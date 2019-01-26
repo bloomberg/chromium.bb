@@ -156,6 +156,11 @@ struct ResolveHostParameters {
 
     // Results will only come from Multicast DNS queries.
     MULTICAST_DNS,
+
+    // No external sources will be used. Results will only come from fast local
+    // sources that are available no matter the source setting, e.g. cache,
+    // hosts file, IP literal resolution, etc.
+    LOCAL_ONLY,
   };
 
   // The source to use for resolved addresses. Default allows the resolver to

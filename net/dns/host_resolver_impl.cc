@@ -462,14 +462,6 @@ class PriorityTracker {
   size_t counts_[NUM_PRIORITIES];
 };
 
-void MakeNotStale(HostCache::EntryStaleness* stale_info) {
-  if (!stale_info)
-    return;
-  stale_info->expired_by = base::TimeDelta::FromSeconds(-1);
-  stale_info->network_changes = 0;
-  stale_info->stale_hits = 0;
-}
-
 // Is |dns_server| within the list of known DNS servers that also support
 // DNS-over-HTTPS?
 bool DnsServerSupportsDoh(const IPAddress& dns_server) {
@@ -591,6 +583,12 @@ class HostResolverImpl::RequestImpl
     return results_ ? results_.value().hostnames() : *nullopt_result;
   }
 
+  const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
+      const override {
+    DCHECK(complete_);
+    return stale_info_;
+  }
+
   void set_results(HostCache::Entry results) {
     // Should only be called at most once and before request is marked
     // completed.
@@ -599,6 +597,16 @@ class HostResolverImpl::RequestImpl
     DCHECK(!parameters_.is_speculative);
 
     results_ = std::move(results);
+  }
+
+  void set_stale_info(HostCache::EntryStaleness stale_info) {
+    // Should only be called at most once and before request is marked
+    // completed.
+    DCHECK(!complete_);
+    DCHECK(!stale_info_);
+    DCHECK(!parameters_.is_speculative);
+
+    stale_info_ = std::move(stale_info);
   }
 
   void ChangeRequestPriority(RequestPriority priority);
@@ -679,6 +687,7 @@ class HostResolverImpl::RequestImpl
 
   bool complete_;
   base::Optional<HostCache::Entry> results_;
+  base::Optional<HostCache::EntryStaleness> stale_info_;
 
   base::TimeTicks request_time_;
 
@@ -1733,6 +1742,10 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       case HostResolverSource::MULTICAST_DNS:
         StartMdnsTask();
         break;
+      case HostResolverSource::LOCAL_ONLY:
+        // If no external source allowed, a job should not be created or started
+        NOTREACHED();
+        break;
     }
 
     // Caution: Job::Start must not complete synchronously.
@@ -2328,13 +2341,16 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, info);
 
-  Key key;
+  Key unused_key;
+  base::Optional<HostCache::EntryStaleness> unused_stale_info;
   HostCache::Entry results = ResolveLocally(
       info.host_port_pair().host(),
       AddressFamilyToDnsQueryType(info.address_family()),
       FlagsToSource(info.host_resolver_flags()), info.host_resolver_flags(),
-      info.allow_cached_response(), false /* allow_stale */,
-      nullptr /* stale_info */, source_net_log, &key);
+      info.allow_cached_response()
+          ? ResolveHostParameters::CacheUsage::ALLOWED
+          : ResolveHostParameters::CacheUsage::DISALLOWED,
+      source_net_log, &unused_key, &unused_stale_info);
 
   if (results.addresses()) {
     *addresses = AddressList::CopyWithPort(results.addresses().value(),
@@ -2357,17 +2373,21 @@ int HostResolverImpl::ResolveStaleFromCache(
   // Update the net log and notify registered observers.
   LogStartRequest(source_net_log, info);
 
-  Key key;
-  HostCache::Entry results =
-      ResolveLocally(info.host_port_pair().host(),
-                     AddressFamilyToDnsQueryType(info.address_family()),
-                     FlagsToSource(info.host_resolver_flags()),
-                     info.host_resolver_flags(), info.allow_cached_response(),
-                     true /* allow_stale */, stale_info, source_net_log, &key);
+  Key unused_key;
+  base::Optional<HostCache::EntryStaleness> optional_stale_info;
+  HostCache::Entry results = ResolveLocally(
+      info.host_port_pair().host(),
+      AddressFamilyToDnsQueryType(info.address_family()),
+      FlagsToSource(info.host_resolver_flags()), info.host_resolver_flags(),
+      info.allow_cached_response()
+          ? ResolveHostParameters::CacheUsage::STALE_ALLOWED
+          : ResolveHostParameters::CacheUsage::DISALLOWED,
+      source_net_log, &unused_key, &optional_stale_info);
 
   if (results.addresses()) {
     *addresses = AddressList::CopyWithPort(results.addresses().value(),
                                            info.host_port_pair().port());
+    *stale_info = std::move(optional_stale_info).value_or(HostCache::kNotStale);
   }
 
   LogFinishRequest(source_net_log, results.error());
@@ -2521,27 +2541,32 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
   DCHECK(!request->job());
   // Request may only be resolved once.
   DCHECK(!request->complete());
-  // MDNS requests do not support skipping cache.
+  // MDNS requests do not support skipping cache or stale lookups.
   // TODO(crbug.com/846423): Either add support for skipping the MDNS cache, or
   // merge to use the normal host cache for MDNS requests.
   DCHECK(request->parameters().source != HostResolverSource::MULTICAST_DNS ||
-         request->parameters().allow_cached_response);
+         request->parameters().cache_usage ==
+             ResolveHostParameters::CacheUsage::ALLOWED);
 
   request->set_request_time(tick_clock_->NowTicks());
 
   LogStartRequest(request->source_net_log(), request->request_host());
 
   Key key;
+  base::Optional<HostCache::EntryStaleness> stale_info;
   HostCache::Entry results = ResolveLocally(
       request->request_host().host(), request->parameters().dns_query_type,
       request->parameters().source, request->host_resolver_flags(),
-      request->parameters().allow_cached_response, false /* allow_stale */,
-      nullptr /* stale_info */, request->source_net_log(), &key);
-  if (results.error() == OK && !request->parameters().is_speculative) {
-    request->set_results(
-        results.CopyWithDefaultPort(request->request_host().port()));
-  }
-  if (results.error() != ERR_DNS_CACHE_MISS) {
+      request->parameters().cache_usage, request->source_net_log(), &key,
+      &stale_info);
+  if (results.error() != ERR_DNS_CACHE_MISS ||
+      request->parameters().source == HostResolverSource::LOCAL_ONLY) {
+    if (results.error() == OK && !request->parameters().is_speculative) {
+      request->set_results(
+          results.CopyWithDefaultPort(request->request_host().port()));
+    }
+    if (stale_info && !request->parameters().is_speculative)
+      request->set_stale_info(std::move(stale_info).value());
     LogFinishRequest(request->source_net_log(), results.error());
     RecordTotalTime(request->parameters().is_speculative, true /* from_cache */,
                     base::TimeDelta());
@@ -2560,11 +2585,13 @@ HostCache::Entry HostResolverImpl::ResolveLocally(
     DnsQueryType dns_query_type,
     HostResolverSource source,
     HostResolverFlags flags,
-    bool allow_cache,
-    bool allow_stale,
-    HostCache::EntryStaleness* stale_info,
+    ResolveHostParameters::CacheUsage cache_usage,
     const NetLogWithSource& source_net_log,
-    Key* out_key) {
+    Key* out_key,
+    base::Optional<HostCache::EntryStaleness>* out_stale_info) {
+  DCHECK(out_stale_info);
+  *out_stale_info = base::nullopt;
+
   IPAddress ip_address;
   IPAddress* ip_address_ptr = nullptr;
   if (ip_address.AssignFromIPLiteral(hostname)) {
@@ -2582,39 +2609,39 @@ HostCache::Entry HostResolverImpl::ResolveLocally(
   *out_key = GetEffectiveKeyForRequest(hostname, dns_query_type, source, flags,
                                        ip_address_ptr, source_net_log);
 
-  DCHECK(allow_stale == !!stale_info);
   // The result of |getaddrinfo| for empty hosts is inconsistent across systems.
   // On Windows it gives the default interface's address, whereas on Linux it
   // gives an error. We will make it fail on all platforms for consistency.
   if (hostname.empty() || hostname.size() > kMaxHostLength) {
-    MakeNotStale(stale_info);
     return HostCache::Entry(ERR_NAME_NOT_RESOLVED,
                             HostCache::Entry::SOURCE_UNKNOWN);
   }
 
   base::Optional<HostCache::Entry> resolved =
       ResolveAsIP(*out_key, ip_address_ptr);
-  if (resolved) {
-    MakeNotStale(stale_info);
+  if (resolved)
     return resolved.value();
-  }
 
   // Special-case localhost names, as per the recommendations in
   // https://tools.ietf.org/html/draft-west-let-localhost-be-localhost.
   resolved = ServeLocalhost(*out_key);
-  if (resolved) {
-    MakeNotStale(stale_info);
+  if (resolved)
     return resolved.value();
-  }
 
-  if (allow_cache) {
-    resolved = ServeFromCache(*out_key, allow_stale, stale_info);
+  if (cache_usage == ResolveHostParameters::CacheUsage::ALLOWED ||
+      cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED) {
+    resolved = ServeFromCache(
+        *out_key,
+        cache_usage == ResolveHostParameters::CacheUsage::STALE_ALLOWED,
+        out_stale_info);
     if (resolved) {
+      DCHECK(out_stale_info->has_value());
       source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
                               resolved.value().CreateNetLogCallback());
       // |ServeFromCache()| will update |*stale_info| as needed.
       return resolved.value();
     }
+    DCHECK(!out_stale_info->has_value());
   }
 
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
@@ -2623,7 +2650,6 @@ HostCache::Entry HostResolverImpl::ResolveLocally(
   if (resolved) {
     source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT,
                             resolved.value().CreateNetLogCallback());
-    MakeNotStale(stale_info);
     return resolved.value();
   }
 
@@ -2685,19 +2711,31 @@ base::Optional<HostCache::Entry> HostResolverImpl::ResolveAsIP(
 base::Optional<HostCache::Entry> HostResolverImpl::ServeFromCache(
     const Key& key,
     bool allow_stale,
-    HostCache::EntryStaleness* stale_info) {
-  DCHECK(allow_stale == !!stale_info);
+    base::Optional<HostCache::EntryStaleness>* out_stale_info) {
+  DCHECK(out_stale_info);
+  *out_stale_info = base::nullopt;
+
   if (!cache_.get())
     return base::nullopt;
 
+  // Local-only requests search the cache for non-local-only results.
+  Key effective_key = key;
+  if (effective_key.host_resolver_source == HostResolverSource::LOCAL_ONLY)
+    effective_key.host_resolver_source = HostResolverSource::ANY;
+
   const HostCache::Entry* cache_entry;
-  if (allow_stale)
-    cache_entry = cache_->LookupStale(key, tick_clock_->NowTicks(), stale_info);
-  else
-    cache_entry = cache_->Lookup(key, tick_clock_->NowTicks());
+  HostCache::EntryStaleness staleness;
+  if (allow_stale) {
+    cache_entry =
+        cache_->LookupStale(effective_key, tick_clock_->NowTicks(), &staleness);
+  } else {
+    cache_entry = cache_->Lookup(effective_key, tick_clock_->NowTicks());
+    staleness = HostCache::kNotStale;
+  }
   if (!cache_entry)
     return base::nullopt;
 
+  *out_stale_info = std::move(staleness);
   return *cache_entry;
 }
 

@@ -777,6 +777,7 @@ TEST_F(HostResolverImplTest, AsynchronousLookup_ResolveHost) {
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
+  EXPECT_FALSE(response.request()->GetStaleInfo());
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
@@ -910,6 +911,7 @@ TEST_F(HostResolverImplTest,
   EXPECT_THAT(response.result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected(kIpLiteral, 80)));
+  EXPECT_FALSE(response.request()->GetStaleInfo());
 }
 
 TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
@@ -932,6 +934,7 @@ TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved_ResolveHost) {
 
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetStaleInfo());
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 }
@@ -960,6 +963,7 @@ TEST_F(HostResolverImplTest, FailedAsynchronousLookup_ResolveHost) {
       HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetStaleInfo());
 
   EXPECT_EQ("just.testing", proc_->GetCaptureList()[0].hostname);
 
@@ -1659,7 +1663,8 @@ TEST_F(HostResolverImplTest, BypassCache_ResolveHost) {
   EXPECT_EQ(1u, proc_->GetCaptureList().size());
 
   HostResolver::ResolveHostParameters parameters;
-  parameters.allow_cached_response = false;
+  parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::DISALLOWED;
   ResolveHostResponseHelper cache_bypassed_response(resolver_->CreateRequest(
       HostPortPair("a", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(cache_bypassed_response.result_error(), IsOk());
@@ -2534,6 +2539,121 @@ TEST_F(HostResolverImplTest, ResolveFromCacheInvalidNameLocalhost) {
   EXPECT_THAT(requests_[1]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
+TEST_F(HostResolverImplTest, SourceNone_FromCache) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+  proc_->SignalMultiple(1u);  // Need only one.
+
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // First NONE query expected to complete synchronously with a cache miss.
+  ResolveHostResponseHelper cache_miss_request(
+      resolver_->CreateRequest(HostPortPair("just.testing", 80),
+                               NetLogWithSource(), source_none_parameters));
+  EXPECT_TRUE(cache_miss_request.complete());
+  EXPECT_THAT(cache_miss_request.result_error(), IsError(ERR_DNS_CACHE_MISS));
+  EXPECT_FALSE(cache_miss_request.request()->GetAddressResults());
+  EXPECT_FALSE(cache_miss_request.request()->GetStaleInfo());
+
+  // Normal query to populate the cache.
+  ResolveHostResponseHelper normal_request(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(normal_request.result_error(), IsOk());
+  EXPECT_FALSE(normal_request.request()->GetStaleInfo());
+
+  // Second NONE query expected to complete synchronously with cache hit.
+  ResolveHostResponseHelper cache_hit_request(
+      resolver_->CreateRequest(HostPortPair("just.testing", 80),
+                               NetLogWithSource(), source_none_parameters));
+  EXPECT_TRUE(cache_hit_request.complete());
+  EXPECT_THAT(cache_hit_request.result_error(), IsOk());
+  EXPECT_THAT(
+      cache_hit_request.request()->GetAddressResults().value().endpoints(),
+      testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
+  EXPECT_FALSE(cache_hit_request.request()->GetStaleInfo().value().is_stale());
+}
+
+TEST_F(HostResolverImplTest, SourceNone_StaleEntry) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+  proc_->SignalMultiple(1u);  // Need only one.
+
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // First NONE query expected to complete synchronously with a cache miss.
+  ResolveHostResponseHelper cache_miss_request(
+      resolver_->CreateRequest(HostPortPair("just.testing", 80),
+                               NetLogWithSource(), source_none_parameters));
+  EXPECT_TRUE(cache_miss_request.complete());
+  EXPECT_THAT(cache_miss_request.result_error(), IsError(ERR_DNS_CACHE_MISS));
+  EXPECT_FALSE(cache_miss_request.request()->GetAddressResults());
+  EXPECT_FALSE(cache_miss_request.request()->GetStaleInfo());
+
+  // Normal query to populate the cache.
+  ResolveHostResponseHelper normal_request(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(normal_request.result_error(), IsOk());
+  EXPECT_FALSE(normal_request.request()->GetStaleInfo());
+
+  MakeCacheStale();
+
+  // Second NONE query still expected to complete synchronously with cache miss.
+  ResolveHostResponseHelper stale_request(
+      resolver_->CreateRequest(HostPortPair("just.testing", 80),
+                               NetLogWithSource(), source_none_parameters));
+  EXPECT_TRUE(stale_request.complete());
+  EXPECT_THAT(stale_request.result_error(), IsError(ERR_DNS_CACHE_MISS));
+  EXPECT_FALSE(stale_request.request()->GetAddressResults());
+  EXPECT_FALSE(stale_request.request()->GetStaleInfo());
+}
+
+TEST_F(HostResolverImplTest, SourceNone_FromIp) {
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("1.2.3.4", 56), NetLogWithSource(), source_none_parameters));
+
+  // Expected to resolve synchronously.
+  EXPECT_TRUE(response.complete());
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("1.2.3.4", 56)));
+  EXPECT_FALSE(response.request()->GetStaleInfo());
+}
+
+TEST_F(HostResolverImplTest, SourceNone_InvalidName) {
+  proc_->AddRuleForAllFamilies("foo,bar.com", "192.168.1.42");
+
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  ResolveHostResponseHelper response(
+      resolver_->CreateRequest(HostPortPair("foo,bar.com", 57),
+                               NetLogWithSource(), source_none_parameters));
+
+  // Expected to fail synchronously.
+  EXPECT_TRUE(response.complete());
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetStaleInfo());
+}
+
+TEST_F(HostResolverImplTest, SourceNone_InvalidLocalhost) {
+  HostResolver::ResolveHostParameters source_none_parameters;
+  source_none_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  ResolveHostResponseHelper response(
+      resolver_->CreateRequest(HostPortPair("foo,bar.localhost", 58),
+                               NetLogWithSource(), source_none_parameters));
+
+  // Expected to fail synchronously.
+  EXPECT_TRUE(response.complete());
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetStaleInfo());
+}
+
 TEST_F(HostResolverImplTest, ResolveStaleFromCache) {
   proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
   proc_->SignalMultiple(1u);  // Need only one.
@@ -2613,6 +2733,79 @@ TEST_F(HostResolverImplTest, ResolveStaleFromCacheError) {
               IsOk());
   EXPECT_TRUE(requests_[6]->HasOneAddress("192.168.1.42", 80));
   EXPECT_TRUE(requests_[6]->staleness().is_stale());
+}
+
+TEST_F(HostResolverImplTest, StaleAllowed) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
+  proc_->SignalMultiple(1u);  // Need only one.
+
+  HostResolver::ResolveHostParameters stale_allowed_parameters;
+  stale_allowed_parameters.source = HostResolverSource::LOCAL_ONLY;
+  stale_allowed_parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+
+  // First query expected to complete synchronously as a cache miss.
+  ResolveHostResponseHelper cache_miss_request(
+      resolver_->CreateRequest(HostPortPair("just.testing", 80),
+                               NetLogWithSource(), stale_allowed_parameters));
+  EXPECT_TRUE(cache_miss_request.complete());
+  EXPECT_THAT(cache_miss_request.result_error(), IsError(ERR_DNS_CACHE_MISS));
+  EXPECT_FALSE(cache_miss_request.request()->GetAddressResults());
+  EXPECT_FALSE(cache_miss_request.request()->GetStaleInfo());
+
+  // Normal query to populate cache
+  ResolveHostResponseHelper normal_request(resolver_->CreateRequest(
+      HostPortPair("just.testing", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(normal_request.result_error(), IsOk());
+  EXPECT_FALSE(normal_request.request()->GetStaleInfo());
+
+  MakeCacheStale();
+
+  // Second NONE query expected to get a stale cache hit.
+  ResolveHostResponseHelper stale_request(
+      resolver_->CreateRequest(HostPortPair("just.testing", 84),
+                               NetLogWithSource(), stale_allowed_parameters));
+  EXPECT_TRUE(stale_request.complete());
+  EXPECT_THAT(stale_request.result_error(), IsOk());
+  EXPECT_THAT(stale_request.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.1.42", 84)));
+  EXPECT_TRUE(stale_request.request()->GetStaleInfo().value().is_stale());
+}
+
+TEST_F(HostResolverImplTest, StaleAllowed_NonLocal) {
+  proc_->AddRuleForAllFamilies("just.testing", "192.168.2.42");
+  proc_->SignalMultiple(1u);  // Need only one.
+
+  HostResolver::ResolveHostParameters stale_allowed_parameters;
+  stale_allowed_parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+
+  // Normal non-local resolves should still work normally with the STALE_ALLOWED
+  // parameter, and there should be no stale info.
+  ResolveHostResponseHelper response(
+      resolver_->CreateRequest(HostPortPair("just.testing", 85),
+                               NetLogWithSource(), stale_allowed_parameters));
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("192.168.2.42", 85)));
+  EXPECT_FALSE(response.request()->GetStaleInfo());
+}
+
+TEST_F(HostResolverImplTest, StaleAllowed_FromIp) {
+  HostResolver::ResolveHostParameters stale_allowed_parameters;
+  stale_allowed_parameters.cache_usage =
+      HostResolver::ResolveHostParameters::CacheUsage::STALE_ALLOWED;
+
+  ResolveHostResponseHelper response(
+      resolver_->CreateRequest(HostPortPair("1.2.3.4", 57), NetLogWithSource(),
+                               stale_allowed_parameters));
+
+  // Expected to resolve synchronously without stale info.
+  EXPECT_TRUE(response.complete());
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected("1.2.3.4", 57)));
+  EXPECT_FALSE(response.request()->GetStaleInfo());
 }
 
 // TODO(mgersh): add a test case for errors with positive TTL after
@@ -6229,6 +6422,34 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
   EXPECT_TRUE(!!cache_entry);
   EXPECT_TRUE(cache_entry->has_ttl());
   EXPECT_THAT(cache_entry->ttl(), base::TimeDelta::FromSeconds(86400));
+}
+
+TEST_F(HostResolverImplDnsTest, CachedError) {
+  CreateResolver();
+  set_allow_fallback_to_proctask(false);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  HostResolver::ResolveHostParameters cache_only_parameters;
+  cache_only_parameters.source = HostResolverSource::LOCAL_ONLY;
+
+  // Expect cache initially empty.
+  ResolveHostResponseHelper cache_miss_response(resolver_->CreateRequest(
+      HostPortPair("nodomain", 80), NetLogWithSource(), cache_only_parameters));
+  EXPECT_THAT(cache_miss_response.result_error(), IsError(ERR_DNS_CACHE_MISS));
+  EXPECT_FALSE(cache_miss_response.request()->GetStaleInfo());
+
+  // Populate cache with an error.
+  ResolveHostResponseHelper no_domain_response(resolver_->CreateRequest(
+      HostPortPair("nodomain", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(no_domain_response.result_error(),
+              IsError(ERR_NAME_NOT_RESOLVED));
+
+  // Expect the error result can be resolved from the cache.
+  ResolveHostResponseHelper cache_hit_response(resolver_->CreateRequest(
+      HostPortPair("nodomain", 80), NetLogWithSource(), cache_only_parameters));
+  EXPECT_THAT(cache_hit_response.result_error(),
+              IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(cache_hit_response.request()->GetStaleInfo().value().is_stale());
 }
 
 TEST_F(HostResolverImplDnsTest, NoCanonicalName) {

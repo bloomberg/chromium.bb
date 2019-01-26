@@ -26,12 +26,19 @@ enum class HostResolverSource {
   // Results will only come from Multicast DNS queries.
   MULTICAST_DNS,
 
-  MAX = MULTICAST_DNS
+  // No external sources will be used. Results will only come from fast local
+  // sources that are available no matter the source setting, e.g. cache, hosts
+  // file, IP literal resolution, etc. Resolves with this setting are guaranteed
+  // to finish synchronously.
+  LOCAL_ONLY,
+
+  MAX = LOCAL_ONLY
 };
 
 const HostResolverSource kHostResolverSources[] = {
     HostResolverSource::ANY, HostResolverSource::SYSTEM,
-    HostResolverSource::DNS, HostResolverSource::MULTICAST_DNS};
+    HostResolverSource::DNS, HostResolverSource::MULTICAST_DNS,
+    HostResolverSource::LOCAL_ONLY};
 
 static_assert(
     base::size(kHostResolverSources) ==
