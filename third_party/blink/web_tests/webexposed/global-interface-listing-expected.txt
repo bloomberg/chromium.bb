@@ -4214,9 +4214,11 @@ interface InputEvent : UIEvent
     method getTargetRanges
 interface IntersectionObserver
     attribute @@toStringTag
+    getter delay
     getter root
     getter rootMargin
     getter thresholds
+    getter trackVisibility
     method constructor
     method disconnect
     method observe
@@ -4228,6 +4230,7 @@ interface IntersectionObserverEntry
     getter intersectionRatio
     getter intersectionRect
     getter isIntersecting
+    getter isVisible
     getter rootBounds
     getter target
     getter time

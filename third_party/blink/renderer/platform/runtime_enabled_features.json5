@@ -643,6 +643,7 @@
     },
     {
       name: "IntersectionObserverV2",
+      status: "stable",
     },
     {
       name: "InvisibleDOM",
