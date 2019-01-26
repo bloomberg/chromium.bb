@@ -233,20 +233,6 @@
       },
     },
   },
-  'cast_runner_browsertests': {
-    # TODO(crbug.com/910799): Enable this once we're confident that it
-    # passes.
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
-  },
-  'cast_runner_integration_tests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64', # TODO(https://crbug.com/918586): Flaky install failures.
-    ],
-  },
   'cast_shell_browsertests': {
     'modifications': {
       'Cast Audio Linux': {
@@ -1336,12 +1322,6 @@
       'linux-chromeos-dbg',  # https://crbug.com/859307
     ],
   },
-  'web_runner_integration_tests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64', # TODO(https://crbug.com/918586): Flaky install failures.
-    ],
-  },
   'webgl2_conformance_tests': {
     'remove_from': [
       # The Mac NVIDIA Retina bots don't have the capacity to run
@@ -1695,12 +1675,6 @@
         },
       },
     },
-  },
-  'webrunner_browsertests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64', # TODO(https://crbug.com/918586): Flaky install failures.
-    ],
   },
   'webui_polymer2_browser_tests': {
     'remove_from': [
