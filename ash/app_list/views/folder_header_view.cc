@@ -268,7 +268,7 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
     delegate_->NavigateBack(folder_item_, key_event);
     return true;
   }
-  if (!CanProcessLeftRightKeyTraversal(key_event))
+  if (!IsUnhandledLeftRightKeyEvent(key_event))
     return false;
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
 }

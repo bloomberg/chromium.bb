@@ -109,7 +109,7 @@ void SuggestionChipContainerView::Layout() {
 
 bool SuggestionChipContainerView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.
-  if (!CanProcessUpDownKeyTraversal(event))
+  if (!IsUnhandledUpDownKeyEvent(event))
     return false;
 
   // Up key moves focus to the search box. Down key moves focus to the first

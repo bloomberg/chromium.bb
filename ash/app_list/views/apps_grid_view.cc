@@ -905,7 +905,7 @@ void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.
-  if (!CanProcessUpDownKeyTraversal(event))
+  if (!IsUnhandledUpDownKeyEvent(event))
     return false;
 
   return HandleVerticalFocusMovement(event.key_code() ==
