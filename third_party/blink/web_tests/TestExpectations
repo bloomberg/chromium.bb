@@ -3048,6 +3048,7 @@ crbug.com/626703 [ Android ] external/wpt/css/css-layout-api/auto-block-size-abs
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/testdriver/file_upload.sub.html [ Skip ]
 crbug.com/626703 crbug.com/913932 [ Android Mac ] external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.tentative.html [ Failure Timeout ]
+crbug.com/626703 crbug.com/913932 [ Win ] external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.tentative.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-preserve-breaks-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-discard-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-trim-trim-inner-001.xht [ Failure ]
