@@ -22,6 +22,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -45,10 +46,11 @@ base::OnceCallback<void(T)> GetCallbackArgument(T* arg) {
 template <typename T>
 class CallbackTracker {
  public:
-  CallbackTracker() : callback_(
-      base::Bind(&CallbackTracker::Callback, base::Unretained(this))) {}
+  CallbackTracker()
+      : callback_(base::BindRepeating(&CallbackTracker::Callback,
+                                      base::Unretained(this))) {}
 
-  using TypedCallback = base::Callback<void(const T&)>;
+  using TypedCallback = base::RepeatingCallback<void(const T&)>;
 
   const TypedCallback& callback() const { return callback_; }
 
@@ -216,6 +218,52 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
 
   delegate.GetPasswordExceptionsList(tracker.callback());
   EXPECT_EQ(2u, tracker.call_count());
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
+  autofill::PasswordForm sample_form = CreateSampleForm();
+  SetUpPasswordStore({sample_form});
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  // Double check that the contents of the passwords list matches our
+  // expectation.
+  bool got_passwords = false;
+  delegate.GetSavedPasswordsList(base::BindLambdaForTesting(
+      [&](const PasswordsPrivateDelegate::UiEntries& password_list) {
+        got_passwords = true;
+        ASSERT_EQ(1u, password_list.size());
+        EXPECT_EQ(sample_form.username_value,
+                  base::UTF8ToUTF16(password_list[0].login_pair.username));
+        EXPECT_EQ(sample_form.password_value.size(),
+                  size_t{password_list[0].num_characters_in_password});
+      }));
+  EXPECT_TRUE(got_passwords);
+
+  int sample_form_id = delegate.GetPasswordIdGeneratorForTesting().GenerateId(
+      password_manager::CreateSortKey(sample_form));
+  delegate.ChangeSavedPassword(sample_form_id, base::ASCIIToUTF16("new_user"),
+                               base::ASCIIToUTF16("new_pass"));
+
+  // Spin the loop to allow PasswordStore tasks posted when changing the
+  // password to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  // Check that the changing the password got reflected in the passwords list.
+  got_passwords = false;
+  delegate.GetSavedPasswordsList(base::BindLambdaForTesting(
+      [&](const PasswordsPrivateDelegate::UiEntries& password_list) {
+        got_passwords = true;
+        ASSERT_EQ(1u, password_list.size());
+        EXPECT_EQ(base::ASCIIToUTF16("new_user"),
+                  base::UTF8ToUTF16(password_list[0].login_pair.username));
+        EXPECT_EQ(base::ASCIIToUTF16("new_pass").size(),
+                  size_t{password_list[0].num_characters_in_password});
+      }));
+  EXPECT_TRUE(got_passwords);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {

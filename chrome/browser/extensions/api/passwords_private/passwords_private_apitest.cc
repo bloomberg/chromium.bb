@@ -77,8 +77,8 @@ class TestDelegate : public PasswordsPrivateDelegate {
       router->OnSavedPasswordsListChanged(current_entries_);
   }
 
-  void GetSavedPasswordsList(const UiEntriesCallback& callback) override {
-    callback.Run(current_entries_);
+  void GetSavedPasswordsList(UiEntriesCallback callback) override {
+    std::move(callback).Run(current_entries_);
   }
 
   void SendPasswordExceptionsList() override {
@@ -91,6 +91,20 @@ class TestDelegate : public PasswordsPrivateDelegate {
   void GetPasswordExceptionsList(
       const ExceptionEntriesCallback& callback) override {
     callback.Run(current_exceptions_);
+  }
+
+  void ChangeSavedPassword(int id,
+                           base::string16 username,
+                           base::Optional<base::string16> password) override {
+    if (size_t{id} >= current_entries_.size())
+      return;
+
+    // PasswordUiEntry does not contain a password. Thus we are only updating
+    // the username and the length of the password.
+    current_entries_[id].login_pair.username = base::UTF16ToUTF8(username);
+    if (password)
+      current_entries_[id].num_characters_in_password = password->size();
+    SendSavedPasswordsList();
   }
 
   void RemoveSavedPassword(int id) override {
@@ -242,6 +256,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
 TestDelegate* PasswordsPrivateApiTest::s_test_delegate_ = nullptr;
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, ChangeSavedPassword) {
+  EXPECT_TRUE(RunPasswordsSubtest("changeSavedPassword")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
                        RemoveAndUndoRemoveSavedPassword) {

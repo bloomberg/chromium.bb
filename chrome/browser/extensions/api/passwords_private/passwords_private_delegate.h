@@ -43,8 +43,8 @@ class PasswordsPrivateDelegate : public KeyedService {
 
   // Gets the saved passwords list.
   using UiEntries = std::vector<api::passwords_private::PasswordUiEntry>;
-  using UiEntriesCallback = base::Callback<void(const UiEntries&)>;
-  virtual void GetSavedPasswordsList(const UiEntriesCallback& callback) = 0;
+  using UiEntriesCallback = base::OnceCallback<void(const UiEntries&)>;
+  virtual void GetSavedPasswordsList(UiEntriesCallback callback) = 0;
 
   // Sends the password exceptions list to the event router.
   virtual void SendPasswordExceptionsList() = 0;
@@ -55,6 +55,15 @@ class PasswordsPrivateDelegate : public KeyedService {
       base::Callback<void(const ExceptionEntries&)>;
   virtual void GetPasswordExceptionsList(
       const ExceptionEntriesCallback& callback) = 0;
+
+  // Changes the username and password corresponding to |id|.
+  // |id|: The id for the password entry being updated.
+  // |new_username|: The new username.
+  // |new_password|: The new password.
+  virtual void ChangeSavedPassword(
+      int id,
+      base::string16 new_username,
+      base::Optional<base::string16> new_password) = 0;
 
   // Removes the saved password entry corresponding to the |id| generated for
   // each entry of the password list.

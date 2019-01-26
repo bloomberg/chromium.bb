@@ -17760,6 +17760,7 @@ Called by update_net_error_codes.py.-->
   <int value="1312" label="AUTOTESTPRIVATE_GETPRIMARYDISPLAYSCALEFACTOR"/>
   <int value="1313" label="AUTOFILLPRIVATE_GETLOCALCREDITCARDLIST"/>
   <int value="1314" label="AUTOFILLPRIVATE_GETSERVERCREDITCARDLIST"/>
+  <int value="1315" label="PASSWORDSPRIVATE_CHANGESAVEDPASSWORD"/>
 </enum>
 
 <enum name="ExtensionIconState">

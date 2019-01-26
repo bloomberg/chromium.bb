@@ -7,6 +7,32 @@
 // and failures are detected.
 
 var availableTests = [
+  function changeSavedPassword() {
+    var numCalls = 0;
+    var callback = function(savedPasswordsList) {
+      numCalls++;
+      if (numCalls == 1) {
+        chrome.passwordsPrivate.changeSavedPassword(0, 'new_user');
+      } else if (numCalls == 2) {
+        chrome.test.assertEq(
+            'new_user', savedPasswordsList[0].loginPair.username);
+        chrome.passwordsPrivate.changeSavedPassword(
+            0, 'another_user', 'new_pass');
+      } else if (numCalls == 3) {
+        chrome.test.assertEq(
+            'another_user', savedPasswordsList[0].loginPair.username);
+        chrome.test.assertEq(
+            'new_pass'.length, savedPasswordsList[0].numCharactersInPassword);
+        chrome.test.succeed();
+      } else {
+        chrome.test.fail();
+      }
+    };
+
+    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
+    chrome.passwordsPrivate.getSavedPasswordList(callback);
+  },
+
   function removeAndUndoRemoveSavedPassword() {
     var numCalls = 0;
     var numSavedPasswords;

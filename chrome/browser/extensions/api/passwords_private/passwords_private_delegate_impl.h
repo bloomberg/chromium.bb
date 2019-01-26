@@ -45,10 +45,14 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // PasswordsPrivateDelegate implementation.
   void SendSavedPasswordsList() override;
-  void GetSavedPasswordsList(const UiEntriesCallback& callback) override;
+  void GetSavedPasswordsList(UiEntriesCallback callback) override;
   void SendPasswordExceptionsList() override;
   void GetPasswordExceptionsList(
       const ExceptionEntriesCallback& callback) override;
+  void ChangeSavedPassword(
+      int id,
+      base::string16 new_username,
+      base::Optional<base::string16> new_password) override;
   void RemoveSavedPassword(int id) override;
   void RemovePasswordException(int id) override;
   void UndoRemoveSavedPasswordOrException() override;
@@ -77,6 +81,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // KeyedService overrides:
   void Shutdown() override;
+
+  SortKeyIdGenerator& GetPasswordIdGeneratorForTesting();
 
   // Use this in tests to mock the OS-level reauthentication.
   void SetOsReauthCallForTesting(
