@@ -243,7 +243,7 @@ public class DownloadNotificationService {
                                                 .setPendingState(pendingState)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.IN_PROGRESS, downloadUpdate);
+                context, DownloadStatus.IN_PROGRESS, downloadUpdate, notificationId);
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
@@ -344,7 +344,7 @@ public class DownloadNotificationService {
                                                 .build();
 
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.PAUSED, downloadUpdate);
+                context, DownloadStatus.PAUSED, downloadUpdate, notificationId);
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
@@ -402,7 +402,7 @@ public class DownloadNotificationService {
                                                 .setTotalBytes(totalBytes)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.COMPLETED, downloadUpdate);
+                context, DownloadStatus.COMPLETED, downloadUpdate, notificationId);
 
         updateNotification(notificationId, notification, id, null);
         mDownloadForegroundServiceManager.updateDownloadStatus(
@@ -446,7 +446,7 @@ public class DownloadNotificationService {
                                                 .setFailState(failState)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.FAILED, downloadUpdate);
+                context, DownloadStatus.FAILED, downloadUpdate, notificationId);
 
         updateNotification(notificationId, notification, id, null);
         mDownloadForegroundServiceManager.updateDownloadStatus(

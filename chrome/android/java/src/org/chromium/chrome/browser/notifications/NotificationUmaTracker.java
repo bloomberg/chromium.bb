@@ -74,15 +74,19 @@ public class NotificationUmaTracker {
      * sure to keep this list in sync.  Additions should be treated as APPEND ONLY to keep the UMA
      * metric semantics the same over time.
      */
-    @IntDef({ActionType.UNKNOWN})
+    @IntDef({ActionType.UNKNOWN, ActionType.DOWNLOAD_PAUSE, ActionType.DOWNLOAD_RESUME,
+            ActionType.DOWNLOAD_CANCEL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         int UNKNOWN = -1;
-        // Pause button when an user download is in progress.
-        int DOWNLOAD_FILES_IN_PROGRESS_PAUSE = 0;
-        // Resume button when an user download is in progress.
-        int DOWNLOAD_FILES_IN_PROGRESS_RESUME = 1;
-        int NUM_ENTRIES = 2;
+        // Pause button on user download notification.
+        int DOWNLOAD_PAUSE = 0;
+        // Resume button on user download notification.
+        int DOWNLOAD_RESUME = 1;
+        // Cancel button on user download notification.
+        int DOWNLOAD_CANCEL = 2;
+
+        int NUM_ENTRIES = 3;
     }
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
