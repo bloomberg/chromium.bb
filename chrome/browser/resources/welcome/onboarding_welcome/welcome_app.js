@@ -131,9 +131,20 @@ Polymer({
         ])
         .then(args => {
           const canSetDefault = args[0];
-          if (!canSetDefault) {
-            modules = modules.filter(module => module != 'nux-set-as-default');
-          }
+
+          modules = modules.filter(module => {
+            if (module == 'nux-set-as-default') {
+              return canSetDefault;
+            }
+
+            if (module == 'nux-email') {
+              // Show email module in en-US only until email recommendations
+              // for other locales is figured out.
+              return navigator.language == 'en-US';
+            }
+
+            return true;
+          });
 
           const indicatorElementCount = modules.reduce((count, module) => {
             return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;
