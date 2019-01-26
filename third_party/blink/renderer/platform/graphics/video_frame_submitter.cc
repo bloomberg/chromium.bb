@@ -343,7 +343,8 @@ bool VideoFrameSubmitter::SubmitFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(video_frame);
-  TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitFrame");
+  TRACE_EVENT1("media", "VideoFrameSubmitter::SubmitFrame", "frame",
+               video_frame->AsHumanReadableString());
 
   if (!compositor_frame_sink_ || !ShouldSubmit())
     return false;
