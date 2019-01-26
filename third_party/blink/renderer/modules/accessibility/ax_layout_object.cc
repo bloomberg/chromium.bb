@@ -2785,7 +2785,7 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
 void AXLayoutObject::AddValidationMessageChild() {
   if (!IsWebArea())
     return;
-  AXObject* ax_object = AXObjectCache().ValidationMessageObjectIfVisible();
+  AXObject* ax_object = AXObjectCache().ValidationMessageObjectIfInvalid();
   if (ax_object)
     children_.push_back(ax_object);
 }
@@ -2803,7 +2803,7 @@ AXObject* AXLayoutObject::ErrorMessage() const {
   if (this != AXObjectCache().FocusedObject())
     return nullptr;
 
-  return AXObjectCache().ValidationMessageObjectIfVisible();
+  return AXObjectCache().ValidationMessageObjectIfInvalid();
 }
 
 void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {

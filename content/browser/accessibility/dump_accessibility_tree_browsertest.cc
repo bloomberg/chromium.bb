@@ -1279,6 +1279,19 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("form-validation-message.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    DumpAccessibilityTreeTest,
+    AccessibilityFormValidationMessageRemovedAfterErrorCorrected) {
+  RunHtmlTest(FILE_PATH_LITERAL(
+      "form-validation-message-removed-after-error-corrected.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityFormValidationMessageAfterHideTimeout) {
+  RunHtmlTest(
+      FILE_PATH_LITERAL("form-validation-message-after-hide-timeout.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFrameset) {
   RunHtmlTest(FILE_PATH_LITERAL("frameset.html"));
 }
