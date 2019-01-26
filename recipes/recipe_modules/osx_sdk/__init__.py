@@ -30,11 +30,6 @@ PROPERTIES = {
       # The CIPD toolchain tool package and version
       toolchain_pkg=Single(str),
       toolchain_ver=Single(str),
-    ), default={
-      'sdk_version': '9c40b',
-
-      'toolchain_pkg': 'infra/tools/mac_toolchain/${platform}',
-      'toolchain_ver': 'git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a',
-    },
+    ), default={},
   )
 }
