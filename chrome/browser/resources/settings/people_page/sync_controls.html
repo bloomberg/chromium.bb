@@ -9,10 +9,6 @@
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 
-<if expr="not chromeos">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
-</if>
-
 <dom-module id="settings-sync-controls">
   <template>
     <style include="settings-shared">
@@ -27,18 +23,6 @@
       .list-item > div {
         flex: 1;
       }
-
-<if expr="not chromeos">
-      #toast {
-        left: 0;
-        z-index: 1;
-      }
-
-      :host-context([dir='rtl']) #toast {
-        left: auto;
-        right: 0;
-      }
-</if>
     </style>
 
     <div class="settings-box first">
@@ -182,16 +166,6 @@
         </cr-toggle>
       </div>
     </div>
-
-<if expr="not chromeos">
-  <cr-toast id="toast"
-      open="[[shouldShowSyncSetupToast_(syncStatus.setupInProgress)]]">
-    <div>$i18n{syncWillStart}</div>
-    <paper-button on-click="onCancelSyncClick_">
-      $i18n{cancelSync}
-    </paper-button>
-  </cr-toast>
-</if>
   </template>
   <script src="sync_controls.js"></script>
 </dom-module>

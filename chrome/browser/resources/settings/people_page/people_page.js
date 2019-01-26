@@ -582,9 +582,4 @@ Polymer({
     }
     return this.i18n('lockScreenTitleLock');
   },
-
-  /** @private */
-  cancelSyncSetup_: function() {
-    this.$$('settings-sync-page').cancelSyncSetup();
-  },
 });

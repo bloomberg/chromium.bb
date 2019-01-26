@@ -190,17 +190,27 @@
           $i18n{peopleSignIn}
         </paper-button>
         <paper-button id="turn-off" class="secondary-button"
-            hidden="[[!shouldShowTurnOffButton_(syncStatus.signedIn)]]"
+            hidden="[[!shouldShowTurnOffButton_(syncStatus.signedIn,
+                showSetupButtons_)]]"
             on-click="onTurnOffButtonTap_"
             disabled="[[syncStatus.setupInProgress]]">
           $i18n{turnOffSync}
         </paper-button>
         <paper-button id="sync-error-button" class="action-button"
-            hidden="[[!shouldShowErrorActionButton_(syncStatus)]]"
+            hidden="[[!shouldShowErrorActionButton_(syncStatus,
+                showSetupButtons_)]]"
             on-click="onErrorButtonTap_"
             disabled="[[syncStatus.setupInProgress]]">
           [[syncStatus.statusActionText]]
         </paper-button>
+        <div id="setup-buttons" hidden="[[!showSetupButtons_]]">
+          <paper-button class="secondary-button" on-click="onSetupCancel_">
+            $i18n{cancel}
+          </paper-button>
+          <paper-button class="action-button" on-click="onSetupConfirm_">
+            $i18n{confirm}
+          </paper-button>
+        </div>
       </div>
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
         <cr-action-menu id="menu" auto-reposition>

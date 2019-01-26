@@ -345,14 +345,17 @@ cr.define('settings_sync_account_control', function() {
       };
       Polymer.dom.flush();
       const userInfo = testElement.$$('#user-info');
+      const setupButtons = testElement.$$('#setup-buttons');
 
       assertTrue(userInfo.textContent.includes('barName'));
       assertFalse(userInfo.textContent.includes('Setup in progress...'));
+      assertVisible(setupButtons, false);
 
       testElement.unifiedConsentEnabled = true;
 
       assertTrue(userInfo.textContent.includes('barName'));
       assertTrue(userInfo.textContent.includes('Setup in progress...'));
+      assertVisible(setupButtons, true);
     });
 
     test('embedded in another page', function() {

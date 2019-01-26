@@ -105,16 +105,6 @@ cr.define('settings_people_page_sync_controls', function() {
       }
       return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
     });
-
-    if (!cr.isChromeOS) {
-      test('ToastNotShownWhenEmbedded', function() {
-        syncControls.syncStatus = {setupInProgress: false};
-        assertFalse(syncControls.$.toast.open);
-
-        syncControls.syncStatus = {setupInProgress: true};
-        assertFalse(syncControls.$.toast.open);
-      });
-    }
   });
 
   suite('SyncControlsSubpageTest', function() {
@@ -141,18 +131,6 @@ cr.define('settings_people_page_sync_controls', function() {
     teardown(function() {
       syncControls.remove();
     });
-
-    if (!cr.isChromeOS) {
-      test('ToastShownForSyncSetup', function() {
-        syncControls.syncStatus = {setupInProgress: false, signedIn: true};
-        assertFalse(syncControls.$.toast.open);
-
-        syncControls.syncStatus = {setupInProgress: true, signedIn: true};
-        assertTrue(syncControls.$.toast.open);
-
-        syncControls.$.toast.querySelector('paper-button').click();
-      });
-    }
 
     test('SignedOut', function() {
       syncControls

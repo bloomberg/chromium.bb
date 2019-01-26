@@ -88,6 +88,13 @@ Polymer({
     },
 
     unifiedConsentEnabled: Boolean,
+
+    /** @private */
+    showSetupButtons_: {
+      type: Boolean,
+      computed: 'computeShowSetupButtons_(unifiedConsentEnabled,' +
+          'hideButtons, syncStatus.setupInProgress)',
+    },
   },
 
   observers: [
@@ -282,7 +289,8 @@ Polymer({
    * @private
    */
   shouldShowTurnOffButton_: function() {
-    return !this.hideButtons && !!this.syncStatus.signedIn;
+    return !this.hideButtons && !this.showSetupButtons_ &&
+        !!this.syncStatus.signedIn;
   },
 
   /**
@@ -296,8 +304,8 @@ Polymer({
       // In a subpage the passphrase button is not required.
       return false;
     }
-    return !this.hideButtons && !!this.syncStatus.signedIn &&
-        !!this.syncStatus.hasError &&
+    return !this.hideButtons && !this.showSetupButtons_ &&
+        !!this.syncStatus.signedIn && !!this.syncStatus.hasError &&
         this.syncStatus.statusAction != settings.StatusAction.NO_ACTION;
   },
 
@@ -440,5 +448,24 @@ Polymer({
         this.recordImpressionUserActions_();
       }
     }
-  }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShowSetupButtons_: function() {
+    return !this.hideButtons && !!this.unifiedConsentEnabled &&
+        !!this.syncStatus.setupInProgress;
+  },
+
+  /** @private */
+  onSetupCancel_: function() {
+    this.fire('sync-setup-done', false);
+  },
+
+  /** @private */
+  onSetupConfirm_: function() {
+    this.fire('sync-setup-done', true);
+  },
 });

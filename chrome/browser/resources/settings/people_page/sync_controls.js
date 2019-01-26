@@ -160,20 +160,6 @@ Polymer({
     return syncAllDataTypes || !autofillSynced;
   },
 
-  /**
-   * @private
-   * @return {boolean}
-   */
-  shouldShowSyncSetupToast_: function() {
-    return settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED &&
-        this.syncStatus.setupInProgress;
-  },
-
-  /** @private */
-  onCancelSyncClick_: function() {
-    this.fire('sync-setup-cancel');
-  },
-
   /** @private */
   syncStatusChanged_: function(syncStatus) {
     // When the sync controls are embedded, the parent has to take care of
