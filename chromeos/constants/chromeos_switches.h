@@ -103,7 +103,6 @@ CHROMEOS_EXPORT extern const char kEnableScreenshotTestingWithMode[];
 CHROMEOS_EXPORT extern const char kEnableTouchCalibrationSetting[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];
-CHROMEOS_EXPORT extern const char kEnableVoiceInteraction[];
 CHROMEOS_EXPORT extern const char kEnterpriseDisableArc[];
 CHROMEOS_EXPORT extern const char kEnterpriseDisableLicenseTypeSelection[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnableForcedReEnrollment[];
@@ -150,7 +149,6 @@ CHROMEOS_EXPORT extern const char kTestEncryptionMigrationUI[];
 CHROMEOS_EXPORT extern const char kTestWallpaperServer[];
 CHROMEOS_EXPORT extern const char kTetherStub[];
 CHROMEOS_EXPORT extern const char kTetherHostScansIgnoreWiredConnections[];
-CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];
 CHROMEOS_EXPORT extern const char kWaitForInitialPolicyFetchForTest[];
 CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
 
@@ -182,15 +180,6 @@ CHROMEOS_EXPORT bool IsGaiaIdMigrationStarted();
 
 // Returns true if this is a Cellular First device.
 CHROMEOS_EXPORT bool IsCellularFirstDevice();
-
-// Returns true if the locale is supported by voice interaction.
-CHROMEOS_EXPORT bool IsVoiceInteractionLocalesSupported();
-
-// Returns true if voice interaction flags are enabled.
-CHROMEOS_EXPORT bool IsVoiceInteractionFlagsEnabled();
-
-// Returns true if voice interaction is enabled.
-CHROMEOS_EXPORT bool IsVoiceInteractionEnabled();
 
 // Returns true if Chrome OS Account Manager is enabled.
 CHROMEOS_EXPORT bool IsAccountManagerEnabled();

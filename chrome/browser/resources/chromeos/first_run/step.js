@@ -101,11 +101,11 @@ cr.define('cr.FirstRun', function() {
     },
 
     /**
-     * Updates UI when voice interaction is enabled by the device.
+     * Updates UI when Google Assistant is enabled.
      */
-    setVoiceInteractionEnabled: function() {
+    setAssistantEnabled: function() {
       if (this.name_ == 'app-list')
-        $('voice-interaction-text').hidden = false;
+        $('google-assistant-text').hidden = false;
     },
   };
 
