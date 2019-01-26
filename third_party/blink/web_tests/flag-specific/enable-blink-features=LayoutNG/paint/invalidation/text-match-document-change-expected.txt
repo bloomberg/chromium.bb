@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'After change'",
-          "rect": [18, 130, 251, 19],
+          "rect": [18, 130, 251, 39],
           "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'Find-in-page 'findme', then click here)'",
-          "rect": [18, 150, 240, 19],
+          "rect": [18, 130, 251, 39],
           "reason": "disappeared"
         },
         {

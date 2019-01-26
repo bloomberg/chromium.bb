@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'xx'",
-          "rect": [24, 8, 16, 48],
+          "rect": [8, 8, 32, 48],
           "reason": "selection"
         },
         {
           "object": "NGPhysicalTextFragment 'y'",
-          "rect": [8, 8, 16, 16],
+          "rect": [8, 8, 32, 48],
           "reason": "selection"
         }
       ]

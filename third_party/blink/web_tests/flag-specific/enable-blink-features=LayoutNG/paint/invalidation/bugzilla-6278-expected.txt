@@ -28,33 +28,43 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment 'vel fringilla orci nibh sed neque.'",
-          "rect": [10, 178, 291, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Quisque eu nulla non nisi molestie'",
-          "rect": [10, 198, 290, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'ac, laoreet non, suscipit sed, sapien.'",
-          "rect": [10, 238, 278, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'accumsan. Etiam tellus urna, laoreet'",
-          "rect": [10, 218, 270, 19],
+          "object": "NGPhysicalTextFragment 'Curabitur pretium, quam quis semper'",
+          "rect": [10, 138, 291, 159],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Phasellus vehicula, sem at posuere'",
-          "rect": [10, 258, 261, 19],
+          "rect": [10, 138, 291, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Quisque eu nulla non nisi molestie'",
+          "rect": [10, 138, 291, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'ac, laoreet non, suscipit sed, sapien.'",
+          "rect": [10, 138, 291, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'accumsan. Etiam tellus urna, laoreet'",
+          "rect": [10, 138, 291, 159],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'malesuada, est libero feugiat libero,'",
-          "rect": [10, 158, 245, 19],
+          "rect": [10, 138, 291, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'vehicula, augue nibh molestie nisl,'",
+          "rect": [10, 138, 291, 159],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'vel fringilla orci nibh sed neque.'",
+          "rect": [10, 138, 291, 159],
           "reason": "geometry"
         },
         {
@@ -74,28 +84,58 @@
         },
         {
           "object": "NGPhysicalTextFragment 'Curabitur pretium, quam quis semper'",
-          "rect": [10, 138, 234, 19],
+          "rect": [10, 138, 234, 199],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Phasellus vehicula, sem at posuere'",
+          "rect": [10, 138, 234, 199],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Quisque eu nulla non nisi molestie'",
+          "rect": [10, 138, 234, 199],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'ac, laoreet non, suscipit sed, sapien.'",
+          "rect": [10, 138, 234, 199],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'accumsan. Etiam tellus urna, laoreet'",
+          "rect": [10, 138, 234, 199],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'malesuada, est libero feugiat libero,'",
+          "rect": [10, 138, 234, 199],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'nec ullamcorper lacus ante vulputate'",
-          "rect": [10, 298, 229, 19],
+          "rect": [10, 138, 234, 199],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'pede.'",
+          "rect": [10, 138, 234, 199],
           "reason": "appeared"
         },
         {
           "object": "NGPhysicalTextFragment 'vehicula, augue nibh molestie nisl,'",
-          "rect": [10, 278, 217, 19],
+          "rect": [10, 138, 234, 199],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'vel fringilla orci nibh sed neque.'",
+          "rect": [10, 138, 234, 199],
           "reason": "geometry"
         },
         {
           "object": "LayoutNGTableCell TD id='col1'",
           "rect": [252, 138, 50, 215],
           "reason": "incremental"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'pede.'",
-          "rect": [10, 318, 34, 19],
-          "reason": "appeared"
         }
       ]
     }

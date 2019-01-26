@@ -28,78 +28,78 @@
           "reason": "style change"
         },
         {
-          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [138, 168, 636, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [148, 168, 635, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [148, 168, 635, 19],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-          "rect": [138, 128, 635, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-          "rect": [148, 128, 634, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
-          "rect": [148, 128, 634, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-          "rect": [138, 188, 627, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-          "rect": [148, 188, 626, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
-          "rect": [148, 188, 626, 19],
+          "rect": [138, 128, 636, 99],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [138, 148, 618, 19],
+          "rect": [138, 128, 636, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
+          "rect": [138, 128, 636, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
+          "rect": [138, 128, 636, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "rect": [138, 128, 636, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
+          "rect": [148, 128, 635, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
+          "rect": [148, 128, 635, 99],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [148, 148, 617, 19],
+          "rect": [148, 128, 635, 99],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [148, 148, 617, 19],
+          "rect": [148, 128, 635, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
+          "rect": [148, 128, 635, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
+          "rect": [148, 128, 635, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
+          "rect": [148, 128, 635, 99],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
+          "rect": [148, 128, 635, 99],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [138, 208, 573, 19],
+          "rect": [148, 128, 635, 99],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [148, 208, 572, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [148, 208, 572, 19],
+          "rect": [148, 128, 635, 99],
           "reason": "geometry"
         },
         {
@@ -113,33 +113,48 @@
           "reason": "incremental"
         },
         {
-          "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
-          "rect": [400, 208, 391, 19],
+          "object": "NGPhysicalTextFragment 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet.'",
+          "rect": [400, 128, 391, 179],
           "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id'",
-          "rect": [400, 268, 385, 19],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
-          "rect": [400, 168, 385, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
-          "rect": [400, 248, 384, 19],
-          "reason": "disappeared"
         },
         {
           "object": "NGPhysicalTextFragment 'Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et'",
-          "rect": [400, 148, 383, 19],
+          "rect": [400, 128, 391, 179],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed'",
+          "rect": [400, 128, 391, 179],
           "reason": "geometry"
         },
         {
           "object": "NGPhysicalTextFragment 'Sed volutpat, tellus vel varius vestibulum, purus quam mollis'",
-          "rect": [400, 228, 382, 19],
+          "rect": [400, 128, 391, 179],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id'",
+          "rect": [400, 128, 391, 179],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula.'",
+          "rect": [400, 128, 391, 179],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.'",
+          "rect": [400, 128, 391, 179],
+          "reason": "geometry"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'quam.'",
+          "rect": [400, 128, 391, 179],
+          "reason": "disappeared"
+        },
+        {
+          "object": "NGPhysicalTextFragment 'sapien, in condimentum leo neque sed nulla. Nunc quis porta'",
+          "rect": [400, 128, 391, 179],
           "reason": "disappeared"
         },
         {
@@ -151,11 +166,6 @@
           "object": "LayoutNGBlockFlow DIV id='left'",
           "rect": [8, 128, 140, 100],
           "reason": "geometry"
-        },
-        {
-          "object": "NGPhysicalTextFragment 'quam.'",
-          "rect": [400, 288, 39, 19],
-          "reason": "disappeared"
         }
       ]
     }
