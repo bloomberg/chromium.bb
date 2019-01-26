@@ -26,9 +26,13 @@ _Untrustworthy inputs_ are inputs that
   * have non-trivial grammars; or
   * come from untrustworthy sources.
 
-Unfortunately, essentially no format you will ever come across has a trivial
-grammar. And, of course, any arbitrary peer on the Internet is an untrustworthy
-source.
+Unfortunately, it is very rare to find a grammar trivial enough that we can
+trust ourselves to parse it successfully or fail safely. (But see
+[Normalization](#Normalization) for a potential example.)
+
+Obviously, any arbitrary peer on the Internet is an untrustworthy source without
+some evidence of trustworthiness (which includes at least [a strong assertion of
+the source's identity](#verifying-trustworthiness-source)).
 
 _Unsafe implementation languages_ are languages that lack
 [memory safety](https://en.wikipedia.org/wiki/Memory_safety), including at least
@@ -78,6 +82,7 @@ of launching a utility process to parse an untrustworthy input is [Safe
 Browsing's ZIP
 analyzer](https://cs.chromium.org/chromium/src/chrome/common/safe_browsing/zip_analyzer.h).
 
+<a href="verifying-trustworthiness-source"></a>
 ### Verifying The Trustworthiness Of A Source
 
 If you can be sure that the input comes from a trustworthy source, it can be OK
@@ -88,17 +93,29 @@ source" meets all of these criteria:
   * peer's keys are [pinned in Chrome](https://cs.chromium.org/chromium/src/net/http/transport_security_state_static.json?sq=package:chromium&g=0); and
   * peer is operated by a business entity that Chrome should trust (e.g. an [Alphabet](https://abc.xyz) company).
 
+<a name="Normalization"></a>
 ### Normalization
 
 You can 'defang' a potentially-malicious input by transforming it into a
-_normalized_ or minimal form. For example, consider the PNG image format, which
-is complex and whose [C implementation has suffered from memory corruption bugs
-in the
+_normal_ or _minimal_ form, usually by first transforming it into a format with
+a simpler grammar (such as [Farbfeld](https://tools.suckless.org/farbfeld/)).
+
+For example, consider the PNG image format, which is complex and whose [C
+implementation has suffered from memory corruption bugs in the
 past](https://www.cvedetails.com/vulnerability-list/vendor_id-7294/Libpng.html).
-An attacker would craft a malicious PNG that could trigger such a bug. But if
-you transform the image into a another format (in another, in a low-privilege
-process, of course), the malicious nature of the PNG 'should' be eliminated and
-then safe for reading at a higher privilege level.
+An attacker could craft a malicious PNG to trigger such a bug. But if you
+transform the image into a format that doesn't have PNG's complexity (in a
+low-privilege process, of course), the malicious nature of the PNG 'should' be
+eliminated and then safe for parsing at a higher privilege level. Even if the
+attacker manages to compromise the low-privilege process with a malicious PNG,
+the high-privilege process will only parse the compromised process' output with
+a simple, plausibly-safe parser. If that parse is successful, the
+higher-privilege process can then optionally further transform it into a
+normalized, minimal form (such as to save space). Otherwise, the parse can fail
+safely, without memory corruption.
+
+The trick of this technique lies in finding a sufficiently-trivial grammar, and
+committing to its limitations.
 
 ### Safe Languages
 
