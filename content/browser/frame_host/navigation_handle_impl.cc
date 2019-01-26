@@ -199,14 +199,6 @@ NavigationHandleImpl::NavigationHandleImpl(
   DCHECK(!navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
 
-  site_url_ = SiteInstance::GetSiteForURL(frame_tree_node()
-                                              ->current_frame_host()
-                                              ->GetSiteInstance()
-                                              ->GetBrowserContext(),
-                                          url_);
-  if (redirect_chain_.empty())
-    redirect_chain_.push_back(url);
-
   starting_site_instance_ =
       frame_tree_node()->current_frame_host()->GetSiteInstance();
 
