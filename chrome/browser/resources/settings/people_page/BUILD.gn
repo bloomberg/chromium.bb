@@ -212,6 +212,7 @@ js_library("signout_dialog") {
 
 js_library("sync_page") {
   deps = [
+    ":sync_account_control",
     ":sync_browser_proxy",
     "..:page_visibility",
     "..:route",
