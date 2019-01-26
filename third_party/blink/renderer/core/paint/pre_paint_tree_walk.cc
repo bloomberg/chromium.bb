@@ -473,14 +473,6 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
   }
 
-  // Because current |PrePaintTreeWalk| walks LayoutObject tree, NGPaintFragment
-  // that are not mapped to LayoutObject are not updated. Ensure they are
-  // updated after all descendants were updated.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && object.IsLayoutNGMixin()) {
-    if (NGPaintFragment* fragment = ToLayoutBlockFlow(object).PaintFragment())
-      fragment->UpdateVisualRectForNonLayoutObjectChildren();
-  }
-
   object.GetMutableForPainting().ClearPaintFlags();
   context_storage_.pop_back();
 }

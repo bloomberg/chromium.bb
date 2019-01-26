@@ -23,14 +23,14 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalTextFragment '\u00A0'",
-          "rect": [8, 8, 97, 100],
-          "reason": "selection"
+          "object": "NGPhysicalTextFragment 'not run'",
+          "rect": [8, 8, 97, 200],
+          "reason": "disappeared"
         },
         {
-          "object": "NGPhysicalTextFragment 'not run'",
-          "rect": [8, 108, 49, 100],
-          "reason": "disappeared"
+          "object": "NGPhysicalTextFragment '\u00A0'",
+          "rect": [8, 8, 97, 200],
+          "reason": "selection"
         }
       ]
     }

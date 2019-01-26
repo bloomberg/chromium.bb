@@ -155,10 +155,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return inline_offset_to_container_box_;
   }
 
-  // Update VisualRect for fragments without LayoutObjects (i.e., line boxes,)
-  // after its descendants were updated.
-  void UpdateVisualRectForNonLayoutObjectChildren();
-
   void AddSelfOutlineRect(Vector<LayoutRect>*,
                           const LayoutPoint& offset,
                           NGOutlineType) const;
@@ -169,8 +165,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   bool ShouldClipOverflow() const;
   bool HasSelfPaintingLayer() const;
   // This is equivalent to LayoutObject::VisualRect
-  LayoutRect VisualRect() const override { return visual_rect_; }
-  void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
+  LayoutRect VisualRect() const override;
 
   LayoutRect SelectionVisualRect() const;
   void SetSelectionVisualRect(const LayoutRect& rect);
@@ -355,12 +350,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // For an inline box, this flag helps to avoid traversing up to its line box
   // every time.
   unsigned is_dirty_inline_ : 1;
-
-  //
-  // Following fields are computed in the pre-paint phase.
-  //
-
-  LayoutRect visual_rect_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT

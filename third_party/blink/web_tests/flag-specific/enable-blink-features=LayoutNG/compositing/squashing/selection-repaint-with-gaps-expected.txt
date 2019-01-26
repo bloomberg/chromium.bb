@@ -33,13 +33,13 @@
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 80, 40, 20],
+          "object": "NGPhysicalTextFragment 'ipsum'",
+          "rect": [0, 80, 40, 40],
           "reason": "selection"
         },
         {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 100, 38, 20],
+          "object": "NGPhysicalTextFragment 'lorem'",
+          "rect": [0, 80, 40, 40],
           "reason": "selection"
         }
       ]
@@ -93,23 +93,23 @@
       "bounds": [100, 210],
       "paintInvalidations": [
         {
-          "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 160, 40, 20],
+          "object": "NGPhysicalTextFragment 'ipsum'",
+          "rect": [0, 160, 40, 40],
           "reason": "selection"
         },
         {
           "object": "NGPhysicalTextFragment 'lorem'",
-          "rect": [0, 80, 40, 20],
+          "rect": [0, 160, 40, 40],
           "reason": "selection"
         },
         {
           "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 180, 38, 20],
+          "rect": [0, 80, 40, 40],
           "reason": "selection"
         },
         {
-          "object": "NGPhysicalTextFragment 'ipsum'",
-          "rect": [0, 100, 38, 20],
+          "object": "NGPhysicalTextFragment 'lorem'",
+          "rect": [0, 80, 40, 40],
           "reason": "selection"
         }
       ]

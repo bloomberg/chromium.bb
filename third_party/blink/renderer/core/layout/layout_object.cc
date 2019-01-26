@@ -1643,7 +1643,6 @@ void LayoutObject::ClearPreviousVisualRects() {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (auto* fragment : fragments) {
-        fragment->SetVisualRect(LayoutRect());
         fragment->SetSelectionVisualRect(LayoutRect());
       }
     }

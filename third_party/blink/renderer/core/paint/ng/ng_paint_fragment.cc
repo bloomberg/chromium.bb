@@ -41,7 +41,6 @@ struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
                                    public ImageResourceObserver {
   void* pointers[6];
   NGPhysicalOffset offsets[2];
-  LayoutRect rects[1];
   unsigned flags;
 };
 
@@ -552,6 +551,35 @@ NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
   return fragment;
 }
 
+LayoutRect NGPaintFragment::VisualRect() const {
+  // VisualRect is computed from fragment tree and set to LayoutObject in
+  // pre-paint. Use the stored value in the LayoutObject.
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  if (const LayoutObject* layout_object = fragment.GetLayoutObject()) {
+    // For inline fragments, InlineBox uses one united rect for the LayoutObject
+    // even when it is fragmented across lines. Use the same technique.
+    //
+    // Atomic inlines have two VisualRect; one for the LayoutBox and another as
+    // InlineBox. NG creates two NGPaintFragment, one as the root of an inline
+    // formatting context and another as a child of the inline formatting
+    // context it participates. |Parent()| can distinguish them because a tree
+    // is created for each inline formatting context.
+    if (Parent())
+      return layout_object->VisualRectForInlineBox();
+
+    return static_cast<const DisplayItemClient*>(layout_object)->VisualRect();
+  }
+
+  // Line box does not have corresponding LayoutObject. Use VisualRect of the
+  // containing LayoutBlockFlow as RootInlineBox does so.
+  DCHECK(fragment.IsLineBox());
+  // Line box is always a direct child of its containing block.
+  NGPaintFragment* containing_block_fragment = Parent();
+  DCHECK(containing_block_fragment);
+  DCHECK(containing_block_fragment->GetLayoutObject());
+  return containing_block_fragment->GetLayoutObject()->VisualRectForInlineBox();
+}
+
 bool NGPaintFragment::FlippedLocalVisualRectFor(
     const LayoutObject* layout_object,
     LayoutRect* visual_rect) {
@@ -572,19 +600,6 @@ bool NGPaintFragment::FlippedLocalVisualRectFor(
   DCHECK(container);
   ToLayoutBox(container->GetLayoutObject())->FlipForWritingMode(*visual_rect);
   return true;
-}
-
-void NGPaintFragment::UpdateVisualRectForNonLayoutObjectChildren() {
-  // Scan direct children only beause line boxes are always direct children of
-  // the inline formatting context.
-  for (NGPaintFragment* child : Children()) {
-    if (!child->PhysicalFragment().IsLineBox())
-      continue;
-    LayoutRect union_of_children;
-    for (const NGPaintFragment* descendant : child->Children())
-      union_of_children.Unite(descendant->VisualRect());
-    child->SetVisualRect(union_of_children);
-  }
 }
 
 void NGPaintFragment::AddSelfOutlineRect(Vector<LayoutRect>* outline_rects,

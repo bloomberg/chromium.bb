@@ -323,18 +323,10 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   fragment_data.SetVisualRect(new_visual_rect);
 
   // For LayoutNG, update NGPaintFragments.
+  // TODO(kojii): If we can compute SelectionVisualRect when needed, the
+  // following code path will not be needed.
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
-
-  // TODO(kojii): multi-col needs additional logic. What's needed is to be
-  // figured out.
-  if (object.IsLayoutNGMixin()) {
-    if (NGPaintFragment* fragment = ToLayoutBlockFlow(object).PaintFragment())
-      fragment->SetVisualRect(new_visual_rect);
-
-    // Also check IsInline below. Inline block is LayoutBlockFlow but is also in
-    // an inline formatting context.
-  }
 
   if (object.IsInline()) {
     // An inline LayoutObject can produce multiple NGPaintFragment. Compute
@@ -345,10 +337,6 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
           object.IsText() && ToLayoutText(object).IsSelected();
       if (!has_selection_in_this_object) {
         for (NGPaintFragment* fragment : fragments) {
-          LayoutRect local_visual_rect = fragment->SelfInkOverflow();
-          fragment->SetVisualRect(MapFragmentLocalRectToVisualRect(
-              local_visual_rect, object, *fragment, context));
-
           if (UNLIKELY(!fragment->SelectionVisualRect().IsEmpty())) {
             context.painting_layer->SetNeedsRepaint();
             ObjectPaintInvalidator(object).InvalidateDisplayItemClient(
@@ -363,13 +351,9 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
         for (NGPaintFragment* fragment : fragments) {
           LayoutRect local_selection_rect =
               ComputeFragmentLocalSelectionRect(*fragment);
-          LayoutRect local_visual_rect =
-              UnionRect(fragment->SelfInkOverflow(), local_selection_rect);
-          fragment->SetVisualRect(MapFragmentLocalRectToVisualRect(
-              local_visual_rect, object, *fragment, context));
-
           LayoutRect selection_visual_rect = MapFragmentLocalRectToVisualRect(
               local_selection_rect, object, *fragment, context);
+          new_visual_rect.Unite(selection_visual_rect);
           const bool should_invalidate =
               object.ShouldInvalidateSelection() ||
               selection_visual_rect != fragment->SelectionVisualRect();
@@ -382,6 +366,9 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
             fragment->SetSelectionVisualRect(selection_visual_rect);
           }
         }
+        // TODO(kojii): Not sure why do we need to include SelectionVisualRect
+        // to VisualRect only in NG, but this is needed to pass some tests.
+        fragment_data.SetVisualRect(new_visual_rect);
       }
     }
   }
