@@ -1421,13 +1421,14 @@ ax::mojom::InvalidState AXNodeObject::GetInvalidState() const {
   if (!attribute_value.IsEmpty())
     return ax::mojom::InvalidState::kOther;
 
-  if (GetNode() && GetNode()->IsElementNode() &&
-      ToElement(GetNode())->IsFormControlElement()) {
-    HTMLFormControlElement* element = ToHTMLFormControlElement(GetNode());
-    return element->IsNotCandidateOrValid() ? ax::mojom::InvalidState::kFalse
-                                            : ax::mojom::InvalidState::kTrue;
+  if (GetElement()) {
+    ListedElement* form_control = ListedElement::From(*GetElement());
+    if (form_control) {
+      return form_control->IsNotCandidateOrValid()
+                 ? ax::mojom::InvalidState::kFalse
+                 : ax::mojom::InvalidState::kTrue;
+    }
   }
-
   return AXObject::GetInvalidState();
 }
 

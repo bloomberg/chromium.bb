@@ -232,7 +232,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void RequestAOMEventListenerPermission();
 
   // For built-in HTML form validation messages.
-  AXObject* ValidationMessageObjectIfVisible();
+  AXObject* ValidationMessageObjectIfInvalid();
 
  protected:
   void PostPlatformNotification(AXObject*, ax::mojom::Event);
@@ -303,6 +303,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Object for HTML validation alerts. Created at most once per object cache.
   AXObject* GetOrCreateValidationMessageObject();
+  void RemoveValidationMessageObject();
 
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.

@@ -1140,37 +1140,52 @@ AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
     // Cache the validation message container for reuse.
     validation_message_axid_ = GetOrCreateAXID(message_ax_object);
     message_ax_object->Init();
+    // Validation message alert object is a child of the document, as not all
+    // form controls can have a child. Also, there are form controls such as
+    // listbox that technically can have children, but they are probably not
+    // expected to have alerts within AT client code.
+    ChildrenChanged(document_);
   }
   return message_ax_object;
 }
 
-AXObject* AXObjectCacheImpl::ValidationMessageObjectIfVisible() {
+AXObject* AXObjectCacheImpl::ValidationMessageObjectIfInvalid() {
   Element* focused_element = document_->FocusedElement();
-  if (!focused_element)
-    return nullptr;
-  ListedElement* form_control = ListedElement::From(*focused_element);
-  if (!form_control || !form_control->IsValidationMessageVisible())
-    return nullptr;
+  if (focused_element) {
+    ListedElement* form_control = ListedElement::From(*focused_element);
+    if (form_control && !form_control->IsNotCandidateOrValid()) {
+      // These must both be true:
+      // * Focused control is currently invalid.
+      // * Validation message was previously created but hidden
+      // from timeout or currently visible.
+      bool was_validation_message_already_created = validation_message_axid_;
+      if (was_validation_message_already_created ||
+          form_control->IsValidationMessageVisible()) {
+        AXObject* focused_object = this->FocusedObject();
+        DCHECK(focused_object);
 
-  AXObject* focused_object = this->FocusedObject();
-  DCHECK(focused_object);
+        // Return as long as the focused form control isn't overriding with a
+        // different message via aria-errormessage.
+        bool override_native_validation_message =
+            focused_object->GetAOMPropertyOrARIAAttribute(
+                AOMRelationProperty::kErrorMessage);
+        if (!override_native_validation_message) {
+          AXObject* message = GetOrCreateValidationMessageObject();
+          if (message && !was_validation_message_already_created)
+            ChildrenChanged(document_);
+          return message;
+        }
+      }
+    }
+  }
 
-  // Return as long as the focused form control isn't overriding with a
-  // different message via aria-errormessage.
-  bool override_native_validation_message =
-      focused_object->GetAOMPropertyOrARIAAttribute(
-          AOMRelationProperty::kErrorMessage);
-  if (override_native_validation_message)
-    return nullptr;
-
-  return GetOrCreateValidationMessageObject();
+  // No focused, invalid form control.
+  RemoveValidationMessageObject();
+  return nullptr;
 }
 
-// Native validation error popup for focused form control in current document.
-void AXObjectCacheImpl::HandleValidationMessageVisibilityChanged(
-    const Element* form_control) {
-  AXObject* message_ax_object = ValidationMessageObjectIfVisible();
-  if (!message_ax_object && validation_message_axid_) {
+void AXObjectCacheImpl::RemoveValidationMessageObject() {
+  if (validation_message_axid_) {
     // Remove when it becomes hidden, so that a new object is created the next
     // time the message becomes visible. It's not possible to reuse the same
     // alert, because the event generator will not generate an alert event if
@@ -1178,16 +1193,20 @@ void AXObjectCacheImpl::HandleValidationMessageVisibilityChanged(
     // user submits the form when an alert is already visible.
     Remove(validation_message_axid_);
     validation_message_axid_ = 0;
+    ChildrenChanged(document_);
   }
+}
 
-  // Form control will now have an error message relation to message container.
+// Native validation error popup for focused form control in current document.
+void AXObjectCacheImpl::HandleValidationMessageVisibilityChanged(
+    const Element* form_control) {
+  AXObject* message_ax_object = ValidationMessageObjectIfInvalid();
+  if (message_ax_object)
+    MarkAXObjectDirty(message_ax_object, false);  // May be invisible now.
+
+  // If the form control is invalid, it will now have an error message relation
+  // to the message container.
   MarkElementDirty(form_control, false);
-
-  // Validation message alert object is a child of the document, as not all form
-  // controls can have a child. Also, there are form controls such as listbox
-  // that technically can have children, but they are probably not expected to
-  // have alerts within AT client code.
-  ChildrenChanged(document_);
 }
 
 void AXObjectCacheImpl::LabelChanged(Element* element) {
@@ -1309,6 +1328,8 @@ void AXObjectCacheImpl::MarkElementDirty(const Element* element, bool subtree) {
 
 void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
                                                       Node* new_focused_node) {
+  RemoveValidationMessageObject();
+
   if (!new_focused_node)
     return;
 
