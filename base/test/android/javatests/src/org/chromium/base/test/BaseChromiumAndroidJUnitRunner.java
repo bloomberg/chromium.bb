@@ -295,6 +295,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             Log.i(TAG, "Scanning loaded dex files for test classes.");
             // Mirror TestRequestBuilder.getClassNamesFromClassPath().
             TestLoader loader = new TestLoader();
+            loader.setClassLoader(new ForgivingClassLoader());
             for (DexFile dexFile : mDexFiles) {
                 Enumeration<String> classNames = dexFile.entries();
                 while (classNames.hasMoreElements()) {
