@@ -36,6 +36,9 @@ import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -63,15 +66,22 @@ public final class DownloadNotificationFactory {
      * @param downloadStatus (in progress, paused, successful, failed, deleted, or summary).
      * @param downloadUpdate information about the download (ie. contentId, fileName, icon,
      * isOffTheRecord, etc).
+     * @param notificationId The notification id passed to {@link
+     *         android.app.NotificationManager#notify(String, int, Notification)}.
      * @return Notification that is built based on these parameters.
      */
     public static Notification buildNotification(Context context,
             @DownloadNotificationService.DownloadStatus int downloadStatus,
-            DownloadUpdate downloadUpdate) {
+            DownloadUpdate downloadUpdate, int notificationId) {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.DOWNLOADS)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.ChannelId.DOWNLOADS,
+                                null /* remoteAppPackageName */,
+                                new NotificationMetadata(
+                                        NotificationUmaTracker.SystemNotificationType
+                                                .DOWNLOAD_FILES,
+                                        null /* tag */, notificationId))
                         .setLocalOnly(true)
                         .setGroup(NotificationConstants.GROUP_DOWNLOADS)
                         .setAutoCancel(true);
@@ -126,13 +136,15 @@ public final class DownloadNotificationFactory {
                         .addAction(R.drawable.ic_pause_white_24dp,
                                 context.getResources().getString(
                                         R.string.download_notification_pause_button),
-                                buildPendingIntent(
-                                        context, pauseIntent, downloadUpdate.getNotificationId()))
+                                buildPendingIntentProvider(
+                                        context, pauseIntent, downloadUpdate.getNotificationId()),
+                                NotificationUmaTracker.ActionType.DOWNLOAD_PAUSE)
                         .addAction(R.drawable.btn_close_white,
                                 context.getResources().getString(
                                         R.string.download_notification_cancel_button),
-                                buildPendingIntent(
-                                        context, cancelIntent, downloadUpdate.getNotificationId()));
+                                buildPendingIntentProvider(
+                                        context, cancelIntent, downloadUpdate.getNotificationId()),
+                                NotificationUmaTracker.ActionType.DOWNLOAD_CANCEL);
 
                 if (!downloadUpdate.getIsOffTheRecord())
                     builder.setLargeIcon(downloadUpdate.getIcon());
@@ -177,19 +189,21 @@ public final class DownloadNotificationFactory {
                         .addAction(R.drawable.ic_file_download_white_24dp,
                                 context.getResources().getString(
                                         R.string.download_notification_resume_button),
-                                buildPendingIntent(
-                                        context, resumeIntent, downloadUpdate.getNotificationId()))
+                                buildPendingIntentProvider(
+                                        context, resumeIntent, downloadUpdate.getNotificationId()),
+                                NotificationUmaTracker.ActionType.DOWNLOAD_RESUME)
                         .addAction(R.drawable.btn_close_white,
                                 context.getResources().getString(
                                         R.string.download_notification_cancel_button),
-                                buildPendingIntent(
-                                        context, cancelIntent, downloadUpdate.getNotificationId()));
+                                buildPendingIntentProvider(
+                                        context, cancelIntent, downloadUpdate.getNotificationId()),
+                                NotificationUmaTracker.ActionType.DOWNLOAD_CANCEL);
 
                 if (!downloadUpdate.getIsOffTheRecord())
                     builder.setLargeIcon(downloadUpdate.getIcon());
 
                 if (downloadUpdate.getIsTransient()) {
-                    builder.setDeleteIntent(buildPendingIntent(
+                    builder.setDeleteIntent(buildPendingIntentProvider(
                             context, cancelIntent, downloadUpdate.getNotificationId()));
                 }
 
@@ -240,9 +254,9 @@ public final class DownloadNotificationFactory {
                     ComponentName component = new ComponentName(
                             context.getPackageName(), DownloadBroadcastManager.class.getName());
                     intent.setComponent(component);
-                    builder.setContentIntent(
-                            PendingIntent.getService(context, downloadUpdate.getNotificationId(),
-                                    intent, PendingIntent.FLAG_UPDATE_CURRENT));
+                    builder.setContentIntent(PendingIntentProvider.getService(context,
+                            downloadUpdate.getNotificationId(), intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT));
                 }
 
                 // It's the job of the service to ensure that the default icon is provided when
@@ -284,7 +298,7 @@ public final class DownloadNotificationFactory {
             Intent downloadHomeIntent = buildActionIntent(
                     context, ACTION_NOTIFICATION_CLICKED, null, downloadUpdate.getIsOffTheRecord());
             builder.setContentIntent(
-                    PendingIntent.getService(context, downloadUpdate.getNotificationId(),
+                    PendingIntentProvider.getService(context, downloadUpdate.getNotificationId(),
                             downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
 
@@ -315,9 +329,9 @@ public final class DownloadNotificationFactory {
      * @param intent Intent to broadcast.
      * @param notificationId ID of the notification.
      */
-    private static PendingIntent buildPendingIntent(
+    private static PendingIntentProvider buildPendingIntentProvider(
             Context context, Intent intent, int notificationId) {
-        return PendingIntent.getService(
+        return PendingIntentProvider.getService(
                 context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
