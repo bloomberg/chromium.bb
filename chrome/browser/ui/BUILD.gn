@@ -337,7 +337,8 @@ jumbo_split_static_library("ui") {
     ]
   }
 
-  allow_circular_includes_from = []
+  # TODO(crbug/925153): Remove this circular dependency.
+  allow_circular_includes_from = [ "//chrome/browser/safe_browsing" ]
   defines = []
   libs = []
 

@@ -743,9 +743,13 @@ jumbo_static_library("extensions") {
   ]
   defines = []
 
-  # TODO(loyso): Remove this circular dependency. http://crbug.com/876576.
-  allow_circular_includes_from =
-      [ "//chrome/browser/web_applications/extensions" ]
+  allow_circular_includes_from = [
+    # TODO(loyso): Remove this circular dependency. http://crbug.com/876576.
+    "//chrome/browser/web_applications/extensions",
+
+    # TODO(crbug/925153): Remove this circular dependency.
+    "//chrome/browser/safe_browsing",
+  ]
 
   # Since browser and browser_extensions actually depend on each other,
   # we must omit the dependency from browser_extensions to browser.
