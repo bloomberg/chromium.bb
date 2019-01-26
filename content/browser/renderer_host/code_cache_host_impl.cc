@@ -22,6 +22,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
@@ -202,6 +203,12 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
     const std::vector<uint8_t>& data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanAccessDataForOrigin(
+          render_process_id_, cache_storage_origin.GetURL())) {
+    mojo::ReportBadMessage("CODE_CACHE_INVALID_CACHE_STORAGE_ORIGIN");
+    return;
+  }
+
   if (!cache_storage_context_->cache_manager())
     return;
 
