@@ -13,18 +13,10 @@ namespace device {
 // Controls whether on Windows, U2F/CTAP2 requests are forwarded to the
 // native WebAuthentication API, where available.
 const base::Feature kWebAuthUseNativeWinApi{"WebAuthenticationUseNativeWinApi",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If true, the minimum API version check for integration with the native
-// Windows WebAuthentication API is disabled. This is an interim solution for
-// for manual testing while we await the release of a DLL that implements the
-// version check.
-const base::Feature kWebAuthDisableWinApiVersionCheckForTesting{
-    "WebAuthenticationDisableWinApiVersionCheckForTesting",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 extern const base::Feature kWebAuthProxyCryptotoken{
-    "WebAuthenticationProxyCryptotoken", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAuthenticationProxyCryptotoken", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace device
