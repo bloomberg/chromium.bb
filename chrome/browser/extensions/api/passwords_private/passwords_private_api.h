@@ -35,6 +35,23 @@ class PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction
       PasswordsPrivateRecordPasswordsPageAccessInSettingsFunction);
 };
 
+class PasswordsPrivateChangeSavedPasswordFunction
+    : public UIThreadExtensionFunction {
+ public:
+  PasswordsPrivateChangeSavedPasswordFunction() {}
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.changeSavedPassword",
+                             PASSWORDSPRIVATE_CHANGESAVEDPASSWORD);
+
+ protected:
+  ~PasswordsPrivateChangeSavedPasswordFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateChangeSavedPasswordFunction);
+};
+
 class PasswordsPrivateRemoveSavedPasswordFunction :
     public UIThreadExtensionFunction {
  public:

@@ -77,6 +77,15 @@ chrome.passwordsPrivate.PasswordExportProgress;
 chrome.passwordsPrivate.recordPasswordsPageAccessInSettings = function() {};
 
 /**
+ * Changes the username and password corresponding to |id|.
+ * @param {number} id The id for the password entry being updated.
+ * @param {string} new_username The new username.
+ * @param {string=} new_password The new password.
+ */
+chrome.passwordsPrivate.changeSavedPassword = function(
+    id, new_username, new_password) {};
+
+/**
  * Removes the saved password corresponding to |loginPair|. If no saved password
  * for this pair exists, this function is a no-op.
  * @param {number} id The id for the password entry being removed.
@@ -125,11 +134,11 @@ chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 chrome.passwordsPrivate.importPasswords = function() {};
 
 /**
- * <p>Triggers the Password Manager password export functionality. Completion
- * Will be signaled by the onPasswordsFileExportProgress event.</p><p>|callback|
- * will be called when the request is started or rejected. If rejected
+ * Triggers the Password Manager password export functionality. Completion Will
+ * be signaled by the onPasswordsFileExportProgress event. |callback| will be
+ * called when the request is started or rejected. If rejected
  * <code>chrome.runtime.lastError</code> will be set to 'in-progress' or
- * 'reauth-failed'.</p>
+ * 'reauth-failed'.
  * @param {function():void} callback
  */
 chrome.passwordsPrivate.exportPasswords = function(callback) {};
