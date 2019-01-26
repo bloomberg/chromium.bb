@@ -615,12 +615,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
     bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale);
 
-    if (disallowed && base::CommandLine::ForCurrentProcess()
-                              ->GetSwitchValueASCII(
-                                  chromeos::switches::kVoiceInteractionLocales)
-                              .find(pref_locale) == std::string::npos) {
+    if (disallowed)
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
-    }
   }
 
   return ash::mojom::AssistantAllowedState::ALLOWED;

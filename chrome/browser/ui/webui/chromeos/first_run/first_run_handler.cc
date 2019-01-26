@@ -4,10 +4,25 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
 
+#include <utility>
+
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
+
+namespace {
+
+bool IsAssistantAllowed() {
+  return ash::mojom::AssistantAllowedState::ALLOWED ==
+         arc::IsAssistantAllowedForProfile(
+             ProfileManager::GetActiveUserProfile());
+}
+
+}  // namespace
 
 namespace chromeos {
 
@@ -47,9 +62,7 @@ void FirstRunHandler::ShowStepPositioned(const std::string& name,
   step_params.SetKey("name", base::Value(name));
   step_params.SetKey("position", position.AsValue());
   step_params.SetKey("pointWithOffset", base::Value(base::Value::Type::LIST));
-  step_params.SetKey(
-      "voiceInteractionEnabled",
-      base::Value(chromeos::switches::IsVoiceInteractionEnabled()));
+  step_params.SetKey("assistantEnabled", base::Value(IsAssistantAllowed()));
 
   web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }
@@ -66,9 +79,7 @@ void FirstRunHandler::ShowStepPointingTo(const std::string& name,
   point_with_offset.AppendInteger(y);
   point_with_offset.AppendInteger(offset);
   step_params.SetKey("pointWithOffset", std::move(point_with_offset));
-  step_params.SetKey(
-      "voiceInteractionEnabled",
-      base::Value(chromeos::switches::IsVoiceInteractionEnabled()));
+  step_params.SetKey("assistantEnabled", base::Value(IsAssistantAllowed()));
 
   web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }

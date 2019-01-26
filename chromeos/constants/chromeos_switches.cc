@@ -27,14 +27,6 @@ const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 // all stored user keys will be converted to GaiaId)
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
-// Controls whether to enable assistant for locale.
-const base::Feature kAssistantFeatureForLocale{
-    "ChromeOSAssistantForLocale", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to enable voice interaction feature.
-const base::Feature kVoiceInteractionFeature{"ChromeOSVoiceInteraction",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether Instant Tethering supports hosts which use the background
 // advertisement model.
 const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
@@ -360,9 +352,6 @@ const char kEnableTouchpadThreeFingerClick[] =
 const char kEnableVideoPlayerChromecastSupport[] =
     "enable-video-player-chromecast-support";
 
-// Enables the VoiceInteraction support.
-const char kEnableVoiceInteraction[] = "enable-voice-interaction";
-
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 
@@ -551,9 +540,6 @@ const char kTetherStub[] = "tether-stub";
 const char kTetherHostScansIgnoreWiredConnections[] =
     "tether-host-scans-ignore-wired-connections";
 
-// List of locales supported by voice interaction.
-const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
-
 // Used to tell the policy infrastructure to not let profile initialization
 // complete until policy is manually set by a test. This is used to provide
 // backward compatibility with a few tests that incorrectly use the
@@ -623,40 +609,6 @@ bool IsGaiaIdMigrationStarted() {
 
 bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
-}
-
-bool IsVoiceInteractionLocalesSupported() {
-  // We use Chromium variations to control locales for which assistant should
-  // be enabled. But we still keep checking the previously hard-coded locales
-  // for compatibility.
-  if (base::FeatureList::IsEnabled(kAssistantFeatureForLocale))
-    return true;
-
-  // TODO(updowndota): Add DCHECK here to make sure the value never changes
-  // after all the use case for this method has been moved into user session.
-
-  // Disable voice interaction for non-supported locales.
-  std::string kLocale = icu::Locale::getDefault().getName();
-  if (kLocale != ULOC_US && kLocale != ULOC_UK && kLocale != ULOC_CANADA &&
-      base::CommandLine::ForCurrentProcess()
-              ->GetSwitchValueASCII(
-                  chromeos::switches::kVoiceInteractionLocales)
-              .find(kLocale) == std::string::npos) {
-    return false;
-  }
-  return true;
-}
-
-bool IsVoiceInteractionFlagsEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !IsAssistantFlagsEnabled() &&
-         (command_line->HasSwitch(kEnableVoiceInteraction) ||
-          base::FeatureList::IsEnabled(kVoiceInteractionFeature));
-}
-
-bool IsVoiceInteractionEnabled() {
-  return IsVoiceInteractionLocalesSupported() &&
-         IsVoiceInteractionFlagsEnabled();
 }
 
 bool IsAccountManagerEnabled() {
