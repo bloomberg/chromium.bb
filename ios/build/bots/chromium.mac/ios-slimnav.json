@@ -17,7 +17,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s Plus",
       "os": "12.1",
@@ -28,7 +28,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
       "os": "12.1",
@@ -39,7 +39,7 @@
     {
       "include": "common_tests.json",
             "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
       "os": "12.1",
@@ -50,7 +50,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "12.1",
@@ -61,7 +61,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s Plus",
       "os": "11.4",
@@ -72,7 +72,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
       "os": "11.4",
@@ -83,7 +83,7 @@
     {
       "include": "common_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
       "os": "11.4",
@@ -94,7 +94,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -105,7 +105,7 @@
     {
       "include": "eg_cq_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
       "os": "11.4",
@@ -116,7 +116,7 @@
     {
       "app": "ios_chrome_bookmarks_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -129,7 +129,8 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -141,7 +142,7 @@
     {
       "app": "ios_chrome_web_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -153,7 +154,7 @@
     {
       "app": "ios_chrome_settings_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -165,7 +166,7 @@
     {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -177,7 +178,7 @@
     {
       "app": "ios_showcase_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "11.4",
@@ -189,7 +190,7 @@
     {
       "app": "ios_chrome_bookmarks_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "shard size": 2,
       "device type": "iPad Air 2",
@@ -202,7 +203,8 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
+        "--disable-features=SlimNavigationManager"
       ],
       "xctest": true,
       "device type": "iPad Air 2",
@@ -214,7 +216,7 @@
     {
       "app": "ios_chrome_web_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "12.1",
@@ -226,7 +228,7 @@
     {
       "app": "ios_chrome_settings_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "12.1",
@@ -238,7 +240,7 @@
     {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "12.1",
@@ -250,7 +252,7 @@
     {
       "app": "ios_showcase_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPad Air 2",
       "os": "12.1",
@@ -262,7 +264,7 @@
     {
       "app": "ios_chrome_bookmarks_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -275,7 +277,8 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
+        "--disable-features=SlimNavigationManager"
       ],
       "xctest": true,
       "device type": "iPhone X",
@@ -287,7 +290,7 @@
     {
       "app": "ios_chrome_web_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -299,7 +302,7 @@
     {
       "app": "ios_chrome_settings_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -311,7 +314,7 @@
     {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -323,7 +326,7 @@
     {
       "app": "ios_showcase_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -335,7 +338,7 @@
     {
       "app": "ios_chrome_bookmarks_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "shard size": 2,
       "device type": "iPhone X",
@@ -348,7 +351,8 @@
     {
       "app": "ios_chrome_manual_fill_egtests",
       "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging,SlimNavigationManager"
+        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging",
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",
@@ -360,7 +364,7 @@
     {
       "app": "ios_chrome_web_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",
@@ -372,7 +376,7 @@
     {
       "app": "ios_chrome_settings_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",
@@ -384,7 +388,7 @@
     {
       "app": "ios_chrome_reading_list_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",
@@ -396,7 +400,7 @@
     {
       "app": "ios_showcase_egtests",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",
@@ -408,7 +412,7 @@
     {
       "include": "eg_cq_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "11.4",
@@ -419,7 +423,7 @@
     {
       "include": "eg_cq_tests.json",
       "test args": [
-        "--enable-features=SlimNavigationManager"
+        "--disable-features=SlimNavigationManager"
       ],
       "device type": "iPhone X",
       "os": "12.1",

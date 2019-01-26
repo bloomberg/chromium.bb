@@ -42,7 +42,7 @@ TEST_F(WebViewRestorableStateTest, EncodeDecode) {
 
   // Wait for restore to finish.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
-    return [restored_web_view canGoBack];
+    return [restored_web_view lastCommittedURL] != nil;
   }));
 
   // Verify that the state has been restored correctly.
