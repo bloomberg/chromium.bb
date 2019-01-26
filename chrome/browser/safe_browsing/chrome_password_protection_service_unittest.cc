@@ -14,7 +14,6 @@
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -33,7 +32,6 @@
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/user_events/fake_user_event_service.h"
@@ -255,13 +253,9 @@ class ChromePasswordProtectionServiceTest
     FakeAccountFetcherService* account_fetcher_service =
         static_cast<FakeAccountFetcherService*>(
             AccountFetcherServiceFactory::GetForProfile(profile()));
-    AccountTrackerService* account_tracker_service =
-        AccountTrackerServiceFactory::GetForProfile(profile());
-    std::string gaia_id = account_info.gaia;
-    std::string email = account_info.email;
     account_fetcher_service->FakeUserInfoFetchSuccess(
-        account_tracker_service->PickAccountIdForAccount(gaia_id, email), email,
-        gaia_id, hosted_domain, "full_name", "given_name", "locale",
+        account_info.account_id, account_info.email, account_info.gaia,
+        hosted_domain, "full_name", "given_name", "locale",
         "http://picture.example.com/picture.jpg");
   }
 
