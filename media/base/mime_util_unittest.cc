@@ -184,6 +184,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-m4a"));
   EXPECT_TRUE(IsSupportedMediaMimeType("video/x-m4v"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/aac"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/3gpp"));
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_TRUE(IsSupportedMediaMimeType("video/mp2t"));
@@ -195,6 +196,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-m4a"));
   EXPECT_FALSE(IsSupportedMediaMimeType("video/x-m4v"));
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/aac"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/3gpp"));
 #endif  // USE_PROPRIETARY_CODECS
   EXPECT_FALSE(IsSupportedMediaMimeType("video/mp3"));
 

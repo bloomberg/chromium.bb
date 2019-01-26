@@ -352,6 +352,10 @@ void MimeUtil::AddSupportedMediaFormats() {
   AddContainerWithCodecs("audio/x-m4a", aac);
   AddContainerWithCodecs("video/x-m4v", avc_and_aac);
 
+  CodecSet video_3gpp_codecs(aac);
+  video_3gpp_codecs.emplace(H264);
+  AddContainerWithCodecs("video/3gpp", video_3gpp_codecs);
+
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   CodecSet mp2t_codecs{H264, MPEG2_AAC, MPEG4_AAC, MP3};
   AddContainerWithCodecs("video/mp2t", mp2t_codecs);
