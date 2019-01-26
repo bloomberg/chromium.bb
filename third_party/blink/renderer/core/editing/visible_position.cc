@@ -119,7 +119,7 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
     LayoutBlockFlow* const context =
         NGOffsetMapping::GetInlineFormattingContextOf(*layout_object);
     DCHECK(context);
-    DCHECK(context->IsLayoutNGBlockFlow());
+    DCHECK(context->IsLayoutNGMixin());
 
     const NGOffsetMapping* mapping =
         NGInlineNode::GetOffsetMapping(context, nullptr);
@@ -129,9 +129,7 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
         mapping->GetTextContentOffset(ToPositionInDOMTree(deep_position));
     DCHECK(offset.has_value());
 
-    DCHECK(mapping->GetCaretNavigator());
-    const NGCaretNavigator& caret_navigator = *mapping->GetCaretNavigator();
-    if (caret_navigator.OffsetIsBidiBoundary(offset.value()))
+    if (NGCaretNavigator(*context).OffsetIsBidiBoundary(offset.value()))
       return VisiblePositionTemplate<Strategy>(upstream_position);
     return VisiblePositionTemplate<Strategy>(downstream_position);
   }

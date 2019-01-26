@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
@@ -439,8 +438,6 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   CollectInlinesInternal(layout_block_flow, &builder, nullptr, nullptr,
                          update_layout);
 
-  std::unique_ptr<NGCaretNavigator> caret_navigator;
-
   // For non-NG object, we need the text, and also the inline items to resolve
   // bidi levels. Otherwise |data| already has the text from the pre-layout
   // phase, check they match.
@@ -450,16 +447,14 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   } else {
     DCHECK(layout_block_flow->IsLayoutNGMixin());
     DCHECK_EQ(data->text_content, builder.ToString());
-    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-      caret_navigator = std::make_unique<NGCaretNavigator>(*data);
   }
 
   // TODO(xiaochengh): This doesn't compute offset mapping correctly when
   // text-transform CSS property changes text length.
   NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
   mapping_builder.SetDestinationString(data->text_content);
-  data->offset_mapping = std::make_unique<NGOffsetMapping>(
-      mapping_builder.Build(std::move(caret_navigator)));
+  data->offset_mapping =
+      std::make_unique<NGOffsetMapping>(mapping_builder.Build());
   DCHECK(data->offset_mapping);
 }
 

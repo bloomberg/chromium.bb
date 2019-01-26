@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 
@@ -19,32 +17,24 @@ class NGCaretNavigatorTest : public RenderingTest,
   void SetupHtml(const char* id, String html) {
     SetBodyInnerHTML(html);
 
-    LayoutBlockFlow* layout_block_flow =
-        ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
-    DCHECK(layout_block_flow);
-    DCHECK(layout_block_flow->IsLayoutNGBlockFlow());
-    DCHECK(layout_block_flow->ChildrenInline());
-
-    const NGOffsetMapping* mapping =
-        NGInlineNode::GetOffsetMapping(layout_block_flow, nullptr);
-    DCHECK(mapping);
-
-    caret_navigator_ = mapping->GetCaretNavigator();
-    DCHECK(caret_navigator_);
+    block_flow_ = ToLayoutBlockFlow(GetLayoutObjectByElementId(id));
+    DCHECK(block_flow_);
+    DCHECK(block_flow_->IsLayoutNGMixin());
+    DCHECK(block_flow_->ChildrenInline());
   }
 
   UBiDiLevel BidiLevelAt(unsigned index) const {
-    return caret_navigator_->BidiLevelAt(index);
+    return NGCaretNavigator(*block_flow_).BidiLevelAt(index);
   }
 
   NGCaretNavigator::VisualCharacterMovementResult LeftCharacterOf(
       unsigned index) const {
-    return caret_navigator_->LeftCharacterOf(index);
+    return NGCaretNavigator(*block_flow_).LeftCharacterOf(index);
   }
 
   NGCaretNavigator::VisualCharacterMovementResult RightCharacterOf(
       unsigned index) const {
-    return caret_navigator_->RightCharacterOf(index);
+    return NGCaretNavigator(*block_flow_).RightCharacterOf(index);
   }
 
   NGCaretNavigator::Position CaretBefore(unsigned index) const {
@@ -57,16 +47,16 @@ class NGCaretNavigatorTest : public RenderingTest,
 
   NGCaretNavigator::VisualCaretMovementResult LeftPositionOf(
       const NGCaretNavigator::Position& position) const {
-    return caret_navigator_->LeftPositionOf(position);
+    return NGCaretNavigator(*block_flow_).LeftPositionOf(position);
   }
 
   NGCaretNavigator::VisualCaretMovementResult RightPositionOf(
       const NGCaretNavigator::Position& position) const {
-    return caret_navigator_->RightPositionOf(position);
+    return NGCaretNavigator(*block_flow_).RightPositionOf(position);
   }
 
  protected:
-  const NGCaretNavigator* caret_navigator_;
+  const LayoutBlockFlow* block_flow_;
 };
 
 TEST_F(NGCaretNavigatorTest, BidiLevelAtBasic) {

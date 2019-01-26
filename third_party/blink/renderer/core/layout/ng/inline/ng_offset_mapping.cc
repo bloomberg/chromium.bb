@@ -221,18 +221,12 @@ LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
 NGOffsetMapping::NGOffsetMapping(NGOffsetMapping&& other)
     : NGOffsetMapping(std::move(other.units_),
                       std::move(other.ranges_),
-                      other.text_,
-                      std::move(other.caret_navigator_)) {}
+                      other.text_) {}
 
-NGOffsetMapping::NGOffsetMapping(
-    UnitVector&& units,
-    RangeMap&& ranges,
-    String text,
-    std::unique_ptr<NGCaretNavigator> caret_navigator)
-    : units_(std::move(units)),
-      ranges_(std::move(ranges)),
-      text_(text),
-      caret_navigator_(std::move(caret_navigator)) {}
+NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
+                                 RangeMap&& ranges,
+                                 String text)
+    : units_(std::move(units)), ranges_(std::move(ranges)), text_(text) {}
 
 NGOffsetMapping::~NGOffsetMapping() = default;
 

@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -16,6 +17,8 @@
 
 namespace blink {
 
+class LayoutBlockFlow;
+class NGInlineItem;
 struct NGInlineNodeData;
 
 // Hosts the |text_content| of an inline formatting context and provides
@@ -23,10 +26,14 @@ struct NGInlineNodeData;
 // left/right characters and visual left/right caret movements.
 // Design doc: http://bit.ly/2QVAwGq
 class CORE_EXPORT NGCaretNavigator {
+  STACK_ALLOCATED();
+
  public:
-  NGCaretNavigator(NGCaretNavigator&&);
-  explicit NGCaretNavigator(const NGInlineNodeData&);
+  explicit NGCaretNavigator(const LayoutBlockFlow&);
   ~NGCaretNavigator();
+
+  const String& GetText() const;
+  bool IsBidiEnabled() const;
 
   // Abstraction of a caret position in |text_|.
   enum class PositionAnchorType { kBefore, kAfter };
@@ -132,18 +139,13 @@ class CORE_EXPORT NGCaretNavigator {
   VisualCaretMovementResult MoveCaretInternal(const Position&,
                                               MoveDirection) const;
 
-  String text_;
+  const NGInlineNodeData& GetData() const;
+  const NGInlineItem& GetItem(unsigned index) const;
+  Vector<int32_t, 32> IndicesInVisualOrder() const;
+  unsigned VisualIndexOf(unsigned index) const;
 
-  // TODO(xiaochengh): Add line-aware index.
-  // TODO(xiaochengh): Reduce memory consumption.
-  Vector<UBiDiLevel, 32> bidi_levels_;
-  Vector<int32_t, 32> indices_in_visual_order_;
-  Vector<int32_t, 32> visual_indices_;
-
-  bool is_bidi_enabled_;
-  TextDirection base_direction_;
-
-  DISALLOW_COPY_AND_ASSIGN(NGCaretNavigator);
+  const LayoutBlockFlow& context_;
+  DocumentLifecycle::DisallowTransitionScope disallow_transition_;
 };
 
 }  // namespace blink
