@@ -2723,6 +2723,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'daisy',
       'veyron_jerry',
       'amd64-generic',
+      'kevin64',
   ])
 
   master_config = site_config.Add(
@@ -2778,7 +2779,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'grunt',
       'hana',
       'kevin-arcnext',
-      'kevin64',
       'nocturne',
       'nyan_big',
       'peach_pit',
@@ -3411,8 +3411,8 @@ def ApplyCustomOverrides(site_config):
       },
 
       # Run TestSimpleChromeWorkflow only on kevin64-release instead of
-      # kevin64-chrome-pfq/kevin64-full.
-      'kevin64-chrome-pfq': {
+      # kevin64-chrome-pfq/kevin64-chromium-pfq/kevin64-full.
+      'kevin64-chromium-pfq': {
           'chrome_sdk_build_chrome': False,
       },
       'kevin64-full': {
