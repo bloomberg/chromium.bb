@@ -16,6 +16,8 @@
   <script src="chrome://resources/js/ios/web_ui.js"></script>
 </if>
 
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 </head>
 <body>
@@ -205,7 +207,7 @@
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
 <if expr="not is_ios">
-          <button class="experiment-restart-button" type="button" tabindex="9">
+          <button id="experiment-restart-button" type="button" tabindex="9">
 <if expr="not chromeos">
           Relaunch Now
 </if>

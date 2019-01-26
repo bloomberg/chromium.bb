@@ -16,6 +16,8 @@ body {
   --color-light-gray: rgba(0, 0, 0, 0.54);
   --color-shadow: rgba(0, 0, 0, 0.1);
   --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --keyboard-focus-ring: rgba(66, 133, 244, 0.4);
+  --google-blue-400: rgb(102, 157, 246);
   --google-blue-500: rgb(66, 133, 244);
   --google-blue-700: rgb(51, 103, 214);
   --google-gray-100: rgb(245, 245, 245);
@@ -390,24 +392,24 @@ h2 {
   line-height: 1.4;
 }
 
-.experiment-restart-button {
-  background: var(--google-blue-700);
+#experiment-restart-button {
+  background: var(--google-blue-500);
   border: 0;
   border-radius: 3px;
   color: white;
   font-size: 14px;
   padding: 14px 38px;
-  text-transform: uppercase;
 }
 
-.experiment-restart-button:active,
-.experiment-restart-button:focus {
-  background: var(--google-blue-500);
+#experiment-restart-button:active,
+#experiment-restart-button:focus,
+#experiment-restart-button:hover {
+  background: var(--google-blue-400);
   outline: 0;
 }
 
-.experiment-restart-button:hover {
-  background: var(--google-blue-500);
+html.focus-outline-visible #experiment-restart-button:focus {
+  box-shadow: 0 0 0 1px var(--keyboard-focus-ring);
 }
 
 #version {
@@ -433,7 +435,7 @@ h2 {
     text-align: initial;
   }
 
-  .experiment-restart-button {
+  #experiment-restart-button {
     padding: 8px;
   }
 
@@ -495,7 +497,7 @@ h2 {
     padding: 8px 12px;
   }
 
-  .experiment-restart-button {
+  #experiment-restart-button {
     padding: 8px 16px;
   }
 
