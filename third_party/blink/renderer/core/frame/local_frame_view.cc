@@ -751,7 +751,7 @@ void LocalFrameView::UpdateLayout() {
   ScriptForbiddenScope forbid_script;
 
   if (IsInPerformLayout() || ShouldThrottleRendering() ||
-      !frame_->GetDocument()->IsActive())
+      !frame_->GetDocument()->IsActive() || frame_->IsProvisional())
     return;
 
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::layout");
