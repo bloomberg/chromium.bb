@@ -4398,11 +4398,11 @@ BEGIN_PARTITION_SEARCH:
       pc_tree->horizontal[0].pred_interp_filter =
           av1_extract_interp_filter(ctx_none->mic.interp_filters, 0);
     }
+    sum_rdc.rate = partition_cost[PARTITION_HORZ];
+    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
     const int64_t best_remain_rdcost = best_rdc.rdcost == INT64_MAX
                                            ? INT64_MAX
                                            : (best_rdc.rdcost - sum_rdc.rdcost);
-    sum_rdc.rate = partition_cost[PARTITION_HORZ];
-    sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
                      PARTITION_HORZ, subsize, &pc_tree->horizontal[0],
                      best_remain_rdcost);
