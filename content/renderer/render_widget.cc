@@ -448,9 +448,6 @@ RenderWidget::~RenderWidget() {
   // browser tests delete a RenderWidget without correclty going through
   // the shutdown. https://crbug.com/545684
 
-  if (input_event_queue_)
-    input_event_queue_->ClearClient();
-
 #if defined(USE_AURA)
   // It is possible for a RenderWidget to be destroyed before it was embedded
   // in a mus window. The RendererWindowTreeClient will leak in such cases. So
@@ -676,6 +673,11 @@ void RenderWidget::OnClose() {
     }
   }
 
+  // Stop handling main thread input events immediately so we don't have them
+  // running while things are partly shut down.
+  if (input_event_queue_)
+    input_event_queue_->ClearClient();
+
   if (for_child_local_root_frame_) {
     // Widgets for frames may be created and closed at any time while the frame
     // is alive. However, WebWidget must be closed synchronously because frame
@@ -886,28 +888,18 @@ viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
   return input_handler_->GetFrameSinkIdAtPoint(point, local_point);
 }
 
-void RenderWidget::HandleInputEvent(
+bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  // This class is not removed as the MainThreadEventQueueClient until it
-  // is destroyed, so we must check |closing_| to avoid introducing input
-  // events after close.
-  if (is_frozen_ || closing_) {
-    std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency_info,
-                            nullptr, base::nullopt);
-    return;
-  }
+  if (is_frozen_)
+    return false;
   input_handler_->HandleInputEvent(input_event, latency_info,
                                    std::move(callback));
+  return true;
 }
 
 void RenderWidget::SetNeedsMainFrame() {
-  // This class is not removed as the MainThreadEventQueueClient until it
-  // is destroyed.
-  if (closing_)
-    return;
-
   // The WebWidgetClient is not |this| if tests override it for the WebView and
   // WebViewClient.
   blink::WebWidgetClient* client =

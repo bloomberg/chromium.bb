@@ -4,6 +4,8 @@
 
 #include "content/renderer/input/main_thread_event_queue.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/metrics/histogram_macros.h"
@@ -116,8 +118,13 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     HandledEventCallback callback =
         base::BindOnce(&QueuedWebInputEvent::HandledEvent,
                        base::Unretained(this), base::RetainedRef(queue));
-    queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
-                                   std::move(callback));
+    if (!queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
+                                        std::move(callback))) {
+      // The |callback| won't be run, so our stored |callback_| should run
+      // indicating error.
+      HandledEvent(queue, INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latencyInfo(),
+                   nullptr, base::nullopt);
+    }
   }
 
   void HandledEvent(MainThreadEventQueue* queue,
@@ -591,12 +598,15 @@ void MainThreadEventQueue::HandleEventResampling(
   }
 }
 
-void MainThreadEventQueue::HandleEventOnMainThread(
+bool MainThreadEventQueue::HandleEventOnMainThread(
     const blink::WebCoalescedInputEvent& event,
     const ui::LatencyInfo& latency,
     HandledEventCallback handled_callback) {
-  if (client_)
-    client_->HandleInputEvent(event, latency, std::move(handled_callback));
+  bool handled = false;
+  if (client_) {
+    handled =
+        client_->HandleInputEvent(event, latency, std::move(handled_callback));
+  }
 
   if (needs_low_latency_until_pointer_up_) {
     // Reset the needs low latency until pointer up mode if necessary.
@@ -612,6 +622,7 @@ void MainThreadEventQueue::HandleEventOnMainThread(
         break;
     }
   }
+  return handled;
 }
 
 void MainThreadEventQueue::SetNeedsMainFrame() {
