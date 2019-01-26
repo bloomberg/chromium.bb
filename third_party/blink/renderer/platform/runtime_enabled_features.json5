@@ -159,6 +159,7 @@
     },
     {
       name: "BlockingDownloadsInSandboxWithoutUserActivation",
+      status: "test"
     },
     {
       name: "BlockMetaSetCookie",
