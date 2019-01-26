@@ -205,7 +205,7 @@ void SearchResultPageView::AddSearchResultContainerView(
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.
-  if (!CanProcessUpDownKeyTraversal(event))
+  if (!IsUnhandledUpDownKeyEvent(event))
     return false;
 
   views::View* next_focusable_view = nullptr;

@@ -9,11 +9,8 @@
 
 namespace app_list {
 
-bool CanProcessLeftRightKeyTraversal(const ui::KeyEvent& event) {
+bool IsUnhandledUnmodifiedEvent(const ui::KeyEvent& event) {
   if (event.handled() || event.type() != ui::ET_KEY_PRESSED)
-    return false;
-
-  if (event.key_code() != ui::VKEY_LEFT && event.key_code() != ui::VKEY_RIGHT)
     return false;
 
   if (event.IsShiftDown() || event.IsControlDown() || event.IsAltDown())
@@ -22,22 +19,33 @@ bool CanProcessLeftRightKeyTraversal(const ui::KeyEvent& event) {
   return true;
 }
 
-bool CanProcessUpDownKeyTraversal(const ui::KeyEvent& event) {
-  if (event.handled() || event.type() != ui::ET_KEY_PRESSED)
+bool IsUnhandledLeftRightKeyEvent(const ui::KeyEvent& event) {
+  if (!IsUnhandledUnmodifiedEvent(event))
     return false;
 
-  if (event.key_code() != ui::VKEY_UP && event.key_code() != ui::VKEY_DOWN)
+  return event.key_code() == ui::VKEY_LEFT ||
+         event.key_code() == ui::VKEY_RIGHT;
+}
+
+bool IsUnhandledUpDownKeyEvent(const ui::KeyEvent& event) {
+  if (!IsUnhandledUnmodifiedEvent(event))
     return false;
 
-  if (event.IsShiftDown() || event.IsControlDown() || event.IsAltDown())
+  return event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN;
+}
+
+bool IsUnhandledArrowKeyEvent(const ui::KeyEvent& event) {
+  if (!IsUnhandledUnmodifiedEvent(event))
     return false;
 
-  return true;
+  return event.key_code() == ui::VKEY_DOWN ||
+         event.key_code() == ui::VKEY_RIGHT ||
+         event.key_code() == ui::VKEY_LEFT || event.key_code() == ui::VKEY_UP;
 }
 
 bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
                                               const ui::KeyEvent& key_event) {
-  DCHECK(CanProcessLeftRightKeyTraversal(key_event));
+  DCHECK(IsUnhandledLeftRightKeyEvent(key_event));
 
   const bool move_focus_reverse = base::i18n::IsRTL()
                                       ? key_event.key_code() == ui::VKEY_RIGHT

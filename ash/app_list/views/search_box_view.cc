@@ -244,7 +244,7 @@ void SearchBoxView::RecordSearchBoxActivationHistogram(
 void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
   app_list_view_->RedirectKeyEventToSearchBox(event);
 
-  if (!CanProcessUpDownKeyTraversal(*event))
+  if (!IsUnhandledUpDownKeyEvent(*event))
     return;
 
   // If focus is in search box view, up key moves focus to the last element of
@@ -557,7 +557,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     return false;
   }
 
-  if (CanProcessLeftRightKeyTraversal(key_event))
+  if (IsUnhandledLeftRightKeyEvent(key_event))
     return ProcessLeftRightKeyTraversalForTextfield(search_box(), key_event);
   return false;
 }

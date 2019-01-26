@@ -1491,17 +1491,15 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
                                                  ->app_list_folder_view()
                                                  ->folder_header_view()
                                                  ->HasTextFocus();
-  if (is_search_box_focused || is_folder_header_view_focused) {
-    // Do not redirect the key event to the |search_box_| when focus is on a
-    // text field.
-    return;
-  }
 
-  if (CanProcessLeftRightKeyTraversal(*event) ||
-      CanProcessUpDownKeyTraversal(*event)) {
-    // Do not redirect the arrow keys that are used to do focus traversal.
+  // Do not redirect the key event to the |search_box_| when focus is on a
+  // text field.
+  if (is_search_box_focused || is_folder_header_view_focused)
     return;
-  }
+
+  // Do not redirect the arrow keys as they are are used for focus traversal.
+  if (IsUnhandledArrowKeyEvent(*event))
+    return;
 
   // Redirect key event to |search_box_|.
   search_box->OnKeyEvent(event);
@@ -1510,11 +1508,11 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
     search_box->RequestFocus();
     return;
   }
-  if (event->type() == ui::ET_KEY_PRESSED) {
-    // Insert it into search box if the key event is a character. Released
-    // key should not be handled to prevent inserting duplicate character.
+
+  // Insert it into search box if the key event is a character. Released
+  // key should not be handled to prevent inserting duplicate character.
+  if (event->type() == ui::ET_KEY_PRESSED)
     search_box->InsertChar(*event);
-  }
 }
 
 void AppListView::OnScreenKeyboardShown(bool shown) {

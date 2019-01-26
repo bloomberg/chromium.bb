@@ -543,7 +543,7 @@ void AppListFolderView::Layout() {
 
 bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.
-  if (!CanProcessUpDownKeyTraversal(event))
+  if (!IsUnhandledUpDownKeyEvent(event))
     return false;
 
   if (folder_header_view_->HasTextFocus() && event.key_code() == ui::VKEY_UP) {
