@@ -10,7 +10,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -81,12 +80,12 @@ int FindDiceSigninTab(TabStripModel* tab_strip) {
 
 // Returns the promo action to be used when signing with a new account.
 signin_metrics::PromoAction GetPromoActionForNewAccount(
-    AccountTrackerService* account_tracker,
+    identity::IdentityManager* identity_manager,
     signin::AccountConsistencyMethod account_consistency) {
   if (account_consistency != signin::AccountConsistencyMethod::kDice)
     return signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE;
 
-  return account_tracker->GetAccounts().size() > 0
+  return identity_manager->GetAccountsWithRefreshTokens().size() > 0
              ? signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
              : signin_metrics::PromoAction::
@@ -125,8 +124,7 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
     email = manager->GetPrimaryAccountInfo().email;
   }
   signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
-      AccountTrackerServiceFactory::GetForProfile(profile),
-      account_consistency);
+      IdentityManagerFactory::GetForProfile(profile), account_consistency);
   ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
                     redirect_url);
 }
