@@ -721,7 +721,6 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
 
 // Verify that a request coming from Cryptotoken bypasses origin checks.
 TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
-  EnableFeature(device::kWebAuthProxyCryptotoken);
   SimulateNavigation(GURL(kTestOrigin1));
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
       base::Time::Now(), base::TimeTicks::Now());
@@ -778,7 +777,6 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
 
 // Requests originating from cryptotoken should only target U2F devices.
 TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
-  EnableFeature(device::kWebAuthProxyCryptotoken);
   TestServiceManagerContext smc;
   SimulateNavigation(GURL(kTestOrigin1));
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
@@ -816,7 +814,6 @@ TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
 
 // Requests originating from cryptotoken should only target U2F devices.
 TEST_F(AuthenticatorImplTest, AttestationPermitted) {
-  EnableFeature(device::kWebAuthProxyCryptotoken);
   TestServiceManagerContext smc;
   SimulateNavigation(GURL(kTestOrigin1));
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
@@ -1914,32 +1911,22 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAATrueIfTouchIdAvailable) {
 
 #if defined(OS_WIN)
 TEST_F(AuthenticatorContentBrowserClientTest, WinIsUVPAA) {
-  for (const bool enable_feature_flag : {false, true}) {
-    SCOPED_TRACE(enable_feature_flag ? "enable_feature_flag"
-                                     : "!enable_feature_flag");
-    for (const bool enable_win_webauthn_api : {false, true}) {
-      SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
-                                           : "!enable_win_webauthn_api");
-      for (const bool is_uvpaa : {false, true}) {
-        SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
+  for (const bool enable_win_webauthn_api : {false, true}) {
+    SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
+                                         : "!enable_win_webauthn_api");
+    for (const bool is_uvpaa : {false, true}) {
+      SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
 
-        base::test::ScopedFeatureList scoped_feature_list;
-        if (enable_feature_flag) {
-          scoped_feature_list.InitAndEnableFeature(
-              device::kWebAuthUseNativeWinApi);
-        }
-        device::ScopedFakeWinWebAuthnApi fake_api;
-        fake_api.set_available(enable_win_webauthn_api);
-        fake_api.set_is_uvpaa(is_uvpaa);
+      device::ScopedFakeWinWebAuthnApi fake_api;
+      fake_api.set_available(enable_win_webauthn_api);
+      fake_api.set_is_uvpaa(is_uvpaa);
 
-        AuthenticatorPtr authenticator = ConnectToAuthenticator();
-        TestIsUvpaaCallback cb;
-        authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
-            cb.callback());
-        cb.WaitForCallback();
-        EXPECT_EQ(enable_feature_flag && enable_win_webauthn_api && is_uvpaa,
-                  cb.value());
-      }
+      AuthenticatorPtr authenticator = ConnectToAuthenticator();
+      TestIsUvpaaCallback cb;
+      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+          cb.callback());
+      cb.WaitForCallback();
+      EXPECT_EQ(enable_win_webauthn_api && is_uvpaa, cb.value());
     }
   }
 }
@@ -1961,7 +1948,6 @@ TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalse) {
 
 TEST_F(AuthenticatorContentBrowserClientTest,
        CryptotokenBypassesAttestationConsentPrompt) {
-  EnableFeature(device::kWebAuthProxyCryptotoken);
   TestServiceManagerContext smc;
   SimulateNavigation(GURL(kTestOrigin1));
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(

@@ -18,7 +18,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "device/fido/features.h"
 #include "device/fido/win/type_conversions.h"
 
 namespace device {
@@ -88,9 +87,7 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
 
   // WinWebAuthnApi:
   bool IsAvailable() const override {
-    return is_bound_ && (api_version_ >= kMinWinWebAuthnApiVersion ||
-                         base::FeatureList::IsEnabled(
-                             kWebAuthDisableWinApiVersionCheckForTesting));
+    return is_bound_ && (api_version_ >= kMinWinWebAuthnApiVersion);
   }
 
   HRESULT IsUserVerifyingPlatformAuthenticatorAvailable(BOOL* result) override {
