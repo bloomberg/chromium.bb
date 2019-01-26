@@ -87,9 +87,7 @@ void IndexedDBCursor::Continue(std::unique_ptr<IndexedDBKey> key,
   IDB_TRACE("IndexedDBCursor::Continue");
 
   if (closed_) {
-    callbacks->OnError(CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                   "The cursor has been closed.",
-                                   transaction_));
+    callbacks->OnError(CreateCursorClosedError());
 
     return;
   }
@@ -111,18 +109,16 @@ void IndexedDBCursor::Advance(
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
-            [](blink::mojom::IDBCursor::AdvanceCallback callback,
-               IndexedDBTransaction* transaction) {
+            [](blink::mojom::IDBCursor::AdvanceCallback callback) {
               const IndexedDBDatabaseError closed_error(
                   CreateCursorClosedError());
               DCHECK_NE(closed_error.code(), 0);
               std::move(callback).Run(
-                  CreateIDBError(closed_error.code(),
-                                 base::string16(closed_error.message()),
-                                 transaction),
+                  blink::mojom::IDBError::New(closed_error.code(),
+                                              closed_error.message()),
                   blink::mojom::IDBCursorValuePtr());
             },
-            std::move(callback), transaction_));
+            std::move(callback)));
     return;
   }
 
@@ -154,20 +150,20 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
               std::move(callback)));
       return s;
     }
+    blink::mojom::IDBErrorPtr error = CreateIDBError(
+        blink::kWebIDBDatabaseExceptionUnknownError,
+        base::ASCIIToUTF16("Error advancing cursor"), transaction_);
     Close();
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             [](blink::mojom::IDBCursor::AdvanceCallback callback,
-               IndexedDBTransaction* transaction) {
-              std::move(callback).Run(
-                  CreateIDBError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 base::ASCIIToUTF16("Error advancing cursor"),
-                                 transaction),
-                  blink::mojom::IDBCursorValuePtr());
+               blink::mojom::IDBErrorPtr error) {
+              std::move(callback).Run(std::move(error),
+                                      blink::mojom::IDBCursorValuePtr());
             },
-            std::move(callback), transaction_));
+            std::move(callback), std::move(error)));
     return s;
   }
 
@@ -225,9 +221,11 @@ leveldb::Status IndexedDBCursor::CursorIterationOperation(
       callbacks->OnSuccess(nullptr);
       return s;
     }
+    IndexedDBDatabaseError error =
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Error continuing cursor.", transaction_);
     Close();
-    callbacks->OnError(CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                   "Error continuing cursor.", transaction_));
+    callbacks->OnError(error);
     return s;
   }
 
@@ -241,9 +239,7 @@ void IndexedDBCursor::PrefetchContinue(
   IDB_TRACE("IndexedDBCursor::PrefetchContinue");
 
   if (closed_) {
-    callbacks->OnError(CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                   "The cursor has been closed.",
-                                   transaction_));
+    callbacks->OnError(CreateCursorClosedError());
     return;
   }
 
@@ -279,10 +275,11 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
         // We've reached the end, so just return what we have.
         break;
       }
-      Close();
-      callbacks->OnError(
+      IndexedDBDatabaseError error =
           CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
-                      "Error continuing cursor.", transaction_));
+                      "Error continuing cursor.", transaction_);
+      Close();
+      callbacks->OnError(error);
       return s;
     }
 
