@@ -633,7 +633,7 @@ public class Tab
                     params.getReferrer() != null ? params.getReferrer().getPolicy() : 0,
                     params.getIsRendererInitiated(), params.getShouldReplaceCurrentEntry(),
                     params.getHasUserGesture(), params.getShouldClearHistoryList(),
-                    params.getInputStartTimestamp());
+                    params.getInputStartTimestamp(), params.getIntentReceivedTimestamp());
 
             for (TabObserver observer : mObservers) {
                 observer.onLoadUrl(this, params, loadType);
@@ -2952,7 +2952,8 @@ public class Tab
     private native int nativeLoadUrl(long nativeTabAndroid, String url, String initiatorOrigin,
             String extraHeaders, ResourceRequestBody postData, int transition, String referrerUrl,
             int referrerPolicy, boolean isRendererInitiated, boolean shoulReplaceCurrentEntry,
-            boolean hasUserGesture, boolean shouldClearHistoryList, long inputStartTimestamp);
+            boolean hasUserGesture, boolean shouldClearHistoryList, long inputStartTimestamp,
+            long intentReceivedTimestamp);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(

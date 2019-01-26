@@ -528,7 +528,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     jboolean should_replace_current_entry,
     jboolean has_user_gesture,
     jboolean should_clear_history_list,
-    jlong input_start_timestamp) {
+    jlong input_start_timestamp,
+    jlong intent_received_timestamp) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -598,6 +599,9 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     if (input_start_timestamp != 0) {
       load_params.input_start =
           base::TimeTicks::FromUptimeMillis(input_start_timestamp);
+    } else if (intent_received_timestamp != 0) {
+      load_params.input_start =
+          base::TimeTicks::FromUptimeMillis(intent_received_timestamp);
     }
     web_contents()->GetController().LoadURLWithParams(load_params);
   }
