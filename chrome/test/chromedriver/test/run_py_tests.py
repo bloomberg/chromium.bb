@@ -98,6 +98,11 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
+_VERSION_SPECIFIC_FILTER['73'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+]
+
 _VERSION_SPECIFIC_FILTER['72'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
@@ -108,12 +113,6 @@ _VERSION_SPECIFIC_FILTER['71'] = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
-_VERSION_SPECIFIC_FILTER['70'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
-    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
-    # Feature not yet supported in this version
-    'ChromeDriverTest.testGenerateTestReport',
-]
 
 
 _OS_SPECIFIC_FILTER = {}
