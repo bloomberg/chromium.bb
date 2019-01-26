@@ -573,8 +573,17 @@ public class VrShell extends GvrLayout
                             @Override
                             public void run() {
                                 VrShellDelegate.enterVrIfNecessary();
-                                nativeRequestRecordAudioPermissionResult(mNativeVrShell,
-                                        grantResults[0] == PackageManager.PERMISSION_GRANTED);
+
+                                // In SVR, the native VR UI is destroyed when
+                                // exiting VR (mNativeVrShell == 0), so
+                                // permission changes will be detected when the
+                                // VR UI is reconstructed. For AIO devices this
+                                // doesn't happen, so we need to notify native
+                                // UI of the permission change immediately.
+                                if (mNativeVrShell != 0) {
+                                    nativeRequestRecordAudioPermissionResult(mNativeVrShell,
+                                            grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                                }
                             }
                         });
                     }
