@@ -158,7 +158,6 @@ class MediaStreamConstraintsUtilAudioTest
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
       const AudioProcessingProperties& properties,
-      bool hotword_enabled,
       bool disable_local_echo,
       bool render_to_associated_sink,
       int effects) {
@@ -170,25 +169,22 @@ class MediaStreamConstraintsUtilAudioTest
     device.input.set_effects(effects);
 
     return std::make_unique<ProcessedLocalAudioSource>(
-        -1, device, hotword_enabled, disable_local_echo, properties,
+        -1, device, disable_local_echo, properties,
         blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
         &pc_factory_);
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
       const AudioProcessingProperties& properties,
-      bool hotword_enabled,
       bool disable_local_echo,
       bool render_to_associated_sink) {
     return GetProcessedLocalAudioSource(
-        properties, hotword_enabled, disable_local_echo,
-        render_to_associated_sink,
+        properties, disable_local_echo, render_to_associated_sink,
         media::AudioParameters::PlatformEffectsMask::NO_EFFECTS);
   }
 
   std::unique_ptr<LocalMediaStreamAudioSource> GetLocalMediaStreamAudioSource(
       bool enable_system_echo_canceller,
-      bool hotword_enabled,
       bool disable_local_echo,
       bool render_to_associated_sink) {
     blink::MediaStreamDevice device;
@@ -199,7 +195,7 @@ class MediaStreamConstraintsUtilAudioTest
       device.matched_output_device_id = std::string("some_device_id");
 
     return std::make_unique<LocalMediaStreamAudioSource>(
-        -1, device, hotword_enabled, disable_local_echo,
+        -1, device, disable_local_echo,
         blink::WebPlatformMediaStreamSource::ConstraintsCallback());
   }
 
@@ -226,10 +222,6 @@ class MediaStreamConstraintsUtilAudioTest
       const AudioSettingsBoolMembers& exclude_main_settings,
       const AudioPropertiesBoolMembers& exclude_audio_properties,
       const AudioCaptureSettings& result) {
-    if (!Contains(exclude_main_settings,
-                  &AudioCaptureSettings::hotword_enabled)) {
-      EXPECT_FALSE(result.hotword_enabled());
-    }
     if (!Contains(exclude_main_settings,
                   &AudioCaptureSettings::disable_local_echo)) {
       EXPECT_TRUE(result.disable_local_echo());
@@ -281,10 +273,6 @@ class MediaStreamConstraintsUtilAudioTest
       const AudioSettingsBoolMembers& exclude_main_settings,
       const AudioPropertiesBoolMembers& exclude_audio_properties,
       const AudioCaptureSettings& result) {
-    if (!Contains(exclude_main_settings,
-                  &AudioCaptureSettings::hotword_enabled)) {
-      EXPECT_FALSE(result.hotword_enabled());
-    }
     if (!Contains(exclude_main_settings,
                   &AudioCaptureSettings::disable_local_echo)) {
       EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
@@ -416,7 +404,6 @@ class MediaStreamConstraintsUtilAudioTest
 
     // The following are not audio processing.
     EXPECT_FALSE(properties.goog_audio_mirroring);
-    EXPECT_FALSE(result.hotword_enabled());
     EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
               result.disable_local_echo());
     EXPECT_FALSE(result.render_to_associated_sink());
@@ -448,7 +435,6 @@ class MediaStreamConstraintsUtilAudioTest
 
     // The following are not audio processing.
     EXPECT_FALSE(properties.goog_audio_mirroring);
-    EXPECT_FALSE(result.hotword_enabled());
     EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
               result.disable_local_echo());
     EXPECT_FALSE(result.render_to_associated_sink());
@@ -504,14 +490,12 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, Unconstrained) {
 // processing properties).
 TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
   AudioSettingsBoolMembers kMainSettings = {
-      &AudioCaptureSettings::hotword_enabled,
       &AudioCaptureSettings::disable_local_echo,
       &AudioCaptureSettings::render_to_associated_sink};
 
   const std::vector<
       blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
       kMainBoolConstraints = {
-          &blink::WebMediaTrackConstraintSet::hotword_enabled,
           &blink::WebMediaTrackConstraintSet::disable_local_echo,
           &blink::WebMediaTrackConstraintSet::render_to_associated_sink};
 
@@ -752,7 +736,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ChannelsWithSource) {
 
   std::unique_ptr<LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
-                                     false /* hotword_enabled */,
                                      false /* disable_local_echo */,
                                      false /* render_to_associated_sink */);
   int channel_count = kMinChannels;
@@ -870,7 +853,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRateWithSource) {
 
   std::unique_ptr<LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
-                                     false /* hotword_enabled */,
                                      false /* disable_local_echo */,
                                      false /* render_to_associated_sink */);
 
@@ -1028,7 +1010,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyWithSource) {
 
   std::unique_ptr<LocalMediaStreamAudioSource> source =
       GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
-                                     false /* hotword_enabled */,
                                      false /* disable_local_echo */,
                                      false /* render_to_associated_sink */);
   // Test set exact sampleRate.
@@ -1234,7 +1215,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithWebRtc) {
 
         // The following are not audio processing.
         EXPECT_FALSE(properties.goog_audio_mirroring);
-        EXPECT_FALSE(result.hotword_enabled());
         EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                   result.disable_local_echo());
         EXPECT_FALSE(result.render_to_associated_sink());
@@ -1295,7 +1275,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithSystem) {
 
         // The following are not audio processing.
         EXPECT_FALSE(properties.goog_audio_mirroring);
-        EXPECT_FALSE(result.hotword_enabled());
         EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                   result.disable_local_echo());
         EXPECT_FALSE(result.render_to_associated_sink());
@@ -1548,7 +1527,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 
           // The following are not audio processing.
           EXPECT_FALSE(properties.goog_audio_mirroring);
-          EXPECT_FALSE(result.hotword_enabled());
           EXPECT_EQ(GetMediaStreamSource() != blink::kMediaStreamSourceDesktop,
                     result.disable_local_echo());
           EXPECT_FALSE(result.render_to_associated_sink());
@@ -1728,18 +1706,15 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
   constraint_factory_.AddAdvanced().goog_highpass_filter.SetExact(true);
   auto& advanced2 = constraint_factory_.AddAdvanced();
   advanced2.goog_highpass_filter.SetExact(false);
-  advanced2.hotword_enabled.SetExact(true);
   constraint_factory_.AddAdvanced().goog_audio_mirroring.SetExact(true);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   CheckDeviceDefaults(result);
-  EXPECT_FALSE(result.hotword_enabled());
-  CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
+  CheckBoolDefaults({},
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
   CheckEchoCancellationTypeDefault(result);
-  EXPECT_FALSE(result.hotword_enabled());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
   EXPECT_TRUE(result.audio_processing_properties().goog_highpass_filter);
 }
@@ -1748,19 +1723,16 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 // set with a boolean constraint is ignored.
 TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedConflictingLastConstraint) {
   constraint_factory_.AddAdvanced().goog_highpass_filter.SetExact(true);
-  constraint_factory_.AddAdvanced().hotword_enabled.SetExact(true);
   constraint_factory_.AddAdvanced().goog_audio_mirroring.SetExact(true);
-  constraint_factory_.AddAdvanced().hotword_enabled.SetExact(false);
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   CheckDeviceDefaults(result);
-  CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
+  CheckBoolDefaults({},
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
   CheckEchoCancellationTypeDefault(result);
   // The fourth advanced set is ignored because it contradicts the second set.
-  EXPECT_TRUE(result.hotword_enabled());
   EXPECT_TRUE(result.audio_processing_properties().goog_audio_mirroring);
   EXPECT_TRUE(result.audio_processing_properties().goog_highpass_filter);
 }
@@ -1798,7 +1770,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
     std::unique_ptr<LocalMediaStreamAudioSource> source =
         GetLocalMediaStreamAudioSource(
             enable_properties /* enable_system_echo_canceller */,
-            enable_properties /* hotword_enabled */,
             enable_properties /* disable_local_echo */,
             enable_properties /* render_to_associated_sink */);
 
@@ -1807,7 +1778,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithNoAudioProcessing) {
         blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
         kConstraints = {
             &blink::WebMediaTrackConstraintSet::echo_cancellation,
-            &blink::WebMediaTrackConstraintSet::hotword_enabled,
             &blink::WebMediaTrackConstraintSet::disable_local_echo,
             &blink::WebMediaTrackConstraintSet::render_to_associated_sink,
         };
@@ -1850,7 +1820,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
   for (blink::WebString value : kEchoCancellationTypeValues) {
     std::unique_ptr<LocalMediaStreamAudioSource> source =
         GetLocalMediaStreamAudioSource(false /* enable_system_echo_canceller */,
-                                       false /* hotword_enabled */,
                                        false /* disable_local_echo */,
                                        false /* render_to_associated_sink */);
 
@@ -1898,8 +1867,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
 
     std::unique_ptr<ProcessedLocalAudioSource> source =
         GetProcessedLocalAudioSource(
-            properties, use_defaults /* hotword_enabled */,
-            use_defaults /* disable_local_echo */,
+            properties, use_defaults /* disable_local_echo */,
             use_defaults /* render_to_associated_sink */);
     const std::vector<
         blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
@@ -1993,7 +1961,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SourceWithAudioProcessing) {
     const std::vector<
         blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
         kAudioBrowserConstraints = {
-            &blink::WebMediaTrackConstraintSet::hotword_enabled,
             &blink::WebMediaTrackConstraintSet::disable_local_echo,
             &blink::WebMediaTrackConstraintSet::render_to_associated_sink,
         };
@@ -2074,8 +2041,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
 
     std::unique_ptr<ProcessedLocalAudioSource> source =
         GetProcessedLocalAudioSource(
-            properties, false /* hotword_enabled */,
-            false /* disable_local_echo */,
+            properties, false /* disable_local_echo */,
             false /* render_to_associated_sink */,
             ec_type == EchoCancellationType::kEchoCancellationSystem
                 ? media::AudioParameters::PlatformEffectsMask::
@@ -2109,8 +2075,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
 
   AudioProcessingProperties properties;
   std::unique_ptr<ProcessedLocalAudioSource> processed_source =
-      GetProcessedLocalAudioSource(properties, false /* hotword_enabled */,
-                                   false /* disable_local_echo */,
+      GetProcessedLocalAudioSource(properties, false /* disable_local_echo */,
                                    false /* render_to_associated_sink */);
 
   const std::string kUnusedDeviceID = "unused_device";

@@ -112,11 +112,10 @@ using AudioDeviceCaptureCapabilities =
 //    For content capture, all device IDs are considered valid by
 //    SelectSettings. Actual validation is performed by the getUserMedia
 //    implementation.
-//  * Audio features: the hotword_enabled, disable_local_echo and
-//    render_to_associated_sink constraints can be used to enable the
-//    corresponding audio feature. If not specified, their default value is
-//    false, except for disable_local_echo, whose default value is false only
-//    for desktop capture.
+//  * Audio features: the disable_local_echo and render_to_associated_sink
+//    constraints can be used to enable the corresponding audio feature. If not
+//    specified, their default value is false, except for disable_local_echo,
+//    whose default value is false only for desktop capture.
 //  * Audio processing. The remaining constraints are used to control audio
 //    processing. This is how audio-processing properties are set for device
 //    capture(see the content::AudioProcessingProperties struct) :

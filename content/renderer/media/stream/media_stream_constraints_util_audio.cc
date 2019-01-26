@@ -1059,9 +1059,6 @@ class DeviceContainer {
       return;
 
     MediaStreamAudioSource* source = capability.source();
-    boolean_containers_[kHotwordEnabled] =
-        BooleanContainer(BoolSet({source->hotword_enabled()}));
-
     boolean_containers_[kDisableLocalEcho] =
         BooleanContainer(BoolSet({source->disable_local_echo()}));
 
@@ -1135,12 +1132,6 @@ class DeviceContainer {
                                                    std::string());
     score += sub_score;
 
-    bool hotword_enabled;
-    std::tie(sub_score, hotword_enabled) =
-        boolean_containers_[kHotwordEnabled].SelectSettingsAndScore(
-            constraint_set.hotword_enabled, false);
-    score += sub_score;
-
     bool disable_local_echo;
     std::tie(sub_score, disable_local_echo) =
         boolean_containers_[kDisableLocalEcho].SelectSettingsAndScore(
@@ -1192,7 +1183,7 @@ class DeviceContainer {
     // in case multiple candidates are available.
     return std::make_tuple(
         score,
-        AudioCaptureSettings(device_id, hotword_enabled, disable_local_echo,
+        AudioCaptureSettings(device_id, disable_local_echo,
                              render_to_associated_sink, best_properties));
   }
 
@@ -1211,7 +1202,6 @@ class DeviceContainer {
 
  private:
   enum BooleanContainerId {
-    kHotwordEnabled,
     kDisableLocalEcho,
     kRenderToAssociatedSink,
     kNumBooleanContainerIds
@@ -1226,7 +1216,6 @@ class DeviceContainer {
 
   static constexpr BooleanPropertyContainerInfo
       kBooleanPropertyContainerInfoMap[] = {
-          {kHotwordEnabled, &ConstraintSet::hotword_enabled},
           {kDisableLocalEcho, &ConstraintSet::disable_local_echo},
           {kRenderToAssociatedSink, &ConstraintSet::render_to_associated_sink}};
 

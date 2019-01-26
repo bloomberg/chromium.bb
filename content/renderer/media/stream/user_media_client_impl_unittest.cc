@@ -892,7 +892,6 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_TRUE(audio_capture_settings.HasValue());
   EXPECT_EQ(media::AudioDeviceDescription::kDefaultDeviceId,
             audio_capture_settings.device_id());
-  EXPECT_FALSE(audio_capture_settings.hotword_enabled());
   EXPECT_TRUE(audio_capture_settings.disable_local_echo());
   EXPECT_FALSE(audio_capture_settings.render_to_associated_sink());
 
@@ -956,7 +955,6 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   // Check default values selected by the constraints algorithm.
   EXPECT_TRUE(audio_capture_settings.HasValue());
   EXPECT_EQ(std::string(), audio_capture_settings.device_id());
-  EXPECT_FALSE(audio_capture_settings.hotword_enabled());
   EXPECT_TRUE(audio_capture_settings.disable_local_echo());
   EXPECT_FALSE(audio_capture_settings.render_to_associated_sink());
 
@@ -1015,7 +1013,6 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   // Check default values selected by the constraints algorithm.
   EXPECT_TRUE(audio_capture_settings.HasValue());
   EXPECT_EQ(std::string(), audio_capture_settings.device_id());
-  EXPECT_FALSE(audio_capture_settings.hotword_enabled());
   EXPECT_FALSE(audio_capture_settings.disable_local_echo());
   EXPECT_FALSE(audio_capture_settings.render_to_associated_sink());
 
@@ -1058,7 +1055,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   MockConstraintFactory factory;
   factory.basic().device_id.SetExact(
       blink::WebString::FromASCII(kFakeAudioInputDeviceId1));
-  factory.basic().hotword_enabled.SetExact(true);
   factory.basic().disable_local_echo.SetExact(true);
   factory.basic().render_to_associated_sink.SetExact(true);
   factory.basic().echo_cancellation.SetExact(false);
@@ -1081,7 +1077,6 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
 
   EXPECT_TRUE(audio_capture_settings.HasValue());
   EXPECT_EQ(kFakeAudioInputDeviceId1, audio_capture_settings.device_id());
-  EXPECT_TRUE(audio_capture_settings.hotword_enabled());
   EXPECT_TRUE(audio_capture_settings.disable_local_echo());
   EXPECT_TRUE(audio_capture_settings.render_to_associated_sink());
 
