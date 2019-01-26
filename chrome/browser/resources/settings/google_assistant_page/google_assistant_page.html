@@ -59,25 +59,26 @@
             </template>
           </select>
         </div>
-        <div class="settings-box two-line" hidden=
-            "[[!prefs.settings.voice_interaction.hotword.enabled.value]]">
-          <div class="start text-area">
-            <div class="label">
-              $i18n{googleAssistantVoiceSettings}
+        <template is="dom-if" if="[[voiceMatchEnabled_]]">
+          <div class="settings-box two-line">
+            <div class="start text-area">
+              <div class="label">
+                $i18n{googleAssistantVoiceSettings}
+              </div>
+              <div class="secondary label">
+                $i18n{googleAssistantVoiceSettingsDescription}
+              </div>
             </div>
-            <div class="secondary label">
-              $i18n{googleAssistantVoiceSettingsDescription}
-            </div>
+            <paper-button id="button" class="secondary-button"
+                on-click="onRetrainVoiceModelTapped_">
+              $i18n{googleAssistantVoiceSettingsRetrainButton}
+            </paper-button>
+            <paper-button id="button" class="secondary-button"
+                on-click="onDeleteVoiceModelTapped_">
+              $i18n{googleAssistantVoiceSettingsDeleteButton}
+            </paper-button>
           </div>
-          <paper-button id="button" class="secondary-button"
-              on-click="onRetrainVoiceModelTapped_">
-            $i18n{googleAssistantVoiceSettingsRetrainButton}
-          </paper-button>
-          <paper-button id="button" class="secondary-button"
-              on-click="onDeleteVoiceModelTapped_">
-            $i18n{googleAssistantVoiceSettingsDeleteButton}
-          </paper-button>
-        </div>
+        </template>
         <settings-toggle-button id="googleAssistantNotificationEnable"
             pref="{{prefs.settings.voice_interaction.notification.enabled}}"
             label="$i18n{googleAssistantEnableNotification}"

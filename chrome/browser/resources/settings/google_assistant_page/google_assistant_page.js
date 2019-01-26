@@ -31,6 +31,12 @@ Polymer({
     },
 
     /** @private */
+    voiceMatchEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     hotwordDspAvailable_: {
       type: Boolean,
       value: function() {
@@ -148,6 +154,9 @@ Polymer({
   /** @private */
   onPrefsChanged_: function() {
     this.refreshDspHotwordState_();
+
+    this.voiceMatchEnabled_ = loadTimeData.getBoolean('voiceMatchEnabled') &&
+        this.getPref('settings.voice_interaction.hotword.enabled.value');
   },
 
   /** @private */
