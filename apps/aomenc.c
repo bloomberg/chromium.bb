@@ -1357,6 +1357,7 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
+      if (config->cfg.large_scale_tile) global->codec = get_aom_lst_encoder();
     } else if (arg_match(&arg, &monochrome, argi)) {
       config->cfg.monochrome = 1;
     } else if (arg_match(&arg, &full_still_picture_hdr, argi)) {

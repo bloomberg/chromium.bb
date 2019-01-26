@@ -85,6 +85,9 @@ enum {
   NV12,   // Tile output in NV12 format.
 } UENUM1BYTE(OUTPUT_FORMAT);
 
+// The fourcc for large_scale_tile encoding is "LSTC".
+#define LST_FOURCC 0x4354534c
+
 struct FileTypeDetectionBuffer {
   char buf[4];
   size_t buf_read;
@@ -150,6 +153,7 @@ typedef struct AvxInterface {
 int get_aom_encoder_count(void);
 const AvxInterface *get_aom_encoder_by_index(int i);
 const AvxInterface *get_aom_encoder_by_name(const char *name);
+const AvxInterface *get_aom_lst_encoder(void);
 
 int get_aom_decoder_count(void);
 const AvxInterface *get_aom_decoder_by_index(int i);
