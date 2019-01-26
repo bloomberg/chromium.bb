@@ -11,46 +11,48 @@ namespace blink {
 
 NGCaretNavigator::~NGCaretNavigator() = default;
 
-NGCaretNavigator::NGCaretNavigator(NGCaretNavigator&& other)
-    : text_(other.text_),
-      bidi_levels_(std::move(other.bidi_levels_)),
-      indices_in_visual_order_(std::move(other.indices_in_visual_order_)),
-      visual_indices_(std::move(other.visual_indices_)),
-      is_bidi_enabled_(other.is_bidi_enabled_),
-      base_direction_(other.base_direction_) {}
+NGCaretNavigator::NGCaretNavigator(const LayoutBlockFlow& context)
+    : context_(context),
+      disallow_transition_(context.GetDocument().Lifecycle()) {
+  DCHECK(RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
+  DCHECK(context.IsLayoutNGMixin());
+  DCHECK(context.ChildrenInline());
+  DCHECK(context.GetNGInlineNodeData());
+  DCHECK(!context.GetDocument().NeedsLayoutTreeUpdate());
+}
 
-NGCaretNavigator::NGCaretNavigator(const NGInlineNodeData& data)
-    : text_(data.text_content),
-      is_bidi_enabled_(data.IsBidiEnabled()),
-      base_direction_(data.BaseDirection()) {
-  if (!is_bidi_enabled_)
-    return;
+const NGInlineNodeData& NGCaretNavigator::GetData() const {
+  return *context_.GetNGInlineNodeData();
+}
 
-  bidi_levels_.resize(text_.length());
-  for (const NGInlineItem& item : data.items) {
-    if (!item.Length())
-      continue;
-    for (unsigned i = item.StartOffset(); i < item.EndOffset(); ++i) {
-      DCHECK_LT(i, bidi_levels_.size());
-      bidi_levels_[i] = item.BidiLevel();
-    }
-  }
+const String& NGCaretNavigator::GetText() const {
+  return GetData().text_content;
+}
 
-  indices_in_visual_order_.resize(text_.length());
-  NGBidiParagraph::IndicesInVisualOrder(bidi_levels_,
-                                        &indices_in_visual_order_);
+bool NGCaretNavigator::IsBidiEnabled() const {
+  return GetData().IsBidiEnabled();
+}
 
-  visual_indices_.resize(text_.length());
-  for (unsigned i = 0; i < indices_in_visual_order_.size(); ++i)
-    visual_indices_[indices_in_visual_order_[i]] = i;
+const NGInlineItem& NGCaretNavigator::GetItem(unsigned index) const {
+  const auto& items = GetData().items;
+  const NGInlineItem* item =
+      std::lower_bound(items.begin(), items.end(), index,
+                       [](const NGInlineItem& item, unsigned index) {
+                         if (item.StartOffset() > index)
+                           return false;
+                         return item.EndOffset() <= index;
+                       });
+  DCHECK_NE(item, items.end());
+  DCHECK_LE(item->StartOffset(), index);
+  DCHECK_LT(index, item->EndOffset());
+  return *item;
 }
 
 UBiDiLevel NGCaretNavigator::BidiLevelAt(unsigned index) const {
-  DCHECK_LT(index, text_.length());
-  if (!is_bidi_enabled_)
+  DCHECK_LT(index, GetText().length());
+  if (!IsBidiEnabled())
     return 0;
-  DCHECK_LT(index, bidi_levels_.size());
-  return bidi_levels_[index];
+  return GetItem(index).BidiLevel();
 }
 
 TextDirection NGCaretNavigator::TextDirectionAt(unsigned index) const {
@@ -59,10 +61,10 @@ TextDirection NGCaretNavigator::TextDirectionAt(unsigned index) const {
 }
 
 bool NGCaretNavigator::OffsetIsBidiBoundary(unsigned offset) const {
-  DCHECK_LE(offset, text_.length());
-  if (!is_bidi_enabled_)
+  DCHECK_LE(offset, GetText().length());
+  if (!IsBidiEnabled())
     return false;
-  if (!offset || offset == text_.length())
+  if (!offset || offset == GetText().length())
     return false;
   return BidiLevelAt(offset - 1) != BidiLevelAt(offset);
 }
@@ -80,9 +82,9 @@ NGCaretNavigator::CaretPositionFromTextContentOffsetAndAffinity(
     return {0, PositionAnchorType::kBefore};
   }
 
-  if (offset < text_.length())
+  if (offset < GetText().length())
     return {offset, PositionAnchorType::kBefore};
-  return {text_.length() - 1, PositionAnchorType::kAfter};
+  return {GetText().length() - 1, PositionAnchorType::kAfter};
 }
 
 // static
@@ -112,7 +114,7 @@ NGCaretNavigator::Position NGCaretNavigator::RightEdgeOf(unsigned index) const {
 NGCaretNavigator::Position NGCaretNavigator::EdgeOfInternal(
     unsigned index,
     MoveDirection edge_direction) const {
-  DCHECK_LT(index, text_.length());
+  DCHECK_LT(index, GetText().length());
   const TextDirection character_direction = TextDirectionAt(index);
   return {index, TowardsSameDirection(edge_direction, character_direction)
                      ? PositionAnchorType::kAfter
@@ -145,25 +147,50 @@ base::Optional<unsigned> NGCaretNavigator::MoveVisualIndex(
   return visual_index + 1;
 }
 
+Vector<int32_t, 32> NGCaretNavigator::IndicesInVisualOrder() const {
+  DCHECK(IsBidiEnabled());
+
+  Vector<UBiDiLevel, 32> levels;
+  levels.resize(GetText().length());
+  for (unsigned i = 0; i < GetText().length(); ++i)
+    levels[i] = BidiLevelAt(i);
+
+  Vector<int32_t, 32> result;
+  result.resize(levels.size());
+  NGBidiParagraph::IndicesInVisualOrder(levels, &result);
+  return result;
+}
+
+unsigned NGCaretNavigator::VisualIndexOf(unsigned index) const {
+  if (!IsBidiEnabled())
+    return index;
+
+  const auto indices_in_visual_order = IndicesInVisualOrder();
+  const auto* visual_iterator = std::find(indices_in_visual_order.begin(),
+                                          indices_in_visual_order.end(), index);
+  DCHECK_NE(visual_iterator, indices_in_visual_order.end());
+  return std::distance(indices_in_visual_order.begin(), visual_iterator);
+}
+
 NGCaretNavigator::VisualCharacterMovementResult
 NGCaretNavigator::MoveCharacterInternal(unsigned index,
                                         MoveDirection move_direction) const {
-  DCHECK_LT(index, text_.length());
-  const unsigned visual_index =
-      is_bidi_enabled_ ? visual_indices_[index] : index;
+  DCHECK_LT(index, GetText().length());
+  const unsigned visual_index = VisualIndexOf(index);
+  const TextDirection base_direction = GetData().BaseDirection();
 
   const base::Optional<unsigned> maybe_result_visual_index =
-      MoveVisualIndex(visual_index, text_.length(), move_direction);
+      MoveVisualIndex(visual_index, GetText().length(), move_direction);
   if (!maybe_result_visual_index.has_value()) {
-    if (TowardsSameDirection(move_direction, base_direction_))
+    if (TowardsSameDirection(move_direction, base_direction))
       return {VisualMovementResultType::kAfterContext, base::nullopt};
     return {VisualMovementResultType::kBeforeContext, base::nullopt};
   }
 
   const unsigned result_visual_index = maybe_result_visual_index.value();
   const unsigned result_index =
-      is_bidi_enabled_ ? indices_in_visual_order_[result_visual_index]
-                       : result_visual_index;
+      IsBidiEnabled() ? IndicesInVisualOrder()[result_visual_index]
+                      : result_visual_index;
   return {VisualMovementResultType::kWithinContext, result_index};
 }
 

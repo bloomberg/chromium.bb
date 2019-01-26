@@ -527,7 +527,7 @@ PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
                                                       start_position));
   }
 
-  DCHECK(context->IsLayoutNGBlockFlow());
+  DCHECK(context->IsLayoutNGMixin());
   const NGOffsetMapping* mapping =
       NGInlineNode::GetOffsetMapping(context, nullptr);
   DCHECK(mapping);
@@ -536,8 +536,7 @@ PositionWithAffinityTemplate<Strategy> TraverseWithBidiCaretAffinity(
       mapping->GetTextContentOffset(start_position_in_dom);
   DCHECK(start_offset.has_value());
 
-  DCHECK(mapping->GetCaretNavigator());
-  const NGCaretNavigator& caret_navigator = *mapping->GetCaretNavigator();
+  NGCaretNavigator caret_navigator(*context);
   const NGCaretNavigator::Position start_caret_position =
       caret_navigator.CaretPositionFromTextContentOffsetAndAffinity(
           start_offset.value(), start_position_with_affinity.Affinity());

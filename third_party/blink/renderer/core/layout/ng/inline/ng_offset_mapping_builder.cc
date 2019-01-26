@@ -199,8 +199,7 @@ void NGOffsetMappingBuilder::SetDestinationString(String string) {
   destination_string_ = string;
 }
 
-NGOffsetMapping NGOffsetMappingBuilder::Build(
-    std::unique_ptr<NGCaretNavigator> caret_navigator) {
+NGOffsetMapping NGOffsetMappingBuilder::Build() {
   // All mapping units are already built. Scan them to build mapping ranges.
   for (unsigned range_start = 0; range_start < mapping_units_.size();) {
     const Node* node = &mapping_units_[range_start].GetOwner();
@@ -216,7 +215,7 @@ NGOffsetMapping NGOffsetMappingBuilder::Build(
   }
 
   return NGOffsetMapping(std::move(mapping_units_), std::move(unit_ranges_),
-                         destination_string_, std::move(caret_navigator));
+                         destination_string_);
 }
 
 void NGOffsetMappingBuilder::EnterInline(const LayoutObject& layout_object) {

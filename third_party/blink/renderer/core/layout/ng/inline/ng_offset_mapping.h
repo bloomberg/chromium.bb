@@ -106,10 +106,7 @@ class CORE_EXPORT NGOffsetMapping {
       HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
   NGOffsetMapping(NGOffsetMapping&&);
-  NGOffsetMapping(UnitVector&&,
-                  RangeMap&&,
-                  String,
-                  std::unique_ptr<NGCaretNavigator>);
+  NGOffsetMapping(UnitVector&&, RangeMap&&, String);
   ~NGOffsetMapping();
 
   const UnitVector& GetUnits() const { return units_; }
@@ -223,10 +220,6 @@ class CORE_EXPORT NGOffsetMapping {
   // control charcters. Returns true otherwise.
   bool HasBidiControlCharactersOnly(unsigned start, unsigned end) const;
 
-  const NGCaretNavigator* GetCaretNavigator() const {
-    return caret_navigator_.get();
-  }
-
  private:
   // The NGOffsetMappingUnits of the inline formatting context in osrted order.
   UnitVector units_;
@@ -237,9 +230,6 @@ class CORE_EXPORT NGOffsetMapping {
   // The text content string of the inline formatting context. Same string as
   // |NGInlineNodeData::text_content_|.
   String text_;
-
-  // Helper class for caret nagivation on |text_|.
-  std::unique_ptr<NGCaretNavigator> caret_navigator_;
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };
