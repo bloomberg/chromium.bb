@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#
+# encoding: utf-8
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -276,6 +276,11 @@ def _RenameLocaleResourceDirs(resource_dirs):
     * Modern ISO 639-1 codes will be renamed to their obsolete variant
       for Indonesian, Hebrew and Yiddish (e.g. 'values-in/ -> values-id/).
 
+    * Norwegian macrolanguage strings will be renamed to Bokmål (main
+      Norway language). See http://crbug.com/920960. In practice this
+      means that 'values-no/ -> values-nb/' unless 'values-nb/' already
+      exists.
+
     * BCP 47 langauge tags will be renamed to an equivalent ISO 639-1
       locale qualifier if possible (e.g. 'values-b+en+US/ -> values-en-rUS').
       Though this is not necessary at the moment, because no third-party
@@ -305,8 +310,8 @@ def _RenameLocaleResourceDirs(resource_dirs):
           raise Exception('Could not substitute locale %s for %s in %s' %
                           (locale, locale2, path))
         if os.path.exists(path2):
-          # This happens sometimes, e.g. the Android support library comes
-          # with both values-sr/ and values-b+sr+Latn/.
+          # This happens sometimes, e.g. some libraries provide both
+          # values-nb/ and values-no/ with the same content.
           continue
         build_utils.MakeDirectory(os.path.dirname(path2))
         shutil.move(path, path2)
