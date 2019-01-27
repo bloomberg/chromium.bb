@@ -50,6 +50,29 @@ void RecordUkmFeatures(const UkmFeatureList& features,
   }
 }
 
+// It's always recommended to use the deprecation API in blink. If the feature
+// was logged from the browser (or from both blink and the browser) where the
+// deprecation API is not available, use this method for the console warning.
+// Note that this doesn't generate the deprecation report.
+void PossiblyWarnFeatureDeprecation(content::RenderFrameHost* rfh,
+                                    WebFeature feature) {
+  switch (feature) {
+    case WebFeature::kNavigationDownloadInSandboxWithoutUserGesture:
+    case WebFeature::kHTMLAnchorElementDownloadInSandboxWithoutUserGesture:
+      rfh->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_WARNING,
+          "Download in sandbox without user activation is deprecated and will "
+          "be removed in M74. You may consider adding "
+          "'allow-downloads-without-user-activation' to the sandbox attribute "
+          "list. See https://www.chromestatus.com/feature/5706745674465280 for "
+          "more details.");
+      return;
+
+    default:
+      return;
+  }
+}
+
 void RecordMainFrameFeature(blink::mojom::WebFeature feature) {
   UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramMainFrameName, feature);
 }
@@ -122,6 +145,7 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
 
     if (features_recorded_.test(static_cast<size_t>(feature)))
       continue;
+    PossiblyWarnFeatureDeprecation(rfh, feature);
     RecordFeature(feature);
     features_recorded_.set(static_cast<size_t>(feature));
   }
