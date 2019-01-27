@@ -1023,9 +1023,9 @@ const SafeBrowsingTestParameters kSafeBrowsingTestCases[] = {
      /*blocked=*/false},
 };
 
-INSTANTIATE_TEST_CASE_P(_,
-                        ChromeDownloadManagerDelegateTestWithSafeBrowsing,
-                        ::testing::ValuesIn(kSafeBrowsingTestCases));
+INSTANTIATE_TEST_SUITE_P(_,
+                         ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+                         ::testing::ValuesIn(kSafeBrowsingTestCases));
 
 }  // namespace
 
