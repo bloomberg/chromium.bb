@@ -385,6 +385,9 @@ class SaveCardInfobarEGTestHelper {
 // Ensures that the infobar goes away and UMA metrics are correctly logged if
 // the user declines upload.
 - (void)testUMA_Upstream_UserDeclines {
+  // TODO(crbug.com/925670): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Failing regularly on the bots.");
+
   base::HistogramTester histogram_tester;
 
   [ChromeEarlGrey
@@ -485,6 +488,9 @@ class SaveCardInfobarEGTestHelper {
 // Ensures that the infobar goes away and no credit card is saved to Chrome if
 // the user declines local save.
 - (void)testUserData_LocalSave_UserDeclines {
+  // TODO(crbug.com/925670): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Failing regularly on the bots.");
+
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kCreditCardUploadForm)];
 
