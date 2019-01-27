@@ -872,13 +872,13 @@ TEST_P(SharedMemoryTest, MappedId) {
 }
 #endif  // !(defined(OS_MACOSX) && !defined(OS_IOS)
 
-INSTANTIATE_TEST_CASE_P(Default,
-                        SharedMemoryTest,
-                        ::testing::Values(Mode::Default));
+INSTANTIATE_TEST_SUITE_P(Default,
+                         SharedMemoryTest,
+                         ::testing::Values(Mode::Default));
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(SkipDevShm,
-                        SharedMemoryTest,
-                        ::testing::Values(Mode::DisableDevShm));
+INSTANTIATE_TEST_SUITE_P(SkipDevShm,
+                         SharedMemoryTest,
+                         ::testing::Values(Mode::DisableDevShm));
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
