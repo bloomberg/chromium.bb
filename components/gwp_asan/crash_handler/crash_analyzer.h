@@ -76,12 +76,12 @@ class CrashAnalyzer {
 
   // This method implements the underlying logic for GetExceptionInfo(). It
   // analyzes the GuardedPageAllocator of the crashing process, and if the
-  // exception address is in the GWP-ASan region it fills out the protobuf
+  // exception occurred in the GWP-ASan region it fills out the protobuf
   // parameter and returns kGwpAsanCrash.
   static GwpAsanCrashAnalysisResult AnalyzeCrashedAllocator(
       const crashpad::ProcessMemory& memory,
+      const crashpad::ExceptionSnapshot& exception,
       crashpad::VMAddress gpa_addr,
-      crashpad::VMAddress exception_addr,
       gwp_asan::Crash* proto);
 
   // This method fills out an AllocationInfo protobuf from a

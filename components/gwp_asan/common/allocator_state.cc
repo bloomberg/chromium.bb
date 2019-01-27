@@ -90,7 +90,7 @@ AllocatorState::ErrorType AllocatorState::GetErrorType(uintptr_t addr,
                                                        bool deallocated) const {
   if (!allocated)
     return ErrorType::kUnknown;
-  if (double_free_detected)
+  if (double_free_address)
     return ErrorType::kDoubleFree;
   if (deallocated)
     return ErrorType::kUseAfterFree;

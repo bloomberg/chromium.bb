@@ -133,8 +133,8 @@ class AllocatorState {
   // present.)
   uintptr_t slot_metadata = 0;
 
-  // Set to true if a double free has occurred.
-  bool double_free_detected = false;
+  // Set to the address of a double freed allocation if a double free occurred.
+  uintptr_t double_free_address = false;
 
   DISALLOW_COPY_AND_ASSIGN(AllocatorState);
 };

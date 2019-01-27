@@ -53,15 +53,11 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::GetExceptionInfo(
   if (exception->Context()->Is64Bit() != is_64_bit)
     return GwpAsanCrashAnalysisResult::kErrorMismatchedBitness;
 
-  crashpad::VMAddress crash_addr = GetAccessAddress(*exception);
-  if (!crash_addr)
-    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
-
   if (!process_snapshot.Memory())
     return GwpAsanCrashAnalysisResult::kErrorNullProcessMemory;
 
-  return AnalyzeCrashedAllocator(*process_snapshot.Memory(), gpa_ptr,
-                                 crash_addr, proto);
+  return AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
+                                 gpa_ptr, proto);
 }
 
 crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
@@ -91,8 +87,8 @@ crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
 
 GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     const crashpad::ProcessMemory& memory,
+    const crashpad::ExceptionSnapshot& exception,
     crashpad::VMAddress gpa_addr,
-    crashpad::VMAddress exception_addr,
     gwp_asan::Crash* proto) {
   AllocatorState unsafe_state;
   if (!memory.Read(gpa_addr, sizeof(unsafe_state), &unsafe_state)) {
@@ -105,6 +101,13 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
     return GwpAsanCrashAnalysisResult::kErrorAllocatorFailedSanityCheck;
   }
   const AllocatorState& valid_state = unsafe_state;
+
+  crashpad::VMAddress exception_addr = GetAccessAddress(exception);
+  if (valid_state.double_free_address)
+    exception_addr = valid_state.double_free_address;
+
+  if (!exception_addr)
+    return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
 
   uintptr_t slot_address;
   auto ret = valid_state.GetMetadataForAddress(exception_addr, &slot_address);
