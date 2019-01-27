@@ -105,9 +105,9 @@ class DeprecatedRegistrarInvalidatorTestDelegate {
   std::unique_ptr<DeprecatedRegistrarInvalidator> invalidator_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(DeprecatedRegistrarInvalidatorTest,
-                              InvalidatorTest,
-                              DeprecatedRegistrarInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(DeprecatedRegistrarInvalidatorTest,
+                               InvalidatorTest,
+                               DeprecatedRegistrarInvalidatorTestDelegate);
 
 }  // namespace
 

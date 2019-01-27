@@ -331,10 +331,10 @@ TEST_P(PerUserTopicRegistrationRequestParamTest,
   EXPECT_EQ(status.code, StatusCode::FAILED_NON_RETRIABLE);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        PerUserTopicRegistrationRequestParamTest,
-                        testing::Values(net::HTTP_BAD_REQUEST,
-                                        net::HTTP_FORBIDDEN,
-                                        net::HTTP_NOT_FOUND));
+INSTANTIATE_TEST_SUITE_P(,
+                         PerUserTopicRegistrationRequestParamTest,
+                         testing::Values(net::HTTP_BAD_REQUEST,
+                                         net::HTTP_FORBIDDEN,
+                                         net::HTTP_NOT_FOUND));
 
 }  // namespace syncer

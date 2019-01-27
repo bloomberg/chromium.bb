@@ -155,9 +155,9 @@ class FCMInvalidationServiceTestDelegate {
   std::unique_ptr<FCMInvalidationService> invalidation_service_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(FCMInvalidationServiceTest,
-                              InvalidationServiceTest,
-                              FCMInvalidationServiceTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(FCMInvalidationServiceTest,
+                               InvalidationServiceTest,
+                               FCMInvalidationServiceTestDelegate);
 
 namespace internal {
 

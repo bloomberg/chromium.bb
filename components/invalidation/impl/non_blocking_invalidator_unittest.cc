@@ -92,8 +92,8 @@ class NonBlockingInvalidatorTestDelegate {
   std::unique_ptr<NonBlockingInvalidator> invalidator_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    NonBlockingInvalidatorTest, InvalidatorTest,
-    NonBlockingInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(NonBlockingInvalidatorTest,
+                               InvalidatorTest,
+                               NonBlockingInvalidatorTestDelegate);
 
 }  // namespace syncer

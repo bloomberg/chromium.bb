@@ -80,9 +80,9 @@ class FCMInvalidatorTestDelegate {
   TestingPrefServiceSimple pref_service_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(FCMInvalidatorTest,
-                              InvalidatorTest,
-                              FCMInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(FCMInvalidatorTest,
+                               InvalidatorTest,
+                               FCMInvalidatorTestDelegate);
 
 }  // namespace
 

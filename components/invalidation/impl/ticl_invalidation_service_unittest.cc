@@ -117,9 +117,9 @@ class TiclInvalidationServiceTestDelegate {
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    TiclInvalidationServiceTest, InvalidationServiceTest,
-    TiclInvalidationServiceTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(TiclInvalidationServiceTest,
+                               InvalidationServiceTest,
+                               TiclInvalidationServiceTestDelegate);
 
 namespace internal {
 
