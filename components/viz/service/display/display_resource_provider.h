@@ -171,7 +171,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   class VIZ_SERVICE_EXPORT ScopedReadLockSkImage {
    public:
     ScopedReadLockSkImage(DisplayResourceProvider* resource_provider,
-                          ResourceId resource_id);
+                          ResourceId resource_id,
+                          SkAlphaType alpha_type = kPremul_SkAlphaType);
     ~ScopedReadLockSkImage();
 
     const SkImage* sk_image() const { return sk_image_.get(); }
@@ -201,7 +202,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
 
     // Lock a resource and create a SkImage from it by using
     // Client::CreateImage.
-    sk_sp<SkImage> LockResourceAndCreateSkImage(ResourceId resource_id);
+    sk_sp<SkImage> LockResourceAndCreateSkImage(ResourceId resource_id,
+                                                SkAlphaType alpha_type);
 
     // Unlock all locked resources with a |sync_token|.
     // See UnlockForExternalUse for the detail. All resources must be unlocked

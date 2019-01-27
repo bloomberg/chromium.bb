@@ -82,13 +82,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
-                                 bool mipmap) override;
+                                 bool mipmap,
+                                 sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken SubmitPaint() override;
   sk_sp<SkImage> MakePromiseSkImage(ResourceMetadata metadata) override;
-  sk_sp<SkImage> MakePromiseSkImageFromRenderPass(const RenderPassId& id,
-                                                  const gfx::Size& size,
-                                                  ResourceFormat format,
-                                                  bool mipmap) override;
+  sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
+      const RenderPassId& id,
+      const gfx::Size& size,
+      ResourceFormat format,
+      bool mipmap,
+      sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken QueueReleasePromiseSkImage(sk_sp<SkImage>&& image) override;
   void FlushQueuedReleases() override;
 
@@ -108,7 +111,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   SkSurfaceCharacterization CreateSkSurfaceCharacterization(
       const gfx::Size& surface_size,
       ResourceFormat format,
-      bool mipmap);
+      bool mipmap,
+      sk_sp<SkColorSpace> color_space);
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);

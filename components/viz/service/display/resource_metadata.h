@@ -33,6 +33,9 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
 
   // The color space for the resource texture.
   gfx::ColorSpace color_space;
+
+  // Whether resource is premultiplied.
+  SkAlphaType alpha_type;
 };
 
 }  // namespace viz

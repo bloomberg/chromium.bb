@@ -525,6 +525,7 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
   metadata.size = resource->transferable.size;
   metadata.resource_format = resource->transferable.format;
   metadata.mailbox_holder.sync_token = resource->sync_token();
+  metadata.color_space = resource->transferable.color_space;
 
   resource->locked_for_external_use = true;
   return metadata;
@@ -850,7 +851,8 @@ DisplayResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() = default;
 
 DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     DisplayResourceProvider* resource_provider,
-    ResourceId resource_id)
+    ResourceId resource_id,
+    SkAlphaType alpha_type)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const ChildResource* resource = resource_provider->LockForRead(resource_id);
   DCHECK(resource);
@@ -876,8 +878,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
         backend_texture, kTopLeft_GrSurfaceOrigin,
         ResourceFormatToClosestSkColorType(!resource_provider->IsSoftware(),
                                            resource->transferable.format),
-        kPremul_SkAlphaType, nullptr);
-    resource_provider_->resource_sk_images_[resource_id] = sk_image_;
+        alpha_type, resource->transferable.color_space.ToSkColorSpace());
     return;
   }
 
@@ -925,8 +926,10 @@ ResourceMetadata DisplayResourceProvider::LockSetForExternalUse::LockResource(
 
 sk_sp<SkImage>
 DisplayResourceProvider::LockSetForExternalUse::LockResourceAndCreateSkImage(
-    ResourceId id) {
+    ResourceId id,
+    SkAlphaType alpha_type) {
   auto metadata = LockResource(id);
+  metadata.alpha_type = alpha_type;
   auto& resource_sk_image = resource_provider_->resource_sk_images_[id];
   if (!resource_sk_image) {
     resource_sk_image =
