@@ -191,6 +191,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final int mModuleDexResourceId;
     private final boolean mIsIncognito;
     @Nullable
+    private final List<String> mTrustedWebActivityAdditionalOrigins;
+    @Nullable
     private String mUrlToLoad;
 
     private int mToolbarColor;
@@ -284,6 +286,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
         mIsTrustedWebActivity = IntentUtils.safeGetBooleanExtra(
                 intent, TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
+        mTrustedWebActivityAdditionalOrigins = IntentUtils.safeGetStringArrayListExtra(intent,
+                TrustedWebUtils.EXTRA_ADDITIONAL_TRUSTED_ORIGINS);
         mTitleVisibilityState = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_TITLE_VISIBILITY_STATE, CustomTabsIntent.NO_TITLE);
         mShowShareItem = IntentUtils.safeGetBooleanExtra(intent,
@@ -871,4 +875,13 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public boolean shouldHideCctHeaderOnModuleManagedUrls() {
         return mHideCctHeaderOnModuleManagedUrls;
     }
+
+    /**
+     * @return Additional origins associated with a Trusted Web Activity client app.
+     */
+    @Nullable
+    public List<String> getTrustedWebActivityAdditionalOrigins() {
+        return mTrustedWebActivityAdditionalOrigins;
+    }
+
 }

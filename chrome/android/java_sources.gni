@@ -2414,6 +2414,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/ClientAppDataRecorderTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityDisclosureControllerTest.java",
   "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityOpenTimeRecorderTest.java",
+  "junit/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/controller/TrustedWebActivityVerifierTest.java",
   "junit/src/org/chromium/chrome/browser/cached_image_fetcher/CachedImageFetcherImplTest.java",
   "junit/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsSourceImplTest.java",
   "junit/src/org/chromium/chrome/browser/cached_image_fetcher/InMemoryCachedImageFetcherTest.java",

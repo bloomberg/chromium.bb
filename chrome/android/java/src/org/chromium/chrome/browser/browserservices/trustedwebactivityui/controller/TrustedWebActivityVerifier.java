@@ -26,6 +26,9 @@ import org.chromium.chrome.browser.tab.TabObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -47,6 +50,9 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final String mClientPackageName;
     private final OriginVerifier mOriginVerifier;
+
+    // These origins need to be verified via OriginVerifier#start, bypassing cache.
+    private final Set<Origin> mOriginsToVerify = new HashSet<>();
 
     @Nullable private VerificationState mState;
 
@@ -84,10 +90,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
                 assert false : "Shouldn't observe navigation when TWAs are disabled";
                 return;
             }
-
-            // This doesn't perform a network request or attempt new verification - it checks to
-            // see if a verification already exists for the given inputs.
-            handleVerificationResult(isPageOnVerifiedOrigin(url), new Origin(url));
+            verify(new Origin(url));
         }
     };
 
@@ -97,7 +100,8 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
             CustomTabsConnection customTabsConnection,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar,
-            ActivityTabProvider activityTabProvider) {
+            ActivityTabProvider activityTabProvider,
+            OriginVerifier.Factory originVerifierFactory) {
         mClientAppDataRecorder = clientAppDataRecorder;
         mCustomTabsConnection = customTabsConnection;
         mIntentDataProvider = intentDataProvider;
@@ -107,7 +111,7 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
                 intentDataProvider.getSession());
         assert mClientPackageName != null;
 
-        mOriginVerifier = new OriginVerifier(mClientPackageName, RELATIONSHIP);
+        mOriginVerifier = originVerifierFactory.create(mClientPackageName, RELATIONSHIP);
 
         tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
         lifecycleDispatcher.register(this);
@@ -139,8 +143,15 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
 
     @Override
     public void onFinishNativeInitialization() {
-        attemptVerificationForInitialUrl(
-                mIntentDataProvider.getUrlToLoad(), mActivityTabProvider.getActivityTab());
+        Origin initialOrigin = new Origin(mIntentDataProvider.getUrlToLoad());
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
+            mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
+            updateState(initialOrigin, VERIFICATION_FAILURE);
+            return;
+        }
+
+        collectTrustedOrigins(initialOrigin);
+        verify(initialOrigin);
 
         // This doesn't belong here, but doesn't deserve a separate class. Do extract it if more
         // PostMessage-related code appears.
@@ -150,35 +161,46 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         }
     }
 
+    private void collectTrustedOrigins(Origin initialOrigin) {
+        mOriginsToVerify.add(initialOrigin);
+        List<String> additionalOrigins =
+                mIntentDataProvider.getTrustedWebActivityAdditionalOrigins();
+        if (additionalOrigins != null) {
+            for (String origin : additionalOrigins) {
+                mOriginsToVerify.add(new Origin(origin));
+            }
+        }
+    }
+
     /** Returns whether the given |url| is on an Origin that the package has been verified for. */
     public boolean isPageOnVerifiedOrigin(String url) {
         return mOriginVerifier.wasPreviouslyVerified(new Origin(url));
     }
 
     /**
-     * Perform verification for the URL that the CustomTabActivity starts on.
+     * Perform verification for the given origin.
      */
-    private void attemptVerificationForInitialUrl(String url, Tab tab) {
-        Origin origin = new Origin(url);
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY)) {
-            mTabObserverRegistrar.unregisterTabObserver(mVerifyOnPageLoadObserver);
-            updateState(origin, VERIFICATION_FAILURE);
-            return;
+    private void verify(Origin origin) {
+        if (mOriginsToVerify.contains(origin)) {
+            // Do verification bypassing the cache.
+            updateState(origin, VERIFICATION_PENDING);
+            mOriginVerifier.start((packageName2, origin2, verified, online) ->
+                    onVerificationResult(origin, verified), origin);
+        } else {
+            // Look into cache only
+            boolean verified = mOriginVerifier.wasPreviouslyVerified(origin);
+            updateState(origin, verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
         }
-
-        updateState(origin, VERIFICATION_PENDING);
-        mOriginVerifier.start((packageName2, origin2, verified, online) -> {
-            if (!origin.equals(new Origin(tab.getUrl()))) return;
-
-            handleVerificationResult(verified, origin);
-        }, origin);
     }
 
-    private void handleVerificationResult(boolean verified, Origin origin) {
-        if (verified) {
-            registerClientAppData(origin);
+    private void onVerificationResult(Origin origin, boolean verified) {
+        mOriginsToVerify.remove(origin);
+        if (verified) registerClientAppData(origin);
+        boolean stillOnSameOrigin =
+                origin.equals(new Origin(mActivityTabProvider.getActivityTab().getUrl()));
+        if (stillOnSameOrigin) {
+            updateState(origin, verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
         }
-        updateState(origin, verified ? VERIFICATION_SUCCESS : VERIFICATION_FAILURE);
     }
 
     private void updateState(Origin origin, @VerificationStatus int status) {
