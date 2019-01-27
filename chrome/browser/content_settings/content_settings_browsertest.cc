@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CookieSettingsTest,
     ::testing::Values(CookieMode::kJSReadJSWrite,
