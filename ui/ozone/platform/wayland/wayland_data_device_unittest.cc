@@ -192,12 +192,12 @@ TEST_P(WaylandDataDeviceManagerTest, ReceiveDrag) {
   data_device_manager_->data_device()->OnLeave();
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandDataDeviceManagerTest,
-                        ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandDataDeviceManagerTest,
+                         ::testing::Values(kXdgShellV5));
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandDataDeviceManagerTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandDataDeviceManagerTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

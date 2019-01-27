@@ -281,11 +281,11 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
   window_->set_pointer_focus(false);
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandScreenTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandScreenTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandScreenTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandScreenTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

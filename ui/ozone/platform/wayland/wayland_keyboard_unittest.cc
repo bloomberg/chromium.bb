@@ -468,11 +468,11 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
   EXPECT_EQ(ET_KEY_RELEASED, key_event2->type());
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandKeyboardTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandKeyboardTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandKeyboardTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandKeyboardTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

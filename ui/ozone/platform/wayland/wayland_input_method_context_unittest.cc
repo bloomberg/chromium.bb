@@ -130,11 +130,11 @@ TEST_P(WaylandInputMethodContextTest, OnCommit) {
   EXPECT_TRUE(input_method_context_delegate_->was_on_commit_called());
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandInputMethodContextTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandInputMethodContextTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandInputMethodContextTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandInputMethodContextTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

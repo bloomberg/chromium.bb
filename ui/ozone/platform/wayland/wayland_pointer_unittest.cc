@@ -290,11 +290,11 @@ TEST_P(WaylandPointerTest, AxisHorizontal) {
   EXPECT_EQ(gfx::PointF(50, 75), mouse_wheel_event->root_location_f());
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandPointerTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandPointerTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandPointerTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandPointerTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui
