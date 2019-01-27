@@ -31,16 +31,13 @@ import json
 import optparse
 import unittest
 
-from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
-from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.common.system.output_capture import OutputCapture
 from blinkpy.common.system.platform_info_mock import MockPlatformInfo
 from blinkpy.common.system.system_host import SystemHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
-from blinkpy.web_tests.models.test_input import TestInput
 from blinkpy.web_tests.port.base import Port, VirtualTestSuite
 from blinkpy.web_tests.port.test import add_unit_tests_to_mock_filesystem, WEB_TEST_DIR, TestPort
 
@@ -297,7 +294,7 @@ class PortTest(LoggingTestCase):
         test_file = 'fast/test.html'
 
         # Simple additional platform directory
-        port._options.additional_platform_directory = ['/tmp/local-baselines']
+        port._options.additional_platform_directory = ['/tmp/local-baselines']  # pylint: disable=protected-access
         self.assertEqual(port.baseline_version_dir(), '/tmp/local-baselines')
 
         self.assertEqual(port.expected_baselines(test_file, '.txt'),
@@ -313,7 +310,7 @@ class PortTest(LoggingTestCase):
                          '/tmp/local-baselines/fast/test-expected.txt')
 
         # Multiple additional platform directories
-        port._options.additional_platform_directory = ['/foo', '/tmp/local-baselines']
+        port._options.additional_platform_directory = ['/foo', '/tmp/local-baselines']  # pylint: disable=protected-access
         self.assertEqual(port.baseline_version_dir(), '/foo')
 
         self.assertEqual(port.expected_baselines(test_file, '.txt'),
@@ -349,6 +346,7 @@ class PortTest(LoggingTestCase):
 
         self.assertEqual('\n'.join(port.expectations_dict().values()), '')
 
+        # pylint: disable=protected-access
         port._options.additional_expectations = [
             '/tmp/additional-expectations-1.txt']
         self.assertEqual('\n'.join(port.expectations_dict().values()), 'content1\n')
@@ -777,6 +775,11 @@ class PortTest(LoggingTestCase):
         self.assertIn('passes/virtual_passes/test-virtual-passes.html', tests)
         self.assertNotIn('virtual/virtual_passes/passes/text.html', tests)
 
+        # crbug.com/880609: test trailing slashes
+        tests = port.tests(['virtual/virtual_passes'])
+        self.assertIn('virtual/virtual_passes/passes/test-virtual-passes.html', tests)
+        self.assertIn('virtual/virtual_passes/passes_two/test-virtual-passes.html', tests)
+
         tests = port.tests(['virtual/virtual_passes/'])
         self.assertIn('virtual/virtual_passes/passes/test-virtual-passes.html', tests)
         self.assertIn('virtual/virtual_passes/passes_two/test-virtual-passes.html', tests)
@@ -915,6 +918,7 @@ class NaturalCompareTest(unittest.TestCase):
         self._port = TestPort(MockSystemHost())
 
     def assert_cmp(self, x, y, result):
+        # pylint: disable=protected-access
         self.assertEqual(cmp(self._port._natural_sort_key(x), self._port._natural_sort_key(y)), result)
 
     def test_natural_compare(self):

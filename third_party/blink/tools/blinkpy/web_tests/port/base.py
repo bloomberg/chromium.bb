@@ -33,11 +33,9 @@ in the web test infrastructure.
 """
 
 import collections
-import errno
 import json
 import logging
 import optparse
-import os
 import re
 import sys
 import tempfile
@@ -47,7 +45,6 @@ from blinkpy.common import find_files
 from blinkpy.common import read_checksum_from_png
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
-from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.w3c.wpt_manifest import WPTManifest
 from blinkpy.web_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
@@ -260,8 +257,8 @@ class Port(object):
         # increases test run time by 2-5X, but provides more consistent results
         # [less state leaks between tests].
         if (self.get_option('reset_shell_between_tests') or
-            self.get_option('repeat_each') > 1 or
-            self.get_option('iterations') > 1):
+                self.get_option('repeat_each') > 1 or
+                self.get_option('iterations') > 1):
             flags += ['--reset-shell-between-tests']
         return flags
 
@@ -1588,8 +1585,10 @@ class Port(object):
 
     def _virtual_tests_matching_paths(self, paths, suites):
         tests = []
+        paths_with_trailing_slash = [p.rstrip(self.TEST_PATH_SEPARATOR) + self.TEST_PATH_SEPARATOR for p in paths]
         for suite in suites:
-            if any(p.startswith(suite.name) for p in paths) or any(suite.name.startswith(os.path.join(p, '')) for p in paths):
+            if (any(p.startswith(suite.name) for p in paths) or
+                    any(suite.name.startswith(p) for p in paths_with_trailing_slash)):
                 self._populate_virtual_suite(suite)
             for test in suite.tests:
                 if any(test.startswith(p) for p in paths):
@@ -1733,8 +1732,8 @@ class Port(object):
         for (font_dirs, font_file, package) in FONT_FILES:
             exists = False
             for font_dir in font_dirs:
-                font_path = os.path.join(font_dir, font_file)
-                if not os.path.isabs(font_path):
+                font_path = self._filesystem.join(font_dir, font_file)
+                if not self._filesystem.isabs(font_path):
                     font_path = self._build_path(font_path)
                 if self._check_file_exists(font_path, '', more_logging=False):
                     result.append(font_path)
