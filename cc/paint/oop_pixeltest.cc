@@ -1413,9 +1413,8 @@ sk_sp<SkTextBlob> BuildTextBlob(
   }
 
   SkTextBlobBuilder builder;
-  SkRect bounds = SkRect::MakeWH(100, 100);
   const int glyphCount = 10;
-  const auto& runBuffer = builder.allocRunPosH(font, glyphCount, 0, &bounds);
+  const auto& runBuffer = builder.allocRunPosH(font, glyphCount, 0);
   for (int i = 0; i < glyphCount; i++) {
     runBuffer.glyphs[i] = static_cast<SkGlyphID>(i);
     runBuffer.pos[i] = SkIntToScalar(i);
