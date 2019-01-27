@@ -7,7 +7,6 @@
 #include <iterator>
 #include <memory>
 
-#include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
@@ -106,12 +105,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   DCHECK_EQ(addr, slots_[slot].alloc_ptr);
   // Check for double free.
   if (slots_[slot].dealloc.trace_collected) {
-    state_.double_free_detected = true;
-    base::subtle::MemoryBarrier();
-    // Trigger an exception by writing to the inaccessible free()d allocation.
-    // We want to crash by accessing the offending allocation in order to signal
-    // to the crash handler that this crash is caused by that allocation.
-    *reinterpret_cast<char*>(ptr) = 'X';
+    state_.double_free_address = addr;
     __builtin_trap();
   }
 
