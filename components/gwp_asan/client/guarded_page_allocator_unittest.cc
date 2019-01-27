@@ -154,9 +154,9 @@ TEST_P(GuardedPageAllocatorParamTest, AllocDeallocAllPages) {
     // Performing death tests post-allocation times out on Windows.
   }
 }
-INSTANTIATE_TEST_CASE_P(VaryNumPages,
-                        GuardedPageAllocatorParamTest,
-                        testing::Values(1, kGpaMaxPages / 2, kGpaMaxPages));
+INSTANTIATE_TEST_SUITE_P(VaryNumPages,
+                         GuardedPageAllocatorParamTest,
+                         testing::Values(1, kGpaMaxPages / 2, kGpaMaxPages));
 
 class ThreadedAllocCountDelegate : public base::DelegateSimpleThread::Delegate {
  public:
