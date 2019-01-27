@@ -2,44 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_SINK_H_
-#define CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_SINK_H_
-
-#include <vector>
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_AUDIO_SINK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_AUDIO_SINK_H_
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
-
-namespace blink {
-class WebMediaStreamTrack;
-}
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace media {
 class AudioBus;
 class AudioParameters;
-}
+}  // namespace media
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT MediaStreamAudioSink : public blink::WebMediaStreamSink {
+class WebMediaStreamTrack;
+
+class BLINK_PLATFORM_EXPORT WebMediaStreamAudioSink
+    : public WebMediaStreamSink {
  public:
   // Adds a MediaStreamAudioSink to the audio track to receive audio data from
   // the track.
   // Called on the main render thread.
-  static void AddToAudioTrack(MediaStreamAudioSink* sink,
-                              const blink::WebMediaStreamTrack& track);
+  static void AddToAudioTrack(WebMediaStreamAudioSink* sink,
+                              const WebMediaStreamTrack& track);
 
   // Removes a MediaStreamAudioSink from the audio track to stop receiving
   // audio data from the track.
   // Called on the main render thread.
-  static void RemoveFromAudioTrack(MediaStreamAudioSink* sink,
-                                   const blink::WebMediaStreamTrack& track);
+  static void RemoveFromAudioTrack(WebMediaStreamAudioSink* sink,
+                                   const WebMediaStreamTrack& track);
 
   // Returns the format of the audio track.
   // Called on the main render thread.
   static media::AudioParameters GetFormatFromAudioTrack(
-      const blink::WebMediaStreamTrack& track);
+      const WebMediaStreamTrack& track);
 
   // Callback called to deliver audio data. The data in |audio_bus| respects the
   // AudioParameters passed in the last call to OnSetFormat().  Called on
@@ -60,9 +57,9 @@ class CONTENT_EXPORT MediaStreamAudioSink : public blink::WebMediaStreamSink {
   virtual void OnSetFormat(const media::AudioParameters& params) = 0;
 
  protected:
-  ~MediaStreamAudioSink() override {}
+  ~WebMediaStreamAudioSink() override {}
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_RENDERER_MEDIA_STREAM_AUDIO_SINK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_AUDIO_SINK_H_

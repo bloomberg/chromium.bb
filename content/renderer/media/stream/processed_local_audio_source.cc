@@ -51,8 +51,8 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     const AudioProcessingProperties& audio_processing_properties,
     const ConstraintsCallback& started_callback,
     PeerConnectionDependencyFactory* factory)
-    : MediaStreamAudioSource(true /* is_local_source */,
-                             disable_local_echo),
+    : blink::MediaStreamAudioSource(true /* is_local_source */,
+                                    disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       pc_factory_(factory),
       audio_processing_properties_(audio_processing_properties),
@@ -72,7 +72,7 @@ ProcessedLocalAudioSource::~ProcessedLocalAudioSource() {
 
 // static
 ProcessedLocalAudioSource* ProcessedLocalAudioSource::From(
-    MediaStreamAudioSource* source) {
+    blink::MediaStreamAudioSource* source) {
   if (source &&
       source->GetClassIdentifier() == kProcessedLocalAudioSourceIdentifier)
     return static_cast<ProcessedLocalAudioSource*>(source);

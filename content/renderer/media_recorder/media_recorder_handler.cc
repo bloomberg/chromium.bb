@@ -13,7 +13,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "media/base/audio_bus.h"
@@ -25,6 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/muxers/webm_muxer.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/scoped_web_callbacks.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
@@ -260,7 +260,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
           blink::WebMediaStreamSource::kReadyStateEnded;
   const bool use_audio_tracks =
       !audio_tracks_.IsEmpty() &&
-      MediaStreamAudioTrack::From(audio_tracks_[0]) &&
+      blink::MediaStreamAudioTrack::From(audio_tracks_[0]) &&
       audio_tracks_[0].Source().GetReadyState() !=
           blink::WebMediaStreamSource::kReadyStateEnded;
 

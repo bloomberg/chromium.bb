@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
@@ -40,6 +39,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/net/cast_transport_config.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -308,7 +308,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 // Note that RemoveFromAudioTrack() is synchronous and we have
 // gurantee that there will be no more audio data after calling it.
 class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
-                      public content::MediaStreamAudioSink,
+                      public blink::WebMediaStreamAudioSink,
                       public media::AudioConverter::InputCallback {
  public:
   // |track| provides data for this sink.

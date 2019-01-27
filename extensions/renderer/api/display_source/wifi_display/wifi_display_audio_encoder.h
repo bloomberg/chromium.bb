@@ -5,8 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_AUDIO_ENCODER_H_
 #define EXTENSIONS_RENDERER_API_DISPLAY_SOURCE_WIFI_DISPLAY_WIFI_DISPLAY_AUDIO_ENCODER_H_
 
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_encoder.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/wds/src/libwds/public/audio_codec.h"
 
 namespace extensions {
@@ -15,7 +15,7 @@ namespace extensions {
 // pipeline.
 // Threading: the client code should belong to a single thread.
 class WiFiDisplayAudioEncoder : public WiFiDisplayMediaEncoder,
-                                public content::MediaStreamAudioSink {
+                                public blink::WebMediaStreamAudioSink {
  public:
   using AudioEncoderCallback =
       base::Callback<void(scoped_refptr<WiFiDisplayAudioEncoder>)>;

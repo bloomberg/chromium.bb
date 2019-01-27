@@ -13,12 +13,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -79,7 +79,7 @@ void ApplyConstraintsProcessor::ProcessAudioRequest() {
   DCHECK_EQ(current_request_.Track().Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
   DCHECK(request_completed_cb_);
-  MediaStreamAudioSource* audio_source = GetCurrentAudioSource();
+  blink::MediaStreamAudioSource* audio_source = GetCurrentAudioSource();
   if (!audio_source) {
     CannotApplyConstraints("The track is not connected to any source");
     return;
@@ -274,10 +274,11 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
       settings.height, settings.frame_rate);
 }
 
-MediaStreamAudioSource* ApplyConstraintsProcessor::GetCurrentAudioSource() {
+blink::MediaStreamAudioSource*
+ApplyConstraintsProcessor::GetCurrentAudioSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_request_.Track().IsNull());
-  return MediaStreamAudioSource::From(current_request_.Track().Source());
+  return blink::MediaStreamAudioSource::From(current_request_.Track().Source());
 }
 
 MediaStreamVideoTrack* ApplyConstraintsProcessor::GetCurrentVideoTrack() {

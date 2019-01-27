@@ -2,16 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
+#include "build/build_config.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
 
-namespace content {
+namespace blink {
+
+const int kMaxAudioLatencyMs = 5000;
+static_assert(std::numeric_limits<int>::max() / media::limits::kMaxSampleRate >
+                  kMaxAudioLatencyMs,
+              "The maxium audio latency can cause overflow.");
+
+// TODO(https://crbug.com/638081):
+// Like in ProcessedLocalAudioSource::GetBufferSize(), we should re-evaluate
+// whether Android needs special treatment here.
+const int kFallbackAudioLatencyMs =
+#if defined(OS_ANDROID)
+    20;
+#else
+    10;
+#endif
+
+static_assert(kFallbackAudioLatencyMs >= 0,
+              "Audio latency has to be non-negative.");
+static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
+              "Fallback audio latency exceeds maximum.");
 
 MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source,
                                                bool disable_local_echo)
@@ -25,8 +46,7 @@ MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source,
 }
 
 MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source)
-    : MediaStreamAudioSource(is_local_source,
-                             false /* disable_local_echo */) {}
+    : MediaStreamAudioSource(is_local_source, false /* disable_local_echo */) {}
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -189,4 +209,4 @@ base::SingleThreadTaskRunner* MediaStreamAudioSource::GetTaskRunner() const {
   return task_runner_.get();
 }
 
-}  // namespace content
+}  // namespace blink

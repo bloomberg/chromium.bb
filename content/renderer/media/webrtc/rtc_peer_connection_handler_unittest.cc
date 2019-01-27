@@ -25,8 +25,6 @@
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
@@ -39,6 +37,8 @@
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -385,7 +385,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   void StopAllTracks(const blink::WebMediaStream& stream) {
     for (const auto& track : stream.AudioTracks())
-      MediaStreamAudioTrack::From(track)->Stop();
+      blink::MediaStreamAudioTrack::From(track)->Stop();
     for (const auto& track : stream.VideoTracks())
       MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
   }
@@ -837,8 +837,8 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks =
       local_stream.AudioTracks();
-  MediaStreamAudioSource* native_audio_source =
-      MediaStreamAudioSource::From(audio_tracks[0].Source());
+  blink::MediaStreamAudioSource* native_audio_source =
+      blink::MediaStreamAudioSource::From(audio_tracks[0].Source());
   native_audio_source->StopSource();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks =

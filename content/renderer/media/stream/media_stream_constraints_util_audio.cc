@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
@@ -23,6 +22,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -957,7 +957,7 @@ class ProcessingBasedContainer {
       ProcessingType processing_type,
       const media::AudioParameters& device_parameters) {
     double fallback_latency =
-        static_cast<double>(kFallbackAudioLatencyMs) / 1000;
+        static_cast<double>(blink::kFallbackAudioLatencyMs) / 1000;
     double device_latency = device_parameters.GetBufferDuration().InSecondsF();
     double allowed_latency = device_parameters.frames_per_buffer() > 0
                                  ? device_latency
@@ -1058,7 +1058,7 @@ class DeviceContainer {
     if (source_info.type() == SourceType::kNone)
       return;
 
-    MediaStreamAudioSource* source = capability.source();
+    blink::MediaStreamAudioSource* source = capability.source();
     boolean_containers_[kDisableLocalEcho] =
         BooleanContainer(BoolSet({source->disable_local_echo()}));
 
@@ -1221,7 +1221,7 @@ class DeviceContainer {
 
   // Utility function to determine which version of this class should be
   // allocated depending on the |source| provided.
-  static SourceInfo InfoFromSource(MediaStreamAudioSource* source,
+  static SourceInfo InfoFromSource(blink::MediaStreamAudioSource* source,
                                    int effects) {
     SourceType source_type;
     AudioProcessingProperties properties;
@@ -1348,7 +1348,7 @@ AudioDeviceCaptureCapability::AudioDeviceCaptureCapability()
     : parameters_(media::AudioParameters::UnavailableDeviceParams()) {}
 
 AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
-    MediaStreamAudioSource* source)
+    blink::MediaStreamAudioSource* source)
     : source_(source) {}
 
 AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
@@ -1418,7 +1418,7 @@ AudioCaptureSettings SelectSettingsAudioCapture(
 }
 
 AudioCaptureSettings CONTENT_EXPORT
-SelectSettingsAudioCapture(MediaStreamAudioSource* source,
+SelectSettingsAudioCapture(blink::MediaStreamAudioSource* source,
                            const blink::WebMediaConstraints& constraints) {
   DCHECK(source);
   if (source->device().type != blink::MEDIA_DEVICE_AUDIO_CAPTURE &&

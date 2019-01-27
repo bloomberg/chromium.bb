@@ -17,8 +17,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
@@ -30,6 +28,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -137,10 +137,10 @@ void CheckVideoSourceAndTrack(MediaStreamVideoSource* source,
   EXPECT_EQ(settings.frame_rate, expected_track_frame_rate);
 }
 
-class MockLocalMediaStreamAudioSource : public MediaStreamAudioSource {
+class MockLocalMediaStreamAudioSource : public blink::MediaStreamAudioSource {
  public:
   MockLocalMediaStreamAudioSource()
-      : MediaStreamAudioSource(true /* is_local_source */) {}
+      : blink::MediaStreamAudioSource(true /* is_local_source */) {}
 
   MOCK_METHOD0(EnsureSourceIsStopped, void());
 
@@ -351,15 +351,15 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     return base::WrapUnique(video_source_);
   }
 
-  std::unique_ptr<MediaStreamAudioSource> CreateAudioSource(
+  std::unique_ptr<blink::MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
       const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
           source_ready) override {
-    std::unique_ptr<MediaStreamAudioSource> source;
+    std::unique_ptr<blink::MediaStreamAudioSource> source;
     if (create_source_that_fails_) {
-      class FailedAtLifeAudioSource : public MediaStreamAudioSource {
+      class FailedAtLifeAudioSource : public blink::MediaStreamAudioSource {
        public:
-        FailedAtLifeAudioSource() : MediaStreamAudioSource(true) {}
+        FailedAtLifeAudioSource() : blink::MediaStreamAudioSource(true) {}
         ~FailedAtLifeAudioSource() override {}
 
        protected:
@@ -370,7 +370,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       local_audio_source_ = new MockLocalMediaStreamAudioSource();
       source = base::WrapUnique(local_audio_source_);
     } else {
-      source = std::make_unique<MediaStreamAudioSource>(true);
+      source = std::make_unique<blink::MediaStreamAudioSource>(true);
     }
 
     source->SetDevice(device);
@@ -665,8 +665,9 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithSameSource) {
   EXPECT_EQ(desc1_audio_tracks[0].Source().Id(),
             desc2_audio_tracks[0].Source().Id());
 
-  EXPECT_EQ(MediaStreamAudioSource::From(desc1_audio_tracks[0].Source()),
-            MediaStreamAudioSource::From(desc2_audio_tracks[0].Source()));
+  EXPECT_EQ(
+      blink::MediaStreamAudioSource::From(desc1_audio_tracks[0].Source()),
+      blink::MediaStreamAudioSource::From(desc2_audio_tracks[0].Source()));
 }
 
 // Test that the same source object is not used if two MediaStreams are
@@ -695,8 +696,9 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   EXPECT_NE(desc1_audio_tracks[0].Source().Id(),
             desc2_audio_tracks[0].Source().Id());
 
-  EXPECT_NE(MediaStreamAudioSource::From(desc1_audio_tracks[0].Source()),
-            MediaStreamAudioSource::From(desc2_audio_tracks[0].Source()));
+  EXPECT_NE(
+      blink::MediaStreamAudioSource::From(desc1_audio_tracks[0].Source()),
+      blink::MediaStreamAudioSource::From(desc2_audio_tracks[0].Source()));
 }
 
 TEST_F(UserMediaClientImplTest, StopLocalTracks) {
@@ -1350,8 +1352,8 @@ TEST_F(UserMediaClientImplTest,
   EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
   blink::WebMediaStreamTrack web_track =
       RequestLocalAudioTrackWithAssociatedSink(true);
-  MediaStreamAudioSource* source =
-      MediaStreamAudioSource::From(web_track.Source());
+  blink::MediaStreamAudioSource* source =
+      blink::MediaStreamAudioSource::From(web_track.Source());
   EXPECT_TRUE(source->device().matched_output_device_id);
 }
 
@@ -1360,8 +1362,8 @@ TEST_F(UserMediaClientImplTest,
   EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
   blink::WebMediaStreamTrack web_track =
       RequestLocalAudioTrackWithAssociatedSink(false);
-  MediaStreamAudioSource* source =
-      MediaStreamAudioSource::From(web_track.Source());
+  blink::MediaStreamAudioSource* source =
+      blink::MediaStreamAudioSource::From(web_track.Source());
   EXPECT_FALSE(source->device().matched_output_device_id);
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_
 
 #include <algorithm>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_parameters.h"
 
-namespace content {
+namespace blink {
 
 // Template containing functionality common to both MediaStreamAudioSource and
 // MediaStreamAudioTrack. This is used for managing the connections between
@@ -79,8 +79,8 @@ class MediaStreamAudioDeliverer {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     base::AutoLock auto_lock(consumers_lock_);
     *consumer_list = consumers_;
-    consumer_list->insert(consumer_list->end(),
-                          pending_consumers_.begin(), pending_consumers_.end());
+    consumer_list->insert(consumer_list->end(), pending_consumers_.begin(),
+                          pending_consumers_.end());
   }
 
   // Change the format of the audio passed in the next call to OnData(). This
@@ -95,8 +95,8 @@ class MediaStreamAudioDeliverer {
         return;
       params_ = params;
     }
-    pending_consumers_.insert(pending_consumers_.end(),
-                              consumers_.begin(), consumers_.end());
+    pending_consumers_.insert(pending_consumers_.end(), consumers_.begin(),
+                              consumers_.end());
     consumers_.clear();
   }
 
@@ -115,8 +115,8 @@ class MediaStreamAudioDeliverer {
       DCHECK(params.IsValid());
       for (Consumer* consumer : pending_consumers_)
         consumer->OnSetFormat(params);
-      consumers_.insert(consumers_.end(),
-                        pending_consumers_.begin(), pending_consumers_.end());
+      consumers_.insert(consumers_.end(), pending_consumers_.begin(),
+                        pending_consumers_.end());
       pending_consumers_.clear();
     }
 
@@ -154,6 +154,6 @@ class MediaStreamAudioDeliverer {
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioDeliverer);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_DELIVERER_H_

@@ -28,6 +28,7 @@ class Size;
 }
 
 namespace blink {
+class MediaStreamAudioSource;
 class WebMediaStream;
 class WebMediaStreamSource;
 class WebString;
@@ -37,7 +38,6 @@ namespace content {
 
 class AudioCaptureSettings;
 class AudioDeviceCaptureCapability;
-class MediaStreamAudioSource;
 class MediaStreamDeviceObserver;
 class MediaStreamVideoSource;
 class PeerConnectionDependencyFactory;
@@ -131,7 +131,7 @@ class CONTENT_EXPORT UserMediaProcessor
 
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
   // These are virtual for test purposes.
-  virtual std::unique_ptr<MediaStreamAudioSource> CreateAudioSource(
+  virtual std::unique_ptr<blink::MediaStreamAudioSource> CreateAudioSource(
       const blink::MediaStreamDevice& device,
       const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
           source_ready);

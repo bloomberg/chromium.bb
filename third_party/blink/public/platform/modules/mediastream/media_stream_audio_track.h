@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_TRACK_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_TRACK_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_TRACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_TRACK_H_
 
 #include <memory>
 
@@ -13,20 +13,20 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_audio_deliverer.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
+#include "third_party/blink/public/platform/web_common.h"
 
-namespace content {
+namespace blink {
 
-class MediaStreamAudioSink;
+class WebMediaStreamAudioSink;
 class MediaStreamAudioSource;
 
 // Provides the part of the audio pipeline delivering audio from a
-// MediaStreamAudioSource to one or more MediaStreamAudioSinks. An instance of
-// this class is owned by blink::WebMediaStreamTrack, and clients should use
+// MediaStreamAudioSource to one or more WebMediaStreamAudioSinks. An instance
+// of this class is owned by blink::WebMediaStreamTrack, and clients should use
 // From() to gain access to a MediaStreamAudioTrack.
-class CONTENT_EXPORT MediaStreamAudioTrack
+class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
     : public blink::WebPlatformMediaStreamTrack {
  public:
   explicit MediaStreamAudioTrack(bool is_local_track);
@@ -46,11 +46,11 @@ class CONTENT_EXPORT MediaStreamAudioTrack
 
   // Add a sink to the track. This function will trigger a OnSetFormat()
   // call on the |sink| before the first chunk of audio is delivered.
-  void AddSink(MediaStreamAudioSink* sink);
+  void AddSink(WebMediaStreamAudioSink* sink);
 
   // Remove a sink from the track. When this method returns, the sink's
   // OnSetFormat() and OnData() methods will not be called again on any thread.
-  void RemoveSink(MediaStreamAudioSink* sink);
+  void RemoveSink(WebMediaStreamAudioSink* sink);
 
   // Returns the output format of the capture source. May return an invalid
   // AudioParameters if the format is not yet available.
@@ -84,14 +84,14 @@ class CONTENT_EXPORT MediaStreamAudioTrack
   void Start(const base::Closure& stop_callback);
 
   // Called by the MediaStreamAudioDeliverer to notify this track of an audio
-  // format change. In turn, all MediaStreamAudioSinks will be notified before
-  // the next chunk of audio is delivered to them.
+  // format change. In turn, all WebMediaStreamAudioSinks will be notified
+  // before the next chunk of audio is delivered to them.
   void OnSetFormat(const media::AudioParameters& params);
 
   // Called by the MediaStreamAudioDeliverer to deliver audio data to this
   // track, which in turn delivers the audio to one or more
-  // MediaStreamAudioSinks. While this track is disabled, silent audio will be
-  // delivered to the sinks instead of the content of |audio_bus|.
+  // WebMediaStreamAudioSinks. While this track is disabled, silent audio will
+  // be delivered to the sinks instead of the content of |audio_bus|.
   void OnData(const media::AudioBus& audio_bus, base::TimeTicks reference_time);
 
  private:
@@ -103,7 +103,7 @@ class CONTENT_EXPORT MediaStreamAudioTrack
   base::Closure stop_callback_;
 
   // Manages sinks connected to this track and the audio format and data flow.
-  MediaStreamAudioDeliverer<MediaStreamAudioSink> deliverer_;
+  MediaStreamAudioDeliverer<WebMediaStreamAudioSink> deliverer_;
 
   // While false (0), silent audio is delivered to the sinks.
   base::subtle::Atomic32 is_enabled_;
@@ -117,6 +117,6 @@ class CONTENT_EXPORT MediaStreamAudioTrack
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioTrack);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_TRACK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_TRACK_H_

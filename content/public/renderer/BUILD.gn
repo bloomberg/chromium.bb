@@ -43,8 +43,6 @@ target(link_target_type, "renderer_sources") {
     "fixed_received_data.cc",
     "fixed_received_data.h",
     "media_stream_audio_renderer.h",
-    "media_stream_audio_sink.cc",
-    "media_stream_audio_sink.h",
     "media_stream_renderer_factory.h",
     "media_stream_utils.cc",
     "media_stream_utils.h",

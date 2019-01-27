@@ -83,7 +83,7 @@ bool AddAudioTrackToMediaStream(
       blink::WebString::FromUTF8(base::GenerateGUID());
   web_media_stream_source.Initialize(
       track_id, blink::WebMediaStreamSource::kTypeAudio, track_id, is_remote);
-  MediaStreamAudioSource* const media_stream_source =
+  blink::MediaStreamAudioSource* const media_stream_source =
       new ExternalMediaStreamAudioSource(std::move(audio_source), sample_rate,
                                          channel_layout, frames_per_buffer,
                                          is_remote);

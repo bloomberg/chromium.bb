@@ -17,25 +17,26 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_push_fifo.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/pc/media_stream_track.h"
 
 namespace content {
 
-// Provides an implementation of the MediaStreamAudioSink which re-chunks audio
-// data into the 10ms chunks required by WebRTC and then delivers the audio to
-// one or more objects implementing the webrtc::AudioTrackSinkInterface.
+// Provides an implementation of the blink::WebMediaStreamAudioSink which
+// re-chunks audio data into the 10ms chunks required by WebRTC and then
+// delivers the audio to one or more objects implementing the
+// webrtc::AudioTrackSinkInterface.
 //
 // The inner class, Adapter, implements the webrtc::AudioTrackInterface and
 // manages one or more "WebRTC sinks" (i.e., instances of
 // webrtc::AudioTrackSinkInterface) which are added/removed on the WebRTC
 // signaling thread.
-class CONTENT_EXPORT WebRtcAudioSink : public MediaStreamAudioSink {
+class CONTENT_EXPORT WebRtcAudioSink : public blink::WebMediaStreamAudioSink {
  public:
   WebRtcAudioSink(
       const std::string& label,
@@ -146,7 +147,7 @@ class CONTENT_EXPORT WebRtcAudioSink : public MediaStreamAudioSink {
     DISALLOW_COPY_AND_ASSIGN(Adapter);
   };
 
-  // MediaStreamAudioSink implementation.
+  // blink::WebMediaStreamAudioSink implementation.
   void OnData(const media::AudioBus& audio_bus,
               base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;

@@ -14,9 +14,9 @@
 #include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
 #include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/webrtc/audio_processor_controls.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace media {
@@ -33,7 +33,7 @@ class PeerConnectionDependencyFactory;
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
 class CONTENT_EXPORT ProcessedLocalAudioSource final
-    : public MediaStreamAudioSource,
+    : public blink::MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:
   // |consumer_render_frame_id| references the RenderFrame that will consume the
@@ -51,7 +51,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   // If |source| is an instance of ProcessedLocalAudioSource, return a
   // type-casted pointer to it. Otherwise, return null.
-  static ProcessedLocalAudioSource* From(MediaStreamAudioSource* source);
+  static ProcessedLocalAudioSource* From(blink::MediaStreamAudioSource* source);
 
   // Non-browser unit tests cannot provide RenderFrame implementations at
   // run-time. This is used to skip the otherwise mandatory check for a valid

@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "content/renderer/media/stream/media_stream_audio_source.h"
+#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"

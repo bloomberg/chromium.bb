@@ -12,7 +12,7 @@ ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource(
     media::ChannelLayout channel_layout,
     int frames_per_buffer,
     bool is_remote)
-    : MediaStreamAudioSource(!is_remote),
+    : blink::MediaStreamAudioSource(!is_remote),
       source_(std::move(source)),
       was_started_(false) {
   DVLOG(1)
@@ -65,10 +65,9 @@ void ExternalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
   // audio/video sync. https://crbug.com/335335
-  MediaStreamAudioSource::DeliverDataToTracks(
-      *audio_bus,
-      base::TimeTicks::Now() -
-          base::TimeDelta::FromMilliseconds(audio_delay_milliseconds));
+  blink::MediaStreamAudioSource::DeliverDataToTracks(
+      *audio_bus, base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(
+                                               audio_delay_milliseconds));
 }
 
 void ExternalMediaStreamAudioSource::OnCaptureError(const std::string& why) {

@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
 
 #include <limits>
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_audio_deliverer.h"
 #include "media/base/limits.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
@@ -24,31 +22,9 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace content {
+namespace blink {
 
-// Define a max limit on the latency equivalent to 5 seconds. This limit is
-// meant to avoid overflows when deriving buffersize or sample rate from the
-// latency.
-static constexpr int kMaxAudioLatencyMs = 5000;
-
-static_assert(std::numeric_limits<int>::max() / media::limits::kMaxSampleRate >
-                  kMaxAudioLatencyMs,
-              "The maxium audio latency can cause overflow.");
-
-// TODO(https://crbug.com/638081):
-// Like in ProcessedLocalAudioSource::GetBufferSize(), we should re-evaluate
-// whether Android needs special treatment here. Or, perhaps we should just
-// DCHECK_GT(device...frames_per_buffer, 0)?
-#if defined(OS_ANDROID)
-static constexpr int kFallbackAudioLatencyMs = 20;
-#else
-static constexpr int kFallbackAudioLatencyMs = 10;
-#endif
-
-static_assert(kFallbackAudioLatencyMs >= 0,
-              "Audio latency has to be non-negative.");
-static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
-              "Audio latency can cause overflow.");
+BLINK_PLATFORM_EXPORT extern const int kFallbackAudioLatencyMs;
 
 class MediaStreamAudioTrack;
 
@@ -83,12 +59,11 @@ class MediaStreamAudioTrack;
 //   // Regardless of whether ConnectToTrack() succeeds, there will always be a
 //   // MediaStreamAudioTrack instance created.
 //   CHECK(MediaStreamAudioTrack::From(blink_track));
-class CONTENT_EXPORT MediaStreamAudioSource
+class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
     : public blink::WebPlatformMediaStreamSource {
  public:
   explicit MediaStreamAudioSource(bool is_local_source);
-  MediaStreamAudioSource(bool is_local_source,
-                         bool disable_local_echo);
+  MediaStreamAudioSource(bool is_local_source, bool disable_local_echo);
   ~MediaStreamAudioSource() override;
 
   // Returns the MediaStreamAudioSource instance owned by the given blink
@@ -211,6 +186,6 @@ class CONTENT_EXPORT MediaStreamAudioSource
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
