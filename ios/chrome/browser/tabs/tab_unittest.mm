@@ -465,9 +465,9 @@ TEST_P(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
   EXPECT_OCMOCK_VERIFY(partialMock);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticTabTest,
-                        TabTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticTabTest,
+                         TabTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace
