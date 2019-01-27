@@ -33,6 +33,9 @@ class TileDrawQuad;
 class VulkanContextProvider;
 class YUVVideoDrawQuad;
 
+// TODO(795132): SkColorSpace is only a subset comparing to gfx::ColorSpace.
+// Need to figure out support for color space that is not covered by
+// SkColorSpace.
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   // Different draw modes that are supported by SkiaRenderer right now.

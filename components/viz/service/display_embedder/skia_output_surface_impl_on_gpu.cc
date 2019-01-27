@@ -163,10 +163,11 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   if (!gpu_service_->is_using_vulkan()) {
     if (!MakeCurrent())
       return;
+    // Conversion to GLSurface's color space follows the same logic as in
+    // gl::GetGLColorSpace().
     gl::GLSurface::ColorSpace surface_color_space =
-        color_space == gfx::ColorSpace::CreateSCRGBLinear()
-            ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
-            : gl::GLSurface::ColorSpace::UNSPECIFIED;
+        color_space.IsHDR() ? gl::GLSurface::ColorSpace::SCRGB_LINEAR
+                            : gl::GLSurface::ColorSpace::UNSPECIFIED;
     if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
                              has_alpha)) {
       LOG(FATAL) << "Failed to resize.";
@@ -187,7 +188,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
     sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
         gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
-        kBGRA_8888_SkColorType, nullptr, &surface_props);
+        kBGRA_8888_SkColorType, color_space.ToSkColorSpace(), &surface_props);
     DCHECK(sk_surface_);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)

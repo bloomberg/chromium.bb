@@ -79,7 +79,9 @@ bool ApplyTransformAndScissorToTileRect(const gfx::Transform& transform) {
 // Scoped helper class for building SkImage from resource id.
 class SkiaRenderer::ScopedSkImageBuilder {
  public:
-  ScopedSkImageBuilder(SkiaRenderer* skia_renderer, ResourceId resource_id);
+  ScopedSkImageBuilder(SkiaRenderer* skia_renderer,
+                       ResourceId resource_id,
+                       SkAlphaType alpha_type = kPremul_SkAlphaType);
   ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
@@ -93,14 +95,15 @@ class SkiaRenderer::ScopedSkImageBuilder {
 
 SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     SkiaRenderer* skia_renderer,
-    ResourceId resource_id) {
+    ResourceId resource_id,
+    SkAlphaType alpha_type) {
   if (!resource_id)
     return;
   auto* resource_provider = skia_renderer->resource_provider_;
   if (!skia_renderer->is_using_ddl() || skia_renderer->non_root_surface_ ||
       !IsTextureResource(resource_provider, resource_id)) {
     // TODO(penghuang): remove this code when DDL is used everywhere.
-    lock_.emplace(resource_provider, resource_id);
+    lock_.emplace(resource_provider, resource_id, alpha_type);
     sk_image_ = lock_->sk_image();
   } else {
     // Look up the image from promise_images_by resource_id and return the
@@ -110,7 +113,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     auto& image = skia_renderer->promise_images_[resource_id];
     if (!image) {
       image = skia_renderer->lock_set_for_external_use_
-                  ->LockResourceAndCreateSkImage(resource_id);
+                  ->LockResourceAndCreateSkImage(resource_id, alpha_type);
       LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";
     }
     sk_image_ = image.get();
@@ -389,7 +392,9 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
           current_frame()->device_viewport_size.height(), 0, 0, vk_image_info);
       root_surface_ = SkSurface::MakeFromBackendRenderTarget(
           GetGrContext(), render_target, kTopLeft_GrSurfaceOrigin,
-          kBGRA_8888_SkColorType, nullptr, &surface_props);
+          kBGRA_8888_SkColorType,
+          current_frame()->root_render_pass->color_space.ToSkColorSpace(),
+          &surface_props);
       DCHECK(root_surface_);
       root_canvas_ = root_surface_->getCanvas();
 #else
@@ -414,7 +419,9 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 
         root_surface_ = SkSurface::MakeFromBackendRenderTarget(
             gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
-            kRGB_888x_SkColorType, nullptr, &surface_props);
+            kRGB_888x_SkColorType,
+            current_frame()->root_render_pass->color_space.ToSkColorSpace(),
+            &surface_props);
         DCHECK(root_surface_);
         root_canvas_ = root_surface_->getCanvas();
       }
@@ -460,7 +467,8 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
     case DrawMode::DDL: {
       non_root_surface_ = nullptr;
       current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
-          render_pass_id, backing.size, backing.format, backing.mipmap);
+          render_pass_id, backing.size, backing.format, backing.mipmap,
+          backing.color_space.ToSkColorSpace());
       break;
     }
     case DrawMode::GL:  // Fallthrough
@@ -746,7 +754,9 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
                                    SkPaint* paint) {
   DCHECK(paint);
-  ScopedSkImageBuilder builder(this, quad->resource_id());
+  ScopedSkImageBuilder builder(
+      this, quad->resource_id(),
+      quad->premultiplied_alpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
   const SkImage* image = builder.sk_image();
   if (!image)
     return;
@@ -808,7 +818,9 @@ void SkiaRenderer::AddTileQuadToBatch(const TileDrawQuad* quad,
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
-  ScopedSkImageBuilder builder(this, quad->resource_id());
+  ScopedSkImageBuilder builder(
+      this, quad->resource_id(),
+      quad->is_premultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
   const SkImage* image = builder.sk_image();
   if (!image)
     return;
@@ -984,7 +996,10 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
-    ScopedSkImageBuilder builder(this, tile_quad->resource_id());
+    ScopedSkImageBuilder builder(this, tile_quad->resource_id(),
+                                 tile_quad->is_premultiplied
+                                     ? kPremul_SkAlphaType
+                                     : kUnpremul_SkAlphaType);
     sk_sp<SkImage> content_image = sk_ref_sp(builder.sk_image());
     DrawRenderPassQuadInternal(quad, content_image, paint);
   } else {
@@ -998,7 +1013,8 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
     switch (draw_mode_) {
       case DrawMode::DDL: {
         content_image = skia_output_surface_->MakePromiseSkImageFromRenderPass(
-            quad->render_pass_id, backing.size, backing.format, backing.mipmap);
+            quad->render_pass_id, backing.size, backing.format, backing.mipmap,
+            backing.color_space.ToSkColorSpace());
         break;
       }
       case DrawMode::GL:  // Fallthrough
@@ -1405,8 +1421,9 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
   int msaa_sample_count = 0;
   SkColorType color_type =
       ResourceFormatToClosestSkColorType(true /* gpu_compositing*/, format);
-  SkImageInfo image_info = SkImageInfo::Make(
-      size.width(), size.height(), color_type, kPremul_SkAlphaType, nullptr);
+  SkImageInfo image_info =
+      SkImageInfo::Make(size.width(), size.height(), color_type,
+                        kPremul_SkAlphaType, color_space.ToSkColorSpace());
   render_pass_surface = SkSurface::MakeRenderTarget(
       gr_context, SkBudgeted::kNo, image_info, msaa_sample_count,
       kTopLeft_GrSurfaceOrigin, &surface_props, mipmap);

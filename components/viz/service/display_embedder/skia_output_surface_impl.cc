@@ -55,7 +55,8 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
       const ResourceMetadata& metadata) {
     auto* helper = new PromiseTextureHelper(
         impl->impl_on_gpu_->weak_ptr(), metadata.size, metadata.resource_format,
-        metadata.mailbox_holder);
+        metadata.mailbox_holder, metadata.color_space.ToSkColorSpace(),
+        metadata.alpha_type);
     return helper->MakePromiseSkImage(impl);
   }
 
@@ -63,13 +64,15 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
       SkiaOutputSurfaceImpl* impl,
       ResourceFormat resource_format,
       gfx::Size size,
-      RenderPassId render_pass_id) {
+      RenderPassId render_pass_id,
+      sk_sp<SkColorSpace> color_space) {
     DCHECK_CALLED_ON_VALID_THREAD(impl->thread_checker_);
     // The ownership of the helper will be passed into makePromisTexture(). The
     // PromiseTextureHelper::Done will always be called. It will delete the
     // helper.
     auto* helper = new PromiseTextureHelper(
-        impl->impl_on_gpu_->weak_ptr(), size, resource_format, render_pass_id);
+        impl->impl_on_gpu_->weak_ptr(), size, resource_format, render_pass_id,
+        std::move(color_space));
     return helper->MakePromiseSkImage(impl);
   }
 
@@ -79,20 +82,26 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   PromiseTextureHelper(base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
                        const gfx::Size& size,
                        ResourceFormat resource_format,
-                       RenderPassId render_pass_id)
+                       RenderPassId render_pass_id,
+                       sk_sp<SkColorSpace> color_space)
       : impl_on_gpu_(impl_on_gpu),
         size_(size),
         resource_format_(resource_format),
-        render_pass_id_(render_pass_id) {}
+        render_pass_id_(render_pass_id),
+        color_space_(std::move(color_space)) {}
   PromiseTextureHelper(base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
                        const gfx::Size& size,
                        ResourceFormat resource_format,
-                       const gpu::MailboxHolder& mailbox_holder)
+                       const gpu::MailboxHolder& mailbox_holder,
+                       sk_sp<SkColorSpace> color_space,
+                       SkAlphaType alpha_type)
       : impl_on_gpu_(impl_on_gpu),
         size_(size),
         resource_format_(resource_format),
         render_pass_id_(0u),
-        mailbox_holder_(mailbox_holder) {}
+        mailbox_holder_(mailbox_holder),
+        color_space_(std::move(color_space)),
+        alpha_type_(alpha_type) {}
   ~PromiseTextureHelper() = default;
 
   sk_sp<SkImage> MakePromiseSkImage(SkiaOutputSurfaceImpl* impl) {
@@ -116,8 +125,8 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     }
     return impl->recorder_->makePromiseTexture(
         backend_format, size_.width(), size_.height(), GrMipMapped::kNo,
-        kTopLeft_GrSurfaceOrigin /* origin */, color_type, kPremul_SkAlphaType,
-        nullptr /* color_space */, PromiseTextureHelper::Fulfill,
+        kTopLeft_GrSurfaceOrigin /* origin */, color_type, alpha_type_,
+        color_space_, PromiseTextureHelper::Fulfill,
         PromiseTextureHelper::Release, PromiseTextureHelper::Done, this);
   }
 
@@ -154,8 +163,10 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
   const gfx::Size size_;
   const ResourceFormat resource_format_;
-  RenderPassId render_pass_id_;
-  gpu::MailboxHolder mailbox_holder_;
+  const RenderPassId render_pass_id_;
+  const gpu::MailboxHolder mailbox_holder_;
+  const sk_sp<SkColorSpace> color_space_;
+  const SkAlphaType alpha_type_ = kPremul_SkAlphaType;
 
   // If non-null, an outstanding SharedImageRepresentation that must be freed on
   // Release. Only written / read from GPU thread.
@@ -200,7 +211,8 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
       yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
       contexts[i] = new PromiseTextureHelper(
           impl->impl_on_gpu_->weak_ptr(), metadata.size,
-          metadata.resource_format, metadata.mailbox_holder);
+          metadata.resource_format, metadata.mailbox_holder,
+          metadata.color_space.ToSkColorSpace(), metadata.alpha_type);
     };
 
     if (is_i420) {
@@ -329,8 +341,9 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
 
   SkSurfaceCharacterization* characterization = nullptr;
   if (characterization_.isValid()) {
-    characterization_ =
-        characterization_.createResized(size.width(), size.height());
+    characterization_ = CreateSkSurfaceCharacterization(
+        gfx::Size(size.width(), size.height()), BGRA_8888, false,
+        color_space.ToSkColorSpace());
   } else {
     characterization = &characterization_;
     initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
@@ -341,11 +354,11 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
-  auto callback =
-      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
-                     base::Unretained(impl_on_gpu_.get()), size,
-                     device_scale_factor, color_space, has_alpha, use_stencil,
-                     characterization, initialize_waitable_event_.get());
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
+                                 base::Unretained(impl_on_gpu_.get()), size,
+                                 device_scale_factor, std::move(color_space),
+                                 has_alpha, use_stencil, characterization,
+                                 initialize_waitable_event_.get());
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
 }
@@ -423,7 +436,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
 
   SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
       gfx::Size(characterization_.width(), characterization_.height()),
-      BGRA_8888, false);
+      BGRA_8888, false, characterization_.refColorSpace());
   overdraw_surface_recorder_.emplace(characterization);
   overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
 
@@ -500,7 +513,8 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     const RenderPassId& id,
     const gfx::Size& surface_size,
     ResourceFormat format,
-    bool mipmap) {
+    bool mipmap,
+    sk_sp<SkColorSpace> color_space) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
   DCHECK(!recorder_);
@@ -509,8 +523,8 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
 
   current_render_pass_id_ = id;
 
-  SkSurfaceCharacterization characterization =
-      CreateSkSurfaceCharacterization(surface_size, format, mipmap);
+  SkSurfaceCharacterization characterization = CreateSkSurfaceCharacterization(
+      surface_size, format, mipmap, std::move(color_space));
   recorder_.emplace(characterization);
   return recorder_->getCanvas();
 }
@@ -565,14 +579,15 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
     const RenderPassId& id,
     const gfx::Size& size,
     ResourceFormat format,
-    bool mipmap) {
+    bool mipmap,
+    sk_sp<SkColorSpace> color_space) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
   // TODO(penghuang): remove this mipmap argument, because we always pass false.
   DCHECK(!mipmap);
 
-  return PromiseTextureHelper::MakePromiseSkImageFromRenderPass(this, format,
-                                                                size, id);
+  return PromiseTextureHelper::MakePromiseSkImageFromRenderPass(
+      this, format, size, id, std::move(color_space));
 }
 
 void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
@@ -639,7 +654,8 @@ SkSurfaceCharacterization
 SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
     const gfx::Size& surface_size,
     ResourceFormat format,
-    bool mipmap) {
+    bool mipmap,
+    sk_sp<SkColorSpace> color_space) {
   auto gr_context_thread_safe = impl_on_gpu_->GetGrContextThreadSafeProxy();
   constexpr uint32_t flags = 0;
   // LegacyFontHost will get LCD text and skia figures out what type to use.
@@ -649,7 +665,7 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
       ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
   SkImageInfo image_info =
       SkImageInfo::Make(surface_size.width(), surface_size.height(), color_type,
-                        kPremul_SkAlphaType, nullptr /* color_space */);
+                        kPremul_SkAlphaType, std::move(color_space));
 
   // TODO(penghuang): Figure out how to choose the right size.
   constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
