@@ -789,7 +789,8 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
       !session_->IsCryptoHandshakeConfirmed() &&
       network_ == factory_->default_network()) {
     if (session_->error() == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
-        session_->error() == quic::QUIC_HANDSHAKE_TIMEOUT) {
+        session_->error() == quic::QUIC_HANDSHAKE_TIMEOUT ||
+        session_->error() == quic::QUIC_PACKET_WRITE_ERROR) {
       // Retry the connection on an alternate network if crypto handshake failed
       // with network idle time out or handshake time out.
       DCHECK(network_ != NetworkChangeNotifier::kInvalidNetworkHandle);
