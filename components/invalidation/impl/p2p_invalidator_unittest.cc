@@ -351,9 +351,9 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
   EXPECT_EQ(5, fake_handler_.GetInvalidationCount());
 }
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    P2PInvalidatorTest, InvalidatorTest,
-    P2PInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(P2PInvalidatorTest,
+                               InvalidatorTest,
+                               P2PInvalidatorTestDelegate);
 
 }  // namespace
 
