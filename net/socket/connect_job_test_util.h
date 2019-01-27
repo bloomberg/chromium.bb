@@ -18,7 +18,16 @@ class StreamSocket;
 
 class TestConnectJobDelegate : public ConnectJob::Delegate {
  public:
-  TestConnectJobDelegate();
+  // Whether a socket should be returned. In most cases, no socket is returned
+  // on failure; however, on certain SSL errors, a socket is returned in the
+  // case of error.
+  enum class SocketExpected {
+    ON_SUCCESS_ONLY,
+    ALWAYS,
+  };
+
+  explicit TestConnectJobDelegate(
+      SocketExpected socket_expected = SocketExpected::ON_SUCCESS_ONLY);
   ~TestConnectJobDelegate() override;
 
   // ConnectJob::Delegate implementation.
@@ -38,6 +47,7 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
   StreamSocket* socket() { return socket_.get(); }
 
  private:
+  const SocketExpected socket_expected_;
   bool has_result_ = false;
   int result_ = ERR_IO_PENDING;
   std::unique_ptr<StreamSocket> socket_;
