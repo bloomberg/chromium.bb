@@ -80,11 +80,11 @@ TEST_P(WaylandSurfaceFactoryTest, CanvasResize) {
   EXPECT_EQ(wl_shm_buffer_get_height(buffer), 50);
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandSurfaceFactoryTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandSurfaceFactoryTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandSurfaceFactoryTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandSurfaceFactoryTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui

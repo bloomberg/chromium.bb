@@ -723,11 +723,11 @@ TEST_P(WaylandWindowTest, DispatchWindowResize) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
-                        WaylandWindowTest,
-                        ::testing::Values(kXdgShellV5));
-INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
-                        WaylandWindowTest,
-                        ::testing::Values(kXdgShellV6));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
+                         WaylandWindowTest,
+                         ::testing::Values(kXdgShellV5));
+INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
+                         WaylandWindowTest,
+                         ::testing::Values(kXdgShellV6));
 
 }  // namespace ui
