@@ -37,10 +37,14 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.inject.Inject;
+
+import dagger.Reusable;
 
 /**
  * Used to verify postMessage origin for a designated package name.
@@ -72,6 +76,16 @@ public class OriginVerifier {
      */
     private static final AtomicReference<Set<String>> sVerificationOverrides =
             new AtomicReference<>();
+
+    @Reusable
+    public static class Factory {
+        @Inject
+        public Factory() {}
+
+        public OriginVerifier create(String packageName, @Relation int relation) {
+            return new OriginVerifier(packageName, relation);
+        }
+    }
 
     /** Small helper class to post a result of origin verification. */
     private class VerifiedCallback implements Runnable {
@@ -112,7 +126,7 @@ public class OriginVerifier {
             int relationship) {
         if (sVerificationOverrides.get() == null) {
             sVerificationOverrides.compareAndSet(null,
-                    Collections.newSetFromMap(new ConcurrentHashMap<>()));
+                    Collections.synchronizedSet(new HashSet<>()));
         }
         sVerificationOverrides.get().add(
                 new Relationship(packageName, "", origin, relationship).toString());
