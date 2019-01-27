@@ -18,8 +18,8 @@
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
-#include "net/socket/connection_attempts.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -29,155 +29,10 @@ class CertVerifier;
 class ClientSocketFactory;
 class ConnectJobFactory;
 class CTVerifier;
-class HostPortPair;
 class HttpProxyClientSocketPool;
-class HttpProxySocketParams;
 class NetworkQualityEstimator;
-class SOCKSSocketParams;
-class SSLClientSocket;
 class TransportClientSocketPool;
 class TransportSecurityState;
-class TransportSocketParams;
-
-class NET_EXPORT_PRIVATE SSLSocketParams
-    : public base::RefCounted<SSLSocketParams> {
- public:
-  enum ConnectionType { DIRECT, SOCKS_PROXY, HTTP_PROXY };
-
-  // Exactly one of |direct_params|, |socks_proxy_params|, and
-  // |http_proxy_params| must be non-NULL.
-  SSLSocketParams(const scoped_refptr<TransportSocketParams>& direct_params,
-                  const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
-                  const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
-                  const HostPortPair& host_and_port,
-                  const SSLConfig& ssl_config,
-                  PrivacyMode privacy_mode);
-
-  // Returns the type of the underlying connection.
-  ConnectionType GetConnectionType() const;
-
-  // Must be called only when GetConnectionType() returns DIRECT.
-  const scoped_refptr<TransportSocketParams>& GetDirectConnectionParams() const;
-
-  // Must be called only when GetConnectionType() returns SOCKS_PROXY.
-  const scoped_refptr<SOCKSSocketParams>&
-      GetSocksProxyConnectionParams() const;
-
-  // Must be called only when GetConnectionType() returns HTTP_PROXY.
-  const scoped_refptr<HttpProxySocketParams>&
-      GetHttpProxyConnectionParams() const;
-
-  const HostPortPair& host_and_port() const { return host_and_port_; }
-  const SSLConfig& ssl_config() const { return ssl_config_; }
-  PrivacyMode privacy_mode() const { return privacy_mode_; }
-
- private:
-  friend class base::RefCounted<SSLSocketParams>;
-  ~SSLSocketParams();
-
-  const scoped_refptr<TransportSocketParams> direct_params_;
-  const scoped_refptr<SOCKSSocketParams> socks_proxy_params_;
-  const scoped_refptr<HttpProxySocketParams> http_proxy_params_;
-  const HostPortPair host_and_port_;
-  const SSLConfig ssl_config_;
-  const PrivacyMode privacy_mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLSocketParams);
-};
-
-// SSLConnectJob handles the SSL handshake after setting up the underlying
-// connection as specified in the params.
-class SSLConnectJob : public ConnectJob {
- public:
-  // Note: the SSLConnectJob does not own |messenger| so it must outlive the
-  // job.
-  SSLConnectJob(const std::string& group_name,
-                RequestPriority priority,
-                const SocketTag& socket_tag,
-                ClientSocketPool::RespectLimits respect_limits,
-                const scoped_refptr<SSLSocketParams>& params,
-                TransportClientSocketPool* transport_pool,
-                TransportClientSocketPool* socks_pool,
-                HttpProxyClientSocketPool* http_proxy_pool,
-                ClientSocketFactory* client_socket_factory,
-                const SSLClientSocketContext& context,
-                NetworkQualityEstimator* network_quality_estimator,
-                Delegate* delegate,
-                NetLog* net_log);
-  ~SSLConnectJob() override;
-
-  // ConnectJob methods.
-  LoadState GetLoadState() const override;
-
-  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
-
-  // Returns the connection timeout that will be used by a HttpProxyConnectJob
-  // created with the specified parameters, given current network conditions.
-  static base::TimeDelta ConnectionTimeout(
-      const SSLSocketParams& params,
-      const NetworkQualityEstimator* network_quality_estimator);
-
- private:
-  enum State {
-    STATE_TRANSPORT_CONNECT,
-    STATE_TRANSPORT_CONNECT_COMPLETE,
-    STATE_SOCKS_CONNECT,
-    STATE_SOCKS_CONNECT_COMPLETE,
-    STATE_TUNNEL_CONNECT,
-    STATE_TUNNEL_CONNECT_COMPLETE,
-    STATE_SSL_CONNECT,
-    STATE_SSL_CONNECT_COMPLETE,
-    STATE_NONE,
-  };
-
-  void OnIOComplete(int result);
-
-  // Runs the state transition loop.
-  int DoLoop(int result);
-
-  int DoTransportConnect();
-  int DoTransportConnectComplete(int result);
-  int DoSOCKSConnect();
-  int DoSOCKSConnectComplete(int result);
-  int DoTunnelConnect();
-  int DoTunnelConnectComplete(int result);
-  int DoSSLConnect();
-  int DoSSLConnectComplete(int result);
-
-  // Returns the initial state for the state machine based on the
-  // |connection_type|.
-  static State GetInitialState(SSLSocketParams::ConnectionType connection_type);
-
-  // Starts the SSL connection process.  Returns OK on success and
-  // ERR_IO_PENDING if it cannot immediately service the request.
-  // Otherwise, it returns a net error code.
-  int ConnectInternal() override;
-
-  void ChangePriorityInternal(RequestPriority priority) override;
-
-  scoped_refptr<SSLSocketParams> params_;
-  TransportClientSocketPool* const transport_pool_;
-  TransportClientSocketPool* const socks_pool_;
-  HttpProxyClientSocketPool* const http_proxy_pool_;
-  ClientSocketFactory* const client_socket_factory_;
-
-  const SSLClientSocketContext context_;
-
-  State next_state_;
-  CompletionRepeatingCallback callback_;
-  std::unique_ptr<ClientSocketHandle> transport_socket_handle_;
-  std::unique_ptr<SSLClientSocket> ssl_socket_;
-
-  HttpResponseInfo error_response_info_;
-
-  ConnectionAttempts connection_attempts_;
-  // The address of the server the connect job is connected to. Populated if
-  // and only if the connect job is connected *directly* to the server (not
-  // through an HTTPS CONNECT request or a SOCKS proxy).
-  IPEndPoint server_address_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLConnectJob);
-};
 
 class NET_EXPORT_PRIVATE SSLClientSocketPool
     : public ClientSocketPool,

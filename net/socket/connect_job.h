@@ -135,8 +135,9 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // completion, ReleaseSocket() can be called to acquire the connected socket
   // if it succeeded.
   //
-  // On completion, the ConnectJob must be completed synchronously, since it
+  // On completion, the ConnectJob must be destroyed synchronously, since it
   // doesn't bother to stop its timer when complete.
+  // TODO(mmenke): Can that be fixed?
   int Connect();
 
   virtual LoadState GetLoadState() const = 0;

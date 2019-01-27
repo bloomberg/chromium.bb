@@ -12,15 +12,17 @@
 
 namespace net {
 
-TestConnectJobDelegate::TestConnectJobDelegate() = default;
+TestConnectJobDelegate::TestConnectJobDelegate(SocketExpected socket_expected)
+    : socket_expected_(socket_expected) {}
+
 TestConnectJobDelegate::~TestConnectJobDelegate() = default;
 
 void TestConnectJobDelegate::OnConnectJobComplete(int result, ConnectJob* job) {
   EXPECT_FALSE(has_result_);
   result_ = result;
   socket_ = job->PassSocket();
-  // socket_.get() should be nullptr iff result != OK.
-  EXPECT_EQ(socket_.get() == nullptr, result != OK);
+  EXPECT_EQ(socket_.get() != nullptr,
+            result == OK || socket_expected_ == SocketExpected::ALWAYS);
   has_result_ = true;
   run_loop_.Quit();
 }
@@ -35,16 +37,15 @@ void TestConnectJobDelegate::StartJobExpectingResult(ConnectJob* connect_job,
                                                      net::Error expected_result,
                                                      bool expect_sync_result) {
   int rv = connect_job->Connect();
-  if (expect_sync_result) {
-    EXPECT_THAT(rv, test::IsError(expected_result));
-    // The callback should not be invoked when a synchronous result is returned.
-    base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(has_result_);
-  } else {
-    EXPECT_FALSE(has_result_);
+  if (rv == ERR_IO_PENDING) {
+    EXPECT_FALSE(expect_sync_result);
     EXPECT_THAT(WaitForResult(), test::IsError(expected_result));
-    // Make sure the callback isn't invoked again.
-    base::RunLoop().RunUntilIdle();
+  } else {
+    EXPECT_TRUE(expect_sync_result);
+    // The callback should not have been invoked.
+    ASSERT_FALSE(has_result_);
+    OnConnectJobComplete(rv, connect_job);
+    EXPECT_THAT(result_, test::IsError(expected_result));
   }
 }
 
