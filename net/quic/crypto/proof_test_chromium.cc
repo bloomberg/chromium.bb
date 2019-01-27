@@ -122,7 +122,7 @@ class ProofTest : public ::testing::TestWithParam<quic::QuicTransportVersion> {
 
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     QuicTransportVersion,
     ProofTest,
     ::testing::ValuesIn(quic::AllSupportedTransportVersions()));

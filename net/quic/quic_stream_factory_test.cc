@@ -900,9 +900,9 @@ class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
             GetParam().client_headers_include_h2_stream_dependency) {}
 };
 
-INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequence,
-                        QuicStreamFactoryTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicStreamFactoryTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicStreamFactoryTest, Create) {
   Initialize();
@@ -8046,9 +8046,9 @@ class QuicStreamFactoryWithDestinationTest
       sequenced_socket_data_vector_;
 };
 
-INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequence,
-                        QuicStreamFactoryWithDestinationTest,
-                        ::testing::ValuesIn(GetPoolingTestParams()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicStreamFactoryWithDestinationTest,
+                         ::testing::ValuesIn(GetPoolingTestParams()));
 
 // A single QUIC request fails because the certificate does not match the origin
 // hostname, regardless of whether it matches the alternative service hostname.

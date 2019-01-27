@@ -999,7 +999,7 @@ class QuicNetworkTransactionTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicNetworkTransactionTest,
     ::testing::Combine(
@@ -7156,9 +7156,9 @@ class QuicNetworkTransactionWithDestinationTest
   SSLSocketDataProvider ssl_data_;
 };
 
-INSTANTIATE_TEST_CASE_P(VersionIncludeStreamDependencySequence,
-                        QuicNetworkTransactionWithDestinationTest,
-                        ::testing::ValuesIn(GetPoolingTestParams()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         QuicNetworkTransactionWithDestinationTest,
+                         ::testing::ValuesIn(GetPoolingTestParams()));
 
 // A single QUIC request fails because the certificate does not match the origin
 // hostname, regardless of whether it matches the alternative service hostname.
