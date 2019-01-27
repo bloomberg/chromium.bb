@@ -1,6 +1,5 @@
 This is a testharness.js-based test.
 PASS idl_test setup
-PASS Partial interface Navigator: original interface defined
 FAIL NFCWriter interface: existence and properties of interface object assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface object length assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface object name assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
@@ -8,18 +7,29 @@ FAIL NFCWriter interface: existence and properties of interface prototype object
 FAIL NFCWriter interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
 FAIL NFCWriter interface: operation push(NFCMessageSource, NFCPushOptions) assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
-PASS NFC interface: existence and properties of interface object
-PASS NFC interface object length
-PASS NFC interface object name
-PASS NFC interface: existence and properties of interface prototype object
-PASS NFC interface: existence and properties of interface prototype object's "constructor" property
-PASS NFC interface: existence and properties of interface prototype object's @@unscopables property
-PASS NFC interface: operation watch(MessageCallback, NFCWatchOptions)
-PASS NFC must be primary interface of navigator.nfc
-PASS Stringification of navigator.nfc
-PASS NFC interface: navigator.nfc must inherit property "watch(MessageCallback, NFCWatchOptions)" with the proper type
-PASS NFC interface: calling watch(MessageCallback, NFCWatchOptions) on navigator.nfc with too few arguments must throw TypeError
-PASS Navigator interface: attribute nfc
-PASS Navigator interface: navigator must inherit property "nfc" with the proper type
+FAIL NFCReader interface: existence and properties of interface object assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface object length assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface object name assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: existence and properties of interface prototype object assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: attribute onreading assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: attribute onerror assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: operation start() assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReader interface: operation stop() assert_own_property: self does not have own property "NFCReader" expected property "NFCReader" missing
+FAIL NFCReadingEvent interface: existence and properties of interface object assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCReadingEvent interface object length assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCReadingEvent interface object name assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCReadingEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCReadingEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCReadingEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCReadingEvent interface: attribute message assert_own_property: self does not have own property "NFCReadingEvent" expected property "NFCReadingEvent" missing
+FAIL NFCErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
+FAIL NFCErrorEvent interface object length assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
+FAIL NFCErrorEvent interface object name assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
+FAIL NFCErrorEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
+FAIL NFCErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
+FAIL NFCErrorEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
+FAIL NFCErrorEvent interface: attribute error assert_own_property: self does not have own property "NFCErrorEvent" expected property "NFCErrorEvent" missing
 Harness: the test ran to completion.
 
