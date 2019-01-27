@@ -313,7 +313,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
     mock_ncn->SetConnectedNetworksList(connected_networks);
     migrate_sessions_on_network_change_v2_ = true;
     migrate_sessions_early_v2_ = true;
-    retry_on_alternate_network_before_handshake_ = true;
     socket_factory_.reset(new TestConnectionMigrationSocketFactory);
     Initialize();
   }
@@ -4997,6 +4996,7 @@ void QuicStreamFactoryTestBase::
         quic::QuicErrorCode quic_error) {
   DCHECK(quic_error == quic::QUIC_NETWORK_IDLE_TIMEOUT ||
          quic_error == quic::QUIC_HANDSHAKE_TIMEOUT);
+  retry_on_alternate_network_before_handshake_ = true;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -5148,6 +5148,7 @@ void QuicStreamFactoryTestBase::
 // is triggered before handshake is confirmed and connection migration is turned
 // on.
 TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
+  DCHECK(!retry_on_alternate_network_before_handshake_);
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
 
@@ -5205,6 +5206,102 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
   // Create QuicHttpStream.
   std::unique_ptr<HttpStream> stream = CreateStream(&request2);
   EXPECT_TRUE(stream.get());
+  stream.reset();
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+// Test that if the original connection is closed with QUIC_PACKET_WRITE_ERROR
+// before handshake is confirmed and new connection before handshake is turned
+// on, a new connection will be retried on the alternate network.
+TEST_P(QuicStreamFactoryTest,
+       RetryConnectionOnWriteErrorBeforeHandshakeConfirmed) {
+  retry_on_alternate_network_before_handshake_ = true;
+  InitializeConnectionMigrationV2Test(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+
+  // Use unmocked crypto stream to do crypto connect.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  // Socket data for connection on the default network.
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  // Trigger PACKET_WRITE_ERROR when sending packets in crypto connect.
+  socket_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  // Socket data for connection on the alternate network.
+  MockQuicData socket_data2;
+  quic::QuicStreamOffset header_stream_offset = 0;
+  socket_data2.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(1));
+  socket_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause.
+  // Change the encryption level after handshake is confirmed.
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  socket_data2.AddWrite(
+      ASYNC, ConstructInitialSettingsPacket(2, &header_stream_offset));
+  socket_data2.AddWrite(
+      ASYNC, ConstructGetRequestPacket(
+                 3, GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+                 &header_stream_offset));
+  socket_data2.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          1, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeAckAndRstPacket(
+                       4, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                       quic::QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  socket_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request, should fail after the write of the CHLO fails.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(),
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+  // Ensure that the session is alive but not active.
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
+  base::RunLoop().RunUntilIdle();
+  QuicChromiumClientSession* session = GetPendingSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+
+  // Confirm the handshake on the alternate network.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      quic::QuicSession::HANDSHAKE_CONFIRMED);
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Resume the data now so that data can be sent and read.
+  socket_data2.Resume();
+
+  // Create the stream.
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+  // Send the request.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+  // Run the message loop to finish asynchronous mock write.
+  base::RunLoop().RunUntilIdle();
+  // Read the response.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
   stream.reset();
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
