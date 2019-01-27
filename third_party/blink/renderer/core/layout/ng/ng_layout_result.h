@@ -124,14 +124,18 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
                  NGBoxFragmentBuilder*);
-  // This constructor is for a non-success status.
-  NGLayoutResult(NGLayoutResultStatus, NGBoxFragmentBuilder*);
+  // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
                  NGLineBoxFragmentBuilder*);
+  // This constructor is for a non-success status.
+  NGLayoutResult(NGLayoutResultStatus, NGBoxFragmentBuilder*);
 
   // We don't need copy constructor today. Delete this to clarify that the
   // default copy constructor will not work because RefCounted can't be copied.
   NGLayoutResult(const NGLayoutResult&) = delete;
+
+  // Delegate constructor that sets up what it can, based on the builder.
+  NGLayoutResult(NGContainerFragmentBuilder* builder);
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
@@ -144,11 +148,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const LayoutUnit bfc_line_offset_;
   const base::Optional<LayoutUnit> bfc_block_offset_;
   const NGMarginStrut end_margin_strut_;
-  const LayoutUnit intrinsic_block_size_;
-  const LayoutUnit minimal_space_shortage_;
+  LayoutUnit intrinsic_block_size_;
+  LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();
 
-  EBreakBetween initial_break_before_;
-  EBreakBetween final_break_after_;
+  EBreakBetween initial_break_before_ = EBreakBetween::kAuto;
+  EBreakBetween final_break_after_ = EBreakBetween::kAuto;
 
   unsigned has_forced_break_ : 1;
 
