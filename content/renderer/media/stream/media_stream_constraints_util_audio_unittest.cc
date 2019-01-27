@@ -2111,11 +2111,11 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MediaStreamConstraintsUtilAudioTest,
-                        testing::Values("",
-                                        blink::kMediaStreamSourceTab,
-                                        blink::kMediaStreamSourceSystem,
-                                        blink::kMediaStreamSourceDesktop));
+INSTANTIATE_TEST_SUITE_P(,
+                         MediaStreamConstraintsUtilAudioTest,
+                         testing::Values("",
+                                         blink::kMediaStreamSourceTab,
+                                         blink::kMediaStreamSourceSystem,
+                                         blink::kMediaStreamSourceDesktop));
 
 }  // namespace content
