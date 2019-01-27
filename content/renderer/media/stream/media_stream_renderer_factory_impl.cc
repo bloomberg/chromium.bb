@@ -5,7 +5,6 @@
 #include "content/renderer/media/stream/media_stream_renderer_factory_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_video_renderer_sink.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/track_audio_renderer.h"
@@ -14,6 +13,7 @@
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -93,8 +93,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
   // and mixes audio from all the tracks that belong to the media stream.
   // For now, we have separate renderers depending on if the first audio track
   // in the stream is local or remote.
-  MediaStreamAudioTrack* audio_track =
-      MediaStreamAudioTrack::From(audio_tracks[0]);
+  blink::MediaStreamAudioTrack* audio_track =
+      blink::MediaStreamAudioTrack::From(audio_tracks[0]);
   if (!audio_track) {
     // This can happen if the track was cloned.
     // TODO(tommi, perkj): Fix cloning of tracks to handle extra data too.

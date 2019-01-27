@@ -49,7 +49,7 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
                        kWebAudioRenderBufferSize);
   }
   // Connect the source provider to the track as a sink.
-  MediaStreamAudioSink::AddToAudioTrack(this, track_);
+  blink::WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
 }
 
 WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
@@ -59,7 +59,7 @@ WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
   // If the track is still active, it is necessary to notify the track before
   // the source provider goes away.
   if (!track_stopped_)
-    MediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
+    blink::WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
 }
 
 void WebRtcLocalAudioSourceProvider::OnSetFormat(

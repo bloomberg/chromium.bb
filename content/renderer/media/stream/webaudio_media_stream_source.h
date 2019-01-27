@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/time/time.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_push_fifo.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_audio_destination_consumer.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -22,7 +22,7 @@ namespace content {
 // MediaStreamAudioTracks. Audio data is transported directly to the tracks in
 // 10 ms chunks.
 class WebAudioMediaStreamSource final
-    : public MediaStreamAudioSource,
+    : public blink::MediaStreamAudioSource,
       public blink::WebAudioDestinationConsumer {
  public:
   explicit WebAudioMediaStreamSource(blink::WebMediaStreamSource* blink_source);

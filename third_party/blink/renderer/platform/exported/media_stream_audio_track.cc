@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_bus.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 
-namespace content {
+namespace blink {
 
 MediaStreamAudioTrack::MediaStreamAudioTrack(bool is_local_track)
     : blink::WebPlatformMediaStreamTrack(is_local_track),
@@ -39,10 +38,10 @@ MediaStreamAudioTrack* MediaStreamAudioTrack::From(
   return static_cast<MediaStreamAudioTrack*>(track.GetPlatformTrack());
 }
 
-void MediaStreamAudioTrack::AddSink(MediaStreamAudioSink* sink) {
+void MediaStreamAudioTrack::AddSink(WebMediaStreamAudioSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  DVLOG(1) << "Adding MediaStreamAudioSink@" << sink
+  DVLOG(1) << "Adding WebMediaStreamAudioSink@" << sink
            << " to MediaStreamAudioTrack@" << this << '.';
 
   // If the track has already stopped, just notify the sink of this fact without
@@ -56,10 +55,10 @@ void MediaStreamAudioTrack::AddSink(MediaStreamAudioSink* sink) {
   sink->OnEnabledChanged(!!base::subtle::NoBarrier_Load(&is_enabled_));
 }
 
-void MediaStreamAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
+void MediaStreamAudioTrack::RemoveSink(WebMediaStreamAudioSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   deliverer_.RemoveConsumer(sink);
-  DVLOG(1) << "Removed MediaStreamAudioSink@" << sink
+  DVLOG(1) << "Removed WebMediaStreamAudioSink@" << sink
            << " from MediaStreamAudioTrack@" << this << '.';
 }
 
@@ -77,9 +76,9 @@ void MediaStreamAudioTrack::SetEnabled(bool enabled) {
   if (enabled == previously_enabled)
     return;
 
-  std::vector<MediaStreamAudioSink*> sinks_to_notify;
+  std::vector<WebMediaStreamAudioSink*> sinks_to_notify;
   deliverer_.GetConsumerList(&sinks_to_notify);
-  for (MediaStreamAudioSink* sink : sinks_to_notify)
+  for (WebMediaStreamAudioSink* sink : sinks_to_notify)
     sink->OnEnabledChanged(enabled);
 }
 
@@ -87,9 +86,9 @@ void MediaStreamAudioTrack::SetContentHint(
     blink::WebMediaStreamTrack::ContentHintType content_hint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::vector<MediaStreamAudioSink*> sinks_to_notify;
+  std::vector<WebMediaStreamAudioSink*> sinks_to_notify;
   deliverer_.GetConsumerList(&sinks_to_notify);
-  for (MediaStreamAudioSink* sink : sinks_to_notify)
+  for (WebMediaStreamAudioSink* sink : sinks_to_notify)
     sink->OnContentHintChanged(content_hint);
 }
 
@@ -110,11 +109,11 @@ void MediaStreamAudioTrack::StopAndNotify(base::OnceClosure callback) {
   DVLOG(1) << "Stopping MediaStreamAudioTrack@" << this << '.';
 
   if (!stop_callback_.is_null())
-    base::ResetAndReturn(&stop_callback_).Run();
+    std::move(stop_callback_).Run();
 
-  std::vector<MediaStreamAudioSink*> sinks_to_end;
+  std::vector<WebMediaStreamAudioSink*> sinks_to_end;
   deliverer_.GetConsumerList(&sinks_to_end);
-  for (MediaStreamAudioSink* sink : sinks_to_end) {
+  for (WebMediaStreamAudioSink* sink : sinks_to_end) {
     deliverer_.RemoveConsumer(sink);
     sink->OnReadyStateChanged(blink::WebMediaStreamSource::kReadyStateEnded);
   }
@@ -140,12 +139,12 @@ void MediaStreamAudioTrack::OnData(const media::AudioBus& audio_bus,
     // The W3C spec requires silent audio to flow while a track is disabled.
     if (!silent_bus_ || silent_bus_->channels() != audio_bus.channels() ||
         silent_bus_->frames() != audio_bus.frames()) {
-      silent_bus_ = media::AudioBus::Create(audio_bus.channels(),
-                                            audio_bus.frames());
+      silent_bus_ =
+          media::AudioBus::Create(audio_bus.channels(), audio_bus.frames());
       silent_bus_->Zero();
     }
     deliverer_.OnData(*silent_bus_, reference_time);
   }
 }
 
-}  // namespace content
+}  // namespace blink

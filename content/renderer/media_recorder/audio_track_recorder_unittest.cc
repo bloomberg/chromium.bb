@@ -15,11 +15,11 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_sample_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/opus/src/include/opus.h"
@@ -250,10 +250,10 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
                             blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
     audio_source.SetPlatformSource(
-        std::make_unique<MediaStreamAudioSource>(true));
+        std::make_unique<blink::MediaStreamAudioSource>(true));
     blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
                             audio_source);
-    CHECK(MediaStreamAudioSource::From(audio_source)
+    CHECK(blink::MediaStreamAudioSource::From(audio_source)
               ->ConnectToTrack(blink_track_));
   }
 

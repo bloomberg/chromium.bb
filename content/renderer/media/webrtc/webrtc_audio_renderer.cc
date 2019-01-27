@@ -17,13 +17,13 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
@@ -588,7 +588,7 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
     // to make sure |web_track| is actually a remote track.
     PeerConnectionRemoteAudioTrack* const remote_track =
         PeerConnectionRemoteAudioTrack::From(
-            MediaStreamAudioTrack::From(web_track));
+            blink::MediaStreamAudioTrack::From(web_track));
     if (!remote_track)
       continue;
     webrtc::AudioSourceInterface* source =

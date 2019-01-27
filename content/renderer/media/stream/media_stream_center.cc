@@ -12,16 +12,16 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/sample_format.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -39,8 +39,8 @@ namespace {
 void CreateNativeAudioMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.Source();
-  MediaStreamAudioSource* media_stream_source =
-      MediaStreamAudioSource::From(source);
+  blink::MediaStreamAudioSource* media_stream_source =
+      blink::MediaStreamAudioSource::From(source);
 
   // At this point, a MediaStreamAudioSource instance must exist. The one
   // exception is when a WebAudio destination node is acting as a source of
@@ -200,8 +200,8 @@ void MediaStreamCenter::DidStopMediaStreamSource(
 void MediaStreamCenter::GetSourceSettings(
     const blink::WebMediaStreamSource& web_source,
     blink::WebMediaStreamTrack::Settings& settings) {
-  MediaStreamAudioSource* const source =
-      MediaStreamAudioSource::From(web_source);
+  blink::MediaStreamAudioSource* const source =
+      blink::MediaStreamAudioSource::From(web_source);
   if (!source)
     return;
 

@@ -18,7 +18,7 @@ void* const kPeerConnectionRemoteTrackIdentifier =
 
 PeerConnectionRemoteAudioTrack::PeerConnectionRemoteAudioTrack(
     scoped_refptr<webrtc::AudioTrackInterface> track_interface)
-    : MediaStreamAudioTrack(false /* is_local_track */),
+    : blink::MediaStreamAudioTrack(false /* is_local_track */),
       track_interface_(std::move(track_interface)) {
   DVLOG(1)
       << "PeerConnectionRemoteAudioTrack::PeerConnectionRemoteAudioTrack()";
@@ -28,12 +28,12 @@ PeerConnectionRemoteAudioTrack::~PeerConnectionRemoteAudioTrack() {
   DVLOG(1)
       << "PeerConnectionRemoteAudioTrack::~PeerConnectionRemoteAudioTrack()";
   // Ensure the track is stopped.
-  MediaStreamAudioTrack::Stop();
+  blink::MediaStreamAudioTrack::Stop();
 }
 
 // static
 PeerConnectionRemoteAudioTrack* PeerConnectionRemoteAudioTrack::From(
-    MediaStreamAudioTrack* track) {
+    blink::MediaStreamAudioTrack* track) {
   if (track &&
       track->GetClassIdentifier() == kPeerConnectionRemoteTrackIdentifier)
     return static_cast<PeerConnectionRemoteAudioTrack*>(track);
@@ -52,7 +52,7 @@ void PeerConnectionRemoteAudioTrack::SetEnabled(bool enabled) {
   // state and the shared state might not be the same.
   track_interface_->set_enabled(enabled);
 
-  MediaStreamAudioTrack::SetEnabled(enabled);
+  blink::MediaStreamAudioTrack::SetEnabled(enabled);
 }
 
 void* PeerConnectionRemoteAudioTrack::GetClassIdentifier() const {
@@ -61,7 +61,7 @@ void* PeerConnectionRemoteAudioTrack::GetClassIdentifier() const {
 
 PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource(
     scoped_refptr<webrtc::AudioTrackInterface> track_interface)
-    : MediaStreamAudioSource(false /* is_local_source */),
+    : blink::MediaStreamAudioSource(false /* is_local_source */),
       track_interface_(std::move(track_interface)),
       is_sink_of_peer_connection_(false) {
   DCHECK(track_interface_);
@@ -75,12 +75,11 @@ PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource() {
   EnsureSourceIsStopped();
 }
 
-std::unique_ptr<MediaStreamAudioTrack>
+std::unique_ptr<blink::MediaStreamAudioTrack>
 PeerConnectionRemoteAudioSource::CreateMediaStreamAudioTrack(
     const std::string& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return std::unique_ptr<MediaStreamAudioTrack>(
-      new PeerConnectionRemoteAudioTrack(track_interface_));
+  return std::make_unique<PeerConnectionRemoteAudioTrack>(track_interface_);
 }
 
 bool PeerConnectionRemoteAudioSource::EnsureSourceIsStarted() {
@@ -133,19 +132,20 @@ void PeerConnectionRemoteAudioSource::OnData(const void* audio_data,
   audio_bus_->FromInterleaved(audio_data, number_of_frames,
                               bits_per_sample / 8);
 
-  media::AudioParameters params = MediaStreamAudioSource::GetAudioParameters();
+  media::AudioParameters params =
+      blink::MediaStreamAudioSource::GetAudioParameters();
   if (!params.IsValid() ||
       params.format() != media::AudioParameters::AUDIO_PCM_LOW_LATENCY ||
       static_cast<size_t>(params.channels()) != number_of_channels ||
       params.sample_rate() != sample_rate ||
       static_cast<size_t>(params.frames_per_buffer()) != number_of_frames) {
-    MediaStreamAudioSource::SetFormat(
+    blink::MediaStreamAudioSource::SetFormat(
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                media::GuessChannelLayout(number_of_channels),
                                sample_rate, number_of_frames));
   }
 
-  MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_, playout_time);
+  blink::MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_, playout_time);
 
 #ifndef NDEBUG
   single_audio_thread_guard_.Release();

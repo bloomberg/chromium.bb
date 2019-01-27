@@ -36,7 +36,7 @@ const char kErrorMediaPipelineFailure[] =
 class WiFiDisplayAudioSink {
  public:
   WiFiDisplayAudioSink(const blink::WebMediaStreamTrack& track,
-                       content::MediaStreamAudioSink* delegate)
+                       blink::WebMediaStreamAudioSink* delegate)
       : track_(track), delegate_(delegate), sink_added_(false) {}
 
   ~WiFiDisplayAudioSink() { Stop(); }
@@ -56,7 +56,7 @@ class WiFiDisplayAudioSink {
 
  private:
   blink::WebMediaStreamTrack track_;
-  content::MediaStreamAudioSink* delegate_;
+  blink::WebMediaStreamAudioSink* delegate_;
   bool sink_added_;
 };
 

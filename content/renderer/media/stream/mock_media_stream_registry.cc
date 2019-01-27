@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "content/renderer/media/stream/video_track_adapter.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -22,9 +22,9 @@ namespace {
 
 const char kTestStreamLabel[] = "stream_label";
 
-class MockCDQualityAudioSource : public MediaStreamAudioSource {
+class MockCDQualityAudioSource : public blink::MediaStreamAudioSource {
  public:
-  MockCDQualityAudioSource() : MediaStreamAudioSource(true) {
+  MockCDQualityAudioSource() : blink::MediaStreamAudioSource(true) {
     SetFormat(media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO,
@@ -85,7 +85,7 @@ void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
   blink_source.Initialize("mock audio source id",
                           blink::WebMediaStreamSource::kTypeAudio,
                           "mock audio source name", false /* remote */);
-  MediaStreamAudioSource* const source = new MockCDQualityAudioSource();
+  blink::MediaStreamAudioSource* const source = new MockCDQualityAudioSource();
   blink_source.SetPlatformSource(base::WrapUnique(source));  // Takes ownership.
 
   blink::WebMediaStreamTrack blink_track;

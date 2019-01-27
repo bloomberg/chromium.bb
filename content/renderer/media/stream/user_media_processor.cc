@@ -21,7 +21,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
@@ -41,6 +40,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -143,8 +143,8 @@ bool IsSameSource(const blink::WebMediaStreamSource& source,
 }
 
 void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
-  MediaStreamAudioSource* source_impl =
-      static_cast<MediaStreamAudioSource*>(source->GetPlatformSource());
+  blink::MediaStreamAudioSource* source_impl =
+      static_cast<blink::MediaStreamAudioSource*>(source->GetPlatformSource());
 
   // If the source is a processed source, get the properties from it.
   if (ProcessedLocalAudioSource* processed_source =
@@ -347,8 +347,8 @@ void UserMediaProcessor::RequestInfo::StartAudioTrack(
 #if DCHECK_IS_ON()
   DCHECK(audio_capture_settings_.HasValue());
 #endif
-  MediaStreamAudioSource* native_source =
-      MediaStreamAudioSource::From(track.Source());
+  blink::MediaStreamAudioSource* native_source =
+      blink::MediaStreamAudioSource::From(track.Source());
   // Add the source as pending since OnTrackStarted will expect it to be there.
   sources_waiting_for_callback_.push_back(native_source);
 
@@ -502,7 +502,7 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
         audio_input_capabilities) {
   AudioDeviceCaptureCapabilities capabilities;
   for (const auto& device : audio_input_capabilities) {
-    MediaStreamAudioSource* audio_source = nullptr;
+    blink::MediaStreamAudioSource* audio_source = nullptr;
     auto it =
         std::find_if(local_sources_.begin(), local_sources_.end(),
                      [&device](const blink::WebMediaStreamSource& web_source) {
@@ -513,7 +513,7 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
       blink::WebPlatformMediaStreamSource* const source =
           it->GetPlatformSource();
       if (source->device().type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
-        audio_source = static_cast<MediaStreamAudioSource*>(source);
+        audio_source = static_cast<blink::MediaStreamAudioSource*>(source);
     }
     if (audio_source) {
       capabilities.emplace_back(audio_source);
@@ -955,7 +955,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
           &UserMediaProcessor::OnAudioSourceStartedOnAudioThread, task_runner_,
           weak_factory_.GetWeakPtr());
 
-  std::unique_ptr<MediaStreamAudioSource> audio_source =
+  std::unique_ptr<blink::MediaStreamAudioSource> audio_source =
       CreateAudioSource(device, std::move(source_ready));
   audio_source->SetStopCallback(base::Bind(
       &UserMediaProcessor::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
@@ -988,7 +988,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
   return source;
 }
 
-std::unique_ptr<MediaStreamAudioSource> UserMediaProcessor::CreateAudioSource(
+std::unique_ptr<blink::MediaStreamAudioSource>
+UserMediaProcessor::CreateAudioSource(
     const MediaStreamDevice& device,
     const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
         source_ready) {

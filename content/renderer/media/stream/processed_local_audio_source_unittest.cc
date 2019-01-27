@@ -9,16 +9,16 @@
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
 #include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -49,7 +49,7 @@ constexpr int kExpectedSourceBufferSize = kRequestedBufferSize;
 // output end of its FIFO.
 constexpr int kExpectedOutputBufferSize = kSampleRate / 100;
 
-class MockMediaStreamAudioSink : public MediaStreamAudioSink {
+class MockMediaStreamAudioSink : public blink::WebMediaStreamAudioSink {
  public:
   MockMediaStreamAudioSink() {}
   ~MockMediaStreamAudioSink() override {}
@@ -135,8 +135,8 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
         ProcessedLocalAudioSource::From(audio_source()));
   }
 
-  MediaStreamAudioSource* audio_source() const {
-    return MediaStreamAudioSource::From(blink_audio_source_);
+  blink::MediaStreamAudioSource* audio_source() const {
+    return blink::MediaStreamAudioSource::From(blink_audio_source_);
   }
 
   const blink::WebMediaStreamTrack& blink_audio_track() {
@@ -189,7 +189,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
       new MockMediaStreamAudioSink());
   EXPECT_CALL(*sink, FormatIsSet(_))
       .WillOnce(Invoke(this, &ThisTest::CheckOutputFormatMatches));
-  MediaStreamAudioTrack::From(blink_audio_track())->AddSink(sink.get());
+  blink::MediaStreamAudioTrack::From(blink_audio_track())->AddSink(sink.get());
 
   // Feed audio data into the ProcessedLocalAudioSource and expect it to reach
   // the sink.
@@ -206,7 +206,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   // Expect the ProcessedLocalAudioSource to auto-stop the MockCapturerSource
   // when the track is stopped.
   EXPECT_CALL(*mock_audio_device_factory()->mock_capturer_source(), Stop());
-  MediaStreamAudioTrack::From(blink_audio_track())->Stop();
+  blink::MediaStreamAudioTrack::From(blink_audio_track())->Stop();
 }
 
 

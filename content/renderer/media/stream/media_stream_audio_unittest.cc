@@ -11,12 +11,12 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -34,12 +34,11 @@ constexpr int kMaxValueSafelyConvertableToFloat = 1 << 24;
 // emits audio samples with monotonically-increasing sample values. Includes
 // hooks for the unit tests to confirm lifecycle status and to change audio
 // format.
-class FakeMediaStreamAudioSource
-    : public MediaStreamAudioSource,
-      public base::PlatformThread::Delegate {
+class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
+                                   public base::PlatformThread::Delegate {
  public:
   FakeMediaStreamAudioSource()
-      : MediaStreamAudioSource(true),
+      : blink::MediaStreamAudioSource(true),
         stop_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         next_buffer_size_(kBufferSize),
@@ -91,7 +90,7 @@ class FakeMediaStreamAudioSource
       // If needed, notify of the new format and re-create |audio_bus_|.
       const int buffer_size = base::subtle::NoBarrier_Load(&next_buffer_size_);
       if (!audio_bus_ || audio_bus_->frames() != buffer_size) {
-        MediaStreamAudioSource::SetFormat(media::AudioParameters(
+        blink::MediaStreamAudioSource::SetFormat(media::AudioParameters(
             media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
             media::CHANNEL_LAYOUT_MONO, kSampleRate, buffer_size));
         audio_bus_ = media::AudioBus::Create(1, buffer_size);
@@ -103,8 +102,8 @@ class FakeMediaStreamAudioSource
       for (int i = 0; i < buffer_size; ++i)
         data[i] = ++sample_count_;
       CHECK_LT(sample_count_, kMaxValueSafelyConvertableToFloat);
-      MediaStreamAudioSource::DeliverDataToTracks(*audio_bus_,
-                                                  base::TimeTicks::Now());
+      blink::MediaStreamAudioSource::DeliverDataToTracks(
+          *audio_bus_, base::TimeTicks::Now());
 
       // Sleep before producing the next chunk of audio.
       base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(
@@ -125,11 +124,11 @@ class FakeMediaStreamAudioSource
   DISALLOW_COPY_AND_ASSIGN(FakeMediaStreamAudioSource);
 };
 
-// A simple MediaStreamAudioSink that consumes audio and confirms the sample
-// values. Includes hooks for the unit tests to monitor the format and flow of
-// audio, whether the audio is silent, and the propagation of the "enabled"
-// state.
-class FakeMediaStreamAudioSink : public MediaStreamAudioSink {
+// A simple blink::WebMediaStreamAudioSink that consumes audio and confirms the
+// sample values. Includes hooks for the unit tests to monitor the format and
+// flow of audio, whether the audio is silent, and the propagation of the
+// "enabled" state.
+class FakeMediaStreamAudioSink : public blink::WebMediaStreamAudioSink {
  public:
   enum EnableState {
     NO_ENABLE_NOTIFICATION,
@@ -138,8 +137,11 @@ class FakeMediaStreamAudioSink : public MediaStreamAudioSink {
   };
 
   FakeMediaStreamAudioSink()
-      : MediaStreamAudioSink(), expected_sample_count_(-1),
-        num_on_data_calls_(0), audio_is_silent_(true), was_ended_(false),
+      : blink::WebMediaStreamAudioSink(),
+        expected_sample_count_(-1),
+        num_on_data_calls_(0),
+        audio_is_silent_(true),
+        was_ended_(false),
         enable_state_(NO_ENABLE_NOTIFICATION) {}
 
   ~FakeMediaStreamAudioSink() final {
@@ -257,11 +259,11 @@ class MediaStreamAudioTest : public ::testing::Test {
 
   FakeMediaStreamAudioSource* source() const {
     return static_cast<FakeMediaStreamAudioSource*>(
-        MediaStreamAudioSource::From(blink_audio_source_));
+        blink::MediaStreamAudioSource::From(blink_audio_source_));
   }
 
-  MediaStreamAudioTrack* track() const {
-    return MediaStreamAudioTrack::From(blink_audio_track_);
+  blink::MediaStreamAudioTrack* track() const {
+    return blink::MediaStreamAudioTrack::From(blink_audio_track_);
   }
 
   blink::WebMediaStreamSource blink_audio_source_;
@@ -333,16 +335,16 @@ TEST_F(MediaStreamAudioTest, ConnectTrackAfterSourceStopped) {
   // blink::WebMediaStreamTrack.
   blink::WebMediaStreamTrack another_blink_track;
   another_blink_track.Initialize(blink_audio_source_.Id(), blink_audio_source_);
-  EXPECT_FALSE(MediaStreamAudioTrack::From(another_blink_track));
+  EXPECT_FALSE(blink::MediaStreamAudioTrack::From(another_blink_track));
   EXPECT_FALSE(source()->ConnectToTrack(another_blink_track));
-  EXPECT_TRUE(MediaStreamAudioTrack::From(another_blink_track));
+  EXPECT_TRUE(blink::MediaStreamAudioTrack::From(another_blink_track));
 }
 
 // Tests that a sink is immediately "ended" when connected to a stopped track.
 TEST_F(MediaStreamAudioTest, AddSinkToStoppedTrack) {
   // Create a track and stop it. Then, when adding a sink, the sink should get
   // the ReadyStateEnded notification immediately.
-  MediaStreamAudioTrack track(true);
+  blink::MediaStreamAudioTrack track(true);
   track.Stop();
   FakeMediaStreamAudioSink sink;
   EXPECT_FALSE(sink.was_ended());
@@ -426,9 +428,10 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   blink::WebMediaStreamTrack another_blink_track;
   another_blink_track.Initialize(blink_audio_source_.Id(), blink_audio_source_);
   EXPECT_TRUE(source()->ConnectToTrack(another_blink_track));
-  MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(false);
+  blink::MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(false);
   FakeMediaStreamAudioSink another_sink;
-  MediaStreamAudioTrack::From(another_blink_track)->AddSink(&another_sink);
+  blink::MediaStreamAudioTrack::From(another_blink_track)
+      ->AddSink(&another_sink);
   EXPECT_EQ(FakeMediaStreamAudioSink::WAS_DISABLED,
             another_sink.enable_state());
 
@@ -440,7 +443,7 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   EXPECT_TRUE(another_sink.is_audio_silent());
 
   // Now, enable the second track and expect the second sink to be notified.
-  MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(true);
+  blink::MediaStreamAudioTrack::From(another_blink_track)->SetEnabled(true);
   EXPECT_EQ(FakeMediaStreamAudioSink::WAS_ENABLED, another_sink.enable_state());
 
   // Wait until non-silent audio reaches the second sink.
@@ -453,7 +456,8 @@ TEST_F(MediaStreamAudioTest, EnableAndDisableTracks) {
   EXPECT_EQ(FakeMediaStreamAudioSink::WAS_DISABLED, sink.enable_state());
   EXPECT_TRUE(sink.is_audio_silent());
 
-  MediaStreamAudioTrack::From(another_blink_track)->RemoveSink(&another_sink);
+  blink::MediaStreamAudioTrack::From(another_blink_track)
+      ->RemoveSink(&another_sink);
   track()->RemoveSink(&sink);
 }
 

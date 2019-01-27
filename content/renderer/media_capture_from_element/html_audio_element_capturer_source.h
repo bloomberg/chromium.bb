@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 
 namespace blink {
 class WebMediaPlayer;
@@ -22,12 +22,12 @@ class WebAudioSourceProviderImpl;
 
 namespace content {
 
-// This class is a MediaStreamAudioSource that registers to the constructor-
-// passed weak WebAudioSourceProviderImpl to receive a copy of the audio data
-// intended for rendering. This copied data is received on OnAudioBus() and sent
-// to all the registered Tracks.
+// This class is a blink::MediaStreamAudioSource that registers to the
+// constructor- passed weak WebAudioSourceProviderImpl to receive a copy of the
+// audio data intended for rendering. This copied data is received on
+// OnAudioBus() and sent to all the registered Tracks.
 class CONTENT_EXPORT HtmlAudioElementCapturerSource final
-    : public MediaStreamAudioSource {
+    : public blink::MediaStreamAudioSource {
  public:
   static HtmlAudioElementCapturerSource*
   CreateFromWebMediaPlayerImpl(blink::WebMediaPlayer* player);
@@ -37,7 +37,7 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
   ~HtmlAudioElementCapturerSource() override;
 
  private:
-  // MediaStreamAudioSource implementation.
+  // blink::MediaStreamAudioSource implementation.
   bool EnsureSourceIsStarted() final;
   void EnsureSourceIsStopped() final;
   void SetAudioCallback();

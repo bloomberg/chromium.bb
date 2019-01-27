@@ -17,12 +17,12 @@
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
 
 namespace blink {
+class MediaStreamAudioSource;
 class WebString;
 }
 
 namespace content {
 
-class MediaStreamAudioSource;
 class MediaStreamVideoSource;
 class MediaStreamVideoTrack;
 
@@ -65,7 +65,7 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
 
   // Helpers for audio requests.
   void ProcessAudioRequest();
-  MediaStreamAudioSource* GetCurrentAudioSource();
+  blink::MediaStreamAudioSource* GetCurrentAudioSource();
 
   // General helpers
   void ApplyConstraintsSucceeded();

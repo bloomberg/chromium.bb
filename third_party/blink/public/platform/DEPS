@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/atomicops.h",
     "+base/callback.h",
     "+base/callback_forward.h",
     "+base/containers/flat_set.h",
@@ -6,6 +7,7 @@ include_rules = [
     "+base/files/file.h",
     "+base/location.h",
     "+base/logging.h",
+    "+base/macros.h",
     "+base/memory/ref_counted.h",
     "+base/memory/scoped_refptr.h",
     "+base/memory/weak_ptr.h",
@@ -13,7 +15,9 @@ include_rules = [
     "+base/optional.h",
     "+base/single_thread_task_runner.h",
     "+base/strings",
+    "+base/synchronization/lock.h",
     "+base/threading/thread.h",
+    "+base/threading/thread_checker.h",
     "+base/time",
     "+base/trace_event",
     "+build/build_config.h",

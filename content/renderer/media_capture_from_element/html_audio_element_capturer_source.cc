@@ -26,7 +26,7 @@ HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
 
 HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(
     media::WebAudioSourceProviderImpl* audio_source)
-    : MediaStreamAudioSource(true /* is_local_source */),
+    : blink::MediaStreamAudioSource(true /* is_local_source */),
       audio_source_(audio_source),
       is_started_(false),
       last_sample_rate_(0),
@@ -87,7 +87,7 @@ void HtmlAudioElementCapturerSource::OnAudioBus(
   if (sample_rate != last_sample_rate_ ||
       audio_bus->channels() != last_num_channels_ ||
       audio_bus->frames() != last_bus_frames_) {
-    MediaStreamAudioSource::SetFormat(
+    blink::MediaStreamAudioSource::SetFormat(
         media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                media::GuessChannelLayout(audio_bus->channels()),
                                sample_rate, audio_bus->frames()));
@@ -96,7 +96,7 @@ void HtmlAudioElementCapturerSource::OnAudioBus(
     last_bus_frames_ = audio_bus->frames();
   }
 
-  MediaStreamAudioSource::DeliverDataToTracks(*audio_bus, capture_time);
+  blink::MediaStreamAudioSource::DeliverDataToTracks(*audio_bus, capture_time);
 }
 
 }  // namespace content

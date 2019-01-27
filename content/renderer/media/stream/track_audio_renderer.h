@@ -18,8 +18,8 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_renderer_sink.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace media {
@@ -51,7 +51,7 @@ namespace content {
 // consumer.
 class CONTENT_EXPORT TrackAudioRenderer
     : public MediaStreamAudioRenderer,
-      public MediaStreamAudioSink,
+      public blink::WebMediaStreamAudioSink,
       public media::AudioRendererSink::RenderCallback {
  public:
   // Creates a renderer for the given |audio_track|.  |playout_render_frame_id|
@@ -82,7 +82,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   ~TrackAudioRenderer() override;
 
  private:
-  // MediaStreamAudioSink implementation.
+  // blink::WebMediaStreamAudioSink implementation.
 
   // Called on the AudioInputDevice worker thread.
   void OnData(const media::AudioBus& audio_bus,
@@ -120,9 +120,9 @@ class CONTENT_EXPORT TrackAudioRenderer
 
   // The audio track which provides access to the source data to render.
   //
-  // This class is calling MediaStreamAudioSink::AddToAudioTrack() and
-  // MediaStreamAudioSink::RemoveFromAudioTrack() to connect and disconnect
-  // with the audio track.
+  // This class is calling blink::WebMediaStreamAudioSink::AddToAudioTrack() and
+  // blink::WebMediaStreamAudioSink::RemoveFromAudioTrack() to connect and
+  // disconnect with the audio track.
   blink::WebMediaStreamTrack audio_track_;
 
   // The RenderFrame in which the audio is rendered into |sink_|.

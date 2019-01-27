@@ -13,12 +13,11 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 
 namespace blink {
+class MediaStreamAudioSource;
 class WebMediaConstraints;
 }
 
 namespace content {
-
-class MediaStreamAudioSource;
 
 // This class represents the capability of an audio-capture device.
 // It may represent three different things:
@@ -53,14 +52,14 @@ class CONTENT_EXPORT AudioDeviceCaptureCapability {
   // settings are restricted to the current settings of |source|. Intended to be
   // used by applyConstraints() for both device and content capture, and by
   // getUserMedia() with device capture for devices that are currently in use.
-  explicit AudioDeviceCaptureCapability(MediaStreamAudioSource* source);
+  explicit AudioDeviceCaptureCapability(blink::MediaStreamAudioSource* source);
 
   AudioDeviceCaptureCapability(const AudioDeviceCaptureCapability& other);
 
   // If this capability represents a device currently in use, this method
   // returns a pointer to the MediaStreamAudioSource object associated with the
   // device. Otherwise, it returns null.
-  MediaStreamAudioSource* source() const { return source_; }
+  blink::MediaStreamAudioSource* source() const { return source_; }
 
   // Returns the ID of the device associated with this capability. If empty,
   // it means that this capability is not associated with a known device and
@@ -77,7 +76,7 @@ class CONTENT_EXPORT AudioDeviceCaptureCapability {
   const media::AudioParameters& Parameters() const;
 
  private:
-  MediaStreamAudioSource* source_ = nullptr;
+  blink::MediaStreamAudioSource* source_ = nullptr;
   std::string device_id_;
   std::string group_id_;
   media::AudioParameters parameters_;
@@ -160,7 +159,7 @@ SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
 // reconfigure audio tracks or sources.
 // TODO(guidou): Allow reconfiguring audio tracks. https://crbug.com/796964
 AudioCaptureSettings CONTENT_EXPORT
-SelectSettingsAudioCapture(MediaStreamAudioSource* source,
+SelectSettingsAudioCapture(blink::MediaStreamAudioSource* source,
                            const blink::WebMediaConstraints& constraints);
 
 }  // namespace content

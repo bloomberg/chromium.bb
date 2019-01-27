@@ -10,12 +10,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media_recorder/audio_track_opus_encoder.h"
 #include "content/renderer/media_recorder/audio_track_pcm_encoder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 
 // Note that this code follows the Chrome media convention of defining a "frame"
 // as "one multi-channel sample" as opposed to another common definition meaning
@@ -40,19 +40,19 @@ AudioTrackRecorder::AudioTrackRecorder(CodecId codec,
       encoder_thread_("AudioEncoderThread") {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.IsNull());
-  DCHECK(MediaStreamAudioTrack::From(track_));
+  DCHECK(blink::MediaStreamAudioTrack::From(track_));
 
   // Start the |encoder_thread_|. From this point on, |encoder_| should work
   // only on |encoder_thread_|, as enforced by DCHECKs.
   encoder_thread_.Start();
 
   // Connect the source provider to the track as a sink.
-  MediaStreamAudioSink::AddToAudioTrack(this, track_);
+  blink::WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
 }
 
 AudioTrackRecorder::~AudioTrackRecorder() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  MediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
+  blink::WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
 }
 
 // Creates an audio encoder from the codec. Returns nullptr if the codec is

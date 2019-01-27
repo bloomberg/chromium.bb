@@ -15,11 +15,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/base/audio_parameters.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace base {
@@ -38,7 +38,7 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
  private:
   // A helper class for receiving audio samples in the audio thread.
   // This class is created and destroyed on the renderer main thread.
-  class AudioSink : public MediaStreamAudioSink {
+  class AudioSink : public blink::WebMediaStreamAudioSink {
    public:
     explicit AudioSink(PepperMediaStreamAudioTrackHost* host);
     ~AudioSink() override;
@@ -55,7 +55,7 @@ class PepperMediaStreamAudioTrackHost : public PepperMediaStreamTrackHostBase {
     // Send a reply to the currently pending |Configure()| request.
     void SendConfigureReply(int32_t result);
 
-    // MediaStreamAudioSink overrides:
+    // blink::WebMediaStreamAudioSink overrides:
     // These two functions should be called on the audio thread.
     // NOTE: For this specific instance, |OnSetFormat()| is also called on the
     // main thread. However, the call to |OnSetFormat()| happens before this

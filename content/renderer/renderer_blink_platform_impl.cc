@@ -775,7 +775,7 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
                                      track_id, false /* is_remote */);
   web_media_stream_track.Initialize(web_media_stream_source);
 
-  MediaStreamAudioSource* const media_stream_source =
+  blink::MediaStreamAudioSource* const media_stream_source =
       HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player);
 

@@ -15,8 +15,8 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     const blink::MediaStreamDevice& device,
     bool disable_local_echo,
     const ConstraintsCallback& started_callback)
-    : MediaStreamAudioSource(true /* is_local_source */,
-                             disable_local_echo),
+    : blink::MediaStreamAudioSource(true /* is_local_source */,
+                                    disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       started_callback_(started_callback) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
@@ -26,7 +26,7 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
   int frames_per_buffer = device.input.frames_per_buffer();
   if (frames_per_buffer <= 0) {
     frames_per_buffer =
-        (device.input.sample_rate() * kFallbackAudioLatencyMs) / 1000;
+        (device.input.sample_rate() * blink::kFallbackAudioLatencyMs) / 1000;
   }
 
   SetFormat(media::AudioParameters(

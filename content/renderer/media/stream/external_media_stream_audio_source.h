@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_EXTERNAL_MEDIA_STREAM_AUDIO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_EXTERNAL_MEDIA_STREAM_AUDIO_SOURCE_H_
 
-#include "content/renderer/media/stream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 
+#include "content/common/content_export.h"
 #include "media/base/audio_capturer_source.h"
 
 namespace content {
@@ -17,7 +18,7 @@ namespace content {
 // MediaStream framework. Audio data is transported directly to the tracks
 // (i.e., there is no audio processing).
 class CONTENT_EXPORT ExternalMediaStreamAudioSource final
-    : public MediaStreamAudioSource,
+    : public blink::MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:
   ExternalMediaStreamAudioSource(
@@ -30,7 +31,7 @@ class CONTENT_EXPORT ExternalMediaStreamAudioSource final
   ~ExternalMediaStreamAudioSource() final;
 
  private:
-  // MediaStreamAudioSource implementation.
+  // blink::MediaStreamAudioSource implementation.
   bool EnsureSourceIsStarted() final;
   void EnsureSourceIsStopped() final;
 

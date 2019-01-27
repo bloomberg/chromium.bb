@@ -7,8 +7,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -16,6 +14,8 @@
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -41,9 +41,9 @@ ACTION_P(RunClosure, closure) {
 }
 
 //
-class MockMediaStreamAudioSink final : public MediaStreamAudioSink {
+class MockMediaStreamAudioSink final : public blink::WebMediaStreamAudioSink {
  public:
-  MockMediaStreamAudioSink() : MediaStreamAudioSink() {}
+  MockMediaStreamAudioSink() : blink::WebMediaStreamAudioSink() {}
   ~MockMediaStreamAudioSink() override = default;
 
   MOCK_METHOD1(OnSetFormat, void(const media::AudioParameters& params));
@@ -86,11 +86,11 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
 
   HtmlAudioElementCapturerSource* source() const {
     return static_cast<HtmlAudioElementCapturerSource*>(
-        MediaStreamAudioSource::From(blink_audio_source_));
+        blink::MediaStreamAudioSource::From(blink_audio_source_));
   }
 
-  MediaStreamAudioTrack* track() const {
-    return MediaStreamAudioTrack::From(blink_audio_track_);
+  blink::MediaStreamAudioTrack* track() const {
+    return blink::MediaStreamAudioTrack::From(blink_audio_track_);
   }
 
   int InjectAudio(media::AudioBus* audio_bus) {
