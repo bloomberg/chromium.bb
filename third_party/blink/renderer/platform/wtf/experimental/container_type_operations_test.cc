@@ -29,7 +29,7 @@ bool operator==(const Pod& left, const Pod& right) {
 template <typename T>
 class ContainerTypeOperationsTest : public testing::Test {};
 
-TYPED_TEST_CASE_P(ContainerTypeOperationsTest);
+TYPED_TEST_SUITE_P(ContainerTypeOperationsTest);
 
 TYPED_TEST_P(ContainerTypeOperationsTest, Completeness) {
   using Ops = CompletedContainerTypeOperations<TypeParam>;
@@ -73,11 +73,11 @@ TYPED_TEST_P(ContainerTypeOperationsTest, Completeness) {
   Ops::DestructRange(storage, storage + SIZE);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ContainerTypeOperationsTest, Completeness);
+REGISTER_TYPED_TEST_SUITE_P(ContainerTypeOperationsTest, Completeness);
 
 using PodTestTypes = testing::Types<int, char, int*, Pod>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Pod, ContainerTypeOperationsTest, PodTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(Pod, ContainerTypeOperationsTest, PodTestTypes);
 
 }  // namespace experimental
 }  // namespace WTF
