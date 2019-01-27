@@ -853,7 +853,7 @@ class BidirectionalStreamQuicImplTest
   HostPortPair destination_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Version,
     BidirectionalStreamQuicImplTest,
     ::testing::Combine(

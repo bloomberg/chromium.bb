@@ -721,7 +721,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   quic::QuicStreamOffset response_offset_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicHttpStreamTest,
     ::testing::Combine(

@@ -252,7 +252,7 @@ class QuicChromiumClientSessionTest
   bool migrate_session_early_v2_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VersionIncludeStreamDependencySequence,
     QuicChromiumClientSessionTest,
     ::testing::Combine(

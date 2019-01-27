@@ -278,7 +278,7 @@ class QuicChromiumClientStreamTest
   quic::QuicClientPushPromiseIndex push_promise_index_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Version,
     QuicChromiumClientStreamTest,
     ::testing::ValuesIn(quic::AllSupportedTransportVersions()));
