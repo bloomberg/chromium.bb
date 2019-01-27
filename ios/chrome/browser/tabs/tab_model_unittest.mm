@@ -760,9 +760,9 @@ TEST_P(TabModelTest, PersistSelectionChange) {
                                                          error:nullptr]);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticTabModelTest,
-                        TabModelTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticTabModelTest,
+                         TabModelTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // anonymous namespace
