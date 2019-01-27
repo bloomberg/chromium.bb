@@ -195,6 +195,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the additional items (when more is pressed) are kept when
 // switching tabs.
 - (void)testAdditionalItemsKept {
+  // TODO(crbug.com/925657): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Failing randomly on the bots.");
+
   // Set server up.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -255,6 +258,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // disposition of the collection takes into account the previous scroll, even
 // when more is tapped.
 - (void)testOpenPageAndGoBackWithMoreContent {
+  // TODO(crbug.com/925657): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Failing randomly on the bots.");
+
   // Set server up.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
@@ -311,6 +317,9 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 // Tests that the "Learn More" cell is present only if there is a suggestion in
 // the section.
 - (void)testLearnMore {
+  // TODO(crbug.com/925657): re-enable when fixed.
+  EARL_GREY_TEST_DISABLED(@"Failing randomly on the bots.");
+
   id<GREYAction> action =
       grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
   [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
