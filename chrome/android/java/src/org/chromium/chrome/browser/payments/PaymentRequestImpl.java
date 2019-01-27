@@ -55,8 +55,10 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
+import org.chromium.payments.mojom.PayerErrors;
 import org.chromium.payments.mojom.PaymentComplete;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
@@ -79,9 +81,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -133,6 +137,11 @@ public class PaymentRequestImpl
          * Called when the hasEnrolledInstrument() request has been responded to.
          */
         void onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
+
+        /**
+         * Called when the payment response is ready.
+         */
+        void onPaymentResponseReady();
     }
 
     /** Limit in the number of suggested items in a section. */
@@ -223,6 +232,7 @@ public class PaymentRequestImpl
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mIsCurrentPaymentRequestShowing;
+    private final Queue<Runnable> mRetryQueue = new LinkedList<>();
 
     /**
      * The raw total amount being charged, as it was received from the website. This data is passed
@@ -1144,6 +1154,7 @@ public class PaymentRequestImpl
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
             editAddress((AutofillAddress) option);
             mPaymentInformationCallback = callback;
+
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         }
 
@@ -1197,6 +1208,8 @@ public class PaymentRequestImpl
                 if (mUI == null) return;
 
                 if (editedAddress != null) {
+                    mAddressEditor.setAddressErrors(null);
+
                     // Sets or updates the shipping address label.
                     editedAddress.setShippingAddressLabelWithCountry();
 
@@ -1230,6 +1243,8 @@ public class PaymentRequestImpl
                 } else {
                     providePaymentInformation();
                 }
+
+                if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
             }
         });
     }
@@ -1245,6 +1260,8 @@ public class PaymentRequestImpl
                 if (mUI == null) return;
 
                 if (editedContact != null) {
+                    mContactEditor.setPayerErrors(null);
+
                     // A partial or complete contact came back from the editor (could have been from
                     // adding/editing or cancelling out of the edit flow).
                     if (!editedContact.isComplete()) {
@@ -1263,6 +1280,8 @@ public class PaymentRequestImpl
                 // action to take (if a contact was selected in the UI, it will stay selected).
 
                 mUI.updateSection(PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+
+                if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
             }
         });
     }
@@ -1439,8 +1458,45 @@ public class PaymentRequestImpl
             return;
         }
 
-        // TODO(zino): Should implement this method (including updating UI part).
-        // Please see https://crbug.com/861704
+        // Go back to the payment sheet
+        mUI.onPayButtonProcessingCancelled();
+
+        if (mRequestShipping && hasShippingAddressError(errors.shippingAddress)) {
+            mRetryQueue.add(() -> {
+                mAddressEditor.setAddressErrors(errors.shippingAddress);
+                AutofillAddress selectedAddress =
+                        (AutofillAddress) mShippingAddressesSection.getSelectedItem();
+                editAddress(selectedAddress);
+            });
+        }
+
+        if ((mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail)
+                && hasPayerError(errors.payer)) {
+            mRetryQueue.add(() -> {
+                mContactEditor.setPayerErrors(errors.payer);
+                AutofillContact selectedContact =
+                        (AutofillContact) mContactSection.getSelectedItem();
+                editContact(selectedContact);
+            });
+        }
+
+        if (!mRetryQueue.isEmpty()) mHandler.post(mRetryQueue.remove());
+    }
+
+    private boolean hasShippingAddressError(AddressErrors errors) {
+        return !TextUtils.isEmpty(errors.addressLine) || !TextUtils.isEmpty(errors.city)
+                || !TextUtils.isEmpty(errors.country)
+                || !TextUtils.isEmpty(errors.dependentLocality)
+                || !TextUtils.isEmpty(errors.languageCode)
+                || !TextUtils.isEmpty(errors.organization) || !TextUtils.isEmpty(errors.phone)
+                || !TextUtils.isEmpty(errors.postalCode) || !TextUtils.isEmpty(errors.recipient)
+                || !TextUtils.isEmpty(errors.region) || !TextUtils.isEmpty(errors.regionCode)
+                || !TextUtils.isEmpty(errors.sortingCode);
+    }
+
+    private boolean hasPayerError(PayerErrors errors) {
+        return !TextUtils.isEmpty(errors.name) || !TextUtils.isEmpty(errors.phone)
+                || !TextUtils.isEmpty(errors.email);
     }
 
     @Override
@@ -1787,6 +1843,7 @@ public class PaymentRequestImpl
     public void onPaymentResponseReady(PaymentResponse response) {
         mClient.onPaymentResponse(response);
         mPaymentResponseHelper = null;
+        if (sObserverForTest != null) sObserverForTest.onPaymentResponseReady();
     }
 
     /**

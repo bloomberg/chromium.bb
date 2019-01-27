@@ -91,6 +91,7 @@ public class EditorDialog
     private View mLayout;
     private EditorModel mEditorModel;
     private Button mDoneButton;
+    private boolean mFormWasValid;
     private ViewGroup mDataView;
     private View mFooter;
     @Nullable
@@ -239,7 +240,7 @@ public class EditorDialog
      *
      * @return Whether all fields contain valid information.
      */
-    private boolean validateForm() {
+    public boolean validateForm() {
         final List<EditorFieldView> invalidViews = getViewsWithInvalidInformation(true);
 
         // Iterate over all the fields to update what errors are displayed, which is necessary to
@@ -260,6 +261,10 @@ public class EditorDialog
                 // field and focus it.
                 invalidViews.get(0).scrollToAndFocus();
             }
+        }
+
+        if (!invalidViews.isEmpty() && mObserverForTest != null) {
+            mObserverForTest.onEditorValidationError();
         }
 
         return invalidViews.isEmpty();
@@ -284,13 +289,10 @@ public class EditorDialog
 
         if (view.getId() == R.id.editor_dialog_done_button) {
             if (validateForm()) {
-                if (mEditorModel != null) mEditorModel.done();
-                mEditorModel = null;
+                mFormWasValid = true;
                 animateOutDialog();
                 return;
             }
-
-            if (mObserverForTest != null) mObserverForTest.onEditorValidationError();
         } else if (view.getId() == R.id.payments_edit_cancel_button) {
             animateOutDialog();
         }
@@ -330,7 +332,15 @@ public class EditorDialog
     @Override
     public void onDismiss(DialogInterface dialog) {
         mIsDismissed = true;
-        if (mEditorModel != null) mEditorModel.cancel();
+        if (mEditorModel != null) {
+            if (mFormWasValid) {
+                mEditorModel.done();
+                mFormWasValid = false;
+            } else {
+                mEditorModel.cancel();
+            }
+            mEditorModel = null;
+        }
         removeTextChangedListenersAndInputFilters();
     }
 

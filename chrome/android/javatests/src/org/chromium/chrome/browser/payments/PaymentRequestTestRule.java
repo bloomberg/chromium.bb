@@ -38,6 +38,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -113,6 +114,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     final CallbackHelper mShowFailed;
     final CallbackHelper mCanMakePaymentQueryResponded;
     final CallbackHelper mExpirationMonthChange;
+    final CallbackHelper mPaymentResponseReady;
     PaymentRequestUI mUI;
 
     private final AtomicReference<WebContents> mWebContentsRef;
@@ -139,6 +141,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mUnableToAbort = new CallbackHelper();
         mBillingAddressChangeProcessed = new CallbackHelper();
         mExpirationMonthChange = new CallbackHelper();
+        mPaymentResponseReady = new CallbackHelper();
         mShowFailed = new CallbackHelper();
         mCanMakePaymentQueryResponded = new CallbackHelper();
         mWebContentsRef = new AtomicReference<>();
@@ -223,6 +226,9 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     public CallbackHelper getExpirationMonthChange() {
         return mExpirationMonthChange;
     }
+    public CallbackHelper getPaymentResponseReady() {
+        return mPaymentResponseReady;
+    }
     public PaymentRequestUI getPaymentRequestUI() {
         return mUI;
     }
@@ -261,6 +267,14 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
             throws InterruptedException, TimeoutException {
         clickNodeAndWait(nodeId, helper);
         mUI = helper.getTarget();
+    }
+
+    protected void retryPaymentRequest(String validationErrors, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                mWebContentsRef.get(), "retry(" + validationErrors + ");");
+        helper.waitForCallback(callCount);
     }
 
     /** Clicks on an HTML node. */
@@ -928,6 +942,12 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     public void onCardUnmaskPromptValidationDone(CardUnmaskPrompt prompt) {
         ThreadUtils.assertOnUiThread();
         mUnmaskValidationDone.notifyCalled(prompt);
+    }
+
+    @Override
+    public void onPaymentResponseReady() {
+        ThreadUtils.assertOnUiThread();
+        mPaymentResponseReady.notifyCalled();
     }
 
     /**

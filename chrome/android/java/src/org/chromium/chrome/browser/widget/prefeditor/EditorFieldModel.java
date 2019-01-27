@@ -139,6 +139,8 @@ public class EditorFieldModel {
     @Nullable
     private CharSequence mInvalidErrorMessage;
     @Nullable
+    private CharSequence mCustomErrorMessage;
+    @Nullable
     private CharSequence mErrorMessage;
     @Nullable
     private CharSequence mLabel;
@@ -536,6 +538,11 @@ public class EditorFieldModel {
         return mErrorMessage;
     }
 
+    /** Updates the custom error message */
+    public void setCustomErrorMessage(@Nullable CharSequence errorMessage) {
+        mCustomErrorMessage = errorMessage;
+    }
+
     /** @return The value that the user has typed into the field or the key of the value that the
      *          user has selected in the dropdown. Can be null. */
     @Nullable
@@ -593,6 +600,11 @@ public class EditorFieldModel {
      * @return Whether the field value is valid.
      */
     public boolean isValid() {
+        if (!TextUtils.isEmpty(mCustomErrorMessage)) {
+            mErrorMessage = mCustomErrorMessage;
+            return false;
+        }
+
         if (isRequired()
                 && (TextUtils.isEmpty(mValue) || TextUtils.getTrimmedLength(mValue) == 0)) {
             mErrorMessage = mRequiredErrorMessage;

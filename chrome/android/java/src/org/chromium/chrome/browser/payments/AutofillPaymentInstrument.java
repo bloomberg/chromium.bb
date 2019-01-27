@@ -259,6 +259,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         }
 
         mCallback.onInstrumentDetailsReady(mMethodName, stringWriter.toString());
+        mCallback = null;
     }
 
     private static String ensureNotNull(@Nullable String value) {
