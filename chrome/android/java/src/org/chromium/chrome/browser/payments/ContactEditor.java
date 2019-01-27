@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.widget.prefeditor.EditorBase;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.widget.prefeditor.EditorModel;
+import org.chromium.payments.mojom.PayerErrors;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +45,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     private final Set<CharSequence> mPayerNames;
     private final Set<CharSequence> mPhoneNumbers;
     private final Set<CharSequence> mEmailAddresses;
+    @Nullable private PayerErrors mPayerErrors;
     @Nullable private EditorFieldValidator mPhoneValidator;
     @Nullable private EditorFieldValidator mEmailValidator;
 
@@ -143,6 +145,15 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         if (getEmailValidator().isValid(emailAddress)) mEmailAddresses.add(emailAddress);
     }
 
+    /**
+     * Sets the payer errors to indicate error messages from merchant's retry() call.
+     *
+     * @param errors The payer errors from merchant's retry() call.
+     */
+    public void setPayerErrors(@Nullable PayerErrors errors) {
+        mPayerErrors = errors;
+    }
+
     @Override
     public void edit(
             @Nullable final AutofillContact toEdit, final Callback<AutofillContact> callback) {
@@ -189,9 +200,18 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                 ? mContext.getString(R.string.payments_add_contact_details_label)
                 : toEdit.getEditTitle());
 
-        if (nameField != null) editor.addField(nameField);
-        if (phoneField != null) editor.addField(phoneField);
-        if (emailField != null) editor.addField(emailField);
+        if (nameField != null) {
+            nameField.setCustomErrorMessage(mPayerErrors != null ? mPayerErrors.name : null);
+            editor.addField(nameField);
+        }
+        if (phoneField != null) {
+            phoneField.setCustomErrorMessage(mPayerErrors != null ? mPayerErrors.phone : null);
+            editor.addField(phoneField);
+        }
+        if (emailField != null) {
+            emailField.setCustomErrorMessage(mPayerErrors != null ? mPayerErrors.email : null);
+            editor.addField(emailField);
+        }
 
         // If the user clicks [Cancel], send |toEdit| contact back to the caller, which was the
         // original state (could be null, a complete contact, a partial contact).
@@ -235,6 +255,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         });
 
         mEditorDialog.show(editor);
+        if (mPayerErrors != null) mEditorDialog.validateForm();
     }
 
     private EditorFieldValidator getPhoneValidator() {

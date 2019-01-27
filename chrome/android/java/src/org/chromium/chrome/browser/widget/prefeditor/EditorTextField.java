@@ -124,6 +124,7 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
             @Override
             public void afterTextChanged(Editable s) {
                 fieldModel.setValue(s.toString());
+                fieldModel.setCustomErrorMessage(null);
                 updateDisplayedError(false);
                 updateFieldValueIcon(false);
                 if (mObserverForTest != null) {

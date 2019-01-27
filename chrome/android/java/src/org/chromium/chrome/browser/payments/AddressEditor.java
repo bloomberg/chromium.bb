@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.widget.prefeditor.EditorBase;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel;
 import org.chromium.chrome.browser.widget.prefeditor.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.widget.prefeditor.EditorModel;
+import org.chromium.payments.mojom.AddressErrors;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +61,8 @@ public class AddressEditor
     private ProgressDialog mProgressDialog;
     private boolean mEmailFieldIncluded;
     private boolean mSaveToDisk;
+    @Nullable
+    private AddressErrors mAddressErrors;
 
     /**
      * Builds an address editor.
@@ -84,6 +87,42 @@ public class AddressEditor
      */
     public void addPhoneNumberIfValid(@Nullable CharSequence phoneNumber) {
         if (!TextUtils.isEmpty(phoneNumber)) mPhoneNumbers.add(phoneNumber.toString());
+    }
+
+    /**
+     * Sets the address errors to indicate error messages from merchant's retry() call.
+     *
+     * @param errors The address errors from merchant's retry() call.
+     */
+    public void setAddressErrors(@Nullable AddressErrors errors) {
+        mAddressErrors = errors;
+    }
+
+    private String getAddressError(int field) {
+        if (mAddressErrors == null) return null;
+
+        switch (field) {
+            case AddressField.COUNTRY:
+                return mAddressErrors.country;
+            case AddressField.ADMIN_AREA:
+                return mAddressErrors.region;
+            case AddressField.LOCALITY:
+                return mAddressErrors.city;
+            case AddressField.DEPENDENT_LOCALITY:
+                return mAddressErrors.dependentLocality;
+            case AddressField.SORTING_CODE:
+                return mAddressErrors.sortingCode;
+            case AddressField.POSTAL_CODE:
+                return mAddressErrors.postalCode;
+            case AddressField.STREET_ADDRESS:
+                return mAddressErrors.addressLine;
+            case AddressField.ORGANIZATION:
+                return mAddressErrors.organization;
+            case AddressField.RECIPIENT:
+                return mAddressErrors.recipient;
+        }
+        assert false : "Unrecognized address field code";
+        return null;
     }
 
     /**
@@ -235,6 +274,7 @@ public class AddressEditor
         });
 
         loadAdminAreasForCountry(mCountryField.getValue().toString());
+        if (mAddressErrors != null) mEditorDialog.validateForm();
     }
 
     private void showProgressDialog() {
@@ -428,6 +468,7 @@ public class AddressEditor
         mAddressUiComponents =
                 mAutofillProfileBridge.getAddressUiComponents(countryCode, languageCode);
         // In terms of order, country must be the first field.
+        mCountryField.setCustomErrorMessage(getAddressError(AddressField.COUNTRY));
         mEditor.addField(mCountryField);
         for (int i = 0; i < mAddressUiComponents.size(); i++) {
             AddressUiComponent component = mAddressUiComponents.get(i);
@@ -447,9 +488,12 @@ public class AddressEditor
             } else {
                 field.setRequiredErrorMessage(null);
             }
+
+            field.setCustomErrorMessage(getAddressError(component.id));
             mEditor.addField(field);
         }
         // Phone number (and email if applicable) are the last fields of the address.
+        mPhoneField.setCustomErrorMessage(mAddressErrors != null ? mAddressErrors.phone : null);
         mEditor.addField(mPhoneField);
         if (mEmailFieldIncluded) {
             mEditor.addField(mEmailField);
