@@ -22,6 +22,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
@@ -50,7 +51,6 @@
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
-#include "components/variations/variations_associated_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 
@@ -62,6 +62,9 @@ using base::Time;
 
 namespace history {
 namespace {
+
+const base::Feature kHistoryServiceUsesTaskScheduler{
+    "HistoryServiceUsesTaskScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
 
@@ -188,9 +191,7 @@ HistoryService::HistoryService() : HistoryService(nullptr, nullptr) {}
 
 HistoryService::HistoryService(std::unique_ptr<HistoryClient> history_client,
                                std::unique_ptr<VisitDelegate> visit_delegate)
-    : thread_(variations::GetVariationParamValue("BrowserScheduler",
-                                                 "RedirectHistoryService") ==
-                      "true"
+    : thread_(base::FeatureList::IsEnabled(kHistoryServiceUsesTaskScheduler)
                   ? nullptr
                   : new base::Thread(kHistoryThreadName)),
       history_client_(std::move(history_client)),
