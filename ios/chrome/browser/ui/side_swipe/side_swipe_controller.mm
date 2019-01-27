@@ -538,10 +538,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     SnapshotTabHelper::FromWebState(currentTab.webState)
         ->UpdateSnapshotWithCallback(nil);
 
-    // Hide the infobar after snapshot has been updated (see the previous line)
-    // to avoid it obscuring the cards in the side swipe view.
-    [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
-
     // Layout tabs with new snapshots in the current orientation.
     [tabSideSwipeView_ updateViewsForDirection:gesture.direction];
 

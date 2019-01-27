@@ -4694,7 +4694,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
   [self.sideSwipeController setInSwipe:NO];
-  [[self.infobarContainerCoordinator view] setHidden:NO];
 
   if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
     web::WebState* webState = self.currentWebState;
