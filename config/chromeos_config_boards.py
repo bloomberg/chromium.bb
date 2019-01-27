@@ -41,6 +41,7 @@ arm_internal_release_boards = frozenset([
     'hana',
     'kevin',
     'kevin-arcnext',
+    'kevin64',
     'kukui',
     'lasilla-ground',
     'nyan_big',

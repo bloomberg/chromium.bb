@@ -2151,13 +2151,19 @@
   kevin64-chrome-pfq-tryjob
   kevin64-chromium-pfq-tryjob
   kevin64-compile-only-pre-cq
+  kevin64-factory-tryjob
   kevin64-full-tryjob
   kevin64-llvm-next-toolchain-tryjob
   kevin64-llvm-toolchain-tryjob
   kevin64-no-vmtest-pre-cq
   kevin64-paladin-tryjob
+  kevin64-payloads-tryjob
   kevin64-pre-cq
+  kevin64-release-afdo-generate-tryjob
+  kevin64-release-afdo-tryjob
+  kevin64-release-afdo-use-tryjob
   kevin64-release-tryjob
+  kevin64-tot-chrome-pfq-informational-tryjob
   kevin64-tot-chromium-pfq-informational-tryjob
   kevin64-unittest-stress
   kip-chrome-pfq-tryjob
