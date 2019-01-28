@@ -8,14 +8,11 @@
 #ifndef BASE_WIN_EMBEDDED_I18N_LANGUAGE_SELECTOR_H_
 #define BASE_WIN_EMBEDDED_I18N_LANGUAGE_SELECTOR_H_
 
-#include <utility>
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_piece.h"
 
 namespace base {
 namespace win {
@@ -26,7 +23,10 @@ namespace i18n {
 // override selection should a corresponding translation be available.
 class BASE_EXPORT LanguageSelector {
  public:
-  using LangToOffset = std::pair<base::StringPiece16, int>;
+  struct LangToOffset {
+    const wchar_t* language;
+    int offset;
+  };
 
   // Constructor to be used for users of this class that will provide the actual
   // language offsets that will be used.
@@ -36,8 +36,9 @@ class BASE_EXPORT LanguageSelector {
   // |languages_to_offset_begin| and |languages_to_offset_end| point to a sorted
   // array of language identifiers (and their offsets) for which translations
   // are available.
-  LanguageSelector(base::StringPiece16 preferred_language,
-                   base::span<const LangToOffset> languages_to_offset);
+  LanguageSelector(const base::string16& preferred_language,
+                   const LangToOffset* languages_to_offset_begin,
+                   const LangToOffset* languages_to_offset_end);
 
   // Constructor for testing purposes.
   // |candidates| is a list of all candiate languages that can be used to
@@ -46,7 +47,8 @@ class BASE_EXPORT LanguageSelector {
   // array of language identifiers (and their offsets) for which translations
   // are available.
   LanguageSelector(const std::vector<base::string16>& candidates,
-                   base::span<const LangToOffset> languages_to_offset);
+                   const LangToOffset* languages_to_offset_begin,
+                   const LangToOffset* languages_to_offset_end);
 
   ~LanguageSelector();
 

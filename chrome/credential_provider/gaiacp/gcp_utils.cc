@@ -82,7 +82,9 @@ base::FilePath GetStartupSentinelLocation() {
 
 const base::win::i18n::LanguageSelector& GetLanguageSelector() {
   static base::NoDestructor<base::win::i18n::LanguageSelector> instance(
-      base::string16(), kLanguageOffsetPairs);
+      base::string16(), &kLanguageOffsetPairs[0],
+      &kLanguageOffsetPairs[base::size(kLanguageOffsetPairs)]);
+
   return *instance;
 }
 

@@ -8,8 +8,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 
 namespace {
 
@@ -88,26 +86,25 @@ bool GetMUIPreferredUILanguageList(LanguageFunction function, ULONG flags,
   return false;
 }
 
-bool GetUserDefaultUILanguage(base::string16* language,
-                              base::string16* region) {
+bool GetUserDefaultUILanguage(std::wstring* language, std::wstring* region) {
   DCHECK(language);
 
   LANGID lang_id = ::GetUserDefaultUILanguage();
   if (LOCALE_CUSTOM_UI_DEFAULT != lang_id) {
     const LCID locale_id = MAKELCID(lang_id, SORT_DEFAULT);
     // max size for LOCALE_SISO639LANGNAME and LOCALE_SISO3166CTRYNAME is 9
-    base::char16 result_buffer[9];
+    wchar_t result_buffer[9];
     int result_length =
-        GetLocaleInfo(locale_id, LOCALE_SISO639LANGNAME,
-                      base::wdata(result_buffer), base::size(result_buffer));
+        GetLocaleInfo(locale_id, LOCALE_SISO639LANGNAME, &result_buffer[0],
+                      base::size(result_buffer));
     DPCHECK(0 != result_length) << "Failed getting language id";
     if (1 < result_length) {
       language->assign(&result_buffer[0], result_length - 1);
       region->clear();
       if (SUBLANG_NEUTRAL != SUBLANGID(lang_id)) {
-        result_length = GetLocaleInfo(locale_id, LOCALE_SISO3166CTRYNAME,
-                                      base::wdata(result_buffer),
-                                      base::size(result_buffer));
+        result_length =
+            GetLocaleInfo(locale_id, LOCALE_SISO3166CTRYNAME, &result_buffer[0],
+                          base::size(result_buffer));
         DPCHECK(0 != result_length) << "Failed getting region id";
         if (1 < result_length)
           region->assign(&result_buffer[0], result_length - 1);
@@ -122,26 +119,27 @@ bool GetUserDefaultUILanguage(base::string16* language,
   return false;
 }
 
-bool GetPreferredUILanguageList(LanguageFunction function,
-                                ULONG flags,
-                                std::vector<base::string16>* languages) {
+bool GetPreferredUILanguageList(LanguageFunction function, ULONG flags,
+                                std::vector<std::wstring>* languages) {
   std::vector<wchar_t> buffer;
-  base::string16 language;
-  base::string16 region;
+  std::wstring language;
+  std::wstring region;
 
   if (GetMUIPreferredUILanguageList(function, flags, &buffer)) {
     std::vector<wchar_t>::const_iterator scan = buffer.begin();
-    language = base::WideToUTF16(&*scan);
+    language.assign(&*scan);
     while (!language.empty()) {
       languages->push_back(language);
       scan += language.size() + 1;
-      language = base::WideToUTF16(&*scan);
+      language.assign(&*scan);
     }
   } else if (GetUserDefaultUILanguage(&language, &region)) {
     // Mimic the MUI behavior of putting the neutral version of the lang after
     // the regional one (e.g., "fr-CA, fr").
     if (!region.empty())
-      languages->push_back(language + base::string16(1, '-') + region);
+      languages->push_back(std::wstring(language)
+                               .append(1, L'-')
+                               .append(region));
     languages->push_back(language);
   } else {
     return false;
@@ -156,12 +154,12 @@ namespace base {
 namespace win {
 namespace i18n {
 
-bool GetUserPreferredUILanguageList(std::vector<base::string16>* languages) {
+bool GetUserPreferredUILanguageList(std::vector<std::wstring>* languages) {
   DCHECK(languages);
   return GetPreferredUILanguageList(USER_LANGUAGES, 0, languages);
 }
 
-bool GetThreadPreferredUILanguageList(std::vector<base::string16>* languages) {
+bool GetThreadPreferredUILanguageList(std::vector<std::wstring>* languages) {
   DCHECK(languages);
   return GetPreferredUILanguageList(
       THREAD_LANGUAGES, MUI_MERGE_SYSTEM_FALLBACK | MUI_MERGE_USER_FALLBACK,
