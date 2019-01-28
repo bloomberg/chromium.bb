@@ -102,11 +102,10 @@ class CORE_EXPORT FetchResponseData final
     cors_exposed_header_names_ = header_names;
   }
 
-  // If the type is Default, replaces |m_buffer|.
-  // If the type is Basic or CORS, replaces |m_buffer| and
-  // |m_internalResponse->m_buffer|.
+  // If the type is Default, replaces |buffer_|.
+  // If the type is Basic or CORS, replaces |buffer_| and
+  // |internal_response_->buffer_|.
   // If the type is Error or Opaque, does nothing.
-  // Call Response::refreshBody after calling this function.
   void ReplaceBodyStreamBuffer(BodyStreamBuffer*);
 
   // Does not call response.setBlobDataHandle().
