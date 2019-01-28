@@ -51,7 +51,7 @@ class StandaloneAudioServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(StandaloneAudioServiceTest);
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(StandaloneAudioService,
-                              ServiceLifetimeTestTemplate,
-                              StandaloneAudioServiceTest);
+INSTANTIATE_TYPED_TEST_SUITE_P(StandaloneAudioService,
+                               ServiceLifetimeTestTemplate,
+                               StandaloneAudioServiceTest);
 }  // namespace audio

@@ -242,9 +242,9 @@ class InProcessServiceLifetimeTestBase : public InProcessServiceTest<false> {
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceLifetimeTestBase);
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(InProcessAudioService,
-                              ServiceLifetimeTestTemplate,
-                              InProcessServiceLifetimeTestBase);
+INSTANTIATE_TYPED_TEST_SUITE_P(InProcessAudioService,
+                               ServiceLifetimeTestTemplate,
+                               InProcessServiceLifetimeTestBase);
 
 }  // namespace audio
 
@@ -256,8 +256,8 @@ using AudioSystemTestVariations =
     testing::Types<audio::InProcessServiceTest<false>,
                    audio::InProcessServiceTest<true>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(InProcessAudioService,
-                              AudioSystemTestTemplate,
-                              AudioSystemTestVariations);
+INSTANTIATE_TYPED_TEST_SUITE_P(InProcessAudioService,
+                               AudioSystemTestTemplate,
+                               AudioSystemTestVariations);
 
 }  // namespace media
