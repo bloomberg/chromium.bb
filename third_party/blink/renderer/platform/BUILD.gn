@@ -500,6 +500,7 @@ jumbo_component("platform") {
     "data_resource_helper.h",
     "date_components.cc",
     "date_components.h",
+    "dom_node_id.h",
     "drag_image.cc",
     "drag_image.h",
     "exported/file_path_conversion.cc",

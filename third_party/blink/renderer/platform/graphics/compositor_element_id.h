@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "cc/trees/element_id.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -35,7 +36,6 @@ enum class CompositorElementIdNamespace {
 using CompositorElementId = cc::ElementId;
 using ScrollbarId = uint64_t;
 using UniqueObjectId = uint64_t;
-using DOMNodeId = uint64_t;
 using SyntheticEffectId = uint64_t;
 
 // Call this to get a globally unique object id for a newly allocated object.
