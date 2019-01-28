@@ -600,10 +600,10 @@ public abstract class ToolbarLayout extends FrameLayout {
     void setTextureCaptureMode(boolean textureMode) {}
 
     boolean shouldIgnoreSwipeGesture() {
+        if (mUrlHasFocus || mFindInPageToolbarShowing) return true;
+        if (mMenuButtonWrapper == null) return false;
         final AppMenuButtonHelper appMenuButtonHelper = mMenuButtonWrapper.getAppMenuButtonHelper();
-        return mUrlHasFocus
-                || (appMenuButtonHelper != null && appMenuButtonHelper.isAppMenuActive())
-                || mFindInPageToolbarShowing;
+        return appMenuButtonHelper != null && appMenuButtonHelper.isAppMenuActive();
     }
 
     /**
