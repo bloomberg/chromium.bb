@@ -62,9 +62,9 @@ class BrowsingDataCounterUtilsBrowserTest
 };
 
 // Instantiate test for unified consent disabled & enabled.
-INSTANTIATE_TEST_CASE_P(,
-                        BrowsingDataCounterUtilsBrowserTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         BrowsingDataCounterUtilsBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
                        ShouldShowCookieException) {

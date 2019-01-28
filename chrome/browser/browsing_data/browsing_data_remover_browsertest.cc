@@ -1390,6 +1390,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Some storage backend use a different code path for full deletions and
 // partial deletions, so we need to test both.
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        BrowsingDataRemoverBrowserTestP,
-                        ::testing::Values(base::Time(), kLastHour));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         BrowsingDataRemoverBrowserTestP,
+                         ::testing::Values(base::Time(), kLastHour));
