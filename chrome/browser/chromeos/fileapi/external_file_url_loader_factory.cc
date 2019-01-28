@@ -112,7 +112,11 @@ class FileSystemReaderDataPipeProducer {
       // be called when the read is complete.
       if (read_size == net::ERR_IO_PENDING)
         return;
-      OnWroteData(read_size);
+      net::Error write_error = FinishWrite(read_size);
+      if (write_error != net::OK) {
+        CompleteWithResult(write_error);
+        return;
+      }
     }
     CompleteWithResult(net::OK);
   }
@@ -120,23 +124,24 @@ class FileSystemReaderDataPipeProducer {
   int64_t total_bytes_written() { return total_bytes_written_; }
 
  private:
-  void OnWroteData(int read_size) {
+  net::Error FinishWrite(int read_size) {
     MojoResult result =
         producer_handle_->EndWriteData(std::max<int>(0, read_size));
-    if (read_size <= 0) {
-      CompleteWithResult(static_cast<net::Error>(read_size));
-      return;
-    }
-    if (result != MOJO_RESULT_OK) {
-      CompleteWithResult(MojoResultToErrorCode(result));
-      return;
-    }
+    if (read_size <= 0)
+      return static_cast<net::Error>(read_size);
+    if (result != MOJO_RESULT_OK)
+      return MojoResultToErrorCode(result);
     remaining_bytes_ -= read_size;
     total_bytes_written_ += read_size;
+    return net::OK;
   }
 
   void OnPendingReadComplete(int read_result) {
-    OnWroteData(read_result);
+    net::Error result = FinishWrite(read_result);
+    if (result != net::OK) {
+      CompleteWithResult(result);
+      return;
+    }
     Write();
   }
 
