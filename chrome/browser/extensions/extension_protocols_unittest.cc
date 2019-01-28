@@ -837,12 +837,12 @@ TEST_P(ExtensionProtocolsTest, MAYBE_ExtensionRequestsNotAborted) {
   EXPECT_EQ(net::OK, DoRequestOrLoad(extension.get(), "background.js").result());
 }
 
-INSTANTIATE_TEST_CASE_P(Extensions,
-                        ExtensionProtocolsTest,
-                        ::testing::ValuesIn(kTestModes));
+INSTANTIATE_TEST_SUITE_P(Extensions,
+                         ExtensionProtocolsTest,
+                         ::testing::ValuesIn(kTestModes));
 
-INSTANTIATE_TEST_CASE_P(Extensions,
-                        ExtensionProtocolsIncognitoTest,
-                        ::testing::ValuesIn(kTestModes));
+INSTANTIATE_TEST_SUITE_P(Extensions,
+                         ExtensionProtocolsIncognitoTest,
+                         ::testing::ValuesIn(kTestModes));
 
 }  // namespace extensions

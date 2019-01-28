@@ -1138,14 +1138,14 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(AllowlistingDisabled,
-                        CrossOriginReadBlockingExtensionAllowlistingTest,
-                        ::testing::Values(AllowlistingParam(false, false)));
-INSTANTIATE_TEST_CASE_P(Allowlisted,
-                        CrossOriginReadBlockingExtensionAllowlistingTest,
-                        ::testing::Values(AllowlistingParam(true, true)));
-INSTANTIATE_TEST_CASE_P(NotAllowlisted,
-                        CrossOriginReadBlockingExtensionAllowlistingTest,
-                        ::testing::Values(AllowlistingParam(true, false)));
+INSTANTIATE_TEST_SUITE_P(AllowlistingDisabled,
+                         CrossOriginReadBlockingExtensionAllowlistingTest,
+                         ::testing::Values(AllowlistingParam(false, false)));
+INSTANTIATE_TEST_SUITE_P(Allowlisted,
+                         CrossOriginReadBlockingExtensionAllowlistingTest,
+                         ::testing::Values(AllowlistingParam(true, true)));
+INSTANTIATE_TEST_SUITE_P(NotAllowlisted,
+                         CrossOriginReadBlockingExtensionAllowlistingTest,
+                         ::testing::Values(AllowlistingParam(true, false)));
 
 }  // namespace extensions

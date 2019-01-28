@@ -500,8 +500,9 @@ TEST_P(ExtensionMessageBubbleTestWithParam,
   EXPECT_TRUE(controller->ShouldShow());
 }
 
-INSTANTIATE_TEST_CASE_P(ExtensionMessageBubbleTest,
-                        ExtensionMessageBubbleTestWithParam, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(ExtensionMessageBubbleTest,
+                         ExtensionMessageBubbleTestWithParam,
+                         testing::Bool());
 
 // The feature this is meant to test is only enacted on Windows, but it should
 // pass on all platforms.
