@@ -21,6 +21,7 @@
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
 #include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
@@ -360,6 +361,23 @@ void AwDrawFnImpl::DrawGL(AwDrawFn_DrawGLParams* params) {
   for (size_t i = 0; i < base::size(hr_params.transform); ++i) {
     hr_params.transform[i] = params->transform[i];
   }
+
+  if (params->version >= 2) {
+    skcms_TransferFunction transfer_fn{
+        params->transfer_function_g, params->transfer_function_a,
+        params->transfer_function_b, params->transfer_function_c,
+        params->transfer_function_d, params->transfer_function_e,
+        params->transfer_function_f};
+    skcms_Matrix3x3 to_xyz;
+    static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
+                  "Color space matrix sizes do not match");
+    memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
+           sizeof(to_xyz.vals));
+    sk_sp<SkColorSpace> color_space =
+        SkColorSpace::MakeRGB(transfer_fn, to_xyz);
+    if (color_space)
+      hr_params.color_space = gfx::ColorSpace(*color_space);
+  }
   render_thread_manager_.DrawOnRT(false /* save_restore */, &hr_params);
 }
 
@@ -485,7 +503,8 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   skcms_TransferFunction transfer_fn{
       params->transfer_function_g, params->transfer_function_a,
       params->transfer_function_b, params->transfer_function_c,
-      params->transfer_function_e, params->transfer_function_f};
+      params->transfer_function_d, params->transfer_function_e,
+      params->transfer_function_f};
   skcms_Matrix3x3 to_xyz;
   static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
                 "Color space matrix sizes do not match");

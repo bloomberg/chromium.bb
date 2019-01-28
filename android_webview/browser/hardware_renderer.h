@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "ui/gfx/color_space.h"
 
 namespace viz {
 class CompositorFrameSinkSupport;
@@ -34,6 +35,7 @@ struct HardwareRendererDrawParams {
   int height;
   bool is_layer;
   float transform[16];
+  gfx::ColorSpace color_space;
 };
 
 class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {

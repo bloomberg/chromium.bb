@@ -158,7 +158,7 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
                  params->clip_bottom - params->clip_top);
   surfaces_->DrawAndSwap(viewport, clip, transform, surface_size_,
                          viz::SurfaceId(frame_sink_id_, child_id_),
-                         device_scale_factor_);
+                         device_scale_factor_, params->color_space);
 }
 
 void HardwareRenderer::AllocateSurface() {
