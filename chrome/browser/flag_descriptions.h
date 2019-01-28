@@ -2158,6 +2158,13 @@ extern const char kEnableInputImeApiDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+extern const char kWebGL2ComputeContextName[];
+extern const char kWebGL2ComputeContextDescription[];
+
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+
 extern const char kExperimentalUiName[];
 extern const char kExperimentalUiDescription[];
 

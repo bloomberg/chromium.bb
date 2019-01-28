@@ -3588,6 +3588,14 @@ const char kEnableInputImeApiDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+
+const char kWebGL2ComputeContextName[] = "WebGL 2.0 Compute";
+const char kWebGL2ComputeContextDescription[] =
+    "Enable the use of WebGL 2.0 Compute API.";
+
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 const char kAutomaticTabDiscardingName[] = "Automatic tab discarding";
