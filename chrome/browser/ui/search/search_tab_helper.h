@@ -124,11 +124,13 @@ class SearchTabHelper : public content::WebContentsObserver,
       const std::string& attribution_line_2,
       const GURL& action_url) override;
   void OnSelectLocalBackgroundImage() override;
-  void OnBlacklistSearchSuggestion(int task_version, long task_id) override;
-  void OnBlacklistSearchSuggestionWithHash(
-      int task_version,
-      long task_id,
-      const std::vector<uint8_t>& hash) override;
+  void OnBlocklistSearchSuggestion(int task_version, long task_id) override;
+  void OnBlocklistSearchSuggestionWithHash(int task_version,
+                                           long task_id,
+                                           const uint8_t hash[4]) override;
+  void OnSearchSuggestionSelected(int task_version,
+                                  long task_id,
+                                  const uint8_t hash[4]) override;
   void OnOptOutOfSearchSuggestions() override;
 
   // Overridden from InstantServiceObserver:

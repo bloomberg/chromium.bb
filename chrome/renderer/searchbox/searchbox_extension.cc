@@ -634,10 +634,13 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       const std::string& attribution_line_2,
       const std::string& attributionActionUrl);
   static void SelectLocalBackgroundImage();
-  static void BlacklistSearchSuggestion(int task_version, int task_id);
-  static void BlacklistSearchSuggestionWithHash(int task_version,
+  static void BlocklistSearchSuggestion(int task_version, int task_id);
+  static void BlocklistSearchSuggestionWithHash(int task_version,
                                                 int task_id,
                                                 const std::string& hash);
+  static void SearchSuggestionSelected(int task_version,
+                                       int task_id,
+                                       const std::string& hash);
   static void OptOutOfSearchSuggestions();
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
@@ -690,9 +693,11 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("selectLocalBackgroundImage",
                  &NewTabPageBindings::SelectLocalBackgroundImage)
       .SetMethod("blacklistSearchSuggestion",
-                 &NewTabPageBindings::BlacklistSearchSuggestion)
+                 &NewTabPageBindings::BlocklistSearchSuggestion)
       .SetMethod("blacklistSearchSuggestionWithHash",
-                 &NewTabPageBindings::BlacklistSearchSuggestionWithHash)
+                 &NewTabPageBindings::BlocklistSearchSuggestionWithHash)
+      .SetMethod("searchSuggestionSelected",
+                 &NewTabPageBindings::SearchSuggestionSelected)
       .SetMethod("optOutOfSearchSuggestions",
                  &NewTabPageBindings::OptOutOfSearchSuggestions);
 }
@@ -1005,24 +1010,43 @@ void NewTabPageBindings::SelectLocalBackgroundImage() {
 }
 
 // static
-void NewTabPageBindings::BlacklistSearchSuggestion(const int task_version,
+void NewTabPageBindings::BlocklistSearchSuggestion(const int task_version,
                                                    const int task_id) {
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->BlacklistSearchSuggestion(task_version, task_id);
+  search_box->BlocklistSearchSuggestion(task_version, task_id);
 }
 
 // static
-void NewTabPageBindings::BlacklistSearchSuggestionWithHash(
+void NewTabPageBindings::BlocklistSearchSuggestionWithHash(
     int task_version,
     int task_id,
     const std::string& hash) {
+  if (hash.length() > 4) {
+    return;
+  }
+
   std::vector<uint8_t> data(hash.begin(), hash.end());
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
-  search_box->BlacklistSearchSuggestionWithHash(task_version, task_id, data);
+  search_box->BlocklistSearchSuggestionWithHash(task_version, task_id, data);
+}
+
+// static
+void NewTabPageBindings::SearchSuggestionSelected(int task_version,
+                                                  int task_id,
+                                                  const std::string& hash) {
+  if (hash.length() > 4) {
+    return;
+  }
+
+  std::vector<uint8_t> data(hash.begin(), hash.end());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->SearchSuggestionSelected(task_version, task_id, data);
 }
 
 // static

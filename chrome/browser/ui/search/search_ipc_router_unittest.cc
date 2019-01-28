@@ -87,12 +87,12 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                     const std::string& attribution2,
                     const GURL& attributionActionUrl));
   MOCK_METHOD0(OnSelectLocalBackgroundImage, void());
-  MOCK_METHOD2(OnBlacklistSearchSuggestion,
+  MOCK_METHOD2(OnBlocklistSearchSuggestion,
                void(int task_version, long task_id));
-  MOCK_METHOD3(OnBlacklistSearchSuggestionWithHash,
-               void(int task_version,
-                    long task_id,
-                    const std::vector<uint8_t>& hash));
+  MOCK_METHOD3(OnBlocklistSearchSuggestionWithHash,
+               void(int task_version, long task_id, const uint8_t hash[4]));
+  MOCK_METHOD3(OnSearchSuggestionSelected,
+               void(int task_version, long task_id, const uint8_t hash[4]));
   MOCK_METHOD0(OnOptOutOfSearchSuggestions, void());
 };
 
@@ -117,8 +117,9 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessSetCustomBackgroundURL, bool());
   MOCK_METHOD0(ShouldProcessSetCustomBackgroundURLWithAttributions, bool());
   MOCK_METHOD0(ShouldProcessSelectLocalBackgroundImage, bool());
-  MOCK_METHOD0(ShouldProcessBlacklistSearchSuggestion, bool());
-  MOCK_METHOD0(ShouldProcessBlacklistSearchSuggestionWithHash, bool());
+  MOCK_METHOD0(ShouldProcessBlocklistSearchSuggestion, bool());
+  MOCK_METHOD0(ShouldProcessBlocklistSearchSuggestionWithHash, bool());
+  MOCK_METHOD0(ShouldProcessSearchSuggestionSelected, bool());
   MOCK_METHOD0(ShouldProcessOptOutOfSearchSuggestions, bool());
   MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
   MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
@@ -904,39 +905,75 @@ TEST_F(SearchIPCRouterTest, IgnoreSelectLocalBackgroundImageMsg) {
   GetSearchIPCRouter().SelectLocalBackgroundImage();
 }
 
-TEST_F(SearchIPCRouterTest, ProcessBlacklistSearchSuggestion) {
+TEST_F(SearchIPCRouterTest, ProcessBlocklistSearchSuggestion) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   int task_version = 0;
   int task_id = 1234;
   EXPECT_CALL(*mock_delegate(),
-              OnBlacklistSearchSuggestion(task_version, task_id))
+              OnBlocklistSearchSuggestion(task_version, task_id))
       .Times(1);
-  EXPECT_CALL(*policy, ShouldProcessBlacklistSearchSuggestion())
+  EXPECT_CALL(*policy, ShouldProcessBlocklistSearchSuggestion())
       .Times(1)
       .WillOnce(Return(true));
 
-  GetSearchIPCRouter().BlacklistSearchSuggestion(task_version, task_id);
+  GetSearchIPCRouter().BlocklistSearchSuggestion(task_version, task_id);
 }
 
-TEST_F(SearchIPCRouterTest, IgnoreBlacklistSearchSuggestion) {
+TEST_F(SearchIPCRouterTest, IgnoreBlocklistSearchSuggestion) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   int task_version = 0;
   int task_id = 1234;
   EXPECT_CALL(*mock_delegate(),
-              OnBlacklistSearchSuggestion(task_version, task_id))
+              OnBlocklistSearchSuggestion(task_version, task_id))
       .Times(0);
-  EXPECT_CALL(*policy, ShouldProcessBlacklistSearchSuggestion())
+  EXPECT_CALL(*policy, ShouldProcessBlocklistSearchSuggestion())
       .Times(1)
       .WillOnce(Return(false));
 
-  GetSearchIPCRouter().BlacklistSearchSuggestion(task_version, task_id);
+  GetSearchIPCRouter().BlocklistSearchSuggestion(task_version, task_id);
 }
 
-TEST_F(SearchIPCRouterTest, ProcessBlacklistSearchSuggestionWithHash) {
+TEST_F(SearchIPCRouterTest, ProcessBlocklistSearchSuggestionWithHash) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  int task_version = 0;
+  int task_id = 1234;
+  std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
+  EXPECT_CALL(*mock_delegate(), OnBlocklistSearchSuggestionWithHash(
+                                    task_version, task_id, hash.data()))
+      .Times(1);
+  EXPECT_CALL(*policy, ShouldProcessBlocklistSearchSuggestionWithHash())
+      .Times(1)
+      .WillOnce(Return(true));
+
+  GetSearchIPCRouter().BlocklistSearchSuggestionWithHash(task_version, task_id,
+                                                         hash);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreBlocklistSearchSuggestionWithHash) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  int task_version = 0;
+  int task_id = 1234;
+  std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
+  EXPECT_CALL(*mock_delegate(), OnBlocklistSearchSuggestionWithHash(
+                                    task_version, task_id, hash.data()))
+      .Times(0);
+  EXPECT_CALL(*policy, ShouldProcessBlocklistSearchSuggestionWithHash())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  GetSearchIPCRouter().BlocklistSearchSuggestionWithHash(task_version, task_id,
+                                                         hash);
+}
+
+TEST_F(SearchIPCRouterTest, ProcessSearchSuggestionSelected) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
@@ -944,17 +981,16 @@ TEST_F(SearchIPCRouterTest, ProcessBlacklistSearchSuggestionWithHash) {
   int task_id = 1234;
   std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
   EXPECT_CALL(*mock_delegate(),
-              OnBlacklistSearchSuggestionWithHash(task_version, task_id, hash))
+              OnSearchSuggestionSelected(task_version, task_id, hash.data()))
       .Times(1);
-  EXPECT_CALL(*policy, ShouldProcessBlacklistSearchSuggestionWithHash())
+  EXPECT_CALL(*policy, ShouldProcessSearchSuggestionSelected())
       .Times(1)
       .WillOnce(Return(true));
 
-  GetSearchIPCRouter().BlacklistSearchSuggestionWithHash(task_version, task_id,
-                                                         hash);
+  GetSearchIPCRouter().SearchSuggestionSelected(task_version, task_id, hash);
 }
 
-TEST_F(SearchIPCRouterTest, IgnoreBlacklistSearchSuggestionWithHash) {
+TEST_F(SearchIPCRouterTest, IgnoreSearchSuggestionSelected) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
@@ -962,14 +998,13 @@ TEST_F(SearchIPCRouterTest, IgnoreBlacklistSearchSuggestionWithHash) {
   int task_id = 1234;
   std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
   EXPECT_CALL(*mock_delegate(),
-              OnBlacklistSearchSuggestionWithHash(task_version, task_id, hash))
+              OnSearchSuggestionSelected(task_version, task_id, hash.data()))
       .Times(0);
-  EXPECT_CALL(*policy, ShouldProcessBlacklistSearchSuggestionWithHash())
+  EXPECT_CALL(*policy, ShouldProcessSearchSuggestionSelected())
       .Times(1)
       .WillOnce(Return(false));
 
-  GetSearchIPCRouter().BlacklistSearchSuggestionWithHash(task_version, task_id,
-                                                         hash);
+  GetSearchIPCRouter().SearchSuggestionSelected(task_version, task_id, hash);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessOptOutOfSearchSuggestions) {

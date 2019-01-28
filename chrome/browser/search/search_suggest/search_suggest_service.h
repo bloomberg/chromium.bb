@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SEARCH_SEARCH_SUGGEST_SEARCH_SUGGEST_SERVICE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -16,6 +17,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
+class Profile;
+
 namespace identity {
 class IdentityManager;
 }  // namespace identity
@@ -25,7 +28,7 @@ class IdentityManager;
 // user signs in or out, the cached value is cleared.
 class SearchSuggestService : public KeyedService {
  public:
-  SearchSuggestService(PrefService* pref_service,
+  SearchSuggestService(Profile* profile,
                        identity::IdentityManager* identity_manager,
                        std::unique_ptr<SearchSuggestLoader> loader);
   ~SearchSuggestService() override;
@@ -57,13 +60,13 @@ class SearchSuggestService : public KeyedService {
   // Register prefs associated with the NTP.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Add the task_id to the blacklist stored in user prefs. Overrides any
+  // Add the task_id to the blocklist stored in user prefs. Overrides any
   // existing entry for the given task_id.
   //
   // A task_id represents a category of searches such as "Camping", a
   // task_version represents the selection criteria used to generate the
   // suggestion.
-  void BlacklistSearchSuggestion(int task_version, long task_id);
+  void BlocklistSearchSuggestion(int task_version, long task_id);
 
   // Add the hash to the list of hashes for the task_id. Stored as a
   // dict of task_ids to lists of hashes in user prefs.
@@ -72,9 +75,17 @@ class SearchSuggestService : public KeyedService {
   // is a specific search within the category such as "Camping equipment", and
   // a task_version represents the selection criteria used ti generate the
   // suggestion.
-  void BlacklistSearchSuggestionWithHash(int task_version,
+  void BlocklistSearchSuggestionWithHash(int task_version,
                                          long task_id,
-                                         const std::vector<uint8_t>& hash);
+                                         const uint8_t hash[4]);
+
+  // Issue a new request with the selected suggestion appended to the blocklist
+  // but NOT stored in user prefs.  This prevents a race condition where the
+  // request completes before the data server side is updated to reflect the
+  // selection, resulting in the same suggestion appearing in the next set.
+  void SearchSuggestionSelected(int task_version,
+                                long task_id,
+                                const uint8_t hash[4]);
 
   // Opt the current profile out of seeing search suggestions. Requests will
   // no longer be made.
@@ -82,9 +93,9 @@ class SearchSuggestService : public KeyedService {
 
   SearchSuggestLoader* loader_for_testing() { return loader_.get(); }
 
-  // Returns the string representation of the suggestions blacklist in the form:
+  // Returns the string representation of the suggestions blocklist in the form:
   // "task_id1:hash1,hash2,hash3;task_id2;task_id3:hash1,hash2".
-  std::string GetBlacklistAsString();
+  std::string GetBlocklistAsString();
 
   // Called when suggestions are displayed on the NTP, clears the cached data
   // and updates timestamps and impression counts.
@@ -94,6 +105,10 @@ class SearchSuggestService : public KeyedService {
   class SigninObserver;
 
   void SigninStatusChanged();
+
+  // Either calls SearchSuggestLoader::Load with |blocklist| or immediately
+  // calls SearchSuggestDataLoaded with the reason a request was not made.
+  void MaybeLoadWithBlocklist(const std::string& blocklist);
 
   // Called when a Refresh() is requested. If |status|==OK, |data| will contain
   // the fetched data. Otherwise |data| will be nullopt and |status| will
@@ -121,7 +136,7 @@ class SearchSuggestService : public KeyedService {
 
   std::unique_ptr<SigninObserver> signin_observer_;
 
-  PrefService* pref_service_;
+  Profile* profile_;
 
   base::ObserverList<SearchSuggestServiceObserver, true>::Unchecked observers_;
 

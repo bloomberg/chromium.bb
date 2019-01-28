@@ -461,19 +461,27 @@ const OmniboxView* SearchTabHelper::GetOmniboxView() const {
   return browser->window()->GetLocationBar()->GetOmniboxView();
 }
 
-void SearchTabHelper::OnBlacklistSearchSuggestion(int task_version,
+void SearchTabHelper::OnBlocklistSearchSuggestion(int task_version,
                                                   long task_id) {
   if (search_suggest_service_)
-    search_suggest_service_->BlacklistSearchSuggestion(task_version, task_id);
+    search_suggest_service_->BlocklistSearchSuggestion(task_version, task_id);
 }
 
-void SearchTabHelper::OnBlacklistSearchSuggestionWithHash(
+void SearchTabHelper::OnBlocklistSearchSuggestionWithHash(
     int task_version,
     long task_id,
-    const std::vector<uint8_t>& hash) {
+    const uint8_t hash[4]) {
   if (search_suggest_service_)
-    search_suggest_service_->BlacklistSearchSuggestionWithHash(task_version,
+    search_suggest_service_->BlocklistSearchSuggestionWithHash(task_version,
                                                                task_id, hash);
+}
+
+void SearchTabHelper::OnSearchSuggestionSelected(int task_version,
+                                                 long task_id,
+                                                 const uint8_t hash[4]) {
+  if (search_suggest_service_)
+    search_suggest_service_->SearchSuggestionSelected(task_version, task_id,
+                                                      hash);
 }
 
 void SearchTabHelper::OnOptOutOfSearchSuggestions() {

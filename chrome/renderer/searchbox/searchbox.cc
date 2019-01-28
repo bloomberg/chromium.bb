@@ -379,16 +379,23 @@ void SearchBox::SelectLocalBackgroundImage() {
   embedded_search_service_->SelectLocalBackgroundImage();
 }
 
-void SearchBox::BlacklistSearchSuggestion(int task_version, long task_id) {
-  embedded_search_service_->BlacklistSearchSuggestion(task_version, task_id);
+void SearchBox::BlocklistSearchSuggestion(int task_version, long task_id) {
+  embedded_search_service_->BlocklistSearchSuggestion(task_version, task_id);
 }
 
-void SearchBox::BlacklistSearchSuggestionWithHash(
+void SearchBox::BlocklistSearchSuggestionWithHash(
     int task_version,
     long task_id,
     const std::vector<uint8_t>& hash) {
-  embedded_search_service_->BlacklistSearchSuggestionWithHash(task_version,
+  embedded_search_service_->BlocklistSearchSuggestionWithHash(task_version,
                                                               task_id, hash);
+}
+
+void SearchBox::SearchSuggestionSelected(int task_version,
+                                         long task_id,
+                                         const std::vector<uint8_t>& hash) {
+  embedded_search_service_->SearchSuggestionSelected(task_version, task_id,
+                                                     hash);
 }
 
 void SearchBox::OptOutOfSearchSuggestions() {
