@@ -483,13 +483,13 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
 
 // Android multi-process tests are not executing the new process. This is flaky.
 #if !defined(OS_ANDROID)
-INSTANTIATE_TEST_CASE_P(PipeCount,
-                        MultiprocessMessagePipeTestWithPipeCount,
-                        // TODO(rockot): Enable the 128 and 250 pipe cases when
-                        // ChannelPosix and ChannelFuchsia have support for
-                        // sending larger numbers of handles per-message. See
-                        // kMaxAttachedHandles in channel.cc for details.
-                        testing::Values(1u, 64u /*, 128u, 250u*/));
+INSTANTIATE_TEST_SUITE_P(PipeCount,
+                         MultiprocessMessagePipeTestWithPipeCount,
+                         // TODO(rockot): Enable the 128 and 250 pipe cases when
+                         // ChannelPosix and ChannelFuchsia have support for
+                         // sending larger numbers of handles per-message. See
+                         // kMaxAttachedHandles in channel.cc for details.
+                         testing::Values(1u, 64u /*, 128u, 250u*/));
 #endif
 
 DEFINE_TEST_CLIENT_WITH_PIPE(CheckMessagePipe, MultiprocessMessagePipeTest, h) {
@@ -1335,7 +1335,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient,
   EXPECT_EQ("bye", ReadMessage(parent));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     MultiprocessMessagePipeTestWithPeerSupport,
     testing::Values(test::MojoTestBase::LaunchType::CHILD,

@@ -145,7 +145,7 @@ TEST_P(RequestResponseTest, EchoEnum) {
   EXPECT_EQ(sample::Enum::VALUE, value);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(RequestResponseTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RequestResponseTest);
 
 }  // namespace
 }  // namespace test
