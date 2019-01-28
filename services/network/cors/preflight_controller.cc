@@ -30,7 +30,7 @@ base::Optional<std::string> GetHeaderString(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     const std::string& header_name) {
   std::string header_value;
-  if (!headers->GetNormalizedHeader(header_name, &header_value))
+  if (!headers || !headers->GetNormalizedHeader(header_name, &header_value))
     return base::nullopt;
   return header_value;
 }
@@ -287,10 +287,10 @@ class PreflightController::PreflightLoader final {
     timing_info_.finish_time = base::TimeTicks::Now();
     timing_info_.alpn_negotiated_protocol = head.alpn_negotiated_protocol;
     timing_info_.connection_info = head.connection_info;
-    if (head.headers) {
-      head.headers->GetNormalizedHeader("Timing-Allow-Origin",
-                                        &timing_info_.timing_allow_origin);
-    }
+    auto timing_allow_origin =
+        GetHeaderString(head.headers, "Timing-Allow-Origin");
+    if (timing_allow_origin)
+      timing_info_.timing_allow_origin = *timing_allow_origin;
     timing_info_.transfer_size = head.encoded_data_length;
 
     base::Optional<CorsErrorStatus> detected_error_status;
