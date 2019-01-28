@@ -424,8 +424,10 @@ bool PasswordSyncBridge::SupportsGetStorageKey() const {
 syncer::ModelTypeSyncBridge::StopSyncResponse
 PasswordSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  NOTIMPLEMENTED();
-  return ModelTypeSyncBridge::StopSyncResponse::kModelNoLongerReadyToSync;
+  // TODO(crbug.com/902349): Implement disable-sync case by a more robust
+  // implementation, via a dedicated method in PasswordStoreSync.
+  return ModelTypeSyncBridge::ApplyStopSyncChanges(
+      std::move(delete_metadata_change_list));
 }
 
 }  // namespace password_manager
