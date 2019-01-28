@@ -392,11 +392,11 @@ class UpgradeDetectorImplTimerTest : public UpgradeDetectorImplTest,
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTimerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        UpgradeDetectorImplTimerTest,
-                        ::testing::Values(0,           // Default period of 7d.
-                                          86400000,    // 1d.
-                                          11100000));  // 3:05:00.
+INSTANTIATE_TEST_SUITE_P(,
+                         UpgradeDetectorImplTimerTest,
+                         ::testing::Values(0,           // Default period of 7d.
+                                           86400000,    // 1d.
+                                           11100000));  // 3:05:00.
 
 // Tests that the notification timer is handled as desired.
 TEST_P(UpgradeDetectorImplTimerTest, TestNotificationTimer) {
