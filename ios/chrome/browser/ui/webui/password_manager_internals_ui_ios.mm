@@ -70,8 +70,9 @@ void PasswordManagerInternalsUIIOS::LogSavePasswordProgress(
   std::string no_quotes(text);
   std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
   base::Value text_string_value(net::EscapeForHTML(no_quotes));
-  web_ui()->CallJavascriptFunction("addSavePasswordProgressLog",
-                                   text_string_value);
+
+  std::vector<const base::Value*> args{&text_string_value};
+  web_ui()->CallJavascriptFunction("addSavePasswordProgressLog", args);
 }
 
 void PasswordManagerInternalsUIIOS::PageLoaded(
@@ -87,7 +88,9 @@ void PasswordManagerInternalsUIIOS::PageLoaded(
           browser_state);
   // No service means the WebUI is displayed in Incognito.
   base::Value is_incognito(!service);
-  web_ui()->CallJavascriptFunction("notifyAboutIncognito", is_incognito);
+
+  std::vector<const base::Value*> args{&is_incognito};
+  web_ui()->CallJavascriptFunction("notifyAboutIncognito", args);
 
   if (service) {
     registered_with_logging_service_ = true;

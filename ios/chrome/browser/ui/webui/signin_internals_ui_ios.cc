@@ -71,10 +71,10 @@ bool SignInInternalsUIIOS::OverrideHandleWebUIIOSMessage(
     // empty in incognito mode. Alternatively, we could force about:signin to
     // open in non-incognito mode always (like about:settings for ex.).
     if (about_signin_internals) {
-      const std::string& reply_handler =
-          "chrome.signin.getSigninInfo.handleReply";
+      base::Value status = about_signin_internals->GetSigninStatus()->Clone();
+      std::vector<const base::Value*> args{&status};
       web_ui()->CallJavascriptFunction(
-          reply_handler, *about_signin_internals->GetSigninStatus());
+          "chrome.signin.getSigninInfo.handleReply", args);
       std::vector<gaia::ListedAccount> cookie_accounts;
       GaiaCookieManagerService* cookie_manager_service =
           ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
@@ -95,12 +95,14 @@ bool SignInInternalsUIIOS::OverrideHandleWebUIIOSMessage(
 
 void SignInInternalsUIIOS::OnSigninStateChanged(
     const base::DictionaryValue* info) {
-  const std::string& event_handler = "chrome.signin.onSigninInfoChanged.fire";
-  web_ui()->CallJavascriptFunction(event_handler, *info);
+  std::vector<const base::Value*> args{info};
+  web_ui()->CallJavascriptFunction("chrome.signin.onSigninInfoChanged.fire",
+                                   args);
 }
 
 void SignInInternalsUIIOS::OnCookieAccountsFetched(
     const base::DictionaryValue* info) {
+  std::vector<const base::Value*> args{info};
   web_ui()->CallJavascriptFunction("chrome.signin.onCookieAccountsFetched.fire",
-                                   *info);
+                                   args);
 }
