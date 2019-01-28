@@ -329,26 +329,7 @@ TEST_F(InstantServiceTest, UpdatingPrefUpdatesThemeInfo) {
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTest, NoLocalFileExists) {
-  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
-  const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
-
-  sync_preferences::TestingPrefServiceSyncable* pref_service =
-      profile()->GetTestingPrefService();
-
-  pref_service->SetUserPref(
-      prefs::kNtpCustomBackgroundDict,
-      std::make_unique<base::Value>(GetBackgroundInfoAsDict(kUrl)));
-  thread_bundle()->RunUntilIdle();
-
-  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
-  EXPECT_EQ(GURL(), theme_info->custom_background_url);
-  EXPECT_EQ(false,
-            pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
-  EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
-}
-
-TEST_F(InstantServiceTest, LocalFileExists) {
+TEST_F(InstantServiceTest, SetLocalImage) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
 
@@ -361,27 +342,38 @@ TEST_F(InstantServiceTest, LocalFileExists) {
   base::WriteFile(path, "background_image", 16);
   base::TaskScheduler::GetInstance()->FlushForTesting();
 
-  pref_service->SetUserPref(
-      prefs::kNtpCustomBackgroundDict,
-      std::make_unique<base::Value>(GetBackgroundInfoAsDict(kUrl)));
+  instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
-  EXPECT_EQ(kUrl, theme_info->custom_background_url);
-  EXPECT_EQ(true,
-            pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
+  EXPECT_TRUE(base::StartsWith(theme_info->custom_background_url.spec(),
+                               chrome::kChromeSearchLocalNtpBackgroundUrl,
+                               base::CompareCase::SENSITIVE));
+  EXPECT_TRUE(
+      pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTest, LocalFilePrefSet) {
+TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
-  const GURL kUrl("chrome-search://local-ntp/background.jpg?123456789");
+  const GURL kUrl("https://www.foo.com/");
 
   sync_preferences::TestingPrefServiceSyncable* pref_service =
       profile()->GetTestingPrefService();
 
-  pref_service->SetUserPref(prefs::kNtpCustomBackgroundLocalToDevice,
-                            std::make_unique<base::Value>(true));
+  base::FilePath profile_path = profile()->GetPath();
+  base::FilePath path(profile_path.AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename));
+  base::WriteFile(path, "background_image", 16);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
+
+  instant_service_->SelectLocalBackgroundImage(path);
+  thread_bundle()->RunUntilIdle();
+
+  EXPECT_TRUE(
+      pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
+
+  // Update theme info via Sync.
   pref_service->SetUserPref(
       prefs::kNtpCustomBackgroundDict,
       std::make_unique<base::Value>(GetBackgroundInfoAsDict(kUrl)));
@@ -389,6 +381,8 @@ TEST_F(InstantServiceTest, LocalFilePrefSet) {
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
+  EXPECT_FALSE(
+      pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
