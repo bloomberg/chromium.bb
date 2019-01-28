@@ -49,8 +49,10 @@ cr.define('print_preview', function() {
     INVITATION_ACCEPTED: 12,
     // User rejected printer sharing invitation.
     INVITATION_REJECTED: 13,
+    // User clicked on Manage button
+    MANAGE_BUTTON_CLICKED: 14,
     // Max value.
-    DESTINATION_SEARCH_MAX_BUCKET: 14
+    DESTINATION_SEARCH_MAX_BUCKET: 15
   };
 
   /**

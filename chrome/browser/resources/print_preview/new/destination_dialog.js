@@ -405,6 +405,8 @@ Polymer({
 
   /** @private */
   onOpenSettingsPrintPage_: function() {
+    this.metrics_.record(
+        print_preview.Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
     print_preview.NativeLayer.getInstance().openSettingsPrintPage();
   },
 });
