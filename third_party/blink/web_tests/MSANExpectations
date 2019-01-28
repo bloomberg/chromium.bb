@@ -215,3 +215,6 @@ crbug.com/914900 [ Linux ] external/wpt/secure-contexts/idlharness.any.worker.ht
 crbug.com/914900 [ Linux ] http/tests/devtools/network/preview-searchable.js [ Pass Timeout ]
 crbug.com/914900 [ Linux ] virtual/outofblink-cors-ns/external/wpt/fetch/api/idl.any.sharedworker.html [ Pass Timeout ]
 crbug.com/914900 [ Linux ] virtual/outofblink-cors/external/wpt/xhr/idlharness.any.worker.html [ Pass Timeout ]
+
+# Sheriff 2019-01-28
+crbug.com/925600 [ Linux ] external/wpt/webrtc-quic/RTCQuicStream.https.html [ Pass Timeout ]
