@@ -116,6 +116,11 @@ ASH_EXPORT bool ShouldExcludeForOverview(const aura::Window* window);
 ASH_EXPORT void RemoveTransientDescendants(
     std::vector<aura::Window*>* out_window_list);
 
+// Minimizes or hides |window| without any animations, in case users what it to
+// hide right away or apply their own animations.
+ASH_EXPORT void HideAndMinimizeWithoutAnimation(aura::Window* window);
+ASH_EXPORT void HideWithoutAnimation(aura::Window* window);
+
 }  // namespace wm
 }  // namespace ash
 
