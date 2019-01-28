@@ -13,6 +13,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -57,6 +58,8 @@ public class AutofillAssistantFacade {
 
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
+        // Have an "attempted starts" baseline for the drop out histogram.
+        AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
         if (canStart(activity.getInitialIntent())) {
             getTab(activity, tab -> startNow(activity, tab));
             return;

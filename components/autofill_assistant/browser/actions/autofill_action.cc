@@ -19,7 +19,6 @@
 
 namespace autofill_assistant {
 
-
 AutofillAction::AutofillAction(const ActionProto& proto)
     : Action(proto), weak_ptr_factory_(this) {
   if (proto.has_use_address()) {

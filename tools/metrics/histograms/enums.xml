@@ -2642,6 +2642,26 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Suggestion Selected"/>
 </enum>
 
+<enum name="AutofillAssistantDropOutReason">
+  <int value="0" label="Autofill Assistant started"/>
+  <int value="1" label="Autostart timed out"/>
+  <int value="2" label="No scripts available"/>
+  <int value="3" label="Custom tab closed"/>
+  <int value="4" label="User declined"/>
+  <int value="5" label="Sheet closed"/>
+  <int value="6" label="Script failed"/>
+  <int value="7" label="User navigation"/>
+  <int value="8" label="Unexpected taps on overlay"/>
+  <int value="9" label="Request payment info failed"/>
+  <int value="10" label="Web contents destroyed"/>
+  <int value="11" label="Render process gone"/>
+  <int value="12" label="Interstitial page attached"/>
+  <int value="13" label="Script initiated shutdown"/>
+  <int value="14" label="Safety net termination"/>
+  <int value="15" label="Tab detached"/>
+  <int value="16" label="Tab changed"/>
+</enum>
+
 <enum name="AutofillCardholderNameFixFlowPromptEvent">
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>

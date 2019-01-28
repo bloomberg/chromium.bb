@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/element_area.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
@@ -102,7 +103,7 @@ class Controller : public ScriptExecutorDelegate,
   void StartPeriodicScriptChecks();
   void StopPeriodicScriptChecks();
   void OnPeriodicScriptCheck();
-  void GiveUp();
+  void GiveUp(Metrics::DropOutReason reason);
 
   // Runs autostart scripts from |runnable_scripts|, if the conditions are
   // right. Returns true if a script was auto-started.
@@ -128,6 +129,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   std::string GetDebugContext() override;
+  Metrics::DropOutReason GetDropOutReason() const override;
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsAnymore() override;
@@ -196,6 +198,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;
+
+  // Drop out reason set when the controller enters a STOPPED state.
+  Metrics::DropOutReason stop_reason_ = Metrics::AA_START;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script

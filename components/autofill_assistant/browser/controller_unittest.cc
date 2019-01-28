@@ -266,7 +266,7 @@ TEST_F(ControllerTest, Stop) {
   EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
       .WillOnce(RunOnceCallback<3>(true, ""));
 
-  EXPECT_CALL(mock_ui_controller_, Shutdown());
+  EXPECT_CALL(mock_ui_controller_, Shutdown(_));
 
   ExecuteScript("stop");
 }
