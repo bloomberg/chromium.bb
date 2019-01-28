@@ -281,6 +281,76 @@ TEST_P(WaylandScreenTest, GetAcceleratedWidgetAtScreenPoint) {
   window_->set_pointer_focus(false);
 }
 
+TEST_P(WaylandScreenTest, GetDisplayMatching) {
+  TestDisplayObserver observer;
+  platform_screen_->AddObserver(&observer);
+
+  const display::Display primary_display =
+      platform_screen_->GetPrimaryDisplay();
+
+  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
+
+  Sync();
+
+  // Place it on the right side of the primary display.
+  const gfx::Rect output2_rect =
+      gfx::Rect(primary_display.bounds().width(), 0, 1024, 768);
+  UpdateOutputGeometry(output2->resource(), output2_rect);
+
+  Sync();
+
+  const display::Display second_display = observer.GetDisplay();
+  EXPECT_EQ(second_display.bounds(), output2_rect);
+
+  // We have two displays: display1(0:0,1024x768) and display2(1024:0,1024x768).
+  EXPECT_EQ(
+      primary_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)).id());
+  EXPECT_EQ(
+      second_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(1024, 0, 10, 10)).id());
+
+  // More pixels on second display.
+  EXPECT_EQ(
+      second_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(1020, 0, 10, 10)).id());
+
+  // More pixels on first display.
+  EXPECT_EQ(
+      primary_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(1018, 0, 10, 10)).id());
+
+  // Half pixels on second and half on primary.
+  EXPECT_EQ(
+      primary_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(1019, 0, 10, 10)).id());
+
+  // Place second display 700 pixels below along y axis (1024:700,1024x768)
+  UpdateOutputGeometry(
+      output2->resource(),
+      gfx::Rect(gfx::Point(output2_rect.x(), output2_rect.y() + 700),
+                output2_rect.size()));
+
+  Sync();
+
+  // The match rect is located outside the displays.
+  EXPECT_EQ(
+      display::kInvalidDisplayId,
+      platform_screen_->GetDisplayMatching(gfx::Rect(1024, 0, 10, 10)).id());
+
+  // At least some of the pixels are located on the display.
+  EXPECT_EQ(
+      primary_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(1023, 0, 10, 10)).id());
+
+  // Most of pixels are located on second display.
+  EXPECT_EQ(
+      second_display.id(),
+      platform_screen_->GetDisplayMatching(gfx::Rect(1023, 695, 10, 10)).id());
+
+  platform_screen_->RemoveObserver(&observer);
+}
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
                          WaylandScreenTest,
                          ::testing::Values(kXdgShellV5));
