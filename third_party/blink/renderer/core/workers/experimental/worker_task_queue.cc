@@ -39,11 +39,10 @@ WorkerTaskQueue::WorkerTaskQueue(Document* document, TaskType task_type)
 
 ScriptPromise WorkerTaskQueue::postFunction(
     ScriptState* script_state,
-    const ScriptValue& function,
+    V8Function* function,
     AbortSignal* signal,
     const Vector<ScriptValue>& arguments) {
   DCHECK(document_->IsContextThread());
-  DCHECK(function.IsFunction());
 
   Task* task =
       MakeGarbageCollected<Task>(ThreadPool::From(*document_), script_state,
@@ -54,10 +53,9 @@ ScriptPromise WorkerTaskQueue::postFunction(
 }
 
 Task* WorkerTaskQueue::postTask(ScriptState* script_state,
-                                const ScriptValue& function,
+                                V8Function* function,
                                 const Vector<ScriptValue>& arguments) {
   DCHECK(document_->IsContextThread());
-  DCHECK(function.IsFunction());
   return MakeGarbageCollected<Task>(ThreadPool::From(*document_), script_state,
                                     function, arguments, task_type_);
 }

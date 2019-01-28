@@ -43,7 +43,7 @@ class TaskBase::AsyncFunctionCompleted : public ScriptFunction {
 
 TaskBase::TaskBase(TaskType task_type,
                    ScriptState* script_state,
-                   const ScriptValue& function,
+                   V8Function* function,
                    const String& function_name)
     : task_type_(task_type),
       self_keep_alive_(this),
@@ -52,10 +52,12 @@ TaskBase::TaskBase(TaskType task_type,
   DCHECK(task_type_ == TaskType::kUserInteraction ||
          task_type_ == TaskType::kIdleTask);
   // TODO(japhet): Handle serialization failures
-  v8::Isolate* isolate = script_state->GetIsolate();
-  if (!function.IsEmpty()) {
+  if (function) {
+    v8::Isolate* isolate = script_state->GetIsolate();
     function_ = SerializedScriptValue::SerializeAndSwallowExceptions(
-        isolate, function.V8Value()->ToString(isolate));
+        isolate, function->CallbackObject()
+                     ->ToString(isolate->GetCurrentContext())
+                     .ToLocalChecked());
   }
 }
 
@@ -421,7 +423,7 @@ void Task::Trace(Visitor* visitor) {
 ResolveTask::ResolveTask(ScriptState* script_state,
                          TaskType task_type,
                          Task* prerequisite)
-    : TaskBase(task_type, script_state, ScriptValue(), String()),
+    : TaskBase(task_type, script_state, nullptr, String()),
       resolver_(ScriptPromiseResolver::Create(script_state)) {
   DCHECK(IsMainThread());
   // It's safe to pass a nullptr ThreadPoolThreadProivder here because it
