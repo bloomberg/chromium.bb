@@ -69,7 +69,7 @@ template <typename GLImageTestDelegate>
 class GLImageNativePixmapToDmabufTest
     : public GLImageTest<GLImageTestDelegate> {};
 
-TYPED_TEST_CASE_P(GLImageNativePixmapToDmabufTest);
+TYPED_TEST_SUITE_P(GLImageNativePixmapToDmabufTest);
 
 TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
   if (this->delegate_.SkipTest())
@@ -97,8 +97,8 @@ TYPED_TEST_P(GLImageNativePixmapToDmabufTest, GLTexture2DToDmabuf) {
 }
 
 // This test verifies that GLImageNativePixmap can be exported as dmabuf fds.
-REGISTER_TYPED_TEST_CASE_P(GLImageNativePixmapToDmabufTest,
-                           GLTexture2DToDmabuf);
+REGISTER_TYPED_TEST_SUITE_P(GLImageNativePixmapToDmabufTest,
+                            GLTexture2DToDmabuf);
 
 using GLImageTestTypes = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferFormat::RGBX_8888>,
@@ -108,17 +108,17 @@ using GLImageTestTypes = testing::Types<
 
 #if !defined(MEMORY_SANITIZER)
 // Fails under MSAN: crbug.com/886995
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmap,
-                              GLImageTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmap,
+                               GLImageTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmap,
-                              GLImageOddSizeTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmap,
+                               GLImageOddSizeTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmap,
-                              GLImageNativePixmapToDmabufTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageNativePixmap,
+                               GLImageNativePixmapToDmabufTest,
+                               GLImageTestTypes);
 #endif
 
 }  // namespace
