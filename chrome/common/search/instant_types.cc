@@ -26,6 +26,7 @@ bool RGBAColor::operator==(const RGBAColor& rhs) const {
 
 ThemeBackgroundInfo::ThemeBackgroundInfo()
     : using_default_theme(true),
+      using_dark_mode(false),
       custom_background_url(std::string()),
       custom_background_attribution_line_1(std::string()),
       custom_background_attribution_line_2(std::string()),
@@ -47,6 +48,7 @@ ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 
 bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
   return using_default_theme == rhs.using_default_theme &&
+         using_dark_mode == rhs.using_dark_mode &&
          custom_background_url == rhs.custom_background_url &&
          custom_background_attribution_line_1 ==
              rhs.custom_background_attribution_line_1 &&

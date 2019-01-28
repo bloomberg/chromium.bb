@@ -73,10 +73,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 
@@ -591,9 +588,6 @@ class LocalNtpSource::SearchConfigurationProvider
     config_data.SetBoolean("isAccessibleBrowser",
                            content::BrowserAccessibilityState::GetInstance()
                                ->IsAccessibleBrowser());
-    config_data.SetBoolean(
-        "isDarkModeEnabled",
-        ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled());
 
     // Serialize the dictionary.
     std::string js_text;
