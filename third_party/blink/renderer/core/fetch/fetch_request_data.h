@@ -40,7 +40,6 @@ class FetchRequestData final
   static FetchRequestData* Create(ScriptState*, const WebServiceWorkerRequest&);
   static FetchRequestData* Create(ScriptState*,
                                   const mojom::blink::FetchAPIRequest&);
-  // Call Request::refreshBody() after calling clone() or pass().
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*, ExceptionState&);
 
@@ -96,7 +95,6 @@ class FetchRequestData final
     header_list_ = header_list;
   }
   BodyStreamBuffer* Buffer() const { return buffer_; }
-  // Call Request::refreshBody() after calling setBuffer().
   void SetBuffer(BodyStreamBuffer* buffer) { buffer_ = buffer; }
   String MimeType() const { return mime_type_; }
   void SetMIMEType(const String& type) { mime_type_ = type; }
