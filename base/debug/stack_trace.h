@@ -108,15 +108,12 @@ class BASE_EXPORT StackTrace {
   void InitTrace(const _CONTEXT* context_record);
 #endif
 
-#if defined(OS_WIN) || defined(OS_ANDROID)
-  // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
-  // the sum of FramesToSkip and FramesToCapture must be less than 63,
-  // so set it to 62.
-  // Testing indicates that Android has issues with a larger value
-  // here, so leave Android at 62 also.
+#if defined(OS_ANDROID)
+  // TODO(https://crbug.com/925525): Testing indicates that Android has issues
+  // with a larger value here, so leave Android at 62.
   static constexpr int kMaxTraces = 62;
 #else
-  // For other architectures, use 250. This seems reasonable without
+  // For other platforms, use 250. This seems reasonable without
   // being huge.
   static constexpr int kMaxTraces = 250;
 #endif
