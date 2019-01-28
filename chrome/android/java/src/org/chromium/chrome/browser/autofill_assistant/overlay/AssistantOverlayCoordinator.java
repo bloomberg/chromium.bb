@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterView.Delegate;
 
 /**
  * Coordinator responsible for showing a full or partial overlay on top of the web page currently
@@ -16,23 +15,24 @@ import org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterVi
 public class AssistantOverlayCoordinator {
     private final ChromeActivity mActivity;
     private final TouchEventFilterView mTouchEventFilter;
-    private final Delegate mTouchEventFilterDelegate;
 
-    public AssistantOverlayCoordinator(ChromeActivity activity, View assistantView,
-            AssistantOverlayModel model, Delegate touchEventFilterDelegate) {
+    public AssistantOverlayCoordinator(
+            ChromeActivity activity, View assistantView, AssistantOverlayModel model) {
         mActivity = activity;
         mTouchEventFilter = assistantView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.touch_event_filter);
-        mTouchEventFilterDelegate = touchEventFilterDelegate;
 
-        mTouchEventFilter.init(mTouchEventFilterDelegate, mActivity.getFullscreenManager(),
+        mTouchEventFilter.init(mActivity.getFullscreenManager(),
                 mActivity.getActivityTab().getWebContents(), mActivity.getCompositorViewHolder());
 
         // Listen for changes in the state.
+        // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.
         model.addObserver((source, propertyKey) -> {
             if (AssistantOverlayModel.STATE == propertyKey) {
                 AssistantOverlayState newState = model.get(AssistantOverlayModel.STATE);
                 setState(newState != null ? newState : AssistantOverlayState.hidden());
+            } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
+                mTouchEventFilter.setDelegate(model.get(AssistantOverlayModel.DELEGATE));
             }
         });
     }

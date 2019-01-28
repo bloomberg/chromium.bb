@@ -55,6 +55,7 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
                                          UiDelegate* ui_delegate)
     : client_(client),
       ui_delegate_(ui_delegate),
+      overlay_delegate_(this),
       header_delegate_(this),
       carousel_delegate_(this),
       weak_ptr_factory_(this) {
@@ -66,6 +67,10 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
       Java_AutofillAssistantUiController_createAndStartUi(
           env, web_contents->GetJavaWebContents(),
           reinterpret_cast<intptr_t>(this));
+
+  // Register overlay_delegate_ as delegate for the overlay.
+  Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
+                                         overlay_delegate_.GetJavaObject());
 
   // Register header_delegate_ as delegate for clicks on header buttons.
   Java_AssistantHeaderModel_setDelegate(env, GetHeaderModel(),
@@ -277,6 +282,23 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
       env, GetOverlayModel(), base::android::ToJavaFloatArray(env, flattened));
 }
 
+void UiControllerAndroid::OnUnexpectedTaps() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_dismissAndShowSnackbar(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ConvertUTF8ToJavaString(
+          env, l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP)),
+      Metrics::OVERLAY_STOP);
+}
+
+void UiControllerAndroid::UpdateTouchableArea() {
+  ui_delegate_->UpdateTouchableArea();
+}
+
+void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
+  ui_delegate_->OnUserInteractionInsideTouchableArea();
+}
+
 // Other methods.
 
 void UiControllerAndroid::ShowOnboarding(
@@ -294,18 +316,6 @@ void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
 void UiControllerAndroid::Close() {
   Java_AutofillAssistantUiController_onClose(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-}
-
-void UiControllerAndroid::UpdateTouchableArea(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  ui_delegate_->UpdateTouchableArea();
-}
-
-void UiControllerAndroid::OnUserInteractionInsideTouchableArea(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcallerj) {
-  ui_delegate_->OnUserInteractionInsideTouchableArea();
 }
 
 void UiControllerAndroid::OnGetPaymentInformation(
