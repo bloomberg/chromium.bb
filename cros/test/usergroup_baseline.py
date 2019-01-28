@@ -123,7 +123,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
                                                'chaps', 'wpa', 'attestation'}),
     GroupEntry(group='wpa', gid=219, users={'root'}),
     GroupEntry(group='input', gid=222, users={'cras', 'power', 'chronos'}),
-    GroupEntry(group='cras', gid=600, users={'chronos', 'power',
+    GroupEntry(group='cras', gid=600, users={'chronos', 'crosvm', 'power',
                                              'rtanalytics'}),
     GroupEntry(group='wayland', gid=601, users={'chronos', 'crosvm'}),
     GroupEntry(group='arc-bridge', gid=602, users={'chronos'}),
