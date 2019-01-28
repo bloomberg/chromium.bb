@@ -602,13 +602,9 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
   }
 }
 
-// static
 // Segment bidi runs by resolving bidi embedding levels.
 // http://unicode.org/reports/tr9/#Resolving_Embedding_Levels
-// TODO(xiaochengh): Merge it back into SegmentBidiRuns(), as we no longer have
-// any legacy callers.
-void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
-                                           const ComputedStyle& style) {
+void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
   if (!data->is_bidi_enabled_) {
     data->SetBaseDirection(TextDirection::kLtr);
     return;
@@ -616,7 +612,7 @@ void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
 
   NGBidiParagraph bidi;
   data->text_content.Ensure16Bit();
-  if (!bidi.SetParagraph(data->text_content, style)) {
+  if (!bidi.SetParagraph(data->text_content, Style())) {
     // On failure, give up bidi resolving and reordering.
     data->is_bidi_enabled_ = false;
     data->SetBaseDirection(TextDirection::kLtr);
@@ -649,10 +645,6 @@ void NGInlineNode::SegmentBidiRunsInternal(NGInlineNodeData* data,
     item_index++;
   DCHECK_EQ(item_index, items.size());
 #endif
-}
-
-void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
-  SegmentBidiRunsInternal(data, Style());
 }
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
