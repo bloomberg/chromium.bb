@@ -69,10 +69,6 @@ WebString WebDocumentLoaderImpl::HttpMethod() const {
   return DocumentLoader::HttpMethod();
 }
 
-mojom::FetchCacheMode WebDocumentLoaderImpl::GetCacheMode() const {
-  return DocumentLoader::CacheMode();
-}
-
 WebString WebDocumentLoaderImpl::Referrer() const {
   return DocumentLoader::GetReferrer().referrer;
 }

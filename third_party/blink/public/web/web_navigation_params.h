@@ -169,9 +169,6 @@ struct BLINK_EXPORT WebNavigationParams {
   WebURL url;
   // The http method (if any) used to load the main resource.
   WebString http_method;
-  // The cache mode used to load the main resource.
-  // TODO(dgozman): remove this, we are not really using it.
-  mojom::FetchCacheMode cache_mode = mojom::FetchCacheMode::kDefault;
   // The referrer string and policy used to load the main resource.
   WebString referrer;
   network::mojom::ReferrerPolicy referrer_policy =

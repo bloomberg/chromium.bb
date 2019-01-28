@@ -428,7 +428,6 @@ bool IsTopLevelNavigation(WebFrame* frame) {
 void FillNavigationParamsRequest(
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
-    bool is_view_source_mode_enabled,
     blink::WebNavigationParams* navigation_params) {
   // Use the original navigation url to start with. We'll replay the redirects
   // afterwards and will eventually arrive to the final url.
@@ -438,9 +437,6 @@ void FillNavigationParamsRequest(
   navigation_params->http_method = WebString::FromLatin1(
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method);
-
-  if (is_view_source_mode_enabled)
-    navigation_params->cache_mode = blink::mojom::FetchCacheMode::kForceCache;
 
   if (common_params.referrer.url.is_valid()) {
     WebString referrer = WebSecurityPolicy::GenerateReferrerHeader(
@@ -2821,9 +2817,7 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   } else {
     GetContentClient()->renderer()->PrepareErrorPage(
         this, error, document_loader->HttpMethod().Ascii(),
-        document_loader->GetCacheMode() ==
-            blink::mojom::FetchCacheMode::kBypassCache,
-        &error_html);
+        false /* ignoring_cache */, &error_html);
   }
 
   // Make sure we never show errors in view source mode.
@@ -3316,7 +3310,6 @@ void RenderFrameImpl::CommitNavigation(
     InternalDocumentStateData* internal_data =
         InternalDocumentStateData::FromDocumentState(document_state.get());
     FillNavigationParamsRequest(common_params, commit_params,
-                                frame_->IsViewSourceModeEnabled(),
                                 navigation_params.get());
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         common_params, commit_params, internal_data->request_id(), head,
@@ -3381,10 +3374,8 @@ void RenderFrameImpl::CommitFailedNavigation(
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
   FillNavigationParamsRequest(common_params, commit_params,
-                              frame_->IsViewSourceModeEnabled(),
                               navigation_params.get());
   navigation_params->url = GURL(kUnreachableWebDataURL);
-  navigation_params->cache_mode = blink::mojom::FetchCacheMode::kNoStore;
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -4581,9 +4572,7 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
         this, unreachable_url, document_loader->HttpMethod().Ascii(),
-        document_loader->GetCacheMode() ==
-            blink::mojom::FetchCacheMode::kBypassCache,
-        http_status_code, &error_html);
+        false /* ignoring_cache */, http_status_code, &error_html);
     // This call may run scripts, e.g. via the beforeunload event, and possibly
     // delete |this|.
     LoadNavigationErrorPage(document_loader,

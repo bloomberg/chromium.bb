@@ -28,7 +28,6 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   auto result = std::make_unique<WebNavigationParams>();
   result->url = info.url_request.Url();
   result->http_method = info.url_request.HttpMethod();
-  result->cache_mode = info.url_request.GetCacheMode();
   result->referrer = info.url_request.HttpHeaderField(http_names::kReferer);
   result->referrer_policy = info.url_request.GetReferrerPolicy();
   result->http_body = info.url_request.HttpBody();
@@ -62,8 +61,6 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateForErrorPage(
     const WebURL& unreachable_url) {
   auto result = WebNavigationParams::CreateWithHTMLString(html, base_url);
   result->unreachable_url = unreachable_url;
-  // Locally generated error pages should not be cached.
-  result->cache_mode = blink::mojom::FetchCacheMode::kNoStore;
   static_cast<WebDocumentLoaderImpl*>(failed_document_loader)
       ->FillNavigationParamsForErrorPage(result.get());
   return result;
