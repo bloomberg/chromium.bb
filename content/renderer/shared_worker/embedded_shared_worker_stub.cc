@@ -16,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/renderer/appcache/appcache_frontend_impl.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -87,7 +87,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::SharedWorkerInfoPtr info,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
-    const mojom::RendererPreferences& renderer_preferences,
+    const blink::mojom::RendererPreferences& renderer_preferences,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr

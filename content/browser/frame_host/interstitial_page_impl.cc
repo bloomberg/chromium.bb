@@ -561,7 +561,7 @@ bool InterstitialPageImpl::ShowingInterstitialPage() {
   return false;
 }
 
-mojom::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
+blink::mojom::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   delegate_->OverrideRendererPrefs(&renderer_preferences_);
   return renderer_preferences_;

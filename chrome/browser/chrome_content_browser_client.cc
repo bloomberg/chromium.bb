@@ -284,7 +284,6 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -324,6 +323,7 @@
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/platform/modules/webshare/webshare.mojom.h"
 #include "third_party/widevine/cdm/buildflags.h"
@@ -2277,7 +2277,7 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
     content::BrowserContext* browser_context,
-    content::mojom::RendererPreferences* out_prefs) {
+    blink::mojom::RendererPreferences* out_prefs) {
   DCHECK(browser_context);
   DCHECK(out_prefs);
   renderer_preferences_util::UpdateFromSystemSettings(

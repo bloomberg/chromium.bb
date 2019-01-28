@@ -31,7 +31,6 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/loader_util.h"
@@ -39,6 +38,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader//url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "url/origin.h"
 
@@ -184,7 +184,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
                                                network::kDefaultAcceptHeader);
 
   // Set the "DNT" header if necessary.
-  mojom::RendererPreferences renderer_preferences;
+  blink::mojom::RendererPreferences renderer_preferences;
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       browser_context, &renderer_preferences);
   if (renderer_preferences.enable_do_not_track)

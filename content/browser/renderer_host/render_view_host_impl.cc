@@ -137,7 +137,7 @@ void GetFontInfo(gfx::PlatformFontWin::SystemFont system_font,
 }
 #endif  // OS_WIN
 
-void GetPlatformSpecificPrefs(mojom::RendererPreferences* prefs) {
+void GetPlatformSpecificPrefs(blink::mojom::RendererPreferences* prefs) {
 #if defined(OS_WIN)
   // Note that what is called "height" in this struct is actually the font size;
   // font "height" typically includes ascender, descender, and padding and is
@@ -407,7 +407,7 @@ bool RenderViewHostImpl::IsRenderViewLive() const {
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
-  mojom::RendererPreferences renderer_preferences =
+  blink::mojom::RendererPreferences renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
   GetPlatformSpecificPrefs(&renderer_preferences);
   Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));

@@ -9,11 +9,13 @@
 
 #include "content/common/content_export.h"
 
-namespace content {
-
+namespace blink {
 namespace mojom {
 class RendererPreferences;
 }
+}  // namespace blink
+
+namespace content {
 
 class NavigationEntry;
 
@@ -47,7 +49,8 @@ class CONTENT_EXPORT InterstitialPageDelegate {
 
   // Allows the delegate to override the renderer preferences structure that's
   // sent to the new RenderViewHost.
-  virtual void OverrideRendererPrefs(mojom::RendererPreferences* prefs) {}
+  virtual void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) {
+  }
 
   // Return the interstitial type for testing.
   virtual TypeID GetTypeForTesting() const;

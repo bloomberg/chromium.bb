@@ -11,7 +11,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -20,6 +19,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
@@ -69,7 +69,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // chrome-extension://).
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
       ServiceWorkerNetworkProvider* network_provider,
-      mojom::RendererPreferences renderer_preferences,
+      blink::mojom::RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -139,7 +139,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   //
   // Regarding the rest of params, see the comments on Create().
   WebWorkerFetchContextImpl(
-      mojom::RendererPreferences renderer_preferences,
+      blink::mojom::RendererPreferences renderer_preferences,
       mojom::RendererPreferenceWatcherRequest watcher_request,
       blink::mojom::ServiceWorkerWorkerClientRequest
           service_worker_client_request,
@@ -168,7 +168,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void ResetServiceWorkerURLLoaderFactory();
 
   // Implements mojom::RendererPreferenceWatcher.
-  void NotifyUpdate(mojom::RendererPreferencesPtr new_prefs) override;
+  void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
   mojo::Binding<blink::mojom::ServiceWorkerWorkerClient> binding_;
   blink::mojom::ServiceWorkerWorkerClientRegistryPtr
@@ -239,7 +239,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   GURL origin_url_;
   int appcache_host_id_ = blink::mojom::kAppCacheNoHostId;
 
-  mojom::RendererPreferences renderer_preferences_;
+  blink::mojom::RendererPreferences renderer_preferences_;
 
   // |watcher_binding_| and |child_preference_watchers_| are for keeping track
   // of updates in the renderer preferences.

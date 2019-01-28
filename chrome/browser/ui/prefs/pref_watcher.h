@@ -19,8 +19,8 @@ namespace content {
 class RendererPreferenceWatcher;
 }  // namespace content
 
-// Watches updates in WebKitPreferences and mojom::RendererPreferences, and
-// notifies tab helpers and watchers for workers of those updates.
+// Watches updates in WebKitPreferences and blink::mojom::RendererPreferences,
+// and notifies tab helpers and watchers for workers of those updates.
 class PrefWatcher : public KeyedService {
  public:
   explicit PrefWatcher(Profile* profile);
@@ -44,10 +44,10 @@ class PrefWatcher : public KeyedService {
   PrefChangeRegistrar pref_change_registrar_;
 
   // |tab_helpers_| observe changes in WebKitPreferences and
-  // mojom::RendererPreferences.
+  // blink::mojom::RendererPreferences.
   std::set<PrefsTabHelper*> tab_helpers_;
 
-  // |worker_watchers_| observe changes in mojom::RendererPreferences.
+  // |worker_watchers_| observe changes in blink::mojom::RendererPreferences.
   mojo::InterfacePtrSet<content::mojom::RendererPreferenceWatcher>
       worker_watchers_;
 };

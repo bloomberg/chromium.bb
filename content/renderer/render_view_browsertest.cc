@@ -700,7 +700,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
 }
 
 TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
-  mojom::RendererPreferences prefs = view()->renderer_preferences();
+  blink::mojom::RendererPreferences prefs = view()->renderer_preferences();
   prefs.browser_handles_all_top_level_requests = true;
   view()->OnSetRendererPrefs(prefs);
 

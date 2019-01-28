@@ -154,7 +154,7 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 
 scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
     ServiceWorkerNetworkProvider* network_provider,
-    mojom::RendererPreferences renderer_preferences,
+    blink::mojom::RendererPreferences renderer_preferences,
     mojom::RendererPreferenceWatcherRequest watcher_request,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -204,7 +204,7 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
 }
 
 WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
-    mojom::RendererPreferences renderer_preferences,
+    blink::mojom::RendererPreferences renderer_preferences,
     mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::ServiceWorkerWorkerClientRequest
         service_worker_client_request,
@@ -523,7 +523,7 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
 }
 
 void WebWorkerFetchContextImpl::NotifyUpdate(
-    mojom::RendererPreferencesPtr new_prefs) {
+    blink::mojom::RendererPreferencesPtr new_prefs) {
   if (accept_languages_watcher_ &&
       renderer_preferences_.accept_languages != new_prefs->accept_languages)
     accept_languages_watcher_->NotifyUpdate();

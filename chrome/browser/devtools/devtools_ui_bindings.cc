@@ -58,7 +58,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
@@ -70,6 +69,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/page_transition_types.h"
 

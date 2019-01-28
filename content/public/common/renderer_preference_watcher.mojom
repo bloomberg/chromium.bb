@@ -4,11 +4,11 @@
 
 module content.mojom;
 
-import "content/public/common/renderer_preferences.mojom";
+import "third_party/blink/public/mojom/renderer_preferences.mojom";
 
 // Implementation of this interface usually lives in the renderer process and
 // the browser process calls NotifyUpdate() whenever preferences are updated.
 interface RendererPreferenceWatcher {
   // Send the new preference to the receiver.
-  NotifyUpdate(RendererPreferences new_prefs);
+  NotifyUpdate(blink.mojom.RendererPreferences new_prefs);
 };

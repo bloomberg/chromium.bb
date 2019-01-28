@@ -518,7 +518,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     const GURL& service_worker_scope,
     const GURL& script_url,
     bool is_starting_installed_worker,
-    mojom::RendererPreferencesPtr renderer_preferences,
+    blink::mojom::RendererPreferencesPtr renderer_preferences,
     blink::mojom::ServiceWorkerRequest service_worker_request,
     blink::mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,

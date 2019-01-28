@@ -148,7 +148,7 @@ SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
 }
 
 void SafeBrowsingBlockingPage::OverrideRendererPrefs(
-    content::mojom::RendererPreferences* prefs) {
+    blink::mojom::RendererPreferences* prefs) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);

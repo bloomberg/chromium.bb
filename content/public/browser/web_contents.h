@@ -45,8 +45,11 @@
 #endif
 
 namespace blink {
-struct Manifest;
+namespace mojom {
+class RendererPreferences;
 }
+struct Manifest;
+}  // namespace blink
 
 namespace base {
 class TimeTicks;
@@ -67,10 +70,6 @@ class InterfaceProvider;
 }
 
 namespace content {
-
-namespace mojom {
-class RendererPreferences;
-}
 
 class BrowserContext;
 class BrowserPluginGuestDelegate;
@@ -736,7 +735,7 @@ class WebContents : public PageNavigator,
   virtual bool WillNotifyDisconnection() = 0;
 
   // Returns the settings which get passed to the renderer.
-  virtual mojom::RendererPreferences* GetMutableRendererPrefs() = 0;
+  virtual blink::mojom::RendererPreferences* GetMutableRendererPrefs() = 0;
 
   // Tells the tab to close now. The tab will take care not to close until it's
   // out of nested run loops.

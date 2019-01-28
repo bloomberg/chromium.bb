@@ -13,12 +13,12 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/webplugininfo_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
@@ -298,7 +298,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
                           gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
 
-IPC_STRUCT_TRAITS_BEGIN(content::mojom::RendererPreferences)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
   IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)
   IPC_STRUCT_TRAITS_MEMBER(hinting)

@@ -49,7 +49,6 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_importance_signals.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
@@ -60,6 +59,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
@@ -421,7 +421,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                      base::OnceCallback<void(int64_t)> callback) override;
   const std::string& GetContentsMimeType() override;
   bool WillNotifyDisconnection() override;
-  mojom::RendererPreferences* GetMutableRendererPrefs() override;
+  blink::mojom::RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
   void SystemDragEnded(RenderWidgetHost* source_rwh) override;
   void NavigatedByUser() override;
@@ -631,7 +631,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-  mojom::RendererPreferences GetRendererPrefs(
+  blink::mojom::RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
   void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
                             const blink::WebInputEvent::Type type) override;
@@ -1622,7 +1622,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool is_showing_before_unload_dialog_;
 
   // Settings that get passed to the renderer process.
-  mojom::RendererPreferences renderer_preferences_;
+  blink::mojom::RendererPreferences renderer_preferences_;
 
   // The time that this WebContents was last made active. The initial value is
   // the WebContents creation time.

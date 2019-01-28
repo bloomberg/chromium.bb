@@ -75,6 +75,7 @@ class FilePath;
 
 namespace blink {
 namespace mojom {
+class RendererPreferences;
 class WebUsbService;
 }
 }  // namespace blink
@@ -149,11 +150,6 @@ class FileSystemBackend;
 }
 
 namespace content {
-
-namespace mojom {
-class RendererPreferences;
-}
-
 enum class PermissionType;
 class AuthenticatorRequestClientDelegate;
 class BrowserChildProcessHost;
@@ -551,7 +547,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // from their closest ancestor frame.
   virtual void UpdateRendererPreferencesForWorker(
       BrowserContext* browser_context,
-      mojom::RendererPreferences* out_prefs);
+      blink::mojom::RendererPreferences* out_prefs);
 
   // DEPRECATED, Please use the NavigationHandle to modify headers.
   // See https://crbug.com/919432.

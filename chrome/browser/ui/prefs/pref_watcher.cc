@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "content/public/common/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace {
 
@@ -103,7 +103,7 @@ void PrefWatcher::UpdateRendererPreferences() {
   for (auto* helper : tab_helpers_)
     helper->UpdateRendererPreferences();
 
-  content::mojom::RendererPreferences prefs;
+  blink::mojom::RendererPreferences prefs;
   renderer_preferences_util::UpdateFromSystemSettings(&prefs, profile_);
   worker_watchers_.ForAllPtrs(
       [&prefs](content::mojom::RendererPreferenceWatcher* watcher) {
