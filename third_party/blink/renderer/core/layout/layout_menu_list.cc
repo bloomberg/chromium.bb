@@ -75,7 +75,8 @@ void LayoutMenuList::UpdateInnerStyle() {
   scoped_refptr<ComputedStyle> inner_style =
       ComputedStyle::Clone(inner_block_->StyleRef());
   AdjustInnerStyle(*inner_style);
-  inner_block_->SetStyleInternal(std::move(inner_style));
+  inner_block_->SetModifiedStyleOutsideStyleRecalc(std::move(inner_style),
+                                                   ApplyStyleChanges::kNo);
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
   if (Layer())

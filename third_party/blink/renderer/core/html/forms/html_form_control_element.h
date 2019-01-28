@@ -150,7 +150,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
                          WebFocusType,
                          InputDeviceCapabilities* source_capabilities) override;
 
-  void DidRecalcStyle(StyleRecalcChange) override;
+  void DidRecalcStyle(const StyleRecalcChange) override;
 
   virtual void ResetImpl() {}
   virtual bool SupportsAutofocus() const;

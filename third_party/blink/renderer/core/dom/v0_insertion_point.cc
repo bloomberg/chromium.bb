@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
 
@@ -105,17 +106,19 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   // We need to attach the distribution here so that they're inserted in the
   // right order otherwise the n^2 protection inside LayoutTreeBuilder will
   // cause them to be inserted in the wrong place later. This also lets
-  // distributed nodes benefit from the n^2 protection.
-  AttachContext children_context(context);
-
-  for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
-    Node* child = distributed_nodes_.at(i);
-    if (child->NeedsAttach())
-      child->AttachLayoutTree(children_context);
+  // distributed nodes benefit from the n^2 protection. If the distributed
+  // children are the direct fallback children they are attached in
+  // ContainerNodes::AttachLayoutTree() via the base class call below.
+  if (!DistributedNodesAreFallback()) {
+    AttachContext children_context(context);
+    for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
+      Node* child = distributed_nodes_.at(i);
+      if (child->NeedsReattachLayoutTree())
+        child->AttachLayoutTree(children_context);
+    }
+    if (children_context.previous_in_flow)
+      context.previous_in_flow = children_context.previous_in_flow;
   }
-  if (children_context.previous_in_flow)
-    context.previous_in_flow = children_context.previous_in_flow;
-
   HTMLElement::AttachLayoutTree(context);
 }
 
@@ -136,28 +139,21 @@ void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
   }
 }
 
-void V0InsertionPoint::DidRecalcStyle(StyleRecalcChange change) {
-  if (!HasDistribution() || DistributedNodeAt(0)->parentNode() == this) {
-    // We either do not have distributed children or the distributed children
-    // are the fallback children. Fallback children have already been
-    // recalculated in ContainerNode::RecalcDescendantStyles().
+void V0InsertionPoint::DidRecalcStyle(const StyleRecalcChange change) {
+  if (DistributedNodesAreFallback()) {
+    // Fallback children have already been recalculated in
+    // ContainerNode::RecalcDescendantStyles().
     return;
   }
 
-  StyleChangeType style_change_type =
-      change == kForce ? kSubtreeStyleChange : kLocalStyleChange;
-
   for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
     Node* node = distributed_nodes_.at(i);
-    if (change == kReattach && node->IsElementNode()) {
-      if (node->ShouldCallRecalcStyle(kReattach))
-        ToElement(node)->RecalcStyle(kReattach);
+    if (!change.TraverseChild(*node))
       continue;
-    }
-    node->SetNeedsStyleRecalc(
-        style_change_type,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kPropagateInheritChangeToDistributedNodes));
+    if (node->IsElementNode())
+      ToElement(node)->RecalcStyle(change);
+    else if (node->IsTextNode())
+      ToText(node)->RecalcTextStyle(change);
   }
 }
 

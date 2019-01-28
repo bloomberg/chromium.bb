@@ -44,13 +44,12 @@ class SVGStopElement final : public SVGElement {
   void Trace(blink::Visitor*) override;
 
  protected:
-  void DidRecalcStyle(StyleRecalcChange) override;
+  void DidRecalcStyle(const StyleRecalcChange) override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  // Stop elements don't have associated layout objects
-  // (they use NonLayoutObjectComputedStyle instead).
+  // Stop elements don't have associated layout objects.
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
     return false;
   }

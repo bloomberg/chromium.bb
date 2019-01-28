@@ -305,7 +305,7 @@ void ListItemOrdinal::ItemInsertedOrRemoved(
 
   // Avoid an O(n^2) walk over the children below when they're all known to be
   // attaching.
-  if (list_node->NeedsAttach())
+  if (list_node->NeedsReattachLayoutTree())
     return;
 
   InvalidateOrdinalsAfter(is_list_reversed, list_node, item_node);

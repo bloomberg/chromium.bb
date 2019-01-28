@@ -644,7 +644,7 @@ void LayoutCounter::LayoutObjectSubtreeAttached(LayoutObject* layout_object) {
     node = node->parentNode();
   else
     node = layout_object->GeneratingNode();
-  if (node && node->NeedsAttach())
+  if (node && node->NeedsReattachLayoutTree())
     return;  // No need to update if the parent is not attached yet
   for (LayoutObject* descendant = layout_object; descendant;
        descendant = descendant->NextInPreOrder(layout_object))
@@ -655,7 +655,7 @@ void LayoutCounter::LayoutObjectStyleChanged(LayoutObject& layout_object,
                                              const ComputedStyle* old_style,
                                              const ComputedStyle& new_style) {
   Node* node = layout_object.GeneratingNode();
-  if (!node || node->NeedsAttach())
+  if (!node || node->NeedsReattachLayoutTree())
     return;  // cannot have generated content or if it can have, it will be
              // handled during attaching
   const CounterDirectiveMap* old_counter_directives =

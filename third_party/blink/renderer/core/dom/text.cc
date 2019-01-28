@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/dom/text.h"
 
+#include <utility>
+
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -370,44 +372,49 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
   if (layout_object_is_needed == !!GetLayoutObject())
     return;
 
-  // The following is almost the same as Node::reattachLayoutTree() except that
-  // we create a layoutObject only if needed.  Not calling reattachLayoutTree()
-  // to avoid repeated calls to Text::textLayoutObjectIsNeeded().
   AttachContext reattach_context;
   reattach_context.performing_reattach = true;
 
-  if (GetStyleChangeType() < kNeedsReattachStyleChange)
-    DetachLayoutTree(reattach_context);
   if (layout_object_is_needed) {
+    DCHECK(!GetLayoutObject());
     LayoutTreeBuilderForText(*this, parent_layout_object,
                              style_parent->MutableComputedStyle())
         .CreateLayoutObject();
+  } else {
+    DetachLayoutTree(reattach_context);
   }
   CharacterData::AttachLayoutTree(reattach_context);
 }
 
-void Text::RecalcTextStyle(StyleRecalcChange change) {
+namespace {
+
+bool NeedsWhitespaceLayoutObject(const ComputedStyle& style) {
+  return style.PreserveNewline();
+}
+
+}  // namespace
+
+void Text::RecalcTextStyle(const StyleRecalcChange change) {
+  scoped_refptr<ComputedStyle> new_style =
+      GetDocument().EnsureStyleResolver().StyleForText(this);
   if (LayoutText* layout_text = GetLayoutObject()) {
-    if (change != kNoChange || NeedsStyleRecalc()) {
-      scoped_refptr<ComputedStyle> new_style =
-          GetDocument().EnsureStyleResolver().StyleForText(this);
-      const ComputedStyle* layout_parent_style =
-          GetLayoutObject()->Parent()->Style();
-      if (!new_style || (new_style != layout_parent_style &&
-                         !new_style->InheritedEqual(*layout_parent_style))) {
-        // The computed style or the need for an anonymous inline wrapper for a
-        // display:contents text child changed.
-        SetNeedsReattachLayoutTree();
-        return;
-      }
-      layout_text->SetStyle(std::move(new_style));
+    const ComputedStyle* layout_parent_style =
+        GetLayoutObject()->Parent()->Style();
+    if (!new_style || (new_style != layout_parent_style &&
+                       !new_style->InheritedEqual(*layout_parent_style))) {
+      // The computed style or the need for an anonymous inline wrapper for a
+      // display:contents text child changed.
+      SetNeedsReattachLayoutTree();
+      return;
     }
+    layout_text->SetStyle(std::move(new_style));
     if (NeedsStyleRecalc())
       layout_text->SetText(DataImpl());
-    ClearNeedsStyleRecalc();
-  } else if (NeedsStyleRecalc() || NeedsWhitespaceLayoutObject()) {
+  } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
+                           NeedsWhitespaceLayoutObject(*new_style))) {
     SetNeedsReattachLayoutTree();
   }
+  ClearNeedsStyleRecalc();
 }
 
 void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
@@ -418,15 +425,6 @@ void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   ReattachLayoutTree();
   whitespace_attacher.DidReattachText(this);
   ClearNeedsReattachLayoutTree();
-}
-
-// If a whitespace node had no layoutObject and goes through a recalcStyle it
-// may need to create one if the parent style now has white-space: pre.
-bool Text::NeedsWhitespaceLayoutObject() {
-  DCHECK(!GetLayoutObject());
-  if (const ComputedStyle* style = ParentComputedStyle())
-    return style->PreserveNewline();
-  return false;
 }
 
 // Passing both |textNode| and its layout object because repeated calls to

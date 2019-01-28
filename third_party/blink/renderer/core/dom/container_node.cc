@@ -163,7 +163,7 @@ void ContainerNode::ParserTakeAllChildrenFrom(ContainerNode& old_parent) {
 }
 
 ContainerNode::~ContainerNode() {
-  DCHECK(NeedsAttach());
+  DCHECK(isConnected() || !NeedsStyleRecalc());
 }
 
 DISABLE_CFI_PERF
@@ -727,7 +727,7 @@ void ContainerNode::RemoveBetween(Node* previous_child,
 
   DCHECK_EQ(old_child.parentNode(), this);
 
-  if (!old_child.NeedsAttach())
+  if (InActiveDocument())
     old_child.DetachLayoutTree();
 
   if (next_child)
@@ -965,50 +965,17 @@ void ContainerNode::RemovedFrom(ContainerNode& insertion_point) {
   Node::RemovedFrom(insertion_point);
 }
 
-#if DCHECK_IS_ON()
-namespace {
-
-bool AttachedAllowedWhenAttaching(Node* node) {
-  return node->getNodeType() == Node::kCommentNode ||
-         node->getNodeType() == Node::kProcessingInstructionNode;
-}
-
-bool ChildAttachedAllowedWhenAttachingChildren(ContainerNode* node) {
-  if (node->IsShadowRoot())
-    return true;
-  if (node->IsV0InsertionPoint())
-    return true;
-  if (IsHTMLSlotElement(node))
-    return true;
-  if (IsShadowHost(node))
-    return true;
-  return false;
-}
-
-}  // namespace
-#endif
-
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
-  for (Node* child = firstChild(); child; child = child->nextSibling()) {
-#if DCHECK_IS_ON()
-    DCHECK(child->NeedsAttach() || AttachedAllowedWhenAttaching(child) ||
-           ChildAttachedAllowedWhenAttachingChildren(this));
-#endif
-    if (child->NeedsAttach())
-      child->AttachLayoutTree(context);
-  }
-
-  ClearChildNeedsStyleRecalc();
-  ClearChildNeedsReattachLayoutTree();
+  for (Node* child = firstChild(); child; child = child->nextSibling())
+    child->AttachLayoutTree(context);
   Node::AttachLayoutTree(context);
+  ClearChildNeedsReattachLayoutTree();
 }
 
 void ContainerNode::DetachLayoutTree(const AttachContext& context) {
   for (Node* child = firstChild(); child; child = child->nextSibling())
     child->DetachLayoutTree(context);
-
-  SetChildNeedsStyleRecalc();
   Node::DetachLayoutTree(context);
 }
 
@@ -1016,12 +983,30 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   GetDocument().IncDOMTreeVersion();
   GetDocument().NotifyChangeChildren(*this);
   InvalidateNodeListCachesInAncestors(nullptr, nullptr, &change);
-  if (change.IsChildInsertion()) {
-    if (change.sibling_changed->NeedsStyleRecalc())
-      MarkAncestorsWithChildNeedsStyleRecalc(change.sibling_changed);
-  } else if (change.IsChildRemoval() || change.type == kAllChildrenRemoved) {
+
+  if (change.IsChildRemoval() || change.type == kAllChildrenRemoved) {
     GetDocument().GetStyleEngine().ChildrenRemoved(*this);
+    return;
   }
+  if (!change.IsChildInsertion())
+    return;
+  if (!isConnected())
+    return;
+  if (!IsDocumentNode() && !IsShadowRoot() && !GetComputedStyle()) {
+    // There is no need to mark for style recalc if the parent element does not
+    // Already have a ComputedStyle. For instance if we insert nodes into a
+    // display:none subtree. If this ContainerNode gets a ComputedStyle during
+    // the next style recalc, we will traverse into the inserted children since
+    // the ComputedStyle goes from null to non-null.
+    return;
+  }
+  if (change.sibling_changed->getNodeType() == Node::kCommentNode)
+    return;
+  if (change.sibling_changed->getNodeType() == Node::kProcessingInstructionNode)
+    return;
+  change.sibling_changed->SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kNodeInserted));
 }
 
 void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
@@ -1402,20 +1387,17 @@ void ContainerNode::SetRestyleFlag(DynamicRestyleFlags mask) {
   EnsureRareData().SetRestyleFlag(mask);
 }
 
-void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change,
-                                           bool calc_invisible) {
+void ContainerNode::RecalcDescendantStyles(const StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
-  DCHECK(change >= kUpdatePseudoElements || ChildNeedsStyleRecalc());
   DCHECK(!NeedsStyleRecalc());
 
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
-    if (child->IsTextNode()) {
+    if (!change.TraverseChild(*child))
+      continue;
+    if (child->IsTextNode())
       ToText(child)->RecalcTextStyle(change);
-    } else if (child->IsElementNode()) {
-      Element* element = ToElement(child);
-      if (element->ShouldCallRecalcStyle(change))
-        element->RecalcStyle(change, calc_invisible);
-    }
+    else if (child->IsElementNode())
+      ToElement(child)->RecalcStyle(change);
   }
 }
 
@@ -1456,7 +1438,6 @@ void ContainerNode::RebuildNonDistributedChildren() {
   WhitespaceAttacher whitespace_attacher;
   for (Node* child = lastChild(); child; child = child->previousSibling())
     RebuildLayoutTreeForChild(child, whitespace_attacher);
-  ClearChildNeedsStyleRecalc();
   ClearChildNeedsReattachLayoutTree();
 }
 
@@ -1482,10 +1463,6 @@ void ContainerNode::RebuildChildrenLayoutTrees(
   // point in O(1) time.  See crbug.com/288225
   for (Node* child = lastChild(); child; child = child->previousSibling())
     RebuildLayoutTreeForChild(child, whitespace_attacher);
-
-  // This is done in ContainerNode::AttachLayoutTree but will never be cleared
-  // if we don't enter ContainerNode::AttachLayoutTree so we do it here.
-  ClearChildNeedsStyleRecalc();
 }
 
 void ContainerNode::CheckForSiblingStyleChanges(SiblingCheckType change_type,

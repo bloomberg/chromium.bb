@@ -216,6 +216,8 @@ class CORE_EXPORT SVGElement : public Element {
   bool IsPresentationAttribute(const QualifiedName&) const override;
   virtual bool IsPresentationAttributeWithSVGDOM(const QualifiedName&) const;
 
+  bool HasSVGParent() const;
+
  protected:
   SVGElement(const QualifiedName&,
              Document&,
@@ -241,8 +243,6 @@ class CORE_EXPORT SVGElement : public Element {
   static void MarkForLayoutAndParentResourceInvalidation(LayoutObject&);
 
   virtual bool SelfHasRelativeLengths() const { return false; }
-
-  bool HasSVGParent() const;
 
   SVGElementSet* SetOfIncomingReferences() const;
 
@@ -274,7 +274,7 @@ class CORE_EXPORT SVGElement : public Element {
       PseudoId pseudo_element_specifier = kPseudoIdNone) final {
     return EnsureComputedStyle(pseudo_element_specifier);
   }
-  void WillRecalcStyle(StyleRecalcChange) override;
+  void WillRecalcStyle(const StyleRecalcChange) override;
   static SVGElementSet& GetDependencyTraversalVisitedSet();
 
   HeapHashSet<WeakMember<SVGElement>> elements_with_relative_lengths_;

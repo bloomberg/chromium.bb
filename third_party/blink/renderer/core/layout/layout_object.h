@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -1329,17 +1331,28 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       MarkingBehavior marking_behaviour = kMarkContainerChain);
 
   // Set the style of the object and update the state of the object accordingly.
-  void SetStyle(scoped_refptr<ComputedStyle>);
+  // ApplyStyleChanges = kYes means we will apply any changes between the old
+  // and new ComputedStyle like paint and size invalidations. If kNo, just set
+  // the ComputedStyle member.
+  enum class ApplyStyleChanges { kNo, kYes };
+  void SetStyle(scoped_refptr<ComputedStyle>,
+                ApplyStyleChanges = ApplyStyleChanges::kYes);
 
   // Set the style of the object if it's generated content.
   void SetPseudoStyle(scoped_refptr<ComputedStyle>);
 
-  // Updates only the local style ptr of the object.  Does not update the state
-  // of the object, and so only should be called when the style is known not to
-  // have changed (or from setStyle).
-  void SetStyleInternal(scoped_refptr<ComputedStyle> style) {
-    style_ = std::move(style);
-  }
+  // In some cases we modify the ComputedStyle after the style recalc, either
+  // for updating anonymous style or doing layout hacks for special elements
+  // where we update the ComputedStyle during layout.
+  // If the LayoutObject has an associated node, we will SetComputedStyle on
+  // that node with the new ComputedStyle.
+  // ApplyStyleChanges = kNo means we will simply set the member object. If it's
+  // kYes, we will apply any changes from the previously set ComputedStyle to do
+  // visual invalidation etc.
+  //
+  // Do not use unless strictly necessary.
+  void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<ComputedStyle>,
+                                          ApplyStyleChanges);
 
   void SetStyleWithWritingModeOf(scoped_refptr<ComputedStyle>,
                                  LayoutObject* parent);
@@ -2265,6 +2278,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
 
+  // Updates only the local style ptr of the object.  Does not update the state
+  // of the object, and so only should be called when the style is known not to
+  // have changed (or from SetStyle).
+  void SetStyleInternal(scoped_refptr<ComputedStyle> style) {
+    style_ = std::move(style);
+  }
   // Overrides should call the superclass at the end. style_ will be 0 the
   // first time this function will be called.
   virtual void StyleWillChange(StyleDifference, const ComputedStyle& new_style);

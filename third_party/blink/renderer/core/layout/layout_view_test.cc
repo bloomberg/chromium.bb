@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
@@ -57,10 +58,10 @@ TEST_F(LayoutViewTest, DisplayNoneFrame) {
   )HTML");
 
   frame_doc->Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  frame_doc->GetStyleEngine().RecalcStyle(kNoChange);
+  frame_doc->GetStyleEngine().RecalcStyle({});
 
   Element* div = frame_doc->getElementById("div");
-  EXPECT_FALSE(div->GetNonAttachedStyle());
+  EXPECT_FALSE(div->GetComputedStyle());
 }
 
 }  // namespace blink

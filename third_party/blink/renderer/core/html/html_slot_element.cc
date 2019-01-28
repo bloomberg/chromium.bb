@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/assigned_nodes_options.h"
@@ -280,7 +281,7 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
     AttachContext children_context(context);
 
     for (auto& node : AssignedNodes()) {
-      if (node->NeedsAttach())
+      if (node->NeedsReattachLayoutTree())
         node->AttachLayoutTree(children_context);
     }
     if (children_context.previous_in_flow)
@@ -402,23 +403,16 @@ void HTMLSlotElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 }
 
-void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
-  if (change < kIndependentInherit)
+void HTMLSlotElement::DidRecalcStyle(const StyleRecalcChange change) {
+  if (!change.RecalcChildren())
     return;
   for (auto& node : assigned_nodes_) {
-    if (change == kReattach && node->IsElementNode()) {
-      DCHECK(node->ShouldCallRecalcStyle(kReattach));
-      ToElement(node)->RecalcStyle(kReattach);
+    if (!change.TraverseChild(*node))
       continue;
-    }
-    // We only need to pick up changes for inherited style, we do not actually
-    // need to match rules against this element but we do that for
-    // simplicity. If we ever stop doing this then we need to update
-    // StyleInvalidator::Invalidate as described in the comment there.
-    node->SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kPropagateInheritChangeToDistributedNodes));
+    if (node->IsElementNode())
+      ToElement(node)->RecalcStyle(change);
+    else if (node->IsTextNode())
+      ToText(node)->RecalcTextStyle(change);
   }
 }
 

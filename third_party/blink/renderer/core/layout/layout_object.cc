@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -2002,10 +2003,17 @@ void LayoutObject::SetNeedsOverflowRecalc() {
 }
 
 DISABLE_CFI_PERF
-void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style) {
-  DCHECK(style);
+void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style,
+                            ApplyStyleChanges apply_changes) {
   if (style_ == style)
     return;
+
+  if (apply_changes == ApplyStyleChanges::kNo) {
+    SetStyleInternal(std::move(style));
+    return;
+  }
+
+  DCHECK(style);
 
   StyleDifference diff;
   if (style_) {
@@ -4241,6 +4249,15 @@ Vector<LayoutRect> LayoutObject::PhysicalOutlineRects(
     r.MoveBy(additional_offset);
   }
   return outline_rects;
+}
+
+void LayoutObject::SetModifiedStyleOutsideStyleRecalc(
+    scoped_refptr<ComputedStyle> style,
+    ApplyStyleChanges apply_changes) {
+  SetStyle(style, apply_changes);
+  if (IsAnonymous() || !GetNode() || !GetNode()->IsElementNode())
+    return;
+  GetNode()->SetComputedStyle(std::move(style));
 }
 
 }  // namespace blink

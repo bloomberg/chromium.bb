@@ -416,7 +416,8 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
   scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
   initialize_style(style.get());
   std::unique_ptr<LayoutInline> node = std::make_unique<LayoutInline>(nullptr);
-  node->SetStyleInternal(std::move(style));
+  node->SetModifiedStyleOutsideStyleRecalc(
+      std::move(style), LayoutObject::ApplyStyleChanges::kNo);
   node->SetIsInLayoutNGInlineFormattingContext(true);
   return node;
 }

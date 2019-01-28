@@ -80,7 +80,7 @@ class HTMLFrameSetElement final : public HTMLElement {
   void DefaultEventHandler(Event&) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
-  void WillRecalcStyle(StyleRecalcChange) override;
+  void WillRecalcStyle(const StyleRecalcChange) override;
 
   Vector<HTMLDimension> row_lengths_;
   Vector<HTMLDimension> col_lengths_;

@@ -41,7 +41,7 @@ namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
   IntSize scroll_offset;
-  void* pointers_or_strings[4];
+  void* pointers_or_strings[3];
   Member<void*> members[17];
   bool flags[1];
 };
@@ -71,15 +71,6 @@ InlineStylePropertyMap& ElementRareData::EnsureInlineStylePropertyMap(
         MakeGarbageCollected<InlineStylePropertyMap>(owner_element);
   }
   return *cssom_map_wrapper_;
-}
-
-void ElementRareData::SetComputedStyle(
-    scoped_refptr<ComputedStyle> computed_style) {
-  computed_style_ = std::move(computed_style);
-}
-
-void ElementRareData::ClearComputedStyle() {
-  computed_style_ = nullptr;
 }
 
 AttrNodeList& ElementRareData::EnsureAttrNodeList() {

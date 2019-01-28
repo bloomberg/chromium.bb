@@ -73,7 +73,7 @@ class NodeRenderingData {
 
  public:
   explicit NodeRenderingData(LayoutObject*,
-                             scoped_refptr<ComputedStyle> non_attached_style);
+                             scoped_refptr<ComputedStyle> computed_style);
   ~NodeRenderingData();
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
@@ -82,17 +82,15 @@ class NodeRenderingData {
     layout_object_ = layout_object;
   }
 
-  ComputedStyle* GetNonAttachedStyle() const {
-    return non_attached_style_.get();
-  }
-  void SetNonAttachedStyle(scoped_refptr<ComputedStyle> non_attached_style);
+  ComputedStyle* GetComputedStyle() const { return computed_style_.get(); }
+  void SetComputedStyle(scoped_refptr<ComputedStyle> computed_style);
 
   static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
  private:
   LayoutObject* layout_object_;
-  scoped_refptr<ComputedStyle> non_attached_style_;
+  scoped_refptr<ComputedStyle> computed_style_;
   DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
 };
 

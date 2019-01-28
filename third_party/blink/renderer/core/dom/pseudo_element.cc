@@ -26,8 +26,11 @@
 
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 
+#include <utility>
+
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -104,29 +107,20 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
 }
 
 scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
-  scoped_refptr<ComputedStyle> original_style =
-      ParentOrShadowHostElement()->StyleForPseudoElement(
-          PseudoStyleRequest(pseudo_id_));
-  if (!original_style || original_style->Display() != EDisplay::kContents)
-    return original_style;
-
-  return StoreOriginalAndReturnLayoutStyle(std::move(original_style));
+  return ParentOrShadowHostElement()->StyleForPseudoElement(
+      PseudoStyleRequest(pseudo_id_));
 }
 
-scoped_refptr<ComputedStyle> PseudoElement::StoreOriginalAndReturnLayoutStyle(
-    scoped_refptr<ComputedStyle> original_style) {
+scoped_refptr<ComputedStyle> PseudoElement::LayoutStyleForDisplayContents(
+    const ComputedStyle& style) {
   // For display:contents we should not generate a box, but we generate a non-
   // observable inline box for pseudo elements to be able to locate the
   // anonymous layout objects for generated content during DetachLayoutTree().
   scoped_refptr<ComputedStyle> layout_style = ComputedStyle::Create();
-  layout_style->InheritFrom(*original_style);
-  layout_style->SetContent(original_style->GetContentData());
+  layout_style->InheritFrom(style);
+  layout_style->SetContent(style.GetContentData());
   layout_style->SetDisplay(EDisplay::kInline);
   layout_style->SetStyleType(pseudo_id_);
-
-  // Store the actual ComputedStyle to be able to return the correct values from
-  // getComputedStyle().
-  StoreNonLayoutObjectComputedStyle(std::move(original_style));
   return layout_style;
 }
 
@@ -145,11 +139,28 @@ void PseudoElement::Dispose() {
   RemovedFrom(*parent);
 }
 
+PseudoElement::AttachLayoutTreeScope::AttachLayoutTreeScope(
+    PseudoElement* element)
+    : element_(element) {
+  if (ComputedStyle* style = element->MutableComputedStyle()) {
+    if (style->Display() == EDisplay::kContents) {
+      original_style_ = style;
+      element->SetComputedStyle(element->LayoutStyleForDisplayContents(*style));
+    }
+  }
+}
+
+PseudoElement::AttachLayoutTreeScope::~AttachLayoutTreeScope() {
+  if (original_style_)
+    element_->SetComputedStyle(std::move(original_style_));
+}
+
 void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(!GetLayoutObject());
-
-  Element::AttachLayoutTree(context);
-
+  {
+    AttachLayoutTreeScope scope(this);
+    Element::AttachLayoutTree(context);
+  }
   LayoutObject* layout_object = GetLayoutObject();
   if (!layout_object)
     return;
@@ -186,22 +197,6 @@ bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
 
 Node* PseudoElement::InnerNodeForHitTesting() const {
   return ParentOrShadowHostNode();
-}
-
-const ComputedStyle* PseudoElement::VirtualEnsureComputedStyle(
-    PseudoId pseudo_element_specifier) {
-  if (HasRareData()) {
-    // Prefer NonLayoutObjectComputedStyle() for display:contents pseudos
-    // instead of the ComputedStyle for the fictional inline box (see
-    // CustomStyleForLayoutObject).
-    if (const ComputedStyle* non_layout_computed_style =
-            NonLayoutObjectComputedStyle()) {
-      DCHECK(!GetLayoutObject() ||
-             non_layout_computed_style->Display() == EDisplay::kContents);
-      return non_layout_computed_style;
-    }
-  }
-  return EnsureComputedStyle(pseudo_element_specifier);
 }
 
 bool PseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {

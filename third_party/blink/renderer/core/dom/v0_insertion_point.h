@@ -74,6 +74,11 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
   Node* DistributedNodePreviousTo(const Node* node) const {
     return distributed_nodes_.PreviousTo(node);
   }
+  bool DistributedNodesAreFallback() const {
+    // We either do not have distributed children or the distributed children
+    // are the fallback children.
+    return !HasDistribution() || DistributedNodeAt(0)->parentNode() == this;
+  }
 
   void Trace(Visitor*) override;
 
@@ -83,7 +88,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
   void ChildrenChanged(const ChildrenChange&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
-  void DidRecalcStyle(StyleRecalcChange) override;
+  void DidRecalcStyle(const StyleRecalcChange) override;
 
  private:
   bool IsV0InsertionPoint() const =
