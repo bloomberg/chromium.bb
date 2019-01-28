@@ -17,6 +17,9 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
+// The accessibility identifier for the settings' "Done" button.
+extern NSString* const kSettingsDoneButtonId;
+
 @protocol SettingsControllerProtocol<NSObject>
 
 @optional

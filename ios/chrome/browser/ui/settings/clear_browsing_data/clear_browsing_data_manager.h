@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_MANAGER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_MANAGER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_MANAGER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_MANAGER_H_
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_consumer.h"
-#import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
 
 @class ListModel;
 @class ActionSheetCoordinator;
@@ -68,7 +68,7 @@ enum class ClearBrowsingDataListType {
 // Manager that serves as the bulk of the logic for
 // ClearBrowsingDataConsumer.
 @interface ClearBrowsingDataManager
-    : NSObject<TimeRangeSelectorCollectionViewControllerDelegate>
+    : NSObject <TimeRangeSelectorCollectionViewControllerDelegate>
 
 // The manager's consumer.
 @property(nonatomic, assign) id<ClearBrowsingDataConsumer> consumer;
@@ -87,16 +87,16 @@ enum class ClearBrowsingDataListType {
 // Returns a ActionSheetCoordinator that has action block to clear data of type
 // |dataTypeMaskToRemove|.
 - (ActionSheetCoordinator*)
-actionSheetCoordinatorWithDataTypesToRemove:
-    (BrowsingDataRemoveMask)dataTypeMaskToRemove
-                         baseViewController:
-                             (UIViewController*)baseViewController
-                                 sourceRect:(CGRect)sourceRect
-                                 sourceView:(UIView*)sourceView;
+    actionSheetCoordinatorWithDataTypesToRemove:
+        (BrowsingDataRemoveMask)dataTypeMaskToRemove
+                             baseViewController:
+                                 (UIViewController*)baseViewController
+                                     sourceRect:(CGRect)sourceRect
+                                     sourceView:(UIView*)sourceView;
 // Get the text to be displayed by a counter from the given |result|
 - (NSString*)counterTextFromResult:
     (const browsing_data::BrowsingDataCounter::Result&)result;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_MANAGER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_MANAGER_H_

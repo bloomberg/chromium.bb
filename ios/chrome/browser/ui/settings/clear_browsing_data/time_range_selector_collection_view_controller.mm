@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
 
 #import "base/mac/foundation_util.h"
 #include "base/stl_util.h"
@@ -66,9 +66,10 @@ static_assert(
 
 #pragma mark Initialization
 
-- (instancetype)
-initWithPrefs:(PrefService*)prefs
-     delegate:(id<TimeRangeSelectorCollectionViewControllerDelegate>)delegate {
+- (instancetype)initWithPrefs:(PrefService*)prefs
+                     delegate:
+                         (id<TimeRangeSelectorCollectionViewControllerDelegate>)
+                             delegate {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self = [super initWithLayout:layout
                          style:CollectionViewControllerStyleDefault];

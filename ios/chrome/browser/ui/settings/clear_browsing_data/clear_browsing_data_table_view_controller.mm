@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
@@ -14,9 +14,9 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/elements/chrome_activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
-#include "ios/chrome/browser/ui/settings/clear_browsing_data_local_commands.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_manager.h"
-#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
+#include "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_manager.h"
+#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
@@ -38,7 +38,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-@interface ClearBrowsingDataTableViewController ()<
+@interface ClearBrowsingDataTableViewController () <
     TableViewTextLinkCellDelegate,
     ClearBrowsingDataConsumer>
 
@@ -155,8 +155,8 @@ class ChromeBrowserState;
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  UITableViewCell* cellToReturn =
-      [super tableView:tableView cellForRowAtIndexPath:indexPath];
+  UITableViewCell* cellToReturn = [super tableView:tableView
+                             cellForRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypeFooterSavedSiteData:

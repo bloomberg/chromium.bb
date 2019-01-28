@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_TIME_RANGE_SELECTOR_COLLECTION_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_TIME_RANGE_SELECTOR_COLLECTION_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_COLLECTION_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_COLLECTION_VIEW_CONTROLLER_H_
 
 #include "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
@@ -11,7 +11,7 @@
 class PrefService;
 @class TimeRangeSelectorCollectionViewController;
 
-@protocol TimeRangeSelectorCollectionViewControllerDelegate<NSObject>
+@protocol TimeRangeSelectorCollectionViewControllerDelegate <NSObject>
 
 // Informs the delegate that |timePeriod| was selected.
 - (void)timeRangeSelectorViewController:
@@ -24,10 +24,10 @@ class PrefService;
 @interface TimeRangeSelectorCollectionViewController
     : SettingsRootCollectionViewController
 
-- (instancetype)
-initWithPrefs:(PrefService*)prefs
-     delegate:(id<TimeRangeSelectorCollectionViewControllerDelegate>)delegate
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithPrefs:(PrefService*)prefs
+                     delegate:
+                         (id<TimeRangeSelectorCollectionViewControllerDelegate>)
+                             delegate NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style
@@ -40,4 +40,4 @@ initWithPrefs:(PrefService*)prefs
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_TIME_RANGE_SELECTOR_COLLECTION_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_COLLECTION_VIEW_CONTROLLER_H_

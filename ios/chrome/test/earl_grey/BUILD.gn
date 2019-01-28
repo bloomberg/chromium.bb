@@ -70,6 +70,7 @@ chrome_ios_eg_test("ios_chrome_bookmarks_egtests") {
 chrome_ios_eg_test("ios_chrome_settings_egtests") {
   deps = [
     "//ios/chrome/browser/ui/settings:eg_tests",
+    "//ios/chrome/browser/ui/settings/clear_browsing_data:eg_tests",
   ]
 }
 
@@ -242,6 +243,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/settings:settings",
     "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/settings/clear_browsing_data",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/toolbar/buttons",

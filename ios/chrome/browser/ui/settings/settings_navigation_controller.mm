@@ -37,6 +37,8 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
+
 @interface SettingsNavigationController () <
     GoogleServicesSettingsCoordinatorDelegate>
 
