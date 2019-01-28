@@ -175,6 +175,6 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
                                       expected_buckets[GetParam()], 1);
 }
 
-INSTANTIATE_TEST_CASE_P(/* No InstantiationName */,
-                        MobileSessionShutdownMetricsProviderTest,
-                        testing::Range(0, 32));
+INSTANTIATE_TEST_SUITE_P(/* No InstantiationName */,
+                         MobileSessionShutdownMetricsProviderTest,
+                         testing::Range(0, 32));
