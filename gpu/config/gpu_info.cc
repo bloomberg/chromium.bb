@@ -53,9 +53,11 @@ void EnumerateVideoEncodeAcceleratorSupportedProfile(
 #if defined(OS_WIN)
 void EnumerateOverlayCapability(const gpu::OverlayCapability& cap,
                                 gpu::GPUInfo::Enumerator* enumerator) {
+  std::string key_string = "overlayCap";
+  key_string += OverlayFormatToString(cap.format);
   enumerator->BeginOverlayCapability();
-  enumerator->AddInt("format", static_cast<int>(cap.format));
-  enumerator->AddInt("isScalingSupported", cap.is_scaling_supported);
+  enumerator->AddString(key_string.c_str(),
+                        cap.is_scaling_supported ? "SCALING" : "DIRECT");
   enumerator->EndOverlayCapability();
 }
 
