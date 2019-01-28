@@ -16,22 +16,22 @@
       // Any sample rate mutiple of 128 is valid for this test, but here it uses
       // 48000Hz because it is a commonly used number that happens to be
       // multiple of 128.
-      let sampleRate = 48000;
+      let sampleRate = 32768;
 
       // The test iterates over 60 pitches starting from 36. (MIDI pitch of C2)
       let fundamentalPitch = 36;
       let numberOfPitches = 60;
 
-      let noteDuration = 0.025;
+      let noteDuration = Math.floor(0.025 * sampleRate) / sampleRate;
       let totalDuration = noteDuration * numberOfPitches;
 
       // Test constraints for each octave.
       let testConstraints = [
-        {thresholdSNR: 103.8508, thresholdDiffULP: 0.3028},
-        {thresholdSNR: 103.8657, thresholdDiffULP: 0.3029},
-        {thresholdSNR: 103.8141, thresholdDiffULP: 0.3047},
-        {thresholdSNR: 103.6818, thresholdDiffULP: 0.3262},
-        {thresholdSNR: 103.1514, thresholdDiffULP: 0.3946}
+        {thresholdSNR: 97.215, thresholdDiffULP: 0.6446},
+        {thresholdSNR: 97.212, thresholdDiffULP: 0.6446},
+        {thresholdSNR: 97.217, thresholdDiffULP: 0.6446},
+        {thresholdSNR: 97.196, thresholdDiffULP: 0.6485},
+        {thresholdSNR: 97.074, thresholdDiffULP: 0.6915}
       ];
 
       function pitchToFrequency(midiPitch) {

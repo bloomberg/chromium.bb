@@ -108,10 +108,25 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
                    bool is_duration_given,
                    ExceptionState&);
 
-  // Returns true on success.
-  bool RenderFromBuffer(AudioBus*,
+  // Render audio directly from the buffer to the audio bus. Returns true on
+  // success, i.e., audio was written to the output bus because all the internal
+  // checks passed.
+  //
+  //   output_bus -
+  //     AudioBus where the rendered audio goes.
+  //   destination_frame_offset -
+  //     Index into the output bus where the first frame should be written.
+  //   number_of_frames -
+  //     Maximum number of frames to process; this can be less that a render
+  //     quantum.
+  //   start_time_offset -
+  //     Actual start time relative to the |destination_frame_offset|.  This
+  //     should be the \sart_time_offset| value returned by
+  //     |UpdateSchedulingInfo|.
+  bool RenderFromBuffer(AudioBus* output_bus,
                         unsigned destination_frame_offset,
-                        uint32_t number_of_frames);
+                        uint32_t number_of_frames,
+                        double start_time_offset);
 
   // Render silence starting from "index" frame in AudioBus.
   inline bool RenderSilenceAndFinishIfNotLooping(AudioBus*,
