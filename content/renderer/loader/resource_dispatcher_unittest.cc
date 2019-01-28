@@ -173,9 +173,9 @@ class ResourceDispatcherTest : public testing::TestWithParam<bool>,
   std::unique_ptr<ResourceDispatcher> dispatcher_;
 };
 
-INSTANTIATE_TEST_CASE_P(ResourceDispatcherTestP,
-                        ResourceDispatcherTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(ResourceDispatcherTestP,
+                         ResourceDispatcherTest,
+                         ::testing::Bool());
 
 // Tests the generation of unique request ids.
 TEST_P(ResourceDispatcherTest, MakeRequestID) {

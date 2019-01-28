@@ -429,9 +429,9 @@ class WebURLLoaderImplTest : public testing::TestWithParam<bool> {
   std::unique_ptr<TestWebURLLoaderClient> client_;
 };
 
-INSTANTIATE_TEST_CASE_P(WebURLLoaderImplTestP,
-                        WebURLLoaderImplTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WebURLLoaderImplTestP,
+                         WebURLLoaderImplTest,
+                         testing::Bool());
 
 TEST_P(WebURLLoaderImplTest, Success) {
   DoStartAsyncRequest();
