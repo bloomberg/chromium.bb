@@ -381,6 +381,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_AlertSeverityLow,
     kColorId_AlertSeverityMedium,
     kColorId_AlertSeverityHigh,
+    // Colors for icons in secondary UI (content settings, help button, etc).
+    kColorId_DefaultIconColor,
     // TODO(benrg): move other hardcoded colors here.
 
     kColorId_NumColors,

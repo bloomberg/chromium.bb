@@ -80,6 +80,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableHoveredBackground:
     case kColorId_ProminentButtonDisabledColor:
     case kColorId_ButtonBorderColor:
+    case kColorId_DefaultIconColor:
       return NativeThemeAura::GetSystemColor(color_id);
 
     // Any other color is not defined and shouldn't be used in a dark theme.
