@@ -61,8 +61,8 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
   return true;
 }
 
-VkInstance VulkanImplementationX11::GetVulkanInstance() {
-  return vulkan_instance_.vk_instance();
+VulkanInstance* VulkanImplementationX11::GetVulkanInstance() {
+  return &vulkan_instance_;
 }
 
 std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
@@ -73,13 +73,14 @@ std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
   surface_create_info.dpy = x_display_;
   surface_create_info.window = window;
   VkResult result = vkCreateXlibSurfaceKHR_(
-      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+      vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateXlibSurfaceKHR() failed: " << result;
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface);
+  return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(),
+                                         surface);
 }
 
 bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(

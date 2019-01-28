@@ -64,8 +64,8 @@ bool VulkanImplementationScenic::InitializeVulkanInstance() {
   return true;
 }
 
-VkInstance VulkanImplementationScenic::GetVulkanInstance() {
-  return vulkan_instance_.vk_instance();
+gpu::VulkanInstance* VulkanImplementationScenic::GetVulkanInstance() {
+  return &vulkan_instance_;
 }
 
 std::unique_ptr<gpu::VulkanSurface>
@@ -83,14 +83,15 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
       image_pipe.Unbind().TakeChannel().release();
 
   VkResult result = vkCreateImagePipeSurfaceFUCHSIA_(
-      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+      vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (result != VK_SUCCESS) {
     // This shouldn't fail, and we don't know whether imagePipeHandle was closed
     // if it does.
     LOG(FATAL) << "vkCreateImagePipeSurfaceFUCHSIA failed: " << result;
   }
 
-  return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface);
+  return std::make_unique<gpu::VulkanSurface>(vulkan_instance_.vk_instance(),
+                                              surface);
 }
 
 bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(

@@ -23,7 +23,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
 
   // VulkanImplementation:
   bool InitializeVulkanInstance() override;
-  VkInstance GetVulkanInstance() override;
+  gpu::VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<gpu::VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
   bool GetPhysicalDevicePresentationSupport(

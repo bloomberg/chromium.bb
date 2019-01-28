@@ -48,8 +48,8 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   return true;
 }
 
-VkInstance VulkanImplementationAndroid::GetVulkanInstance() {
-  return vulkan_instance_.vk_instance();
+VulkanInstance* VulkanImplementationAndroid::GetVulkanInstance() {
+  return &vulkan_instance_;
 }
 
 std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
@@ -59,13 +59,14 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
   surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
   surface_create_info.window = window;
   VkResult result = vkCreateAndroidSurfaceKHR_(
-      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+      vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateAndroidSurfaceKHR() failed: " << result;
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface);
+  return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(),
+                                         surface);
 }
 
 bool VulkanImplementationAndroid::GetPhysicalDevicePresentationSupport(

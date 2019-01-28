@@ -50,8 +50,8 @@ bool VulkanImplementationGbm::InitializeVulkanInstance() {
   return true;
 }
 
-VkInstance VulkanImplementationGbm::GetVulkanInstance() {
-  return vulkan_instance_.vk_instance();
+gpu::VulkanInstance* VulkanImplementationGbm::GetVulkanInstance() {
+  return &vulkan_instance_;
 }
 
 std::unique_ptr<gpu::VulkanSurface> VulkanImplementationGbm::CreateViewSurface(

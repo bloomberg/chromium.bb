@@ -7,6 +7,7 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_instance.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace viz {
@@ -50,14 +51,25 @@ bool VulkanInProcessContextProvider::Initialize() {
   backend_context.fDevice = device_queue_->GetVulkanDevice();
   backend_context.fQueue = device_queue_->GetVulkanQueue();
   backend_context.fGraphicsQueueIndex = device_queue_->GetVulkanQueueIndex();
+  backend_context.fInstanceVersion =
+      vulkan_implementation_->GetVulkanInstance()->api_version();
 
-  // gpu::VulkanInstance always initializes apiVersion=1.1.
-  // TODO(sergeyu): Extend VulkanImplementation interface to provide apiVersion
-  // and list of enabled extensions instead of hardcoding them here.
-  backend_context.fInstanceVersion = VK_MAKE_VERSION(1, 1, 0);
-  backend_context.fExtensions =
-      kEXT_debug_report_GrVkExtensionFlag | kKHR_surface_GrVkExtensionFlag |
-      kKHR_swapchain_GrVkExtensionFlag | kKHR_xcb_surface_GrVkExtensionFlag;
+  backend_context.fExtensions = 0;
+
+  // Instance extensions.
+  const gfx::ExtensionSet& extensions =
+      vulkan_implementation_->GetVulkanInstance()->enabled_extensions();
+  if (gfx::HasExtension(extensions, VK_EXT_DEBUG_REPORT_EXTENSION_NAME))
+    backend_context.fExtensions |= kEXT_debug_report_GrVkExtensionFlag;
+  if (gfx::HasExtension(extensions, VK_KHR_SURFACE_EXTENSION_NAME))
+    backend_context.fExtensions |= kKHR_surface_GrVkExtensionFlag;
+
+  // Device extensions.
+  if (gfx::HasExtension(device_queue_->enabled_extensions(),
+                        VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+    backend_context.fExtensions |= kKHR_swapchain_GrVkExtensionFlag;
+  }
+
   backend_context.fFeatures = kGeometryShader_GrVkFeatureFlag |
                               kDualSrcBlend_GrVkFeatureFlag |
                               kSampleRateShading_GrVkFeatureFlag;
