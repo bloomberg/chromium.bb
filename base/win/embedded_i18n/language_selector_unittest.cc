@@ -101,7 +101,7 @@ TEST_P(LanguageSelectorMatchCandidateTest, TestMatchCandidate) {
 }
 
 // Test that all existing translations can be found by exact match.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestExactMatches,
     LanguageSelectorMatchCandidateTest,
     ::testing::ValuesIn(
@@ -109,7 +109,7 @@ INSTANTIATE_TEST_CASE_P(
         &kExactMatchCandidates[base::size(kExactMatchCandidates)]));
 
 // Test the alias matches.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestAliasMatches,
     LanguageSelectorMatchCandidateTest,
     ::testing::ValuesIn(
@@ -117,7 +117,7 @@ INSTANTIATE_TEST_CASE_P(
         &kAliasMatchCandidates[base::size(kAliasMatchCandidates)]));
 
 // Test a few wildcard matches.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestWildcardMatches,
     LanguageSelectorMatchCandidateTest,
     ::testing::ValuesIn(
@@ -138,42 +138,42 @@ TEST_P(LanguageSelectorAliasTest, AliasesMatch) {
   EXPECT_EQ(std::get<0>(GetParam()), instance.selected_translation());
 }
 
-INSTANTIATE_TEST_CASE_P(EnGbAliases,
-                        LanguageSelectorAliasTest,
-                        ::testing::Combine(::testing::Values(L"en-gb"),
-                                           ::testing::Values(L"en-au",
-                                                             L"en-ca",
-                                                             L"en-nz",
-                                                             L"en-za")));
+INSTANTIATE_TEST_SUITE_P(EnGbAliases,
+                         LanguageSelectorAliasTest,
+                         ::testing::Combine(::testing::Values(L"en-gb"),
+                                            ::testing::Values(L"en-au",
+                                                              L"en-ca",
+                                                              L"en-nz",
+                                                              L"en-za")));
 
-INSTANTIATE_TEST_CASE_P(IwAliases,
-                        LanguageSelectorAliasTest,
-                        ::testing::Combine(::testing::Values(L"iw"),
-                                           ::testing::Values(L"he")));
+INSTANTIATE_TEST_SUITE_P(IwAliases,
+                         LanguageSelectorAliasTest,
+                         ::testing::Combine(::testing::Values(L"iw"),
+                                            ::testing::Values(L"he")));
 
-INSTANTIATE_TEST_CASE_P(NoAliases,
-                        LanguageSelectorAliasTest,
-                        ::testing::Combine(::testing::Values(L"no"),
-                                           ::testing::Values(L"nb")));
+INSTANTIATE_TEST_SUITE_P(NoAliases,
+                         LanguageSelectorAliasTest,
+                         ::testing::Combine(::testing::Values(L"no"),
+                                            ::testing::Values(L"nb")));
 
-INSTANTIATE_TEST_CASE_P(FilAliases,
-                        LanguageSelectorAliasTest,
-                        ::testing::Combine(::testing::Values(L"fil"),
-                                           ::testing::Values(L"tl")));
+INSTANTIATE_TEST_SUITE_P(FilAliases,
+                         LanguageSelectorAliasTest,
+                         ::testing::Combine(::testing::Values(L"fil"),
+                                            ::testing::Values(L"tl")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ZhCnAliases,
     LanguageSelectorAliasTest,
     ::testing::Combine(::testing::Values(L"zh-cn"),
                        ::testing::Values(L"zh-chs", L"zh-hans", L"zh-sg")));
 
-INSTANTIATE_TEST_CASE_P(ZhTwAliases,
-                        LanguageSelectorAliasTest,
-                        ::testing::Combine(::testing::Values(L"zh-tw"),
-                                           ::testing::Values(L"zh-cht",
-                                                             L"zh-hant",
-                                                             L"zh-hk",
-                                                             L"zh-mo")));
+INSTANTIATE_TEST_SUITE_P(ZhTwAliases,
+                         LanguageSelectorAliasTest,
+                         ::testing::Combine(::testing::Values(L"zh-tw"),
+                                            ::testing::Values(L"zh-cht",
+                                                              L"zh-hant",
+                                                              L"zh-hk",
+                                                              L"zh-mo")));
 
 // Test that we can get a match of the default language.
 TEST(LanguageSelectorTest, DefaultLanguageName) {
