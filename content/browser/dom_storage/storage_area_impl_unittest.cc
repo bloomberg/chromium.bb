@@ -313,10 +313,10 @@ class StorageAreaImplParamTest : public StorageAreaImplTest,
   ~StorageAreaImplParamTest() override {}
 };
 
-INSTANTIATE_TEST_CASE_P(StorageAreaImplTest,
-                        StorageAreaImplParamTest,
-                        testing::Values(CacheMode::KEYS_ONLY_WHEN_POSSIBLE,
-                                        CacheMode::KEYS_AND_VALUES));
+INSTANTIATE_TEST_SUITE_P(StorageAreaImplTest,
+                         StorageAreaImplParamTest,
+                         testing::Values(CacheMode::KEYS_ONLY_WHEN_POSSIBLE,
+                                         CacheMode::KEYS_AND_VALUES));
 
 TEST_F(StorageAreaImplTest, GetLoadedFromMap) {
   storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
