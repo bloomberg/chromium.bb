@@ -136,7 +136,7 @@ TEST_P(AntiVirusMetricsProviderTest, GetMetricsFullName) {
                                 expected_result, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(, AntiVirusMetricsProviderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, AntiVirusMetricsProviderTest, ::testing::Bool());
 
 TEST_F(AntiVirusMetricsProviderSimpleTest, StripProductVersion) {
   Testcase testcases[] = {
