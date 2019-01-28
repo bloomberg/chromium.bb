@@ -23,6 +23,7 @@
 
 namespace perfetto {
 class SharedMemoryArbiter;
+class StartupTraceWriterRegistry;
 }  // namespace perfetto
 
 namespace tracing {
@@ -90,6 +91,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       base::OnceCallback<void(mojom::ProducerClientPtr,
                               mojom::ProducerHostRequest)>;
   void CreateMojoMessagepipes(MessagepipesReadyCallback);
+
+  // Binds the registry and its trace writers to the ProducerClient's SMB, to
+  // write into the given target buffer. The ownership of |registry| is
+  // transferred to ProducerClient (and its SharedMemoryArbiter).
+  void BindStartupTraceWriterRegistry(
+      std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
+      perfetto::BufferID target_buffer);
 
   // Add a new data source to the ProducerClient; the caller
   // retains ownership and is responsible for making sure
