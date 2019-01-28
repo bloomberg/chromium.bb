@@ -35,8 +35,8 @@ using content::DOMStorageContext;
 
 namespace {
 
-using TestCompletionCallback = BrowsingDataHelperCallback<
-    BrowsingDataLocalStorageHelper::LocalStorageInfo>;
+using TestCompletionCallback =
+    BrowsingDataHelperCallback<content::StorageUsageInfo>;
 
 constexpr base::FilePath::CharType kTestFile0[] =
     FILE_PATH_LITERAL("http_www.chromium.org_0.localstorage");
@@ -85,8 +85,7 @@ class StopTestOnCallback {
   }
 
   void Callback(
-      const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
-      local_storage_info) {
+      const std::list<content::StorageUsageInfo>& local_storage_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // There's no guarantee on the order, ensure these files are there.
     const char* const kTestHosts[] = {"www.chromium.org", "www.google.com"};
@@ -94,8 +93,8 @@ class StopTestOnCallback {
     ASSERT_EQ(base::size(kTestHosts), local_storage_info.size());
     for (size_t i = 0; i < base::size(kTestHosts); ++i) {
       for (const auto& info : local_storage_info) {
-        ASSERT_TRUE(info.origin_url.SchemeIs("http"));
-        if (info.origin_url.host_piece() == kTestHosts[i]) {
+        ASSERT_EQ(info.origin.scheme(), "http");
+        if (info.origin.host() == kTestHosts[i]) {
           ASSERT_FALSE(test_hosts_found[i]);
           test_hosts_found[i] = true;
         }
@@ -127,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
       new BrowsingDataLocalStorageHelper(browser()->profile()));
   CreateLocalStorageFilesForTest();
   base::RunLoop run_loop;
-  local_storage_helper->DeleteOrigin(GURL(kOriginOfTestFile0),
-                                     run_loop.QuitClosure());
+  local_storage_helper->DeleteOrigin(
+      url::Origin::Create(GURL(kOriginOfTestFile0)), run_loop.QuitClosure());
   run_loop.Run();
 
   // Ensure the file has been deleted.
@@ -162,14 +161,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest,
       base::Bind(&TestCompletionCallback::callback,
                  base::Unretained(&callback)));
 
-  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
-      callback.result();
+  std::list<content::StorageUsageInfo> result = callback.result();
 
   ASSERT_EQ(2u, result.size());
   auto info = result.begin();
-  EXPECT_EQ(origin1, info->origin_url);
+  EXPECT_EQ(origin1, info->origin.GetURL());
   info++;
-  EXPECT_EQ(origin2, info->origin_url);
+  EXPECT_EQ(origin2, info->origin.GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
@@ -185,11 +183,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, CannedUnique) {
       base::Bind(&TestCompletionCallback::callback,
                  base::Unretained(&callback)));
 
-  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result =
-      callback.result();
+  std::list<content::StorageUsageInfo> result = callback.result();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(origin, result.begin()->origin_url);
+  EXPECT_EQ(origin, result.begin()->origin.GetURL());
 }
 
 }  // namespace

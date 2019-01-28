@@ -648,8 +648,7 @@ void OnLocalStorageModelInfoLoaded(
     Profile* profile,
     bool fetch_important,
     const ScopedJavaGlobalRef<jobject>& java_callback,
-    const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
-        local_storage_info) {
+    const std::list<content::StorageUsageInfo>& local_storage_info) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> map =
       Java_WebsitePreferenceBridge_createLocalStorageInfoMap(env);
@@ -660,21 +659,16 @@ void OnLocalStorageModelInfoLoaded(
         profile, kMaxImportantSites);
   }
 
-  for (const BrowsingDataLocalStorageHelper::LocalStorageInfo& info :
-       local_storage_info) {
-    ScopedJavaLocalRef<jstring> full_origin =
-        ConvertUTF8ToJavaString(env, info.origin_url.spec());
-    std::string origin_str = info.origin_url.GetOrigin().spec();
-
+  for (const content::StorageUsageInfo& info : local_storage_info) {
     bool important = false;
     if (fetch_important) {
       std::string registerable_domain;
-      if (info.origin_url.HostIsIPAddress()) {
-        registerable_domain = info.origin_url.host();
+      if (url::HostIsIPAddress(info.origin.host())) {
+        registerable_domain = info.origin.host();
       } else {
         registerable_domain =
             net::registry_controlled_domains::GetDomainAndRegistry(
-                info.origin_url,
+                info.origin.host(),
                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
       }
       auto important_domain_search =
@@ -687,14 +681,10 @@ void OnLocalStorageModelInfoLoaded(
         important = true;
       }
     }
-    // Remove the trailing slash so the origin is matched correctly in
-    // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
-    DCHECK_EQ('/', origin_str.back());
-    origin_str.pop_back();
-    ScopedJavaLocalRef<jstring> origin =
-        ConvertUTF8ToJavaString(env, origin_str);
+    ScopedJavaLocalRef<jstring> java_origin =
+        ConvertUTF8ToJavaString(env, info.origin.Serialize());
     Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
-        env, map, origin, full_origin, info.size, important);
+        env, map, java_origin, info.total_size_bytes, important);
   }
 
   base::android::RunObjectCallbackAndroid(java_callback, map);
@@ -741,10 +731,11 @@ static void JNI_WebsitePreferenceBridge_ClearLocalStorageData(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   auto local_storage_helper =
       base::MakeRefCounted<BrowsingDataLocalStorageHelper>(profile);
-  GURL origin_url = GURL(ConvertJavaStringToUTF8(env, jorigin));
+  auto origin =
+      url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin)));
   local_storage_helper->DeleteOrigin(
-      origin_url, base::BindOnce(&OnLocalStorageCleared,
-                                 ScopedJavaGlobalRef<jobject>(java_callback)));
+      origin, base::BindOnce(&OnLocalStorageCleared,
+                             ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void JNI_WebsitePreferenceBridge_ClearStorageData(

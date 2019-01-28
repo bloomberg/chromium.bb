@@ -417,10 +417,10 @@ class SiteSettingsHandlerTest : public testing::Test {
         std::move(container), profile()->GetExtensionSpecialStoragePolicy());
 
     mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-        GURL("https://www.example.com/"), 2);
+        url::Origin::Create(GURL("https://www.example.com/")), 2);
 
     mock_browsing_data_local_storage_helper->AddLocalStorageForOrigin(
-        GURL("https://www.google.com/"), 5);
+        url::Origin::Create(GURL("https://www.google.com/")), 5);
     mock_browsing_data_local_storage_helper->Notify();
 
     mock_browsing_data_cookie_helper->AddCookieSamples(

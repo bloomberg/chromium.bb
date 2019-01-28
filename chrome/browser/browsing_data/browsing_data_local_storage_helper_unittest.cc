@@ -45,9 +45,9 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   helper->AddLocalStorage(origin2);
   helper->AddLocalStorage(origin3);
   EXPECT_EQ(3u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin2, base::DoNothing());
+  helper->DeleteOrigin(url::Origin::Create(origin2), base::DoNothing());
   EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin1, base::DoNothing());
+  helper->DeleteOrigin(url::Origin::Create(origin1), base::DoNothing());
   EXPECT_EQ(1u, helper->GetLocalStorageCount());
 }
 

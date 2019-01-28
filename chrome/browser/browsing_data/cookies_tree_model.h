@@ -111,11 +111,9 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     DetailedInfo& InitDatabase(
         const BrowsingDataDatabaseHelper::DatabaseInfo* database_info);
     DetailedInfo& InitLocalStorage(
-        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-            local_storage_info);
+        const content::StorageUsageInfo* local_storage_info);
     DetailedInfo& InitSessionStorage(
-        const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-            session_storage_info);
+        const content::StorageUsageInfo* session_storage_info);
     DetailedInfo& InitAppCache(const GURL& origin,
                                const blink::mojom::AppCacheInfo* appcache_info);
     DetailedInfo& InitIndexedDB(const content::StorageUsageInfo* usage_info);
@@ -138,10 +136,6 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
     url::Origin origin;
     const net::CanonicalCookie* cookie = nullptr;
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info = nullptr;
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info =
-        nullptr;
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-        session_storage_info = nullptr;
     const blink::mojom::AppCacheInfo* appcache_info = nullptr;
     // Used for IndexedDB, Service Worker, and Cache Storage node types.
     const content::StorageUsageInfo* usage_info = nullptr;

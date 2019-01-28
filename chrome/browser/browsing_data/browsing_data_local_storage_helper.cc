@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -36,12 +37,11 @@ void GetUsageInfoCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result;
+  std::list<content::StorageUsageInfo> result;
   for (const content::StorageUsageInfo& info : infos) {
     if (!HasStorageScheme(info.origin.GetURL()))
       continue;
-    result.push_back(BrowsingDataLocalStorageHelper::LocalStorageInfo(
-        info.origin.GetURL(), info.total_size_bytes, info.last_modified));
+    result.push_back(info);
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
@@ -49,14 +49,6 @@ void GetUsageInfoCallback(
 }
 
 }  // namespace
-
-BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
-    const GURL& origin_url,
-    int64_t size,
-    base::Time last_modified)
-    : origin_url(origin_url), size(size), last_modified(last_modified) {}
-
-BrowsingDataLocalStorageHelper::LocalStorageInfo::~LocalStorageInfo() {}
 
 BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(Profile* profile)
     : dom_storage_context_(BrowserContext::GetDefaultStoragePartition(profile)
@@ -74,11 +66,10 @@ void BrowsingDataLocalStorageHelper::StartFetching(FetchCallback callback) {
       base::BindOnce(&GetUsageInfoCallback, std::move(callback)));
 }
 
-void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin_url,
+void BrowsingDataLocalStorageHelper::DeleteOrigin(const url::Origin& origin,
                                                   base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  dom_storage_context_->DeleteLocalStorage(url::Origin::Create(origin_url),
-                                           std::move(callback));
+  dom_storage_context_->DeleteLocalStorage(origin, std::move(callback));
 }
 
 //---------------------------------------------------------
@@ -118,19 +109,20 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::list<LocalStorageInfo> result;
+  std::list<content::StorageUsageInfo> result;
   for (const GURL& url : pending_local_storage_info_)
-    result.push_back(LocalStorageInfo(url, 0, base::Time()));
+    result.push_back(
+        content::StorageUsageInfo(url::Origin::Create(url), 0, base::Time()));
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataLocalStorageHelper::DeleteOrigin(
-    const GURL& origin_url,
+    const url::Origin& origin,
     base::OnceClosure callback) {
-  pending_local_storage_info_.erase(origin_url);
-  BrowsingDataLocalStorageHelper::DeleteOrigin(origin_url, std::move(callback));
+  pending_local_storage_info_.erase(origin.GetURL());
+  BrowsingDataLocalStorageHelper::DeleteOrigin(origin, std::move(callback));
 }
 
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
