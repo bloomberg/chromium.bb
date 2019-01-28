@@ -668,9 +668,9 @@ class TCPSocketWithMockSocketTest
   net::MockClientSocketFactory mock_client_socket_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        TCPSocketWithMockSocketTest,
-                        testing::Values(net::SYNCHRONOUS, net::ASYNC));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TCPSocketWithMockSocketTest,
+                         testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
 // Tests that a server socket handles Accept() correctly when the underlying
 // implementation completes Accept() in sync and async mode.
