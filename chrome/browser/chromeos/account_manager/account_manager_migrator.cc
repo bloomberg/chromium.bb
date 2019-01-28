@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -42,6 +43,7 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 
@@ -88,10 +90,10 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
  public:
   AccountMigrationBaseStep(const std::string& id,
                            AccountManager* account_manager,
-                           AccountTrackerService* account_tracker_service)
+                           identity::IdentityManager* identity_manager)
       : AccountMigrationRunner::Step(id),
         account_manager_(account_manager),
-        account_tracker_service_(account_tracker_service),
+        identity_manager_(identity_manager),
         weak_factory_(this) {}
   ~AccountMigrationBaseStep() override = default;
 
@@ -116,12 +118,14 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
       return;
     }
 
-    // |AccountTrackerService::SeedAccountInfo| must be called before
+    // |IdentityManager::LegacySeedAccountInfo| must be called before
     // |AccountManager::UpsertToken|. |AccountManager| observers will need to
     // translate |AccountManager::AccountKey| to other formats using
-    // |AccountTrackerService| and hence |AccountTrackerService| should be
-    // updated first.
-    account_tracker_service_->SeedAccountInfo(gaia_id, email);
+    // |IdentityManager| and hence |IdentityManager| should be updated first.
+    AccountInfo account_info;
+    account_info.email = email;
+    account_info.gaia = gaia_id;
+    identity_manager_->LegacySeedAccountInfo(account_info);
     account_manager_->UpsertToken(
         AccountManager::AccountKey{
             gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
@@ -154,7 +158,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
   AccountManager* const account_manager_;
 
   // Non-owning pointer.
-  AccountTrackerService* const account_tracker_service_;
+  identity::IdentityManager* const identity_manager_;
 
   // A temporary cache of accounts in |AccountManager|, guaranteed to be
   // up-to-date when |StartMigration| is called.
@@ -171,11 +175,12 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
  public:
   DeviceAccountMigration(AccountManager::AccountKey device_account,
                          AccountManager* account_manager,
+                         identity::IdentityManager* identity_manager,
                          AccountTrackerService* account_tracker_service,
                          scoped_refptr<TokenWebData> token_web_data)
       : AccountMigrationBaseStep(kDeviceAccountMigration,
                                  account_manager,
-                                 account_tracker_service),
+                                 identity_manager),
         account_mapper_util_(account_tracker_service),
         token_web_data_(token_web_data),
         device_account_(device_account) {}
@@ -272,11 +277,11 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
  public:
   ContentAreaAccountsMigration(
       AccountManager* account_manager,
-      AccountTrackerService* const account_tracker_service,
+      identity::IdentityManager* identity_manager,
       GaiaCookieManagerService* gaia_cookie_manager_service)
       : AccountMigrationBaseStep(kContentAreaAccountsMigration,
                                  account_manager,
-                                 account_tracker_service),
+                                 identity_manager),
         gaia_cookie_manager_service_(gaia_cookie_manager_service) {}
   ~ContentAreaAccountsMigration() override {
     gaia_cookie_manager_service_->RemoveObserver(this);
@@ -347,11 +352,11 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
                              public arc::ArcSessionManager::Observer {
  public:
   ArcAccountsMigration(AccountManager* account_manager,
-                       AccountTrackerService* account_tracker_service,
+                       identity::IdentityManager* identity_manager,
                        arc::ArcAuthService* arc_auth_service)
       : AccountMigrationBaseStep(kArcAccountsMigration,
                                  account_manager,
-                                 account_tracker_service),
+                                 identity_manager),
         arc_auth_service_(arc_auth_service),
         weak_factory_(this) {}
   ~ArcAccountsMigration() override { Reset(); }
@@ -510,16 +515,16 @@ void AccountManagerMigrator::AddMigrationSteps() {
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
       factory->GetAccountManager(profile_->GetPath().value());
-
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(
-      device_account, account_manager, account_tracker_service,
+      device_account, account_manager, identity_manager,
+      AccountTrackerServiceFactory::GetForProfile(profile_),
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
   migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
-      account_manager, account_tracker_service,
+      account_manager, identity_manager,
       GaiaCookieManagerServiceFactory::GetForProfile(
           profile_) /* gaia_cookie_manager_service */));
 
@@ -528,7 +533,7 @@ void AccountManagerMigrator::AddMigrationSteps() {
     // not been provisioned yet, there cannot be any accounts that need to be
     // migrated.
     migration_runner_.AddStep(std::make_unique<ArcAccountsMigration>(
-        account_manager, account_tracker_service,
+        account_manager, identity_manager,
         arc::ArcAuthService::GetForBrowserContext(
             profile_) /* arc_auth_service */));
   } else {
