@@ -40,7 +40,7 @@ bool InterpolatedTransformOperation::operator==(
     return false;
   const InterpolatedTransformOperation* t =
       static_cast<const InterpolatedTransformOperation*>(&o);
-  return progress == t->progress && from == t->from && to == t->to;
+  return progress_ == t->progress_ && from_ == t->from_ && to_ == t->to_;
 }
 
 void InterpolatedTransformOperation::Apply(
@@ -48,10 +48,10 @@ void InterpolatedTransformOperation::Apply(
     const FloatSize& border_box_size) const {
   TransformationMatrix from_transform;
   TransformationMatrix to_transform;
-  from.ApplyRemaining(border_box_size, starting_index, from_transform);
-  to.ApplyRemaining(border_box_size, starting_index, to_transform);
+  from_.ApplyRemaining(border_box_size, starting_index_, from_transform);
+  to_.ApplyRemaining(border_box_size, starting_index_, to_transform);
 
-  to_transform.Blend(from_transform, progress);
+  to_transform.Blend(from_transform, progress_);
   transform.Multiply(to_transform);
 }
 

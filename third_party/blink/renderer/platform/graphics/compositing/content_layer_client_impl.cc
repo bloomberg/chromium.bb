@@ -41,9 +41,9 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
   if (!transform)
     return 0;
 
-  auto it = context.transform_id_map.find(transform);
-  if (it != context.transform_id_map.end())
-    return it->value;
+  auto transform_lookup_result = context.transform_id_map.find(transform);
+  if (transform_lookup_result != context.transform_id_map.end())
+    return transform_lookup_result->value;
 
   int parent_id = GetTransformId(transform->Parent(), context);
   if (transform->Matrix().IsIdentity() && !transform->RenderingContextId()) {
@@ -69,12 +69,13 @@ static int GetTransformId(const TransformPaintPropertyNode* transform,
     json->SetBoolean("flattenInheritedTransform", false);
 
   if (auto rendering_context = transform->RenderingContextId()) {
-    auto it = context.rendering_context_map.find(rendering_context);
+    auto context_lookup_result =
+        context.rendering_context_map.find(rendering_context);
     int rendering_id = context.rendering_context_map.size() + 1;
-    if (it == context.rendering_context_map.end())
+    if (context_lookup_result == context.rendering_context_map.end())
       context.rendering_context_map.Set(rendering_context, rendering_id);
     else
-      rendering_id = it->value;
+      rendering_id = context_lookup_result->value;
 
     json->SetInteger("renderingContext", rendering_id);
   }

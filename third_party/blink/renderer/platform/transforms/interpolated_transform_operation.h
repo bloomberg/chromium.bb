@@ -65,29 +65,30 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
       double progress,
       bool blend_to_identity = false) override;
   scoped_refptr<TransformOperation> Zoom(double factor) final {
-    return Create(from.Zoom(factor), to.Zoom(factor), starting_index, progress);
+    return Create(from_.Zoom(factor), to_.Zoom(factor), starting_index_,
+                  progress_);
   }
 
   bool DependsOnBoxSize() const override {
-    return from.DependsOnBoxSize() || to.DependsOnBoxSize();
+    return from_.DependsOnBoxSize() || to_.DependsOnBoxSize();
   }
 
   InterpolatedTransformOperation(const TransformOperations& from,
                                  const TransformOperations& to,
                                  int starting_index,
                                  double progress)
-      : from(from),
-        to(to),
-        starting_index(starting_index),
-        progress(progress) {}
+      : from_(from),
+        to_(to),
+        starting_index_(starting_index),
+        progress_(progress) {}
 
-  const TransformOperations from;
-  const TransformOperations to;
+  const TransformOperations from_;
+  const TransformOperations to_;
   // Number of operations to skip from the start of each list. By spec,
   // pairwise interpolations are performed for compatible operations at the
   // start of the list and matrix interpolation for the remainder.
-  int starting_index;
-  double progress;
+  int starting_index_;
+  double progress_;
 };
 
 }  // namespace blink
