@@ -209,7 +209,7 @@ class ScriptExecutor : public ActionDelegate {
     void SavePreInterruptState();
 
     // Restores the UI states as found by SavePreInterruptState.
-    void RestorePreInterruptUiState();
+    void RestoreStatusMessage();
 
     // if save_pre_interrupt_state_ is set, attempt to scroll the page back to
     // the original area.
@@ -223,7 +223,7 @@ class ScriptExecutor : public ActionDelegate {
 
     std::unique_ptr<BatchElementChecker> batch_element_checker_;
     std::set<const Script*> runnable_interrupts_;
-    bool element_found_;
+    bool element_found_ = false;
 
     // An empty vector of interrupts that can be passed to interrupt_executor_
     // and outlives it. Interrupts must not run interrupts.
@@ -234,7 +234,7 @@ class ScriptExecutor : public ActionDelegate {
 
     // If true, pre-interrupt state was saved already. This happens just before
     // the first interrupt.
-    bool saved_pre_interrupt_state_;
+    bool saved_pre_interrupt_state_ = false;
 
     // The status message that was displayed when the interrupt started.
     std::string pre_interrupt_status_;
