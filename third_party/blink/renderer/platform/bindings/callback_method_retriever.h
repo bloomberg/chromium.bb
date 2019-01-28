@@ -38,6 +38,13 @@ class PLATFORM_EXPORT CallbackMethodRetriever {
                                   exception_state);
   }
 
+  // Returns a function extracted from the prototype chain, or throw a TypeError
+  // if a function doesn't exist.
+  v8::Local<v8::Function> GetMethodOrThrow(const StringView& method_name,
+                                           ExceptionState& exception_state) {
+    return GetFunctionOrThrow(prototype_object_, method_name, exception_state);
+  }
+
   // Returns a function extracted from the callback function, or undefined.
   // Throws if the property is neither of function nor undefined.
   v8::Local<v8::Value> GetStaticMethodOrUndefined(
@@ -47,12 +54,26 @@ class PLATFORM_EXPORT CallbackMethodRetriever {
                                   exception_state);
   }
 
+  // Returns a function extracted from the callback function, or throw a
+  // TypeError if a function doesn't exist.
+  v8::Local<v8::Function> GetStaticMethodOrThrow(
+      const StringView& method_name,
+      ExceptionState& exception_state) {
+    return GetFunctionOrThrow(constructor_->CallbackObject(), method_name,
+                              exception_state);
+  }
+
  private:
   // Gets |property| from |object|. Throws an exception if the property is
   // neither of function nor undefined.
   v8::Local<v8::Value> GetFunctionOrUndefined(v8::Local<v8::Object> object,
                                               const StringView& property,
                                               ExceptionState&);
+  // Gets |property| from |object|. Throws an exception if the property is
+  // not a function.
+  v8::Local<v8::Function> GetFunctionOrThrow(v8::Local<v8::Object> object,
+                                             const StringView& property,
+                                             ExceptionState&);
 
   Member<CallbackFunctionBase> constructor_;
   v8::Isolate* isolate_;

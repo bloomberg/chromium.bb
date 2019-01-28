@@ -63,4 +63,20 @@ v8::Local<v8::Value> CallbackMethodRetriever::GetFunctionOrUndefined(
   return value;
 }
 
+v8::Local<v8::Function> CallbackMethodRetriever::GetFunctionOrThrow(
+    v8::Local<v8::Object> object,
+    const StringView& property,
+    ExceptionState& exception_state) {
+  v8::Local<v8::Value> value =
+      GetFunctionOrUndefined(object, property, exception_state);
+  if (exception_state.HadException())
+    return v8::Local<v8::Function>();
+  if (value->IsUndefined()) {
+    exception_state.ThrowTypeError(String::Format(
+        "Property \"%s\" doesn't exist", property.Characters8()));
+    return v8::Local<v8::Function>();
+  }
+  return value.As<v8::Function>();
+}
+
 }  // namespace blink
