@@ -89,6 +89,17 @@ to <parameter>config</parameter>.
 @@
 
 @RET@		FcBool
+@FUNC@		FcDirCacheCreateUUID
+@TYPE1@		FcChar8 *			@ARG1@		dir
+@TYPE2@		FcBool				@ARG2@		force
+@TYPE3@		FcConfig *			@ARG3@		config
+@PURPOSE@	Create .uuid file at a directory
+@DESC@
+This function is deprecated. it doesn't take any effects.
+@SINCE@		2.12.92
+@@
+
+@RET@		FcBool
 @FUNC@		FcDirCacheDeleteUUID
 @TYPE1@		const FcChar8 *			@ARG1@		dir
 @TYPE2@		FcConfig *			@ARG2@		config
