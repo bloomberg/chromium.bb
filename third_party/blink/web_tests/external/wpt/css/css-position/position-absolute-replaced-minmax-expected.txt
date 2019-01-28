@@ -10,28 +10,28 @@ PASS minmax replaced IFRAME 8
 PASS minmax replaced IFRAME 9
 PASS minmax replaced IFRAME 10
 PASS minmax replaced IFRAME 11
-PASS minmax replaced async IMG 12
-PASS minmax replaced async IMG 13
-PASS minmax replaced async IMG 14
-PASS minmax replaced async IMG 15
-PASS minmax replaced async IMG 16
-PASS minmax replaced async IMG 17
-PASS minmax replaced async IMG 18
-PASS minmax replaced async IMG 19
-PASS minmax replaced async IMG 20
-PASS minmax replaced async IMG 21
-PASS minmax replaced async IMG 22
-PASS minmax replaced async IMG 23
-PASS minmax replaced async IMG 24
-PASS minmax replaced async IMG 25
-PASS minmax replaced async IMG 26
-PASS minmax replaced async IMG 27
-PASS minmax replaced async IMG 28
-PASS minmax replaced async IMG 29
-PASS minmax replaced async IMG 30
-PASS minmax replaced async IMG 31
-PASS minmax replaced async IMG 32
-PASS minmax replaced async IMG 33
+PASS minmax replaced IMG 12
+PASS minmax replaced IMG 13
+PASS minmax replaced IMG 14
+PASS minmax replaced IMG 15
+PASS minmax replaced IMG 16
+PASS minmax replaced IMG 17
+PASS minmax replaced IMG 18
+PASS minmax replaced IMG 19
+PASS minmax replaced IMG 20
+PASS minmax replaced IMG 21
+PASS minmax replaced IMG 22
+PASS minmax replaced IMG svg 23
+PASS minmax replaced IMG svg 24
+PASS minmax replaced IMG svg 25
+PASS minmax replaced IMG svg 26
+PASS minmax replaced IMG svg 27
+PASS minmax replaced IMG svg 28
+PASS minmax replaced IMG svg 29
+PASS minmax replaced IMG svg 30
+PASS minmax replaced IMG svg 31
+PASS minmax replaced IMG svg 32
+PASS minmax replaced IMG svg 33
 PASS minmax replaced IMG 34
 FAIL minmax replaced IMG 35 assert_equals: incorrect offsetWidth expected "400" but got "438"
 PASS minmax replaced IMG 36
