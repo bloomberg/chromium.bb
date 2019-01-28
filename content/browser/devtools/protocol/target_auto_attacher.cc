@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
@@ -82,6 +83,37 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
     AddEligibleHosts(*it.second.get(), &result);
 
   return result;
+}
+
+base::flat_set<GURL> GetFrameUrls(RenderFrameHostImpl* render_frame_host) {
+  // We try to attach to a service worker in the following cases:
+  // 1. SW is created while user is inspecting frame (from WorkerCreated).
+  // 2. Frame has navigated and we are picking up new SW corresponding to new
+  //    url (from DidFinishNavigation).
+  // 3. Frame is trying to navigate and it spawns a new SW which we pick up
+  //    (from WorkerCreated). See also https://crbug.com/907072
+  //
+  // We are not attaching in the following case:
+  // 4. Frame is trying to navigate and we _should_ pick up an existing SW but we don't.
+  //    We _could_ do this, but since we are not pausing the navigation, there
+  //    is no principal difference between picking up SW earlier or later.
+  //
+  // We also try to detach from SW picked up for [3] if navigation has failed
+  // (from DidFinishNavigation).
+
+  base::flat_set<GURL> frame_urls;
+  if (render_frame_host) {
+    for (FrameTreeNode* node :
+         render_frame_host->frame_tree_node()->frame_tree()->Nodes()) {
+      frame_urls.insert(node->current_url());
+      // We use both old and new frame urls to support [3], where we attach while
+      // navigation is still ongoing.
+      if (node->navigation_request()) {
+        frame_urls.insert(node->navigation_request()->common_params().url);
+      }
+    }
+  }
+  return frame_urls;
 }
 
 }  // namespace
@@ -186,17 +218,12 @@ void TargetAutoAttacher::ReattachServiceWorkers(bool waiting_for_debugger) {
   if (!auto_attaching_service_workers_)
     return;
 
-  frame_urls_.clear();
   BrowserContext* browser_context = nullptr;
-  if (render_frame_host_) {
-    for (FrameTreeNode* node :
-         render_frame_host_->frame_tree_node()->frame_tree()->Nodes()) {
-      frame_urls_.insert(node->current_url());
-    }
+  if (render_frame_host_)
     browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
-  }
 
-  auto matching = GetMatchingServiceWorkers(browser_context, frame_urls_);
+  auto matching = GetMatchingServiceWorkers(browser_context,
+                                            GetFrameUrls(render_frame_host_));
   Hosts new_hosts;
   for (const auto& pair : matching)
     new_hosts.insert(pair.second);
@@ -260,7 +287,9 @@ void TargetAutoAttacher::WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
   BrowserContext* browser_context = nullptr;
   if (render_frame_host_)
     browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
-  auto hosts = GetMatchingServiceWorkers(browser_context, frame_urls_);
+
+  auto hosts = GetMatchingServiceWorkers(browser_context,
+                                         GetFrameUrls(render_frame_host_));
   if (hosts.find(host->GetId()) != hosts.end()) {
     *should_pause_on_start = wait_for_debugger_on_start_;
     Hosts new_hosts;

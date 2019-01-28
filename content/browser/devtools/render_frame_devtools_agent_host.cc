@@ -404,10 +404,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     for (DevToolsSession* session : sessions())
       session->ResumeSendingMessagesToAgent();
   }
-  if (handle->HasCommitted()) {
-    for (auto* target : protocol::TargetHandler::ForAgentHost(this))
-      target->DidCommitNavigation();
-  }
+  for (auto* target : protocol::TargetHandler::ForAgentHost(this))
+    target->DidFinishNavigation();
 }
 
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(
