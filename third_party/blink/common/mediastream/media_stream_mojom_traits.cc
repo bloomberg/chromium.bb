@@ -32,6 +32,8 @@ EnumTraits<blink::mojom::MediaStreamType, blink::MediaStreamType>::ToMojom(
       return blink::mojom::MediaStreamType::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
     case blink::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE:
       return blink::mojom::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE;
+    case blink::MediaStreamType::MEDIA_DISPLAY_AUDIO_CAPTURE:
+      return blink::mojom::MediaStreamType::MEDIA_DISPLAY_AUDIO_CAPTURE;
     case blink::MediaStreamType::NUM_MEDIA_TYPES:
       return blink::mojom::MediaStreamType::NUM_MEDIA_TYPES;
   }
@@ -67,6 +69,9 @@ bool EnumTraits<blink::mojom::MediaStreamType, blink::MediaStreamType>::
       return true;
     case blink::mojom::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE:
       *out = blink::MediaStreamType::MEDIA_DISPLAY_VIDEO_CAPTURE;
+      return true;
+    case blink::mojom::MediaStreamType::MEDIA_DISPLAY_AUDIO_CAPTURE:
+      *out = blink::MediaStreamType::MEDIA_DISPLAY_AUDIO_CAPTURE;
       return true;
     case blink::mojom::MediaStreamType::NUM_MEDIA_TYPES:
       *out = blink::MediaStreamType::NUM_MEDIA_TYPES;
