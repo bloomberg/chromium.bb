@@ -2200,6 +2200,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Arc.SmartTextSelection.Request">
+  <owner>linben@chromium.org</owner>
+  <owner>djacobo@chromium.org</owner>
   <owner>jorgegil@google.com</owner>
   <description>
     Recorded when a request to the ARC++ container to generate Smart Text
