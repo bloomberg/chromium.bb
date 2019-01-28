@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1006017844123154345">เปิดแบบออนไลน์</translation>
+<translation id="1023450834687746199">คุณล้างข้อมูล <ph name="APP_NAME" /> แล้ว</translation>
 <translation id="1036727731225946849">กำลังเพิ่ม <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">จากเว็บไซต์</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
@@ -142,6 +143,7 @@
 <translation id="2017836877785168846">ล้างประวัติการเข้าชมและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ</translation>
 <translation id="2021896219286479412">ส่วนควบคุมเว็บไซต์แบบเต็มหน้าจอ</translation>
 <translation id="2038563949887743358">เปิดการขอเว็บไซต์เดสก์ท็อป</translation>
+<translation id="204321170514947529"><ph name="APP_NAME" /> มีข้อมูลอยู่ใน Chrome ด้วย</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB จากแอปอื่นๆ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2063713494490388661">แตะเพื่อค้นหา</translation>
@@ -165,7 +167,6 @@
 <translation id="2154484045852737596">แก้ไขบัตร</translation>
 <translation id="2154710561487035718">คัดลอก URL</translation>
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2197557662829090533">อนุญาตให้ไลฟ์สไตล์ดิจิทัลแสดงเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
@@ -242,6 +243,7 @@
 <translation id="2779651927720337254">ล้มเหลว</translation>
 <translation id="2781151931089541271">เหลือ 1 วิ</translation>
 <translation id="2784212955220061919">ในโหมด Lite เบราว์เซอร์ Chrome จะโหลดหน้าเว็บได้เร็วขึ้นและใช้เน็ตน้อยลงสูงสุดถึง 60 เปอร์เซ็นต์ เทคโนโลยีระบบคลาวด์ของ Google ช่วยเพิ่มประสิทธิภาพหน้าเว็บที่คุณเข้าชม</translation>
+<translation id="2785336755839207516">คุณถอนการติดตั้ง <ph name="APP_NAME" /> แล้ว</translation>
 <translation id="2803478378562657435">กำลังแสดงรหัสผ่านที่บันทึกไว้และตัวเลือกรหัสผ่าน</translation>
 <translation id="2810645512293415242">ลดรายละเอียดหน้าเว็บเพื่อประหยัดเน็ตมือถือและโหลดได้เร็วขึ้น</translation>
 <translation id="281504910091592009">ดูและจัดการรหัสผ่านที่บันทึกไว้ใน<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /></translation>
@@ -283,6 +285,7 @@
 <translation id="3115898365077584848">แสดงข้อมูล</translation>
 <translation id="3123473560110926937">บล็อกในบางเว็บไซต์</translation>
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
+<translation id="3143515551205905069">ยกเลิกการซิงค์</translation>
 <translation id="3148434565183091099">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="3157842584138209013">ดูปริมาณอินเทอร์เน็ตที่คุณประหยัดไปได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="3166827708714933426">แป้นพิมพ์ลัดสำหรับแท็บและหน้าต่าง</translation>
@@ -301,6 +304,7 @@
 <translation id="3269093882174072735">โหลดภาพ</translation>
 <translation id="3269956123044984603">เปิด "ข้อมูลการซิงค์อัตโนมัติ" ในการตั้งค่าบัญชี Android เพื่อรับแท็บจากอุปกรณ์อื่นๆ ของคุณ</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
+<translation id="3288003805934695103">โหลดหน้าใหม่</translation>
 <translation id="32895400574683172">อนุญาตให้แสดงการแจ้งเตือน</translation>
 <translation id="3295530008794733555">ท่องเว็บได้เร็วขึ้น ใช้เน็ตน้อยลง</translation>
 <translation id="3295602654194328831">ซ่อนข้อมูล</translation>
@@ -370,6 +374,7 @@
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3819562311292413223">ดาวน์โหลดบทความสำหรับคุณ</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
+<translation id="385051799172605136">กลับ</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
 <translation id="3895926599014793903">บังคับให้เปิดใช้การซูม</translation>
@@ -381,6 +386,7 @@
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="395206256282351086">ปิดใช้คำแนะนำการค้นหาและเว็บไซต์แล้ว</translation>
 <translation id="3955193568934677022">อนุญาตให้ไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง (แนะนำ)</translation>
+<translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome จะโหลดหน้าเว็บเมื่อพร้อม}other{Chrome จะโหลดหน้าเว็บเมื่อพร้อม}}</translation>
 <translation id="3963007978381181125">การเข้ารหัสลับด้วยรหัสผ่านจะไม่รวมข้อมูลวิธีการชำระเงินและที่อยู่จาก Google Pay เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะอ่านข้อมูลที่เข้ารหัสได้ Google จะไม่ได้รับหรือจัดเก็บรหัสผ่านนี้ คุณจะต้องรีเซ็ตการซิงค์หากลืมรหัสผ่านหรือต้องการเปลี่ยนแปลงการตั้งค่านี้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
@@ -431,6 +437,7 @@
 <translation id="4275663329226226506">สื่อ</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
 <translation id="429312253194641664">เว็บไซต์กำลังเล่นสื่อ</translation>
+<translation id="4298388696830689168">เว็บไซต์ที่ลิงก์</translation>
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4314815835985389558">จัดการการซิงค์</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
@@ -699,6 +706,7 @@
 <translation id="6232535412751077445">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
 
 ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
+<translation id="624789221780392884">พร้อมอัปเดต</translation>
 <translation id="6255999984061454636">การแนะนำเนื้อหา</translation>
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">ไซต์ทั้งหมด</translation>
@@ -734,6 +742,7 @@
 <translation id="6475951671322991020">ดาวน์โหลดวิดีโอ</translation>
 <translation id="6482749332252372425">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเพราะพื้นที่เก็บข้อมูลไม่เพียงพอ</translation>
 <translation id="6496823230996795692">โปรดเชื่อมต่ออินเทอร์เน็ตเพื่อใช้ <ph name="APP_NAME" /> เป็นครั้งแรก</translation>
+<translation id="6508722015517270189">รีสตาร์ท Chrome</translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6534565668554028783">Google ใช้เวลาตอบกลับนานเกินไป</translation>
 <translation id="6538442820324228105">ดาวน์โหลดแล้ว <ph name="GBS" /> GB</translation>
@@ -832,7 +841,6 @@
 <translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
 <translation id="7189598951263744875">แชร์...</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
-<translation id="7221869452894271364">โหลดหน้านี้ใหม่</translation>
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
 <translation id="7250468141469952378">เลือกไว้ <ph name="ITEM_COUNT" /> รายการ</translation>
@@ -919,6 +927,7 @@
 <translation id="784934925303690534">ช่วงเวลา</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7854964836418414587">ปิด "ดูคำแนะนำแบบนี้อีก"</translation>
+<translation id="7871791972254842204">อ่านและยอมรับข้อกำหนดและเงื่อนไขเกี่ยวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ภายหลัง</translation>
 <translation id="7875915731392087153">สร้างอีเมล</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
 <translation id="7882131421121961860">ไม่พบประวัติ</translation>
@@ -969,6 +978,7 @@
 <translation id="8200772114523450471">ทำต่อ</translation>
 <translation id="8209050860603202033">เปิดรูปภาพ</translation>
 <translation id="8220488350232498290">พื้นที่ที่ใช้ไปสำหรับการดาวน์โหลด <ph name="GIGABYTES" /> GB</translation>
+<translation id="8232956427053453090">เก็บข้อมูลไว้</translation>
 <translation id="8249310407154411074">เลื่อนไปบนสุด</translation>
 <translation id="8250920743982581267">เอกสาร</translation>
 <translation id="825412236959742607">หน้านี้ใช้หน่วยความจำมากเกินไป Chrome จึงนำเนื้อหาบางส่วนออก</translation>
@@ -1022,10 +1032,12 @@
 <translation id="860043288473659153">ชื่อผู้ถือบัตร</translation>
 <translation id="8604763363205185560">ช่วยปรับปรุง Chrome และความปลอดภัยของ Chrome</translation>
 <translation id="8609465669617005112">เลื่อนขึ้น</translation>
+<translation id="8611192991944347781">จัดการข้อมูล</translation>
 <translation id="8616006591992756292">บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="8617240290563765734">ต้องการเปิด URL แนะนำซึ่งระบุอยู่ในเนื้อหาที่ดาวน์โหลดไหม</translation>
 <translation id="8636825310635137004">เปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="8641930654639604085">พยายามบล็อกไซต์สำหรับผู้ใหญ่</translation>
+<translation id="8655129584991699539">คุณล้างข้อมูลได้ในการตั้งค่า Chrome</translation>
 <translation id="8662811608048051533">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8664979001105139458">มีชื่อไฟล์นี้อยู่แล้ว</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
@@ -1033,6 +1045,7 @@
 <translation id="868929229000858085">ค้นหารายชื่อติดต่อ</translation>
 <translation id="869891660844655955">วันหมดอายุ</translation>
 <translation id="8719023831149562936">ไม่สามารถบีมแท็บปัจจุบัน</translation>
+<translation id="8723954843026426558">ฉันยอมรับข้อกำหนดและเงื่อนไข นโยบายความเป็นส่วนตัว และสิทธิ์การถอนของ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8728487861892616501">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ <ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /> ของ Chrome รวมถึง <ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>

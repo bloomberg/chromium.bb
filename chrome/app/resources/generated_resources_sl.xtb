@@ -367,6 +367,7 @@
 <translation id="15373452373711364">Velik miškin kazalec</translation>
 <translation id="1538729222189715449">Odpiranje datotek za Linux ...</translation>
 <translation id="1540605929960647700">Omogočanje predstavitvenega načina</translation>
+<translation id="1541396123399225659">Dodajanje novi skupini</translation>
 <translation id="1542514202066550870">Ta zavihek predvaja vsebino VR v slušalkah z mikrofonom.</translation>
 <translation id="1543284117603151572">Uvoženo iz brskalnika Edge</translation>
 <translation id="1545177026077493356">Samodejni način kiosk</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Formatiranje ...</translation>
 <translation id="159359590073980872">Predpomnilnik za slike</translation>
 <translation id="1593926297800505364">Shranjevanje plačilnega sredstva</translation>
+<translation id="1595492813686795610">Poteka nadgradnja Linuxa</translation>
 <translation id="1598233202702788831">Skrbnik je onemogočil posodobitve.</translation>
 <translation id="1600857548979126453">Dostopajte do podsistema iskalnika napak na strani</translation>
 <translation id="1601560923496285236">Uporabi</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">Omogoči temo</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Prikaži v Spletni trgovini Chrome</translation>
-<translation id="1761588866118490543">Glasovni model</translation>
 <translation id="176193854664720708">Tipalo prstnih odtisov je v gumbu za vklop. Rahlo se ga dotaknite s poljubnim prstom.</translation>
 <translation id="1763046204212875858">Ustvari bližnjice do &amp;programov ...</translation>
 <translation id="1763108912552529023">Nadaljujte raziskovanje</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">Tiskanje v pogovornem oknu sistema ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vprašaj pred pošiljanjem (priporočljivo)</translation>
 <translation id="2384436799579181135">Prišlo je do napake. Preverite tiskalnik in poskusite znova.</translation>
+<translation id="2386926718981642523">Dostopajte do Pomočnika, kadar koli izgovorite »Ok Google«</translation>
 <translation id="2387458720915042159">Vrsta povezave strežnika proxy</translation>
 <translation id="2391419135980381625">Standardna pisava</translation>
 <translation id="2391762656119864333">Prekliči</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> ni uspel vzpostaviti povezave z omrežjem <ph name="NETWORK_ID" />. Izberite drugo omrežje ali poskusite znova.</translation>
 <translation id="2553440850688409052">Skrij ta vtičnik</translation>
 <translation id="2554553592469060349">Izbrana datoteka je prevelika (največja velikost: 3 MB).</translation>
+<translation id="255747371423522804">Dodaj obstoječi skupini</translation>
 <translation id="2558896001721082624">Vedno pokaži možnosti funkcij za ljudi s posebnimi potrebami v sistemskem meniju</translation>
 <translation id="2562685439590298522">Google Dokumenti</translation>
 <translation id="2562743677925229011">Niste prijavljeni v <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="2972642118232180842">Zaženi samo pomembno vsebino (priporočeno)</translation>
 <translation id="2973324205039581528">Izklopi zvok spletnega mesta</translation>
+<translation id="2977480621796371840">Odstrani iz skupine</translation>
 <translation id="2979639724566107830">Odpri v novem oknu</translation>
 <translation id="2981113813906970160">Pokaži velik miškin kazalec</translation>
 <translation id="2982970937345031">Anonimna prijava</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Ločilo</translation>
 <translation id="3389312115541230716">Z desnim miškinim gumbom kliknite ikono za <ph name="SMALL_PRODUCT_LOGO" /> v opravilni vrstici</translation>
+<translation id="3393352139658145068">Aktiviranje Pomočnika, ko kdor koli izgovori »Ok Google«. Zaradi varčevanja z energijo akumulatorja je sprožilna beseda »Ok Google« vklopljena samo, ko je naprava priklopljena v vir napajanja.</translation>
 <translation id="3396800784455899911">Če kliknete gumb »Sprejmi in nadaljuj«, se strinjate z obdelavo, ki je opisana zgoraj za te Googlove storitve.</translation>
 <translation id="3399432415385675819">Obvestila bodo onemogočena</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3169,6 +3174,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5816434091619127343">Če uveljavite zahtevane spremembe tiskalnika, bo ta neuporaben.</translation>
 <translation id="5817918615728894473">Seznani</translation>
 <translation id="5821565227679781414">Ustvari bližnjico</translation>
+<translation id="5825412242012995131">Vklop (priporočeno)</translation>
 <translation id="5826507051599432481">Običajno ime (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Tiskanje ...</translation>
@@ -3713,6 +3719,11 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6629841649550503054">Vse varnostno kopirano v <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409">Razširitev <ph name="EXTENSION_NAME" /> želi trajen dostop do potrdila za preverjanje svoje pristnosti v vašem imenu.</translation>
 <translation id="6635956300022133031">Izbira in prilagajanje glasov za pretvorbo besedila v govor</translation>
+<translation id="6637585982786704944">Aplikacije in spletna mesta, ki imajo vaše dovoljenje, lahko dostopajo do podatkov o računu, ki jih potrebujejo za pravilno delovanje.
+
+    Če ne želite dodati računa, se prijavite kot gost ali odprite okno za brskanje po spletu brez beleženja zgodovine.
+
+    Vse računa si lahko ogledate in jih upravljate v »Nastavitve -&gt; Računi za Google«.</translation>
 <translation id="6639554308659482635">Pomnilnik SQLite</translation>
 <translation id="6641138807883536517">Naključno ustvarjeno geslo za varni modul ni na voljo. To je običajno po izvedbi funkcije Powerwash.</translation>
 <translation id="6643016212128521049">Počisti</translation>
@@ -3914,6 +3925,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6957231940976260713">Ime storitve</translation>
 <translation id="696203921837389374">Omogoči sinhronizacijo prek prenosa podatkov v mobilnih omrežjih</translation>
 <translation id="6964390816189577014">Junak</translation>
+<translation id="6964760285928603117">Odstranitev iz skupine</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="6965648386495488594">Vrata</translation>
 <translation id="6965978654500191972">Naprava</translation>
@@ -4023,6 +4035,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7109543803214225826">Bližnjica je bila odstranjena</translation>
 <translation id="7113502843173351041">Poznati morate svoj e-poštni naslov</translation>
 <translation id="7114054701490058191">Gesli se ne ujemata</translation>
+<translation id="7114648273807173152">Če se želite v račun za Google prijaviti s funkcijo Smart Lock, odprite »Nastavitve &gt; Povezane naprave &gt; Vaš telefon &gt; Smart Lock«.</translation>
 <translation id="7117228822971127758">Poskusite znova pozneje</translation>
 <translation id="7117247127439884114">Prijavite se znova ...</translation>
 <translation id="711840821796638741">Prikaz upravljanih zaznamkov</translation>
@@ -4178,6 +4191,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
 <translation id="7352651011704765696">Prišlo je do neznane težave</translation>
 <translation id="735361434055555355">Nameščanje Linuxa ...</translation>
+<translation id="7353887511974462734">Dodajanje obstoječi skupini</translation>
 <translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
 <translation id="7359359531237882347">Kopiranje toliko elementov: <ph name="NUMBER_OF_ITEMS" /> …</translation>
 <translation id="7359588939039777303">Oglasi blokirani.</translation>
@@ -4240,7 +4254,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7456847797759667638">Odpri mesto ...</translation>
 <translation id="7461924472993315131">Pripni</translation>
 <translation id="7463006580194749499">Dodaj osebo</translation>
-<translation id="7464902436585505072">Glasovni model »OK Google«</translation>
 <translation id="7465778193084373987">Spletni naslov ukinjenega Netscapeovega potrdila</translation>
 <translation id="7469894403370665791">Samodejno vzpostavi povezavo s tem omrežjem</translation>
 <translation id="747114903913869239">Napaka: Razširitve ni bilo mogoče dekodirati</translation>
@@ -4810,6 +4823,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="827097179112817503">Pokaži gumb za domačo stran</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 zaznamek izbrisan}one{# zaznamek izbrisan}two{# zaznamka izbrisana}few{# zaznamki izbrisani}other{# zaznamkov izbrisanih}}</translation>
 <translation id="8272443605911821513">Razširitve lahko upravljate tako, da v meniju »Več orodij« kliknete »Razširitve«.</translation>
+<translation id="8272966760965438857">Upravljanje računov za Google na enem mestu</translation>
 <translation id="8274332263553132018">Predvajanje datoteke</translation>
 <translation id="8274924778568117936">Ne izklopite ali zaprite naprave <ph name="DEVICE_TYPE" />, dokler se posodobitev ne konča. Naprava <ph name="DEVICE_TYPE" /> se bo po končani namestitvi znova zagnala.</translation>
 <translation id="8275038454117074363">Uvozi</translation>
@@ -5196,6 +5210,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8883847527783433352">Sinhroniziraj z drugim računom</translation>
 <translation id="8885197664446363138">Smart Lock ni na voljo</translation>
 <translation id="88870264962436283">Uporaba funkcije Touch ID v aplikaciji <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Aplikacija se bo odprla, ko bo nadgradnja dokončana. Nadgradnje lahko trajajo nekaj minut.</translation>
 <translation id="8888432776533519951">Barva:</translation>
 <translation id="8890516388109605451">Viri</translation>
 <translation id="8892168913673237979">Pripravljeni ste.</translation>

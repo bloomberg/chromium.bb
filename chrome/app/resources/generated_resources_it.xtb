@@ -367,6 +367,7 @@
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1538729222189715449">Apertura di file Linux…</translation>
 <translation id="1540605929960647700">Attiva modalità demo</translation>
+<translation id="1541396123399225659">Aggiungi a nuovo gruppo</translation>
 <translation id="1542514202066550870">Questa scheda mostra contenuti VR a un auricolare.</translation>
 <translation id="1543284117603151572">Importati da Edge</translation>
 <translation id="1545177026077493356">Modalità kiosk automatica</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Formattazione in corso...</translation>
 <translation id="159359590073980872">Cache immagini</translation>
 <translation id="1593926297800505364">Salva il metodo di pagamento</translation>
+<translation id="1595492813686795610">Upgrade di Linux…</translation>
 <translation id="1598233202702788831">Gli aggiornamenti sono stati disattivati dall'amministratore.</translation>
 <translation id="1600857548979126453">Accesso al backend del debugger delle pagine</translation>
 <translation id="1601560923496285236">Applica</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">Attiva tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Visualizza nel Chrome Web Store</translation>
-<translation id="1761588866118490543">Modello vocale</translation>
 <translation id="176193854664720708">Il sensore di impronte digitali si trova nel tasto di accensione. Toccalo leggermente con un dito.</translation>
 <translation id="1763046204212875858">Creazione di scorciatoie applicazione</translation>
 <translation id="1763108912552529023">Continua a esplorare</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">Stampa utilizzando la finestra di dialogo di sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Chiedi prima di inviare (opzione consigliata)</translation>
 <translation id="2384436799579181135">Si è verificato un errore. Controlla la tua stampante e riprova.</translation>
+<translation id="2386926718981642523">Accedi all'assistente ogni volta che dici "Ok Google"</translation>
 <translation id="2387458720915042159">Tipo di connessione proxy</translation>
 <translation id="2391419135980381625">Carattere standard</translation>
 <translation id="2391762656119864333">Revoca</translation>
@@ -1042,6 +1044,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> non è riuscito a collegarsi a <ph name="NETWORK_ID" />. Seleziona un'altra rete o riprova.</translation>
 <translation id="2553440850688409052">Nascondi questo plug-in</translation>
 <translation id="2554553592469060349">Il file selezionato è troppo grande (dimensioni massime: 3 mb).</translation>
+<translation id="255747371423522804">Aggiungi al gruppo esistente</translation>
 <translation id="2558896001721082624">Mostra sempre le opzioni di accessibilità nel menu di sistema</translation>
 <translation id="2562685439590298522">Documenti</translation>
 <translation id="2562743677925229011">Non connesso a <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1313,6 +1316,7 @@
 <translation id="2972581237482394796">&amp;Ripeti</translation>
 <translation id="2972642118232180842">Esegui solo contenuti importanti (consigliata)</translation>
 <translation id="2973324205039581528">Disattiva l'audio del sito</translation>
+<translation id="2977480621796371840">Rimuovi dal gruppo</translation>
 <translation id="2979639724566107830">Apri in un'altra finestra</translation>
 <translation id="2981113813906970160">Mostra puntatore mouse grande</translation>
 <translation id="2982970937345031">Segnalazione anonima</translation>
@@ -1561,6 +1565,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separatore</translation>
 <translation id="3389312115541230716">Fai clic con il pulsante destro del mouse sull'icona <ph name="SMALL_PRODUCT_LOGO" /> nella barra delle applicazioni</translation>
+<translation id="3393352139658145068">Attiva l'assistente quando qualcuno dice "Ok Google". Per consumare meno batteria, la hotword "Ok Google" è attiva solo quando il dispositivo è collegato a una fonte di alimentazione.</translation>
 <translation id="3396800784455899911">Se fai clic sul pulsante "Accetta e continua", accetti l'elaborazione descritta in precedenza per questi servizi Google.</translation>
 <translation id="3399432415385675819">Le notifiche verranno disattivate</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3162,6 +3167,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5816434091619127343">Le modifiche richieste renderebbero la stampante inutilizzabile.</translation>
 <translation id="5817918615728894473">Accoppia</translation>
 <translation id="5821565227679781414">Crea scorciatoia</translation>
+<translation id="5825412242012995131">On (opzione consigliata)</translation>
 <translation id="5826507051599432481">Nome comune (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Stampa in corso...</translation>
@@ -3706,6 +3712,11 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6629841649550503054">Backup di tutti gli elementi su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> completato.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> desidera un accesso permanente a un certificato per eseguire l'autenticazione a tuo nome.</translation>
 <translation id="6635956300022133031">Seleziona e personalizza le voci per la sintesi vocale</translation>
+<translation id="6637585982786704944">Le app e i siti web autorizzati possono accedere ai dati degli account necessari per il loro corretto funzionamento.
+
+    Se non vuoi aggiungere un account, accedi come ospite oppure apri una finestra di navigazione in incognito per navigare sul Web.
+
+    Puoi aprire Impostazioni -&gt; Account Google per vedere e gestire tutti gli account.</translation>
 <translation id="6639554308659482635">Memoria SQLite</translation>
 <translation id="6641138807883536517">La password del modulo per la sicurezza generata in modo casuale non è disponibile, ma è normale dopo un Powerwash.</translation>
 <translation id="6643016212128521049">Cancella</translation>
@@ -3907,6 +3918,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6957231940976260713">Nome servizio</translation>
 <translation id="696203921837389374">Attiva sincronizzazione tramite dati mobili</translation>
 <translation id="6964390816189577014">Eroe</translation>
+<translation id="6964760285928603117">Rimuovi dal gruppo</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Porta</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
@@ -4016,6 +4028,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7109543803214225826">Scorciatoia rimossa</translation>
 <translation id="7113502843173351041">Accedere all'indirizzo email</translation>
 <translation id="7114054701490058191">Le password non corrispondono</translation>
+<translation id="7114648273807173152">Per utilizzare Smart Lock per accedere al tuo Account Google, apri Impostazioni &gt; Dispositivi connessi &gt; Il tuo telefono &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Riprova più tardi</translation>
 <translation id="7117247127439884114">Esegui di nuovo l'accesso...</translation>
 <translation id="711840821796638741">Mostra Preferiti gestiti</translation>
@@ -4171,6 +4184,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7348093485538360975">Tastiera sullo schermo</translation>
 <translation id="7352651011704765696">Si è verificato un problema</translation>
 <translation id="735361434055555355">Installazione di Linux...</translation>
+<translation id="7353887511974462734">Aggiungi al gruppo esistente</translation>
 <translation id="735745346212279324">VPN scollegata</translation>
 <translation id="7359359531237882347">Copia di <ph name="NUMBER_OF_ITEMS" /> elementi...</translation>
 <translation id="7359588939039777303">Annunci bloccati.</translation>
@@ -4233,7 +4247,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7456847797759667638">Apri percorso...</translation>
 <translation id="7461924472993315131">Blocca</translation>
 <translation id="7463006580194749499">Aggiungi persona</translation>
-<translation id="7464902436585505072">Modello vocale "Ok Google"</translation>
 <translation id="7465778193084373987">URL di revoca certificato Netscape</translation>
 <translation id="7469894403370665791">Collegati automaticamente a questa rete</translation>
 <translation id="747114903913869239">Errore: impossibile decodificare l'estensione</translation>
@@ -4800,6 +4813,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="827097179112817503">Mostra pulsante Home</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 preferito eliminato}other{# preferiti eliminati}}</translation>
 <translation id="8272443605911821513">Gestisci le tue estensioni facendo clic su Estensioni nel menu "Altri strumenti".</translation>
+<translation id="8272966760965438857">Gestisci il tuo Account Google in un unico posto</translation>
 <translation id="8274332263553132018">Trasmetti file</translation>
 <translation id="8274924778568117936">Non spegnere o chiudere il tuo dispositivo <ph name="DEVICE_TYPE" /> fino al termine dell'aggiornamento. Il dispositivo <ph name="DEVICE_TYPE" /> si riavvierà al termine dell'installazione.</translation>
 <translation id="8275038454117074363">Importa</translation>
@@ -5186,6 +5200,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8883847527783433352">Sincronizza con un altro account</translation>
 <translation id="8885197664446363138">Smart Lock non disponibile</translation>
 <translation id="88870264962436283">Usa Touch ID con <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">L'app verrà aperta al termine dell'upgrade. Gli upgrade possono richiedere qualche minuto.</translation>
 <translation id="8888432776533519951">Colore:</translation>
 <translation id="8890516388109605451">Fonti</translation>
 <translation id="8892168913673237979">Finito.</translation>

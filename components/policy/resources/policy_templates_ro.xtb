@@ -773,6 +773,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă setarea este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, acest computer va accepta numai conexiunile de la computerele client din rețeaua locală.
 
           Dacă politica nu este configurată, setarea va fi activată.</translation>
+<translation id="2813281962735757923">Această politică stabilește intervalele de timp în care dispozitivul <ph name="PRODUCT_OS_NAME" /> nu poate căuta automat actualizări.
+      Când politica este setată la o listă nevidă de intervale de timp:
+      Dispozitivele nu vor putea căuta automat actualizări în intervalele de timp specificate. Dispozitivele care necesită retragerea sau care sunt sub versiunea <ph name="PRODUCT_OS_NAME" /> minimă nu vor fi afectate de această politică, din cauza potențialelor probleme de securitate. În plus, politica nu blochează căutările de actualizări solicitate de utilizatori sau administratori.
+      Când politica este dezactivată sau nu conține intervale de timp:
+      Căutările automate de actualizări nu vor fi blocate de această politică, dar pot fi blocate de alte politici. Această funcție este activată doar pe dispozitivele Chrome configurate drept chioșcuri cu lansare automată. Alte dispozitive nu vor fi limitate de această politică.</translation>
 <translation id="2823870601012066791">Locația din registry-ul Windows pentru clienții <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
 <translation id="2838830882081735096">Nu permite migrarea datelor și ARC</translation>
@@ -1064,6 +1069,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="355118380775352753">Site-uri care vor fi deschise în browserul secundar</translation>
 <translation id="3577251398714997599">Setare pentru anunțurile de pe site-urile cu anunțuri deranjante</translation>
+<translation id="3591527072193107424">Activează funcția Compatibilitate pentru browsere vechi.</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3624171042292187668">
       Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a beneficia la maximum atât de izolare, cât și de impact limitat asupra utilizatorilor, folosind IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Setarea SitePerProcess izolează toate site-urile.
@@ -1253,6 +1259,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="3965339130942650562">Timp limită până când este executată deconectarea utilizatorului inactiv</translation>
 <translation id="3973371701361892765">Nu ascundeți niciodată automat raftul</translation>
 <translation id="3984028218719007910">Această politică stabilește dacă <ph name="PRODUCT_OS_NAME" /> păstrează datele contului local după deconectare. Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> nu va păstra conturi persistente, iar toate datele din sesiunea utilizatorului vor fi eliminate după deconectare. Dacă această politică nu este activată sau nu este configurată, dispozitivul poate păstra (criptate) datele locale ale utilizatorului.</translation>
+<translation id="398475542699441679">Această politică stabilește dacă să activeze Compatibilitatea pentru browsere vechi.
+
+      Când politica nu este configurată sau nu este activată, Chrome nu va încerca să lanseze adresele URL într-un browser secundar.
+
+      Când politica este activată, Chrome va încerca să lanseze unele adrese URL într-un browser secundar (cum ar fi Internet Explorer). Această funcție este configurată folosind politicile din grupul <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Funcția înlocuiește extensia <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Configurația din extensie va fi inclusă în această funcție, dar îți recomandăm insistent să folosești politicile Chrome în schimb. Astfel, compatibilitatea va fi îmbunătățită pe viitor.</translation>
 <translation id="3997519162482760140">Adresele URL cărora li se va acorda acces la dispozitivele de capturare a conținutului video pe paginile de conectare SAML</translation>
 <translation id="4001275826058808087">Administratorii IT pentru dispozitivele companiei pot utiliza acest marcaj pentru a controla dacă utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
@@ -1494,6 +1507,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
            Pentru exemple de șabloane, accesează https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Deschide o listă de adrese URL</translation>
+<translation id="4674871290487541952">Permite algoritmi nesecurizați în verificarea integrității la actualizările și instalările extensiilor</translation>
 <translation id="4680936297850947973">Învechită în M68. Folosește DefaultPopupsSetting.
 
       Pentru o explicație completă, consultă https://www.chromestatus.com/features/5675755719622656.
@@ -2495,6 +2509,12 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
 nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această politică este lăsată nesetată, modul fundal este inițial dezactivat și poate fi stabilit de utilizator din setările browserului.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> oferă actualizarea și instalarea securizată a extensiilor. Totuși, conținutul unor extensii găzduite în afara Magazinului web Chrome poate fi protejat numai prin algoritmi nesecurizați de semnătură sau de hashing, cum ar fi SHA1. Dacă politica este dezactivată, instalarea nouă și actualizările acestor extensii nu vor fi permise de Chrome (până când dezvoltatorii extensiei reconstruiesc extensia cu algoritmi mai puternici). Dacă politica este activată, instalarea și actualizările acestor extensii vor fi permise.
+
+          Setarea prestabilită va fi de a activa comportamentul când nu este configurată.
+          Începând cu <ph name="PRODUCT_NAME" /> 75, setarea prestabilită va fi de a dezactiva comportamentul când nu este configurată.
+
+          Începând cu <ph name="PRODUCT_NAME" /> 77, politica va fi ignorată și considerată dezactivată.</translation>
 <translation id="7126716959063786004">Activează oprirea proceselor în Managerul de activități</translation>
 <translation id="7127892035367404455">Revino la versiunea țintă</translation>
 <translation id="7128918109610518786">Listează identificatorii aplicațiilor pe care <ph name="PRODUCT_OS_NAME" /> le afișează ca aplicații fixate în bara lansatorului.

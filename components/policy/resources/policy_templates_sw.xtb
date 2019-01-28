@@ -780,6 +780,11 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Ikiwa mpangilio huu utazimwa na miunganisho ya kutoa ya UDP imechujwa na ngome, basi mashini hii itaweza tu kuruhusu miunganisho kutoka kwenye mashini ya seva teja katika mtandao wa karibu.
 
           Ikiwa sera hii itaachwa bila kuwekwa mpangilio utawashwa.</translation>
+<translation id="2813281962735757923">Sera hii hudhibiti vipindi ambapo kifaa cha <ph name="PRODUCT_OS_NAME" />hakiruhusiwi kukagua masasisho kiotomatiki.
+      Sera hii inapowekwa katika orodha yenye vipindi fulani vya muda:
+      Vifaa havitaweza kukagua masasisho kiotomatiki katika vipindi vilivyobainishwa. Vifaa ambavyo vinahitaji matoleo ya zamani au vinatumia matoleo yanayofuata <ph name="PRODUCT_OS_NAME" />havitaathiriwa na sera hii kutokana na matatizo ya usalama yanayoweza kutokea. Zaidi ya hayo, sera hii haitazuia ukaguzi wa masasisho unaoombwa na watumiaji au wasimamizi.
+      Sera hii isipowekwa au ikikosa kipindi chochote:
+      Hamna ukaguzi wa masasisho ya kiotomatiki utakaozuiliwa na sera hii, lakini unaweza kuzuiliwa na sera zingine. Kipengele hiki kimewashwa tu kwenye vifaa vya Chrome ambavyo vimewekewa mipangilio ya skrini nzima kufunguka kiotomatiki. Vifaa vingine havitazuiwa na sera hii.</translation>
 <translation id="2823870601012066791">Eneo la sajili ya Windows la viteja vya <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
 <translation id="2838830882081735096">Usiruhusu uhamishaji data na ARC</translation>
@@ -1078,6 +1083,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="355118380775352753">Tovuti zinazofunguka katika kivinjari mbadala</translation>
 <translation id="3577251398714997599">Mipangilio ya matangazo kwa tovuti zilizo na matangazo yanayokatiza matumizi</translation>
+<translation id="3591527072193107424">Washa kipengele cha Uwezo wa Kutumia Kivinjari Kilichopitwa na Wakati.</translation>
 <translation id="3591584750136265240">Weka mipangilio ya tabia ya kithibitishaji cha kuingia katika akaunti</translation>
 <translation id="3624171042292187668">
       Huenda utataka kuangalia mipangilio ya sera ya IsolateOrigins ili upate hali bora kati ya hizi mbili, utengaji na athari ndogo kwa watumiaji, kwa kutumia IsolateOrigins katika orodha ya tovuti unazotaka kutenga. Mipangilio hii, SitePerProcess, inatenga tovuti zote.
@@ -1267,6 +1273,13 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
 <translation id="3965339130942650562">Muda umekwisha mpaka uondokaji wa kuingia kusikotumika kutekelezwe</translation>
 <translation id="3973371701361892765">Usiwahi kuficha rafu kiotomatiki</translation>
 <translation id="3984028218719007910">Inathibitisha iwapo <ph name="PRODUCT_OS_NAME" /> inaweka data ya akaunti ya karibu baada ya kuondoka. Ikiwa imewekwa kwenye ndivyo, hakuna akaunti za kudumu zinazowekwa kwa <ph name="PRODUCT_OS_NAME" /> na data yote kutoka kwenye kipindi cha mtumiaji itatupwa baada ya kuondoka. Ikiwa sera hii imewekwa kuwa sivyo au haijasanidiwa, kifaa kinaweza kuweka data ya mtumiaji wa karibu (iliyosimbwa fiche).</translation>
+<translation id="398475542699441679">Sera hii inadhibiti ruhusa ya Uwezo wa Kutumia Kivinjari Kilichopitwa na Wakati.
+
+      Sera hii isipowekwa au ikiwekwa kuwa 'sivyo', Chrome haitajaribu kufungua URL zilizobainishwa katika kivinjari mbadala.
+
+      Sera hii ikiwekwa kuwa 'ndivyo', Chrome itajaribu kufungua baadhi ya URL katika kivinjari mbadala (kama vile Internet Explorer). Mipangilio ya kipengele hiki huwekwa kwa kutumia sera katika kikundi cha <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Kipengele hiki kinachukua nafasi ya kiendelezi cha <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Mipangilio kutoka kiendelezi italetwa kwenye kipengele hiki, lakini tunapendekeza zaidi utumie sera za Chrome badala yake. Hali hii inahakikisha uoanifu bora zaidi katika siku zijazo.</translation>
 <translation id="3997519162482760140">URL zitakazopewa idhini ya kufikia vifaa vya kurekodi video kwenye kurasa za kuingia katika SAML</translation>
 <translation id="4001275826058808087">Usimamizi wa IT kwa vifaa vya biashara unaweza kutumia alama hii kudhibiti iwapo itaruhusu watumiaji kukomboa matoleo kupitia Usajili wa Chrome OS.
 
@@ -1514,6 +1527,7 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
 
           Kwa mifano ya ruwaza angalia https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Fungua orodha ya URL</translation>
+<translation id="4674871290487541952">Ruhusu algoriti zisizo salama katika ukaguzi wa mabadiliko ya data kwenye masasisho na usakinishaji wa viendelezi</translation>
 <translation id="4680936297850947973">Sera iliacha kuendesha huduma katika toleo la M68. Badala yake tumia DefaultPopupsSetting.
 
      Kwa ufafanuzi kamili, angalia https://www.chromestatus.com/features/5675755719622656.
@@ -2546,6 +2560,12 @@ Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
       Sera hii ikiwekwa kuwa Sivyo, kipengee cha hali ya chinichini huzimwa na hakiwezi kudhibitiwa na mtumiaji katika mipangilio ya kivinjari.
 
     Sera hii ikiachwa bila kuwekwa, kipengee cha hali ya chinichini huzimwa kwanza na kinaweza kudhibitiwa na mtumiaji katika mipangilio ya kivinjari.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> hutoa usakinishaji wa viendelezi na masasisho salama. Hata hivyo, huenda maudhui ya baadhi ya viendelezi vinavyopangishwa nje ya Duka la Chrome kwenye Wavuti yakalindwa tu kwa kutumia njia isiyo salama ya kuambatisha vyeti au algoriti za kupunguza urefu kama vile SHA1. Sera hii inapozimwa, usakinishaji mpya na masasisho ya viendelezi kama hivyo havitaruhusiwa na Chrome (hadi wasanidi wa viendelezi waunde upya viendelezi vinavyotumia algoriti thabiti). Sera hii ikiwashwa, usakinishaji na masasisho ya viendelezi kama hivi utaruhusiwa.
+
+          Sera isipowekwa, hali hii itawashwa kwa chaguomsingi.
+          Kwa kuanzia <ph name="PRODUCT_NAME" /> 75, sera isipowekwa, hali hii itazimwa kwa chaguomsingi.
+
+          Kwa kuanzia <ph name="PRODUCT_NAME" /> 77, sera hii haitatumiwa na itachukuliwa kuwa imezimwa.</translation>
 <translation id="7126716959063786004">Washa kipengele cha kutamatisha shughuli katika Kidhibiti cha Shughuli kwenye Chrome</translation>
 <translation id="7127892035367404455">Rejea kwenye toleo lengwa</translation>
 <translation id="7128918109610518786">Inaorodhesha vitambuaji vya programu <ph name="PRODUCT_OS_NAME" /> huonyesha kama programu zilizobanwa katika upau wa kizinduzi.

@@ -36,7 +36,7 @@
 <translation id="1165039591588034296">错误</translation>
 <translation id="1173894706177603556">重命名</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
-<translation id="1181037720776840403">删除</translation>
+<translation id="1181037720776840403">移除</translation>
 <translation id="1197088940767939838">橙色</translation>
 <translation id="1201402288615127009">下一页</translation>
 <translation id="1201895884277373915">来自该网站的更多内容</translation>
@@ -129,6 +129,7 @@
 <translation id="1656489000284462475">取货</translation>
 <translation id="1662550410081243962">保存并填写付款方式</translation>
 <translation id="1663943134801823270">信用卡选项和地址选项均来自 Chrome。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
+<translation id="1671391448414634642">从现在开始，<ph name="SOURCE_LANGUAGE" />网页一律会被翻译成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Google Chrome 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Google Chrome 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1697532407822776718">搞定了！</translation>
@@ -182,6 +183,7 @@
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
 <translation id="2030481566774242610">您是想访问<ph name="LINK" />吗？</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />检查代理服务器和防火墙<ph name="END_LINK" /></translation>
+<translation id="2053111141626950936">系统不会翻译<ph name="LANGUAGE" />网页。</translation>
 <translation id="2053553514270667976">邮编</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
 <translation id="2068663545051464999">已上传的崩溃报告的 ID：<ph name="CRASH_ID" />（本地上下文：<ph name="CRASH_LOCAL_ID" />）</translation>
@@ -562,6 +564,7 @@
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="445100540951337728">接受的借记卡</translation>
+<translation id="4482953324121162758">系统不会翻译此网站。</translation>
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">联系系统管理员</translation>
 <translation id="450710068430902550">与管理员分享</translation>
@@ -753,6 +756,7 @@
 <translation id="5786044859038896871">要填充您的信用卡信息吗？</translation>
 <translation id="5798683403665926540">在 Chrome 设置中更改主页</translation>
 <translation id="5803412860119678065">要填充您的“<ph name="CARD_DETAIL" />”吗？</translation>
+<translation id="5804241973901381774">权限</translation>
 <translation id="5810442152076338065">您与 <ph name="DOMAIN" /> 之间的连接采用过时的加密套件进行了加密。</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5838278095973806738">请勿在此网站上输入任何敏感信息（例如密码或信用卡信息），因为攻击者可能会盗取这些信息。</translation>
@@ -774,6 +778,7 @@
 <translation id="5967592137238574583">修改联系信息</translation>
 <translation id="5967867314010545767">从历史记录中移除</translation>
 <translation id="5975083100439434680">缩小</translation>
+<translation id="5977976211062815271">在这部设备上</translation>
 <translation id="598637245381783098">无法打开付款应用</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="5990559369517809815">对服务器的请求已遭到某个扩展程序的阻止。</translation>
@@ -870,6 +875,7 @@
 <translation id="6710594484020273272">&lt;输入搜索字词&gt;</translation>
 <translation id="671076103358959139">注册令牌：</translation>
 <translation id="6711464428925977395">代理服务器出现问题，或者地址有误。</translation>
+<translation id="6723740634201835758">在您的 Google 帐号中</translation>
 <translation id="674375294223700098">未知的服务器证书错误。</translation>
 <translation id="6744009308914054259">在等待连接时，您可以前往“下载内容”页面阅读离线文章。</translation>
 <translation id="6753269504797312559">政策值</translation>
@@ -910,6 +916,7 @@
 <translation id="6979440798594660689">静音（默认）</translation>
 <translation id="6984479912851154518">即将退出无痕模式，以便通过外部应用付款。要继续吗？</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
+<translation id="6996312675313362352">始终翻译<ph name="ORIGINAL_LANGUAGE" />内容</translation>
 <translation id="7012363358306927923">中国银联</translation>
 <translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
 <translation id="7029809446516969842">密码</translation>

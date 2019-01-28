@@ -810,6 +810,11 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
           Kui seade on keelatud ja tulemüür filtreerib väljuvad UDP-ühendused, siis lubab seade klientseadmetest tulevaid ühendusi vaid kohalikus võrgus.
 
           Kui jätate selle reegli määramata, siis seade lubatakse.</translation>
+<translation id="2813281962735757923">See reegel juhib perioode, mille jooksul ei tohi operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seade automaatselt värskendusi kontrollida.
+      Kui selle reegli väärtuseks on määratud mis tahes ajavahemikud, toimub järgmine.
+      Seadmed ei saa nendel konkreetsetel ajavahemikel automaatselt värskendusi kontrollida. See reegel ei mõjuta võimalike turvaohtude tõttu seadmeid, mis tuleb viia vanemale versioonile või mis kasutavad vanemat kui minimaalset nõutavat versiooni <ph name="PRODUCT_OS_NAME" />. Peale selle ei blokeeri see reegel kasutajate või administraatorite taotletud värskenduste kontrolle.
+      Kui see reegel on määramata või ei sisalda ajavahemikke, toimub järgmine.
+      See reegel ei blokeeri automaatseid värskenduste kontrolle, kuid muud reeglid võivad seda teha. See funktsioon on lubatud ainult Chrome’i seadetes, mis on seadistatud kui automaatselt käivituvad kioskid. Teisi seadmeid need eeskirjad ei piira.</translation>
 <translation id="2823870601012066791">Windowsi registri asukoht operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> klientide puhul:</translation>
 <translation id="2824715612115726353">Luba inkognitorežiim</translation>
 <translation id="2838830882081735096">Keela andmete üleviimine ja ARC</translation>
@@ -1103,6 +1108,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="355118380775352753">Alternatiivses brauseris avatavad veebisaidid</translation>
 <translation id="3577251398714997599">Sekkuvate reklaamidega saitide reklaamiseaded</translation>
+<translation id="3591527072193107424">Pärandbrauseri toe funktsiooni lubamine.</translation>
 <translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
 <translation id="3624171042292187668">
       Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit IsolateOrigins saitide puhul, mille soovite isoleerida. Seade SitePerProcess isoleerib kõik saidid.
@@ -1291,6 +1297,13 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3965339130942650562">Ajalõpp kuni jõudeolekus kasutaja väljalogimiseni</translation>
 <translation id="3973371701361892765">Ära peida hoidlat kunagi automaatselt</translation>
 <translation id="3984028218719007910">Määrab, kas <ph name="PRODUCT_OS_NAME" /> säilitab kohaliku konto andmed pärast väljalogimist. Selle reegli lubamisel ei säilita <ph name="PRODUCT_OS_NAME" /> kontode andmeid ja kasutaja seansi kõik andmed eemaldatakse pärast väljalogimist. Kui keelate selle reegli või jätate määramata, siis võib seade säilitada kohaliku kasutaja andmeid (krüptitult).</translation>
+<translation id="398475542699441679">See reegel kontrollib, kas lubada pärandbrauserite tugi.
+
+      Kui see reegel on seadistamata või keelatud, ei ürita Chrome alternatiivses brauseris määratud URLe avada.
+
+      Kui see reegel on lubatud, üritab Chrome osasid URLe alternatiivses brauseris avada (näiteks Internet Expolrer). See funktsioon on seadistatud, kasutades reegleid grupis <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      See funktsioon on laienduse <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" /> asendus. Laienduse konfiguratsioonid lisatakse sellesse funktsiooni, aga tungivalt soovituslik on siiski Chrome’i reegleid kasutada. See tagab parema ühilduvuse tulevikus.</translation>
 <translation id="3997519162482760140">URL-id, millele antakse SAML-i sisselogimislehtedel juurdepääs videosalvestusseadmetele</translation>
 <translation id="4001275826058808087">Ettevõtte seadmete IT-administraatorid saavad selle märgistuse abil juhtida, kas lubada kasutajatel pakkumisi lunastada Chrome OS-i registreerimise abil.
 
@@ -1541,6 +1554,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
           Vaadake näidismustreid aadressilt http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Ava URL-ide loend</translation>
+<translation id="4674871290487541952">Ebaturvaliste algoritmide lubamine laienduse värskendamise ja installimise terviklikkuse kontrollis</translation>
 <translation id="4680936297850947973">Versioonis M68 on tugi katkestatud. Kasutage selle asemel reeglit DefaultPopupsSetting.
 
       Vaadake täielikku selgitust aadressilt https://www.chromestatus.com/features/5675755719622656.
@@ -2587,6 +2601,12 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
       Kui reegel on seatud väärtusele Väär, on taustarežiim keelatud ja kasutaja ei saa seda brauseri seadetes muuta.
 
       Kui jätate reegli määramata, on taustarežiim vaikimisi keelatud ja kasutaja saab seda brauseri seadetes muuta.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> tagab turvalise värskendamise ja laienduste installimise. Kuid osade laienduste, mida ei hosti Chrome'i veebipood, sisu võib olla kaistud ainult ebaturvalise sisselogimise või räsialgoritmidega (näiteks SHA1). Kui see reegel on keelatud, ei luba Chrome selliste laienduste installimist ega värskendamist (kuni laienduse arendajad loovad laienduse uuesti tugevamate algoritmidega). Kui see reegel on lubatud, on selliste laienduste installimine ja värskendamine lubatud.
+
+          Kui see on seadistamata, käsitletakse seda vaikimisi kui lubatud.
+          Alates tootest <ph name="PRODUCT_NAME" /> 75: kui see on seadistamata, käsitletakse seda vaikimisi kui keelatud.
+
+          Alates tootest <ph name="PRODUCT_NAME" /> 77: seda reeglit ignoreeritakse ja käsitletakse nagu see oleks keelatud.</translation>
 <translation id="7126716959063786004">Lõpetamisprotsesside lubamine tegumihalduris</translation>
 <translation id="7127892035367404455">Tagasiminek sihtversioonile</translation>
 <translation id="7128918109610518786">Loetleb rakenduste identifikaatorid, mida <ph name="PRODUCT_OS_NAME" /> näitab käivitusribal kinnitatud rakendustena.

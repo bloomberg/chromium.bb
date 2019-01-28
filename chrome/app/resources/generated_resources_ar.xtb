@@ -367,6 +367,7 @@
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1538729222189715449">‏جارٍ فتح ملفات نظام التشغيل Linux...</translation>
 <translation id="1540605929960647700">تفعيل الوضع التجريبي</translation>
+<translation id="1541396123399225659">إضافة إلى مجموعة جديدة</translation>
 <translation id="1542514202066550870">‏تقدم علامة التبويب هذه محتوى VR إلى سماعة رأس.</translation>
 <translation id="1543284117603151572">‏تم الاستيراد من شبكة Edge</translation>
 <translation id="1545177026077493356">وضع الكشك التلقائي</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">جارٍ التهيئة...</translation>
 <translation id="159359590073980872">ذاكرة التخزين المؤقت للصور</translation>
 <translation id="1593926297800505364">حفظ طريقة الدفع</translation>
+<translation id="1595492813686795610">‏جارٍ ترقية Linux</translation>
 <translation id="1598233202702788831">أوقف المشرف التحديثات.</translation>
 <translation id="1600857548979126453">الدخول إلى الواجهة الخلفية لبرنامج تصحيح خلل الصفحة</translation>
 <translation id="1601560923496285236">تطبيق</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">تفعيل المظهر</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">‏العرض في سوق Chrome الإلكتروني</translation>
-<translation id="1761588866118490543">النموذج الصوتي</translation>
 <translation id="176193854664720708">يتوفَّر مستشعر بصمات الإصبع في زر التشغيل. يمكنك لمسه برفقٍ بأي إصبع.</translation>
 <translation id="1763046204212875858">إنشاء اختصارات للتطبيق</translation>
 <translation id="1763108912552529023">متابعة الاستكشاف</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">الطباعة باستخدام مربع حوار النظام... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">اسأل قبل الإرسال (موصى به)</translation>
 <translation id="2384436799579181135">حدث خطأ ما. يُرجى التحقق من الطابعة وإعادة المحاولة.</translation>
+<translation id="2386926718981642523">‏يمكنك الوصول إلى "مساعد Google" في أي وقت تنطق فيه عبارة "Ok Google".</translation>
 <translation id="2387458720915042159">نوع الاتصال بالخادم الوكيل</translation>
 <translation id="2391419135980381625">الخط القياسي</translation>
 <translation id="2391762656119864333">إبطال</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190">تعذر على <ph name="PRODUCT_NAME" /> الاتصال بـ <ph name="NETWORK_ID" />. يُرجى تحديد شبكة أخرى أو إعادة المحاولة.</translation>
 <translation id="2553440850688409052">إخفاء هذا المكون الإضافي</translation>
 <translation id="2554553592469060349">الملف المحدد كبير جدًا (الحد الأقصى للحجم: 3 ميغابايت).</translation>
+<translation id="255747371423522804">الإضافة إلى مجموعة حالية</translation>
 <translation id="2558896001721082624">عرض خيارات إمكانية الوصول في قائمة النظام دائمًا</translation>
 <translation id="2562685439590298522">المستندات</translation>
 <translation id="2562743677925229011">لم يتم تسجيل الدخول إلى <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1314,6 +1317,7 @@
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="2972642118232180842">تشغيل المحتوى المهم فقط (موصى به)</translation>
 <translation id="2973324205039581528">تجاهل الموقع</translation>
+<translation id="2977480621796371840">إزالة من مجموعة</translation>
 <translation id="2979639724566107830">فتح الإشارة في نافذة جديدة</translation>
 <translation id="2981113813906970160">عرض مؤشر الماوس الكبير</translation>
 <translation id="2982970937345031">إرسال التقرير بدون الكشف عن هويتك</translation>
@@ -1563,6 +1567,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">فاصل</translation>
 <translation id="3389312115541230716">انقر بزر الماوس الأيمن على رمز <ph name="SMALL_PRODUCT_LOGO" /> في شريط المهام</translation>
+<translation id="3393352139658145068">‏يُرجى تفعيل "مساعد Google" عندما ينطق مستخدم عبارة “Ok Google”. ولتوفير شحن البطارية، يتم تفعيل “Ok Google” عند توصيل الجهاز بمصدر طاقة.</translation>
 <translation id="3396800784455899911">‏بالنقر على الزر "قبول ومتابعة"، فأنت توافق على المعالجة الموضّحة أعلاه لخدمات Google هذه.</translation>
 <translation id="3399432415385675819">سيتم إيقاف الإشعارات</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />، <ph name="TIME_LEFT" /></translation>
@@ -2107,7 +2112,7 @@
 <translation id="4193154014135846272">‏مستند Google</translation>
 <translation id="4194570336751258953">تفعيل الضغط للنقر</translation>
 <translation id="4195249722193633765">‏تثبيت التطبيق باستخدام Linux (إصدار تجريبي)</translation>
-<translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
+<translation id="4195643157523330669">فتح في علامة تبويب جديدة</translation>
 <translation id="4195814663415092787">المتابعة من حيث توقفت</translation>
 <translation id="4197674956721858839">تحديد ملف مضغوط</translation>
 <translation id="4198146608511578238">‏ما عليك سوى الضغط على رمز Launcher باستمرار للتحدث إلى مساعد Google.</translation>
@@ -3162,6 +3167,7 @@
 <translation id="5816434091619127343">تغييرات الطابعة المطلوبة تجعل الطابعة غير قابلة للاستخدام.</translation>
 <translation id="5817918615728894473">إقران</translation>
 <translation id="5821565227679781414">إنشاء اختصار</translation>
+<translation id="5825412242012995131">تفعيل (مُقترح)</translation>
 <translation id="5826507051599432481">‏الاسم الشائع (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">الطباعة جارية...</translation>
@@ -3707,6 +3713,11 @@
 <translation id="6629841649550503054">‏تم نسخ جميع العناصر احتياطيًا في <ph name="BEGIN_LINK" />Google Drive.<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> يريد وصولاً دائمًا إلى شهادة للمصادقة الذاتية نيابةً عنك.</translation>
 <translation id="6635956300022133031">اختيار إعدادات الصوت في ميزة تحويل النص إلى كلام وتخصيصها</translation>
+<translation id="6637585982786704944">‏يمكن للتطبيقات والمواقع الإلكترونية التي تمنحها إذن الوصول إلى معلومات الحساب التي تحتاج إليها للعمل بشكلٍ صحيح.
+
+    في حال لم ترغب في إضافة حساب، يُرجى تسجيل الدخول كضيف أو فتح نافذة التصفُّح المتخفي لتصفًّح الويب.
+
+    يمكنك الانتقال إلى "الإعدادات" -&gt; "حسابات Google" لعرض جميع الحسابات وإدارتها.</translation>
 <translation id="6639554308659482635">‏ذاكرة SQLite</translation>
 <translation id="6641138807883536517">‏كلمة مرور الوحدة الآمنة التي تم إنشاؤها عشوائيًا غير متاحة. ويعد ذلك أمرًا عاديًا بعد إجراء Powerwash.</translation>
 <translation id="6643016212128521049">محو</translation>
@@ -3908,6 +3919,7 @@
 <translation id="6957231940976260713">اسم الخدمة</translation>
 <translation id="696203921837389374">تفعيل المزامنة عبر بيانات الجوّال</translation>
 <translation id="6964390816189577014">بطل</translation>
+<translation id="6964760285928603117">إزالة من مجموعة</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965648386495488594">المنفذ</translation>
 <translation id="6965978654500191972">جهاز</translation>
@@ -4017,6 +4029,7 @@
 <translation id="7109543803214225826">تمت إزالة الاختصار</translation>
 <translation id="7113502843173351041">معرفة عنوان بريدك الإلكتروني</translation>
 <translation id="7114054701490058191">كلمات المرور غير متطابقة</translation>
+<translation id="7114648273807173152">‏لاستخدام Smart Lock لتسجيل الدخول إلى حسابك على Google، يمكنك الانتقال إلى "الإعدادات" &gt; "الأجهزة المتصلة" &gt; "هاتفك" &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">يُرجى إعادة المحاولة لاحقًا</translation>
 <translation id="7117247127439884114">تسجيل الدخول مرة أخرى...</translation>
 <translation id="711840821796638741">عرض الإشارات المرجعية المدارة</translation>
@@ -4057,7 +4070,7 @@
 <translation id="7171559745792467651">تثبيت التطبيقات من أجهزتك الأخرى</translation>
 <translation id="7175037578838465313">تهيئة <ph name="NAME" /></translation>
 <translation id="7175353351958621980">تم التحميل من:</translation>
-<translation id="7180611975245234373">تحديث</translation>
+<translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="7180865173735832675">تخصيص</translation>
 <translation id="7182359331070524176">‏اختيار ألبوم من "صور Google"</translation>
 <translation id="7186088072322679094">البقاء مثبتًا في شريط الأدوات</translation>
@@ -4172,6 +4185,7 @@
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
 <translation id="7352651011704765696">حدث خطأ ما</translation>
 <translation id="735361434055555355">‏جارٍ تثبيت نظام التشغيل Linux...</translation>
+<translation id="7353887511974462734">الإضافة إلى مجموعة حالية</translation>
 <translation id="735745346212279324">تم قطع اتصال الشبكة الافتراضية الخاصة</translation>
 <translation id="7359359531237882347">جارٍ نسخ <ph name="NUMBER_OF_ITEMS" /> من العناصر...</translation>
 <translation id="7359588939039777303">تم حظر الإعلانات.</translation>
@@ -4234,7 +4248,6 @@
 <translation id="7456847797759667638">فتح موقع...</translation>
 <translation id="7461924472993315131">تثبيت</translation>
 <translation id="7463006580194749499">إضافة شخص</translation>
-<translation id="7464902436585505072">‏النموذج الصوتي لعبارة "Ok Google"</translation>
 <translation id="7465778193084373987">‏عنوان URL لإبطال شهادة Netscape</translation>
 <translation id="7469894403370665791">الاتصال بهذه الشبكة تلقائيًا</translation>
 <translation id="747114903913869239">خطأ: تعذر فك تشفير الإضافة</translation>
@@ -4804,6 +4817,7 @@
 <translation id="827097179112817503">عرض زر الصفحة الرئيسية</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{تم حذف إشارة مرجعية واحدة}zero{تم حذف # إشارة مرجعية}two{تم حذف إشارتين مرجعيتين (#)}few{تم حذف # إشارات مرجعية}many{تم حذف # إشارةً مرجعيةً}other{تم حذف # إشارة مرجعية}}</translation>
 <translation id="8272443605911821513">يمكنك إدارة الإضافات من خلال النقر على "الإضافات" في قائمة "المزيد من الأدوات".</translation>
+<translation id="8272966760965438857">‏إدارة حساباتك على Google في مكان واحد</translation>
 <translation id="8274332263553132018">إرسال الملف</translation>
 <translation id="8274924778568117936">لا توقف تشغيل جهاز <ph name="DEVICE_TYPE" /> أو تُغلقه لحين الانتهاء من التحديث. ستتم إعادة تشغيل جهاز <ph name="DEVICE_TYPE" /> بعد اكتمال التثبيت.</translation>
 <translation id="8275038454117074363">الاستيراد</translation>
@@ -5190,6 +5204,7 @@
 <translation id="8883847527783433352">المزامنة مع حساب آخر</translation>
 <translation id="8885197664446363138">‏Smart Lock غير متاح</translation>
 <translation id="88870264962436283">استخدام رقم التعريف باللمس مع <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">سيتم فتح التطبيق عند انتهاء الترقية. قد تستغرق عمليات الترقية بضع دقائق.</translation>
 <translation id="8888432776533519951">اللون:</translation>
 <translation id="8890516388109605451">المصادر</translation>
 <translation id="8892168913673237979">كل شيء جاهز!</translation>

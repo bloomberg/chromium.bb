@@ -797,6 +797,11 @@
           Ja šis iestatījums ir atspējots un ugunsmūris filtrē izejošos UDP savienojumus, ierīce atļaus savienojumus tikai no lokālā tīkla klientu ierīcēm.
 
           Ja šī politika netiek iestatīta, iestatījums tiek iespējots.</translation>
+<translation id="2813281962735757923">Šī politika nosaka, kuros laika periodos <ph name="PRODUCT_OS_NAME" /> ierīce nedrīkst automātiski pārbaudīt, vai ir pieejami atjauninājumi.
+      Ja šī politika ir iestatīta, norādot laika intervālu sarakstu, kas nav tukšs, tad ir spēkā tālāk norādītie iestatījumi.
+      Norādītajos laika intervālos ierīces nevar automātiski pārbaudīt, vai ir pieejami atjauninājumi. Potenciālu drošības problēmu dēļ šī politika neietekmē ierīces, kurām nepieciešama atrite vai kuru <ph name="PRODUCT_OS_NAME" /> versija ir vecāka nekā minimālā pieļaujamā versija. Turklāt ar šo politiku netiks bloķēta atjauninājumu meklēšana, ko pieprasīs lietotāji vai administratori.
+      Ja šī politika nav iestatīta vai tajā nav norādīti laika intervāli, ir spēkā šādi iestatījumi.
+      Šī politika nebloķēs automātisku atjauninājumu meklēšanu, taču citas politikas var meklēšanu bloķēt. Šī funkcija ir pieejama tikai tādās Chrome ierīcēs, kas ir konfigurētas kā automātiskas palaišanas kioski. Šī politika neierobežos citas ierīces.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> klientu Windows reģistra vieta:</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
 <translation id="2838830882081735096">Aizliegt datu migrēšanu un ARC</translation>
@@ -1091,6 +1096,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="355118380775352753">Vietnes, kas atveramas citā pārlūkprogrammā</translation>
 <translation id="3577251398714997599">Reklāmu iestatījumi vietnēm, kurās tiek rādītas traucējošas reklāmas</translation>
+<translation id="3591527072193107424">Iespējot funkciju Mantoto pārlūku atbalsts.</translation>
 <translation id="3591584750136265240">Pieteikšanās autentifikācijas darbības konfigurēšana</translation>
 <translation id="3624171042292187668">
       Lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un ierobežotu ietekmi uz lietotājiem, ieteicams izmantot “IsolateOrigins” politikas iestatījumu. Izmantojot politiku “SitePerProcess”, tiek izolētas visas vietnes.
@@ -1276,6 +1282,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="3965339130942650562">Noildze, līdz dīkstāves lietotāja atteikšanās tiek izpildīta</translation>
 <translation id="3973371701361892765">Nekad automātiski neslēpt plauktu</translation>
 <translation id="3984028218719007910">Nosaka, vai produkts <ph name="PRODUCT_OS_NAME" /> saglabā lokālā konta datus pēc atteikšanās. Ja politika iestatīta uz Patiesa, produkts  <ph name="PRODUCT_OS_NAME" /> nesaglabā nevienu pastāvīgo kontu un visi dati no lietotāja sesijas tiek atmesti pēc atteikšanās. Ja politika ir iestatīta uz Aplama vai nav konfigurēta, ierīce, iespējams, saglabā (šifrētos) lokālos lietotāja datus.</translation>
+<translation id="398475542699441679">Šī politika nosaka, vai jāiespējo mantoto pārlūku atbalsts.
+
+      Ja šī politika nav iestatīta vai tai ir iestatīta vērtība "False", pārlūkā Chrome netiek mēģināts atvērt attiecīgi apzīmētus URL citā pārlūkā.
+
+      Ja šai politikai ir iestatīta vērtība "True", pārlūkā Chrome tiek mēģināts atvērt dažus URL citā pārlūkā (piemēram, pārlūkā Internet Explorer). Šī funkcija tiek konfigurēta, izmantojot grupas “<ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />” politikas.
+
+      Šī funkcija aizstāj paplašinājumu <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Paplašinājuma konfigurācija tiks pārnesta uz šo funkciju, taču ļoti ieteicams šīs konfigurācijas vietā izmantot Chrome politikas. Tā turpmāk tiks nodrošināta labāka saderība.</translation>
 <translation id="3997519162482760140">Vietrāži URL, kuriem tiks nodrošināta piekļuve video tveršanas ierīcēm SAML pieteikšanās lapās.</translation>
 <translation id="4001275826058808087">IT administratori var izmantot šo atzīmi uzņēmuma ierīcēs, lai noteiktu, vai ļaut lietotājiem izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
@@ -1526,6 +1539,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Šablonu piemērus skatiet šeit: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Atvērt vietrāžu URL sarakstu</translation>
+<translation id="4674871290487541952">Paplašinājumu atjaunināšanas un instalēšanas integritātes pārbaudēs atļaut nedrošus algoritmus</translation>
 <translation id="4680936297850947973">Novecojis versijā M68. Tā vietā izmantojiet iestatījumu DefaultPopupsSetting.
 
       Detalizēts skaidrojums ir sniegts vietnē https://www.chromestatus.com/features/5675755719622656.
@@ -2559,6 +2573,12 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šai politikai ir iestatīta vērtība Nepatiesa, fona režīms ir atspējots un lietotājs var to kontrolēt pārlūka iestatījumos.
 
       Ja šī politika nav iestatīta, fona režīms ir sākotnēji atspējots un lietotājs var to kontrolēt pārlūka iestatījumos.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> sniedz iespēju droši atjaunināt un instalēt paplašinājumus. Tomēr dažos paplašinājumos, kas netiek viesoti Chrome interneta veikalā, saturs var būt aizsargāts tikai ar nedrošiem parakstīšanas vai jaukšanas algoritmiem, piemēram, SHA1. Ja šī politika ir atspējota, pārlūkā Chrome netiek atļauts instalēt un atjaunināt šādus paplašinājumus (līdz paplašinājumu izstrādātāji pārveido tos, uzlabojot algoritmus). Ja šī politika ir iespējota, tiek atļauts instalēt un atjaunināt šādus paplašinājumus.
+
+          Ja politikai nav iestatīta vērtība, pēc noklusējuma tiek lietota iespējošanas izturēšanās.
+          Sākot no versijas <ph name="PRODUCT_NAME" /> 75, ja vērtība nav iestatīta, tiek lietota atspējošanas izturēšanās.
+
+          Sākot no versijas <ph name="PRODUCT_NAME" /> 77, šī politika netiek ievērota un tiek uzskatīta par atspējotu.</translation>
 <translation id="7126716959063786004">Procesu beigšanas iespējošana uzdevumu pārvaldniekā</translation>
 <translation id="7127892035367404455">Atritināšana uz mērķa versiju</translation>
 <translation id="7128918109610518786">Norāda lietojumprogrammu identifikatorus, ko operētājsistēma <ph name="PRODUCT_OS_NAME" /> palaišanas joslā rāda kā piespraustās lietotnes.

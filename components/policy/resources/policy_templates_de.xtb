@@ -775,6 +775,11 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           Falls die Einstellung deaktiviert ist und ausgehende UDP-Verbindungen von der Firewall gefiltert werden, erlaubt dieser Computer nur Verbindungen von Clientcomputern im lokalen Netzwerk.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung aktiviert.</translation>
+<translation id="2813281962735757923">Über diese Richtlinie wird der Zeitraum festgelegt, in dem das <ph name="PRODUCT_OS_NAME" />-Gerät nicht automatisch nach Updates suchen darf.
+      Folgendes passiert, wenn diese Richtlinie auf eine nicht leere Liste von Zeiträumen festgelegt wird:
+      Geräte können während der festgelegten Zeiträume nicht automatisch nach Updates suchen. Auf Geräten, für die ein Rollback erforderlich ist oder die eine Version von <ph name="PRODUCT_OS_NAME" /> ausführen, die unter der Mindestversion liegt, hat diese Richtlinie aufgrund potenzieller Sicherheitsprobleme keine Auswirkungen. Außerdem blockiert diese Richtlinie keine Prüfungen auf Updates, die von Nutzern oder Administratoren angefordert werden.
+      Wenn diese Richtlinie nicht konfiguriert ist oder keine Zeiträume enthält, passiert Folgendes:
+      Automatische Prüfungen auf Updates werden zwar nicht durch diese Richtlinie blockiert, können jedoch durch andere Richtlinien blockiert werden. Diese Funktion ist nur auf Chrome-Geräten aktiviert, die als automatisch startende Kioske konfiguriert wurden. Andere Geräte werden von dieser Richtlinie nicht eingeschränkt.</translation>
 <translation id="2823870601012066791">Windows-Registrierungspfad für <ph name="PRODUCT_OS_NAME" />-Clients:</translation>
 <translation id="2824715612115726353">Inkognitomodus aktivieren</translation>
 <translation id="2838830882081735096">Datenmigration und ARC nicht zulassen</translation>
@@ -1061,6 +1066,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
+<translation id="3591527072193107424">Funktion für die Unterstützung älterer Browser aktivieren.</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
 <translation id="3624171042292187668">
       Sie sollten sich die Richtlinieneinstellung "IsolateOrigins" ansehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
@@ -1244,6 +1250,13 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
+<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung für ältere Browser aktiviert wird.
+
+      Wenn die Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, versucht Chrome nicht, bestimmte URLs in einem alternativen Browser zu starten.
+
+      Wenn diese Richtlinie auf "true" gesetzt ist, versucht Chrome, einige URLs in einem alternativen Browser, wie z. B. Internet Explorer, zu starten. Diese Funktion wird mithilfe der Richtlinien in der Gruppe <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" /> konfiguriert.
+
+      Sie ist ein Ersatz für die Erweiterung <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Konfigurationen von der Erweiterung werden nicht für diese Funktion übernommen. Es wird jedoch dringend empfohlen, stattdessen die Chrome-Richtlinien zu verwenden. Dadurch wird eine bessere Kompatibilität in der Zukunft gewährleistet.</translation>
 <translation id="3997519162482760140">URLs, denen auf SAML-Log-in-Seiten Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
 <translation id="4001275826058808087">IT-Administratoren von Unternehmensgeräten können hiermit festlegen, ob Nutzer Angebote über die Chrome OS-Registrierung einlösen können.
 
@@ -1485,6 +1498,7 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
           Beispielmuster finden Sie unter https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">URL-Liste öffnen</translation>
+<translation id="4674871290487541952">Unsichere Algorithmen in Integritätsprüfungen bei Erweiterungsupdates und -installationen erlauben</translation>
 <translation id="4680936297850947973">In M68 nicht mehr verfügbar. Verwenden Sie stattdessen "DefaultPopupsSetting".
 
       Eine vollständige Erläuterung finden Sie unter https://www.chromestatus.com/features/5675755719622656.
@@ -2471,6 +2485,12 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
       Ist diese Richtlinie auf "false" gesetzt, wird der Hintergrundmodus deaktiviert und der Prozess kann nicht vom Nutzer über die Browsereinstellungen gesteuert werden.
 
       Ist diese Richtlinie nicht konfiguriert, wird der Hintergrundmodus anfänglich deaktiviert und der Prozess kann vom Nutzer über die Browsereinstellungen gesteuert werden.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> bietet eine sichere Aktualisierung und Installation von Erweiterungen. Der Inhalt einiger Erweiterungen wird jedoch außerhalb des Chrome Web Store gehostet und kann nur durch unsichere Anmelde- oder Hash-Algorithmen wie SHA1 geschützt werden. Wenn diese Richtlinie deaktiviert wird, wird eine Neuinstallation und Aktualisierung solcher Erweiterungen von Chrome nicht erlaubt (bis die Entwickler der Erweiterung diese mit stärkeren Algorithmen neu erstellen). Wenn diese Richtlinie aktiviert ist, ist die Installation und Aktualisierung solcher Erweiterungen zulässig.
+
+          Ist diese Richtlinie nicht konfiguriert, wird sie standardmäßig aktiviert.
+          Ist diese Richtlinie ab <ph name="PRODUCT_NAME" /> 75 nicht konfiguriert, wird sie standardmäßig deaktiviert.
+
+          Ab <ph name="PRODUCT_NAME" /> 77 wird diese Richtlinie ignoriert und als deaktiviert eingestuft.</translation>
 <translation id="7126716959063786004">Beenden von Prozessen im Task-Manager erlauben</translation>
 <translation id="7127892035367404455">Rollback auf die Zielversion</translation>
 <translation id="7128918109610518786">Listet die App-IDs auf, die unter <ph name="PRODUCT_OS_NAME" /> in der Übersichtsleiste als in der Übersicht angezeigte Apps erscheinen.

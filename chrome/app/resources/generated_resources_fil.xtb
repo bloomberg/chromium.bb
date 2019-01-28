@@ -367,6 +367,7 @@
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1538729222189715449">Binubuksan ang mga Linux file...</translation>
 <translation id="1540605929960647700">I-enable ang demo mode</translation>
+<translation id="1541396123399225659">Idagdag sa Bagong Grupo</translation>
 <translation id="1542514202066550870">Nagpapakita ang tab na ito ng VR content sa isang headset.</translation>
 <translation id="1543284117603151572">Na-import Mula Sa Edge</translation>
 <translation id="1545177026077493356">Awtomatikong Kiosk Mode</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Nagpo-format...</translation>
 <translation id="159359590073980872">Cache ng Larawan</translation>
 <translation id="1593926297800505364">I-save ang paraan ng pagbabayad</translation>
+<translation id="1595492813686795610">Ina-upgrade ang Linux</translation>
 <translation id="1598233202702788831">Na-disable ng iyong administrator ang mga update.</translation>
 <translation id="1600857548979126453">I-access ang backend ng debugger ng pahina</translation>
 <translation id="1601560923496285236">Ilapat</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">Paganahin ang tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Tingnan sa Chrome Web Store</translation>
-<translation id="1761588866118490543">Voice model</translation>
 <translation id="176193854664720708">Nasa power button ang sensor para sa fingerprint. Pundutin ito nang magaan gamit ang alinmang daliri.</translation>
 <translation id="1763046204212875858">Gumawa ng mga shortcut ng application</translation>
 <translation id="1763108912552529023">Magpatuloy sa pag-explore</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">I-print gamit ang dialog ng system... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Magtanong bago magpadala (inirerekomenda)</translation>
 <translation id="2384436799579181135">Nagka-error. Pakisuri ang iyong printer at subukang muli.</translation>
+<translation id="2386926718981642523">I-access ang iyong Assistant sa tuwing sinasabi mo ang "Ok Google"</translation>
 <translation id="2387458720915042159">Uri ng koneksyon sa proxy</translation>
 <translation id="2391419135980381625">Karaniwang font</translation>
 <translation id="2391762656119864333">Bawiin</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190">Hindi nagawang kumonekta ng <ph name="PRODUCT_NAME" /> sa <ph name="NETWORK_ID" />. Mangyaring pumili ng ibang network o subukang muli.</translation>
 <translation id="2553440850688409052">Itago ang Plugin na Ito</translation>
 <translation id="2554553592469060349">Masyadong malaki ang napiling file (max na laki: 3mb).</translation>
+<translation id="255747371423522804">Idagdag sa dati nang grupo</translation>
 <translation id="2558896001721082624">Ipakita ang mga opsyon sa accessibility sa menu ng system</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">Hindi naka-sign in sa <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;I-redo</translation>
 <translation id="2972642118232180842">Magpatakbo lang ng mahalagang content (inirerekomenda)</translation>
 <translation id="2973324205039581528">I-mute ang Site</translation>
+<translation id="2977480621796371840">Alisin sa grupo</translation>
 <translation id="2979639724566107830">Buksan ng bagong window</translation>
 <translation id="2981113813906970160">Ipakita ang malaking mouse cursor</translation>
 <translation id="2982970937345031">Mag-ulat nang anonymous</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">I-right click ang icon na <ph name="SMALL_PRODUCT_LOGO" /> sa taskbar</translation>
+<translation id="3393352139658145068">I-activate ang Assistant kapag may sinumang nagsabi ng “Ok Google”. Para makatipid ng baterya, naka-on lang ang “Ok Google” kapag nakakonekta ang iyong device sa isang pinagmumulan ng kuryente.</translation>
 <translation id="3396800784455899911">Sa pamamagitan ng pag-click sa button na "Tanggapin at magpatuloy," sumasang-ayon ka sa pagpoproseso na inilarawan sa itaas para sa mga serbisyong ito ng Google.</translation>
 <translation id="3399432415385675819">Madi-disable ang mga notification</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3167,6 +3172,7 @@
 <translation id="5816434091619127343">Magiging hindi magagamit ang printer dahil sa mga hiniling na pagbabago sa printer.</translation>
 <translation id="5817918615728894473">Ipares</translation>
 <translation id="5821565227679781414">Lumikha ng Shortcut</translation>
+<translation id="5825412242012995131">Naka-on (inirerekomenda)</translation>
 <translation id="5826507051599432481">Common Name (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Nagpi-print...</translation>
@@ -3414,7 +3420,7 @@
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Palawakin lahat...</translation>
 <translation id="6164005077879661055">Permanenteng matatanggal ang lahat ng file at lokal na data na kaugnay ng pinangangasiwaang user sa oras na alisin ang pinangangasiwaang user na ito. Maaari pa ring makita ng manager ang mga nabisitang website at setting para sa pinangangasiwaang user na ito sa <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Matuto nang higit pa</translation>
+<translation id="6165508094623778733">Matuto pa</translation>
 <translation id="6166185671393271715">Mag-import ng Mga Password sa Chrome</translation>
 <translation id="6169040057125497443">Pakisuri ang iyong mikropono.</translation>
 <translation id="6169666352732958425">Hindi ma-cast ang desktop.</translation>
@@ -3711,6 +3717,11 @@
 <translation id="6629841649550503054">Naka-back up na ang lahat sa <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409">Gusto ng <ph name="EXTENSION_NAME" /> ng permanenteng access sa isang certificate upang patunayan ang sarili nito sa iyong ngalan.</translation>
 <translation id="6635956300022133031">Pumili at mag-customize ng mga boses ng text-to-speech</translation>
+<translation id="6637585982786704944">Maaaring i-access ng mga app at website na mayroon ng iyong pahintulot ang impormasyon ng account na kinakailangan ng mga ito para gumana nang maayos ang mga ito.
+
+    Kung ayaw mong magdagdag ng account, mag-sign in bilang bisita o magbukas ng incognito na window para sa pag-browse sa web.
+
+    Maaari kang pumunta sa Mga Setting -&gt; Mga Google Account para tingnan at pamahalaan ang lahat ng account.</translation>
 <translation id="6639554308659482635">Memorya sa SQLite</translation>
 <translation id="6641138807883536517">Hindi available ang random na ginawang password ng secure na module. Normal lang ito pagkatapos ng Powerwash.</translation>
 <translation id="6643016212128521049">I-clear</translation>
@@ -3912,6 +3923,7 @@
 <translation id="6957231940976260713">Pangalan ng serbisyo</translation>
 <translation id="696203921837389374">I-enable ang pagsi-sync gamit ang mobile data</translation>
 <translation id="6964390816189577014">Bayani</translation>
+<translation id="6964760285928603117">Alisin Sa Grupo</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Device</translation>
@@ -4021,6 +4033,7 @@
 <translation id="7109543803214225826">Inalis ang shortcut</translation>
 <translation id="7113502843173351041">Alamin ang iyong email address</translation>
 <translation id="7114054701490058191">Hindi magkatugma ang mga password</translation>
+<translation id="7114648273807173152">Para gamitin ang Smart Lock para mag-sign in sa iyong Google Account, pumunta sa Mga Setting &gt; Mga nakakonektang device &gt; Iyong telepono &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Pakisubukang muli sa ibang pagkakataon</translation>
 <translation id="7117247127439884114">Muling Mag-sign in...</translation>
 <translation id="711840821796638741">Ipakita ang Mga Pinamamahalaang Bookmark</translation>
@@ -4176,6 +4189,7 @@
 <translation id="7348093485538360975">Nasa screen na keyboard</translation>
 <translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="735361434055555355">Ini-install ang Linux...</translation>
+<translation id="7353887511974462734">Idagdag sa Dati Nang Grupo</translation>
 <translation id="735745346212279324">Nakadiskonekta ang VPN</translation>
 <translation id="7359359531237882347">Kinokopya ang <ph name="NUMBER_OF_ITEMS" /> (na) item...</translation>
 <translation id="7359588939039777303">Na-block ang mga ad.</translation>
@@ -4238,7 +4252,6 @@
 <translation id="7456847797759667638">Buksan ang Lokasyon...</translation>
 <translation id="7461924472993315131">I-pin</translation>
 <translation id="7463006580194749499">Magdagdag ng tao</translation>
-<translation id="7464902436585505072">Voice model na "Ok Google"</translation>
 <translation id="7465778193084373987">URL ng Pagpapawalang-bisa ng Netscape Certificate</translation>
 <translation id="7469894403370665791">Awtomatikong kumonekta sa network na ito</translation>
 <translation id="747114903913869239">Error: Hindi magawang i-decode ang extension</translation>
@@ -4808,6 +4821,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="827097179112817503">Ipakita ang button ng home</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Na-delete ang 1 bookmark}one{Na-delete ang # bookmark}other{Na-delete ang # na bookmark}}</translation>
 <translation id="8272443605911821513">Pamahalaan ang iyong mga extension sa pamamagitan ng pag-click sa Mga Extension sa menu ng "Higit pang mga tool."</translation>
+<translation id="8272966760965438857">Pamahalaan ang iyong Mga Google Account sa iisang lugar</translation>
 <translation id="8274332263553132018">I-cast ang file</translation>
 <translation id="8274924778568117936">Huwag i-off o isara ang iyong <ph name="DEVICE_TYPE" /> hanggang sa matapos ang pag-update. Magre-restart ang <ph name="DEVICE_TYPE" /> mo pagkatapos ng pag-install.</translation>
 <translation id="8275038454117074363">I-import</translation>
@@ -5196,6 +5210,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8883847527783433352">I-sync sa Isa pang Account</translation>
 <translation id="8885197664446363138">Hindi available ang Smart Lock</translation>
 <translation id="88870264962436283">Gamitin ang Touch ID sa <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Bubukas ang iyong app kapag tapos na ang pag-upgrade. Maaaring tumagal nang ilang minuto ang mga pag-upgrade.</translation>
 <translation id="8888432776533519951">Kulay</translation>
 <translation id="8890516388109605451">Mga Source</translation>
 <translation id="8892168913673237979">Handa na ang lahat!</translation>

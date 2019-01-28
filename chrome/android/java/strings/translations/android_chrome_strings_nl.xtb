@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1006017844123154345">Online openen</translation>
+<translation id="1023450834687746199">Je hebt de gegevens voor <ph name="APP_NAME" /> verwijderd.</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> toevoegen...</translation>
 <translation id="1041308826830691739">Van websites</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -142,6 +143,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2017836877785168846">Wist de geschiedenis en automatische aanvullingen in de adresbalk.</translation>
 <translation id="2021896219286479412">Siteopties op volledig scherm</translation>
 <translation id="2038563949887743358">'Desktopsite aanvragen' inschakelen</translation>
+<translation id="204321170514947529"><ph name="APP_NAME" /> heeft ook gegevens in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB voor andere apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2063713494490388661">Tikken om te zoeken</translation>
@@ -165,7 +167,6 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2154484045852737596">Kaart bewerken</translation>
 <translation id="2154710561487035718">URL kopiëren</translation>
 <translation id="2156074688469523661">Resterende sites (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">Controleer je internetverbinding</translation>
 <translation id="2197557662829090533">Digitaal welzijn toestaan om websites weer te geven die je hebt bezocht</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
@@ -242,6 +243,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="2779651927720337254">mislukt</translation>
 <translation id="2781151931089541271">1 seconde resterend</translation>
 <translation id="2784212955220061919">In de Lite-versie van Chrome worden pagina's sneller geladen en wordt tot wel 60 procent minder data verbruikt. De cloudtechnologie van Google optimaliseert de pagina's die je bezoekt.</translation>
+<translation id="2785336755839207516">Je hebt <ph name="APP_NAME" /> verwijderd.</translation>
 <translation id="2803478378562657435">Opgeslagen wachtwoorden en wachtwoordopties weergeven</translation>
 <translation id="2810645512293415242">Vereenvoudigde pagina om data te besparen en sneller te laden.</translation>
 <translation id="281504910091592009">Bekijk en beheer opgeslagen wachtwoorden in je <ph name="BEGIN_LINK" />Google-account<ph name="END_LINK" /></translation>
@@ -283,6 +285,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3115898365077584848">Informatie weergeven</translation>
 <translation id="3123473560110926937">Geblokkeerd op bepaalde sites</translation>
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
+<translation id="3143515551205905069">Synchronisatie annuleren</translation>
 <translation id="3148434565183091099">Log in bij Chrome om al je bladwijzers op al je apparaten te bekijken.</translation>
 <translation id="3157842584138209013">Via de knop 'Meer opties' kun je zien hoeveel data je hebt bespaard</translation>
 <translation id="3166827708714933426">Sneltoetsen voor tabbladen en vensters</translation>
@@ -301,6 +304,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3269093882174072735">Afbeelding laden</translation>
 <translation id="3269956123044984603">Schakel in je account bij de instellingen van Android 'Gegevens automatisch synchroniseren' in om de tabbladen op je andere apparaten te bekijken.</translation>
 <translation id="3282568296779691940">Inloggen bij Chrome</translation>
+<translation id="3288003805934695103">Laad de pagina opnieuw</translation>
 <translation id="32895400574683172">Meldingen zijn toegestaan</translation>
 <translation id="3295530008794733555">Surf sneller en verbruik minder data</translation>
 <translation id="3295602654194328831">Informatie verbergen</translation>
@@ -370,6 +374,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads verwijderd</translation>
 <translation id="3819562311292413223">Artikelen voor jou downloaden</translation>
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
+<translation id="385051799172605136">Vorige</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="3895926599014793903">Zoom inschakelen forceren</translation>
@@ -381,6 +386,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="3950820424414687140">Inloggen</translation>
 <translation id="395206256282351086">Zoek- en sitesuggesties uitgeschakeld</translation>
 <translation id="3955193568934677022">Toestaan dat sites beveiligde content afspelen (aanbevolen)</translation>
+<translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome laadt de pagina wanneer deze gereed is}other{Chrome laadt de pagina's wanneer deze gereed zijn}}</translation>
 <translation id="3963007978381181125">Wachtwoordzinversleuteling is niet van toepassing op betaalmethoden en adressen van Google Pay. Alleen iemand met je wachtwoordzin kan je versleutelde gegevens lezen. De wachtwoordzin wordt niet verzonden naar of opgeslagen door Google. Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, moet je de synchronisatie resetten. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Downloaden voltooid</translation>
 <translation id="397583555483684758">Synchronisatie werkt niet meer</translation>
@@ -431,6 +437,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
 <translation id="429312253194641664">Een site speelt media af</translation>
+<translation id="4298388696830689168">Gekoppelde sites</translation>
 <translation id="4307992518367153382">Basisinstellingen</translation>
 <translation id="4314815835985389558">Synchronisatie beheren</translation>
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
@@ -699,6 +706,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld om de beveiliging te verbeteren, om content, services, advertenties en aanbevelingen te leveren en om rapportagestatistieken te genereren.</translation>
+<translation id="624789221780392884">Update gereed</translation>
 <translation id="6255999984061454636">Contentsuggesties</translation>
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
@@ -734,6 +742,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6475951671322991020">Video downloaden</translation>
 <translation id="6482749332252372425">Downloaden van <ph name="FILE_NAME" /> is mislukt door te weinig opslagruimte.</translation>
 <translation id="6496823230996795692">Maak verbinding met internet als je <ph name="APP_NAME" /> voor het eerst wilt gebruiken.</translation>
+<translation id="6508722015517270189">Chrome opnieuw starten</translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="6534565668554028783">Het duurt te lang voordat Google reageert</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB gedownload</translation>
@@ -832,7 +841,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7189372733857464326">Wachten tot Google Play-services is geüpdatet</translation>
 <translation id="7189598951263744875">Delen...</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
-<translation id="7221869452894271364">Deze pagina opnieuw laden</translation>
 <translation id="723171743924126238">Afbeeldingen selecteren</translation>
 <translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> geselecteerd</translation>
@@ -919,6 +927,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="784934925303690534">Periode</translation>
 <translation id="7851858861565204677">Andere apparaten</translation>
 <translation id="7854964836418414587">'Meer zoals dit' sluiten</translation>
+<translation id="7871791972254842204">De algemene voorwaarden voor <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> later lezen en ermee akkoord gaan</translation>
 <translation id="7875915731392087153">E-mail maken</translation>
 <translation id="7876243839304621966">Alles verwijderen</translation>
 <translation id="7882131421121961860">Geen geschiedenis gevonden</translation>
@@ -969,6 +978,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8200772114523450471">Hervatten</translation>
 <translation id="8209050860603202033">Afbeelding openen</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB gedownload</translation>
+<translation id="8232956427053453090">Gegevens behouden</translation>
 <translation id="8249310407154411074">Bovenaan zetten</translation>
 <translation id="8250920743982581267">Documenten</translation>
 <translation id="825412236959742607">Omdat deze pagina te veel geheugen gebruikt, heeft Chrome wat content verwijderd.</translation>
@@ -1022,10 +1032,12 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="860043288473659153">Naam kaarthouder</translation>
 <translation id="8604763363205185560">Help Chrome en de beveiliging daarvan te verbeteren</translation>
 <translation id="8609465669617005112">Omhoog</translation>
+<translation id="8611192991944347781">Gegevens beheren</translation>
 <translation id="8616006591992756292">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">De voorgestelde URL in de gedownloade content openen?</translation>
 <translation id="8636825310635137004">Schakel synchronisatie in om de tabbladen op je andere apparaten te bekijken</translation>
 <translation id="8641930654639604085">Sites met content voor volwassenen proberen te blokkeren</translation>
+<translation id="8655129584991699539">Je kunt de gegevens wissen in de Chrome-instellingen</translation>
 <translation id="8662811608048051533">Hiermee word je uitgelogd van de meeste sites.</translation>
 <translation id="8664979001105139458">Bestandsnaam bestaat al</translation>
 <translation id="8676374126336081632">Invoer wissen</translation>
@@ -1033,6 +1045,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="868929229000858085">Zoek in je contacten</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8719023831149562936">Kan huidig tabblad niet beamen</translation>
+<translation id="8723954843026426558">Ik ga akkoord met de algemene voorwaarden, het privacybeleid en het herroepingsrecht van <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
 <translation id="8728487861892616501">Door deze app te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />Servicevoorwaarden<ph name="END_LINK1" /> en het <ph name="BEGIN_LINK2" />Privacybeleid<ph name="END_LINK2" /> van Chrome en het <ph name="BEGIN_LINK3" />Privacybeleid voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Gereed</translation>

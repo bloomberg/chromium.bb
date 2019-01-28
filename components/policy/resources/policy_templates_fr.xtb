@@ -815,6 +815,11 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
           Si ce paramètre est désactivé et si les connexions UDP sortantes sont filtrées par le pare-feu, ce poste autorise uniquement les connexions émanant des postes clients au sein du réseau local.
 
           Si cette règle n'est pas configurée, le paramètre est activé.</translation>
+<translation id="2813281962735757923">Cette règle permet de définir les périodes durant lesquelles l'appareil <ph name="PRODUCT_OS_NAME" /> n'est pas autorisé à rechercher automatiquement des mises à jour.
+      Si des périodes sont définies lors de la configuration de cette règle :
+      Aucune recherche automatique de mises à jour n'est effectuée pendant ces périodes. Les appareils nécessitant un rollback ou équipés d'une version antérieure à <ph name="PRODUCT_OS_NAME" /> ne sont pas concernés par cette règle en raison de problèmes de sécurité potentiels. Sachez également que cette règle n'empêche pas l'utilisateur ou l'administrateur de procéder à une recherche de mises à jour.
+      Si cette règle n'est pas configurée ou si aucune période n'est définie :
+      La recherche automatique de mises à jour n'est pas bloquée par cette règle, mais peut l'être par d'autres. Cette fonctionnalité n'est activée que sur les appareils Chrome configurés pour se lancer automatiquement en mode Kiosque. Elle ne limitera pas les autres appareils.</translation>
 <translation id="2823870601012066791">Emplacement du registre Windows pour les clients <ph name="PRODUCT_OS_NAME" /> :</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
 <translation id="2838830882081735096">Interdire la migration de données et ARC</translation>
@@ -1112,6 +1117,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
+<translation id="3591527072193107424">Activer la fonctionnalité Legacy Browser Support.</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
 <translation id="3624171042292187668">
       Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
@@ -1300,6 +1306,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3965339130942650562">Délai avant exécution de la déconnexion de l'utilisateur en cas d'inactivité</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
+<translation id="398475542699441679">Cette règle contrôle l'activation de Legacy Browser Support.
+
+      Si elle n'est pas définie, ou si elle est définie sur "false", Chrome n'essaiera pas de lancer les URL indiquées dans un autre navigateur.
+
+      Si elle est définie sur "true", Chrome essaiera de lancer certaines URL dans un autre navigateur (par exemple Internet Explorer). Cette fonctionnalité est configurée à l'aide des règles du groupe <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Cette fonctionnalité remplace l'extension <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. La configuration définie dans l'extension sera appliquée à cette fonctionnalité, mais il est vivement conseillé de lui préférer les règles Chrome. Une meilleure compatibilité sera ainsi assurée à l'avenir.</translation>
 <translation id="3997519162482760140">URL autorisées à accéder aux appareils de capture vidéo sur les pages de connexion SAML</translation>
 <translation id="4001275826058808087">Les administrateurs informatiques des appareils d'entreprise peuvent utiliser cet indicateur pour autoriser ou non les utilisateurs à profiter de leurs offres via le service d'enregistrement de Chrome OS.
 
@@ -1551,6 +1564,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Ouvrir une liste d'URL</translation>
+<translation id="4674871290487541952">Autoriser les algorithmes non sécurisés dans les vérifications de l'intégrité des mises à jour et des installations d'extension</translation>
 <translation id="4680936297850947973">Règle abandonnée dans la version M68. Utilisez à la place la règle DefaultPopupsSetting.
 
       Pour obtenir une explication complète, consultez la page https://www.chromestatus.com/features/5675755719622656.
@@ -2596,6 +2610,12 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "False", le mode arrière-plan est désactivé et ne peut pas être contrôlé par l'utilisateur dans les paramètres du navigateur.
 
       Si cette règle n'est pas définie, le mode arrière-plan est désactivé initialement et peut être contrôlé par l'utilisateur dans les paramètres du navigateur.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> assure la sécurité de la mise à jour et de l'installation d'extensions. Cependant, le contenu de certaines extensions hébergées en dehors du Chrome Web Store peut n'être protégé que par une connexion non sécurisée ou des algorithmes de hachage tels que SHA1. Si cette règle est désactivée, Chrome n'autorisera pas la nouvelle installation ni la mise à jour de ces extensions (tant que les développeurs ne les dotent pas d'algorithmes plus sécurisés). Si cette règle est activée, l'installation et la mise à jour de ces extensions seront autorisées.
+
+          Si elle n'est pas définie, la règle sera activée par défaut.
+          À partir de <ph name="PRODUCT_NAME" /> 75, la règle sera désactivée par défaut.
+
+          À partir de <ph name="PRODUCT_NAME" /> 77, la règle sera ignorée et considérée comme désactivée.</translation>
 <translation id="7126716959063786004">Mettre fin aux processus dans le gestionnaire des tâches</translation>
 <translation id="7127892035367404455">Rétablir la version cible</translation>
 <translation id="7128918109610518786">Permet de répertorier les identifiants des applications épinglées que <ph name="PRODUCT_OS_NAME" /> affiche dans la barre du lanceur d'applications.

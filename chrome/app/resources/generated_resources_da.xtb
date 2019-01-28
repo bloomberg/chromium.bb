@@ -367,6 +367,7 @@
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="1538729222189715449">Åbner Linux-filer...</translation>
 <translation id="1540605929960647700">Aktivér demotilstand</translation>
+<translation id="1541396123399225659">Føj til ny gruppe</translation>
 <translation id="1542514202066550870">Denne fane viser VR-indhold til et headset.</translation>
 <translation id="1543284117603151572">Importeret fra Edge</translation>
 <translation id="1545177026077493356">Automatisk terminaltilstand</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Formaterer...</translation>
 <translation id="159359590073980872">Billedcache</translation>
 <translation id="1593926297800505364">Gem betalingsmetode</translation>
+<translation id="1595492813686795610">Linux opgraderes</translation>
 <translation id="1598233202702788831">Opdateringer er deaktiveret af din administrator.</translation>
 <translation id="1600857548979126453">Få adgang til administration af fejlfinding på siden</translation>
 <translation id="1601560923496285236">Anvend</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">Aktivér tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Se i Chrome Webshop</translation>
-<translation id="1761588866118490543">Stemmemodel</translation>
 <translation id="176193854664720708">Fingeraftrykslæseren sidder i afbryderknappen. Tryk let på den med en finger.</translation>
 <translation id="1763046204212875858">Opret programgenveje</translation>
 <translation id="1763108912552529023">Udforsk videre</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">Dialogboks til Udskriv via system... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spørg inden afsendelse (anbefales)</translation>
 <translation id="2384436799579181135">Der opstod en fejl. Tjek din printer, og prøv igen.</translation>
+<translation id="2386926718981642523">Få adgang til din assistent, hver gang du siger "Ok Google"</translation>
 <translation id="2387458720915042159">Proxy-forbindelsestype</translation>
 <translation id="2391419135980381625">Standardskriftstørrelse</translation>
 <translation id="2391762656119864333">Tilbagekald</translation>
@@ -1040,6 +1042,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kunne ikke oprette forbindelse til <ph name="NETWORK_ID" />. Vælg et andet netværk, eller prøv igen.</translation>
 <translation id="2553440850688409052">Skjul dette plugin</translation>
 <translation id="2554553592469060349">Den valgte fil er for stor (maksimal størrelse: 3 MB).</translation>
+<translation id="255747371423522804">Føj til eksisterende gruppe</translation>
 <translation id="2558896001721082624">Vis altid indstillingerne for hjælpefunktioner i systemmenuen</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">Ikke logget ind på <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1313,6 +1316,7 @@
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
 <translation id="2972642118232180842">Kør kun vigtigt indhold (anbefales)</translation>
 <translation id="2973324205039581528">Slå lyden fra på et website</translation>
+<translation id="2977480621796371840">Fjern fra gruppe</translation>
 <translation id="2979639724566107830">Åbn i nyt vindue</translation>
 <translation id="2981113813906970160">Vis stor musemarkør</translation>
 <translation id="2982970937345031">Rapportér anonymt</translation>
@@ -1563,6 +1567,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Højreklik på <ph name="SMALL_PRODUCT_LOGO" />-ikonet på proceslinjen</translation>
+<translation id="3393352139658145068">Aktivér assistenten, når nogen siger “Ok Google”. For at spare på batteriet er “Ok Google” kun aktiveret, når din enhed er sluttet til en strømkilde.</translation>
 <translation id="3396800784455899911">Når du klikker på knappen "Acceptér og fortsæt", accepterer du den behandling, der er beskrevet ovenfor, for disse Google-tjenester.</translation>
 <translation id="3399432415385675819">Notifikationer deaktiveres</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3165,6 +3170,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5816434091619127343">De printerændringer, du har anmodet om, vil gøre printeren ubrugelig.</translation>
 <translation id="5817918615728894473">Start parring</translation>
 <translation id="5821565227679781414">Opret genvej</translation>
+<translation id="5825412242012995131">Til (anbefales)</translation>
 <translation id="5826507051599432481">Kaldenavn (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Udskriver...</translation>
@@ -3710,6 +3716,11 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6629841649550503054">Alt er sikkerhedskopieret til <ph name="BEGIN_LINK" />Google Drev<ph name="END_LINK" />.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ønsker permanent adgang til et certifikat for at godkende sig selv på dine vegne.</translation>
 <translation id="6635956300022133031">Vælg og tilpas oplæsningsstemmer</translation>
+<translation id="6637585982786704944">Apps og websites, der har din tilladelse, kan få adgang til de kontooplysninger, de skal bruge for at fungere korrekt.
+
+    Hvis du ikke vil tilføje en konto, kan du logge ind som gæst eller åbne et inkognitovindue til internetbrug.
+
+    Du kan gå til Indstillinger -&gt; Google-konti for at se og administrere alle konti.</translation>
 <translation id="6639554308659482635">SQLite-hukommelse</translation>
 <translation id="6641138807883536517">Den tilfældigt genererede adgangskode til sikkerhedsmodulet er ikke tilgængelig. Dette er normalt efter en Powerwash.</translation>
 <translation id="6643016212128521049">Ryd</translation>
@@ -3911,6 +3922,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6957231940976260713">Tjenestens navn</translation>
 <translation id="696203921837389374">Aktivér synkronisering via mobildata</translation>
 <translation id="6964390816189577014">Helt</translation>
+<translation id="6964760285928603117">Fjern fra gruppe</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Enhed</translation>
@@ -4020,6 +4032,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7109543803214225826">Genvejen blev fjernet</translation>
 <translation id="7113502843173351041">Kende din mailadresse</translation>
 <translation id="7114054701490058191">Adgangskoderne matcher ikke</translation>
+<translation id="7114648273807173152">Du kan bruge Smart Lock til at logge ind på din Google-konto ved at gå til Indstillinger &gt; Tilsluttede enheder &gt; Din telefon &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Prøv igen senere</translation>
 <translation id="7117247127439884114">Log ind igen...</translation>
 <translation id="711840821796638741">Vis administrerede bogmærker</translation>
@@ -4175,6 +4188,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="7352651011704765696">Der opstod en fejl</translation>
 <translation id="735361434055555355">Installerer Linux...</translation>
+<translation id="7353887511974462734">Føj til eksisterende gruppe</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7359359531237882347">Kopierer <ph name="NUMBER_OF_ITEMS" /> elementer...</translation>
 <translation id="7359588939039777303">Annoncer er blokeret.</translation>
@@ -4237,7 +4251,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7456847797759667638">Åbn placering...</translation>
 <translation id="7461924472993315131">Fastgør</translation>
 <translation id="7463006580194749499">Tilføj person</translation>
-<translation id="7464902436585505072">Stemmemodellen "Ok Google"</translation>
 <translation id="7465778193084373987">Webadresse for tilbagekaldelse af Netscape-certifikat</translation>
 <translation id="7469894403370665791">Opret automatisk forbindelse til dette netværk</translation>
 <translation id="747114903913869239">Fejl: Udvidelsen kunne ikke afkodes</translation>
@@ -4806,6 +4819,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="827097179112817503">Vis knappen Startside</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bogmærke er slettet}one{# bogmærke er slettet}other{# bogmærker er slettet}}</translation>
 <translation id="8272443605911821513">Administrer dine udvidelser ved at klikke på Udvidelser i menuen "Flere værktøjer".</translation>
+<translation id="8272966760965438857">Administrer dine Google-konti på ét sted</translation>
 <translation id="8274332263553132018">Cast fil</translation>
 <translation id="8274924778568117936">Undgå at slukke eller lukke din <ph name="DEVICE_TYPE" />, før opdateringen er færdig. Din <ph name="DEVICE_TYPE" /> genstarter, når installationen er gennemført.</translation>
 <translation id="8275038454117074363">Importer</translation>
@@ -5193,6 +5207,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8883847527783433352">Synkroniser med en anden konto</translation>
 <translation id="8885197664446363138">Smart Lock er ikke tilgængelig</translation>
 <translation id="88870264962436283">Brug Touch ID med <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Din app åbner, når opgraderingen er fuldført. Opgraderinger kan tage et par minutter.</translation>
 <translation id="8888432776533519951">Farve:</translation>
 <translation id="8890516388109605451">Kilder</translation>
 <translation id="8892168913673237979">Fuldført</translation>

@@ -167,7 +167,6 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="2154484045852737596">Edit kad</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Baki tapak (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">Periksa sambungan Internet anda</translation>
 <translation id="2197557662829090533">Benarkan Kesejahteraan Digital menunjukkan tapak web yang anda lawati</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, apl web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Teruskan sebagai <ph name="USER_FULL_NAME" /></translation>
@@ -286,6 +285,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="3115898365077584848">Tunjukkan Maklumat</translation>
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
 <translation id="3137521801621304719">Tinggalkan mod inkognito</translation>
+<translation id="3143515551205905069">Batalkan penyegerakan</translation>
 <translation id="3148434565183091099">Log masuk ke Chrome untuk mendapatkan penanda halaman pada semua peranti anda.</translation>
 <translation id="3157842584138209013">Lihat jumlah data yang dapat dijimatkan daripada butang Lagi Pilihan</translation>
 <translation id="3166827708714933426">Pintasan tab dan tetingkap</translation>
@@ -304,6 +304,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="3269093882174072735">Muatkan imej</translation>
 <translation id="3269956123044984603">Untuk mendapatkan tab daripada peranti anda yang lain, hidupkan "Auto segerak data" dalam tetapan akaun Android.</translation>
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
+<translation id="3288003805934695103">Memuatkan semula halaman</translation>
 <translation id="32895400574683172">Pemberitahuan dibenarkan</translation>
 <translation id="3295530008794733555">Semak imbas lebih pantas. Gunakan kurang data.</translation>
 <translation id="3295602654194328831">Sembunyikan Maklumat</translation>
@@ -373,6 +374,7 @@ Namun begitu, anda tidak halimunan. Menggunakan mod peribadi tidak menyembunyika
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> muat turun dipadamkan</translation>
 <translation id="3819562311292413223">Muat turun artikel untuk anda</translation>
 <translation id="3822502789641063741">Hapuskan storan tapak?</translation>
+<translation id="385051799172605136">Kembali</translation>
 <translation id="3859306556332390985">Cari ke hadapan</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
 <translation id="3895926599014793903">Zum didaya paksa</translation>
@@ -704,6 +706,7 @@ Namun begitu, anda boleh dilihat. Menggunakan mod inkognoti tidak menyembunyikan
 <translation id="6232535412751077445">Tindakan mendayakan "Jangan Kesan" bermaksud permintaan akan disertakan dengan trafik penyemakan imbas anda. Sebarang kesan bergantung pada sama ada tapak web memberi respons kepada permintaan dan cara permintaan ditafsirkan.
 
 Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan ini dengan memaparkan iklan yang tidak berdasarkan tapak web lain yang anda lawati. Pelbagai tapak web masih akan mengumpul dan menggunakan data penyemakan imbas anda — contohnya, untuk meningkatkan keselamatan, untuk menyediakan kandungan, iklan dan cadangan serta untuk menjana statistik pelaporan.</translation>
+<translation id="624789221780392884">Kemaskini bersedia</translation>
 <translation id="6255999984061454636">Cadangan kandungan</translation>
 <translation id="6277522088822131679">Terdapat masalah semasa mencetak halaman. Sila cuba sekali lagi.</translation>
 <translation id="6295158916970320988">Semua tapak</translation>
@@ -739,6 +742,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6475951671322991020">Muat turun video</translation>
 <translation id="6482749332252372425">Muat turun <ph name="FILE_NAME" /> gagal kerana ruang storan tidak mencukupi.</translation>
 <translation id="6496823230996795692">Untuk menggunakan <ph name="APP_NAME" /> buat kali pertama, sila bersambung ke Internet.</translation>
+<translation id="6508722015517270189">Mulakan semula Chrome</translation>
 <translation id="6527303717912515753">Kongsi</translation>
 <translation id="6534565668554028783">Google mengambil masa terlalu lama untuk bertindak balas</translation>
 <translation id="6538442820324228105">Dimuat turun <ph name="GBS" /> GB</translation>
@@ -837,7 +841,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7189372733857464326">Menunggu Perkhidmatan Google Play selesai mengemas kini</translation>
 <translation id="7189598951263744875">Kongsi...</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
-<translation id="7221869452894271364">Muatkan semula halaman ini</translation>
 <translation id="723171743924126238">Pilih imej</translation>
 <translation id="7243308994586599757">Pilihan tersedia berhampiran bahagian bawah skrin</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>

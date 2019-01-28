@@ -305,7 +305,7 @@
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> を充電しています</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6164005077879661055">この監視対象ユーザーを削除すると、このユーザーに関連付けられたすべてのファイルとローカル データも完全に削除されます。この監視対象ユーザーがアクセスしたウェブサイトやこのユーザーの設定は引き続き、管理者が <ph name="MANAGEMENT_URL" /> で見ることができます。</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6254629735336163724">横に固定</translation>
 <translation id="6259254695169772643">タッチペンを使って選択してください</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: 有効にしています...</translation>

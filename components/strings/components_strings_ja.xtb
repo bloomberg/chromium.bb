@@ -103,7 +103,7 @@
 <translation id="1521655867290435174">Google スプレッドシート</translation>
 <translation id="1527263332363067270">接続を待機しています…</translation>
 <translation id="1532118530259321453">このページの内容</translation>
-<translation id="153384715582417236">現時点では他にありません</translation>
+<translation id="153384715582417236">現在、コンテンツはありません</translation>
 <translation id="154408704832528245">配達先住所を選択</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
 <translation id="1555130319947370107">青</translation>
@@ -129,6 +129,7 @@
 <translation id="1656489000284462475">引取</translation>
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
+<translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Google Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Google Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
 <translation id="1697532407822776718">設定が完了しました。</translation>
@@ -182,6 +183,7 @@
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
 <translation id="2030481566774242610">もしかして: <ph name="LINK" /></translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
+<translation id="2053111141626950936"><ph name="LANGUAGE" />のページは翻訳されません。</translation>
 <translation id="2053553514270667976">郵便番号</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 件の候補}other{# 件の候補}}</translation>
 <translation id="2068663545051464999">クラッシュ レポート ID <ph name="CRASH_ID" /> がアップロードされました（ローカル コンテキスト: <ph name="CRASH_LOCAL_ID" />）</translation>
@@ -566,6 +568,7 @@
 <translation id="4434045419905280838">ポップアップとリダイレクト</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
 <translation id="445100540951337728">利用可能なデビットカード</translation>
+<translation id="4482953324121162758">このサイトは翻訳されません。</translation>
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">システム管理者に問い合わせる</translation>
 <translation id="450710068430902550">管理者との共有</translation>
@@ -757,6 +760,7 @@
 <translation id="5786044859038896871">カード情報を入力しますか？</translation>
 <translation id="5798683403665926540">Chrome の設定でホームページを変更します</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> を入力しますか？</translation>
+<translation id="5804241973901381774">権限</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
@@ -778,6 +782,7 @@
 <translation id="5967592137238574583">連絡先情報の編集</translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
+<translation id="5977976211062815271">このデバイス</translation>
 <translation id="598637245381783098">お支払いアプリを開けません</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
 <translation id="5990559369517809815">サーバーへのリクエストは拡張機能によってブロックされています。</translation>
@@ -807,7 +812,7 @@
 <translation id="614940544461990577">次をお試しください:</translation>
 <translation id="6151417162996330722">サーバー証明書の有効期限が長すぎます。</translation>
 <translation id="6157877588268064908">配送方法と要件を確認するには、住所を選択してください</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6169916984152623906">現在、シークレット モードで閲覧しています。あなたのアクティビティは、この端末を利用する他のユーザーには表示されません。ただし、ダウンロードしたファイルとブックマークは通常どおり保存されます。</translation>
 <translation id="6177128806592000436">このサイトへの接続は保護されていません</translation>
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
@@ -875,6 +880,7 @@
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="671076103358959139">登録トークン:</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
+<translation id="6723740634201835758">Google アカウント</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6744009308914054259">接続するまでの間、[ダウンロード] に移動してオフラインで記事を読むことができます。</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
@@ -915,6 +921,7 @@
 <translation id="6979440798594660689">ミュート（デフォルト）</translation>
 <translation id="6984479912851154518">外部アプリケーションでのお支払い処理に進むため、プライベート モードを解除します。続行しますか？</translation>
 <translation id="6989763994942163495">詳細設定を表示...</translation>
+<translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" />を常に翻訳</translation>
 <translation id="7012363358306927923">中国銀聯</translation>
 <translation id="7016992613359344582">料金の請求は 1 回限りの場合も毎月行われる場合もあり、課金されたかどうかわからないこともあります。</translation>
 <translation id="7029809446516969842">パスワード</translation>

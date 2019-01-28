@@ -131,7 +131,7 @@
 <translation id="1177138678118607465">શોધ અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે, Google તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે. તમે આને myaccount.google.com/activitycontrols/search પર બદલી શકો છો</translation>
 <translation id="1177863135347784049">કસ્ટમ</translation>
 <translation id="1178581264944972037">થોભો</translation>
-<translation id="1181037720776840403">દૂર કરો</translation>
+<translation id="1181037720776840403">કાઢી નાખો</translation>
 <translation id="1183237619868651138">સ્થાનિક કૅશ મેમરીમાં <ph name="EXTERNAL_CRX_FILE" />ને ઇન્સ્ટૉલ કરી શકતાં નથી.</translation>
 <translation id="1185924365081634987">આ નેટવર્ક ભૂલને સુધારવા માટે તમે <ph name="GUEST_SIGNIN_LINK_START" />અતિથિ તરીકે બ્રાઉઝ કરો<ph name="GUEST_SIGNIN_LINK_END" /> ને પણ અજમાવી શકો છો.</translation>
 <translation id="1186771945450942097">નુકસાનકારક સૉફ્ટવેર દૂર કરો</translation>
@@ -364,6 +364,7 @@
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
 <translation id="1538729222189715449">Linux ફાઇલો ખોલી રહ્યાં છીએ...</translation>
 <translation id="1540605929960647700">ડેમો મોડ ચાલુ કરો</translation>
+<translation id="1541396123399225659">નવા ગ્રૂપમાં ઉમેરો</translation>
 <translation id="1542514202066550870">આ ટૅબ હૅડસેટ પર VR કન્ટેન્ટ પ્રસ્તુત કરી રહ્યું છે.</translation>
 <translation id="1543284117603151572">Edge માંથી આયાત કરેલ</translation>
 <translation id="1545177026077493356">સ્વચલિત કિઓસ્ક મોડ</translation>
@@ -401,6 +402,7 @@
 <translation id="1593594475886691512">ફોર્મેટિંગ...</translation>
 <translation id="159359590073980872">ફોટો કૅશ મેમરી</translation>
 <translation id="1593926297800505364">ચુકવણી પદ્ધતિ સાચવો</translation>
+<translation id="1595492813686795610">Linux અપગ્રેડ થાય છે</translation>
 <translation id="1598233202702788831">તમારા વ્યવસ્થાપક દ્વારા અપડેટ્સ અક્ષમ કરાયા છે.</translation>
 <translation id="1600857548979126453">પૃષ્ઠ ડીબગર બૅકએંડ ઍક્સેસ કરો</translation>
 <translation id="1601560923496285236">લાગુ કરો</translation>
@@ -512,7 +514,6 @@
 <translation id="175772926354468439">થીમ ચાલુ કરો</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome વેબ સ્ટોરમાં જુઓ</translation>
-<translation id="1761588866118490543">વૉઇસ મૉડલ</translation>
 <translation id="176193854664720708">ફિંગરપ્રિન્ટ સેન્સર એ પાવર બટનમાં ઉપલબ્ધ છે. તેને કોઈપણ આંગળીથી હળવેથી સ્પર્શ કરો.</translation>
 <translation id="1763046204212875858">ઍપ્લિકેશન શૉર્ટકટ્સ બનાવો</translation>
 <translation id="1763108912552529023">અન્વેષણ કરતાં રહો</translation>
@@ -934,6 +935,7 @@
 <translation id="2379281330731083556">સિસ્ટમ સંવાદનો ઉપયોગ કરીને પ્રિન્ટ કરો...<ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">મોકલતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="2384436799579181135">એક ભૂલ આવી છે. કૃપા કરીને તમારું પ્રિન્ટર તપાસો અને ફરી પ્રયાસ કરો.</translation>
+<translation id="2386926718981642523">કોઈપણ સમયે "ઓકે Google" બોલીને તમારા આસિસ્ટંટને ઍક્સેસ કરો</translation>
 <translation id="2387458720915042159">પ્રૉક્સી કનેક્શનનો પ્રકાર</translation>
 <translation id="2391419135980381625">માનક ફૉન્ટ</translation>
 <translation id="2391762656119864333">રદબાતલ કરો</translation>
@@ -1039,6 +1041,7 @@
 <translation id="2553340429761841190"><ph name="NETWORK_ID" /> ને કનેક્ટ કરવામાં <ph name="PRODUCT_NAME" /> અક્ષમ હતું. કૃપા કરીને બીજું નેટવર્ક પસંદ કરો અથવા ફરી પ્રયાસ કરો.</translation>
 <translation id="2553440850688409052">આ પ્લગિન છુપાવો </translation>
 <translation id="2554553592469060349">પસંદ કરેલ ફાઇલ ખૂબ મોટી છે (મહત્તમ કદ: 3mb).</translation>
+<translation id="255747371423522804">હાલના ગ્રૂપમાં ઉમેરો</translation>
 <translation id="2558896001721082624">સિસ્ટમ મેનૂમાં હંમેશાં ઍક્સેસિબિલિટી વિકલ્પો બતાવો</translation>
 <translation id="2562685439590298522">દસ્તાવેજ</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> પર સાઇન ઇન નથી</translation>
@@ -1311,6 +1314,7 @@
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="2972642118232180842">માત્ર મહત્ત્વનું કન્ટેન્ટ ચલાવો (ભલામણ કરેલ)</translation>
 <translation id="2973324205039581528">સાઇટને મ્યૂટ કરો</translation>
+<translation id="2977480621796371840">ગ્રૂપમાંથી દૂર કરો</translation>
 <translation id="2979639724566107830">નવી વિંડોમાં ખોલો</translation>
 <translation id="2981113813906970160">મોટું માઉસ કર્સર બતાવો</translation>
 <translation id="2982970937345031">અનામ રીતે જાણ કરો</translation>
@@ -1561,6 +1565,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">વિભાજક</translation>
 <translation id="3389312115541230716">ટાસ્કબારમાં <ph name="SMALL_PRODUCT_LOGO" /> આઇકનને રાઇટ ક્લિક કરો</translation>
+<translation id="3393352139658145068">જ્યારે કોઈ “ઓકે Google” કહે ત્યારે આસિસ્ટંટને સક્રિય કરો. બૅટરીની બચત કરવા માટે, જ્યારે તમારું ડિવાઇસ પાવર સ્રોત સાથે કનેક્ટેડ હોય ત્યારે જ માત્ર "ઓકે Google” ચાલુ હોય છે.</translation>
 <translation id="3396800784455899911">"સ્વીકારો અને ચાલુ રાખો" બટન પર ક્લિક કરીને, તમે આ Google સેવાઓ માટે ઉપર વર્ણવેલી પ્રક્રિયા સાથે સંમત થાઓ છો.</translation>
 <translation id="3399432415385675819">સૂચનાઓ અક્ષમ કરવામાં આવશે</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3164,6 +3169,7 @@
 <translation id="5816434091619127343">પ્રિન્ટર માટે વિનંતી કરેલ ફેરફારોને લીધે પ્રિન્ટર વાપરી શકાશે નહીં.</translation>
 <translation id="5817918615728894473">જોડી કરો</translation>
 <translation id="5821565227679781414">શૉર્ટકટ બનાવો</translation>
+<translation id="5825412242012995131">ચાલુ કરો (સુઝાવ આપેલ)</translation>
 <translation id="5826507051599432481">કોમન નેમ (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">છાપકામ...</translation>
@@ -3708,6 +3714,11 @@
 <translation id="6629841649550503054">તમામનો <ph name="BEGIN_LINK" />Google ડ્રાઇવ<ph name="END_LINK" /> પર બેકઅપ લેવાયો!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ને તમારા વતી પોતાની પ્રમાણિત કરવા માટે પ્રમાણપત્રની કાયમી અ‍ૅક્સેસ જોઈએ છે.</translation>
 <translation id="6635956300022133031">ટેક્સ્ટ ટૂ સ્પીચ વૉઇસ પસંદ કરો અને કસ્ટમાઇઝ કરો</translation>
+<translation id="6637585982786704944">તમારી પરવાનગી ધરાવતી ઍપ અને વેબસાઇટ, તેમને યોગ્ય રીતે કાર્ય કરવામાં જરૂરી હોય તેવી એકાઉન્ટની માહિતી ઍક્સેસ કરી શકે છે.
+
+    તમે એકાઉન્ટ ઉમેરવા માગતા ન હો, તો અતિથિ તરીકે સાઇન ઇન કરો અથવા વેબ બ્રાઉઝ કરવા માટે છુપી વિન્ડો ખોલો.
+
+    બધાં એકાઉન્ટ જોવા અને મેનેજ કરવા માટે તમે સેટિંગ &gt; Google એકાઉન્ટમાં જઈ શકો છો.</translation>
 <translation id="6639554308659482635">SQLite મેમરી</translation>
 <translation id="6641138807883536517">રૅન્ડમલી બનાવવામાં આવેલો સુરક્ષિત મોડ્યુલ પાસવર્ડ ઉપલબ્ધ નથી. પાવરવૉશ પછી આમ થવું સામાન્ય છે.</translation>
 <translation id="6643016212128521049">સાફ કરો</translation>
@@ -3909,6 +3920,7 @@
 <translation id="6957231940976260713">સેવાનું નામ</translation>
 <translation id="696203921837389374">મોબાઇલ ડેટા પર સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="6964390816189577014">હીરો</translation>
+<translation id="6964760285928603117">ગ્રૂપમાંથી દૂર કરો</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6965648386495488594">પોર્ટ</translation>
 <translation id="6965978654500191972">ઉપકરણ</translation>
@@ -4018,6 +4030,7 @@
 <translation id="7109543803214225826">શૉર્ટકટ કાઢી નાખ્યો</translation>
 <translation id="7113502843173351041">તમારું ઇમેઇલ ઍડ્રેસ જાણો</translation>
 <translation id="7114054701490058191">પાસવર્ડ્સ મેળ ખાતા નથી</translation>
+<translation id="7114648273807173152">તમારા Google એકાઉન્ટમાં સાઇન ઇન કરવા માટે SmartLockનો ઉપયોગ કરવા, સેટિંગ &gt; કનેક્ટ કરેલાં ડિવાઇસ &gt; તમારો ફોન &gt; SmartLock પર જાઓ.</translation>
 <translation id="7117228822971127758">કૃપા કરીને થોડા સમય પછી ફરી પ્રયાસ કરો</translation>
 <translation id="7117247127439884114">ફરીથી સાઇન ઇન કરો...</translation>
 <translation id="711840821796638741">સંચાલિત બુકમાર્ક્સ દર્શાવો</translation>
@@ -4173,6 +4186,7 @@
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
 <translation id="7352651011704765696">કંઈક ખોટું થયું હતું</translation>
 <translation id="735361434055555355">Linux ઇન્સ્ટૉલ કરી રહ્યાં છીએ…</translation>
+<translation id="7353887511974462734">હાલના ગ્રૂપમાં ઉમેરો</translation>
 <translation id="735745346212279324">VPN ડિસ્કનેક્ટ કર્યું છે</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> આઇટમ કૉપિ કરી રહ્યું છે...</translation>
 <translation id="7359588939039777303">જાહેરાતો અવરોધિત કરી.</translation>
@@ -4235,7 +4249,6 @@
 <translation id="7456847797759667638">સ્થાન ખોલો...</translation>
 <translation id="7461924472993315131">પિન કરો</translation>
 <translation id="7463006580194749499">વ્યક્તિ ઉમેરો</translation>
-<translation id="7464902436585505072">"ઑકે Google" વૉઇસ મોડલ</translation>
 <translation id="7465778193084373987">નેટસ્કેપ પ્રમાણપત્ર રિવોકેશન URL</translation>
 <translation id="7469894403370665791">આ નેટવર્કથી આપમેળે કનેક્ટ થાઓ</translation>
 <translation id="747114903913869239">ભૂલ: એક્સટેન્શનને ડિકોડ કરવામાં અક્ષમ</translation>
@@ -4797,6 +4810,7 @@
 <translation id="827097179112817503">હોમ બટન દર્શાવો</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 બુકમાર્ક કાઢી નાખ્યું}one{# બુકમાર્ક કાઢી નાખ્યા}other{# બુકમાર્ક કાઢી નાખ્યા}}</translation>
 <translation id="8272443605911821513">"વધુ સાધનો" મેનૂમાં એક્સટેન્શન્સને ક્લિક કરીને તમારા એક્સટેન્શન્સનું સંચાલન કરો.</translation>
+<translation id="8272966760965438857">તમારાં Google એકાઉન્ટ એક જ સ્થળે મેનેજ કરો</translation>
 <translation id="8274332263553132018">ફાઇલ કાસ્ટ કરો</translation>
 <translation id="8274924778568117936">અપડેટ પૂર્ણ ન થાય ત્યાં સુધી તમારું <ph name="DEVICE_TYPE" /> બંધ કરતા નહીં. ઇન્સ્ટૉલેશન પૂર્ણ થયા બાદ તમારું <ph name="DEVICE_TYPE" /> ફરી શરૂ થશે.</translation>
 <translation id="8275038454117074363">આયાત કરો</translation>
@@ -5183,6 +5197,7 @@
 <translation id="8883847527783433352">બીજા એકાઉન્ટ સાથે સિંક કરો</translation>
 <translation id="8885197664446363138">Smart Lock અનુપલબ્ધ છે</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" />ના ટચ IDનો ઉપયોગ કરો</translation>
+<translation id="8888253246822647887">જ્યારે અપગ્રેડ પૂર્ણ થશે ત્યારે તમારી ઍપ ખુલશે. અપગ્રેડમાં થોડી મિનિટ લાગી શકે છે.</translation>
 <translation id="8888432776533519951">રંગ:</translation>
 <translation id="8890516388109605451">સ્રોતો</translation>
 <translation id="8892168913673237979">બધું સેટ છે!</translation>

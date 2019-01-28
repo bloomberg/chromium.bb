@@ -367,6 +367,7 @@
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1538729222189715449">Linux 파일을 여는 중...</translation>
 <translation id="1540605929960647700">데모 모드 사용</translation>
+<translation id="1541396123399225659">새 그룹에 추가</translation>
 <translation id="1542514202066550870">이 탭에서 헤드셋에 VR 콘텐츠를 전송하는 중입니다.</translation>
 <translation id="1543284117603151572">Edge에서 가져옴</translation>
 <translation id="1545177026077493356">자동 키오스크 모드</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">포맷 중...</translation>
 <translation id="159359590073980872">이미지 캐시</translation>
 <translation id="1593926297800505364">결제 수단 저장</translation>
+<translation id="1595492813686795610">Linux 업그레이드 중</translation>
 <translation id="1598233202702788831">관리자가 업데이트를 사용 중지했습니다.</translation>
 <translation id="1600857548979126453">페이지 디버거 백엔드에 액세스</translation>
 <translation id="1601560923496285236">적용</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">테마 사용</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome 웹 스토어에서 보기</translation>
-<translation id="1761588866118490543">음성 모델</translation>
 <translation id="176193854664720708">지문 센서는 전원 버튼에 있습니다. 손가락으로 가볍게 터치하세요.</translation>
 <translation id="1763046204212875858">애플리케이션 바로가기 만들기</translation>
 <translation id="1763108912552529023">계속 살펴보기</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">시스템 대화상자를 사용하여 인쇄... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">보내기 전에 확인(권장)</translation>
 <translation id="2384436799579181135">오류가 발생했습니다. 프린터를 확인한 후 다시 시도해 주세요.</translation>
+<translation id="2386926718981642523">"Ok Google"이라고 말할 때마다 어시스턴트에 액세스합니다.</translation>
 <translation id="2387458720915042159">프록시 연결 유형</translation>
 <translation id="2391419135980381625">표준 글꼴</translation>
 <translation id="2391762656119864333">취소</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />에서 <ph name="NETWORK_ID" />에 연결할 수 없습니다. 다른 네트워크를 선택하거나 다시 시도하세요.</translation>
 <translation id="2553440850688409052">이 플러그인 숨기기</translation>
 <translation id="2554553592469060349">선택한 파일이 너무 큽니다(최대 크기: 3MB).</translation>
+<translation id="255747371423522804">기존 그룹에 추가</translation>
 <translation id="2558896001721082624">시스템 메뉴에 접근성 옵션 항상 표시</translation>
 <translation id="2562685439590298522">문서도구</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />에 로그인되어 있지 않습니다.</translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
 <translation id="2972642118232180842">중요한 콘텐츠만 실행(권장)</translation>
 <translation id="2973324205039581528">사이트 음소거</translation>
+<translation id="2977480621796371840">그룹에서 삭제</translation>
 <translation id="2979639724566107830">새 창에서 열기</translation>
 <translation id="2981113813906970160">큰 마우스 커서 표시</translation>
 <translation id="2982970937345031">익명으로 신고하기</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">구분자</translation>
 <translation id="3389312115541230716">작업 표시줄의 <ph name="SMALL_PRODUCT_LOGO" /> 아이콘을 마우스 오른쪽 버튼으로 클릭</translation>
+<translation id="3393352139658145068">누군가 “Ok Google”이라고 말하면 어시스턴트를 활성화합니다. 배터리를 절약하기 위하여 기기가 전원에 연결되어 있는 경우에만 “Ok Google” 기능이 켜집니다.</translation>
 <translation id="3396800784455899911">'동의 및 계속' 버튼을 클릭하면 이러한 Google 서비스와 관련하여 위에 설명된 처리 방식에 동의하는 것으로 간주됩니다.</translation>
 <translation id="3399432415385675819">알림이 사용 중지됩니다.</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3165,6 +3170,7 @@
 <translation id="5816434091619127343">프린터 변경을 요청하면 프린터를 사용할 수 없게 됩니다.</translation>
 <translation id="5817918615728894473">페어링</translation>
 <translation id="5821565227679781414">바로가기 만들기</translation>
+<translation id="5825412242012995131">사용(권장)</translation>
 <translation id="5826507051599432481">일반 이름(CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">인쇄 중...</translation>
@@ -3709,6 +3715,11 @@
 <translation id="6629841649550503054">모두 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업했습니다.</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />에서 사용자를 대신하여 인증하기 위해 인증서에 대한 영구적인 액세스 권한을 요청합니다.</translation>
 <translation id="6635956300022133031">텍스트 음성 변환 기능의 음성을 선택하고 맞춤설정합니다.</translation>
+<translation id="6637585982786704944">사용자가 허가한 앱 및 웹사이트는 정상적인 작동을 위해 필요한 계정 정보에 액세스할 수 있습니다.
+
+    계정을 추가하고 싶지 않다면 게스트로 로그인하거나 시크릿 창을 열어 웹을 탐색하세요.
+
+    설정 -&gt; Google 계정으로 이동하여 모든 계정을 보고 관리할 수 있습니다.</translation>
 <translation id="6639554308659482635">SQLite 메모리</translation>
 <translation id="6641138807883536517">임의로 생성된 보안 모듈 비밀번호는 사용할 수 없습니다. 이는 파워워시 후에는 정상적으로 나타나는 현상입니다.</translation>
 <translation id="6643016212128521049">삭제</translation>
@@ -3910,6 +3921,7 @@
 <translation id="6957231940976260713">서비스 이름</translation>
 <translation id="696203921837389374">모바일 데이터를 이용한 동기화 사용 설정</translation>
 <translation id="6964390816189577014">영웅</translation>
+<translation id="6964760285928603117">그룹에서 삭제</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6965648386495488594">포트</translation>
 <translation id="6965978654500191972">기기</translation>
@@ -4019,6 +4031,7 @@
 <translation id="7109543803214225826">바로가기 삭제됨</translation>
 <translation id="7113502843173351041">이메일 주소 조회</translation>
 <translation id="7114054701490058191">비밀번호가 일치하지 않습니다.</translation>
+<translation id="7114648273807173152">Smart Lock을 사용해 Google 계정에 로그인하려면 설정 &gt; 연결된 기기 &gt; 휴대전화 &gt; Smart Lock으로 이동하세요.</translation>
 <translation id="7117228822971127758">나중에 다시 시도해 주세요</translation>
 <translation id="7117247127439884114">다시 로그인...</translation>
 <translation id="711840821796638741">관리 북마크 표시</translation>
@@ -4174,6 +4187,7 @@
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="7352651011704765696">문제가 발생한 경우</translation>
 <translation id="735361434055555355">Linux 설치 중...</translation>
+<translation id="7353887511974462734">기존 그룹에 추가</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7359359531237882347">항목 <ph name="NUMBER_OF_ITEMS" />개 복사 중...</translation>
 <translation id="7359588939039777303">광고가 차단되었습니다.</translation>
@@ -4236,7 +4250,6 @@
 <translation id="7456847797759667638">위치 열기...</translation>
 <translation id="7461924472993315131">고정</translation>
 <translation id="7463006580194749499">사용자 추가</translation>
-<translation id="7464902436585505072">'Ok Google' 음성 모델</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="7469894403370665791">네트워크에 자동 연결</translation>
 <translation id="747114903913869239">오류: 확장 프로그램을 디코딩할 수 없음</translation>
@@ -4806,6 +4819,7 @@
 <translation id="827097179112817503">홈 버튼 표시</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{북마크 1개가 삭제됨}other{북마크 #개가 삭제됨}}</translation>
 <translation id="8272443605911821513">'추가 도구' 메뉴에서 확장 프로그램을 클릭하여 확장 프로그램을 관리할 수 있습니다.</translation>
+<translation id="8272966760965438857">한곳에서 Google 계정을 관리하세요</translation>
 <translation id="8274332263553132018">파일 전송</translation>
 <translation id="8274924778568117936">업데이트가 완료될 때까지 <ph name="DEVICE_TYPE" />을(를) 끄거나 닫지 마세요. 설치가 완료되면 <ph name="DEVICE_TYPE" />이(가) 다시 시작됩니다.</translation>
 <translation id="8275038454117074363">가져오기</translation>
@@ -5005,7 +5019,7 @@
 <translation id="8619892228487928601"><ph name="CERTIFICATE_NAME" />: <ph name="ERROR" /></translation>
 <translation id="8620617069779373398">로밍 상태</translation>
 <translation id="8620765578342452535">네트워크 연결 구성</translation>
-<translation id="8621866727807194849">컴퓨터에 유해한 소프트웨어가 있습니다. Chrome이 유해한 소프트웨어를 삭제하고, 설정을 복원하고, 확장 프로그램을 사용 중지하는 중입니다. 이 작업이 끝나면 브라우저가 다시 정상적으로 작동할 것입니다.</translation>
+<translation id="8621866727807194849">컴퓨터에 유해한 소프트웨어가 있습니다. Chrome이 유해한 소프트웨어를 삭제하고, 설정을 복원하고, 확장 프로그램을 사용 중지하는 중입니다. 이 작업이 끝나면 브라우저가 다시 정상적으로 작동합니다.</translation>
 <translation id="862542460444371744">확장 프로그램(&amp;E)</translation>
 <translation id="8627151598708688654">소스 선택</translation>
 <translation id="862727964348362408">일시중지됨</translation>
@@ -5192,6 +5206,7 @@
 <translation id="8883847527783433352">다른 계정에 동기화</translation>
 <translation id="8885197664446363138">Smart Lock을 사용할 수 없음</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" /> 앱에서 Touch ID 사용</translation>
+<translation id="8888253246822647887">업그레이드가 종료되면 앱이 열립니다. 업그레이드하는 데 몇 분 정도 걸릴 수 있습니다.</translation>
 <translation id="8888432776533519951">색상:</translation>
 <translation id="8890516388109605451">소스</translation>
 <translation id="8892168913673237979">설정 완료</translation>

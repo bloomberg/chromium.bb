@@ -783,6 +783,11 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres ut av brannmuren, vil denne maskinen bare tillate forbindelser fra klientmaskiner i det lokale nettverket.
 
           Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
+<translation id="2813281962735757923">Denne regelen styrer tidsrommene når <ph name="PRODUCT_OS_NAME" />-enheten ikke har lov til å se etter oppdateringer automatisk.
+      Dette skjer når denne regelen er satt til en liste med tidsintervaller som ikke er tom:
+      Enheter kan ikke se etter oppdateringer automatisk i tidsintervallene du angir. Enheter som krever rollback eller har en eldre <ph name="PRODUCT_OS_NAME" />-versjon enn minstekravet, berøres ikke av denne regelen. Dette er for å unngå potensielle sikkerhetsproblemer. Denne regelen blokkerer heller ikke forespørsler fra brukere og administratorer om å se etter oppdateringer.
+      Dette skjer når denne regelen ikke er angitt eller ikke inneholder tidsintervaller:
+      Regelen blokkerer ikke enheter fra å se etter oppdateringer automatisk, men andre regler kan blokkere dette. Denne funksjonen er bare aktivert på Chrome-enheter som er konfigurert til å starte kioskapper automatisk. Andre enheter begrenses ikke av denne regelen.</translation>
 <translation id="2823870601012066791">Plasseringen av Windows-registeret for <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2838830882081735096">Ikke tillat dataoverføring og ARC</translation>
@@ -1072,6 +1077,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
+<translation id="3591527072193107424">Slå på støtten for eldre nettlesere.</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3624171042292187668">
       Det kan være lurt å endre innstillingen for IsolateOrigins-regelen for å få det beste fra begge verdener – isolering og begrenset innvirkning for brukere – ved å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere. Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
@@ -1259,6 +1265,13 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3965339130942650562">Tidsavbrudd før inaktiv brukeravlogging utføres</translation>
 <translation id="3973371701361892765">Aldri skjul hyllen automatisk</translation>
 <translation id="3984028218719007910">Avgjør om <ph name="PRODUCT_OS_NAME" /> beholder lokal kontodata etter avlogging. Hvis retningslinjen er angitt som Sann, beholdes det ikke noen vedvarende kontoer av <ph name="PRODUCT_OS_NAME" />, og all data fra brukerøkten blir forkastet etter avlogging. Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, kan enheten beholde (kryptert) lokal brukerdata.</translation>
+<translation id="398475542699441679">Denne regelen styrer om støtte for eldre nettlesere skal aktiveres.
+
+      Når denne regelen er satt til «false» (usann) eller ikke er angitt, prøver ikke Chrome å åpne angitte nettadresser i andre nettlesere.
+
+      Når denne regelen er satt til «true» (sann), prøver Chrome å åpne visse nettadresser i andre nettlesere (som Internet Explorer). Denne funksjonen konfigureres med reglene i <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />-gruppen.
+
+      Denne funksjonen erstatter <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />-utvidelsen. Konfigurasjonen for utvidelsen blir videreført til denne funksjonen, men det anbefales sterkt å bruke Chrome-regler i stedet. Dette sikrer bedre kompatibilitet i fremtiden.</translation>
 <translation id="3997519162482760140">Nettadresser som får tilgang til videoopptaksenheter på SAML-påloggingssider</translation>
 <translation id="4001275826058808087">IT-administratorer for bedriftsenheter kan bruke denne markeringen til å kontrollere om brukerne kan innløse tilbud via Chrome OS- registrering.
 
@@ -1509,6 +1522,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
+<translation id="4674871290487541952">Tillat usikre algoritmer i integritetssjekker ved installering og oppdatering av utvidelser</translation>
 <translation id="4680936297850947973">Avviklet i M68. Bruk DefaultPopupsSetting i stedet.
 
       Du kan se en fullstendig forklaring ved å gå til https://www.chromestatus.com/features/5675755719622656.
@@ -2541,6 +2555,12 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne regelen settes til usann, slås bakgrunnsmodusen av. Den kan ikke kontrolleres av brukerne i nettleserinnstillingene.
 
       Hvis du ikke spesifiserer denne regelen, er bakgrunnsmodusen i utgangspunktet avslått, men den kan kontrolleres av brukerne i nettleserinnstillingene.</translation>
+<translation id="7123266440503901785">Med <ph name="PRODUCT_NAME" /> kan du installere og oppdatere utvidelser på en sikker måte. Men det kan hende at innholdet i noen utvidelser som tilbys utenfor Chrome Nettmarked, bare er beskyttet av usikre signaturer eller hashing-algoritmer, for eksempel SHA1. Når denne regelen er slått av, tillater ikke Chrome at slike utvidelser installeres eller oppdateres (frem til utviklerne av utvidelsen lager en utgave med sterkere algoritmer). Når denne regelen er slått på, tillates det at slike utvidelser installeres og oppdateres.
+
+          Når regelen ikke er angitt, fungerer den som om den er slått på.
+          Fra og med <ph name="PRODUCT_NAME" /> 75 fungerer regelen som om den er slått av når den ikke er angitt.
+
+          Fra og med <ph name="PRODUCT_NAME" /> 77 ignoreres denne regelen og behandles som om den er slått av.</translation>
 <translation id="7126716959063786004">Slå på muligheten for å avslutte prosesser i oppgavebehandlingen</translation>
 <translation id="7127892035367404455">Rollback til målversjon</translation>
 <translation id="7128918109610518786">Viser en liste over programidentifikatorene <ph name="PRODUCT_OS_NAME" /> viser som festede programmer i programlisteraden.

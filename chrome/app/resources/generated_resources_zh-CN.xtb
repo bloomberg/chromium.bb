@@ -131,7 +131,7 @@
 <translation id="1177138678118607465">Google 可能会使用您的浏览记录为您量身定制 Google 搜索、广告和其他 Google 服务。您随时可通过 myaccount.google.com/activitycontrols/search 更改此设置</translation>
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1178581264944972037">暂停</translation>
-<translation id="1181037720776840403">删除</translation>
+<translation id="1181037720776840403">移除</translation>
 <translation id="1183237619868651138">无法将 <ph name="EXTERNAL_CRX_FILE" /> 安装在本地缓存中。</translation>
 <translation id="1185924365081634987">您也可以尝试<ph name="GUEST_SIGNIN_LINK_START" />以访客身份浏览<ph name="GUEST_SIGNIN_LINK_END" />，以便修复该网络错误。</translation>
 <translation id="1186771945450942097">移除有害软件</translation>
@@ -364,6 +364,7 @@
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1538729222189715449">正在打开 Linux 文件…</translation>
 <translation id="1540605929960647700">启用演示模式</translation>
+<translation id="1541396123399225659">添加到新组</translation>
 <translation id="1542514202066550870">此标签页正在向头戴设备显示 VR 内容。</translation>
 <translation id="1543284117603151572">从 Edge 导入的书签</translation>
 <translation id="1545177026077493356">自动自助服务终端模式</translation>
@@ -402,6 +403,7 @@
 <translation id="1593594475886691512">正在格式化…</translation>
 <translation id="159359590073980872">图片缓存</translation>
 <translation id="1593926297800505364">保存付款方式</translation>
+<translation id="1595492813686795610">Linux 正在升级</translation>
 <translation id="1598233202702788831">您的管理员已停用更新。</translation>
 <translation id="1600857548979126453">访问页面调试程序后端</translation>
 <translation id="1601560923496285236">应用</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">启用主题背景</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">在 Chrome 网上应用店中查看详情</translation>
-<translation id="1761588866118490543">语音模型</translation>
 <translation id="176193854664720708">指纹传感器位于电源按钮中。请用任一根手指轻轻触摸它。</translation>
 <translation id="1763046204212875858">创建应用快捷方式</translation>
 <translation id="1763108912552529023">继续了解</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">使用系统对话框进行打印...<ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">发送前先询问（推荐）</translation>
 <translation id="2384436799579181135">出错了。请检查您的打印机，然后重试。</translation>
+<translation id="2386926718981642523">随时访问您的 Google 助理，只需说“Ok Google”即可</translation>
 <translation id="2387458720915042159">代理连接类型</translation>
 <translation id="2391419135980381625">标准字体</translation>
 <translation id="2391762656119864333">撤消</translation>
@@ -1039,6 +1041,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />无法连接到<ph name="NETWORK_ID" />。请选择其他网络或重试。</translation>
 <translation id="2553440850688409052">隐藏此插件</translation>
 <translation id="2554553592469060349">所选文件太大（大小上限为3mb）。</translation>
+<translation id="255747371423522804">添加到现有组</translation>
 <translation id="2558896001721082624">始终在系统菜单中显示无障碍选项</translation>
 <translation id="2562685439590298522">文档</translation>
 <translation id="2562743677925229011">尚未登录 <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1310,6 +1313,7 @@
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2972642118232180842">只运行重要内容（推荐）</translation>
 <translation id="2973324205039581528">将单个网站静音</translation>
+<translation id="2977480621796371840">从组中移除</translation>
 <translation id="2979639724566107830">在新窗口中打开</translation>
 <translation id="2981113813906970160">显示大号鼠标光标</translation>
 <translation id="2982970937345031">以匿名方式报告</translation>
@@ -1558,6 +1562,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔符</translation>
 <translation id="3389312115541230716">右键点击任务栏中的 <ph name="SMALL_PRODUCT_LOGO" /> 图标</translation>
+<translation id="3393352139658145068">只要有人说“Ok Google”，就能启动 Google 助理。为了省电，仅当您的设备连接至电源时，“Ok Google”才可用。</translation>
 <translation id="3396800784455899911">点击“接受并继续”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
 <translation id="3399432415385675819">通知将被停用</translation>
 <translation id="340282674066624">已下载 <ph name="DOWNLOAD_RECEIVED" />，还需 <ph name="TIME_LEFT" /></translation>
@@ -3154,6 +3159,7 @@
 <translation id="5816434091619127343">所请求的打印机更改会导致打印机不可用。</translation>
 <translation id="5817918615728894473">配对</translation>
 <translation id="5821565227679781414">创建快捷方式</translation>
+<translation id="5825412242012995131">开启（推荐）</translation>
 <translation id="5826507051599432481">公用名 (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">正在打印...</translation>
@@ -3698,6 +3704,11 @@
 <translation id="6629841649550503054">所有文件都已备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" />！</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />希望获得某个证书的永久访问权限，以便代表您进行自我身份验证。</translation>
 <translation id="6635956300022133031">选择和自定义文字转语音的语音</translation>
+<translation id="6637585982786704944">已获得您的授权的应用和网站可访问其所需的帐号信息以正常运行。
+
+    如果您不想添加帐号，请以访客身份登录，或打开一个无痕式窗口来浏览网页。
+
+    您可依次转到“设置”-&gt;“Google 帐号”以查看和管理所有帐号。</translation>
 <translation id="6639554308659482635">SQLite 使用的内存</translation>
 <translation id="6641138807883536517">无法提供随机生成的安全模块密码。这是执行 Powerwash 之后的正常现象。</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -3899,6 +3910,7 @@
 <translation id="6957231940976260713">服务名称</translation>
 <translation id="696203921837389374">在移动数据网络中启用同步功能</translation>
 <translation id="6964390816189577014">英雄</translation>
+<translation id="6964760285928603117">从组中移除</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6965648386495488594">端口</translation>
 <translation id="6965978654500191972">设备</translation>
@@ -4008,6 +4020,7 @@
 <translation id="7109543803214225826">已移除快捷方式</translation>
 <translation id="7113502843173351041">获取您的电子邮件地址</translation>
 <translation id="7114054701490058191">密码不符</translation>
+<translation id="7114648273807173152">要使用 Smart Lock 登录您的 Google 帐号，请依次转到“设置”&gt;“已连接的设备”&gt;“您的手机”&gt;“Smart Lock”。</translation>
 <translation id="7117228822971127758">请稍后重试</translation>
 <translation id="7117247127439884114">重新登录...</translation>
 <translation id="711840821796638741">显示托管书签</translation>
@@ -4163,6 +4176,7 @@
 <translation id="7348093485538360975">屏幕键盘</translation>
 <translation id="7352651011704765696">出了点问题</translation>
 <translation id="735361434055555355">正在安装 Linux…</translation>
+<translation id="7353887511974462734">添加到现有组</translation>
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7359359531237882347">正在复制 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
 <translation id="7359588939039777303">广告已被拦截。</translation>
@@ -4225,7 +4239,6 @@
 <translation id="7456847797759667638">打开位置...</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="7463006580194749499">添加用户</translation>
-<translation id="7464902436585505072">“Ok Google”语音模型</translation>
 <translation id="7465778193084373987">Netscape 证书吊销网址</translation>
 <translation id="7469894403370665791">自动连接到该网络</translation>
 <translation id="747114903913869239">错误：无法对扩展程序进行解码</translation>
@@ -4792,6 +4805,7 @@
 <translation id="827097179112817503">显示“主页”按钮</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{已删除 1 个书签}other{已删除 # 个书签}}</translation>
 <translation id="8272443605911821513">点击“更多工具”菜单中的“扩展程序”，可以管理您的扩展程序。</translation>
+<translation id="8272966760965438857">在一个位置集中管理您的 Google 帐号</translation>
 <translation id="8274332263553132018">投射文件</translation>
 <translation id="8274924778568117936">在完成更新之前，请勿关闭您的 <ph name="DEVICE_TYPE" />。您的 <ph name="DEVICE_TYPE" /> 将会于安装完毕后重启。</translation>
 <translation id="8275038454117074363">导入</translation>
@@ -5178,6 +5192,7 @@
 <translation id="8883847527783433352">同步到另一帐号中</translation>
 <translation id="8885197664446363138">无法开启 Smart Lock</translation>
 <translation id="88870264962436283">使用 Touch ID 登录 <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">待完成升级后，您的应用即会打开。整个升级过程可能需要几分钟的时间。</translation>
 <translation id="8888432776533519951">颜色：</translation>
 <translation id="8890516388109605451">来源</translation>
 <translation id="8892168913673237979">搞定了！</translation>

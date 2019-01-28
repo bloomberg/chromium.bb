@@ -367,6 +367,7 @@
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1538729222189715449">Linux ফাইল খোলা হচ্ছে...</translation>
 <translation id="1540605929960647700">ডেমো মোড চালু করুন</translation>
+<translation id="1541396123399225659">নতুন গ্রুপে যোগ করুন</translation>
 <translation id="1542514202066550870">এই ট্যাবটি কোনও একটি হেডসেটে ভিআর (VR) কন্টেন্ট দেখাচ্ছে।</translation>
 <translation id="1543284117603151572">Edge থেকে আমদানি করা</translation>
 <translation id="1545177026077493356">স্বয়ংক্রিয় Kiosk মোড</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">ফরম্যাট করা হচ্ছে...</translation>
 <translation id="159359590073980872">ছবি ক্যাশে</translation>
 <translation id="1593926297800505364">পেমেন্ট পদ্ধতি সেভ করুন</translation>
+<translation id="1595492813686795610">Linux আপগ্রেড হচ্ছে</translation>
 <translation id="1598233202702788831">আপনার প্রশাসক দ্বারা আপডেট অক্ষম করা হয়েছে।</translation>
 <translation id="1600857548979126453">পৃষ্ঠা ডিবাগার ব্যাকএন্ড অ্যাক্সেস করুন</translation>
 <translation id="1601560923496285236">প্রয়োগ করুন</translation>
@@ -515,7 +517,6 @@
 <translation id="175772926354468439">থিম সক্ষম করুন</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome ওয়েব স্টোরে দেখুন</translation>
-<translation id="1761588866118490543">ভয়েস মডেল</translation>
 <translation id="176193854664720708">পাওয়ার বোতামে আঙ্গুলের ছাপের সেন্সরটি আছে। যেকোনও আঙ্গুল দিয়ে আলতো করে এটিকে টাচ করুন।</translation>
 <translation id="1763046204212875858">অ্যাপ্লিকেশন শর্টকাটগুলি তৈরি করুন</translation>
 <translation id="1763108912552529023">অন্বেষণ করা চালিয়ে যান</translation>
@@ -937,6 +938,7 @@
 <translation id="2379281330731083556">সিস্টেম কথোপকথন ব্যবহার করে প্রিন্ট করুন...<ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">পাঠানোর আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="2384436799579181135">একটি ত্রুটি ঘটেছে৷ অনুগ্রহ করে আপনার প্রিন্টারটি পরীক্ষা করে আবার চেষ্টা করুন।</translation>
+<translation id="2386926718981642523">যেকোনও সময়ে "হ্যালো Google" বলে অ্যাসিস্ট্যান্টকে অ্যাক্সেস করতে পারবেন</translation>
 <translation id="2387458720915042159">প্রক্সি সংযোগের প্রকার</translation>
 <translation id="2391419135980381625">মানক হরফ</translation>
 <translation id="2391762656119864333">প্রত্যাহার করুন</translation>
@@ -1041,6 +1043,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />, <ph name="NETWORK_ID" /> এর সাথে সংযোগ স্থাপনে অক্ষম ছিল৷ দয়া করে অন্য একটি নেটওয়ার্ক বেছে নিন বা আবার চেষ্টা করুন৷</translation>
 <translation id="2553440850688409052">এই প্লাগইনটি লুকান</translation>
 <translation id="2554553592469060349">নির্বাচিত ফাইল খুবই বড়  (সর্বোচ্চ আকার: 3MB )৷</translation>
+<translation id="255747371423522804">আগে থেকে থাকা গ্রুপে যোগ করুন</translation>
 <translation id="2558896001721082624">সিস্টেম মেনুতে সর্বদা অ্যাক্সেসযোগ্যতার বিকল্পগুলি দেখান</translation>
 <translation id="2562685439590298522">দস্তাবেজ</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" />-এ প্রবেশ করেননি</translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
 <translation id="2972642118232180842">শুধুমাত্র গুরুত্বপূর্ণ কন্টেন্ট চালান (প্রস্তাবিত)</translation>
 <translation id="2973324205039581528">সাইটটি মিউট করুন</translation>
+<translation id="2977480621796371840">গ্রুপ থেকে সরান</translation>
 <translation id="2979639724566107830">নতুন উইন্ডোতে খুলুন</translation>
 <translation id="2981113813906970160">বড় মাউস কার্সার দেখান</translation>
 <translation id="2982970937345031">নাম ছাড়া প্রতিবেদন করুন</translation>
@@ -1562,6 +1566,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">পৃথককারী</translation>
 <translation id="3389312115541230716">কার্যদণ্ডে <ph name="SMALL_PRODUCT_LOGO" /> আইকনে ডান ক্লিক করুন</translation>
+<translation id="3393352139658145068">কেউ “হ্যালো Google” বললে অ্যাসিস্ট্যান্ট কাজ শুরু করবে। ব্যাটারির চার্জ সাশ্রয় করার জন্য, আপনার ডিভাইস চার্জে লাগানো থাকলে তবেই “হ্যালো Google” চালু থাকে।</translation>
 <translation id="3396800784455899911">'স্বীকার করে চালিয়ে যান' বোতামে ক্লিক করার অর্থ এই Google পরিষেবাগুলির জন্য উপরোক্ত বর্ণিত প্রক্রিয়াগুলিতে আপনি সম্মতি দেন।</translation>
 <translation id="3399432415385675819">বিজ্ঞপ্তি অক্ষম করা হবে</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3163,6 +3168,7 @@
 <translation id="5816434091619127343">অনুরোধ করা প্রিন্টার পরিবর্তন করলে তা প্রিন্টার ব্যবহারের সুবিধা অব্যবহারযোগ্য করে তুলবে।</translation>
 <translation id="5817918615728894473">যুক্ত করুন</translation>
 <translation id="5821565227679781414">শর্টকাট তৈরি করুন</translation>
+<translation id="5825412242012995131">চালু আছে (সাজেস্ট করা)</translation>
 <translation id="5826507051599432481">কমন নেম (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">মুদ্রন হচ্ছে...</translation>
@@ -3708,6 +3714,11 @@
 <translation id="6629841649550503054"><ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ সবগুলির ব্যাকআপ নেওয়া হয়েছে</translation>
 <translation id="6630752851777525409">আপনার পক্ষ থেকে একটি সার্টিফিকেট প্রমাণীকৃত করতে <ph name="EXTENSION_NAME" /> সেটিতে স্থায়ী অ্যাক্সেস চায়।</translation>
 <translation id="6635956300022133031">পাঠ্য থেকে ভাষ্য ভয়েস বেছে নিন এবং কাস্টমাইজ করুন</translation>
+<translation id="6637585982786704944">আপনি অনুমতি দিয়েছেন এমন অ্যাপ এবং ওয়েবসাইট সঠিকভাবে কাজ করার প্রয়োজনে অ্যাকাউন্ট সম্পর্কিত তথ্য অ্যাক্সেস করতে পারে।
+
+    অ্যাকাউন্ট যোগ করতে না চাইলে, ওয়েব ব্রাউজিংয়ের জন্য অতিথি হিসেবে সাইন-ইন করতে বা ছদ্মবেশী উইন্ডো ব্যবহার করতে পারেন।
+
+    আপনি সেটিংস -&gt; Google অ্যাকাউন্ট বিকল্পে গিয়ে সব অ্যাকাউন্ট দেখতে এবং ম্যানেজ করতে পারেন।</translation>
 <translation id="6639554308659482635">SQLite স্মৃতি</translation>
 <translation id="6641138807883536517">র‍্যান্ডম ভাবে জেনারেট করা নিরাপদ মডিউল পাসওয়ার্ডটি পাওয়া যাচ্ছে না। পাওয়ারওয়াশের পরে এরকম হয়ে থাকে।</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
@@ -3909,6 +3920,7 @@
 <translation id="6957231940976260713">পরিষেবার নাম</translation>
 <translation id="696203921837389374">মোবাইল ডেটার মাধ্যমে সিঙ্ক করা সক্ষম করুন</translation>
 <translation id="6964390816189577014">হিরো</translation>
+<translation id="6964760285928603117">গ্রুপ থেকে সরান</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6965648386495488594">পোর্ট</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
@@ -4018,6 +4030,7 @@
 <translation id="7109543803214225826">শর্টকাট সরানো হয়েছে</translation>
 <translation id="7113502843173351041">আপনার ইমেল আইডি জানুন</translation>
 <translation id="7114054701490058191">পাসওয়ার্ডগুলি মিলছে না</translation>
+<translation id="7114648273807173152">Smart Lock ব্যবহার করতে আপনার Google অ্যাকাউন্টে সাইন-ইন করে সেটিংস &gt; কানেক্ট করা ডিভাইস &gt; আপনার ফোন &gt; Smart Lock বিকল্পে যান।</translation>
 <translation id="7117228822971127758">পরে আবার চেষ্টা করুন</translation>
 <translation id="7117247127439884114">আবার প্রবেশ করুন...</translation>
 <translation id="711840821796638741">পরিচালিত বুকমার্কগুলি দেখান</translation>
@@ -4173,6 +4186,7 @@
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
 <translation id="7352651011704765696">কিছু সমস্যা হয়েছে</translation>
 <translation id="735361434055555355">Linux ইনস্টল করা হচ্ছে...</translation>
+<translation id="7353887511974462734">আগে থেকে থাকা গ্রুপে যোগ করুন</translation>
 <translation id="735745346212279324">VPN ডিসকানেক্ট করা হয়েছে</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />টি আইটেম কপি করা হচ্ছে…</translation>
 <translation id="7359588939039777303">বিজ্ঞাপন ব্লক করা হয়েছে।</translation>
@@ -4235,7 +4249,6 @@
 <translation id="7456847797759667638">লোকেশন খুলুন...</translation>
 <translation id="7461924472993315131">পিন</translation>
 <translation id="7463006580194749499">একজন ব্যক্তিকে যোগ করুন</translation>
-<translation id="7464902436585505072">"ওকে Google" ভয়েস মডেল</translation>
 <translation id="7465778193084373987">Netscape সার্টিফিকেট রদকরণ ইউআরএল</translation>
 <translation id="7469894403370665791">স্বয়ংক্রিয়ভাবে এই নেটওয়ার্কে সংযোগ করুন</translation>
 <translation id="747114903913869239">সমস্যা: এক্সটেনশন ডিকোড করা যায়নি</translation>
@@ -4803,6 +4816,7 @@
 <translation id="827097179112817503">হোম বোতাম দেখান</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{১টি বুকমার্ক মোছা হয়েছে}one{#টি বুকমার্ক মোছা হয়েছে}other{#টি বুকমার্ক মোছা হয়েছে}}</translation>
 <translation id="8272443605911821513">"আরও টুলগুলির মেনুতে" এক্সটেনশনগুলি ক্লিক করে আপনার এক্সটেনশনগুলি পরিচালনা করুন৷</translation>
+<translation id="8272966760965438857">এক জায়গায় আপনার সব Google অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="8274332263553132018">ফাইল কাস্ট করুন</translation>
 <translation id="8274924778568117936">আপডেটটি সম্পূর্ণ না হওয়া পর্যন্ত <ph name="DEVICE_TYPE" />টি বন্ধ করবেন না। ইনস্টলেশন হয়ে গেলে <ph name="DEVICE_TYPE" />টি নিজে থেকেই রিস্টার্ট হবে।</translation>
 <translation id="8275038454117074363">আমদানি</translation>
@@ -5190,6 +5204,7 @@
 <translation id="8883847527783433352">অন্য অ্যাকাউন্টে সিঙ্ক করুন</translation>
 <translation id="8885197664446363138">Smart Lock অনুপলব্ধ</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" /> অ্যাপে টাচ আইডি ব্যবহার করুন</translation>
+<translation id="8888253246822647887">আপগ্রেড প্রক্রিয়া শেষ হওয়ার পরেই আপনার অ্যাপ চালু হবে। আপগ্রেড প্রক্রিয়াতে কয়েক মিনিট লাগতে পারে।</translation>
 <translation id="8888432776533519951">রঙ:</translation>
 <translation id="8890516388109605451">উৎস</translation>
 <translation id="8892168913673237979">সমস্ত সেট আছে!</translation>

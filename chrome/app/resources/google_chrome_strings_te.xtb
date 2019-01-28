@@ -54,7 +54,7 @@
 <translation id="225363235161345695">{0,plural, =1{ఒక గంటలో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# గంటల్లో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="2286950485307333924">మీరు ఇప్పుడు Chromeకి సైన్ ఇన్ చేసారు</translation>
 <translation id="2290014774651636340">Google API కీలు లేవు. Google Chrome కార్యాచరణలో కొంత భాగం నిలిపివేయబడుతుంది.</translation>
-<translation id="2290095356545025170">మీరు Google Chrome ని ఖచ్చితంగా అన్ ఇన్‌స్టాల్ చెయ్యాలని అనుకుంటున్నారా?</translation>
+<translation id="2290095356545025170">మీరు Google Chromeను ఖచ్చితంగా అన్‌ఇన్‌స్టాల్ చేయాలని అనుకుంటున్నారా?</translation>
 <translation id="2309047409763057870">ఇది Google Chrome యొక్క రెండవ ఇన‌స్ట‌లేష‌న్‌. దీన్ని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయడం సాధ్యపడదు.</translation>
 <translation id="2334084861041072223">కాపీరైట్ <ph name="YEAR" /> Google Inc. అన్ని హ‌క్కులు రిజ‌ర్వ్ చేయ‌బ‌డ్డాయి.</translation>
 <translation id="2346876346033403680">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" />గా Chromeకు సైన్ ఇన్ చేశారు. అది మీ ఖాతా కాకుంటే, మీ సమాచారాన్ని వేరుగా ఉంచడానికి కొత్త Chrome వినియోగదారును సృష్టించండి.
@@ -63,7 +63,7 @@
 <translation id="2348335408836342058">ఈ సైట్ కోసం మీ కెమెరా మరియు మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromeకు అనుమతి అవసరం</translation>
 <translation id="2429317896000329049">మీ డొమైన్ కోసం సమకాలీకరణ అందుబాటులో లేనందున Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="2467438592969358367">Google Chrome మీ పాస్‌వర్డ్‌లను ఎగుమతి చేయాలనుకుంటోంది. దీనిని అనుమతించడం కోసం మీ Windows పాస్‌వర్డ్‌ని టైప్ చేయండి.</translation>
-<translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
+<translation id="2485422356828889247">అన్ఇన్‌స్టాల్ చేయి</translation>
 <translation id="2534507159460261402">Google Pay (Chromeకి కాపీ చేయబడింది)</translation>
 <translation id="2535429035253759792">ఈ అప్‌డేట్‌ని వర్తింపజేయడం కోసం మీరు Chromeని పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు</translation>
 <translation id="2580411288591421699">ప్రస్తుతం అమలవుతున్న Google Chrome వెర్ష‌న్‌ను ఇన్‌స్టాల్ చేయ‌లేదు. దయచేసి Google Chromeను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -102,7 +102,7 @@
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="34857402635545079">అలాగే (<ph name="URL" />)లో ఉన్న Chromeకి సంబంధించిన డేటాని తీసివేయి</translation>
 <translation id="3503306920980160878">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromeకు మీ స్థాన యాక్సెస్ అవసరం</translation>
-<translation id="3582972582564653026">మీ పరికరాల అంతటా Chromeని సమకాలీకరించండి మరియు వ్యక్తిగతీకరించండి</translation>
+<translation id="3582972582564653026">మీ పరికరాల అంతటా Chromeను సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి</translation>
 <translation id="3622797965165704966">ఇప్పుడు మీ Google ఖాతాతో, షేర్ చేయ‌బ‌డిన కంప్యూటర్‌ల‌లో Chromeను సులభంగా ఉపయోగించవచ్చు.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="3716182511346448902">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తోంది, కాబట్టి దీన్ని Chrome పాజ్ చేయబడింది.</translation>
@@ -113,7 +113,7 @@
 <translation id="386202838227397562">దయచేసి అన్ని Google Chrome విండోలను మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3873044882194371212">Chrome అ&amp;జ్ఞాత విండోలో లింక్‌ను తెరువు</translation>
-<translation id="3889417619312448367">Google Chromeను అన్ఇన్స్టాల్ చెయ్యి</translation>
+<translation id="3889417619312448367">Google Chromeను అన్‌ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="3898493977366060150">Google స్మార్ట్‌లతో వెబ్ బ్రౌజింగ్</translation>
 <translation id="4028693306634653894">Chromeకి వేగవంతంగా వెళ్లండి</translation>
 <translation id="4050175100176540509">ముఖ్యమైన భద్రతా మెరుగుదలలు మరియు కొత్త లక్షణాలు తాజా సంస్కరణలో అందుబాటులో ఉన్నాయి.</translation>
@@ -124,7 +124,7 @@
 <translation id="424864128008805179">Chrome నుండి సైన్ అవుట్ చేయాలా?</translation>
 <translation id="4251615635259297716">మీ Chrome డేటాను ఈ ఖాతాకు జోడించాలా?</translation>
 <translation id="4251625577313994583">మీ iPhoneలో Chromeని పొందండి</translation>
-<translation id="4293420128516039005">మీ పరికరాల అంతటా Chromeని సమకాలీకరించడం మరియు వ్యక్తిగతీకరించడం కోసం సైన్ ఇన్ చేయండి</translation>
+<translation id="4293420128516039005">మీ పరికరాల అంతటా Chromeను సింక్ చేయడం మరియు వ్యక్తిగతీకరించడం కోసం సైన్ ఇన్ చేయండి</translation>
 <translation id="4328355335528187361">Google Chrome డెవలపర్ (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">Chromeకు <ph name="EXTENSION_NAME" /> జోడించబడింది</translation>
@@ -138,7 +138,7 @@
 <translation id="4600710005438004015">Chromeని తాజా వెర్షన్‌కు అప్‌డేట్ చేయడం సాధ్యం కాలేదు, కనుక మీరు కొత్త ఫీచర్‌లు మరియు భద్రతా పరిష్కారాలను పొందలేరు.</translation>
 <translation id="4631713731678262610">Chrome మెనూలో దాచండి</translation>
 <translation id="4633000520311261472">Chromeను సురక్షితం చేయడానికి, మేము <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడని మరియు మీకు తెలియకుండానే జోడించబడిన కొన్ని పొడిగింపులను నిలిపివేసాము.</translation>
-<translation id="4700157086864140907">Google Chrome మీరు బ్రౌజర్‌లో టైప్ చేసే వాటిని Google సర్వర్‌లకు పంపించడం ద్వారా, Google శోధనలో ఉపయోగించబడేలాంటి పదనిర్మాణ-తనిఖీ సాంకేతిక పరిజ్ఞానాన్ని మీరు ఉపయోగించడానికి అనుమతించడం ద్వారా మరింత చురుకైన పదనిర్మాణ-తనిఖీని అందిస్తుంది.</translation>
+<translation id="4700157086864140907">మీరు బ్రౌజర్‌లో టైప్ చేసే వాటిని Google సర్వర్‌లకు పంపించడం ద్వారా, Google శోధనలో ఉపయోగించే స్పెల్ చెక్ - సాంకేతిక పరిజ్ఞానాన్ని మీరు ఉపయోగించగలిగేలా అనుమతించి, మరింత మెరుగైన స్పెల్ చెక్‌ను Google Chrome అందించగలదు.</translation>
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ని ప్రారంభించడానికి Chromeను పునఃప్రారంభించండి</translation>
 <translation id="4754614261631455953">Google Chrome కెనరీ (mDNS-In)</translation>
@@ -161,7 +161,7 @@
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />సేవా నిబంధనలు<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromeను ఉపయోగించవచ్చు.</translation>
 <translation id="532046782124376502">హెచ్చరిక: Google Chrome మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయకుండా ఎక్సటెన్షన్‌లను నివారించలేదు. ఈ ఎక్సటెన్షన్‌ను అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
-<translation id="5386244825306882791">ఇది మీరు Chromeని ప్రారంభించేటప్పుడు లేదా ఓమ్నిపెట్టె నుండి శోధించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
+<translation id="5386244825306882791">ఇది మీరు Chromeను ప్రారంభించేటప్పుడు లేదా ఓమ్నిబాక్స్ నుండి వెతికేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
 <translation id="5483595757826856374">{0,plural, =0{ఇప్పుడు Chrome తిరిగి ప్రారంభించబడుతుంది}=1{1 సెకనులో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# సెకన్లలో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="5505603430818498864">Google Chrome మీరు చూసే పేజీలలోని ఫోటోలను Google సర్వర్‌లకు పంపడం ద్వారా ఆయా ఫోటోలలో ఉండే ఆకారాలు మరియు అక్షరాలను గుర్తించి, ఆ పేజీలలోని కంటెంట్‌ని మీకు మరింత అర్థవంతంగా తెలియజేయడానికి కృషి చేస్తుంది.</translation>

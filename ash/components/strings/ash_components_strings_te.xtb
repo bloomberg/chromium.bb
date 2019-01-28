@@ -9,7 +9,7 @@
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">మీ ప్రస్తుత పేజీని ముద్రించండి</translation>
-<translation id="1383876407941801731">శోధించు</translation>
+<translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> లేదా <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">పంక్తి చివరికి వెళ్లు</translation>
 <translation id="1510238584712386396">లాంచర్</translation>
@@ -25,7 +25,7 @@
 <translation id="1996162290124031907">తదుపరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2010818616644390445">విండోలో చివరి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="2040706009561734834">లాంచర్‌ని తెరవండి/మూసివేయండి</translation>
-<translation id="2088054208777350526">కీబోర్డ్ షార్ట్‌కట్‌ల కోసం శోధించు</translation>
+<translation id="2088054208777350526">కీబోర్డ్ షార్ట్‌కట్‌ల కోసం వెతకండి</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> లేదా <ph name="F" /></translation>
 <translation id="2145908266289632567">వచన సవరణ</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 నుండి =</translation>
@@ -62,7 +62,7 @@
 <translation id="3256109297135787951">మీ అరలోని ఒక అంశానికి గల హైలైట్‌ని తీసివేయండి</translation>
 <translation id="3288816184963444640">ప్రస్తుత విండోను మూసివేయండి</translation>
 <translation id="3407560819924487926">కార్య నిర్వాహకుడిని తెరవండి</translation>
-<translation id="3422679037938588196">మీ శోధన కోసం తరువాత సరిపోలికకు వెళ్లండి</translation>
+<translation id="3422679037938588196">మీ శోధనకు వచ్చిన మునుపటి సరిపోలికకు వెళ్లండి</translation>
 <translation id="344577624355799426"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">మీ ప్రస్తుత విండోలో తెరిచి ఉన్న అన్ని పేజీలను బుక్‌మార్క్‌ల వలె కొత్త ఫోల్డర్‌లో సేవ్ చేయండి</translation>
 <translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో బ్యాక్‌గ్రౌండ్‌లో తెరవండి</translation>
@@ -108,7 +108,7 @@
 <translation id="5316716239522500219">మానిటర్‌లను ప్రతిబింబించు</translation>
 <translation id="539072479502328326">డాక్ చేసిన మాగ్నిఫైయర్‌ను ఆన్ లేదా ఆఫ్ చేస్తుంది</translation>
 <translation id="5541719484267030947">ట్యాబ్‌ను లాగే సమయంలో, <ph name="ESC" />ని నొక్కండి</translation>
-<translation id="5554139136362089836">ప్రస్తుత పేజీని శోధించండి</translation>
+<translation id="5554139136362089836">ప్రస్తుత పేజీని వెతకండి</translation>
 <translation id="5563050856984839829"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="561814908794220892">వెబ్‌పేజీని కొత్త ట్యాబ్‌లో తెరవండి</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> లేదా <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
@@ -138,7 +138,7 @@
 <translation id="649811797655257835">ఫైల్‌ని ఎంచుకుని, ఆపై <ph name="SPACE" />ని నొక్కండి</translation>
 <translation id="6556040137485212400">అత్యంత ఎక్కువ సమయం నుండి ఉపయోగించని విండోని తెరవండి</translation>
 <translation id="666343722268997814">హైలైట్ చేసిన అంశం కోసం కుడి-క్లిక్ మెనూను తెరవండి</translation>
-<translation id="6671538777808758331">మీ శోధన కోసం తరువాత సరిపోలికకు వెళ్లండి</translation>
+<translation id="6671538777808758331">మీ శోధనకు వచ్చిన తర్వాతి సరిపోలికకు వెళ్లండి</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> లేదా <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">ఎడమ వైపున విండోని డాక్ చేయండి</translation>
 <translation id="6692847073476874842">ఫైల్స్ యాప్‌లో ఫైల్‌ను ప్రివ్యూ చేయండి</translation>
@@ -176,7 +176,7 @@
 <translation id="8388247778047144397">లింక్‌ను ట్యాబ్ స్ట్రిప్‌లోని ఖాళీ ప్రాంతంలోకి లాగండి</translation>
 <translation id="8389638407792712197">కొత్త విండోని తెరవండి</translation>
 <translation id="8429696719963529183">F కీలు (F1 నుండి F12 వరకు) ఉపయోగించండి</translation>
-<translation id="8537650670971624753">శోధన మోడ్ నుండి నిష్క్రమించు</translation>
+<translation id="8537650670971624753">శోధన మోడ్ నుండి నిష్క్రమించండి</translation>
 <translation id="85690795166292698">లింక్‌ను కొత్త ట్యాబ్‌లో తెరవండి</translation>
 <translation id="8609384513243082612">కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="8644639153978066712">దాచబడిన ఫైల్‌లను ఫైల్స్ యాప్ ద్వారా ప్రదర్శించండి</translation>
@@ -194,7 +194,7 @@
 <translation id="906458777597946297">విండోను గరిష్టీకరించు</translation>
 <translation id="9091855755813503076">పంక్తి ప్రారంభానికి వెళ్లు</translation>
 <translation id="9106898733795143799">పేజీ &amp; వెబ్ బ్రౌజర్</translation>
-<translation id="9162942292291287644"><ph name="QUERY" /> కోసం శోధన ఫలితం లేదు</translation>
+<translation id="9162942292291287644"><ph name="QUERY" />కు శోధన ఫలితాలేవీ లేవు</translation>
 <translation id="9179672198516322668">జనాదరణ పొందిన షార్ట్‌కట్‌లు</translation>
 <translation id="93603345341560814"><ph name="SHIFT" />ను నొక్కి, లింక్‌ను క్లిక్ చేయండి</translation>
 <translation id="945383118875625837">‌లింక్‌ని బుక్‌మార్క్‌ల బార్ వద్దకు లాగండి</translation>
