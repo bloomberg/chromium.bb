@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 
 #include "base/bind.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -32,7 +32,8 @@ IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
 // static
 IOSChromeContentSuggestionsServiceFactory*
 IOSChromeContentSuggestionsServiceFactory::GetInstance() {
-  return base::Singleton<IOSChromeContentSuggestionsServiceFactory>::get();
+  static base::NoDestructor<IOSChromeContentSuggestionsServiceFactory> instance;
+  return instance.get();
 }
 
 // static
