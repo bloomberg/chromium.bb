@@ -652,12 +652,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityLoginTest,
   EXPECT_TRUE(IsMenuButtonVisible());
 }
 
-INSTANTIATE_TEST_CASE_P(TrayAccessibilityTestInstance,
-                        TrayAccessibilityTest,
-                        testing::Values(PREF_SERVICE,
-                                        POLICY));
-INSTANTIATE_TEST_CASE_P(TrayAccessibilityLoginTestInstance,
-                        TrayAccessibilityLoginTest,
-                        testing::Values(PREF_SERVICE, POLICY));
+INSTANTIATE_TEST_SUITE_P(TrayAccessibilityTestInstance,
+                         TrayAccessibilityTest,
+                         testing::Values(PREF_SERVICE, POLICY));
+INSTANTIATE_TEST_SUITE_P(TrayAccessibilityLoginTestInstance,
+                         TrayAccessibilityLoginTest,
+                         testing::Values(PREF_SERVICE, POLICY));
 
 }  // namespace chromeos
