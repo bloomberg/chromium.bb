@@ -30,6 +30,10 @@ _REPO_NAME = 'chrome_runner'
 # Amount of time to wait for the termination of the system log output thread.
 _JOIN_TIMEOUT_SECS = 5
 
+# Amount of time to wait for Amber to complete package installation, as a
+# mitigation against hangs due to amber/network-related failures.
+_INSTALL_TIMEOUT_SECS = 5 * 60
+
 
 def _AttachKernelLogReader(target):
   """Attaches a kernel log reader as a long-running SSH task."""
@@ -234,7 +238,8 @@ def RunPackage(output_dir, target, package_path, package_name, package_deps,
                    (install_package_name, package_version))
       return_code = target.RunCommand(['amber_ctl', 'get_up', '-n',
                                        install_package_name, '-v',
-                                       package_version])
+                                       package_version],
+                                       timeout_secs=_INSTALL_TIMEOUT_SECS)
       if return_code != 0:
         raise Exception('Error while installing %s.' % install_package_name)
 
