@@ -56,14 +56,12 @@ class StrikeDatabaseIntegratorBase {
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeBrowsingDataRemoverDelegateTest,
                            StrikeDatabaseEmptyOnAutofillRemoveEverything);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
-                           GetKeyForCreditCardSaveTest);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
-                           GetIdForCreditCardSaveTest);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardSaveStrikeDatabaseTest,
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            RemoveExpiredStrikesTest);
-  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationStrikeDatabaseTest,
-                           RemoveExpiredStrikesTest);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           GetKeyForStrikeDatabaseIntegratorUniqueIdTest);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           RemoveExpiredStrikesUniqueIdTest);
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 
