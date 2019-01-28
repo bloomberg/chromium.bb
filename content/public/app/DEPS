@@ -4,8 +4,9 @@ include_rules = [
   "+content/public/gpu/content_gpu_client.h",
   "+content/public/renderer/content_renderer_client.h",
   "+content/public/utility/content_utility_client.h",
-  "+services/service_manager",
   "+services/audio/public",
+  "+services/service_manager",
+  "+services/video_capture/public",
 ]
 
 specific_include_rules = {
@@ -28,7 +29,6 @@ specific_include_rules = {
     "+services/resource_coordinator/manifest.h",
     "+services/shape_detection/manifest.h",
     "+services/tracing/manifest.h",
-    "+services/video_capture/manifest.h",
     "+services/viz/manifest.h",
   ],
 }

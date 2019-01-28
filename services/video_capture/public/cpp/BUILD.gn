@@ -25,6 +25,19 @@ source_set("cpp") {
   ]
 }
 
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+  deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/video_capture/public/mojom",
+    "//services/video_capture/public/mojom:constants",
+  ]
+}
+
 source_set("mocks") {
   testonly = true
 

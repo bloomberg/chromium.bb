@@ -6,13 +6,16 @@
 
 #include "base/command_line.h"
 #include "media/base/media_switches.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
+#include "services/video_capture/public/cpp/manifest.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
-#include "services/video_capture/tests_catalog_source.h"
 
 namespace video_capture {
+
+const char kTestServiceName[] = "video_capture_unittests";
 
 DeviceFactoryProviderTest::SharedMemoryVirtualDeviceContext::
     SharedMemoryVirtualDeviceContext(mojom::ProducerRequest producer_request)
@@ -23,10 +26,17 @@ DeviceFactoryProviderTest::SharedMemoryVirtualDeviceContext::
     ~SharedMemoryVirtualDeviceContext() = default;
 
 DeviceFactoryProviderTest::DeviceFactoryProviderTest()
-    : test_service_manager_(CreateTestCatalog()),
-      test_service_binding_(&test_service_,
-                            test_service_manager_.RegisterTestInstance(
-                                "video_capture_unittests")) {}
+    : test_service_manager_(
+          {GetManifest(),
+           service_manager::ManifestBuilder()
+               .WithServiceName(kTestServiceName)
+               .RequireCapability(mojom::kServiceName, "tests")
+               .RequireCapability(service_manager::mojom::kServiceName,
+                                  "service_manager:service_manager")
+               .Build()}),
+      test_service_binding_(
+          &test_service_,
+          test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
 
 DeviceFactoryProviderTest::~DeviceFactoryProviderTest() = default;
 
