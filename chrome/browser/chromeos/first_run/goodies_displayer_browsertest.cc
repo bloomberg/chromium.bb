@@ -151,9 +151,9 @@ IN_PROC_BROWSER_TEST_P(GoodiesDisplayerBrowserTest, DisplayGoodies) {
   ExpectTabCounts(browser2, 1, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        GoodiesDisplayerBrowserTest,
-                        testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         GoodiesDisplayerBrowserTest,
+                         testing::Values(true, false));
 
 }  // namespace chromeos
 
