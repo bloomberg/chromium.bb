@@ -9,18 +9,22 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "build/buildflag.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace signin_ui_util {
@@ -150,9 +154,9 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     return ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
   }
 
-  // Returns the account tracker service.
-  AccountTrackerService* GetAccountTrackerService() {
-    return AccountTrackerServiceFactory::GetForProfile(profile());
+  // Returns the identity manager.
+  identity::IdentityManager* GetIdentityManager() {
+    return IdentityManagerFactory::GetForProfile(profile());
   }
 
   void EnableSync(const AccountInfo& account_info,
@@ -273,10 +277,10 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
-  // Add an account.
   std::string account_id =
-      GetAccountTrackerService()->SeedAccountInfo(kMainEmail, kMainGaiaID);
-  GetTokenService()->UpdateCredentials(account_id, "token");
+      GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+          kMainGaiaID, kMainEmail, "refresh_token", false,
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   for (bool is_default_promo_account : {true, false}) {
     base::HistogramTester histogram_tester;
@@ -286,8 +290,11 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
     EXPECT_EQ(0, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
-    EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id),
-               is_default_promo_account);
+    EnableSync(
+        GetIdentityManager()
+            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            .value(),
+        is_default_promo_account);
     signin_metrics::PromoAction expected_promo_action =
         is_default_promo_account
             ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
@@ -323,10 +330,16 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   AddTab(browser(), GURL("http://example.com"));
-  // Add an account to the account tracker, but do not add it to the token
-  // service in order for it to require a reauth before enabling sync.
   std::string account_id =
-      GetAccountTrackerService()->SeedAccountInfo(kMainGaiaID, kMainEmail);
+      GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+          kMainGaiaID, kMainEmail, "refresh_token", false,
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  // Add an account and then put its refresh token into an error state to
+  // require a reauth before enabling sync.
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      GetIdentityManager(), account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   for (bool is_default_promo_account : {true, false}) {
     base::HistogramTester histogram_tester;
@@ -336,8 +349,11 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     EXPECT_EQ(0, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
-    EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id),
-               is_default_promo_account);
+    EnableSync(
+        GetIdentityManager()
+            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            .value(),
+        is_default_promo_account);
     ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);
 
     ExpectOneSigninStartedHistograms(
@@ -400,10 +416,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
-  // Add an account.
-  std::string account_id =
-      GetAccountTrackerService()->SeedAccountInfo(kMainEmail, kMainGaiaID);
-  GetTokenService()->UpdateCredentials(account_id, "token");
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   ExpectNoSigninStartedHistograms(histogram_tester);
   EXPECT_EQ(
