@@ -143,12 +143,12 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   MockWebMediaPlayer* media_player_;
 };
 
-INSTANTIATE_TEST_CASE_P(Audio,
-                        HTMLMediaElementTest,
-                        testing::Values(MediaTestParam::kAudio));
-INSTANTIATE_TEST_CASE_P(Video,
-                        HTMLMediaElementTest,
-                        testing::Values(MediaTestParam::kVideo));
+INSTANTIATE_TEST_SUITE_P(Audio,
+                         HTMLMediaElementTest,
+                         testing::Values(MediaTestParam::kAudio));
+INSTANTIATE_TEST_SUITE_P(Video,
+                         HTMLMediaElementTest,
+                         testing::Values(MediaTestParam::kVideo));
 
 TEST_P(HTMLMediaElementTest, effectiveMediaVolume) {
   struct TestData {
