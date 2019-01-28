@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -462,16 +463,41 @@ class SafeBrowsingBlockingPageBrowserTest
 
     // Proceed through the HTTPS interstitial.
     ui_test_utils::NavigateToURL(browser(), url);
-    EXPECT_TRUE(WaitForReady(browser()));
-    InterstitialPage* https_warning = browser()
-                                          ->tab_strip_model()
-                                          ->GetActiveWebContents()
-                                          ->GetInterstitialPage();
+
+    // TODO(carlosil, crbug.com/448486): This function is overly complicated
+    // due to the need to support combinations of safe browsing and SSL
+    // interstitials being committed navigations or overlays. Since most SSL
+    // specific code is only used in this function, it is stuck here for now.
+    // Once both SSL and SB committed interstitials launch, this function can
+    // use the general case interstitial code, and should be cleaned up.
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::InterstitialPageDelegate* ssl_blocking_page;
+
+    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+      EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+      security_interstitials::SecurityInterstitialTabHelper* helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(contents);
+      EXPECT_TRUE(helper);
+      ssl_blocking_page =
+          helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+    } else {
+      EXPECT_TRUE(WaitForReady(browser()));
+      ssl_blocking_page = browser()
+                              ->tab_strip_model()
+                              ->GetActiveWebContents()
+                              ->GetInterstitialPage()
+                              ->GetDelegateForTesting();
+    }
     EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
-              https_warning->GetDelegateForTesting()->GetTypeForTesting());
-    https_warning->Proceed();
-    content::WaitForInterstitialDetach(
-        browser()->tab_strip_model()->GetActiveWebContents());
+              ssl_blocking_page->GetTypeForTesting());
+    ssl_blocking_page->CommandReceived(base::IntToString(
+        security_interstitials::SecurityInterstitialCommand::CMD_PROCEED));
+    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
+      EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+    else
+      content::WaitForInterstitialDetach(contents);
 
     return SetupWarningAndNavigateToURL(url, browser());
   }

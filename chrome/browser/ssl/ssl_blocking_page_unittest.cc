@@ -59,6 +59,7 @@ TEST_F(SSLBlockingPageTest, VerifySecurityInterstitialExtensionEvents) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   base::RepeatingCallback<void(content::CertificateRequestResultType)>
       callback = base::BindRepeating(&EmptyCallback);
+  ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
 
   // Simulates the showing of a SSL blocking page.
   SSLBlockingPage* blocking_page = SSLBlockingPage::Create(

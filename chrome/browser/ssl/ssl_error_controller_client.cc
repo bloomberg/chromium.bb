@@ -212,9 +212,12 @@ void SSLErrorControllerClient::Proceed() {
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   ChromeSSLHostStateDelegate* state = static_cast<ChromeSSLHostStateDelegate*>(
       profile->GetSSLHostStateDelegate());
-  state->AllowCert(request_url_.host(), *ssl_info_.cert.get(),
-                   net::MapCertStatusToNetError(ssl_info_.cert_status));
-  Reload();
+  // ChromeSSLHostStateDelegate can be null during tests.
+  if (state) {
+    state->AllowCert(request_url_.host(), *ssl_info_.cert.get(),
+                     net::MapCertStatusToNetError(ssl_info_.cert_status));
+    Reload();
+  }
 }
 
 bool SSLErrorControllerClient::CanLaunchDateAndTimeSettings() {

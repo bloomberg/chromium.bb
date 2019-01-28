@@ -90,6 +90,10 @@ KeyedService* CertificateReportingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
+  // In unit tests the safe browsing service can be null, if this happens,
+  // return null instead of crashing.
+  if (!safe_browsing_service)
+    return nullptr;
   return new CertificateReportingService(
       safe_browsing_service,
       url_loader_factory_.get() ? url_loader_factory_
