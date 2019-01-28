@@ -518,6 +518,10 @@ void InterceptedRequest::ResumeReadingBodyFromNet() {
 
 std::unique_ptr<AwContentsIoThreadClient>
 InterceptedRequest::GetIoThreadClient() {
+  if (request_.originated_from_service_worker) {
+    return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
+  }
+
   // |process_id_| == 0 indicates this is a navigation, and so we should use the
   // frame_tree_node_id API (with request_.render_frame_id).
   return process_id_

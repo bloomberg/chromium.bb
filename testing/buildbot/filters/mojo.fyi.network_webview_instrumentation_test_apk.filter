@@ -24,10 +24,6 @@
 # https://crbug.com/893568
 -org.chromium.android_webview.test.AwContentsTest.testDownload
 
-# https://crbug.com/893569
--org.chromium.android_webview.test.AwServiceWorkerClientTest.testFetchResourceLoadingError
--org.chromium.android_webview.test.AwServiceWorkerClientTest.testInvokeInterceptCallback
-
 # https://crbug.com/893572
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testBrowserInitiatedRedirectHangingNavigation
 -org.chromium.android_webview.test.ClientOnPageStartedTest.testNotCalledForDownloadContentDisposition
