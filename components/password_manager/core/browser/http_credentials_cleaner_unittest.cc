@@ -239,9 +239,9 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   scoped_task_environment.RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        HttpCredentialCleanerTest,
-                        ::testing::ValuesIn(kCases));
+INSTANTIATE_TEST_SUITE_P(,
+                         HttpCredentialCleanerTest,
+                         ::testing::ValuesIn(kCases));
 
 TEST(HttpCredentialCleaner, StartCleanUpTest) {
   for (bool should_start_clean_up : {false, true}) {
