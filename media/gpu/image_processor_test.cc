@@ -99,10 +99,10 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
 };
 
 // I420->NV12
-INSTANTIATE_TEST_CASE_P(ConvertI420ToNV12,
-                        ImageProcessorSimpleParamTest,
-                        ::testing::Values(std::make_tuple(kI420Image,
-                                                          kNV12Image)));
+INSTANTIATE_TEST_SUITE_P(ConvertI420ToNV12,
+                         ImageProcessorSimpleParamTest,
+                         ::testing::Values(std::make_tuple(kI420Image,
+                                                           kNV12Image)));
 
 #if defined(OS_CHROMEOS)
 // TODO(hiroh): Add more tests.
