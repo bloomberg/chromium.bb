@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/manage_sync_settings_coordinator.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/settings/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/manage_sync_settings_table_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,16 +18,21 @@
 // View controller.
 @property(nonatomic, strong)
     ManageSyncSettingsTableViewController* viewController;
+// Mediator.
+@property(nonatomic, strong) ManageSyncSettingsMediator* mediator;
 
 @end
 
 @implementation ManageSyncSettingsCoordinator
 
 - (void)start {
+  self.mediator = [[ManageSyncSettingsMediator alloc] init];
   self.viewController = [[ManageSyncSettingsTableViewController alloc]
       initWithTableViewStyle:UITableViewStyleGrouped
                  appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   self.viewController.presentationDelegate = self;
+  self.viewController.modelDelegate = self.mediator;
+  self.mediator.consumer = self.viewController;
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
