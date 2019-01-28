@@ -3651,7 +3651,7 @@ void GLRenderer::UpdateRenderPassTextures(
     bool size_appropriate =
         texture.size().width() >= requirements.size.width() &&
         texture.size().height() >= requirements.size.height();
-    bool mipmap_appropriate = !requirements.mipmap || texture.mipmap();
+    bool mipmap_appropriate = !requirements.generate_mipmap || texture.mipmap();
     if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
   }
@@ -3683,7 +3683,7 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
   ScopedRenderPassTexture contents_texture(
       output_surface_->context_provider(), requirements.size,
       BackbufferFormat(), current_frame()->current_render_pass->color_space,
-      requirements.mipmap);
+      requirements.generate_mipmap);
   render_pass_textures_[render_pass_id] = std::move(contents_texture);
 }
 

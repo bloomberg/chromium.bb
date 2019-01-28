@@ -107,7 +107,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   struct RenderPassRequirements {
     gfx::Size size;
-    bool mipmap = false;
+    bool generate_mipmap = false;
   };
 
   static gfx::RectF QuadVertexRect();

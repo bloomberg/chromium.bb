@@ -65,6 +65,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
       ResourceFormat resource_format,
       gfx::Size size,
       RenderPassId render_pass_id,
+      bool mipmap,
       sk_sp<SkColorSpace> color_space) {
     DCHECK_CALLED_ON_VALID_THREAD(impl->thread_checker_);
     // The ownership of the helper will be passed into makePromisTexture(). The
@@ -72,7 +73,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     // helper.
     auto* helper = new PromiseTextureHelper(
         impl->impl_on_gpu_->weak_ptr(), size, resource_format, render_pass_id,
-        std::move(color_space));
+        mipmap, std::move(color_space));
     return helper->MakePromiseSkImage(impl);
   }
 
@@ -83,12 +84,15 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
                        const gfx::Size& size,
                        ResourceFormat resource_format,
                        RenderPassId render_pass_id,
+                       bool mipmap,
                        sk_sp<SkColorSpace> color_space)
       : impl_on_gpu_(impl_on_gpu),
         size_(size),
         resource_format_(resource_format),
         render_pass_id_(render_pass_id),
+        mipmap_(mipmap ? GrMipMapped::kYes : GrMipMapped::kNo),
         color_space_(std::move(color_space)) {}
+
   PromiseTextureHelper(base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
                        const gfx::Size& size,
                        ResourceFormat resource_format,
@@ -124,7 +128,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
 #endif
     }
     return impl->recorder_->makePromiseTexture(
-        backend_format, size_.width(), size_.height(), GrMipMapped::kNo,
+        backend_format, size_.width(), size_.height(), mipmap_,
         kTopLeft_GrSurfaceOrigin /* origin */, color_type, alpha_type_,
         color_space_, PromiseTextureHelper::Fulfill,
         PromiseTextureHelper::Release, PromiseTextureHelper::Done, this);
@@ -165,6 +169,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   const ResourceFormat resource_format_;
   const RenderPassId render_pass_id_;
   const gpu::MailboxHolder mailbox_holder_;
+  const GrMipMapped mipmap_ = GrMipMapped::kNo;
   const sk_sp<SkColorSpace> color_space_;
   const SkAlphaType alpha_type_ = kPremul_SkAlphaType;
 
@@ -583,11 +588,9 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
     sk_sp<SkColorSpace> color_space) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
-  // TODO(penghuang): remove this mipmap argument, because we always pass false.
-  DCHECK(!mipmap);
 
   return PromiseTextureHelper::MakePromiseSkImageFromRenderPass(
-      this, format, size, id, std::move(color_space));
+      this, format, size, id, mipmap, std::move(color_space));
 }
 
 void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
