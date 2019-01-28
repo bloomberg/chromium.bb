@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -692,6 +693,7 @@ void VariationsService::OnSimpleLoaderRedirect(
 void VariationsService::OnSimpleLoaderCompleteOrRedirect(
     std::unique_ptr<std::string> response_body,
     bool was_redirect) {
+  TRACE_EVENT0("browser", "VariationsService::OnSimpleLoaderCompleteOrRedirect");
   const bool is_first_request = !initial_request_completed_;
   initial_request_completed_ = true;
 
