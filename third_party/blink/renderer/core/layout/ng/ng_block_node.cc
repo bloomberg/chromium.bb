@@ -586,10 +586,16 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetLogicalHeight(logical_height);
   box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
+
   // TODO(mstensho): This should always be done by the parent algorithm, since
   // we may have auto margins, which only the parent is able to resolve. Remove
   // the following line when all layout modes do this properly.
-  box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
+  if (box_->IsTableCell()) {
+    // Table-cell margins compute to zero.
+    box_->SetMargin(NGPhysicalBoxStrut());
+  } else {
+    box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
+  }
 
   LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(*box_);
   if (UNLIKELY(flow_thread)) {
