@@ -38,13 +38,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
     <script src='../js/webxr-polyfill.js'></script>
 
-    <!--This script patches up around implementation differences in past browser versions
-        so that the samples can always be written against the most recent spec changes.
-        It won't be necessary after the API has been officially shipped for a bit.-->
-    <script src='../js/webxr-version-shim.js'></script>
-
-    <script src='../js/cottontail/build/cottontail.js'></script>
-
     <script src='../js/webxr-button.js'></script>
   </head>
   <body>
@@ -61,27 +54,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         </p>
       </details>
     </header>
-    <script>
-      (function () {
-      'use strict';
+    <script type="module">
+      import {Scene} from '../js/cottontail/src/scenes/scene.js';
+      import {Renderer, createWebGLContext} from '../js/cottontail/src/core/renderer.js';
+      import {Gltf2Node} from '../js/cottontail/src/nodes/gltf2.js';
+      import {QueryArgs} from '../js/cottontail/src/util/query-args.js';
+      import {FallbackHelper} from '../js/cottontail/src/util/fallback-helper.js';
+      import {Node} from '../js/cottontail/src/core/node.js';
+      import {DropShadowNode} from '../js/cottontail/src/nodes/drop-shadow.js';
+      import {vec3} from '../js/cottontail/src/math/gl-matrix.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
         var polyfill = new WebXRPolyfill();
       }
-      // Apply the version shim after the polyfill is instantiated, to ensure
-      // that the polyfill also gets patched if necessary.
-      var versionShim = new WebXRVersionShim();
 
       let useReticle = document.getElementById('useReticle');
 
       // XR globals.
       let xrButton = null;
-      let xrFrameOfRef = null;
-
-      let outputCanvas = document.createElement('canvas');
-      outputCanvas.setAttribute('id', 'output-canvas');
-      let ctx = outputCanvas.getContext('xrpresent');
+      let xrRefSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -119,23 +111,45 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.requestDevice().then((device) => {
-            device.supportsSession({ environmentIntegration: true, outputContext: ctx }).then(() => {
-              xrButton.setDevice(device);
+          navigator.xr.supportsSessionMode('immersive-ar').then(() => {
+            xrButton.enabled = true;
+          }).catch(() => {
+            navigator.xr.supportsSessionMode('legacy-inline-ar').then(() => {
+                xrButton.enabled = true;
             });
           });
         }
       }
 
-      function onRequestSession(device) {
-        device.requestSession({ environmentIntegration: true, outputContext: ctx })
-            .then((session) => {
-              // Add the canvas to the document once we know that it will be
-              // rendered to.
-              document.body.appendChild(outputCanvas);
+      function makeCanvas() {
+          // Create a fullscreen canvas element for use with legacy AR mode.
+          let canvas = document.createElement('canvas');
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.left = 0;
+          canvas.style.top = 0;
+          canvas.style.right = 0;
+          canvas.style.bottom = 0;
+          canvas.style.margin = 0;
+          canvas.id = 'legacy-canvas';
+          return canvas;
+      }
+
+      function onRequestSession() {
+        navigator.xr.requestSession({ mode: 'immersive-ar' }).then((session) => {
               xrButton.setSession(session);
               onSessionStarted(session);
+        }).catch(() => {
+            let legacyCanvas = makeCanvas();
+            let legacyCtx = legacyCanvas.getContext('xrpresent');
+            navigator.xr.requestSession({ mode: 'legacy-inline-ar',
+                                          outputContext: legacyCtx
+                                        }).then((session) => {
+                document.body.appendChild(legacyCanvas);
+                xrButton.setSession(session);
+                onSessionStarted(session);
             });
+        });
       }
 
       function onSessionStarted(session) {
@@ -144,8 +158,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         if (!gl) {
           gl = createWebGLContext({
-            compatibleXRDevice: session.device,
-            xrCompatible : true,
+            xrCompatible: true
           });
 
           renderer = new Renderer(gl);
@@ -155,19 +168,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         session.baseLayer = new XRWebGLLayer(session, gl);
 
-        session.requestFrameOfReference('eye-level').then((frameOfRef) => {
-          xrFrameOfRef = frameOfRef;
+        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+          xrRefSpace = refSpace;
           session.requestAnimationFrame(onXRFrame);
         });
       }
 
       function onEndSession(session) {
         session.end();
-        // Remove the injected output canvas from the DOM.
-        document.body.removeChild(document.querySelector('#output-canvas'));
       }
 
       function onSessionEnded(event) {
+        if (event.session.mode.startsWith('legacy')) {
+          document.body.removeChild(document.querySelector('#legacy-canvas'));
+        }
         xrButton.setSession(null);
       }
 
@@ -201,7 +215,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         } else {
           // Otherwise we'll use the target ray from the input source that generated
           // this event to fire off a new hit test.
-          let inputPose = event.frame.getInputPose(event.inputSource, xrFrameOfRef);
+          let inputPose = event.frame.getInputPose(event.inputSource, xrRefSpace);
           if (!inputPose) {
             return;
           }
@@ -215,7 +229,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 inputPose.targetRay.direction.x,
                 inputPose.targetRay.direction.y,
                 inputPose.targetRay.direction.z);
-            event.frame.session.requestHitTest(rayOrigin, rayDirection, xrFrameOfRef).then((results) => {
+            event.frame.session.requestHitTest(rayOrigin, rayDirection, xrRefSpace).then((results) => {
               if (results.length) {
                 addARObjectAt(results[0].hitMatrix);
               }
@@ -227,7 +241,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // Called every time a XRSession requests that a new frame be drawn.
       function onXRFrame(t, frame) {
         let session = frame.session;
-        let pose = frame.getViewerPose(xrFrameOfRef);
+        let pose = frame.getViewerPose(xrRefSpace);
 
         // If requested, use the pose to cast a reticle into the scene using a
         // continuous hit test. For the moment we're just using the flower
@@ -241,7 +255,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           vec3.sub(rayDirection, rayDirection, rayOrigin);
           vec3.normalize(rayDirection, rayDirection);
 
-          session.requestHitTest(rayOrigin, rayDirection, xrFrameOfRef).then((results) => {
+          session.requestHitTest(rayOrigin, rayDirection, xrRefSpace).then((results) => {
             // When the hit test returns use it to place our proxy object.
             if (results.length) {
               let hitResult = results[0];
@@ -266,7 +280,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Start the XR application.
       initXR();
-      })();
     </script>
   </body>
 </html>

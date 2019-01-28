@@ -38,13 +38,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
     <script src='js/webxr-polyfill.js'></script>
 
-    <!--This script patches up around implementation differences in past browser versions
-        so that the samples can always be written against the most recent spec changes.
-        It won't be necessary after the API has been officially shipped for a bit.-->
-    <script src='js/webxr-version-shim.js'></script>
-
-    <script src='js/cottontail/build/cottontail.js'></script>
-
     <script src='js/webxr-button.js'></script>
   </head>
   <body>
@@ -63,21 +56,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <main style='text-align: center;'>
       <p>Click 'Enter XR' to see content</p>
     </main>
-    <script>
-      (function () {
-      'use strict';
+    <script type="module">
+      import {Scene} from './js/cottontail/src/scenes/scene.js';
+      import {Renderer, createWebGLContext} from './js/cottontail/src/core/renderer.js';
+      import {Gltf2Node} from './js/cottontail/src/nodes/gltf2.js';
+      import {QueryArgs} from './js/cottontail/src/util/query-args.js';
+      import {SkyboxNode} from './js/cottontail/src/nodes/skybox.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
         var polyfill = new WebXRPolyfill();
       }
-      // Apply the version shim after the polyfill is instantiated, to ensure
-      // that the polyfill also gets patched if necessary.
-      var versionShim = new WebXRVersionShim();
 
       // XR globals.
       let xrButton = null;
-      let xrFrameOfRef = null;
+      let xrRefSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -94,15 +87,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.requestDevice().then((device) => {
-            device.supportsSession({immersive: true}).then(() => {
-              xrButton.setDevice(device);
-            });
+          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
+            xrButton.enabled = true;
           });
         }
       }
 
-      function onRequestSession(device) {
+      function onRequestSession() {
         // In order to mirror an exclusive session, we must provide
         // an XRPresentationContext, which indicates the canvas that will
         // contain results of the session's rendering.
@@ -115,8 +106,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         // Providing an outputContext when requesting an exclusive session
         // indicates that it should be used as the mirror destination.
-        device.requestSession({
-          immersive: true,
+        navigator.xr.requestSession({
+          mode: 'immersive-vr',
           outputContext: ctx
         }).then(onSessionStarted);
       }
@@ -128,7 +119,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         if (!gl) {
           gl = createWebGLContext({
-            compatibleXRDevice: session.device
+            xrCompatible: true
           });
 
           renderer = new Renderer(gl);
@@ -144,8 +135,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         outputCanvas.width = session.baseLayer.framebufferWidth / 2;
         outputCanvas.height = session.baseLayer.framebufferHeight;
 
-        session.requestFrameOfReference('eye-level').then((frameOfRef) => {
-          xrFrameOfRef = frameOfRef;
+        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+          xrRefSpace = refSpace;
 
           session.requestAnimationFrame(onXRFrame);
         });
@@ -171,18 +162,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         session.requestAnimationFrame(onXRFrame);
 
-        let pose = frame.getDevicePose(xrFrameOfRef);
+        let pose = frame.getViewerPose(xrRefSpace);
 
         if (pose) {
           gl.bindFramebuffer(gl.FRAMEBUFFER, session.baseLayer.framebuffer);
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-          for (let view of frame.views) {
+          for (let view of pose.views) {
             let viewport = session.baseLayer.getViewport(view);
             gl.viewport(viewport.x, viewport.y,
                         viewport.width, viewport.height);
 
-            scene.draw(view.projectionMatrix, pose.getViewMatrix(view));
+            scene.draw(view.projectionMatrix, view.viewMatrix);
           }
         }
 
@@ -192,7 +183,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Start the XR application.
       initXR();
-      })();
     </script>
   </body>
 </html>
