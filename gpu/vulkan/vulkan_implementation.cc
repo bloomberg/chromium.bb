@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_instance.h"
 
 namespace gpu {
 
@@ -17,7 +18,7 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
     VulkanImplementation* vulkan_implementation,
     uint32_t option) {
   auto device_queue = std::make_unique<VulkanDeviceQueue>(
-      vulkan_implementation->GetVulkanInstance());
+      vulkan_implementation->GetVulkanInstance()->vk_instance());
   auto callback = base::BindRepeating(
       &VulkanImplementation::GetPhysicalDevicePresentationSupport,
       base::Unretained(vulkan_implementation));

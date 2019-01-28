@@ -69,6 +69,7 @@ if (enable_vulkan) {
       "//base",
       "//gpu/vulkan",
       "//gpu/vulkan:buildflags",
+      "//ui/gfx",
     ]
   }
 }

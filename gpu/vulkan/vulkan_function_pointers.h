@@ -42,6 +42,7 @@ struct VulkanFunctionPointers {
   // Unassociated functions
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn = nullptr;
   PFN_vkCreateInstance vkCreateInstanceFn = nullptr;
+  PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersionFn = nullptr;
   PFN_vkEnumerateInstanceExtensionProperties
       vkEnumerateInstanceExtensionPropertiesFn = nullptr;
   PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerPropertiesFn =

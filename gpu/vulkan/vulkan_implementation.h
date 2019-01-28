@@ -28,6 +28,7 @@ namespace gpu {
 
 class VulkanDeviceQueue;
 class VulkanSurface;
+class VulkanInstance;
 
 // This object provides factory functions for creating vulkan objects that use
 // platform-specific extensions (e.g. for creation of VkSurfaceKHR objects).
@@ -39,7 +40,7 @@ class VULKAN_EXPORT VulkanImplementation {
 
   virtual bool InitializeVulkanInstance() = 0;
 
-  virtual VkInstance GetVulkanInstance() = 0;
+  virtual VulkanInstance* GetVulkanInstance() = 0;
 
   virtual std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) = 0;

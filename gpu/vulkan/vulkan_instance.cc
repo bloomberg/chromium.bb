@@ -56,12 +56,23 @@ bool VulkanInstance::Initialize(
   if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
     return false;
 
+  uint32_t supported_api_version = VK_MAKE_VERSION(1, 0, 0);
+  if (vulkan_function_pointers->vkEnumerateInstanceVersionFn) {
+    vulkan_function_pointers->vkEnumerateInstanceVersionFn(
+        &supported_api_version);
+  }
+
+  // Use Vulkan 1.1 if it's available.
+  api_version_ = (supported_api_version >= VK_MAKE_VERSION(1, 1, 0))
+                     ? VK_MAKE_VERSION(1, 1, 0)
+                     : VK_MAKE_VERSION(1, 0, 0);
+
   VkResult result = VK_SUCCESS;
 
   VkApplicationInfo app_info = {};
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   app_info.pApplicationName = "Chromium";
-  app_info.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+  app_info.apiVersion = api_version_;
 
   std::vector<const char*> enabled_extensions;
   enabled_extensions.insert(std::end(enabled_extensions),

@@ -37,6 +37,12 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   if (!vkCreateInstanceFn)
     return false;
 
+  vkEnumerateInstanceVersionFn =
+      reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
+          vkGetInstanceProcAddrFn(nullptr, "vkEnumerateInstanceVersion"));
+  // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should
+  // proceed even if we fail to get vkEnumerateInstanceVersion pointer.
+
   vkEnumerateInstanceExtensionPropertiesFn =
       reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
           vkGetInstanceProcAddrFn(nullptr,

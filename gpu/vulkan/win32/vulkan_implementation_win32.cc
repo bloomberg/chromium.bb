@@ -55,8 +55,8 @@ bool VulkanImplementationWin32::InitializeVulkanInstance() {
   return true;
 }
 
-VkInstance VulkanImplementationWin32::GetVulkanInstance() {
-  return vulkan_instance_.vk_instance();
+VulkanInstance* VulkanImplementationWin32::GetVulkanInstance() {
+  return &vulkan_instance_;
 }
 
 std::unique_ptr<VulkanSurface> VulkanImplementationWin32::CreateViewSurface(
@@ -68,13 +68,14 @@ std::unique_ptr<VulkanSurface> VulkanImplementationWin32::CreateViewSurface(
       reinterpret_cast<HINSTANCE>(GetWindowLongPtr(window, GWLP_HINSTANCE));
   surface_create_info.hwnd = window;
   VkResult result = vkCreateWin32SurfaceKHR_(
-      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+      vulkan_instance_.vk_instance(), &surface_create_info, nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreatWin32SurfaceKHR() failed: " << result;
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface);
+  return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(),
+                                         surface);
 }
 
 bool VulkanImplementationWin32::GetPhysicalDevicePresentationSupport(

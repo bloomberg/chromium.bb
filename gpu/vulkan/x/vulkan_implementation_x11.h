@@ -23,7 +23,7 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
 
   // VulkanImplementation:
   bool InitializeVulkanInstance() override;
-  VkInstance GetVulkanInstance() override;
+  VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
   bool GetPhysicalDevicePresentationSupport(
