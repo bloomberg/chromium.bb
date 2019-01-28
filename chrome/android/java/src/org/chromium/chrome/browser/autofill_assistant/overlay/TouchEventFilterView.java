@@ -53,20 +53,6 @@ import java.util.List;
  */
 public class TouchEventFilterView
         extends View implements ChromeFullscreenManager.FullscreenListener, GestureStateListener {
-    /** A client of this view. */
-    public interface Delegate {
-        /** Called after a certain number of unexpected taps. */
-        void onUnexpectedTaps();
-
-        /** Asks for an update of the touchable area. */
-        void updateTouchableArea();
-
-        /**
-         * Called when interaction within allowed touchable area was detected. The interaction
-         * could be any gesture.
-         */
-        void onUserInteractionInsideTouchableArea();
-    }
 
     /**
      * Complain after there's been {@link TAP_TRACKING_COUNT} taps within
@@ -92,7 +78,7 @@ public class TouchEventFilterView
     /** The current gesture is being forwarded to the content view. */
     private static final int FORWARDING_GESTURE_MODE = 2;
 
-    private Delegate mDelegate;
+    private AssistantOverlayDelegate mDelegate;
     private ChromeFullscreenManager mFullscreenManager;
     private GestureListenerManager mGestureListenerManager;
     private View mCompositorView;
@@ -224,9 +210,8 @@ public class TouchEventFilterView
     }
 
     /** Initializes dependencies. */
-    public void init(Delegate delegate, ChromeFullscreenManager fullscreenManager,
-            WebContents webContents, View compositorView) {
-        mDelegate = delegate;
+    public void init(ChromeFullscreenManager fullscreenManager, WebContents webContents,
+            View compositorView) {
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
         mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
@@ -247,6 +232,13 @@ public class TouchEventFilterView
             mGestureListenerManager = null;
         }
         cleanupCurrentGestureBuffer();
+    }
+
+    /**
+     * Set this view delegate.
+     */
+    public void setDelegate(AssistantOverlayDelegate delegate) {
+        mDelegate = delegate;
     }
 
     /**
@@ -347,7 +339,9 @@ public class TouchEventFilterView
                 resetCurrentGesture();
 
                 if (shouldLetEventThrough(event)) {
-                    mDelegate.onUserInteractionInsideTouchableArea();
+                    if (mDelegate != null) {
+                        mDelegate.onUserInteractionInsideTouchableArea();
+                    }
                     // This is the last we'll hear of this gesture unless it turns multi-touch. No
                     // need to track or forward it.
                     return false;
@@ -546,12 +540,12 @@ public class TouchEventFilterView
         if (!mBrowserScrolling) {
             // onScrollOffsetOrExtentChanged will be called alone, without onScrollStarted during a
             // Javascript-initiated scroll.
-            mDelegate.updateTouchableArea();
+            askForTouchableAreaUpdate();
             return;
         }
         mBrowserScrollOffsetY = scrollOffsetY - mInitialBrowserScrollOffsetY;
         invalidate();
-        mDelegate.updateTouchableArea();
+        askForTouchableAreaUpdate();
     }
 
     /** Called at the end of a scroll gesture triggered by the browser. */
@@ -564,7 +558,7 @@ public class TouchEventFilterView
         mBrowserScrollOffsetY = 0;
         mBrowserScrolling = false;
         invalidate();
-        mDelegate.updateTouchableArea();
+        askForTouchableAreaUpdate();
     }
 
     /** Considers whether to let the client know about unexpected taps. */
@@ -580,6 +574,12 @@ public class TouchEventFilterView
         if (mUnexpectedTapTimes.size() == TAP_TRACKING_COUNT && mDelegate != null) {
             mDelegate.onUnexpectedTaps();
             mUnexpectedTapTimes.clear();
+        }
+    }
+
+    private void askForTouchableAreaUpdate() {
+        if (mDelegate != null) {
+            mDelegate.updateTouchableArea();
         }
     }
 

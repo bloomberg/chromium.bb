@@ -7,7 +7,7 @@
     <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP" desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action." formatter_data="android_java">
       I cannot help anymore, please continue on your own.
     </message>
-    <message name="IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP" desc="Text label shown next to an UNDO button when user action indicate they want to continue on their own." formatter_data="android_java">
+    <message name="IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP" desc="Text label shown next to an UNDO button when user action indicate they want to continue on their own.">
       Continue manually?
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_LOADING" desc="Text label that is shown during the loading of the first page, right after being triggered.">

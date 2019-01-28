@@ -91,16 +91,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         safeNativeStop();
     }
 
-    @Override
-    public void updateTouchableArea() {
-        safeNativeUpdateTouchableArea();
-    }
-
-    @Override
-    public void onUserInteractionInsideTouchableArea() {
-        safeNativeOnUserInteractionInsideTouchableArea();
-    }
-
     /**
      * Native => Java methods.
      */
@@ -199,17 +189,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mNativeUiController != 0) nativeStop(mNativeUiController);
     }
     private native void nativeStop(long nativeUiControllerAndroid);
-
-    void safeNativeUpdateTouchableArea() {
-        if (mNativeUiController != 0) nativeUpdateTouchableArea(mNativeUiController);
-    }
-    private native void nativeUpdateTouchableArea(long nativeUiControllerAndroid);
-
-    void safeNativeOnUserInteractionInsideTouchableArea() {
-        if (mNativeUiController != 0)
-            nativeOnUserInteractionInsideTouchableArea(mNativeUiController);
-    }
-    private native void nativeOnUserInteractionInsideTouchableArea(long nativeUiControllerAndroid);
 
     void safeNativeOnGetPaymentInformation(boolean succeed,
             @Nullable PersonalDataManager.CreditCard card,

@@ -21,8 +21,11 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<AssistantOverlayState> STATE =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
+            new WritableObjectPropertyKey<>();
+
     public AssistantOverlayModel() {
-        super(STATE);
+        super(STATE, DELEGATE);
     }
 
     @CalledByNative
@@ -43,5 +46,10 @@ public class AssistantOverlayModel extends PropertyModel {
                     /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
         }
         set(STATE, AssistantOverlayState.partial(boxes));
+    }
+
+    @CalledByNative
+    private void setDelegate(AssistantOverlayDelegate delegate) {
+        set(DELEGATE, delegate);
     }
 }

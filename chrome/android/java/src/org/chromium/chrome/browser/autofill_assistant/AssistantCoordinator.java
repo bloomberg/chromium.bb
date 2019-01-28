@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
-import org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterView;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -26,23 +25,12 @@ import org.chromium.content_public.browser.WebContents;
  * The main coordinator for the Autofill Assistant, responsible for instantiating all other
  * sub-components and shutting down the Autofill Assistant.
  */
-class AssistantCoordinator implements TouchEventFilterView.Delegate {
+class AssistantCoordinator {
     interface Delegate {
         /**
          * Completely stop the Autofill Assistant.
          */
         void stop();
-
-        /**
-         * Asks for an update of the touchable area.
-         */
-        void updateTouchableArea();
-
-        /**
-         * Called when interaction within allowed touchable area was detected. The interaction
-         * could be any gesture.
-         */
-        void onUserInteractionInsideTouchableArea();
     }
 
     private static final String FEEDBACK_CATEGORY_TAG =
@@ -78,8 +66,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mBottomBarCoordinator =
                 new AssistantBottomBarCoordinator(activity, webContents, mAssistantView, mModel);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
-        mOverlayCoordinator = new AssistantOverlayCoordinator(
-                activity, mAssistantView, mModel.getOverlayModel(), this);
+        mOverlayCoordinator =
+                new AssistantOverlayCoordinator(activity, mAssistantView, mModel.getOverlayModel());
 
         showAssistantView();
     }
@@ -217,10 +205,6 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
-    private void dismissAndShowSnackbar(int message, @DropOutReason int reason) {
-        dismissAndShowSnackbar(mActivity.getString(message), reason);
-    }
-
     /**
      * Show the Chrome feedback form.
      */
@@ -228,24 +212,6 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
                 mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
                 FeedbackContext.buildContextString(mActivity, debugContext, 4));
-    }
-
-    // Implementation of methods from {@link TouchEventFilterView.Delegate}.
-
-    @Override
-    public void onUnexpectedTaps() {
-        dismissAndShowSnackbar(
-                R.string.autofill_assistant_maybe_give_up, DropOutReason.OVERLAY_STOP);
-    }
-
-    @Override
-    public void updateTouchableArea() {
-        mDelegate.updateTouchableArea();
-    }
-
-    @Override
-    public void onUserInteractionInsideTouchableArea() {
-        mDelegate.onUserInteractionInsideTouchableArea();
     }
 
     // Private methods.

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/autofill_assistant/assistant_carousel_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
+#include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -54,6 +55,11 @@ class UiControllerAndroid : public UiController {
   void UpdateTouchableArea(bool enabled,
                            const std::vector<RectF>& areas) override;
 
+  // Called by AssistantOverlayDelegate:
+  void OnUnexpectedTaps();
+  void UpdateTouchableArea();
+  void OnUserInteractionInsideTouchableArea();
+
   // Called by AssistantHeaderDelegate:
   void OnFeedbackButtonClicked();
   void OnCloseButtonClicked();
@@ -63,11 +69,6 @@ class UiControllerAndroid : public UiController {
 
   // Called by Java.
   void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void UpdateTouchableArea(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj);
-  void OnUserInteractionInsideTouchableArea(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller);
   void OnGetPaymentInformation(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
@@ -85,6 +86,7 @@ class UiControllerAndroid : public UiController {
  private:
   Client* const client_;
   UiDelegate* const ui_delegate_;
+  AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
   AssistantCarouselDelegate carousel_delegate_;
 
