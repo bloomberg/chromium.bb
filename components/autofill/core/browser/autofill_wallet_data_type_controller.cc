@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/sync_error.h"
@@ -97,8 +98,13 @@ void AutofillWalletDataTypeController::StopModels() {
         !currently_enabled_) {
       autofill::PersonalDataManager* pdm =
           sync_client()->GetPersonalDataManager();
-      if (pdm)
+      if (pdm) {
+        int count = pdm->GetServerCreditCards().size() +
+                    pdm->GetServerProfiles().size() +
+                    (pdm->GetPaymentsCustomerData() == nullptr ? 0 : 1);
+        SyncWalletDataRecordClearedEntitiesCount(count);
         pdm->ClearAllServerData();
+      }
     }
   }
 }
