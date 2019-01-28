@@ -85,6 +85,8 @@ using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
 using ExpectedUkmMetrics =
     std::vector<std::vector<std::pair<const char*, int64_t>>>;
 
+const char* kTestGuid = "00000000-0000-0000-0000-000000000001";
+
 int64_t Collapse(uint64_t sig) {
   return sig % 1021;
 }
@@ -216,6 +218,14 @@ void AppendFieldTypeUkm(const FormData& form,
   }
 }
 
+void SetProfileTestData(AutofillProfile* profile) {
+  test::SetProfileInfo(profile, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
+                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
+                       "12345678901");
+  profile->set_guid(kTestGuid);
+}
+
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
@@ -240,7 +250,8 @@ class AutofillMetricsTest : public testing::Test {
   void CreateAmbiguousProfiles();
 
   // Removes all existing profiles and creates one profile.
-  void RecreateProfile();
+  // |is_server| allows creation of |SERVER_PROFILE|.
+  void RecreateProfile(bool is_server);
 
   // Removes all existing credit cards and creates a local, masked server,
   // and/or full server credit card, according to the parameters.
@@ -351,16 +362,19 @@ void AutofillMetricsTest::CreateAmbiguousProfiles() {
   personal_data_->Refresh();
 }
 
-void AutofillMetricsTest::RecreateProfile() {
+void AutofillMetricsTest::RecreateProfile(bool is_server) {
   personal_data_->ClearProfiles();
 
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
-                       "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
-                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
-                       "12345678901");
-  profile.set_guid("00000000-0000-0000-0000-000000000001");
-  personal_data_->AddProfile(profile);
+  if (is_server) {
+    AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "server_id");
+    SetProfileTestData(&profile);
+    personal_data_->AddProfile(profile);
+  } else {
+    AutofillProfile profile;
+    SetProfileTestData(&profile);
+    personal_data_->AddProfile(profile);
+  }
+
   personal_data_->Refresh();
 }
 
@@ -422,7 +436,7 @@ void AutofillMetricsTest::CreateTestAutofillProfiles() {
                        "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                        "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                        "12345678901");
-  profile1.set_guid("00000000-0000-0000-0000-000000000001");
+  profile1.set_guid(kTestGuid);
   personal_data_->AddProfile(profile1);
 
   AutofillProfile profile2;
@@ -721,7 +735,7 @@ TEST_F(AutofillMetricsTest,
   base::UserActionTester user_action_tester;
   // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-  std::string guid("00000000-0000-0000-0000-000000000001");
+  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
   autofill_manager_->FillOrPreviewForm(
       AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
@@ -786,7 +800,7 @@ TEST_F(AutofillMetricsTest,
   base::UserActionTester user_action_tester;
   // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-  std::string guid("00000000-0000-0000-0000-000000000001");
+  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
   autofill_manager_->FillOrPreviewForm(
       AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
@@ -813,7 +827,7 @@ TEST_F(AutofillMetricsTest,
 // correctly.
 TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
 
   // Set up our form data.
   FormData form;
@@ -868,7 +882,7 @@ TEST_F(AutofillMetricsTest, LogHiddenRepresentationalFieldSkipDecision) {
   // Simulate filling form.
   {
     base::UserActionTester user_action_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    std::string guid(kTestGuid);  // local profile.
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -1240,7 +1254,7 @@ TEST_F(AutofillMetricsTest,
   base::UserActionTester user_action_tester;
   // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-  std::string guid("00000000-0000-0000-0000-000000000001");
+  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
   autofill_manager_->FillOrPreviewForm(
       AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
@@ -1321,7 +1335,7 @@ TEST_F(AutofillMetricsTest,
   base::UserActionTester user_action_tester;
   // Simulate having seen this form on page load.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
-  std::string guid("00000000-0000-0000-0000-000000000001");
+  std::string guid(kTestGuid);
   // Trigger phone number rationalization at filling time.
   autofill_manager_->FillOrPreviewForm(
       AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
@@ -3152,7 +3166,7 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
 // Test that the profile checkout flow user actions are correctly logged.
 TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
 
   // Set up our form data.
   FormData form;
@@ -3207,7 +3221,7 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Simulate selecting a profile suggestions.
   {
     base::UserActionTester user_action_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    std::string guid(kTestGuid);  // local profile.
     external_delegate_->OnQuery(0, form, form.fields.front(), gfx::RectF());
     external_delegate_->DidAcceptSuggestion(
         ASCIIToUTF16("Test"),
@@ -3219,7 +3233,7 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // Simulate filling a profile suggestion.
   {
     base::UserActionTester user_action_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile.
+    std::string guid(kTestGuid);  // local profile.
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -3412,7 +3426,7 @@ TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
 // Tests that the Autofill_PolledProfileSuggestions user action is only logged
 // once if the field is queried repeatedly.
 TEST_F(AutofillMetricsTest, PolledProfileSuggestions_DebounceLogs) {
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
 
   // Set up the form data.
   FormData form;
@@ -4574,7 +4588,7 @@ TEST_P(AutofillMetricsIFrameTest,
 
 TEST_F(AutofillMetricsTest, ShouldNotLogFormEventNoCardForAddressForm) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5583,7 +5597,7 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
 // Test that popup suppressed form events for address are logged.
 TEST_F(AutofillMetricsTest, AddressSuppressedFormEvents) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5640,7 +5654,7 @@ TEST_F(AutofillMetricsTest, AddressSuppressedFormEvents) {
 // Test that we log suggestion shown form events for address.
 TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5729,7 +5743,7 @@ TEST_F(AutofillMetricsTest, AddressShownFormEvents) {
 // Test that we log filled form events for address.
 TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5756,7 +5770,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   {
     // Simulating selecting/filling a local profile suggestion.
     base::HistogramTester histogram_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile
+    std::string guid(kTestGuid);  // local profile
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -5775,7 +5789,7 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
   {
     // Simulating selecting/filling a local profile suggestion.
     base::HistogramTester histogram_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile
+    std::string guid(kTestGuid);  // local profile
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -5789,12 +5803,53 @@ TEST_F(AutofillMetricsTest, AddressFilledFormEvents) {
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, 1);
   }
+
+  // Create a server profile and reset the autofill manager state.
+  RecreateProfile(/*is_server=*/true);
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulate selecting/filling a server profile suggestion.
+    base::HistogramTester histogram_tester;
+    std::string guid(kTestGuid);  // server profile
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), guid));
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, 1);
+  }
+
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulate selecting/filling a server profile suggestion more than once.
+    base::HistogramTester histogram_tester;
+    std::string guid(kTestGuid);  // server profile
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), guid));
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+        autofill_manager_->MakeFrontendID(std::string(), guid));
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, 1);
+  }
 }
 
 // Test that we log submitted form events for address.
 TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -5895,7 +5950,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(
         0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile
+    std::string guid(kTestGuid);  // local profile
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -6001,7 +6056,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 // Test that we log "will submit" and "submitted" form events for address.
 TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
   // Create a profile.
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
   // Set up our form data.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -6069,7 +6124,7 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnQueryFormFieldAutofill(
         0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
-    std::string guid("00000000-0000-0000-0000-000000000001");  // local profile
+    std::string guid(kTestGuid);  // local profile
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -6326,7 +6381,7 @@ TEST_F(AutofillMetricsTest, AddressFormEventsAreSegmented) {
   // Reset the autofill manager state.
   autofill_manager_->Reset();
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  RecreateProfile();
+  RecreateProfile(/*is_server=*/false);
 
   {
     // Simulate activating the autofill popup for the street field.
@@ -7115,7 +7170,7 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
   // Simulate editing an autofilled field.
   {
     base::HistogramTester histogram_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");
+    std::string guid(kTestGuid);
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
         autofill_manager_->MakeFrontendID(std::string(), guid));
@@ -8166,7 +8221,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   // Simulate seeing.
   base::HistogramTester histogram_tester;
   autofill_manager_->AddSeenForm(form, field_types, field_types);
-  std::string guid("00000000-0000-0000-0000-000000000001");
+  std::string guid(kTestGuid);
 
   // Simulate checking whether to fill a dynamic form before the form was filled
   // initially.
