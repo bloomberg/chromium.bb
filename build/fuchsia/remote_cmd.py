@@ -6,6 +6,7 @@ import logging
 import os
 import subprocess
 import sys
+import threading
 
 _SSH = ['ssh']
 _SCP = ['scp', '-C']  # Use gzip compression.
@@ -43,11 +44,13 @@ class CommandRunner(object):
   def _GetSshCommandLinePrefix(self):
     return _SSH + ['-F', self._config_path, self._host, '-p', str(self._port)]
 
-  def RunCommand(self, command, silent):
+  def RunCommand(self, command, silent, timeout_secs=None):
     """Executes an SSH command on the remote host and blocks until completion.
 
     command: A list of strings containing the command and its arguments.
     silent: If true, suppresses all output from 'ssh'.
+    timeout_secs: If set, limits the amount of time that |command| may run.
+                  Commands which exceed the timeout are killed.
 
     Returns the exit code from the remote command."""
 
@@ -55,9 +58,24 @@ class CommandRunner(object):
     _SSH_LOGGER.debug('ssh exec: ' + ' '.join(ssh_command))
     if silent:
       devnull = open(os.devnull, 'w')
-      return subprocess.call(ssh_command, stderr=devnull, stdout=devnull)
+      process = subprocess.Popen(ssh_command, stderr=devnull, stdout=devnull)
     else:
-      return subprocess.call(ssh_command)
+      process = subprocess.Popen(ssh_command)
+
+    timeout_timer = None
+    if timeout_secs:
+      timeout_timer = threading.Timer(timeout_secs, process.kill)
+      timeout_timer.start()
+
+    process.wait()
+
+    if timeout_timer:
+      timeout_timer.cancel()
+
+    if process.returncode == -9:
+      raise Exception('Timeout when executing \"%s\".' % ' '.join(command))
+
+    return process.returncode
 
 
   def RunCommandPiped(self, command = None, ssh_args = None, **kwargs):

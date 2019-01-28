@@ -83,13 +83,14 @@ class Target(object):
     logging.debug('running (non-blocking) \'%s\'.' % ' '.join(command))
     return self.GetCommandRunner().RunCommandPiped(command, **kwargs)
 
-  def RunCommand(self, command, silent=False):
+  def RunCommand(self, command, silent=False, timeout_secs=None):
     """Executes a remote command and waits for it to finish executing.
 
     Returns the exit code of the command."""
 
     logging.debug('running \'%s\'.' % ' '.join(command))
-    return self.GetCommandRunner().RunCommand(command, silent)
+    return self.GetCommandRunner().RunCommand(command, silent,
+                                              timeout_secs=timeout_secs)
 
   def PutFile(self, source, dest, recursive=False):
     """Copies a file from the local filesystem to the target filesystem.
