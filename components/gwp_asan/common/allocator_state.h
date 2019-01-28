@@ -77,9 +77,7 @@ class AllocatorState {
     AllocationInfo dealloc;
   };
 
-  // TODO(vtsyrklevich): Get rid of inline (requires chromium-style plugin
-  // update.)
-  inline constexpr AllocatorState();
+  AllocatorState();
 
   // Returns true if address is in memory managed by this class.
   inline bool PointerIsMine(uintptr_t addr) const {
@@ -138,8 +136,6 @@ class AllocatorState {
 
   DISALLOW_COPY_AND_ASSIGN(AllocatorState);
 };
-
-constexpr AllocatorState::AllocatorState() {}
 
 // Ensure that the allocator state is a plain-old-data. That way we can safely
 // initialize it by copying memory from out-of-process without worrying about

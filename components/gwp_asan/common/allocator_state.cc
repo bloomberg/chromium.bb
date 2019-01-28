@@ -16,6 +16,8 @@ namespace internal {
 constexpr size_t AllocatorState::kGpaMaxPages;
 constexpr size_t AllocatorState::kMaxStackFrames;
 
+AllocatorState::AllocatorState() {}
+
 AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     uintptr_t exception_address,
     uintptr_t* slot_address) const {
