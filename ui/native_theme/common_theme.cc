@@ -91,6 +91,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_TreeText:
         return SkColorSetA(SK_ColorWHITE, 0xDD);
+      case NativeTheme::kColorId_AlertSeverityLow:
+        return gfx::kGoogleGreen300;
+      case NativeTheme::kColorId_AlertSeverityMedium:
+        return gfx::kGoogleYellow300;
+      case NativeTheme::kColorId_AlertSeverityHigh:
+        return gfx::kGoogleRed300;
+      case NativeTheme::kColorId_ThrobberSpinningColor:
+        return gfx::kGoogleBlue300;
       default:
         break;
     }
