@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_CODE_GENERATOR_H_
-#define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_CODE_GENERATOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_CODE_AUTHENTICATOR_H_
+#define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_CODE_AUTHENTICATOR_H_
 
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/macros.h"
@@ -76,6 +77,7 @@ class ParentAccessCode {
 
   bool operator==(const ParentAccessCode&) const;
   bool operator!=(const ParentAccessCode&) const;
+  friend std::ostream& operator<<(std::ostream&, const ParentAccessCode&);
 
  private:
   std::string code_;
@@ -83,31 +85,43 @@ class ParentAccessCode {
   base::Time valid_to_;
 };
 
-// Generates ParentAccessCodes.
-class ParentAccessCodeGenerator {
+// Generates and validates ParentAccessCodes.
+class ParentAccessCodeAuthenticator {
  public:
   // Granularity of which generation and verification are carried out. Should
   // not exceed code validity period.
   static constexpr base::TimeDelta kCodeGranularity =
       base::TimeDelta::FromMinutes(1);
 
-  explicit ParentAccessCodeGenerator(const ParentAccessCodeConfig& config);
-  ~ParentAccessCodeGenerator();
+  explicit ParentAccessCodeAuthenticator(const ParentAccessCodeConfig& config);
+  ~ParentAccessCodeAuthenticator();
 
-  // Generates parent access code from the given |timestamp|. Returns the code
+  // Generates Parent Access Code from the given |timestamp|. Returns the code
   // if generation was successful.
   base::Optional<ParentAccessCode> Generate(base::Time timestamp);
 
+  // Returns ParentAccessCode structure with validity information, if |code| is
+  // valid for the given timestamp.
+  base::Optional<ParentAccessCode> Validate(const std::string& code,
+                                            base::Time timestamp);
+
  private:
-  // Configuration used to generate parent access code.
+  // Returns ParentAccessCode structure with validity information, if |code| is
+  // valid for the range [|valid_from|, |valid_to|). |valid_to| needs to be
+  // greater or equal to |valid_from|.
+  base::Optional<ParentAccessCode> ValidateInRange(const std::string& code,
+                                                   base::Time valid_from,
+                                                   base::Time valid_to);
+
+  // Configuration used to generate and validate parent access code.
   const ParentAccessCodeConfig config_;
 
   // Keyed-hash message authentication generator.
   crypto::HMAC hmac_{crypto::HMAC::SHA1};
 
-  DISALLOW_COPY_AND_ASSIGN(ParentAccessCodeGenerator);
+  DISALLOW_COPY_AND_ASSIGN(ParentAccessCodeAuthenticator);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_CODE_GENERATOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_PARENT_ACCESS_CODE_PARENT_ACCESS_CODE_AUTHENTICATOR_H_
