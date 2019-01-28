@@ -638,6 +638,7 @@ if (is_chromeos) {
     ]
     deps = [
       ":buildflags",
+      "test:frame_file_writer",
       "test:frame_validator",
       "test:video_player",
       "//base/test:test_support",

@@ -8,6 +8,7 @@
 #include "base/test/test_timeouts.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
 #include "media/gpu/test/video_player/video.h"
@@ -39,6 +40,7 @@ class VideoDecoderTestEnvironment : public ::testing::Environment {
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   std::unique_ptr<FrameRendererDummy> dummy_frame_renderer_;
+  std::unique_ptr<VideoFrameFileWriter> frame_file_writer_;
   const Video* const video_;
 
   // An exit manager is required to run callbacks on shutdown.
@@ -64,9 +66,12 @@ void VideoDecoderTestEnvironment::SetUp() {
 
   dummy_frame_renderer_ = FrameRendererDummy::Create();
   ASSERT_NE(dummy_frame_renderer_, nullptr);
+
+  frame_file_writer_ = media::test::VideoFrameFileWriter::Create();
 }
 
 void VideoDecoderTestEnvironment::TearDown() {
+  frame_file_writer_.reset();
   dummy_frame_renderer_.reset();
   task_environment_.reset();
 }
@@ -81,9 +86,23 @@ class VideoDecoderTest : public ::testing::Test {
       const VideoDecoderClientConfig& config = VideoDecoderClientConfig()) {
     frame_validator_ =
         media::test::VideoFrameValidator::Create(video->FrameChecksums());
-    return VideoPlayer::Create(video, g_env->dummy_frame_renderer_.get(),
-                               {frame_validator_.get()}, config);
+    // TODO(dstaessens@) allow enabling/disabling file writing
+    return VideoPlayer::Create(
+        video, g_env->dummy_frame_renderer_.get(),
+        {frame_validator_.get(), g_env->frame_file_writer_.get()}, config);
   }
+
+  void SetUp() override {
+    const ::testing::TestInfo* const test_info =
+        ::testing::UnitTest::GetInstance()->current_test_info();
+    // Change the video frame output folder to 'video_frames/test_name/'.
+    base::FilePath output_folder =
+        base::FilePath("video_frames")
+            .Append(base::FilePath(test_info->name()));
+    g_env->frame_file_writer_->SetOutputFolder(output_folder);
+  }
+
+  void TearDown() override { g_env->frame_file_writer_->WaitUntilDone(); }
 
  protected:
   std::unique_ptr<VideoFrameValidator> frame_validator_;

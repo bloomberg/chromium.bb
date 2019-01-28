@@ -221,6 +221,7 @@ std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
   return MD5DigestToBase16(digest);
 }
 
+// TODO(dstaessens@) Move to video_frame_writer.h
 bool VideoFrameValidator::WriteI420ToFile(
     size_t frame_index,
     const VideoFrame* const video_frame) const {
