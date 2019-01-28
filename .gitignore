@@ -43,6 +43,7 @@
 .project
 .pydevproject
 .checkstyle
+compile_commands.json
 cscope.*
 GPATH
 GRTAGS
