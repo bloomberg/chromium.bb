@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//extensions/buildflags/buildflags.gni")
-import("//third_party/protobuf/proto_library.gni")
 
 static_library("safe_browsing") {
   sources = [
@@ -298,6 +297,7 @@ source_set("test_support") {
     ]
 
     deps = [
+      ":safe_browsing",
       "//chrome/common/safe_browsing:proto",
       "//content/public/browser:browser",
     ]
