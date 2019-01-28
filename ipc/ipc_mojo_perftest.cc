@@ -635,10 +635,10 @@ TEST_P(MojoInProcessInterfacePerfTest, SingleThreadPingPong) {
   RunPingPongServer(server_handle, "SingleProcess");
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MojoInProcessInterfacePerfTest,
-                        testing::Values(InProcessMessageMode::kSerialized,
-                                        InProcessMessageMode::kUnserialized));
+INSTANTIATE_TEST_SUITE_P(,
+                         MojoInProcessInterfacePerfTest,
+                         testing::Values(InProcessMessageMode::kSerialized,
+                                         InProcessMessageMode::kUnserialized));
 
 TEST_P(MojoInProcessInterfacePassingPerfTest, MultiThreadInterfacePassing) {
   MojoHandle server_handle, client_handle;
@@ -700,10 +700,10 @@ TEST_P(MojoInProcessInterfacePassingPerfTest,
                             true /* associated */);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MojoInProcessInterfacePassingPerfTest,
-                        testing::Values(InProcessMessageMode::kSerialized,
-                                        InProcessMessageMode::kUnserialized));
+INSTANTIATE_TEST_SUITE_P(,
+                         MojoInProcessInterfacePassingPerfTest,
+                         testing::Values(InProcessMessageMode::kSerialized,
+                                         InProcessMessageMode::kUnserialized));
 
 class CallbackPerfTest : public testing::Test {
  public:
