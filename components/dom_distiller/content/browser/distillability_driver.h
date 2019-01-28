@@ -22,8 +22,7 @@ class DistillabilityDriver
       public content::WebContentsUserData<DistillabilityDriver> {
  public:
   ~DistillabilityDriver() override;
-  void CreateDistillabilityService(
-      mojom::DistillabilityServiceRequest request);
+  void CreateDistillabilityService(mojom::DistillabilityServiceRequest request);
 
   void SetDelegate(const DistillabilityDelegate& delegate);
 
