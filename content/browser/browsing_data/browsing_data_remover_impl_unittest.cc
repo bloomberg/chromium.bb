@@ -123,7 +123,8 @@ struct StoragePartitionRemovalData {
         remove_end(other.remove_end),
         origin_matcher(other.origin_matcher),
         cookie_deletion_filter(other.cookie_deletion_filter.Clone()),
-        remove_code_cache(other.remove_code_cache) {}
+        remove_code_cache(other.remove_code_cache),
+        url_matcher(other.url_matcher) {}
 
   StoragePartitionRemovalData& operator=(
       const StoragePartitionRemovalData& rhs) {
@@ -134,6 +135,7 @@ struct StoragePartitionRemovalData {
     origin_matcher = rhs.origin_matcher;
     cookie_deletion_filter = rhs.cookie_deletion_filter.Clone();
     remove_code_cache = rhs.remove_code_cache;
+    url_matcher = rhs.url_matcher;
     return *this;
   }
 
@@ -144,6 +146,7 @@ struct StoragePartitionRemovalData {
   StoragePartition::OriginMatcherFunction origin_matcher;
   CookieDeletionFilterPtr cookie_deletion_filter;
   bool remove_code_cache;
+  base::RepeatingCallback<bool(const GURL&)> url_matcher;
 };
 
 net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
@@ -211,8 +214,15 @@ class StoragePartitionRemovalTestStoragePartition
             base::Unretained(this), std::move(callback)));
   }
 
-  void ClearCodeCaches(base::OnceClosure callback) override {
+  void ClearCodeCaches(
+      base::Time begin,
+      base::Time end,
+      const base::RepeatingCallback<bool(const GURL&)>& url_matcher,
+      base::OnceClosure callback) override {
     storage_partition_removal_data_.remove_code_cache = true;
+    storage_partition_removal_data_.remove_begin = begin;
+    storage_partition_removal_data_.remove_end = end;
+    storage_partition_removal_data_.url_matcher = url_matcher;
   }
 
   const StoragePartitionRemovalData& GetStoragePartitionRemovalData() const {

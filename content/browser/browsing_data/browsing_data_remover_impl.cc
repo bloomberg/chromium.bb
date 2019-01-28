@@ -445,6 +445,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
           CreatePendingTaskCompletionClosureForMojo());
     }
     storage_partition->ClearCodeCaches(
+        delete_begin, delete_end, nullable_filter,
         CreatePendingTaskCompletionClosureForMojo());
 
     // When clearing cache, wipe accumulated network related data

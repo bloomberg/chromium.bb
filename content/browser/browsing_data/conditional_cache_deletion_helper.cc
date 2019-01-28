@@ -14,13 +14,17 @@
 namespace {
 
 bool EntryPredicateFromURLsAndTime(
-    const base::Callback<bool(const GURL&)>& url_predicate,
-    const base::Time& begin_time,
-    const base::Time& end_time,
+    const base::RepeatingCallback<bool(const GURL&)>& url_predicate,
+    const base::RepeatingCallback<std::string(const std::string&)>&
+        get_url_from_key,
+    base::Time begin_time,
+    base::Time end_time,
     const disk_cache::Entry* entry) {
+  std::string url = entry->GetKey();
+  if (!get_url_from_key.is_null())
+    url = get_url_from_key.Run(entry->GetKey());
   return (entry->GetLastUsed() >= begin_time &&
-          entry->GetLastUsed() < end_time &&
-          url_predicate.Run(GURL(entry->GetKey())));
+          entry->GetLastUsed() < end_time && url_predicate.Run(GURL(url)));
 }
 
 }  // namespace
@@ -29,9 +33,9 @@ namespace content {
 
 ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
     disk_cache::Backend* cache,
-    const base::Callback<bool(const disk_cache::Entry*)>& condition)
+    base::RepeatingCallback<bool(const disk_cache::Entry*)> condition)
     : cache_(cache),
-      condition_(condition),
+      condition_(std::move(condition)),
       current_entry_(nullptr),
       previous_entry_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -40,12 +44,28 @@ ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
 // static
 base::Callback<bool(const disk_cache::Entry*)>
 ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
-    const base::Callback<bool(const GURL&)>& url_predicate,
-    const base::Time& begin_time,
-    const base::Time& end_time) {
-  return base::Bind(&EntryPredicateFromURLsAndTime, url_predicate,
-                    begin_time.is_null() ? base::Time() : begin_time,
-                    end_time.is_null() ? base::Time::Max() : end_time);
+    base::RepeatingCallback<bool(const GURL&)> url_predicate,
+    base::Time begin_time,
+    base::Time end_time) {
+  return base::BindRepeating(
+      &EntryPredicateFromURLsAndTime, std::move(url_predicate),
+      base::RepeatingCallback<std::string(const std::string&)>(),
+      begin_time.is_null() ? base::Time() : begin_time,
+      end_time.is_null() ? base::Time::Max() : end_time);
+}
+
+// static
+base::RepeatingCallback<bool(const disk_cache::Entry*)>
+ConditionalCacheDeletionHelper::CreateCustomKeyURLAndTimeCondition(
+    base::RepeatingCallback<bool(const GURL&)> url_predicate,
+    base::RepeatingCallback<std::string(const std::string&)> get_url_from_key,
+    base::Time begin_time,
+    base::Time end_time) {
+  return base::BindRepeating(&EntryPredicateFromURLsAndTime,
+                             std::move(url_predicate),
+                             std::move(get_url_from_key),
+                             begin_time.is_null() ? base::Time() : begin_time,
+                             end_time.is_null() ? base::Time::Max() : end_time);
 }
 
 int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(

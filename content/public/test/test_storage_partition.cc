@@ -130,7 +130,11 @@ void TestStoragePartition::ClearHttpAndMediaCaches(
     const base::Callback<bool(const GURL&)>& url_matcher,
     base::OnceClosure callback) {}
 
-void TestStoragePartition::ClearCodeCaches(base::OnceClosure callback) {}
+void TestStoragePartition::ClearCodeCaches(
+    const base::Time begin,
+    const base::Time end,
+    const base::RepeatingCallback<bool(const GURL&)>& url_matcher,
+    base::OnceClosure callback) {}
 
 void TestStoragePartition::Flush() {}
 

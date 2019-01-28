@@ -1306,10 +1306,14 @@ void StoragePartitionImpl::ClearHttpAndMediaCaches(
   }
 }
 
-void StoragePartitionImpl::ClearCodeCaches(base::OnceClosure callback) {
+void StoragePartitionImpl::ClearCodeCaches(
+    const base::Time begin,
+    const base::Time end,
+    const base::RepeatingCallback<bool(const GURL&)>& url_matcher,
+    base::OnceClosure callback) {
   // StoragePartitionCodeCacheDataRemover deletes itself when it is done.
-  StoragePartitionCodeCacheDataRemover::Create(this)->Remove(
-      std::move(callback));
+  StoragePartitionCodeCacheDataRemover::Create(this, url_matcher, begin, end)
+      ->Remove(std::move(callback));
 }
 
 void StoragePartitionImpl::Flush() {

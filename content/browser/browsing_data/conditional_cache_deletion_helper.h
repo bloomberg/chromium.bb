@@ -21,14 +21,14 @@ class Entry;
 
 namespace content {
 
-// Helper to remove http cache data from a StoragePartition.
+// Helper to remove http/code cache data from a StoragePartition.
 class CONTENT_EXPORT ConditionalCacheDeletionHelper {
  public:
   // Creates a helper to delete |cache| entries that match the |condition|.
   // Must be created on the IO thread!
   ConditionalCacheDeletionHelper(
       disk_cache::Backend* cache,
-      const base::Callback<bool(const disk_cache::Entry*)>& condition);
+      base::RepeatingCallback<bool(const disk_cache::Entry*)> condition);
 
   // A convenience method to create a condition matching cache entries whose
   // last modified time is between |begin_time| (inclusively), |end_time|
@@ -37,9 +37,22 @@ class CONTENT_EXPORT ConditionalCacheDeletionHelper {
   // in their respective direction.
   static base::Callback<bool(const disk_cache::Entry*)>
   CreateURLAndTimeCondition(
-      const base::Callback<bool(const GURL&)>& url_predicate,
-      const base::Time& begin_time,
-      const base::Time& end_time);
+      base::RepeatingCallback<bool(const GURL&)> url_predicate,
+      base::Time begin_time,
+      base::Time end_time);
+
+  // A convenience method to create a condition matching cache entries whose
+  // last modified time is between |begin_time| (inclusively), |end_time|
+  // (exclusively) and whose URL obtained by passing the key to the
+  // |get_url_from_key| is matched by the |url_predicate|. The
+  // |get_url_from_key| method is useful when the entries are not keyed by the
+  // resource url alone. For ex: using two keys for site isolation.
+  static base::RepeatingCallback<bool(const disk_cache::Entry*)>
+  CreateCustomKeyURLAndTimeCondition(
+      base::RepeatingCallback<bool(const GURL&)> url_predicate,
+      base::RepeatingCallback<std::string(const std::string&)> get_url_from_key,
+      base::Time begin_time,
+      base::Time end_time);
 
   // Deletes the cache entries according to the specified condition. Destroys
   // this instance of ConditionalCacheDeletionHelper when finished.

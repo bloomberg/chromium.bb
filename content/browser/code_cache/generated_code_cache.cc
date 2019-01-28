@@ -15,6 +15,9 @@
 namespace content {
 
 namespace {
+constexpr char kPrefix[] = "_key";
+constexpr char kSeparator[] = " \n";
+
 // We always expect to receive valid URLs that can be used as keys to the code
 // cache. The relevant checks (for ex: resource_url is valid, origin_lock is
 // not opque etc.,) must be done prior to requesting the code cache.
@@ -51,19 +54,31 @@ std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
   CheckValidKeys(resource_url, origin_lock);
 
   // Add a prefix _ so it can't be parsed as a valid URL.
-  std::string key = "_key";
+  std::string key(kPrefix);
   // Remove reference, username and password sections of the URL.
   key.append(net::SimplifyUrlForRequest(resource_url).spec());
   // Add a separator between URL and origin to avoid any possibility of
   // attacks by crafting the URL. URLs do not contain any control ASCII
   // characters, and also space is encoded. So use ' \n' as a seperator.
-  key.append(" \n");
+  key.append(kSeparator);
 
   if (origin_lock.is_valid())
     key.append(net::SimplifyUrlForRequest(origin_lock).spec());
   return key;
 }
+
 }  // namespace
+
+std::string GeneratedCodeCache::GetResourceURLFromKey(const std::string& key) {
+  constexpr size_t kPrefixStringLen = base::size(kPrefix) - 1;
+  // Only expect valid keys. All valid keys have a prefix and a separator.
+  DCHECK_GE(key.length(), kPrefixStringLen);
+  DCHECK_NE(key.find(kSeparator), std::string::npos);
+
+  std::string resource_url =
+      key.substr(kPrefixStringLen, key.find(kSeparator) - kPrefixStringLen);
+  return resource_url;
+}
 
 void GeneratedCodeCache::CollectStatistics(
     GeneratedCodeCache::CacheEntryStatus status) {
@@ -89,8 +104,8 @@ class GeneratedCodeCache::PendingOperation {
       const ReadDataCallback&);
   static std::unique_ptr<PendingOperation> CreateDeletePendingOp(
       std::string key);
-  static std::unique_ptr<PendingOperation> CreateClearCachePendingOp(
-      net::CompletionCallback callback);
+  static std::unique_ptr<PendingOperation> CreateGetBackendPendingOp(
+      GetBackendCallback callback);
 
   ~PendingOperation();
 
@@ -98,20 +113,20 @@ class GeneratedCodeCache::PendingOperation {
   const std::string& key() const { return key_; }
   const scoped_refptr<net::IOBufferWithSize> data() const { return data_; }
   ReadDataCallback ReleaseReadCallback() { return std::move(read_callback_); }
-  net::CompletionCallback ReleaseCallback() { return std::move(callback_); }
+  GetBackendCallback ReleaseCallback() { return std::move(callback_); }
 
  private:
   PendingOperation(Operation op,
                    std::string key,
                    scoped_refptr<net::IOBufferWithSize>,
                    const ReadDataCallback&,
-                   net::CompletionCallback);
+                   GetBackendCallback);
 
   const Operation op_;
   const std::string key_;
   const scoped_refptr<net::IOBufferWithSize> data_;
   ReadDataCallback read_callback_;
-  net::CompletionCallback callback_;
+  GetBackendCallback callback_;
 };
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
@@ -120,7 +135,7 @@ GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
     scoped_refptr<net::IOBufferWithSize> buffer) {
   return base::WrapUnique(
       new PendingOperation(Operation::kWrite, std::move(key), buffer,
-                           ReadDataCallback(), net::CompletionCallback()));
+                           ReadDataCallback(), GetBackendCallback()));
 }
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
@@ -129,7 +144,7 @@ GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
     const ReadDataCallback& read_callback) {
   return base::WrapUnique(new PendingOperation(
       Operation::kFetch, std::move(key), scoped_refptr<net::IOBufferWithSize>(),
-      read_callback, net::CompletionCallback()));
+      read_callback, GetBackendCallback()));
 }
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
@@ -137,14 +152,14 @@ GeneratedCodeCache::PendingOperation::CreateDeletePendingOp(std::string key) {
   return base::WrapUnique(
       new PendingOperation(Operation::kDelete, std::move(key),
                            scoped_refptr<net::IOBufferWithSize>(),
-                           ReadDataCallback(), net::CompletionCallback()));
+                           ReadDataCallback(), GetBackendCallback()));
 }
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
-GeneratedCodeCache::PendingOperation::CreateClearCachePendingOp(
-    net::CompletionCallback callback) {
+GeneratedCodeCache::PendingOperation::CreateGetBackendPendingOp(
+    GetBackendCallback callback) {
   return base::WrapUnique(
-      new PendingOperation(Operation::kClearCache, std::string(),
+      new PendingOperation(Operation::kGetBackend, std::string(),
                            scoped_refptr<net::IOBufferWithSize>(),
                            ReadDataCallback(), std::move(callback)));
 }
@@ -154,7 +169,7 @@ GeneratedCodeCache::PendingOperation::PendingOperation(
     std::string key,
     scoped_refptr<net::IOBufferWithSize> buffer,
     const ReadDataCallback& read_callback,
-    net::CompletionCallback callback)
+    GetBackendCallback callback)
     : op_(op),
       key_(std::move(key)),
       data_(buffer),
@@ -166,7 +181,7 @@ GeneratedCodeCache::PendingOperation::~PendingOperation() = default;
 GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
                                        int max_size_bytes,
                                        CodeCacheType cache_type)
-    : backend_state_(kUnInitialized),
+    : backend_state_(kInitializing),
       path_(path),
       max_size_bytes_(max_size_bytes),
       cache_type_(cache_type),
@@ -175,6 +190,22 @@ GeneratedCodeCache::GeneratedCodeCache(const base::FilePath& path,
 }
 
 GeneratedCodeCache::~GeneratedCodeCache() = default;
+
+void GeneratedCodeCache::GetBackend(GetBackendCallback callback) {
+  switch (backend_state_) {
+    case kFailed:
+      std::move(callback).Run(nullptr);
+      return;
+    case kInitialized:
+      std::move(callback).Run(backend_.get());
+      return;
+    case kInitializing:
+      pending_ops_.push_back(
+          GeneratedCodeCache::PendingOperation::CreateGetBackendPendingOp(
+              std::move(callback)));
+      return;
+  }
+}
 
 void GeneratedCodeCache::WriteData(const GURL& url,
                                    const GURL& origin_lock,
@@ -270,21 +301,6 @@ void GeneratedCodeCache::DeleteEntry(const GURL& url, const GURL& origin_lock) {
   DeleteEntryImpl(key);
 }
 
-int GeneratedCodeCache::ClearCache(net::CompletionCallback callback) {
-  if (backend_state_ == kFailed) {
-    return net::ERR_FAILED;
-  }
-
-  if (backend_state_ != kInitialized) {
-    pending_ops_.push_back(
-        GeneratedCodeCache::PendingOperation::CreateClearCachePendingOp(
-            std::move(callback)));
-    return net::ERR_IO_PENDING;
-  }
-
-  return backend_->DoomAllEntries(std::move(callback));
-}
-
 void GeneratedCodeCache::CreateBackend() {
   // Create a new Backend pointer that cleans itself if the GeneratedCodeCache
   // instance is not live when the CreateCacheBackend finishes.
@@ -342,8 +358,8 @@ void GeneratedCodeCache::IssueOperation(PendingOperation* op) {
     case kDelete:
       DeleteEntryImpl(op->key());
       break;
-    case kClearCache:
-      DoPendingClearCache(op->ReleaseCallback());
+    case kGetBackend:
+      DoPendingGetBackend(op->ReleaseCallback());
       break;
   }
 }
@@ -530,14 +546,54 @@ bool GeneratedCodeCache::EnqueueAsPendingOperation(
   return false;
 }
 
-void GeneratedCodeCache::DoPendingClearCache(
-    net::CompletionCallback user_callback) {
-  int result = backend_->DoomAllEntries(user_callback);
-  if (result != net::ERR_IO_PENDING) {
-    // Call the callback here because we returned ERR_IO_PENDING for initial
-    // request.
-    std::move(user_callback).Run(result);
+void GeneratedCodeCache::DoPendingGetBackend(GetBackendCallback user_callback) {
+  if (backend_state_ == kInitialized) {
+    std::move(user_callback).Run(backend_.get());
+    return;
   }
+
+  DCHECK_EQ(backend_state_, kFailed);
+  std::move(user_callback).Run(nullptr);
+  return;
+}
+
+void GeneratedCodeCache::SetLastUsedTimeForTest(
+    const GURL& resource_url,
+    const GURL& origin_lock,
+    base::Time time,
+    base::RepeatingCallback<void(void)> user_callback) {
+  // This is used only for tests. So reasonable to assume that backend is
+  // initialized here. All other operations handle the case when backend was not
+  // yet opened.
+  DCHECK_EQ(backend_state_, kInitialized);
+
+  scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry_ptr =
+      new base::RefCountedData<disk_cache::Entry*>();
+
+  net::CompletionOnceCallback callback = base::BindOnce(
+      &GeneratedCodeCache::OpenCompleteForSetLastUsedForTest,
+      weak_ptr_factory_.GetWeakPtr(), entry_ptr, time, user_callback);
+
+  std::string key = GetCacheKey(resource_url, origin_lock);
+  int result = backend_->OpenEntry(key, net::LOWEST, &entry_ptr->data,
+                                   std::move(callback));
+  if (result != net::ERR_IO_PENDING) {
+    OpenCompleteForSetLastUsedForTest(entry_ptr, time, user_callback, result);
+  }
+}
+
+void GeneratedCodeCache::OpenCompleteForSetLastUsedForTest(
+    scoped_refptr<base::RefCountedData<disk_cache::Entry*>> entry,
+    base::Time time,
+    base::RepeatingCallback<void(void)> callback,
+    int rv) {
+  DCHECK_EQ(rv, net::OK);
+  DCHECK(entry->data);
+  {
+    disk_cache::ScopedEntryPtr disk_entry(entry->data);
+    disk_entry->SetLastUsedTimeForTest(time);
+  }
+  std::move(callback).Run();
 }
 
 }  // namespace content
