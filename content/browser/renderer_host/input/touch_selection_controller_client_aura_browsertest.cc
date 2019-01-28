@@ -384,9 +384,9 @@ class FrameStableObserver {
   DISALLOW_COPY_AND_ASSIGN(FrameStableObserver);
 };
 
-INSTANTIATE_TEST_CASE_P(TouchSelectionForCrossProcessFramesTests,
-                        TouchSelectionControllerClientAuraSiteIsolationTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(TouchSelectionForCrossProcessFramesTests,
+                         TouchSelectionControllerClientAuraSiteIsolationTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
                        BasicSelectionIsolatedIframe) {
