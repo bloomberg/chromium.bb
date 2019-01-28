@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -132,12 +133,12 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
     @CalledByNative
     private void onHideOverlay() {
-        mCoordinator.getOverlayCoordinator().hide();
+        mCoordinator.getOverlayCoordinator().setState(AssistantOverlayState.hidden());
     }
 
     @CalledByNative
     private void onShowOverlay() {
-        mCoordinator.getOverlayCoordinator().showFullOverlay();
+        mCoordinator.getOverlayCoordinator().setState(AssistantOverlayState.full());
     }
 
     @CalledByNative
@@ -147,7 +148,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             boxes.add(new RectF(/* left= */ coords[i], /* top= */ coords[i + 1],
                     /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
         }
-        mCoordinator.getOverlayCoordinator().showPartialOverlay(enabled, boxes);
+        mCoordinator.getOverlayCoordinator().setState(AssistantOverlayState.partial(boxes));
     }
 
     @CalledByNative

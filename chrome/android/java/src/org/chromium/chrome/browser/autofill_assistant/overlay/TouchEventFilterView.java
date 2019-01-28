@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant;
+package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -31,7 +31,6 @@ import org.chromium.content_public.browser.WebContents;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -97,21 +96,10 @@ public class TouchEventFilterView
     private ChromeFullscreenManager mFullscreenManager;
     private GestureListenerManager mGestureListenerManager;
     private View mCompositorView;
-    private final List<RectF> mTouchableArea = new ArrayList<>();
     private final Paint mGrayOut;
     private final Paint mClear;
 
-    /**
-     * Whether a partial-screen overlay is enabled or not. Has precedence over {@link
-     * @mFullOverlayEnabled}.
-     */
-    private boolean mPartialOverlayEnabled;
-
-    /**
-     * Whether a full-screen overlay is enabled or not. Is overridden by {@link
-     * @mPartialOverlayEnabled}.
-     */
-    private boolean mFullOverlayEnabled;
+    private AssistantOverlayState mCurrentState = AssistantOverlayState.hidden();
 
     /** Padding added between the element area and the grayed-out area. */
     private final float mPaddingPx;
@@ -214,9 +202,6 @@ public class TouchEventFilterView
         mClear = new Paint();
         mClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
-        setFullOverlay(false);
-        setPartialOverlay(false, Collections.emptyList());
-
         mTapDetector = new GestureDetector(context, new SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
@@ -265,44 +250,34 @@ public class TouchEventFilterView
     }
 
     /**
-     * Enables/disables a full screen overlay.
-     *
-     * If both a full and a partial screen overlay are set, the partial overlay has precedence.
-     *
-     * @param enabled if {@code false}, the full screen overlay is disabled
+     * Set the current state of the overlay.
      */
-    public void setFullOverlay(boolean enabled) {
-        if (mFullOverlayEnabled != enabled) {
-            mFullOverlayEnabled = enabled;
-
-            // reset tap counter each time the full screen overlay is disabled.
-            if (!mFullOverlayEnabled) mUnexpectedTapTimes.clear();
-            updateVisibility();
-            invalidate();
+    public void setState(AssistantOverlayState newState) {
+        if (newState.equals(mCurrentState)) {
+            return;
         }
-    }
 
-    /**
-     * Enables/disables a partial screen overlay.
-     *
-     * If both a full and a partial screen overlay are set, the partial overlay has precedence.
-     *
-     * @param enabled if {@code false}, the partial overlay is disabled
-     * @param rectangles rectangles defining the area that can be used, may be empty
-     */
-    public void setPartialOverlay(boolean enabled, List<RectF> rectangles) {
-        if (mPartialOverlayEnabled != enabled || (enabled && !mTouchableArea.equals(rectangles))) {
-            mPartialOverlayEnabled = enabled;
-
-            clearTouchableArea();
-            mTouchableArea.addAll(rectangles);
-            updateVisibility();
-            invalidate();
+        // Partial overlay has precedence over full overlay.
+        // TODO(crbug.com/806868): Remove this precedence by making sure we don't set a full overlay
+        // when there is a partial overlay already. This class shouldn't dictate whether it accepts
+        // its state or not.
+        if (mCurrentState.isPartial() && newState.isFull()) {
+            return;
         }
-    }
 
-    private boolean isOverlayShown() {
-        return mFullOverlayEnabled || mPartialOverlayEnabled;
+        mCurrentState = newState;
+
+        // Reset tap counter each time we hide the overlay.
+        if (newState.isHidden()) {
+            mUnexpectedTapTimes.clear();
+        }
+
+        if (newState.isPartial()) {
+            clearOffsets();
+        }
+
+        updateVisibility();
+        invalidate();
     }
 
     private void updateVisibility() {
@@ -313,15 +288,13 @@ public class TouchEventFilterView
             //
             // TODO(crbug.com/806868): filter elements available to touch exploration, when it
             // is enabled.
-            setVisibility(
-                    (mPartialOverlayEnabled || !mFullOverlayEnabled) ? View.GONE : View.VISIBLE);
+            setVisibility(!mCurrentState.isFull() ? View.GONE : View.VISIBLE);
         }
 
-        setAlpha(isOverlayShown() ? 1.0f : 0.0f);
+        setAlpha(mCurrentState.isHidden() ? 0.0f : 1.0f);
     }
 
-    private void clearTouchableArea() {
-        mTouchableArea.clear();
+    private void clearOffsets() {
         mOffsetY = 0;
         mInitialBrowserScrollOffsetY += mBrowserScrollOffsetY;
         mBrowserScrollOffsetY = 0;
@@ -335,8 +308,8 @@ public class TouchEventFilterView
         }
 
         // Note that partial overlays have precedence over full overlays
-        if (mPartialOverlayEnabled) return dispatchTouchEventWithPartialOverlay(event);
-        if (mFullOverlayEnabled) return dispatchTouchEventWithFullOverlay(event);
+        if (mCurrentState.isPartial()) return dispatchTouchEventWithPartialOverlay(event);
+        if (mCurrentState.isFull()) return dispatchTouchEventWithFullOverlay(event);
         return dispatchTouchEventWithNoOverlay();
     }
 
@@ -501,7 +474,7 @@ public class TouchEventFilterView
     @SuppressLint("CanvasSize")
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (!isOverlayShown()) {
+        if (mCurrentState.isHidden()) {
             return;
         }
         canvas.drawPaint(mGrayOut);
@@ -517,7 +490,7 @@ public class TouchEventFilterView
         }
 
         int height = yBottom - yTop;
-        for (RectF rect : mTouchableArea) {
+        for (RectF rect : mCurrentState.boxes()) {
             mDrawRect.left = rect.left * width - mPaddingPx;
             mDrawRect.top =
                     yTop + rect.top * height - mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
@@ -611,7 +584,7 @@ public class TouchEventFilterView
     }
 
     private boolean isInTouchableArea(float x, float y) {
-        for (RectF rect : mTouchableArea) {
+        for (RectF rect : mCurrentState.boxes()) {
             if (rect.contains(x, y, x, y)) {
                 return true;
             }

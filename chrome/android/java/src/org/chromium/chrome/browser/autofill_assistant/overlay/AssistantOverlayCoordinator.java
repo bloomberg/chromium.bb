@@ -2,26 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.autofill_assistant;
+package org.chromium.chrome.browser.autofill_assistant.overlay;
 
-import android.graphics.RectF;
 import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill_assistant.TouchEventFilterView.Delegate;
-
-import java.util.List;
+import org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterView.Delegate;
 
 /**
  * Coordinator responsible for showing a full or partial overlay on top of the web page currently
  * displayed.
  */
-class AssistantOverlayCoordinator {
+public class AssistantOverlayCoordinator {
     private final ChromeActivity mActivity;
     private final TouchEventFilterView mTouchEventFilter;
     private final Delegate mTouchEventFilterDelegate;
 
-    AssistantOverlayCoordinator(
+    public AssistantOverlayCoordinator(
             ChromeActivity activity, View assistantView, Delegate touchEventFilterDelegate) {
         mActivity = activity;
         mTouchEventFilter = assistantView.findViewById(
@@ -45,30 +42,17 @@ class AssistantOverlayCoordinator {
     }
 
     /**
-     * Enable an overlay that will fully cover the web page.
+     * Set the overlay state.
      */
-    public void showFullOverlay() {
-        if (!mActivity.isViewObscuringAllTabs())
+    public void setState(AssistantOverlayState state) {
+        if (state.isFull() && !mActivity.isViewObscuringAllTabs()) {
             mActivity.addViewObscuringAllTabs(mTouchEventFilter);
-        mTouchEventFilter.setFullOverlay(true);
-    }
+        }
 
-    /**
-     * Enable a partial overlay that doesn't cover the portion of the web page whose coordinates
-     * are given by {@code coords}.
-     */
-    public void showPartialOverlay(boolean enabled, List<RectF> coords) {
-        if (mActivity.isViewObscuringAllTabs())
+        if (!state.isFull() && mActivity.isViewObscuringAllTabs()) {
             mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
-        mTouchEventFilter.setPartialOverlay(enabled, coords);
-    }
+        }
 
-    /**
-     * Hide any (partial or full) overlay previously shown.
-     */
-    public void hide() {
-        if (mActivity.isViewObscuringAllTabs())
-            mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
-        mTouchEventFilter.setFullOverlay(false);
+        mTouchEventFilter.setState(state);
     }
 }
