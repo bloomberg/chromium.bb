@@ -7,7 +7,10 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
+#import "ios/chrome/browser/ui/settings/manage_sync_settings_consumer.h"
+
 @class ManageSyncSettingsTableViewController;
+@protocol ManageSyncSettingsTableViewControllerModelDelegate;
 
 // Delegate for presentation events related to
 // ManageSyncSettingsTableViewController.
@@ -21,12 +24,15 @@
 
 // View controller to related to Manage sync settings view.
 @interface ManageSyncSettingsTableViewController
-    : SettingsRootTableViewController
+    : SettingsRootTableViewController <ManageSyncSettingsConsumer>
 
 // Presentation delegate.
 @property(nonatomic, weak)
     id<ManageSyncSettingsTableViewControllerPresentationDelegate>
         presentationDelegate;
+@property(nonatomic, weak)
+    id<ManageSyncSettingsTableViewControllerModelDelegate>
+        modelDelegate;
 
 @end
 
