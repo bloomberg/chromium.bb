@@ -108,7 +108,10 @@ public class AutofillAssistantUiTest {
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
-                () -> new AssistantCoordinator(getActivity(), mCoordinatorDelegateMock));
+                ()
+                        -> new AssistantCoordinator(getActivity(),
+                                mCustomTabActivityTestRule.getWebContents(),
+                                mCoordinatorDelegateMock));
 
         // Bottom sheet is shown when creating the AssistantCoordinator.
         View bottomSheet = findViewByIdInMainCoordinator(R.id.autofill_assistant);

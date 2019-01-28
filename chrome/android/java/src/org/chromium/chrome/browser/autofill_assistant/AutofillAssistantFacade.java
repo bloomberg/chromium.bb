@@ -58,12 +58,12 @@ public class AutofillAssistantFacade {
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
         if (canStart(activity.getInitialIntent())) {
-            getCurrentTab(activity, tab -> startNow(activity, tab));
+            getTab(activity, tab -> startNow(activity, tab));
             return;
         }
 
         if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-            getCurrentTab(activity, tab -> {
+            getTab(activity, tab -> {
                 AutofillAssistantClient client =
                         AutofillAssistantClient.fromWebContents(tab.getWebContents());
                 client.showOnboarding(() -> startNow(activity, tab));
@@ -82,8 +82,9 @@ public class AutofillAssistantFacade {
         client.start(initialUrl, parameters, activity.getInitialIntent().getExtras());
     }
 
-    private static void getCurrentTab(ChromeActivity activity, Callback<Tab> callback) {
-        if (activity.getActivityTab() != null) {
+    private static void getTab(ChromeActivity activity, Callback<Tab> callback) {
+        if (activity.getActivityTab() != null
+                && activity.getActivityTab().getWebContents() != null) {
             callback.onResult(activity.getActivityTab());
             return;
         }
@@ -95,6 +96,7 @@ public class AutofillAssistantFacade {
                     public void onActivityTabChanged(Tab tab) {
                         if (tab == null) return;
                         activity.getActivityTabProvider().removeObserver(this);
+                        assert tab.getWebContents() != null;
                         callback.onResult(tab);
                     }
                 });
