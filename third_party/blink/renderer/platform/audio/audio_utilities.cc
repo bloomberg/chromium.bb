@@ -66,9 +66,25 @@ double DiscreteTimeConstantForSampleRate(double time_constant,
   return 1 - exp(-1 / (sample_rate * time_constant));
 }
 
-size_t TimeToSampleFrame(double time, double sample_rate) {
+size_t TimeToSampleFrame(double time,
+                         double sample_rate,
+                         enum SampleFrameRounding rounding_mode) {
   DCHECK_GE(time, 0);
-  double frame = round(time * sample_rate);
+  double frame;
+
+  switch (rounding_mode) {
+    case kRoundToNearest:
+      frame = round(time * sample_rate);
+      break;
+    case kRoundDown:
+      frame = floor(time * sample_rate);
+      break;
+    case kRoundUp:
+      frame = ceil(time * sample_rate);
+      break;
+    default:
+      NOTREACHED();
+  }
 
   // Just return the largest possible size_t value if necessary.
   if (frame >= std::numeric_limits<size_t>::max()) {

@@ -138,7 +138,7 @@ void AudioBufferSourceHandler::Process(uint32_t frames_to_process) {
 
     // Render by reading directly from the buffer.
     if (!RenderFromBuffer(output_bus, quantum_frame_offset,
-                          buffer_frames_to_process)) {
+                          buffer_frames_to_process, start_time_offset)) {
       output_bus->Zero();
       return;
     }
@@ -177,7 +177,8 @@ bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
 bool AudioBufferSourceHandler::RenderFromBuffer(
     AudioBus* bus,
     unsigned destination_frame_offset,
-    uint32_t number_of_frames) {
+    uint32_t number_of_frames,
+    double start_time_offset) {
   DCHECK(Context()->IsAudioThread());
 
   // Basic sanity checking
@@ -273,6 +274,20 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // Get local copy.
   double virtual_read_index = virtual_read_index_;
 
+  // We should never start the the source before the start time, so
+  // start_time_offset should always be negative or 0.
+  DCHECK_LE(start_time_offset, 0);
+
+  // Adjust the read index by the start_time_offset (compensated by the playback
+  // rate) because we always start output on a frame boundary with interpolation
+  // if necessary.
+  if (start_time_offset < 0) {
+    if (computed_playback_rate != 0) {
+      virtual_read_index +=
+          std::abs(start_time_offset * computed_playback_rate);
+    }
+  }
+
   // Render loop - reading from the source buffer to the destination using
   // linear interpolation.
   int frames_to_process = number_of_frames;
@@ -293,6 +308,7 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
     unsigned read_index = static_cast<unsigned>(virtual_read_index);
     unsigned delta_frames = static_cast<unsigned>(virtual_delta_frames);
     end_frame = static_cast<unsigned>(virtual_end_frame);
+
     while (frames_to_process > 0) {
       int frames_to_end = end_frame - read_index;
       int frames_this_time = std::min(frames_to_process, frames_to_end);

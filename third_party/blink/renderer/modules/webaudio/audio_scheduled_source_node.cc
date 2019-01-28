@@ -83,12 +83,22 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
   // endFrame              : End frame for this source.
   size_t quantum_start_frame = Context()->CurrentSampleFrame();
   size_t quantum_end_frame = quantum_start_frame + quantum_frame_size;
-  size_t start_frame =
-      audio_utilities::TimeToSampleFrame(start_time_, sample_rate);
-  size_t end_frame =
-      end_time_ == kUnknownTime
-          ? 0
-          : audio_utilities::TimeToSampleFrame(end_time_, sample_rate);
+
+  // Round up if the start_time isn't on a frame boundary so we don't start too
+  // early.
+  size_t start_frame = audio_utilities::TimeToSampleFrame(
+      start_time_, sample_rate, audio_utilities::kRoundUp);
+  size_t end_frame = 0;
+
+  if (end_time_ == kUnknownTime) {
+    end_frame = 0;
+  } else {
+    // The end frame is the end time rounded up because it is an exclusive upper
+    // bound of the end time.  We also need to take care to handle huge end
+    // times and clamp the corresponding frame to the largest size_t value.
+    end_frame = audio_utilities::TimeToSampleFrame(end_time_, sample_rate,
+                                                   audio_utilities::kRoundUp);
+  }
 
   // If we know the end time and it's already passed, then don't bother doing
   // any more rendering this cycle.
@@ -125,6 +135,7 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
 
   if (!non_silent_frames_to_process) {
     // Output silence.
+    DCHECK_LE(start_frame_offset, 0);
     output_bus->Zero();
     return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
                            start_frame_offset);
@@ -147,11 +158,13 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
     size_t zero_start_frame = end_frame - quantum_start_frame;
     size_t frames_to_zero = quantum_frame_size - zero_start_frame;
 
+    DCHECK_LT(zero_start_frame, quantum_frame_size);
+    DCHECK_LE(frames_to_zero, quantum_frame_size);
+    DCHECK_LE(zero_start_frame + frames_to_zero, quantum_frame_size);
+
     bool is_safe = zero_start_frame < quantum_frame_size &&
                    frames_to_zero <= quantum_frame_size &&
                    zero_start_frame + frames_to_zero <= quantum_frame_size;
-    DCHECK(is_safe);
-
     if (is_safe) {
       if (frames_to_zero > non_silent_frames_to_process)
         non_silent_frames_to_process = 0;
@@ -166,6 +179,7 @@ AudioScheduledSourceHandler::UpdateSchedulingInfo(size_t quantum_frame_size,
     Finish();
   }
 
+  DCHECK_LE(start_frame_offset, 0);
   return std::make_tuple(quantum_frame_offset, non_silent_frames_to_process,
                          start_frame_offset);
 }

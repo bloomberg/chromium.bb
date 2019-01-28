@@ -11,16 +11,22 @@ Tests that AudioBufferSourceNode supports loop-points with .loopStart and .loopE
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
+    <script src="../resources/audio-file-utils.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
       let audit = Audit.createTaskRunner();
 
-      let sampleRate = 44100.0;
+      // Use power of two to eliminate round-off in computing frames from time
+      // and vice versa. 
+      let sampleRate = 32768;
       let numberOfNotes = 60;  // play over a 5 octave range
-      let noteDuration = 0.025;
-      let noteSpacing =
-          noteDuration + 0.005;  // leave 5ms of silence between each "note"
+      // Make sure noteDuration, noteSilence, and noteSpacing are exactly whole
+      // frames.
+      let noteDuration = Math.floor(0.025 * sampleRate) / sampleRate;
+      // Leave about 5ms of silence between each "note"
+      let noteSilence = Math.floor(0.005 * sampleRate) / sampleRate;
+      let noteSpacing = noteDuration + noteSilence;
       let lengthInSeconds = numberOfNotes * noteSpacing;
 
       let context = 0;
@@ -139,7 +145,7 @@ Tests that AudioBufferSourceNode supports loop-points with .loopStart and .loopE
                   // in ULP. This is experimentally determined. Assuming that
                   // the reference file is a 16-bit wav file, the max values in
                   // the wave file are +/- 32768.
-                  let maxUlp = 0.9999;
+                  let maxUlp = 0;
                   let threshold = maxUlp / 32768;
 
                   for (let k = 0; k < renderedAudio.numberOfChannels; ++k) {
@@ -149,6 +155,11 @@ Tests that AudioBufferSourceNode supports loop-points with .loopStart and .loopE
                         .beCloseToArray(
                             expectedAudio.getChannelData(k),
                             {absoluteThreshold: threshold});
+                  }
+
+                  const filename = 'audiobuffersource-loop-points-actual.wav';
+                  if (downloadAudioBuffer(renderedAudio, filename, true)) {
+                    should(true, 'Saved reference file').message(filename, '');
                   }
                 })
                 .then(() => task.done());
