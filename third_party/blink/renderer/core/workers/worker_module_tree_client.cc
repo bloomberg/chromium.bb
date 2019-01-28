@@ -31,6 +31,7 @@ void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     worker_reporting_proxy.DidFailToFetchModuleScript();
     return;
   }
+  worker_reporting_proxy.DidFetchScript();
 
   // Step 12: "Otherwise, continue the rest of these steps after the algorithm's
   // asynchronous completion, with script being the asynchronous completion

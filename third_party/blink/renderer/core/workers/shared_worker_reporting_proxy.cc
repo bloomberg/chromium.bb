@@ -62,6 +62,18 @@ void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
   // Not supported in SharedWorker.
 }
 
+void SharedWorkerReportingProxy::DidFetchScript() {
+  DCHECK(!IsMainThread());
+  // TODO(nhiroki): Change the task type to kDOMManipulation here and elsewhere
+  // in this file. See the HTML spec:
+  // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model:dom-manipulation-task-source-2
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&WebSharedWorkerImpl::DidFetchScript,
+                      CrossThreadUnretained(worker_)));
+}
+
 void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
   DCHECK(!IsMainThread());
   // TODO(nhiroki): Dispatch an error event at the SharedWorker object in the
@@ -69,6 +81,22 @@ void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
 }
 
 void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {
+  DCHECK(!IsMainThread());
+  // TODO(nhiroki): Implement module scripts for shared workers.
+  // (https://crbug.com/824646)
+  NOTIMPLEMENTED();
+}
+
+void SharedWorkerReportingProxy::DidEvaluateClassicScript(bool success) {
+  DCHECK(!IsMainThread());
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&WebSharedWorkerImpl::DidEvaluateClassicScript,
+                      CrossThreadUnretained(worker_), success));
+}
+
+void SharedWorkerReportingProxy::DidEvaluateModuleScript(bool success) {
   DCHECK(!IsMainThread());
   // TODO(nhiroki): Implement module scripts for shared workers.
   // (https://crbug.com/824646)

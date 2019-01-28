@@ -203,17 +203,21 @@ void EmbeddedSharedWorkerStub::WorkerReadyForInspection() {
 
 void EmbeddedSharedWorkerStub::WorkerScriptLoaded() {
   host_->OnScriptLoaded();
-  running_ = true;
-  // Process any pending connections.
-  for (auto& item : pending_channels_)
-    ConnectToChannel(item.first, std::move(item.second));
-  pending_channels_.clear();
 }
 
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
   host_->OnScriptLoadFailed();
   pending_channels_.clear();
   delete this;
+}
+
+void EmbeddedSharedWorkerStub::WorkerScriptEvaluated(bool success) {
+  DCHECK(!running_);
+  running_ = true;
+  // Process any pending connections.
+  for (auto& item : pending_channels_)
+    ConnectToChannel(item.first, std::move(item.second));
+  pending_channels_.clear();
 }
 
 void EmbeddedSharedWorkerStub::CountFeature(blink::mojom::WebFeature feature) {

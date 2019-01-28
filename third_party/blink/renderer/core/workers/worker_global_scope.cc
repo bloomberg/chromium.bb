@@ -410,6 +410,9 @@ void WorkerGlobalScope::DidImportClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
+  ReportingProxy().DidFetchScript();
+  probe::scriptImported(this, classic_script_loader->Identifier(),
+                        classic_script_loader->SourceText());
 
   // Step 12.3. "Set worker global scope's url to response's url."
   // Step 12.4. "Set worker global scope's HTTPS state to response's HTTPS
