@@ -2253,7 +2253,7 @@ TEST_P(AutomaticRebootManagerTest, StartNoUptime) {
   FastForwardUntilNoTasksRemain(false);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutomaticRebootManagerTestInstance,
     AutomaticRebootManagerTest,
     ::testing::Values(
