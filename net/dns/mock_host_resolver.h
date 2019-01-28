@@ -81,7 +81,6 @@ class MockHostResolverBase
       public base::SupportsWeakPtr<MockHostResolverBase> {
  private:
   class RequestImpl;
-  class LegacyRequestImpl;
   class MdnsListenerImpl;
 
  public:

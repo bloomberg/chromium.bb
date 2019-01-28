@@ -589,6 +589,8 @@ class HostResolverImpl::RequestImpl
     return stale_info_;
   }
 
+  void ChangeRequestPriority(RequestPriority priority) override;
+
   void set_results(HostCache::Entry results) {
     // Should only be called at most once and before request is marked
     // completed.
@@ -608,8 +610,6 @@ class HostResolverImpl::RequestImpl
 
     stale_info_ = std::move(stale_info);
   }
-
-  void ChangeRequestPriority(RequestPriority priority);
 
   void AssignJob(Job* job) {
     DCHECK(job);
@@ -692,75 +692,6 @@ class HostResolverImpl::RequestImpl
   base::TimeTicks request_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
-};
-
-// Wraps a RequestImpl to implement Request objects from the legacy Resolve()
-// API. The wrapped request must not yet have been started.
-//
-// TODO(crbug.com/821021): Delete this class once all usage has been
-// converted to the new CreateRequest() API.
-class HostResolverImpl::LegacyRequestImpl : public HostResolver::Request {
- public:
-  explicit LegacyRequestImpl(std::unique_ptr<RequestImpl> inner_request)
-      : inner_request_(std::move(inner_request)) {
-    DCHECK(!inner_request_->job());
-    DCHECK(!inner_request_->complete());
-  }
-
-  ~LegacyRequestImpl() override {}
-
-  void ChangeRequestPriority(RequestPriority priority) override {
-    inner_request_->ChangeRequestPriority(priority);
-  }
-
-  int Start() {
-    return inner_request_->Start(base::BindOnce(
-        &LegacyRequestImpl::LegacyApiCallback, base::Unretained(this)));
-  }
-
-  // Do not call to assign the callback until we are running an async job (after
-  // Start() returns ERR_IO_PENDING) and before completion.  Until then, the
-  // legacy HostResolverImpl::Resolve() needs to hang onto |callback| to ensure
-  // it stays alive for the duration of the method call, as some callers may be
-  // binding objects, eg the AddressList, with the callback.
-  void AssignCallback(CompletionOnceCallback callback,
-                      AddressList* addresses_result_ptr) {
-    DCHECK(callback);
-    DCHECK(addresses_result_ptr);
-    DCHECK(inner_request_->job());
-    DCHECK(!inner_request_->complete());
-
-    callback_ = std::move(callback);
-    addresses_result_ptr_ = addresses_result_ptr;
-  }
-
-  const RequestImpl& inner_request() const { return *inner_request_; }
-
- private:
-  // Result callback to bridge results handled entirely via ResolveHostRequest
-  // to legacy API styles where AddressList was a separate method out parameter.
-  void LegacyApiCallback(int error) {
-    // Must call AssignCallback() before async results.
-    DCHECK(callback_);
-
-    if (error == OK && !inner_request_->parameters().is_speculative) {
-      // Legacy API does not allow non-address results (eg TXT), so AddressList
-      // is always expected to be present on OK.
-      DCHECK(inner_request_->GetAddressResults());
-      *addresses_result_ptr_ = inner_request_->GetAddressResults().value();
-    }
-    addresses_result_ptr_ = nullptr;
-    std::move(callback_).Run(error);
-  }
-
-  const std::unique_ptr<RequestImpl> inner_request_;
-
-  CompletionOnceCallback callback_;
-  // This is a caller-provided pointer and should not be used once |callback_|
-  // is invoked.
-  AddressList* addresses_result_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(LegacyRequestImpl);
 };
 
 //------------------------------------------------------------------------------
@@ -2316,20 +2247,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
       source_net_log, info.host_port_pair(),
       RequestInfoToResolveHostParameters(info, priority),
       weak_ptr_factory_.GetWeakPtr());
-  auto wrapped_request =
-      std::make_unique<LegacyRequestImpl>(std::move(request));
-
-  int rv = wrapped_request->Start();
-
-  if (rv == OK && !info.is_speculative()) {
-    DCHECK(wrapped_request->inner_request().GetAddressResults());
-    *addresses = wrapped_request->inner_request().GetAddressResults().value();
-  } else if (rv == ERR_IO_PENDING) {
-    wrapped_request->AssignCallback(std::move(callback), addresses);
-    *out_req = std::move(wrapped_request);
-  }
-
-  return rv;
+  return LegacyResolve(std::move(request), info.is_speculative(), addresses,
+                       std::move(callback), out_req);
 }
 
 int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
@@ -3227,6 +3146,7 @@ HostResolverImpl::RequestImpl::~RequestImpl() {
 
 void HostResolverImpl::RequestImpl::ChangeRequestPriority(
     RequestPriority priority) {
+  DCHECK(job_);
   job_->ChangeRequestPriority(this, priority);
 }
 

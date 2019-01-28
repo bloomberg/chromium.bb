@@ -118,6 +118,11 @@ class NET_EXPORT HostResolver {
     // |ERR_IO_PENDING|.
     virtual const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
         const = 0;
+
+    // Changes the priority of the specified request. Can only be called while
+    // the request is running (after Start() returns |ERR_IO_PENDING| and before
+    // the callback is invoked).
+    virtual void ChangeRequestPriority(RequestPriority priority) {}
   };
 
   // |max_concurrent_resolves| is how many resolve requests will be allowed to
@@ -472,6 +477,19 @@ class NET_EXPORT HostResolver {
   static HostResolverSource FlagsToSource(HostResolverFlags flags);
   static HostResolverFlags ParametersToHostResolverFlags(
       const ResolveHostParameters& parameters);
+
+  // Use legacy Resolve()-style semantics to run the new-style |inner_request|.
+  // Useful to implement legacy Resolve() in HostResolver implementations.
+  //
+  // |inner_request| must be newly-created and not yet started.
+  //
+  // TODO(crbug.com/922699): Delete this once all usage has been converted to
+  // the new CreateRequest() API and HostResolver::Resolve() is removed.
+  static int LegacyResolve(std::unique_ptr<ResolveHostRequest> inner_request,
+                           bool is_speculative,
+                           AddressList* addresses,
+                           CompletionOnceCallback callback,
+                           std::unique_ptr<Request>* out_req);
 
  protected:
   HostResolver();

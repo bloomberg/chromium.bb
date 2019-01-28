@@ -4,11 +4,16 @@
 
 #include "net/dns/host_resolver.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_util.h"
@@ -25,6 +30,76 @@ namespace {
 // further optimized, but 8 is what FF currently does. We found some routers
 // that limit this to 6, so we're temporarily holding it at that level.
 const size_t kDefaultMaxProcTasks = 6u;
+
+// Wraps a ResolveHostRequest to implement Request objects from the legacy
+// Resolve() API. The wrapped request must not yet have been started.
+//
+// TODO(crbug.com/821021): Delete this class once all usage has been
+// converted to the new CreateRequest() API.
+class LegacyRequestImpl : public HostResolver::Request {
+ public:
+  LegacyRequestImpl(
+      std::unique_ptr<HostResolver::ResolveHostRequest> inner_request,
+      bool is_speculative)
+      : inner_request_(std::move(inner_request)),
+        is_speculative_(is_speculative) {}
+
+  ~LegacyRequestImpl() override {}
+
+  void ChangeRequestPriority(RequestPriority priority) override {
+    inner_request_->ChangeRequestPriority(priority);
+  }
+
+  int Start() {
+    return inner_request_->Start(base::BindOnce(
+        &LegacyRequestImpl::LegacyApiCallback, base::Unretained(this)));
+  }
+
+  // Do not call to assign the callback until we are running an async job (after
+  // Start() returns ERR_IO_PENDING) and before completion.  Until then, the
+  // legacy HostResolverImpl::Resolve() needs to hang onto |callback| to ensure
+  // it stays alive for the duration of the method call, as some callers may be
+  // binding objects, eg the AddressList, with the callback.
+  void AssignCallback(CompletionOnceCallback callback,
+                      AddressList* addresses_result_ptr) {
+    DCHECK(callback);
+    DCHECK(addresses_result_ptr);
+
+    callback_ = std::move(callback);
+    addresses_result_ptr_ = addresses_result_ptr;
+  }
+
+  const HostResolver::ResolveHostRequest& inner_request() const {
+    return *inner_request_;
+  }
+
+ private:
+  // Result callback to bridge results handled entirely via ResolveHostRequest
+  // to legacy API styles where AddressList was a separate method out parameter.
+  void LegacyApiCallback(int error) {
+    // Must call AssignCallback() before async results.
+    DCHECK(callback_);
+
+    if (error == OK && !is_speculative_) {
+      // Legacy API does not allow non-address results (eg TXT), so AddressList
+      // is always expected to be present on OK.
+      DCHECK(inner_request_->GetAddressResults());
+      *addresses_result_ptr_ = inner_request_->GetAddressResults().value();
+    }
+    addresses_result_ptr_ = nullptr;
+    std::move(callback_).Run(error);
+  }
+
+  const std::unique_ptr<HostResolver::ResolveHostRequest> inner_request_;
+  const bool is_speculative_;
+
+  CompletionOnceCallback callback_;
+  // This is a caller-provided pointer and should not be used once |callback_|
+  // is invoked.
+  AddressList* addresses_result_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(LegacyRequestImpl);
+};
 
 }  // namespace
 
@@ -248,6 +323,33 @@ HostResolverFlags HostResolver::ParametersToHostResolverFlags(
   if (parameters.loopback_only)
     flags |= HOST_RESOLVER_LOOPBACK_ONLY;
   return flags;
+}
+
+// static
+int HostResolver::LegacyResolve(
+    std::unique_ptr<ResolveHostRequest> inner_request,
+    bool is_speculative,
+    AddressList* addresses,
+    CompletionOnceCallback callback,
+    std::unique_ptr<Request>* out_req) {
+  auto wrapped_request = std::make_unique<LegacyRequestImpl>(
+      std::move(inner_request), is_speculative);
+
+  int rv = wrapped_request->Start();
+
+  if (rv == OK && !is_speculative) {
+    DCHECK(addresses);
+    DCHECK(wrapped_request->inner_request().GetAddressResults());
+    *addresses = wrapped_request->inner_request().GetAddressResults().value();
+  } else if (rv == ERR_IO_PENDING) {
+    DCHECK(addresses);
+    DCHECK(callback);
+    DCHECK(out_req);
+    wrapped_request->AssignCallback(std::move(callback), addresses);
+    *out_req = std::move(wrapped_request);
+  }
+
+  return rv;
 }
 
 HostResolver::HostResolver() = default;
