@@ -271,8 +271,8 @@ IN_PROC_BROWSER_TEST_P(NetworkPortalDetectorImplBrowserTestIgnoreProxy,
   TestImpl(GetParam());
 }
 
-INSTANTIATE_TEST_CASE_P(CaptivePortalAuthenticationIgnoresProxy,
-                        NetworkPortalDetectorImplBrowserTestIgnoreProxy,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(CaptivePortalAuthenticationIgnoresProxy,
+                         NetworkPortalDetectorImplBrowserTestIgnoreProxy,
+                         testing::Bool());
 
 }  // namespace chromeos

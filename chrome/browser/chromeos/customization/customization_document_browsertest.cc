@@ -254,8 +254,8 @@ IN_PROC_BROWSER_TEST_P(CustomizationVPDTest, GetUILanguageList) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(StringSequence,
-                        CustomizationVPDTest,
-                        testing::ValuesIn(kVPDInitialLocales));
+INSTANTIATE_TEST_SUITE_P(StringSequence,
+                         CustomizationVPDTest,
+                         testing::ValuesIn(kVPDInitialLocales));
 
 }  // namespace chromeos
