@@ -14425,7 +14425,7 @@
               },
               'access_code_ttl': {
                 'type': 'integer',
-                'minimum': 30,
+                'minimum': 60,
                 'maximum': 3600,
                 'description': 'Time that access code is valid for (in seconds).'
               },
