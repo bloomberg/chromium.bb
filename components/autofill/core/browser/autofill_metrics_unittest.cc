@@ -154,12 +154,14 @@ void VerifySubmitFormUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                          const FormData& form,
                          AutofillMetrics::AutofillFormSubmittedState state,
                          bool is_for_credit_card,
+                         bool has_upi_vpa_field,
                          const std::set<FormType>& form_types) {
   VerifyFormInteractionUkm(
       ukm_recorder, form, UkmFormSubmittedType::kEntryName,
       {{{UkmFormSubmittedType::kAutofillFormSubmittedStateName, state},
         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
         {UkmFormSubmittedType::kIsForCreditCardName, is_for_credit_card},
+        {UkmFormSubmittedType::kHasUpiVpaFieldName, has_upi_vpa_field},
         {UkmFormSubmittedType::kFormTypesName,
          AutofillMetrics::FormTypesToBitVector(form_types)},
         {UkmFormSubmittedType::kFormSignatureName,
@@ -3158,9 +3160,37 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
          Collapse(CalculateFormSignature(form))}}});
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
-  VerifySubmitFormUkm(
-      test_ukm_recorder_, form, AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-      /*is_for_credit_card=*/true, {FormType::CREDIT_CARD_FORM});
+  VerifySubmitFormUkm(test_ukm_recorder_, form,
+                      AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
+                      /*is_for_credit_card=*/true, /* has_upi_vpa_field=*/false,
+                      {FormType::CREDIT_CARD_FORM});
+}
+
+// Test that the UPI Checkout flow form submit is correctly logged
+TEST_F(AutofillMetricsTest, UpiVpaUkmTest) {
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+  FormFieldData field;
+  test::CreateTestFormField("Enter VPA", "upi-vpa", "unique_id@upi", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  {
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+
+    VerifySubmitFormUkm(test_ukm_recorder_, forms.back(),
+                        AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
+                        /*is_for_credit_card=*/false,
+                        /* has_upi_vpa_field */ true,
+                        /* UPI VPA has Unknown form type.*/
+                        {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE});
+    PurgeUKM();
+  }
 }
 
 // Test that the profile checkout flow user actions are correctly logged.
@@ -3297,7 +3327,8 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(test_ukm_recorder_, form,
                       AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-                      /*is_for_credit_card=*/false, {FormType::ADDRESS_FORM});
+                      /*is_for_credit_card=*/false,
+                      /* has_upi_vpa_field=*/false, {FormType::ADDRESS_FORM});
 }
 
 // Tests that the Autofill_PolledCreditCardSuggestions user action is only
@@ -4678,6 +4709,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 
@@ -4721,6 +4753,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 
@@ -4768,6 +4801,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 
@@ -4812,6 +4846,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 
@@ -4858,6 +4893,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 
@@ -4909,6 +4945,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 
@@ -4936,6 +4973,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
 
     autofill_manager_->OnFormSubmitted(form, false,
@@ -4947,6 +4985,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
           {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
           {UkmFormSubmittedType::kIsForCreditCardName, true},
+          {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
           {UkmFormSubmittedType::kFormTypesName,
            AutofillMetrics::FormTypesToBitVector({FormType::CREDIT_CARD_FORM})},
           {UkmFormSubmittedType::kFormSignatureName,
@@ -4955,6 +4994,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
           {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
           {UkmFormSubmittedType::kIsForCreditCardName, true},
+          {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
           {UkmFormSubmittedType::kFormTypesName,
            AutofillMetrics::FormTypesToBitVector({FormType::CREDIT_CARD_FORM})},
           {UkmFormSubmittedType::kFormSignatureName,
@@ -5125,6 +5165,7 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardSubmittedFormEvents) {
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
                         /*is_for_credit_card=*/true,
+                        /* has_upi_vpa_field=*/false,
                         {FormType::CREDIT_CARD_FORM});
   }
 }
@@ -5889,7 +5930,8 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-                        /*is_for_credit_card=*/false, {FormType::ADDRESS_FORM});
+                        /*is_for_credit_card=*/false,
+                        /* has_upi_vpa_field=*/false, {FormType::ADDRESS_FORM});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -5917,7 +5959,8 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormEvents) {
 
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA,
-                        /*is_for_credit_card=*/false, {FormType::ADDRESS_FORM});
+                        /*is_for_credit_card=*/false,
+                        /* has_upi_vpa_field=*/false, {FormType::ADDRESS_FORM});
   }
 
   // Reset the autofill manager state and purge UKM logs.
@@ -6482,6 +6525,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6518,6 +6562,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6558,6 +6603,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
               FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6605,6 +6651,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6641,6 +6688,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6678,6 +6726,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6722,6 +6771,7 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector(
               {FormType::ADDRESS_FORM, FormType::UNKNOWN_FORM_TYPE})},
@@ -6797,6 +6847,7 @@ TEST_F(
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFormSubmittedType::kIsForCreditCardName, false},
+         {UkmFormSubmittedType::kHasUpiVpaFieldName, false},
          {UkmFormSubmittedType::kFormTypesName,
           AutofillMetrics::FormTypesToBitVector({FormType::ADDRESS_FORM})},
          {UkmFormSubmittedType::kFormSignatureName,

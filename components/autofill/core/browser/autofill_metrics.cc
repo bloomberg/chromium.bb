@@ -1473,6 +1473,7 @@ void AutofillMetrics::LogProfileActionOnFormSubmitted(
 void AutofillMetrics::LogAutofillFormSubmittedState(
     AutofillFormSubmittedState state,
     bool is_for_credit_card,
+    bool has_upi_vpa_field,
     const std::set<FormType>& form_types,
     const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
@@ -1510,9 +1511,9 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
       NOTREACHED();
       break;
   }
-  form_interactions_ukm_logger->LogFormSubmitted(is_for_credit_card, form_types,
-                                                 state, form_parsed_timestamp,
-                                                 form_signature);
+  form_interactions_ukm_logger->LogFormSubmitted(
+      is_for_credit_card, has_upi_vpa_field, form_types, state,
+      form_parsed_timestamp, form_signature);
 }
 
 // static
@@ -2198,6 +2199,7 @@ void AutofillMetrics::LogWalletSyncTransportCardsOptIn(bool is_opted_in) {
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     bool is_for_credit_card,
+    bool has_upi_vpa_field,
     const std::set<FormType>& form_types,
     AutofillFormSubmittedState state,
     const base::TimeTicks& form_parsed_timestamp,
@@ -2208,6 +2210,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   ukm::builders::Autofill_FormSubmitted builder(source_id_);
   builder.SetAutofillFormSubmittedState(static_cast<int>(state))
       .SetIsForCreditCard(is_for_credit_card)
+      .SetHasUpiVpaField(has_upi_vpa_field)
       .SetFormTypes(FormTypesToBitVector(form_types))
       .SetFormSignature(HashFormSignature(form_signature));
   if (form_parsed_timestamp.is_null())

@@ -457,6 +457,11 @@ be describing additional metrics about the same event.
       ith type was detected. Multiple types are possible.
     </summary>
   </metric>
+  <metric name="HasUpiVpaField">
+    <summary>
+      True for forms containing a UPI/VPA field.
+    </summary>
+  </metric>
   <metric name="IsForCreditCard">
     <summary>
       True for credit card forms, false for address/profile forms. See

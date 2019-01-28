@@ -891,6 +891,7 @@ class AutofillMetrics {
                       ServerFieldType predicted_type,
                       ServerFieldType actual_type);
     void LogFormSubmitted(bool is_for_credit_card,
+                          bool has_upi_vpa_field,
                           const std::set<FormType>& form_types,
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
@@ -1212,6 +1213,7 @@ class AutofillMetrics {
   static void LogAutofillFormSubmittedState(
       AutofillFormSubmittedState state,
       bool is_for_credit_card,
+      bool has_upi_vpa_field,
       const std::set<FormType>& form_types,
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,

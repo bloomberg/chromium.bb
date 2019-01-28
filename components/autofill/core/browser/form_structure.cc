@@ -966,6 +966,7 @@ void FormStructure::LogQualityMetrics(
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
   bool is_for_credit_card = IsCompleteCreditCardForm();
+  bool has_upi_vpa_field = false;
 
   // Determine the correct suffix for the metric, depending on whether or
   // not a submission was observed.
@@ -976,6 +977,7 @@ void FormStructure::LogQualityMetrics(
   for (size_t i = 0; i < field_count(); ++i) {
     auto* const field = this->field(i);
     if (IsUPIVirtualPaymentAddress(field->value)) {
+      has_upi_vpa_field = true;
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_ENTER_UPI_VPA, field->Type().group(),
           security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
@@ -1060,8 +1062,8 @@ void FormStructure::LogQualityMetrics(
     }
 
     AutofillMetrics::LogAutofillFormSubmittedState(
-        state, is_for_credit_card, GetFormTypes(), form_parsed_timestamp_,
-        form_signature(), form_interactions_ukm_logger);
+        state, is_for_credit_card, has_upi_vpa_field, GetFormTypes(),
+        form_parsed_timestamp_, form_signature(), form_interactions_ukm_logger);
   }
 }
 
