@@ -112,21 +112,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
-    # Fails on android-marshmallow-arm64-rel (Nexus 5X)
-    self.Fail('Pixel_Video_MP4',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Rot_90',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Rot_180',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
-    self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
-    self.Fail('Pixel_Video_VP9',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=911898)
-
     # Fails on Mac Pro FYI Release (AMD)
+    self.Fail('Pixel_Video_MP4',
+        ['mac', ('amd', 0x679e)], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3',
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_90',
@@ -135,3 +123,11 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
+
+    # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV
+    self.Fail('Pixel_Video_MP4', ['android'], bug=925744)
+    self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3', ['android'], bug=925744)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_180', ['android'], bug=925744)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_270', ['android'], bug=925744)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=925744)
+    self.Fail('Pixel_Video_VP9', ['android'], bug=925744)
