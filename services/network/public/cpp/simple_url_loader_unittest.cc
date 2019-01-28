@@ -2786,7 +2786,7 @@ TEST_P(SimpleURLLoaderTest, GetFinalURLAfterRedirect) {
   EXPECT_EQ(url, test_helper->simple_url_loader()->GetFinalURL());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No prefix */,
     SimpleURLLoaderTest,
     testing::Values(SimpleLoaderTestHelper::DownloadType::TO_STRING,

@@ -190,8 +190,8 @@ TEST_P(IgnoreCertificateErrorsSPKIListFlagTest, TestUserDataDirSwitchRequired) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(WithUserDataDirSwitchPresent,
-                        IgnoreCertificateErrorsSPKIListFlagTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(WithUserDataDirSwitchPresent,
+                         IgnoreCertificateErrorsSPKIListFlagTest,
+                         ::testing::Bool());
 
 }  // namespace network

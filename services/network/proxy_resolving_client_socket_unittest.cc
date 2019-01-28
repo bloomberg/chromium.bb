@@ -76,9 +76,9 @@ class ProxyResolvingClientSocketTest
   const bool use_tls_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ProxyResolvingClientSocketTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ProxyResolvingClientSocketTest,
+                         ::testing::Bool());
 
 // Tests that the global socket pool limit
 // (ClientSocketPoolManager::max_sockets_per_group) doesn't apply to this
@@ -817,7 +817,7 @@ const int kProxyTestMockErrors[] = {net::ERR_PROXY_CONNECTION_FAILED,
                                     net::ERR_PROXY_CERTIFICATE_INVALID,
                                     net::ERR_SSL_PROTOCOL_ERROR};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     ReconsiderProxyAfterErrorTest,
     testing::Combine(testing::Bool(),
