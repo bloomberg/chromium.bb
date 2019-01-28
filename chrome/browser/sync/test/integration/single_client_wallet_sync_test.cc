@@ -1370,26 +1370,26 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletWithAccountStorageSyncTest,
   EXPECT_EQ(1U, GetServerCards(profile_data).size());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientWalletSyncTestWithoutAccountStorage,
-                        ::testing::Values(std::make_pair(false, false),
-                                          std::make_pair(true, false),
-                                          std::make_pair(true, true)));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientWalletSyncTestWithoutAccountStorage,
+                         ::testing::Values(std::make_pair(false, false),
+                                           std::make_pair(true, false),
+                                           std::make_pair(true, true)));
 
 // Depends on SyncUSSWalletData, cannot set the first param to false.
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientWalletWithAccountStorageSyncTest,
-                        ::testing::Values(std::make_pair(true, false),
-                                          std::make_pair(true, true)));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientWalletWithAccountStorageSyncTest,
+                         ::testing::Values(std::make_pair(true, false),
+                                           std::make_pair(true, true)));
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientWalletSyncTestWithDefaultFeatures,
-                        ::testing::Values(std::make_pair(false, false),
-                                          std::make_pair(true, false),
-                                          std::make_pair(true, true)));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientWalletSyncTestWithDefaultFeatures,
+                         ::testing::Values(std::make_pair(false, false),
+                                           std::make_pair(true, false),
+                                           std::make_pair(true, true)));
 
 // Depends on SyncUSSWalletData, cannot set the first param to false.
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientWalletSecondaryAccountSyncTest,
-                        ::testing::Values(std::make_pair(true, false),
-                                          std::make_pair(true, true)));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientWalletSecondaryAccountSyncTest,
+                         ::testing::Values(std::make_pair(true, false),
+                                           std::make_pair(true, true)));

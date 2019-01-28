@@ -214,8 +214,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientExtensionSettingsAndAppSettingsSyncTest,
                InstallAppForAllProfiles(1), InstallAppForAllProfiles(2));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientExtensionSettingsAndAppSettingsSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientExtensionSettingsAndAppSettingsSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

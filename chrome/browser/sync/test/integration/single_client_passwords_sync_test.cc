@@ -150,6 +150,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
   EXPECT_NE(new_encryption_key_name, prior_encryption_key_name);
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientPasswordsSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientPasswordsSyncTest,
+                         ::testing::Values(false, true));

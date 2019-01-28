@@ -110,8 +110,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientExtensionsSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientExtensionsSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

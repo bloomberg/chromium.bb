@@ -295,12 +295,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTestWithSelfNotifications,
   EXPECT_THAT(GetPrefs(1)->GetString(pref_name), Eq("non-priority value"));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientPreferencesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientPreferencesSyncTest,
+                         ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientPreferencesSyncTestWithSelfNotifications,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientPreferencesSyncTestWithSelfNotifications,
+                         ::testing::Values(false, true));
 
 }  // namespace

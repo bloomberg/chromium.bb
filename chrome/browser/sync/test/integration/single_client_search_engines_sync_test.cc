@@ -31,6 +31,6 @@ IN_PROC_BROWSER_TEST_P(SingleClientSearchEnginesSyncTest, Sanity) {
   ASSERT_TRUE(search_engines_helper::ServiceMatchesVerifier(0));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientSearchEnginesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientSearchEnginesSyncTest,
+                         ::testing::Values(false, true));

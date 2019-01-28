@@ -80,8 +80,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientAutofillProfileSyncTest,
   EXPECT_EQ(1uL, pdm->GetProfiles().size());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientAutofillProfileSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientAutofillProfileSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

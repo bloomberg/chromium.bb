@@ -2265,8 +2265,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientBookmarksSyncTestIncludingUssTests,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientBookmarksSyncTestIncludingUssTests,
+                         ::testing::Values(false, true));
 
 }  // namespace

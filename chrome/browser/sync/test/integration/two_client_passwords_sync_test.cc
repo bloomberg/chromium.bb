@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
 // We instantiate every test 4 times, for every combination of pseudo-USS being
 // enabled in individual clients. This verifies backward-compatibility between
 // the two implementations.
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientPasswordsSyncTest,
-                        ::testing::Combine(::testing::Values(false, true),
-                                           ::testing::Values(false, true)));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientPasswordsSyncTest,
+                         ::testing::Combine(::testing::Values(false, true),
+                                            ::testing::Values(false, true)));

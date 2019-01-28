@@ -176,8 +176,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest, MAYBE_Limit) {
       NumDictionaryEntriesChecker(0, kMaxSyncableDictionaryWords).Wait());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientDictionarySyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientDictionarySyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

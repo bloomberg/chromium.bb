@@ -104,8 +104,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientThemesSyncTest, DefaultTheme) {
   EXPECT_TRUE(UsingDefaultTheme(verifier()));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientThemesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientThemesSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

@@ -126,8 +126,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
   EXPECT_EQ(GetCustomTheme(1), GetThemeID(GetProfile(0)));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientThemesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientThemesSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

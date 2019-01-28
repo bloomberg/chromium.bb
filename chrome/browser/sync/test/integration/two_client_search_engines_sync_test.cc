@@ -234,6 +234,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientSearchEnginesSyncTest,
   ASSERT_TRUE(SearchEnginesMatchChecker().Wait());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientSearchEnginesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientSearchEnginesSyncTest,
+                         ::testing::Values(false, true));
