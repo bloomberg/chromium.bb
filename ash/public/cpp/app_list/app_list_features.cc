@@ -24,8 +24,6 @@ const base::Feature kEnableHomeLauncherGestures{
     "HomeLauncherGestures", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableAppsGridGapFeature{"EnableAppsGridGapFeature",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
@@ -61,10 +59,6 @@ bool IsHomeLauncherGesturesEnabled() {
 
 bool IsSettingsShortcutSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableSettingsShortcutSearch);
-}
-
-bool IsAppsGridGapFeatureEnabled() {
-  return base::FeatureList::IsEnabled(kEnableAppsGridGapFeature);
 }
 
 bool IsZeroStateSuggestionsEnabled() {

@@ -42,9 +42,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncherGestures;
 // Enables the Settings shortcut search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
 
-// Enables the apps grid gap feature.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppsGridGapFeature;
-
 // Enables the feature to display zero state suggestions.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 
@@ -61,7 +58,6 @@ bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
 bool ASH_PUBLIC_EXPORT IsAppSearchResultRankerEnabled();

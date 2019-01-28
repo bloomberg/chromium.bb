@@ -3623,12 +3623,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "TabSwitcherOnReturn")},
 #endif
 
-#if defined(OS_CHROMEOS)
-    {"enable-apps-grid-gap", flag_descriptions::kEnableAppsGridGapFeatureName,
-     flag_descriptions::kEnableAppsGridGapFeatureDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableAppsGridGapFeature)},
-#endif  // OS_CHROMEOS
-
     {"enable-layered-api", flag_descriptions::kLayeredAPIName,
      flag_descriptions::kLayeredAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLayeredAPI)},

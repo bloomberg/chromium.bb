@@ -3190,12 +3190,6 @@ const char kEnableAppDataSearchDescription[] =
     "Allow launcher search to access data available through Firebase App "
     "Indexing";
 
-const char kEnableAppsGridGapFeatureName[] =
-    "Enable apps grid gap feature in launcher.";
-const char kEnableAppsGridGapFeatureDescription[] =
-    "Enables gaps at the end of each page and enables dragging an item to an "
-    "empty page in launcher.";
-
 const char kEnableArcUnifiedAudioFocusName[] =
     "Enable unified audio focus on ARC";
 const char kEnableArcUnifiedAudioFocusDescription[] =
@@ -3706,8 +3700,7 @@ const char kPnaclSubzeroDescription[] =
 
 #if defined(OS_CHROMEOS)
 const char kPdfAnnotations[] = "PDF Annotations";
-const char kPdfAnnotationsDescription[] =
-    "Enable annotating PDF documents.";
+const char kPdfAnnotationsDescription[] = "Enable annotating PDF documents.";
 #endif  // defined(OS_CHROMEOS)
 
 const char kPdfFormSaveName[] = "Save PDF Forms";

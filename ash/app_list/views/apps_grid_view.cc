@@ -300,9 +300,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
       bounds_animator_(this),
       page_flip_delay_in_ms_(kPageFlipDelayInMsFullscreen),
       pagination_animation_start_frame_number_(0),
-      view_structure_(this),
-      is_apps_grid_gap_feature_enabled_(
-          app_list_features::IsAppsGridGapFeatureEnabled()) {
+      view_structure_(this) {
   DCHECK(contents_view_);
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   // Clip any icons that are outside the grid view's bounds. These icons would
@@ -679,7 +677,7 @@ void AppsGridView::EndDrag(bool cancel) {
   ClearDragState();
   UpdatePaging();
   AnimateToIdealBounds();
-  if (!cancel && IsAppsGridGapEnabled())
+  if (!cancel && !folder_delegate_)
     view_structure_.SaveToMetadata();
 
   if (folder_item_view) {
@@ -765,7 +763,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
 
   // Add drag_view_ to the end of the view_model_.
   view_model_.Add(drag_view_, view_model_.view_size());
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.Add(drag_view_, GetLastTargetIndex());
 
   drag_start_page_ = pagination_model_.selected_page();
@@ -867,7 +865,7 @@ void AppsGridView::Layout() {
     fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
 
   UpdateTilePadding();
-  CalculateIdealBounds();
+  CalculateIdealBoundsForFolder();
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);
     if (view != drag_view_)
@@ -990,7 +988,7 @@ void AppsGridView::Update() {
     view_model_.Add(view, view_model_.view_size());
     AddChildView(view);
   }
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.LoadFromMetadata();
   UpdateColsAndRowsForFolder();
   UpdatePaging();
@@ -1010,7 +1008,7 @@ int AppsGridView::TilesPerPage(int page) const {
 }
 
 void AppsGridView::UpdatePaging() {
-  if (IsAppsGridGapEnabled()) {
+  if (!folder_delegate_) {
     pagination_model_.SetTotalPages(view_structure_.total_pages());
     return;
   }
@@ -1171,9 +1169,9 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
   return gfx::Vector2d(x_offset, y_offset);
 }
 
-void AppsGridView::CalculateIdealBounds() {
-  if (IsAppsGridGapEnabled()) {
-    CalculateIdealBoundsWithGridGap();
+void AppsGridView::CalculateIdealBoundsForFolder() {
+  if (!folder_delegate_) {
+    CalculateIdealBounds();
     return;
   }
 
@@ -1208,7 +1206,7 @@ void AppsGridView::CalculateIdealBounds() {
 void AppsGridView::AnimateToIdealBounds() {
   const gfx::Rect visible_bounds(GetVisibleBounds());
 
-  CalculateIdealBounds();
+  CalculateIdealBoundsForFolder();
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);
     if (view == drag_view_)
@@ -1668,7 +1666,7 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
   }
   ClearDragState();
   AnimateToIdealBounds();
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.SaveToMetadata();
 
   if (cancel_reparent) {
@@ -1916,7 +1914,7 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
 
   // The same item index does not guarantee the same visual index, so move the
   // item visual index here.
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.Move(item_view, target);
 
   // Reorder the app list item views in accordance with |view_model_|.
@@ -1969,7 +1967,7 @@ void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
           CreateViewForItemAtIndex(folder_item_index);
       target_folder_view->SetBoundsRect(target_view_bounds);
       view_model_.Add(target_folder_view, target_model_index);
-      if (IsAppsGridGapEnabled())
+      if (!folder_delegate_)
         view_structure_.Add(target_folder_view, target_index);
 
       // If drag view is in front of the position where it will be moved to, we
@@ -1987,7 +1985,7 @@ void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
   // Fade out the drag_view_ and delete it when animation ends.
   int drag_model_index = view_model_.GetIndexOfView(drag_view_);
   view_model_.Remove(drag_model_index);
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.Remove(drag_view_);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
   bounds_animator_.SetAnimationDelegate(
@@ -2031,8 +2029,7 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
 
     // Adjust |target_override| if it is beyond the deleted folder grid index in
     // the same page.
-    if (IsAppsGridGapEnabled() &&
-        target.page == deleted_folder_grid_index.page &&
+    if (!folder_delegate_ && target.page == deleted_folder_grid_index.page &&
         target.slot > deleted_folder_grid_index.slot) {
       --target_override.slot;
     }
@@ -2047,7 +2044,7 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
     target_position = item_list_->item_at(target_item_index)->position();
   model_->MoveItemToFolderAt(reparent_item, "", target_position);
   view_model_.Move(current_model_index, target_model_index);
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.Move(item_view, target_override);
   ReorderChildView(item_view, target_model_index);
 
@@ -2119,7 +2116,7 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
           CreateViewForItemAtIndex(new_folder_index);
       new_folder_view->SetBoundsRect(target_rect);
       view_model_.Add(new_folder_view, target_model_index);
-      if (IsAppsGridGapEnabled())
+      if (!folder_delegate_)
         view_structure_.Add(new_folder_view, target_index);
       AddChildViewAt(new_folder_view, target_model_index);
     } else {
@@ -2134,7 +2131,7 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
   // Fade out the drag_view_ and delete it when animation ends.
   int drag_model_index = view_model_.GetIndexOfView(drag_view_);
   view_model_.Remove(drag_model_index);
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.Remove(drag_view_);
   bounds_animator_.AnimateViewTo(drag_view_, drag_view_->bounds());
   bounds_animator_.SetAnimationDelegate(
@@ -2183,7 +2180,7 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
   AppListItemView* last_item_view = CreateViewForItemAtIndex(last_item_index);
   last_item_view->SetBoundsRect(folder_rect);
   view_model_.Add(last_item_view, target_model_index);
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.Add(last_item_view, target_index);
   AddChildViewAt(last_item_view, target_model_index);
 }
@@ -2202,7 +2199,7 @@ void AppsGridView::CancelContextMenusOnCurrentPage() {
 void AppsGridView::DeleteItemViewAtIndex(int index, bool sanitize) {
   AppListItemView* item_view = GetItemViewAt(index);
   view_model_.Remove(index);
-  if (IsAppsGridGapEnabled()) {
+  if (!folder_delegate_) {
     view_structure_.Remove(item_view, sanitize /* clear_overflow */,
                            sanitize /* clear_empty_pages */);
   }
@@ -2279,7 +2276,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
     view->SetVisible(model_->state_fullscreen() != AppListViewState::PEEKING);
   }
 
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.LoadFromMetadata();
   UpdateColsAndRowsForFolder();
   UpdatePaging();
@@ -2294,7 +2291,7 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
   if (!item->is_page_break())
     DeleteItemViewAtIndex(GetModelIndexOfItem(item), true /* sanitize */);
 
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.LoadFromMetadata();
   UpdateColsAndRowsForFolder();
   UpdatePaging();
@@ -2320,7 +2317,7 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     ReorderChildView(view_model_.view_at(to_model_index), to_model_index);
   }
 
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     view_structure_.LoadFromMetadata();
   UpdateColsAndRowsForFolder();
   UpdatePaging();
@@ -2469,12 +2466,8 @@ void AppsGridView::SetAsFolderDroppingTarget(const GridIndex& target_index,
   }
 }
 
-bool AppsGridView::IsAppsGridGapEnabled() const {
-  return !folder_delegate_ && is_apps_grid_gap_feature_enabled_;
-}
-
 GridIndex AppsGridView::GetIndexFromModelIndex(int model_index) const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.GetIndexFromModelIndex(model_index);
 
   const int tiles_in_page0 = TilesPerPage(0);
@@ -2488,7 +2481,7 @@ GridIndex AppsGridView::GetIndexFromModelIndex(int model_index) const {
 }
 
 int AppsGridView::GetModelIndexFromIndex(const GridIndex& index) const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.GetModelIndexFromIndex(index);
 
   if (index.page == 0)
@@ -2498,7 +2491,7 @@ int AppsGridView::GetModelIndexFromIndex(const GridIndex& index) const {
 }
 
 GridIndex AppsGridView::GetLastTargetIndex() const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.GetLastTargetIndex();
 
   DCHECK_LT(0, view_model_.view_size());
@@ -2507,7 +2500,7 @@ GridIndex AppsGridView::GetLastTargetIndex() const {
 }
 
 GridIndex AppsGridView::GetLastTargetIndexOfPage(int page) const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.GetLastTargetIndexOfPage(page);
 
   if (page == pagination_model_.total_pages() - 1)
@@ -2518,7 +2511,7 @@ GridIndex AppsGridView::GetLastTargetIndexOfPage(int page) const {
 
 int AppsGridView::GetTargetModelIndexForMove(AppListItemView* moved_view,
                                              const GridIndex& index) const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.GetTargetModelIndexForMove(moved_view, index);
 
   return GetModelIndexFromIndex(index);
@@ -2526,10 +2519,10 @@ int AppsGridView::GetTargetModelIndexForMove(AppListItemView* moved_view,
 
 size_t AppsGridView::GetTargetItemIndexForMove(AppListItemView* moved_view,
                                                const GridIndex& index) const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.GetTargetItemIndexForMove(moved_view, index);
 
-  // Model index is the same as item index when apps grid gap is disabled.
+  // Model index is the same as item index for folder.
   return GetModelIndexFromIndex(index);
 }
 
@@ -2540,7 +2533,7 @@ bool AppsGridView::IsValidIndex(const GridIndex& index) const {
 }
 
 bool AppsGridView::IsValidReorderTargetIndex(const GridIndex& index) const {
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.IsValidReorderTargetIndex(index);
 
   return IsValidIndex(index);
@@ -2553,12 +2546,12 @@ bool AppsGridView::IsValidPageFlipTarget(int page) const {
   // If the user wants to drag an app to the next new page and has not done so
   // during the dragging session, then it is the right target because a new page
   // will be created in OnPageFlipTimer().
-  return IsAppsGridGapEnabled() && !extra_page_opened_ &&
+  return !folder_delegate_ && !extra_page_opened_ &&
          pagination_model_.total_pages() == page;
 }
 
-void AppsGridView::CalculateIdealBoundsWithGridGap() {
-  DCHECK(IsAppsGridGapEnabled());
+void AppsGridView::CalculateIdealBounds() {
+  DCHECK(!folder_delegate_);
 
   // |view_structure_| should only be updated at the end of drag. So make a
   // copy of it and only change the copy for calculating the ideal bounds of
@@ -2622,7 +2615,7 @@ int AppsGridView::GetModelIndexOfItem(const AppListItem* item) {
 }
 
 int AppsGridView::GetTargetModelIndexFromItemIndex(size_t item_index) {
-  if (!IsAppsGridGapEnabled())
+  if (folder_delegate_)
     return item_index;
 
   CHECK(item_index <= item_list_->item_count());
@@ -2641,7 +2634,7 @@ void AppsGridView::RecordPageMetrics() {
 
   // Calculate the number of pages that have empty slots.
   int page_count = 0;
-  if (IsAppsGridGapEnabled()) {
+  if (!folder_delegate_) {
     const auto& pages = view_structure_.pages();
     for (size_t i = 0; i < pages.size(); ++i) {
       if (static_cast<int>(pages[i].size()) < TilesPerPage(i))
@@ -2653,8 +2646,7 @@ void AppsGridView::RecordPageMetrics() {
       item_num -= TilesPerPage(i);
     }
 
-    // Only last page allows gaps if it is not full when apps grid gap is
-    // disabled.
+    // Only last page allows gaps if it is not full for folder.
     if (item_num != 0)
       page_count = 1;
   }
@@ -2686,7 +2678,7 @@ int AppsGridView::GetItemsNumOfPage(int page) const {
   if (page < 0 || page >= pagination_model_.total_pages())
     return 0;
 
-  if (IsAppsGridGapEnabled())
+  if (!folder_delegate_)
     return view_structure_.items_on_page(page);
 
   if (page < pagination_model_.total_pages() - 1)
