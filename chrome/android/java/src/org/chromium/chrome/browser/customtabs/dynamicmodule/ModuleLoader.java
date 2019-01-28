@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Process;
 import android.support.annotation.Nullable;
 
 import dalvik.system.DexClassLoader;
@@ -23,8 +24,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.TaskPriority;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics.DestructionReason;
@@ -155,10 +154,7 @@ public class ModuleLoader {
         ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.NOT_LOADED);
 
         mIsModuleLoading = true;
-        new LoadClassTask(moduleContext)
-                .executeWithTaskTraits(new TaskTraits()
-                                               .setTaskPriority(TaskPriority.USER_VISIBLE)
-                                               .setMayBlock(true));
+        new LoadClassTask(moduleContext).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -330,7 +326,16 @@ public class ModuleLoader {
         @Override
         @Nullable
         protected Class<?> doInBackground() {
+            int oldPriority = Process.getThreadPriority(0);
             try {
+                // We don't want to block the UI thread, but we don't want to be really slow either.
+                // The AsyncTask class sets the thread priority quite low
+                // (THREAD_PRIORITY_BACKGROUND) and does not distinguish between user-visible
+                // user-invisible tasks.
+                // TODO(crbug.com/863457): Replace this with something like a task trait that
+                // influences priority once we have a task scheduler in Java.
+                Process.setThreadPriority(Process.THREAD_PRIORITY_DEFAULT);
+
                 boolean loadFromDex = updateModuleDexInDiskIfNeeded();
                 long entryPointLoadClassStartTime = ModuleMetrics.now();
                 Class<?> clazz =
@@ -344,6 +349,8 @@ public class ModuleLoader {
                 Log.e(TAG, "Could not copy dex to local storage", e);
                 ModuleMetrics.recordLoadResult(
                         ModuleMetrics.LoadResult.FAILED_TO_COPY_DEX_EXCEPTION);
+            } finally {
+                Process.setThreadPriority(oldPriority);
             }
             return null;
         }
