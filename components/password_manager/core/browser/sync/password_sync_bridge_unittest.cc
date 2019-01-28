@@ -554,4 +554,29 @@ TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
   EXPECT_FALSE(error);
 }
 
+TEST_F(PasswordSyncBridgeTest, ShouldGetAllDataForDebuggingWithHiddenPassword) {
+  const int kPrimaryKey1 = 1000;
+  const int kPrimaryKey2 = 1001;
+  autofill::PasswordForm form1 = MakePasswordForm(kSignonRealm1);
+  autofill::PasswordForm form2 = MakePasswordForm(kSignonRealm2);
+
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey1, form1);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey2, form2);
+
+  std::unique_ptr<syncer::DataBatch> batch;
+
+  bridge()->GetAllDataForDebugging(base::BindLambdaForTesting(
+      [&](std::unique_ptr<syncer::DataBatch> in_batch) {
+        batch = std::move(in_batch);
+      }));
+
+  ASSERT_THAT(batch, NotNull());
+  while (batch->HasNext()) {
+    const syncer::KeyAndData& data_pair = batch->Next();
+    EXPECT_EQ("hidden", data_pair.second->specifics.password()
+                            .client_only_encrypted_data()
+                            .password_value());
+  }
+}
+
 }  // namespace password_manager
