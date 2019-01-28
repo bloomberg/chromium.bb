@@ -465,7 +465,7 @@ Response TargetHandler::Disable() {
   return Response::OK();
 }
 
-void TargetHandler::DidCommitNavigation() {
+void TargetHandler::DidFinishNavigation() {
   auto_attacher_.UpdateServiceWorkers();
 }
 
