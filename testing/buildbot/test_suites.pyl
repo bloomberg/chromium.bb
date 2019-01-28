@@ -2657,9 +2657,6 @@
             '--smoke-test-mode',
           ],
         },
-        'args': [
-          '--gtest-benchmark-name=components_perftests',
-        ],
       },
     },
 
@@ -2710,9 +2707,6 @@
             '--smoke-test-mode',
           ],
         },
-        'args': [
-          '--gtest-benchmark-name=views_perftests',
-        ],
       },
       'webkit_layout_tests': {
         # layout test failures are retried 3 times when '--test-list' is not

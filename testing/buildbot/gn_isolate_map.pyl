@@ -127,8 +127,6 @@
   "angle_perftests": {
     "args": [
       "angle_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       "--test-launcher-jobs=1",
       "--test-launcher-retry-limit=0",
@@ -253,8 +251,6 @@
   "base_perftests": {
     "args": [
       "base_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       "--test-launcher-jobs=1",
       "--test-launcher-retry-limit=0",
@@ -623,8 +619,6 @@
   "command_buffer_perftests": {
     "args": [
       "command_buffer_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
@@ -655,6 +649,7 @@
   "components_perftests": {
     "args": [
       "--xvfb",
+      "--gtest-benchmark-name=components_perftests",
       "--non-telemetry=true",
       "--migrated-test=true",
       "components_perftests",
@@ -1033,8 +1028,6 @@
   "gpu_perftests": {
     "args": [
       "gpu_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
@@ -1360,8 +1353,6 @@
   "load_library_perf_tests": {
     "args": [
       "load_library_perf_tests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
     ],
     "label": "//chrome/test:load_library_perf_tests",
@@ -1399,8 +1390,6 @@
   "media_perftests": {
     "args": [
       "media_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--single-process-tests",
       "--test-launcher-retry-limit=0",
       "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned",
@@ -1800,8 +1789,6 @@
   "net_perftests": {
     "args": [
       "net_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
     ],
     "label": "//net:net_perftests",
     "script": "//testing/scripts/run_performance_tests_wrapper.py",
@@ -2031,8 +2018,6 @@
   "performance_browser_tests": {
     "args": [
       "performance_browser_tests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       # TODO(crbug.com/759866): Figure out why CastV2PerformanceTest/0 sometimes
       # takes 15-30 seconds to start up and, once fixed, remove this workaround
@@ -2449,8 +2434,6 @@
   "tracing_perftests": {
     "args": [
       "tracing_perftests",
-      "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
@@ -2591,6 +2574,7 @@
   "views_perftests": {
     "args": [
       "--xvfb",
+      "--gtest-benchmark-name=views_perftests",
       "--non-telemetry=true",
       "--migrated-test=true",
       "views_perftests",
@@ -2630,7 +2614,8 @@
   "vr_common_perftests": {
     "args": [
       "vr_common_perftests",
-      "--non-telemetry=true",
+      "--non-telemetry=1",
+      "--gtest-benchmark-name=xr.vr.common_perftests",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],

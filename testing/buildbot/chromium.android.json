@@ -23694,9 +23694,6 @@
     ],
     "isolated_scripts": [
       {
-        "args": [
-          "--gtest-benchmark-name=components_perftests"
-        ],
         "isolate_name": "components_perftests",
         "merge": {
           "args": [
