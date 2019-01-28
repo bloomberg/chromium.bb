@@ -916,6 +916,7 @@ void ProfileSyncService::OnEngineInitialized(
     const std::string& bag_of_chips,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!cache_guid.empty());
 
   // TODO(treib): Based on some crash reports, it seems like the user could have
   // signed out already at this point, so many of the steps below, including
@@ -1436,12 +1437,12 @@ void ProfileSyncService::ConfigureDataTypeManager(
   syncer::ConfigureContext configure_context;
   configure_context.authenticated_account_id =
       GetAuthenticatedAccountInfo().account_id;
-  configure_context.cache_guid = sync_client_->GetDeviceInfoSyncService()
-                                     ->GetLocalDeviceInfoProvider()
-                                     ->GetLocalSyncCacheGUID();
+  configure_context.cache_guid = sync_prefs_.GetCacheGuid();
   configure_context.storage_option = syncer::STORAGE_ON_DISK;
   configure_context.reason = reason;
   configure_context.configuration_start_time = base::Time::Now();
+
+  DCHECK(!configure_context.cache_guid.empty());
 
   if (!migrator_) {
     // We create the migrator at the same time.
@@ -2036,16 +2037,15 @@ ProfileSyncService::GetEncryptionObserverForTest() {
 void ProfileSyncService::RemoveClientFromServer() const {
   if (!engine_initialized_)
     return;
-  const std::string cache_guid = sync_client_->GetDeviceInfoSyncService()
-                                     ->GetLocalDeviceInfoProvider()
-                                     ->GetLocalSyncCacheGUID();
+  const std::string cache_guid = sync_prefs_.GetCacheGuid();
+  DCHECK(!cache_guid.empty());
   std::string birthday;
   syncer::UserShare* user_share = GetUserShare();
   if (user_share && user_share->directory.get()) {
     birthday = user_share->directory->store_birthday();
   }
   const std::string& access_token = auth_manager_->access_token();
-  if (!access_token.empty() && !cache_guid.empty() && !birthday.empty()) {
+  if (!access_token.empty() && !birthday.empty()) {
     sync_stopped_reporter_->ReportSyncStopped(access_token, cache_guid,
                                               birthday);
   }

@@ -63,11 +63,6 @@ std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
   return MakeUserAgentForSync(channel_, is_tablet_);
 }
 
-std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return cache_guid_;
-}
-
 std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::RepeatingClosure& callback) {
@@ -80,7 +75,6 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
                                              const std::string& session_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
-  cache_guid_ = cache_guid;
 
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, session_name, version_, GetSyncUserAgent(),
@@ -92,7 +86,6 @@ void LocalDeviceInfoProviderImpl::Initialize(const std::string& cache_guid,
 
 void LocalDeviceInfoProviderImpl::Clear() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  cache_guid_ = "";
   local_device_info_.reset();
 }
 
