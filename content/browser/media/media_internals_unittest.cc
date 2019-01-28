@@ -306,7 +306,7 @@ TEST_P(MediaInternalsAudioLogTest, AudioLogCreateClose) {
   ExpectStatus("closed");
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MediaInternalsAudioLogTest,
     MediaInternalsAudioLogTest,
     testing::Values(media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
