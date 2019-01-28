@@ -702,6 +702,12 @@ void RenderWidget::OnSynchronizeVisualProperties(
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
   VisualProperties params = original_params;
+  // Web tests can override the device scale factor in the renderer.
+  if (device_scale_factor_for_testing_) {
+    params.screen_info.device_scale_factor = *device_scale_factor_for_testing_;
+    params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
+        params.new_size, params.screen_info.device_scale_factor);
+  }
 
   // Inform the rendering thread of the color space indicating the presence of
   // HDR capabilities. The HDR bit happens to be globally true/false for all
@@ -754,16 +760,6 @@ void RenderWidget::OnSynchronizeVisualProperties(
         params.browser_controls_shrink_blink_size;
     top_controls_height_ = params.top_controls_height;
     bottom_controls_height_ = params.bottom_controls_height;
-
-    // TODO(fsamuel): Modifies the |params| that are used for
-    // SynchronizeVisualProperties(), but does not used this modified
-    // device_scale_factor for the auto-resize values, which is probably a bug.
-    if (device_scale_factor_for_testing_) {
-      params.screen_info.device_scale_factor =
-          *device_scale_factor_for_testing_;
-      params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
-          params.new_size, params.screen_info.device_scale_factor);
-    }
   }
 
   if (!resizing_mode_selector_->ShouldAbortOnResize(this, params)) {
