@@ -90,21 +90,21 @@ using GLImageTestTypes =
                    GLImageDXGITestDelegate<gfx::BufferFormat::RGBX_8888>>;
 
 // Disabled by default as it requires DX11.
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageDXGIHandle,
-                              GLImageTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageDXGIHandle,
+                               GLImageTest,
+                               GLImageTestTypes);
 
 using GLImageRGBTestTypes =
     testing::Types<GLImageDXGITestDelegate<gfx::BufferFormat::RGBA_8888>,
                    GLImageDXGITestDelegate<gfx::BufferFormat::RGBX_8888>>;
 
 // Disabled by default as it requires DX11.
-INSTANTIATE_TYPED_TEST_CASE_P(DISABLED_GLImageDXGIHandle,
-                              GLImageZeroInitializeTest,
-                              GLImageRGBTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(DISABLED_GLImageDXGIHandle,
+                               GLImageZeroInitializeTest,
+                               GLImageRGBTestTypes);
 
 // Disabled by default as it requires DX11.
-INSTANTIATE_TYPED_TEST_CASE_P(
+INSTANTIATE_TYPED_TEST_SUITE_P(
     DISABLED_GLImageDXGIHandle,
     GLImageBindTest,
     GLImageDXGITestDelegate<gfx::BufferFormat::RGBA_8888>);
