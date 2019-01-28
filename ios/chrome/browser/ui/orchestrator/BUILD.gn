@@ -13,6 +13,7 @@ source_set("orchestrator") {
     "toolbar_animatee.h",
   ]
   deps = [
+    "//base",
     "//ios/chrome/common:timing",
   ]
   libs = [ "UIKit.framework" ]

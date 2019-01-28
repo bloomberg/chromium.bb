@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/orchestrator/edit_view_animatee.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
 #import "ios/chrome/browser/ui/orchestrator/toolbar_animatee.h"
@@ -16,30 +17,39 @@
 @interface OmniboxFocusOrchestrator ()
 
 @property(nonatomic, assign) BOOL isAnimating;
+@property(nonatomic, assign) BOOL stateChangedDuringAnimation;
+@property(nonatomic, assign) BOOL finalOmniboxFocusedState;
+@property(nonatomic, assign) BOOL finalToolbarExpandedState;
+@property(nonatomic, assign) int inProgressAnimationCount;
 
 @end
 
 @implementation OmniboxFocusOrchestrator
 
-@synthesize toolbarAnimatee = _toolbarAnimatee;
-@synthesize locationBarAnimatee = _locationBarAnimatee;
-@synthesize editViewAnimatee = _editViewAnimatee;
-@synthesize isAnimating = _isAnimating;
-
 - (void)transitionToStateOmniboxFocused:(BOOL)omniboxFocused
                         toolbarExpanded:(BOOL)toolbarExpanded
                                animated:(BOOL)animated {
+  // If a new transition is requested while one is ongoing, we don't want
+  // to start the new one immediately. However, we do want the omnibox to end
+  // up in whatever state was requested last. Therefore, we cache the last
+  // requested state and set the omnibox to that state (without animation) at
+  // the end of the animations. This may look jerky, but will cause the
+  // final state to be a valid one.
+  if (self.isAnimating) {
+    self.stateChangedDuringAnimation = YES;
+    self.finalOmniboxFocusedState = omniboxFocused;
+    self.finalToolbarExpandedState = toolbarExpanded;
+    return;
+  }
+
+  self.isAnimating = animated;
+  self.inProgressAnimationCount = 0;
+
   if (toolbarExpanded) {
     [self updateUIToExpandedState:animated];
   } else {
     [self updateUIToContractedState:animated];
   }
-
-  if (self.isAnimating) {
-    return;
-  }
-
-  self.isAnimating = animated;
 
   // Make the rest of the animation happen on the next runloop when this
   // animation have calculated the final frame for the location bar.
@@ -64,9 +74,7 @@
 
 - (void)focusOmniboxAnimated:(BOOL)animated {
   // Cleans up after the animation.
-  // The argument is necessary as this is used as |completion| in UIView
-  // animateWithBlock: call.
-  auto cleanup = ^(BOOL __unused complete) {
+  void (^cleanup)() = ^{
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setSteadyViewHidden:YES];
     [self.locationBarAnimatee resetTransforms];
@@ -74,7 +82,6 @@
     [self.locationBarAnimatee setEditViewFaded:NO];
     [self.editViewAnimatee setLeadingIconFaded:NO];
     [self.editViewAnimatee setClearButtonFaded:NO];
-    self.isAnimating = NO;
   };
 
   if (animated) {
@@ -88,14 +95,18 @@
 
     CGFloat duration = ios::material::kDuration1;
 
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration
-                          delay:0
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:^{
-                       [self.locationBarAnimatee
-                               resetEditViewOffsetAndOffsetSteadyViewToMatch];
-                     }
-                     completion:cleanup];
+        delay:0
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [self.locationBarAnimatee
+                  resetEditViewOffsetAndOffsetSteadyViewToMatch];
+        }
+        completion:^(BOOL complete) {
+          cleanup();
+          [self animationFinished];
+        }];
 
     // Fading the views happens with a different timing for a better visual
     // effect. The steady view looks like an ordinary label, and it fades before
@@ -103,43 +114,49 @@
     // looks like selected text. Since the selection is blue, it looks
     // overwhelming if faded in at the same time as the steady view. So it fades
     // in faster and later into the animation to look better.
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration * 0.8
-                          delay:duration * 0.1
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:^{
-                       [self.locationBarAnimatee setSteadyViewFaded:YES];
-                     }
-                     completion:nil];
+        delay:duration * 0.1
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [self.locationBarAnimatee setSteadyViewFaded:YES];
+        }
+        completion:^(BOOL complete) {
+          [self animationFinished];
+        }];
 
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration * 0.6
-                          delay:duration * 0.4
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:^{
-                       [self.locationBarAnimatee setEditViewFaded:NO];
-                     }
-                     completion:nil];
+        delay:duration * 0.4
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [self.locationBarAnimatee setEditViewFaded:NO];
+        }
+        completion:^(BOOL _) {
+          [self animationFinished];
+        }];
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration * 0.2
-                          delay:duration * 0.8
-                        options:UIViewAnimationCurveLinear
-                     animations:^{
-                       [self.editViewAnimatee setLeadingIconFaded:NO];
-                       [self.editViewAnimatee setClearButtonFaded:NO];
-                     }
-                     completion:nil];
+        delay:duration * 0.8
+        options:UIViewAnimationCurveLinear
+        animations:^{
+          [self.editViewAnimatee setLeadingIconFaded:NO];
+          [self.editViewAnimatee setClearButtonFaded:NO];
+        }
+        completion:^(BOOL _) {
+          [self animationFinished];
+        }];
   } else {
-    cleanup(YES);
+    cleanup();
   }
 }
 
 - (void)defocusOmniboxAnimated:(BOOL)animated {
   // Cleans up after the animation.
-  // The argument is necessary as this is used as |completion| in UIView
-  // animateWithBlock: call.
-  void (^cleanup)(BOOL _) = ^(BOOL _) {
+  void (^cleanup)() = ^{
     [self.locationBarAnimatee setEditViewHidden:YES];
     [self.locationBarAnimatee setSteadyViewHidden:NO];
     [self.locationBarAnimatee resetTransforms];
-    self.isAnimating = NO;
     [self.locationBarAnimatee setSteadyViewFaded:NO];
     [self.editViewAnimatee setLeadingIconFaded:NO];
     [self.editViewAnimatee setClearButtonFaded:NO];
@@ -156,41 +173,55 @@
 
     CGFloat duration = ios::material::kDuration1;
 
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration
-                          delay:0
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:^{
-                       [self.locationBarAnimatee
-                               resetSteadyViewOffsetAndOffsetEditViewToMatch];
-                     }
-                     completion:cleanup];
+        delay:0
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [self.locationBarAnimatee
+                  resetSteadyViewOffsetAndOffsetEditViewToMatch];
+        }
+        completion:^(BOOL _) {
+          cleanup();
+          [self animationFinished];
+        }];
 
     // These timings are explained in a comment in
     // focusOmniboxAnimated:shouldExpand:.
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:0.2 * duration
-                     animations:^{
-                       [self.editViewAnimatee setLeadingIconFaded:YES];
-                       [self.editViewAnimatee setClearButtonFaded:YES];
-                     }];
+        animations:^{
+          [self.editViewAnimatee setLeadingIconFaded:YES];
+          [self.editViewAnimatee setClearButtonFaded:YES];
+        }
+        completion:^(BOOL _) {
+          [self animationFinished];
+        }];
 
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration * 0.8
-                          delay:duration * 0.1
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:^{
-                       [self.locationBarAnimatee setEditViewFaded:YES];
-                     }
-                     completion:nil];
+        delay:duration * 0.1
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [self.locationBarAnimatee setEditViewFaded:YES];
+        }
+        completion:^(BOOL _) {
+          [self animationFinished];
+        }];
 
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration * 0.6
-                          delay:duration * 0.4
-                        options:UIViewAnimationCurveEaseInOut
-                     animations:^{
-                       [self.locationBarAnimatee setSteadyViewFaded:NO];
-                     }
-                     completion:nil];
+        delay:duration * 0.4
+        options:UIViewAnimationCurveEaseInOut
+        animations:^{
+          [self.locationBarAnimatee setSteadyViewFaded:NO];
+        }
+        completion:^(BOOL _) {
+          [self animationFinished];
+        }];
 
   } else {
-    cleanup(YES);
+    cleanup();
   }
 }
 
@@ -209,17 +240,23 @@
   if (animated) {
     // Use UIView animateWithDuration instead of UIViewPropertyAnimator to
     // avoid UIKit bug. See https://crbug.com/856155.
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:ios::material::kDuration1
                           delay:0
                         options:UIViewAnimationCurveEaseInOut
                      animations:expansion
-                     completion:nil];
+                     completion:^(BOOL _) {
+                       [self animationFinished];
+                     }];
 
+    self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:ios::material::kDuration2
                           delay:0
                         options:UIViewAnimationCurveEaseInOut
                      animations:hideControls
-                     completion:nil];
+                     completion:^(BOOL _) {
+                       [self animationFinished];
+                     }];
   } else {
     expansion();
     hideControls();
@@ -248,6 +285,7 @@
         ios::material::kDuration1 + ios::material::kDuration2;
     CGFloat relativeDurationAnimation1 =
         ios::material::kDuration1 / totalDuration;
+    self.inProgressAnimationCount += 1;
     [UIView animateKeyframesWithDuration:totalDuration
         delay:0
         options:UIViewAnimationCurveEaseInOut
@@ -264,7 +302,8 @@
                                       showControls();
                                     }];
         }
-        completion:^(BOOL finished) {
+        completion:^(BOOL _) {
+          [self animationFinished];
           hideCancel();
         }];
   } else {
@@ -272,6 +311,26 @@
     showControls();
     hideCancel();
   }
+}
+
+- (void)animationFinished {
+  self.inProgressAnimationCount -= 1;
+  if (self.inProgressAnimationCount > 0) {
+    return;
+  }
+
+  // inProgressAnimation count should never be negative because it should
+  // always be incremented before starting an animation and decremented
+  // when the animation finishes.
+  DCHECK(self.inProgressAnimationCount == 0);
+
+  self.isAnimating = NO;
+  if (self.stateChangedDuringAnimation) {
+    [self transitionToStateOmniboxFocused:self.finalOmniboxFocusedState
+                          toolbarExpanded:self.finalToolbarExpandedState
+                                 animated:NO];
+  }
+  self.stateChangedDuringAnimation = NO;
 }
 
 @end
