@@ -211,9 +211,9 @@ static void update_rc_counts(AV1_COMP *cpi) {
 static void check_show_existing_frame(AV1_COMP *cpi) {
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   AV1_COMMON *const cm = &cpi->common;
-  const FRAME_UPDATE_TYPE next_frame_update_type =
+  const FRAME_UPDATE_TYPE frame_update_type =
       gf_group->update_type[gf_group->index];
-  const int which_arf = (cpi->new_bwdref_update_rule == 1)
+  const int which_arf = cpi->new_bwdref_update_rule
                             ? gf_group->arf_update_idx[gf_group->index] > 0
                             : gf_group->arf_update_idx[gf_group->index];
 
@@ -223,28 +223,27 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
     // NOTE: When new structure is used, every bwdref will have one overlay
     //       frame. Therefore, there is no need to find out which frame to
     //       show in advance.
-    if (cpi->new_bwdref_update_rule == 0) {
-      // NOTE: If the current frame is a last bi-predictive frame, it is
+    if (!cpi->new_bwdref_update_rule) {
+      // NOTE: If the last frame is a last bi-predictive frame, it is
       //       needed next to show the BWDREF_FRAME, which is pointed by
       //       the last_fb_idxes[0] after reference frame buffer update
-      cpi->rc.is_last_bipred_frame = 0;
       cm->show_existing_frame = 1;
       cpi->existing_fb_idx_to_show = cm->remapped_ref_idx[0];
     }
   } else if (cpi->is_arf_filter_off[which_arf] &&
-             (next_frame_update_type == OVERLAY_UPDATE ||
-              next_frame_update_type == INTNL_OVERLAY_UPDATE)) {
+             (frame_update_type == OVERLAY_UPDATE ||
+              frame_update_type == INTNL_OVERLAY_UPDATE)) {
     const int bwdref_to_show =
-        (cpi->new_bwdref_update_rule == 1) ? BWDREF_FRAME : ALTREF2_FRAME;
+        cpi->new_bwdref_update_rule ? BWDREF_FRAME : ALTREF2_FRAME;
     // Other parameters related to OVERLAY_UPDATE will be taken care of
     // in av1_rc_get_second_pass_params(cpi)
     cm->show_existing_frame = 1;
     cpi->rc.is_src_frame_alt_ref = 1;
     cpi->existing_fb_idx_to_show =
-        (next_frame_update_type == OVERLAY_UPDATE)
+        (frame_update_type == OVERLAY_UPDATE)
             ? get_ref_frame_map_idx(cm, ALTREF_FRAME)
             : get_ref_frame_map_idx(cm, bwdref_to_show);
-    if (cpi->new_bwdref_update_rule == 0) {
+    if (!cpi->new_bwdref_update_rule) {
       cpi->is_arf_filter_off[which_arf] = 0;
     }
   }
@@ -700,7 +699,6 @@ struct lookahead_entry *choose_frame_source(
                                frame_params);
   }
 
-  cpi->rc.is_bwd_ref_frame = 0;
   int brf_src_index = get_brf_src_index(cpi);
   if (brf_src_index) {
     assert(brf_src_index <= cpi->rc.frames_to_key);
@@ -734,6 +732,26 @@ struct lookahead_entry *choose_frame_source(
   return source;
 }
 
+// Don't allow a show_existing_frame to coincide with an error resilient or
+// S-Frame. An exception can be made in the case of a keyframe, since it does
+// not depend on any previous frames.
+static int allow_show_existing(const AV1_COMP *const cpi) {
+  if (cpi->common.current_frame.frame_number == 0) return 0;
+
+  const struct lookahead_entry *lookahead_src =
+      av1_lookahead_peek(cpi->lookahead, 0);
+  if (lookahead_src == NULL) return 1;
+
+  const int is_error_resilient =
+      cpi->oxcf.error_resilient_mode ||
+      (lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT);
+  const int is_s_frame =
+      cpi->oxcf.s_frame_mode || (lookahead_src->flags & AOM_EFLAG_SET_S_FRAME);
+  const int is_key_frame =
+      (cpi->rc.frames_to_key == 0) || (cpi->frame_flags & FRAMEFLAGS_KEY);
+  return !(is_error_resilient || is_s_frame) || is_key_frame;
+}
+
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         int64_t *const time_stamp, int64_t *const time_end,
@@ -747,6 +765,13 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   memset(&frame_input, 0, sizeof(frame_input));
   memset(&frame_params, 0, sizeof(frame_params));
   memset(&frame_results, 0, sizeof(frame_results));
+
+  if (oxcf->pass == 0 || oxcf->pass == 2) {
+    check_show_existing_frame(cpi);
+    cm->show_existing_frame &= allow_show_existing(cpi);
+  } else {
+    cm->show_existing_frame = 0;
+  }
 
   int temporal_filtered = 0;
   struct lookahead_entry *source = NULL;
@@ -904,7 +929,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     update_fb_of_context_type(cpi, &frame_params, cpi->fb_of_context_type);
     set_additional_frame_flags(cm, frame_params.frame_flags);
     update_rc_counts(cpi);
-    check_show_existing_frame(cpi);  // Is next frame a show_existing frame?
   }
 
   // Unpack frame_results:

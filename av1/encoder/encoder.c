@@ -5701,26 +5701,6 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
 }
 #endif  // CONFIG_INTERNAL_STATS
 
-// Don't allow a show_existing_frame to coincide with an error resilient or
-// S-Frame. An exception can be made in the case of a keyframe, since it does
-// not depend on any previous frames.
-static int allow_show_existing(const AV1_COMP *const cpi) {
-  if (cpi->common.current_frame.frame_number == 0) return 0;
-
-  const struct lookahead_entry *lookahead_src =
-      av1_lookahead_peek(cpi->lookahead, 0);
-  if (lookahead_src == NULL) return 1;
-
-  const int is_error_resilient =
-      cpi->oxcf.error_resilient_mode ||
-      (lookahead_src->flags & AOM_EFLAG_ERROR_RESILIENT);
-  const int is_s_frame =
-      cpi->oxcf.s_frame_mode || (lookahead_src->flags & AOM_EFLAG_SET_S_FRAME);
-  const int is_key_frame =
-      (cpi->rc.frames_to_key == 0) || (cpi->frame_flags & FRAMEFLAGS_KEY);
-  return !(is_error_resilient || is_s_frame) || is_key_frame;
-}
-
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
@@ -5759,8 +5739,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   // Initialize fields related to forward keyframes
   cpi->no_show_kf = 0;
-
-  cm->show_existing_frame &= allow_show_existing(cpi);
 
   if (assign_cur_frame_new_fb(cm) == NULL) return AOM_CODEC_ERROR;
 
