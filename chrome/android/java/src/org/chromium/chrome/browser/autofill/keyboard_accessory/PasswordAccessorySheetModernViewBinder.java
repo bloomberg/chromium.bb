@@ -55,10 +55,10 @@ class PasswordAccessorySheetModernViewBinder {
         }
 
         void bindChipView(ChipView chip, KeyboardAccessoryData.UserInfo.Field field) {
-            chip.getInnerTextView().setTransformationMethod(
+            chip.getPrimaryTextView().setTransformationMethod(
                     field.isObfuscated() ? new PasswordTransformationMethod() : null);
-            chip.getInnerTextView().setText(field.getDisplayText());
-            chip.getInnerTextView().setContentDescription(field.getA11yDescription());
+            chip.getPrimaryTextView().setText(field.getDisplayText());
+            chip.getPrimaryTextView().setContentDescription(field.getA11yDescription());
             chip.setOnClickListener(!field.isSelectable() ? null : src -> field.triggerSelection());
             chip.setClickable(field.isSelectable());
             chip.setEnabled(field.isSelectable());

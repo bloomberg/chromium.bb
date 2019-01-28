@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.widget.ChipView;
 
 /**
  * Observes {@link KeyboardAccessoryProperties} changes (like a newly available tab) and triggers
@@ -23,8 +24,7 @@ class KeyboardAccessoryModernViewBinder {
     public static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
         switch (viewType) {
             case BarItem.Type.SUGGESTION:
-                return new KeyboardAccessoryViewBinder.BarItemTextViewHolder(
-                        parent, R.layout.keyboard_accessory_suggestion);
+                return new BarItemChipViewHolder(parent);
             case BarItem.Type.TAB_SWITCHER:
                 return new TabItemViewHolder(parent);
             case BarItem.Type.ACTION_BUTTON: // Intentional fallthrough. Use legacy handling.
@@ -32,6 +32,20 @@ class KeyboardAccessoryModernViewBinder {
                 break;
         }
         return KeyboardAccessoryViewBinder.create(parent, viewType);
+    }
+
+    static class BarItemChipViewHolder extends BarItemViewHolder<BarItem, ChipView> {
+        BarItemChipViewHolder(ViewGroup parent) {
+            super(parent, R.layout.keyboard_accessory_suggestion_modern);
+        }
+
+        @Override
+        protected void bind(BarItem item, ChipView chipView) {
+            KeyboardAccessoryData.Action action = item.getAction();
+            assert action != null : "Tried to bind item without action. Chose a wrong ViewHolder?";
+            chipView.getPrimaryTextView().setText(action.getCaption());
+            chipView.setOnClickListener(view -> action.getCallback().onResult(action));
+        }
     }
 
     static class TabItemViewHolder
