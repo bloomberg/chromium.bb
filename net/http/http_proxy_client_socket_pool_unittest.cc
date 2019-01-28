@@ -32,6 +32,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/gtest_util.h"
@@ -73,7 +74,18 @@ class HttpProxyClientSocketPoolTest
   HttpProxyClientSocketPoolTest()
       : transport_socket_pool_(kMaxSockets,
                                kMaxSocketsPerGroup,
-                               &socket_factory_),
+                               &socket_factory_,
+                               session_deps_.host_resolver.get(),
+                               session_deps_.cert_verifier.get(),
+                               session_deps_.channel_id_service.get(),
+                               session_deps_.transport_security_state.get(),
+                               session_deps_.cert_transparency_verifier.get(),
+                               session_deps_.ct_policy_enforcer.get(),
+                               std::string() /* ssl_session_cache_shard */,
+                               session_deps_.ssl_config_service.get(),
+                               nullptr /* socket_performance_watcher_factory */,
+                               nullptr /* network_quality_estimator */,
+                               nullptr /* net_log */),
         ssl_socket_pool_(kMaxSockets,
                          kMaxSocketsPerGroup,
                          session_deps_.cert_verifier.get(),
@@ -98,6 +110,7 @@ class HttpProxyClientSocketPoolTest
                                                         nullptr,
                                                         &estimator_,
                                                         nullptr)) {
+    session_deps_.host_resolver->set_synchronous_mode(true);
     session_ = CreateNetworkSession();
   }
 
@@ -226,19 +239,11 @@ class HttpProxyClientSocketPoolTest
     return SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
 
-  RequestPriority GetLastTransportRequestPriority() const {
-    return transport_socket_pool_.last_request_priority();
-  }
-
-  RequestPriority GetTransportRequestPriority(size_t index) const {
-    return transport_socket_pool_.requests()[index]->priority();
-  }
-
   const base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   TestNetworkQualityEstimator* estimator() { return &estimator_; }
 
-  MockTransportClientSocketPool* transport_socket_pool() {
+  TransportClientSocketPool* transport_socket_pool() {
     return &transport_socket_pool_;
   }
   SSLClientSocketPool* ssl_socket_pool() { return &ssl_socket_pool_; }
@@ -257,9 +262,7 @@ class HttpProxyClientSocketPoolTest
 
   TestNetworkQualityEstimator estimator_;
 
-  MockTransportClientSocketPool transport_socket_pool_;
-  MockHostResolver host_resolver_;
-  std::unique_ptr<CertVerifier> cert_verifier_;
+  TransportClientSocketPool transport_socket_pool_;
   SSLClientSocketPool ssl_socket_pool_;
 
   std::unique_ptr<HttpNetworkSession> session_;
@@ -352,21 +355,23 @@ TEST_P(HttpProxyClientSocketPoolTest, ProxyDelegateExtraHeaders) {
 // Make sure that HttpProxyConnectJob passes on its priority to its
 // (non-SSL) socket request on Init.
 TEST_P(HttpProxyClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
-  Initialize(base::span<MockRead>(), base::span<MockWrite>(),
-             base::span<MockRead>(), base::span<MockWrite>());
-  EXPECT_EQ(OK, handle_.Init("a", CreateNoTunnelParams(), HIGHEST, SocketTag(),
-                             ClientSocketPool::RespectLimits::ENABLED,
-                             CompletionOnceCallback(), pool_.get(),
-                             NetLogWithSource()));
-  EXPECT_EQ(HIGHEST, GetLastTransportRequestPriority());
-  EXPECT_EQ(HIGHEST, GetTransportRequestPriority(0));
+  // Make request hang during host resolution, so can observe priority there.
+  session_deps_.host_resolver->set_synchronous_mode(false);
+  session_deps_.host_resolver->set_ondemand_mode(true);
+
+  EXPECT_THAT(
+      handle_.Init("a", CreateNoTunnelParams(), HIGHEST, SocketTag(),
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   CompletionOnceCallback(), pool_.get(), NetLogWithSource()),
+      IsError(ERR_IO_PENDING));
+  EXPECT_EQ(HIGHEST, session_deps_.host_resolver->last_request_priority());
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, SetPriority) {
-  data_ = std::make_unique<SequencedSocketData>();
-  data_->set_connect_data(MockConnect(ASYNC, OK));
-
-  socket_factory()->AddSocketDataProvider(data_.get());
+  // Make request hang during host resolution, so can observe priority changes
+  // there.
+  session_deps_.host_resolver->set_synchronous_mode(false);
+  session_deps_.host_resolver->set_ondemand_mode(true);
 
   int rv = handle_.Init("a", CreateTunnelParams(), LOW, SocketTag(),
                         ClientSocketPool::RespectLimits::ENABLED,
@@ -375,10 +380,20 @@ TEST_P(HttpProxyClientSocketPoolTest, SetPriority) {
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
 
-  EXPECT_EQ(LOW, GetTransportRequestPriority(0));
+  // For HTTPS requests, the H2 code will attempt to resolve the host name from
+  // the cache before the ConnectJob gets stuck trying to resolve the host name.
+  // Simplest to just add up total number of resolves to figure the resolution
+  // request being waited on.
+  int host_resolve_request_id =
+      session_deps_.host_resolver->num_resolve() +
+      session_deps_.host_resolver->num_resolve_from_cache();
+
+  EXPECT_EQ(LOW, session_deps_.host_resolver->request_priority(
+                     host_resolve_request_id));
 
   handle_.SetPriority(HIGHEST);
-  EXPECT_EQ(HIGHEST, GetTransportRequestPriority(0));
+  EXPECT_EQ(HIGHEST, session_deps_.host_resolver->request_priority(
+                         host_resolve_request_id));
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
@@ -525,8 +540,6 @@ TEST_P(HttpProxyClientSocketPoolTest, SetSpdySessionSocketRequestPriority) {
       handle_.Init("a", CreateTunnelParams(), MEDIUM, SocketTag(),
                    ClientSocketPool::RespectLimits::ENABLED,
                    callback_.callback(), pool_.get(), NetLogWithSource()));
-  EXPECT_EQ(MEDIUM, GetLastTransportRequestPriority());
-  EXPECT_EQ(MEDIUM, GetTransportRequestPriority(0));
 
   handle_.SetPriority(HIGHEST);
   // Expect frame with HIGHEST priority, not MEDIUM.
