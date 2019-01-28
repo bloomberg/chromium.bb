@@ -92,9 +92,6 @@ enum StyleChangeType {
   kLocalStyleChange = 1 << kNodeStyleChangeShift,
   // This node and all of its flat-tree descendeants need style recalculation.
   kSubtreeStyleChange = 2 << kNodeStyleChangeShift,
-  // This node and all of its descendants are detached and need style
-  // recalculation.
-  kNeedsReattachStyleChange = 3 << kNodeStyleChangeShift,
 };
 
 enum class CustomElementState {
@@ -263,13 +260,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool SupportsAltText();
 
-  void SetNonAttachedStyle(scoped_refptr<ComputedStyle> non_attached_style);
-
-  ComputedStyle* GetNonAttachedStyle() const {
-    return HasRareData()
-               ? data_.rare_data_->GetNodeRenderingData()->GetNonAttachedStyle()
-               : data_.node_layout_data_->GetNonAttachedStyle();
-  }
+  void SetComputedStyle(scoped_refptr<ComputedStyle> computed_style);
 
   // Other methods (not part of DOM)
 
@@ -428,17 +419,9 @@ class CORE_EXPORT Node : public EventTarget {
     return IsUserActionElement() && IsUserActionElementHasFocusWithin();
   }
 
-  bool NeedsAttach() const {
-    return GetStyleChangeType() == kNeedsReattachStyleChange;
-  }
   // True if the style recalc process should recalculate style for this node.
   bool NeedsStyleRecalc() const {
-    // We do not ClearNeedsStyleRecalc() if the recalc triggers a layout re-
-    // attachment (see Element::RecalcStyle()). In order to avoid doing an extra
-    // StyleForLayoutObject for slotted elements, also check if we have been
-    // marked for re-attachment (which mean we have already gone through
-    // RecalcStyleForReattachment as a slot-assigned element).
-    return GetStyleChangeType() != kNoStyleChange && !NeedsReattachLayoutTree();
+    return GetStyleChangeType() != kNoStyleChange;
   }
   StyleChangeType GetStyleChangeType() const {
     return static_cast<StyleChangeType>(node_flags_ & kStyleChangeMask);
@@ -488,8 +471,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   void MarkAncestorsWithChildNeedsReattachLayoutTree();
 
-  void SetForceReattachLayoutTree() { SetFlag(kForceReattachLayoutTree); }
-  bool GetForceReattachLayoutTree() {
+  bool GetForceReattachLayoutTree() const {
     return GetFlag(kForceReattachLayoutTree);
   }
 
@@ -693,19 +675,12 @@ class CORE_EXPORT Node : public EventTarget {
   void ReattachLayoutTree(AttachContext&);
   void LazyReattachIfAttached();
 
-  // Returns true if recalcStyle should be called on the object, if there is
-  // such a method (on Document and Element).
-  bool ShouldCallRecalcStyle(StyleRecalcChange);
-
   // ---------------------------------------------------------------------------
   // Inline ComputedStyle accessors
   //
   // Note that the following 'inline' functions are not defined in this header,
   // but in node_computed_style.h. Please include that file if you want to use
   // these functions.
-
-  // Wrapper for nodes that don't have a layoutObject, but still cache the style
-  // (like HTMLOptionElement).
   ComputedStyle* MutableComputedStyle() const;
   const ComputedStyle* GetComputedStyle() const;
   const ComputedStyle* ParentComputedStyle() const;
@@ -943,8 +918,7 @@ class CORE_EXPORT Node : public EventTarget {
 
     kForceReattachLayoutTree = 1 << 30,
 
-    kDefaultNodeFlags =
-        kIsFinishedParsingChildrenFlag | kNeedsReattachStyleChange
+    kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
   };
 
   // 1 bit remaining.
@@ -960,8 +934,7 @@ class CORE_EXPORT Node : public EventTarget {
   enum ConstructionType {
     kCreateOther = kIsFinishedParsingChildrenFlag,
     kCreateText = kDefaultNodeFlags | kIsTextFlag,
-    kCreateContainer =
-        kDefaultNodeFlags | kChildNeedsStyleRecalcFlag | kIsContainerFlag,
+    kCreateContainer = kDefaultNodeFlags | kIsContainerFlag,
     kCreateElement = kCreateContainer | kIsElementFlag,
     kCreateShadowRoot =
         kCreateContainer | kIsDocumentFragmentFlag | kIsInShadowTreeFlag,
@@ -1003,11 +976,6 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   void SetTreeScope(TreeScope* scope) { tree_scope_ = scope; }
-
-  static void MarkAncestorsWithChildNeedsStyleRecalc(Node* child) {
-    child->MarkAncestorsWithChildNeedsStyleRecalc();
-  }
-
   void SetIsFinishedParsingChildren(bool value) {
     SetFlag(value, kIsFinishedParsingChildrenFlag);
   }
@@ -1069,28 +1037,6 @@ inline void Node::SetParentOrShadowHostNode(ContainerNode* parent) {
 inline ContainerNode* Node::ParentOrShadowHostNode() const {
   DCHECK(IsMainThread());
   return reinterpret_cast<ContainerNode*>(parent_or_shadow_host_node_.Get());
-}
-
-inline void Node::LazyReattachIfAttached() {
-  if (NeedsAttach())
-    return;
-  if (!InActiveDocument())
-    return;
-
-  AttachContext context;
-  context.performing_reattach = true;
-
-  DetachLayoutTree(context);
-  // Comments and processing instructions are never marked dirty.
-  if (NeedsStyleRecalc())
-    MarkAncestorsWithChildNeedsStyleRecalc();
-}
-
-inline bool Node::ShouldCallRecalcStyle(StyleRecalcChange change) {
-  if (NeedsReattachLayoutTree())
-    return false;
-  return change >= kIndependentInherit || NeedsStyleRecalc() ||
-         ChildNeedsStyleRecalc();
 }
 
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.

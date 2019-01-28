@@ -1690,12 +1690,13 @@ scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
   return initial_data_;
 }
 
-void StyleEngine::RecalcStyle(StyleRecalcChange change) {
+void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
   DCHECK(GetDocument().documentElement());
-  DCHECK(GetDocument().ChildNeedsStyleRecalc() || change == kForce);
+  DCHECK(GetDocument().ChildNeedsStyleRecalc() || change.RecalcDescendants());
 
   Element& root_element = style_recalc_root_.RootElement();
-  if (change == kForce || &root_element == GetDocument().documentElement()) {
+  if (change.RecalcChildren() ||
+      &root_element == GetDocument().documentElement()) {
     GetDocument().documentElement()->RecalcStyle(change);
   } else {
     Element* parent = root_element.ParentOrShadowHostElement();
@@ -1751,7 +1752,6 @@ void StyleEngine::UpdateStyleRecalcRoot(ContainerNode* ancestor,
     // LazyReattachIfAttached() from HTMLSlotElement::DetachLayoutTree(). We
     // probably want to get rid of LazyReattachIfAttached() altogether and call
     // DetachLayoutTree on assigned nodes instead.
-    DCHECK_EQ(dirty_node->GetStyleChangeType(), kNeedsReattachStyleChange);
     return;
   }
   style_recalc_root_.Update(ancestor, dirty_node);

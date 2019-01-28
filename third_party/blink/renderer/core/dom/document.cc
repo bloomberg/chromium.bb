@@ -2281,27 +2281,26 @@ void Document::UpdateStyle() {
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
-  StyleRecalcChange change = kNoChange;
-  if (GetStyleChangeType() >= kSubtreeStyleChange)
-    change = kForce;
-
   NthIndexCache nth_index_cache(*this);
 
-  // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver() before
-  // calling StyleForViewport() below because apparently the StyleResolver's
-  // constructor has side effects. We should fix it. See
-  // printing/setPrinting.html, printing/width-overflow.html though they only
-  // fail on mac when accessing the resolver by what appears to be a viewport
-  // size difference.
+  StyleRecalcChange change;
+  if (GetStyleChangeType() == kSubtreeStyleChange) {
+    change = change.ForceRecalcDescendants();
 
-  if (change == kForce) {
     has_nodes_with_placeholder_style_ = false;
+    // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver()
+    // before calling StyleForViewport() below because apparently the
+    // StyleResolver's constructor has side effects. We should fix it. See
+    // printing/setPrinting.html, printing/width-overflow.html though they only
+    // fail on mac when accessing the resolver by what appears to be a viewport
+    // size difference.
     scoped_refptr<ComputedStyle> viewport_style =
         StyleResolver::StyleForViewport(*this);
-    StyleRecalcChange local_change = ComputedStyle::StylePropagationDiff(
-        viewport_style.get(), GetLayoutView()->Style());
-    if (local_change != kNoChange)
+    if (ComputedStyle::ComputeDifference(viewport_style.get(),
+                                         GetLayoutView()->Style()) !=
+        ComputedStyle::Difference::kEqual) {
       GetLayoutView()->SetStyle(std::move(viewport_style));
+    }
   }
 
   ClearNeedsStyleRecalc();
@@ -2314,7 +2313,7 @@ void Document::UpdateStyle() {
   GetStyleEngine().SetStatsEnabled(should_record_stats);
 
   if (Element* document_element = documentElement()) {
-    if (document_element->ShouldCallRecalcStyle(change)) {
+    if (change.TraverseChild(*document_element)) {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
       Element* viewport_defining = ViewportDefiningElement();

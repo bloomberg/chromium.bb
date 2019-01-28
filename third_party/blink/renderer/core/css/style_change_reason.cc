@@ -32,11 +32,11 @@ const char kInlineCSSStyleMutated[] =
 const char kInspector[] = "Inspector";
 const char kLanguage[] = "Language";
 const char kInvisibleChange[] = "InvisibleChange";
+const char kLazyReattach[] = "LazyReattach";
 const char kLinkColorChange[] = "LinkColorChange";
+const char kNodeInserted[] = "NodeInserted";
 const char kPlatformColorChange[] = "PlatformColorChange";
 const char kPolicyViolation[] = "Feature Policy Violation";
-const char kPropagateInheritChangeToDistributedNodes[] =
-    "PropagateInheritChangeToDistributedNodes";
 const char kPropertyRegistration[] = "PropertyRegistration";
 const char kPropertyUnregistration[] = "PropertyUnregistration";
 const char kPseudoClass[] = "PseudoClass";

@@ -737,7 +737,7 @@ void HTMLMediaElement::AttachLayoutTree(AttachContext& context) {
     GetLayoutObject()->UpdateFromElement();
 }
 
-void HTMLMediaElement::DidRecalcStyle(StyleRecalcChange) {
+void HTMLMediaElement::DidRecalcStyle(const StyleRecalcChange) {
   if (GetLayoutObject())
     GetLayoutObject()->UpdateFromElement();
 }

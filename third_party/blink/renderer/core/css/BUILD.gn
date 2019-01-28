@@ -950,6 +950,8 @@ blink_core_sources("css") {
     "style_property_serializer.cc",
     "style_property_serializer.h",
     "style_property_shorthand_custom.cc",
+    "style_recalc.cc",
+    "style_recalc.h",
     "style_recalc_root.cc",
     "style_recalc_root.h",
     "style_rule.cc",

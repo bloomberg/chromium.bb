@@ -38,15 +38,14 @@ inline const ComputedStyle* Node::GetComputedStyle() const {
 }
 
 inline ComputedStyle* Node::MutableComputedStyle() const {
-  if (NeedsReattachLayoutTree())
-    return GetNonAttachedStyle();
-
+  if (IsElementNode()) {
+    return HasRareData()
+               ? data_.rare_data_->GetNodeRenderingData()->GetComputedStyle()
+               : data_.node_layout_data_->GetComputedStyle();
+  }
+  // Text nodes and Document.
   if (LayoutObject* layout_object = GetLayoutObject())
     return layout_object->MutableStyle();
-
-  if (IsElementNode())
-    return ToElement(this)->MutableNonLayoutObjectComputedStyle();
-
   return nullptr;
 }
 

@@ -356,7 +356,7 @@ class CORE_EXPORT StyleEngine final
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
-  void RecalcStyle(StyleRecalcChange change);
+  void RecalcStyle(const StyleRecalcChange change);
   void RebuildLayoutTree();
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 

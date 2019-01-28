@@ -305,7 +305,7 @@ String HTMLFormControlElement::ResultForDialogSubmit() {
   return FastGetAttribute(kValueAttr);
 }
 
-void HTMLFormControlElement::DidRecalcStyle(StyleRecalcChange) {
+void HTMLFormControlElement::DidRecalcStyle(const StyleRecalcChange) {
   if (LayoutObject* layout_object = GetLayoutObject())
     layout_object->UpdateFromElement();
 }

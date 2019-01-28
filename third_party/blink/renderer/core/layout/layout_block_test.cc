@@ -20,7 +20,8 @@ class LayoutBlockTest : public RenderingTest {};
 TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument(), style);
-  obj->SetStyleInternal(nullptr);
+  obj->SetModifiedStyleOutsideStyleRecalc(nullptr,
+                                          LayoutObject::ApplyStyleChanges::kNo);
   EXPECT_FALSE(obj->Style());
   EXPECT_THAT(obj->DecoratedName().Ascii().data(),
               MatchesRegex("LayoutN?G?BlockFlow \\(anonymous\\)"));

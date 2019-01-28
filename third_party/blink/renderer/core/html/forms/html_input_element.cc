@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -1924,12 +1925,9 @@ scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {
       OriginalStyleForLayoutObject());
 }
 
-void HTMLInputElement::DidRecalcStyle(StyleRecalcChange change) {
+void HTMLInputElement::DidRecalcStyle(const StyleRecalcChange change) {
   TextControlElement::DidRecalcStyle(change);
-  if (change != kReattach)
-    return;
-  ComputedStyle* style = GetNonAttachedStyle();
-  if (style && style->Display() != EDisplay::kNone)
+  if (NeedsReattachLayoutTree() && GetComputedStyle())
     input_type_view_->StartResourceLoading();
 }
 

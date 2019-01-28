@@ -1049,9 +1049,9 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
 
 scoped_refptr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
-  Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node);
-  DCHECK(parent_node);
-  return parent_node->MutableComputedStyle();
+  if (Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node))
+    return parent_node->MutableComputedStyle();
+  return nullptr;
 }
 
 void StyleResolver::UpdateFont(StyleResolverState& state) {

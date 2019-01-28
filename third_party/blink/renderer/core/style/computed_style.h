@@ -124,9 +124,9 @@ class WebkitTextStrokeColor;
 //
 // In addition to storing the computed value of every CSS property,
 // ComputedStyle also contains various internal style information. Examples
-// include cached_pseudo_styles_ (for storing pseudo element styles), unique_
-// (for style caching) and has_simple_underline_ (cached indicator flag of
-// text-decoration). These are stored on ComputedStyle for two reasons:
+// include cached_pseudo_styles_ (for storing pseudo element styles) and
+// has_simple_underline_ (cached indicator flag of text-decoration). These are
+// stored on ComputedStyle for two reasons:
 //
 //  1) They share the same lifetime as ComputedStyle, so it is convenient to
 //  store them in the same object rather than a separate object that have to be
@@ -253,9 +253,41 @@ class ComputedStyle : public ComputedStyleBase,
   static const ComputedStyle& InitialStyle() { return MutableInitialStyle(); }
   static void InvalidateInitialStyle();
 
-  // Computes how the style change should be propagated down the tree.
-  static StyleRecalcChange StylePropagationDiff(const ComputedStyle* old_style,
-                                                const ComputedStyle* new_style);
+  // Find out how two ComputedStyles differ. Used for figuring out if style
+  // recalc needs to propagate style changes down the tree. The constants are
+  // listed in increasing severity. E.g. kInherited also means we need to update
+  // pseudo elements (kPseudoStyle).
+  enum class Difference {
+    // The ComputedStyle objects have the same computed style. The might have
+    // some different extra flags which means we still need to replace the old
+    // with the new instance.
+    kEqual,
+    // Non-inherited properties differ which means we need to apply visual
+    // difference changes to the layout tree through LayoutObject::SetStyle().
+    kNonInherited,
+    // Pseudo element style is different which means we have to update pseudo
+    // element existence and computed style.
+    kPseudoStyle,
+    // Inherited properties are different which means we need to recalc style
+    // for children. Only independent properties changed which means we can
+    // inherit by cloning the exiting ComputedStyle for children an set modified
+    // properties directly without re-matching rules.
+    kIndependentInherited,
+    // Inherited properties are different which means we need to recalc style
+    // for children.
+    kInherited,
+    // Display type changes for flex/grid/custom layout affects computed style
+    // adjustments for descendants. For instance flex/grid items are blockified
+    // at computed style time and such items can be arbitrarily deep down the
+    // flat tree in the presence of display:contents.
+    kDisplayAffectingDescendantStyles,
+  };
+  static Difference ComputeDifference(const ComputedStyle* old_style,
+                                      const ComputedStyle* new_style);
+
+  // Returns true if the ComputedStyle change requires a LayoutObject re-attach.
+  static bool NeedsReattachLayoutTree(const ComputedStyle* old_style,
+                                      const ComputedStyle* new_style);
 
   // Copies the values of any independent inherited properties from the parent
   // that are not explicitly set in this style.

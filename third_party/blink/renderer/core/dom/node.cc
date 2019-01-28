@@ -170,18 +170,17 @@ struct SameSizeAsNode : EventTarget {
 
 NodeRenderingData::NodeRenderingData(
     LayoutObject* layout_object,
-    scoped_refptr<ComputedStyle> non_attached_style)
-    : layout_object_(layout_object), non_attached_style_(non_attached_style) {}
+    scoped_refptr<ComputedStyle> computed_style)
+    : layout_object_(layout_object), computed_style_(computed_style) {}
 
 NodeRenderingData::~NodeRenderingData() {
   CHECK(!layout_object_);
 }
 
-void NodeRenderingData::SetNonAttachedStyle(
-    scoped_refptr<ComputedStyle> non_attached_style) {
+void NodeRenderingData::SetComputedStyle(
+    scoped_refptr<ComputedStyle> computed_style) {
   DCHECK_NE(&SharedEmptyData(), this);
-  DCHECK(!non_attached_style || !non_attached_style_);
-  non_attached_style_ = non_attached_style;
+  computed_style_ = computed_style;
 }
 
 NodeRenderingData& NodeRenderingData::SharedEmptyData() {
@@ -903,7 +902,7 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
 
   // Swap the NodeRenderingData to point to a new NodeRenderingData instead of
   // the static SharedEmptyData instance.
-  DCHECK(!node_layout_data->GetNonAttachedStyle());
+  DCHECK(!node_layout_data->GetComputedStyle());
   node_layout_data = new NodeRenderingData(layout_object, nullptr);
   if (HasRareData())
     data_.rare_data_->SetNodeRenderingData(node_layout_data);
@@ -911,9 +910,8 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
     data_.node_layout_data_ = node_layout_data;
 }
 
-void Node::SetNonAttachedStyle(
-    scoped_refptr<ComputedStyle> non_attached_style) {
-  // We don't set non-attached style for text nodes.
+void Node::SetComputedStyle(scoped_refptr<ComputedStyle> computed_style) {
+  // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
 
   NodeRenderingData* node_layout_data =
@@ -923,21 +921,22 @@ void Node::SetNonAttachedStyle(
   // Already pointing to a non empty NodeRenderingData so just set the pointer
   // to the new LayoutObject.
   if (!node_layout_data->IsSharedEmptyData()) {
-    node_layout_data->SetNonAttachedStyle(non_attached_style);
+    node_layout_data->SetComputedStyle(computed_style);
     return;
   }
 
-  if (!non_attached_style)
+  if (!computed_style)
     return;
 
-  // Ensure we don't unnecessarily set non-attached style for elements which are
-  // not part of the flat tree and consequently won't be attached.
-  DCHECK(LayoutTreeBuilderTraversal::Parent(*this));
+  // Ensure we only set computed style for elements which are not part of the
+  // flat tree unless it's enforced for getComputedStyle().
+  DCHECK(computed_style->IsEnsuredInDisplayNone() ||
+         LayoutTreeBuilderTraversal::Parent(*this));
 
   // Swap the NodeRenderingData to point to a new NodeRenderingData instead of
   // the static SharedEmptyData instance.
   DCHECK(!node_layout_data->GetLayoutObject());
-  node_layout_data = new NodeRenderingData(nullptr, non_attached_style);
+  node_layout_data = new NodeRenderingData(nullptr, computed_style);
   if (HasRareData())
     data_.rare_data_->SetNodeRenderingData(node_layout_data);
   else
@@ -1069,6 +1068,8 @@ void Node::MarkAncestorsWithChildNeedsStyleInvalidation() {
   bool parent_dirty = ancestor && ancestor->NeedsStyleInvalidation();
   for (; ancestor && !ancestor->ChildNeedsStyleInvalidation();
        ancestor = ancestor->ParentOrShadowHostNode()) {
+    if (!ancestor->isConnected())
+      return;
     ancestor->SetChildNeedsStyleInvalidation();
     if (ancestor->NeedsStyleInvalidation())
       break;
@@ -1101,6 +1102,8 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
        ancestor = ancestor->ParentOrShadowHostNode()) {
+    if (!ancestor->isConnected())
+      return;
     ancestor->SetChildNeedsStyleRecalc();
     if (ancestor->NeedsStyleRecalc())
       break;
@@ -1186,6 +1189,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
                                const StyleChangeReasonForTracing& reason) {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DCHECK(change_type != kNoStyleChange);
+
   if (!InActiveDocument())
     return;
   if (!IsContainerNode() && !IsTextNode())
@@ -1393,26 +1397,20 @@ Node* Node::CommonAncestor(const Node& other,
 void Node::ReattachLayoutTree(AttachContext& context) {
   context.performing_reattach = true;
 
-  // We only need to detach if the node has already been through
-  // attachLayoutTree().
-  if (GetStyleChangeType() < kNeedsReattachStyleChange)
-    DetachLayoutTree(context);
+  DetachLayoutTree(context);
   AttachLayoutTree(context);
   DCHECK(!NeedsReattachLayoutTree());
-  DCHECK(!GetNonAttachedStyle());
 }
 
 void Node::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc() || IsDocumentNode());
   DCHECK(!GetDocument().Lifecycle().InDetach());
-  DCHECK(NeedsAttach());
 
   LayoutObject* layout_object = GetLayoutObject();
   DCHECK(!layout_object ||
          (layout_object->Style() &&
           (layout_object->Parent() || layout_object->IsLayoutView())));
 
-  ClearNeedsStyleRecalc();
   ClearNeedsReattachLayoutTree();
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
@@ -1422,11 +1420,9 @@ void Node::AttachLayoutTree(AttachContext& context) {
 void Node::DetachLayoutTree(const AttachContext& context) {
   DCHECK(GetDocument().Lifecycle().StateAllowsDetach());
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
-
   if (GetLayoutObject())
     GetLayoutObject()->DestroyAndCleanupAnonymousWrappers();
   SetLayoutObject(nullptr);
-  SetStyleChange(kNeedsReattachStyleChange);
 }
 
 const ComputedStyle* Node::VirtualEnsureComputedStyle(
@@ -1435,6 +1431,25 @@ const ComputedStyle* Node::VirtualEnsureComputedStyle(
              ? ParentOrShadowHostNode()->EnsureComputedStyle(
                    pseudo_element_specifier)
              : nullptr;
+}
+
+void Node::LazyReattachIfAttached() {
+  if (!InActiveDocument())
+    return;
+  if (!IsContainerNode() && !IsTextNode())
+    return;
+
+  AttachContext context;
+  context.performing_reattach = true;
+  DetachLayoutTree(context);
+
+  if (GetDocument().GetStyleEngine().InRebuildLayoutTree())
+    return;
+
+  SetFlag(kForceReattachLayoutTree);
+  SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kLazyReattach));
 }
 
 // FIXME: Shouldn't these functions be in the editing code?  Code that asks

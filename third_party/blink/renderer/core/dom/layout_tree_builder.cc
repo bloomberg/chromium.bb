@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
@@ -196,7 +197,7 @@ LayoutTreeBuilderForText::CreateInlineWrapperForDisplayContentsIfNeeded() {
 void LayoutTreeBuilderForText::CreateLayoutObject() {
   ComputedStyle& style = *style_;
 
-  DCHECK(style_ == layout_object_parent_->Style() ||
+  DCHECK(style_ == layout_object_parent_->GetNode()->GetComputedStyle() ||
          ToElement(LayoutTreeBuilderTraversal::Parent(*node_))
              ->HasDisplayContentsStyle());
 
@@ -287,7 +288,7 @@ void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
   for (const LayoutObject* block : blocks_)
     ToElement(*block->GetNode()).LazyReattachIfAttached();
   state_ = State::kForcingLegacyLayout;
-  document_->GetStyleEngine().RecalcStyle(kNoChange);
+  document_->GetStyleEngine().RecalcStyle({});
   document_->GetStyleEngine().RebuildLayoutTree();
   state_ = State::kClosed;
 }

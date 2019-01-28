@@ -109,13 +109,13 @@ int SVGElement::tabIndex() const {
   return -1;
 }
 
-void SVGElement::WillRecalcStyle(StyleRecalcChange change) {
+void SVGElement::WillRecalcStyle(const StyleRecalcChange change) {
   if (!HasSVGRareData())
     return;
   // If the style changes because of a regular property change (not induced by
   // SMIL animations themselves) reset the "computed style without SMIL style
   // properties", so the base value change gets reflected.
-  if (change > kNoChange || NeedsStyleRecalc())
+  if (change.ShouldRecalcStyleFor(*this))
     SvgRareData()->SetNeedsOverrideComputedStyleUpdate();
 }
 

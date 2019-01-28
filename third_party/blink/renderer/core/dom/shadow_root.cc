@@ -138,22 +138,19 @@ void ShadowRoot::setInnerHTML(const StringOrTrustedHTML& stringOrHtml,
   }
 }
 
-void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
+void ShadowRoot::RecalcStyle(const StyleRecalcChange change) {
   // ShadowRoot doesn't support custom callbacks.
   DCHECK(!HasCustomStyleCallbacks());
 
-  if (GetStyleChangeType() >= kSubtreeStyleChange) {
-    if (change < kForce)
-      change = kForce;
-    if (NeedsAttach() || change == kReattach)
-      SetNeedsReattachLayoutTree();
-  }
-  // There's no style to update so just calling RecalcStyle means we're updated.
-  if (change != kReattach)
-    ClearNeedsStyleRecalc();
+  StyleRecalcChange child_change = change;
+  if (GetStyleChangeType() == kSubtreeStyleChange)
+    child_change = child_change.ForceRecalcDescendants();
 
-  if (change >= kUpdatePseudoElements || ChildNeedsStyleRecalc())
-    RecalcDescendantStyles(change);
+  // There's no style to update so just calling RecalcStyle means we're updated.
+  ClearNeedsStyleRecalc();
+
+  if (child_change.TraverseChildren(*this))
+    RecalcDescendantStyles(child_change);
   ClearChildNeedsStyleRecalc();
 }
 

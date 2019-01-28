@@ -1195,12 +1195,13 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
 
   switch (relayout_behavior) {
     case kAlreadyInLayout:
-      // Don't free currentStyle until the end of the layout pass. This allows
+      // Don't free current_style until the end of the layout pass. This allows
       // other parts of the system to safely hold raw ComputedStyle* pointers
-      // during layout, e.g. BreakingContext::m_currentStyle.
+      // during layout, e.g. BreakingContext::current_style_.
       styles_retained_during_layout_.push_back(&current_style);
 
-      layout_object->SetStyleInternal(std::move(style));
+      layout_object->SetModifiedStyleOutsideStyleRecalc(
+          std::move(style), LayoutObject::ApplyStyleChanges::kNo);
       if (layout_object->IsText())
         ToLayoutText(layout_object)->AutosizingMultiplerChanged();
       DCHECK(!layouter || layout_object->IsDescendantOf(&layouter->Root()));
@@ -1212,7 +1213,8 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
 
     case kLayoutNeeded:
       DCHECK(!layouter);
-      layout_object->SetStyle(std::move(style));
+      layout_object->SetModifiedStyleOutsideStyleRecalc(
+          std::move(style), LayoutObject::ApplyStyleChanges::kYes);
       break;
   }
 

@@ -47,10 +47,8 @@ class CORE_EXPORT PseudoElement : public Element {
   bool CanStartSelection() const override { return false; }
   bool CanContainRangeEndPoint() const override { return false; }
   PseudoId GetPseudoId() const override { return pseudo_id_; }
-  const ComputedStyle* VirtualEnsureComputedStyle(
-      PseudoId pseudo_element_specifier = kPseudoIdNone) final;
-  scoped_refptr<ComputedStyle> StoreOriginalAndReturnLayoutStyle(
-      scoped_refptr<ComputedStyle>);
+  scoped_refptr<ComputedStyle> LayoutStyleForDisplayContents(
+      const ComputedStyle&);
 
   static String PseudoElementNameForEvents(PseudoId);
 
@@ -61,6 +59,18 @@ class CORE_EXPORT PseudoElement : public Element {
   virtual void Dispose();
 
  private:
+  class AttachLayoutTreeScope {
+    STACK_ALLOCATED();
+
+   public:
+    AttachLayoutTreeScope(PseudoElement*);
+    ~AttachLayoutTreeScope();
+
+   private:
+    Member<PseudoElement> element_;
+    scoped_refptr<ComputedStyle> original_style_;
+  };
+
   PseudoId pseudo_id_;
 };
 

@@ -91,10 +91,6 @@ class ElementRareData : public NodeRareData {
     attribute_map_ = attribute_map;
   }
 
-  ComputedStyle* GetComputedStyle() const { return computed_style_.get(); }
-  void SetComputedStyle(scoped_refptr<ComputedStyle>);
-  void ClearComputedStyle();
-
   DOMTokenList* GetClassList() const { return class_list_.Get(); }
   void SetClassList(DOMTokenList* class_list) {
     class_list_ = class_list;
@@ -228,7 +224,6 @@ class ElementRareData : public NodeRareData {
       intersection_observer_data_;
   TraceWrapperMember<ResizeObserverDataMap> resize_observer_data_;
 
-  scoped_refptr<ComputedStyle> computed_style_;
   // TODO(davaajav):remove this field when v0 custom elements are deprecated
   Member<V0CustomElementDefinition> v0_custom_element_definition_;
   Member<CustomElementDefinition> custom_element_definition_;

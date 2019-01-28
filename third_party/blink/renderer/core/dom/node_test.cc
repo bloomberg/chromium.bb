@@ -38,7 +38,7 @@ class NodeTest : public EditingTestBase {
   LayoutObject* ReattachLayoutTreeForNode(Node& node) {
     node.LazyReattachIfAttached();
     GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-    GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
+    GetDocument().GetStyleEngine().RecalcStyle({});
     ReattachLegacyLayoutObjectList legacy_objects(GetDocument());
     Node::AttachContext context;
     node.ReattachLayoutTree(context);
@@ -340,9 +340,13 @@ TEST_F(NodeTest, LazyReattachCommentAndPI) {
 
   comment->LazyReattachIfAttached();
   EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(comment->GetForceReattachLayoutTree());
+  EXPECT_FALSE(comment->NeedsStyleRecalc());
 
   pi->LazyReattachIfAttached();
   EXPECT_FALSE(body->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(pi->GetForceReattachLayoutTree());
+  EXPECT_FALSE(pi->NeedsStyleRecalc());
 }
 
 }  // namespace blink

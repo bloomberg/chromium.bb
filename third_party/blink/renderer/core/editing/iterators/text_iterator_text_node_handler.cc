@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
