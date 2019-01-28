@@ -933,9 +933,9 @@ TEST_P(LogDnsClientTest, CanCancelQueries) {
   histograms_.ExpectTotalCount(kAuditProofRcodeHistogram, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(ReadMode,
-                        LogDnsClientTest,
-                        ::testing::Values(net::IoMode::ASYNC,
-                                          net::IoMode::SYNCHRONOUS));
+INSTANTIATE_TEST_SUITE_P(ReadMode,
+                         LogDnsClientTest,
+                         ::testing::Values(net::IoMode::ASYNC,
+                                           net::IoMode::SYNCHRONOUS));
 
 }  // namespace certificate_transparency
