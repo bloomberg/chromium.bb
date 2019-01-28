@@ -1079,7 +1079,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestInterstitialTest,
   EXPECT_TRUE(hit_report().is_subresource);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     V4SafeBrowsingServiceJsRequestInterstitialTest,
     ::testing::Values(
@@ -1109,17 +1109,17 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestNoInterstitialTest,
   EXPECT_FALSE(got_hit_report());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     V4SafeBrowsingServiceJsRequestNoInterstitialTest,
-    ::testing::Values(
-        JsRequestTestParam(ContextType::kSharedWorker,
-                           JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kServiceWorker,
-                           JsRequestType::kWebSocket),
-        JsRequestTestParam(ContextType::kSharedWorker, JsRequestType::kFetch),
-        JsRequestTestParam(ContextType::kServiceWorker,
-                           JsRequestType::kFetch)));
+    ::testing::Values(JsRequestTestParam(ContextType::kSharedWorker,
+                                         JsRequestType::kWebSocket),
+                      JsRequestTestParam(ContextType::kServiceWorker,
+                                         JsRequestType::kWebSocket),
+                      JsRequestTestParam(ContextType::kSharedWorker,
+                                         JsRequestType::kFetch),
+                      JsRequestTestParam(ContextType::kServiceWorker,
+                                         JsRequestType::kFetch)));
 
 using V4SafeBrowsingServiceJsRequestSafeTest =
     V4SafeBrowsingServiceJsRequestTest;
@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceJsRequestSafeTest,
   EXPECT_FALSE(got_hit_report());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     V4SafeBrowsingServiceJsRequestSafeTest,
     ::testing::Values(
@@ -1314,7 +1314,7 @@ IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceMetadataTest, MalwareImg) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MaybeSetMetadata,
     V4SafeBrowsingServiceMetadataTest,
     testing::Values(ThreatPatternType::NONE,
