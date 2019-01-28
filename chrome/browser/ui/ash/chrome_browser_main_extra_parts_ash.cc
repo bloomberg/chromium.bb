@@ -254,6 +254,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   cast_config_client_media_router_ =
       std::make_unique<CastConfigClientMediaRouter>();
   login_screen_client_ = std::make_unique<LoginScreenClient>();
+  // https://crbug.com/884127 ensuring that LoginScreenClient is initialized before using it InitializeDeviceDisablingManager.
+  g_browser_process->platform_part()->InitializeDeviceDisablingManager();
+
   media_client_ = std::make_unique<MediaClient>();
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been
