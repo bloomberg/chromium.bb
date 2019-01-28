@@ -7,6 +7,7 @@
 		      dir |
 		      include |
 		      match |
+		      remap-dir |
 		      selectfont)* >
 
 <!-- 
@@ -14,7 +15,6 @@
 -->
 <!ELEMENT dir (#PCDATA)>
 <!ATTLIST dir
-	  map       CDATA                         #IMPLIED
 	  prefix    (default|xdg|relative|cwd)    "default"
 	  xml:space (default|preserve)            'preserve'>
 
@@ -110,6 +110,15 @@
 	</edit>
     </match>
 -->
+
+<!--
+    Map a font path as the path "as-path"
+-->
+<!ELEMENT remap-dir
+          as-path   CDATA                       #REQUIRED
+          prefix    (default|xdg|relative|cwd)  "default"
+	  xml:space (default|preserve)          "preserve">
+
 <!--
     Periodically rescan the font configuration and
     directories to synch internal state with filesystem
