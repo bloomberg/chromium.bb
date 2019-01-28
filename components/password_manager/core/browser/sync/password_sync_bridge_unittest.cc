@@ -30,6 +30,7 @@ using testing::Eq;
 using testing::Invoke;
 using testing::NotNull;
 using testing::Return;
+using testing::UnorderedElementsAre;
 
 constexpr char kSignonRealm1[] = "abc";
 constexpr char kSignonRealm2[] = "def";
@@ -47,9 +48,9 @@ MATCHER_P(FormHasSignonRealm, expected_signon_realm, "") {
   return arg.signon_realm == expected_signon_realm;
 }
 
-// |*arg| must be of type PasswordStoreChangeList.
+// |*arg| must be of type PasswordStoreChange.
 MATCHER_P(ChangeHasPrimaryKey, expected_primary_key, "") {
-  return arg[0].primary_key() == expected_primary_key;
+  return arg.primary_key() == expected_primary_key;
 }
 
 // |*arg| must be of type SyncMetadataStoreChangeList.
@@ -378,8 +379,9 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteCreation) {
               AddLoginSync(FormHasSignonRealm(kSignonRealm1)));
   EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kStorageKey, _));
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
-  EXPECT_CALL(*mock_password_store_sync(),
-              NotifyLoginsChanged(ChangeHasPrimaryKey(1)));
+  EXPECT_CALL(
+      *mock_password_store_sync(),
+      NotifyLoginsChanged(UnorderedElementsAre(ChangeHasPrimaryKey(1))));
 
   // Processor shouldn't be notified about remote changes.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
@@ -407,7 +409,8 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteUpdate) {
               UpdateLoginSync(FormHasSignonRealm(kSignonRealm1)));
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
   EXPECT_CALL(*mock_password_store_sync(),
-              NotifyLoginsChanged(ChangeHasPrimaryKey(kPrimaryKey)));
+              NotifyLoginsChanged(
+                  UnorderedElementsAre(ChangeHasPrimaryKey(kPrimaryKey))));
 
   // Processor shouldn't be notified about remote changes.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
@@ -433,7 +436,8 @@ TEST_F(PasswordSyncBridgeTest, ShouldApplyRemoteDeletion) {
               RemoveLoginByPrimaryKeySync(kPrimaryKey));
   EXPECT_CALL(*mock_password_store_sync(), CommitTransaction());
   EXPECT_CALL(*mock_password_store_sync(),
-              NotifyLoginsChanged(ChangeHasPrimaryKey(kPrimaryKey)));
+              NotifyLoginsChanged(
+                  UnorderedElementsAre(ChangeHasPrimaryKey(kPrimaryKey))));
 
   // Processor shouldn't be notified about remote changes.
   EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
@@ -474,6 +478,80 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotGetDataForNonExistingStorageKey) {
   base::Optional<sync_pb::PasswordSpecifics> optional_specifics =
       GetDataFromBridge(/*storage_key=*/kPrimaryKeyStr);
   EXPECT_FALSE(optional_specifics.has_value());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
+  ON_CALL(mock_processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  // Setup the test to have Form 1 and Form 2 stored locally, and Form 2 and
+  // Form 3 coming as remote changes. We will assign primary keys for Form 1 and
+  // Form 2. Form 3 will arrive as remote creation, and FakeDatabase will assign
+  // it primary key 1.
+  const int kPrimaryKey1 = 1000;
+  const int kPrimaryKey2 = 1001;
+  const int kExpectedPrimaryKey3 = 1;
+  const std::string kPrimaryKeyStr1 = "1000";
+  const std::string kPrimaryKeyStr2 = "1001";
+  const std::string kExpectedPrimaryKeyStr3 = "1";
+  autofill::PasswordForm form1 = MakePasswordForm(kSignonRealm1);
+  autofill::PasswordForm form2 = MakePasswordForm(kSignonRealm2);
+  autofill::PasswordForm form3 = MakePasswordForm(kSignonRealm3);
+  sync_pb::PasswordSpecifics specifics1 =
+      CreateSpecificsWithSignonRealm(kSignonRealm1);
+  sync_pb::PasswordSpecifics specifics2 =
+      CreateSpecificsWithSignonRealm(kSignonRealm2);
+  sync_pb::PasswordSpecifics specifics3 =
+      CreateSpecificsWithSignonRealm(kSignonRealm3);
+
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey1, form1);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKey2, form2);
+
+  // Form 1 will be added to the change processor, Form 2 will be updated in the
+  // password sync store, and Form 3 will be added to the password store sync.
+
+  // Interactions should happen in this order:
+  //           +--> Put(1) ------------------------------------+
+  //           |                                               |
+  // Begin() --|--> UpdateLoginSync(2) --> UpdateStorageKey(2)-|--> Commit()
+  //           |                                               |
+  //           +--> AddLoginSync (3)   --> UpdateStorageKey(3)-+
+
+  testing::Sequence s1, s2, s3;
+  EXPECT_CALL(*mock_password_store_sync(), BeginTransaction())
+      .InSequence(s1, s2, s3);
+  EXPECT_CALL(mock_processor(),
+              Put(kPrimaryKeyStr1, EntityDataHasSignonRealm(kSignonRealm1), _))
+      .InSequence(s1);
+  EXPECT_CALL(*mock_password_store_sync(),
+              UpdateLoginSync(FormHasSignonRealm(kSignonRealm2)))
+      .InSequence(s2);
+  EXPECT_CALL(*mock_password_store_sync(),
+              AddLoginSync(FormHasSignonRealm(kSignonRealm3)))
+      .InSequence(s3);
+
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kPrimaryKeyStr2, _))
+      .InSequence(s2);
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, kExpectedPrimaryKeyStr3, _))
+      .InSequence(s3);
+  EXPECT_CALL(*mock_password_store_sync(), CommitTransaction())
+      .InSequence(s1, s2, s3);
+
+  EXPECT_CALL(*mock_password_store_sync(),
+              NotifyLoginsChanged(UnorderedElementsAre(
+                  ChangeHasPrimaryKey(kPrimaryKey2),
+                  ChangeHasPrimaryKey(kExpectedPrimaryKey3))))
+      .InSequence(s1, s2, s3);
+
+  // Processor shouldn't be informed about Form 2 or Form 3.
+  EXPECT_CALL(mock_processor(), Put(kPrimaryKeyStr2, _, _)).Times(0);
+  EXPECT_CALL(mock_processor(), Put(kExpectedPrimaryKeyStr3, _, _)).Times(0);
+
+  base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(),
+      {syncer::EntityChange::CreateAdd(
+           /*storage_key=*/"", SpecificsToEntity(specifics2)),
+       syncer::EntityChange::CreateAdd(
+           /*storage_key=*/"", SpecificsToEntity(specifics3))});
+  EXPECT_FALSE(error);
 }
 
 }  // namespace password_manager

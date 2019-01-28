@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 
+#include <unordered_set>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -189,7 +191,97 @@ PasswordSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  NOTIMPLEMENTED();
+  base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
+                                           true);
+  // Read all local passwords.
+  PrimaryKeyToFormMap key_to_local_form_map;
+  if (!password_store_sync_->ReadAllLogins(&key_to_local_form_map)) {
+    return syncer::ModelError(FROM_HERE,
+                              "Failed to load entries from password store.");
+  }
+
+  // Collect the client tags of remote passwords.  Note that |entity_data| only
+  // contains client tag *hashes*.
+  std::unordered_set<std::string> client_tags_of_remote_passwords;
+  for (const syncer::EntityChange& entity_change : entity_data) {
+    client_tags_of_remote_passwords.insert(GetClientTag(entity_change.data()));
+  }
+
+  // This is used to keep track of all the changes applied to the password
+  // store to notify other observers of the password store.
+  PasswordStoreChangeList password_store_changes;
+  base::Optional<syncer::ModelError> error;
+  {
+    ScopedStoreTransaction transaction(password_store_sync_);
+    // For any local password that doesn't exist in the remote passwords, issue
+    // a change_processor()->Put(). Password comparison is done by comparing the
+    // client tags. In addition, collect the client tags of local passwords.
+    std::unordered_set<std::string> client_tags_of_local_passwords;
+    for (const auto& pair : key_to_local_form_map) {
+      std::unique_ptr<syncer::EntityData> entity_data =
+          CreateEntityData(/*password_form=*/*pair.second);
+      const std::string client_tag_of_local_password =
+          GetClientTag(*entity_data);
+      client_tags_of_local_passwords.insert(client_tag_of_local_password);
+      if (client_tags_of_remote_passwords.count(client_tag_of_local_password) ==
+          0) {
+        change_processor()->Put(
+            /*storage_key=*/base::NumberToString(pair.first),
+            std::move(entity_data), metadata_change_list.get());
+      }
+    }
+
+    // For any remote password that doesn't exist in the local passwords, issue
+    // a password_store_sync_->AddLoginSync() and for those that exist in the
+    // local passwords, issue a password_store_sync_->UpdateLoginSync().
+    // Password comparison is done by comparing the client tags. In both cases,
+    // invoke the change_processor()->UpdateStorageKey().
+    const base::Time time_now = base::Time::Now();
+    for (const syncer::EntityChange& entity_change : entity_data) {
+      const std::string client_tag_of_remote_password =
+          GetClientTag(entity_change.data());
+      PasswordStoreChangeList changes;
+      if (client_tags_of_local_passwords.count(client_tag_of_remote_password) ==
+          0) {
+        changes = password_store_sync_->AddLoginSync(
+            PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
+        DCHECK_LE(1U, changes.size());
+      } else {
+        changes = password_store_sync_->UpdateLoginSync(
+            PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
+        DCHECK_LE(1U, changes.size());
+      }
+      if (changes.empty()) {
+        return syncer::ModelError(
+            FROM_HERE, "Failed to add/update an entry in the password store.");
+      }
+      change_processor()->UpdateStorageKey(
+          entity_change.data(),
+          /*storage_key=*/
+          base::NumberToString(changes[0].primary_key()),
+          metadata_change_list.get());
+      password_store_changes.push_back(changes[0]);
+    }
+
+    // Persist the metadata changes.
+    // TODO(mamir): add some test coverage for the metadata persistence.
+    syncer::SyncMetadataStoreChangeList sync_metadata_store_change_list(
+        password_store_sync_->GetMetadataStore(), syncer::PASSWORDS);
+    // |metadata_change_list| must have been created via
+    // CreateMetadataChangeList() so downcasting is safe.
+    static_cast<syncer::InMemoryMetadataChangeList*>(metadata_change_list.get())
+        ->TransferChangesTo(&sync_metadata_store_change_list);
+    error = sync_metadata_store_change_list.TakeError();
+  }  // End of scoped transaction.
+
+  if (!password_store_changes.empty()) {
+    // It could be the case that there are no remote passwords. In such case,
+    // there would be no changes to the password store other than the sync
+    // metadata changes, and no need to notify observers since they aren't
+    // interested in changes to sync metadata.
+    password_store_sync_->NotifyLoginsChanged(password_store_changes);
+  }
+
   return base::nullopt;
 }
 
@@ -255,8 +347,7 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           break;
         }
       }
-      password_store_changes.insert(password_store_changes.end(),
-                                    changes.begin(), changes.end());
+      password_store_changes.push_back(changes[0]);
     }
 
     // Persist the metadata changes.
@@ -287,7 +378,7 @@ void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
   PrimaryKeyToFormMap key_to_form_map;
   if (!password_store_sync_->ReadAllLogins(&key_to_form_map)) {
     change_processor()->ReportError(
-        {FROM_HERE, "Failed to load entries from table."});
+        {FROM_HERE, "Failed to load entries from the password store."});
     return;
   }
 
