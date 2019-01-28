@@ -85,7 +85,7 @@ class DOMStorageAreaParamTest : public DOMStorageAreaTest,
   ~DOMStorageAreaParamTest() override {}
 };
 
-INSTANTIATE_TEST_CASE_P(_, DOMStorageAreaParamTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(_, DOMStorageAreaParamTest, ::testing::Bool());
 
 TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
   const std::string kFirstNamespaceId = "id1";
