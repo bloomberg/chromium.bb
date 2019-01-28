@@ -224,10 +224,10 @@ TEST_P(RTCVideoEncoderTest, RepeatedInitSucceeds) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
 }
 
-INSTANTIATE_TEST_CASE_P(CodecProfiles,
-                        RTCVideoEncoderTest,
-                        Values(webrtc::kVideoCodecVP8,
-                               webrtc::kVideoCodecH264));
+INSTANTIATE_TEST_SUITE_P(CodecProfiles,
+                         RTCVideoEncoderTest,
+                         Values(webrtc::kVideoCodecVP8,
+                                webrtc::kVideoCodecH264));
 
 // Checks that WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE is returned when there is
 // platform error.
