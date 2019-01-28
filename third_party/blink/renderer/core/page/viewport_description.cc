@@ -68,10 +68,10 @@ float ViewportDescription::ResolveViewportLength(
   if (length.GetType() == kExtendToZoom)
     return ViewportDescription::kValueExtendToZoom;
 
-  if (length.GetType() == kPercent && direction == kHorizontal)
+  if (length.IsPercent() && direction == kHorizontal)
     return initial_viewport_size.Width() * length.GetFloatValue() / 100.0f;
 
-  if (length.GetType() == kPercent && direction == kVertical)
+  if (length.IsPercent() && direction == kVertical)
     return initial_viewport_size.Height() * length.GetFloatValue() / 100.0f;
 
   if (length.GetType() == kDeviceWidth)
@@ -265,7 +265,7 @@ void ViewportDescription::ReportMobilePageStats(
   }
 
   if (IsMetaViewportType()) {
-    if (max_width.GetType() == blink::kFixed) {
+    if (max_width.IsFixed()) {
       meta_tag_type_histogram.Count(
           static_cast<int>(ViewportUMAType::kConstantWidth));
 

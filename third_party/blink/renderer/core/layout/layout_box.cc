@@ -809,8 +809,8 @@ LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
   // to avoid recursing up through our containing blocks again to determine it.
   const ComputedStyle& style_to_use = StyleRef();
   if (!style_to_use.LogicalMaxHeight().IsMaxSizeNone()) {
-    if (style_to_use.LogicalMaxHeight().GetType() == kPercent &&
-        style_to_use.LogicalHeight().GetType() == kPercent) {
+    if (style_to_use.LogicalMaxHeight().IsPercent() &&
+        style_to_use.LogicalHeight().IsPercent()) {
       LayoutUnit available_logical_height(
           logical_height / style_to_use.LogicalHeight().Value() * 100);
       logical_height = std::min(logical_height,
@@ -824,8 +824,8 @@ LayoutUnit LayoutBox::ConstrainContentBoxLogicalHeightByMinMax(
     }
   }
 
-  if (style_to_use.LogicalMinHeight().GetType() == kPercent &&
-      style_to_use.LogicalHeight().GetType() == kPercent) {
+  if (style_to_use.LogicalMinHeight().IsPercent() &&
+      style_to_use.LogicalHeight().IsPercent()) {
     LayoutUnit available_logical_height(
         logical_height / style_to_use.LogicalHeight().Value() * 100);
     logical_height =
@@ -2800,7 +2800,7 @@ void LayoutBox::ComputeLogicalWidth(
   }
 
   if (style_to_use.TextAutosizingMultiplier() != 1 &&
-      style_to_use.MarginStart().GetType() == kFixed) {
+      style_to_use.MarginStart().IsFixed()) {
     Node* parent_node = GeneratingNode();
     if (parent_node && (IsHTMLOListElement(*parent_node) ||
                         IsHTMLUListElement(*parent_node))) {
@@ -2851,7 +2851,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
     const Length& logical_width_length,
     LayoutUnit available_logical_width,
     LayoutUnit border_and_padding) const {
-  if (logical_width_length.GetType() == kFillAvailable) {
+  if (logical_width_length.IsFillAvailable()) {
     if (!IsHTMLMarqueeElement(GetNode())) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSFillAvailableLogicalWidth);
@@ -2864,13 +2864,13 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
   LayoutUnit max_logical_width;
   ComputeIntrinsicLogicalWidths(min_logical_width, max_logical_width);
 
-  if (logical_width_length.GetType() == kMinContent)
+  if (logical_width_length.IsMinContent())
     return min_logical_width + border_and_padding;
 
-  if (logical_width_length.GetType() == kMaxContent)
+  if (logical_width_length.IsMaxContent())
     return max_logical_width + border_and_padding;
 
-  if (logical_width_length.GetType() == kFitContent) {
+  if (logical_width_length.IsFitContent()) {
     min_logical_width += border_and_padding;
     max_logical_width += border_and_padding;
     return std::max(min_logical_width,

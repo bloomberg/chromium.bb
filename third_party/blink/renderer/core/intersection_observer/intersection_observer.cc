@@ -339,7 +339,7 @@ HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
 
 static void AppendLength(StringBuilder& string_builder, const Length& length) {
   string_builder.AppendNumber(length.IntValue());
-  if (length.GetType() == kPercent)
+  if (length.IsPercent())
     string_builder.Append('%');
   else
     string_builder.Append("px", 2);

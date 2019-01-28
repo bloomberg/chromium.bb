@@ -596,9 +596,9 @@ LayoutUnit LayoutFlexibleBox::ComputeMainAxisExtentForChild(
   // that here. (Compare code in LayoutBlock::computePreferredLogicalWidths)
   LayoutUnit border_and_padding = child.BorderAndPaddingLogicalWidth();
   if (child.StyleRef().LogicalWidth().IsAuto() && !HasAspectRatio(child)) {
-    if (size.GetType() == kMinContent)
+    if (size.IsMinContent())
       return child.MinPreferredLogicalWidth() - border_and_padding;
-    if (size.GetType() == kMaxContent)
+    if (size.IsMaxContent())
       return child.MaxPreferredLogicalWidth() - border_and_padding;
   }
   return child.ComputeLogicalWidthUsing(size_type, size, ContentLogicalWidth(),
