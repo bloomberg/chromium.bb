@@ -598,12 +598,12 @@ IN_PROC_BROWSER_TEST_P(StorageAreaApiTest, StorageAreaOnChanged) {
   ASSERT_TRUE(RunExtensionTest("settings/storage_area")) << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(StorageAreaNativeBindings,
-                        StorageAreaApiTest,
-                        ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(StorageAreaNativeBindings,
+                         StorageAreaApiTest,
+                         ::testing::Values(true));
 
-INSTANTIATE_TEST_CASE_P(StorageAreaJSBindings,
-                        StorageAreaApiTest,
-                        ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(StorageAreaJSBindings,
+                         StorageAreaApiTest,
+                         ::testing::Values(false));
 
 }  // namespace extensions
