@@ -896,4 +896,4 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
 }
 
-INSTANTIATE_TEST_CASE_P(, TabStripTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, TabStripTest, ::testing::Values(false, true));
