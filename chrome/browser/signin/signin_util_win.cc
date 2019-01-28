@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -32,6 +32,8 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace signin_util {
 
@@ -99,19 +101,14 @@ void ImportCredentialsFromProvider(Profile* profile,
       AboutSigninInternalsFactory::GetInstance()->GetForProfile(profile);
   signin_internals->OnAuthenticationResultReceived("Credential Provider");
 
-  // First seed the account tracker before adding the account to the token
-  // service.
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  std::string account_id = account_tracker->SeedAccountInfo(
-      base::UTF16ToUTF8(gaia_id), base::UTF16ToUTF8(email));
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  token_service->UpdateCredentials(
-      account_id, refresh_token,
-      signin_metrics::SourceForRefreshTokenOperation::
-          kMachineLogon_CredentialProvider);
+  std::string account_id =
+      IdentityManagerFactory::GetForProfile(profile)
+          ->GetAccountsMutator()
+          ->AddOrUpdateAccount(base::UTF16ToUTF8(gaia_id),
+                               base::UTF16ToUTF8(email), refresh_token,
+                               /*is_under_advanced_protection=*/false,
+                               signin_metrics::SourceForRefreshTokenOperation::
+                                   kMachineLogon_CredentialProvider);
 
   if (turn_on_sync) {
     Browser* browser = chrome::FindLastActiveWithProfile(profile);
