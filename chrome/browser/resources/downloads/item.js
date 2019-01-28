@@ -10,6 +10,9 @@ cr.define('downloads', function() {
       cr.ui.FocusRowBehavior,
     ],
 
+    /** Used by FocusRowBehavior. */
+    overrideCustomEquivalent: true,
+
     properties: {
       /** @type {!downloads.Data} */
       data: Object,
@@ -102,6 +105,17 @@ cr.define('downloads', function() {
     ready: function() {
       this.mojoHandler_ = downloads.BrowserProxy.getInstance().handler;
       this.content = this.$.content;
+    },
+
+    /** Overrides FocusRowBehavior. */
+    getCustomEquivalent: function(sampleElement) {
+      if (sampleElement.getAttribute('focus-type') == 'cancel') {
+        return this.$$('[focus-type="retry"]');
+      }
+      if (sampleElement.getAttribute('focus-type') == 'retry') {
+        return this.$$('[focus-type="pauseOrResume"]');
+      }
+      return null;
     },
 
     /** @return {!HTMLElement} */
