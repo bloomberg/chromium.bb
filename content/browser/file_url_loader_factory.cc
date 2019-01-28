@@ -851,8 +851,11 @@ void CreateFileURLLoader(
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer,
     scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
+  // TODO(crbug.com/924416): Re-evaluate how TaskPriority is set here and in
+  // other file URL-loading-related code. Some callers require USER_VISIBLE
+  // (i.e., BEST_EFFORT is not enough).
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
@@ -868,10 +871,12 @@ std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
     const base::FilePath& profile_path,
     scoped_refptr<const SharedCorsOriginAccessList>
         shared_cors_origin_access_list) {
+  // TODO(crbug.com/924416): Re-evaluate TaskPriority: Should the caller provide
+  // it?
   return std::make_unique<content::FileURLLoaderFactory>(
       profile_path, shared_cors_origin_access_list,
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 }
 

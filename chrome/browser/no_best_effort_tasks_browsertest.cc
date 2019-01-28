@@ -4,16 +4,34 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/unpacked_installer.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/extension.h"
+#endif
 
 namespace {
 
@@ -63,10 +81,24 @@ class NoBestEffortTasksTest : public InProcessBrowserTest {
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableBackgroundTasks);
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    // Redirect all DNS requests back to localhost (to the embedded test
+    // server).
+    host_resolver()->AddRule("*", "127.0.0.1");
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   DISALLOW_COPY_AND_ASSIGN(NoBestEffortTasksTest);
 };
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+constexpr base::StringPiece kExtensionId = "ddchlicdkolnonkihahngkmmmjnjlkkf";
+constexpr base::TimeDelta kSendMessageRetryPeriod =
+    base::TimeDelta::FromMilliseconds(250);
+#endif
 
 }  // namespace
 
@@ -99,3 +131,74 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadAndPaintFromNetwork) {
   RunLoopUntilLoadedAndPainted run_until_loaded_and_painted(web_contents);
   run_until_loaded_and_painted.Run();
 }
+
+// Verify that an extension can be loaded and perform basic messaging without
+// running BEST_EFFORT tasks. Regression test for http://crbug.com/177163#c112.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadExtensionAndSendMessages) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load the extension, waiting until the ExtensionRegistry reports that its
+  // renderer has been started.
+  base::FilePath extension_dir;
+  const bool have_test_data_dir =
+      base::PathService::Get(chrome::DIR_TEST_DATA, &extension_dir);
+  ASSERT_TRUE(have_test_data_dir);
+  extension_dir = extension_dir.AppendASCII("extensions")
+                      .AppendASCII("no_best_effort_tasks_test_extension");
+  extensions::UnpackedInstaller::Create(
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service())
+      ->Load(extension_dir);
+  auto* const extension =
+      extensions::TestExtensionRegistryObserver(
+          extensions::ExtensionRegistry::Get(browser()->profile()))
+          .WaitForExtensionReady();
+  ASSERT_TRUE(extension);
+  ASSERT_EQ(kExtensionId, extension->id());
+
+  // Navigate to a test page, waiting until complete. Note that the hostname
+  // here must match the pattern found in the extension's manifest file, or it
+  // will not be able to send/receive messaging from the test web page (due to
+  // extension permissions).
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("fake.chromium.org", "/empty.html"));
+
+  // Execute JavaScript in the test page, to send a ping message to the
+  // extension and await the reply. The chrome.runtime.sendMessage() operation
+  // can fail if the extension's background page hasn't finished running yet
+  // (i.e., there is no message listener yet). Thus, use a retry loop.
+  const std::string request_reply_javascript = base::StringPrintf(
+      "new Promise((resolve, reject) => {\n"
+      "  chrome.runtime.sendMessage(\n"
+      "      '%s',\n"
+      "      {ping: true},\n"
+      "      response => {\n"
+      "        if (response) {\n"
+      "          resolve(response);\n"
+      "        } else {\n"
+      "          reject(chrome.runtime.lastError.message);\n"
+      "        }\n"
+      "      });\n"
+      "})",
+      extension->id().c_str());
+  for (;;) {
+    const auto result =
+        content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                        request_reply_javascript);
+    if (result.error.empty()) {
+      LOG(INFO) << "Got a response from the extension.";
+      EXPECT_TRUE(result.value.FindBoolKey("pong").value_or(false));
+      break;
+    }
+    // An error indicates the extension's message listener isn't up yet. Wait a
+    // little before trying again.
+    LOG(INFO) << "Waiting for the extension's message listener...";
+    base::RunLoop run_loop;
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kSendMessageRetryPeriod);
+    run_loop.Run();
+  }
+}
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
