@@ -652,8 +652,8 @@ TEST_P(StrongBindingTest, ConnectionErrorWithReason) {
   run_loop.Run();
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(BindingTest);
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(StrongBindingTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(BindingTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(StrongBindingTest);
 
 }  // namespace
 }  // mojo

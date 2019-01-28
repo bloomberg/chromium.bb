@@ -977,7 +977,7 @@ TEST_P(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
   thread_safe_ptr = nullptr;
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(InterfacePtrTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(InterfacePtrTest);
 
 }  // namespace
 }  // namespace test

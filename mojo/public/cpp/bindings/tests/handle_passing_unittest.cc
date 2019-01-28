@@ -319,7 +319,7 @@ TEST_P(HandlePassingTest, CreateNamedObject) {
   EXPECT_EQ(std::string("object2"), name2);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(HandlePassingTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(HandlePassingTest);
 
 }  // namespace
 }  // namespace test

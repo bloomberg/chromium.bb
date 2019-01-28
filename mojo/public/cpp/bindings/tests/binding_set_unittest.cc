@@ -643,7 +643,7 @@ TEST_P(BindingSetTest, StrongBinding_RemoveBinding) {
   EXPECT_EQ(0, PingInstanceCounter::instance_count);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(BindingSetTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(BindingSetTest);
 
 }  // namespace
 }  // namespace test

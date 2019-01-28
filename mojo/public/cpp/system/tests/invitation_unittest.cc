@@ -322,14 +322,14 @@ DEFINE_TEST_CLIENT(CppProcessErrorsClient) {
   EXPECT_EQ(kDisconnectMessage, ReadMessage(pipe));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        InvitationCppTest,
-                        testing::Values(TransportType::kChannel
+INSTANTIATE_TEST_SUITE_P(,
+                         InvitationCppTest,
+                         testing::Values(TransportType::kChannel
 #if !defined(OS_FUCHSIA)
-                                        ,
-                                        TransportType::kChannelServer
+                                         ,
+                                         TransportType::kChannelServer
 #endif
-                                        ));
+                                         ));
 
 }  // namespace
 }  // namespace mojo

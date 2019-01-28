@@ -93,6 +93,6 @@ TEST_P(NativeStructTest, NativeStructWithAttachments) {
   loop.Run();
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(NativeStructTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(NativeStructTest);
 
 }  // namespace mojo
