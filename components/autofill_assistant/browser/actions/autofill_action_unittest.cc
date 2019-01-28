@@ -193,8 +193,11 @@ TEST_F(AutofillActionTest, MAYBE_FillManually) {
   action_proto.mutable_use_address()->set_prompt(kSelectionPrompt);
 
   // No selection was made previously.
-  EXPECT_CALL(mock_client_memory_, has_selected_address(kAddressName))
-      .WillOnce(Return(true));
+  // Note: We use ON_CALL instead of EXPECT_CALL as the `has_selected_address`
+  // call is made inside a DCHECK, which means this won't be called when testing
+  // a release build.
+  ON_CALL(mock_client_memory_, has_selected_address(kAddressName))
+      .WillByDefault(Return(true));
 
   ExpectActionToStopScript(action_proto, kFillForm);
 }
