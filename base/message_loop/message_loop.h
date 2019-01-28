@@ -11,6 +11,7 @@
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -27,6 +28,10 @@
 #include "build/build_config.h"
 
 namespace base {
+namespace features {
+BASE_EXPORT extern const Feature kMessageLoopUsesSequenceManager;
+}  // namespace features
+
 class MessageLoopImpl;
 
 namespace sequence_manager {

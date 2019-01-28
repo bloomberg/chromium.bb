@@ -25,6 +25,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/task/task_traits.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -572,9 +573,14 @@ class TwoThreadTestCase : public TestCase {
 
 class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
  public:
-  void SetUp() override {
-    delegate_ = CreateDelegate();
+  SequenceManagerPerfTest() {
+    // We want to compare performance against the original MessageLoop back-end,
+    // so disable the SequenceManager version.
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMessageLoopUsesSequenceManager);
   }
+
+  void SetUp() override { delegate_ = CreateDelegate(); }
 
   void TearDown() override { delegate_.reset(); }
 
@@ -667,6 +673,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
   }
 
   std::unique_ptr<PerfTestDelegate> delegate_;
+  test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(
