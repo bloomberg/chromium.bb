@@ -257,12 +257,11 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
   arc::mojom::AccessibilityFilterType filter_type =
       GetFilterTypeForProfile(profile_);
 
-  if (filter_type == arc::mojom::AccessibilityFilterType::OFF)
-    return;
+  DCHECK(
+      filter_type !=
+      arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME_DEPRECATED);
 
-  if (filter_type == arc::mojom::AccessibilityFilterType::ALL ||
-      filter_type ==
-          arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME) {
+  if (filter_type == arc::mojom::AccessibilityFilterType::ALL) {
     if (event_data->node_data.empty())
       return;
 
@@ -628,9 +627,7 @@ void ArcAccessibilityHelperBridge::UpdateFilterType() {
     instance->SetFilter(filter_type);
 
   bool add_activation_observer =
-      filter_type == arc::mojom::AccessibilityFilterType::ALL ||
-      filter_type ==
-          arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME;
+      filter_type == arc::mojom::AccessibilityFilterType::ALL;
   if (add_activation_observer == activation_observer_added_)
     return;
 
