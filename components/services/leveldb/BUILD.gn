@@ -4,7 +4,6 @@
 
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 static_library("lib") {
@@ -48,11 +47,6 @@ service_executable("leveldb") {
   ]
 }
 
-service_manifest("manifest") {
-  name = "leveldb"
-  source = "manifest.json"
-}
-
 test("leveldb_service_unittests") {
   sources = [
     "leveldb_mojo_unittest.cc",
@@ -61,11 +55,12 @@ test("leveldb_service_unittests") {
   ]
 
   deps = [
-    ":leveldb_service_unittests_catalog_source",
     "//base",
     "//base/test:test_support",
+    "//components/services/filesystem/public/cpp:manifest",
     "//components/services/filesystem/public/interfaces",
     "//components/services/leveldb/public/cpp",
+    "//components/services/leveldb/public/cpp:manifest",
     "//components/services/leveldb/public/interfaces",
     "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
@@ -80,23 +75,4 @@ test("leveldb_service_unittests") {
     ":leveldb",
     "//components/services/filesystem:filesystem",
   ]
-}
-
-service_manifest("test_manifest") {
-  name = "leveldb_service_unittests"
-  source = "test_manifest.json"
-}
-
-catalog("leveldb_service_unittests_catalog") {
-  embedded_services = [ ":test_manifest" ]
-  standalone_services = [
-    ":manifest",
-    "//components/services/filesystem:manifest",
-  ]
-}
-
-catalog_cpp_source("leveldb_service_unittests_catalog_source") {
-  testonly = true
-  catalog = ":leveldb_service_unittests_catalog"
-  generated_function_name = "leveldb::test::CreateTestCatalog"
 }
