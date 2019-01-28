@@ -72,7 +72,7 @@ class SharedWorkerHostTest : public testing::Test {
   }
 
   void StartWorker(SharedWorkerHost* host,
-                   mojom::SharedWorkerFactoryPtr factory) {
+                   blink::mojom::SharedWorkerFactoryPtr factory) {
     blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr provider_info =
         nullptr;
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -157,7 +157,7 @@ TEST_F(SharedWorkerHostTest, Normal) {
   base::WeakPtr<SharedWorkerHost> host = CreateHost();
 
   // Start the worker.
-  mojom::SharedWorkerFactoryPtr factory;
+  blink::mojom::SharedWorkerFactoryPtr factory;
   MockSharedWorkerFactory factory_impl(mojo::MakeRequest(&factory));
   StartWorker(host.get(), std::move(factory));
 
@@ -253,7 +253,7 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
   base::WeakPtr<SharedWorkerHost> host = CreateHost();
 
   // Create the factory.
-  mojom::SharedWorkerFactoryPtr factory;
+  blink::mojom::SharedWorkerFactoryPtr factory;
   MockSharedWorkerFactory factory_impl(mojo::MakeRequest(&factory));
   // Start the worker.
   StartWorker(host.get(), std::move(factory));
@@ -296,7 +296,7 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
   base::WeakPtr<SharedWorkerHost> host = CreateHost();
 
   // Start the worker.
-  mojom::SharedWorkerFactoryPtr factory;
+  blink::mojom::SharedWorkerFactoryPtr factory;
   MockSharedWorkerFactory factory_impl(mojo::MakeRequest(&factory));
   StartWorker(host.get(), std::move(factory));
 

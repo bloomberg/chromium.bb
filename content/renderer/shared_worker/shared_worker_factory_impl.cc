@@ -13,8 +13,8 @@ namespace content {
 
 // static
 void SharedWorkerFactoryImpl::Create(
-    mojom::SharedWorkerFactoryRequest request) {
-  mojo::MakeStrongBinding<mojom::SharedWorkerFactory>(
+    blink::mojom::SharedWorkerFactoryRequest request) {
+  mojo::MakeStrongBinding<blink::mojom::SharedWorkerFactory>(
       base::WrapUnique(new SharedWorkerFactoryImpl()), std::move(request));
 }
 

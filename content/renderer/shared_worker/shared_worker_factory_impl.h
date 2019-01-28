@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
 
 #include "base/macros.h"
-#include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 
 namespace blink {
 class URLLoaderFactoryBundleInfo;
@@ -16,9 +16,9 @@ class URLLoaderFactoryBundleInfo;
 
 namespace content {
 
-class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
+class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
  public:
-  static void Create(mojom::SharedWorkerFactoryRequest request);
+  static void Create(blink::mojom::SharedWorkerFactoryRequest request);
 
  private:
   SharedWorkerFactoryImpl();

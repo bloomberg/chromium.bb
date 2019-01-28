@@ -142,7 +142,7 @@ SharedWorkerHost::~SharedWorkerHost() {
 }
 
 void SharedWorkerHost::Start(
-    mojom::SharedWorkerFactoryPtr factory,
+    blink::mojom::SharedWorkerFactoryPtr factory,
     blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -219,7 +219,7 @@ void SharedWorkerHost::Start(
   // Set up interface provider interface.
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
-      mojom::kNavigation_SharedWorkerSpec, process_id_,
+      blink::mojom::kNavigation_SharedWorkerSpec, process_id_,
       mojo::MakeRequest(&interface_provider)));
 
   // Set the default factory to the bundle for subresource loading to pass to

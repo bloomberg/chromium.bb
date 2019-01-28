@@ -16,7 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "content/common/shared_worker/shared_worker_factory.mojom.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -25,6 +25,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
@@ -90,7 +91,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // default network loader factory is created by the RenderFrameHost, and
   // service worker controller is sent via ServiceWorkerContainer#SetController.
   void Start(
-      mojom::SharedWorkerFactoryPtr factory,
+      blink::mojom::SharedWorkerFactoryPtr factory,
       blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
@@ -199,7 +200,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // associated with Mojo interfaces (ServiceWorkerContainer and
   // URLLoaderFactory) that are needed to stay alive while the worker is
   // starting or running.
-  mojom::SharedWorkerFactoryPtr factory_;
+  blink::mojom::SharedWorkerFactoryPtr factory_;
 
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
