@@ -87,10 +87,17 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
-              host_resolver_.get(),
               &client_socket_factory_,
-              NULL,
-              NULL) {}
+              host_resolver_.get(),
+              nullptr /* cert_verifier */,
+              nullptr /* channel_id_server */,
+              nullptr /* transport_security_state */,
+              nullptr /* cert_transparency_verifier */,
+              nullptr /* ct_policy_enforcer */,
+              std::string() /* ssl_session_cache_shard */,
+              nullptr /* socket_performance_watcher_factory */,
+              nullptr /* network_quality_estimator */,
+              nullptr /* net_log */) {}
 
   ~TransportClientSocketPoolTest() override {
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
@@ -396,8 +403,15 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 }
 
 TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
-  TransportClientSocketPool pool(kMaxSockets, 1, host_resolver_.get(),
-                                 &client_socket_factory_, nullptr, nullptr);
+  TransportClientSocketPool pool(
+      kMaxSockets, 1, &client_socket_factory_, host_resolver_.get(),
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* net_log */);
 
   // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY
   TestCompletionCallback callback1;
@@ -1073,8 +1087,14 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
   for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
     MockTaggingClientSocketFactory socket_factory;
     TransportClientSocketPool pool(
-        kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(), &socket_factory,
-        nullptr /* socket_performance_watcher_factory */, nullptr /* netlog */);
+        kMaxSockets, kMaxSocketsPerGroup, &socket_factory, host_resolver_.get(),
+        nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+        nullptr /* transport_security_state */,
+        nullptr /* cert_transparency_verifier */,
+        nullptr /* ct_policy_enforcer */,
+        std::string() /* ssl_session_cache_shard */,
+        nullptr /* socket_performance_watcher_factory */,
+        nullptr /* network_quality_estimator */, nullptr /* netlog */);
 
     scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
         HostPortPair("proxy", 80), false, OnHostResolutionCallback()));
@@ -1110,8 +1130,15 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   ASSERT_TRUE(test_server.Start());
 
   TransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      ClientSocketFactory::GetDefaultFactory(), NULL, NULL);
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), host_resolver_.get(),
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
   SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
@@ -1228,8 +1255,14 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   host_resolver_->set_synchronous_mode(true);
   MockTaggingClientSocketFactory socket_factory;
   TransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(), &socket_factory,
-      nullptr /* socket_performance_watcher_factory */, nullptr /* netlog */);
+      kMaxSockets, kMaxSocketsPerGroup, &socket_factory, host_resolver_.get(),
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
 
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);

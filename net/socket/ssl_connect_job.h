@@ -23,13 +23,10 @@
 
 namespace net {
 
-class ClientSocketFactory;
 class HostPortPair;
 class HttpProxyClientSocketPool;
 class HttpProxySocketParams;
-class NetworkQualityEstimator;
 class SOCKSSocketParams;
-class SSLClientSocket;
 class TransportClientSocketPool;
 class TransportSocketParams;
 
@@ -84,19 +81,13 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob {
  public:
   // Note: the SSLConnectJob does not own |messenger| so it must outlive the
   // job.
-  SSLConnectJob(const std::string& group_name,
-                RequestPriority priority,
-                const SocketTag& socket_tag,
-                bool respect_limits,
+  SSLConnectJob(RequestPriority priority,
+                const CommonConnectJobParams& common_connect_job_params,
                 const scoped_refptr<SSLSocketParams>& params,
                 TransportClientSocketPool* transport_pool,
                 TransportClientSocketPool* socks_pool,
                 HttpProxyClientSocketPool* http_proxy_pool,
-                ClientSocketFactory* client_socket_factory,
-                const SSLClientSocketContext& context,
-                NetworkQualityEstimator* network_quality_estimator,
-                Delegate* delegate,
-                NetLog* net_log);
+                Delegate* delegate);
   ~SSLConnectJob() override;
 
   // ConnectJob methods.
@@ -152,9 +143,6 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob {
   TransportClientSocketPool* const transport_pool_;
   TransportClientSocketPool* const socks_pool_;
   HttpProxyClientSocketPool* const http_proxy_pool_;
-  ClientSocketFactory* const client_socket_factory_;
-
-  const SSLClientSocketContext context_;
 
   State next_state_;
   CompletionRepeatingCallback callback_;

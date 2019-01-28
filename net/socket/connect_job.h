@@ -14,9 +14,11 @@
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/socket_tag.h"
+#include "net/socket/ssl_client_socket.h"
 
 namespace net {
 
@@ -24,6 +26,7 @@ class ClientSocketFactory;
 class ClientSocketHandle;
 class HostResolver;
 class NetLog;
+class NetworkQualityEstimator;
 class SocketPerformanceWatcherFactory;
 class StreamSocket;
 class WebSocketEndpointLockManager;
@@ -39,8 +42,10 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
       const SocketTag& socket_tag,
       bool respect_limits,
       ClientSocketFactory* client_socket_factory,
-      SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       HostResolver* host_resolver,
+      const SSLClientSocketContext& ssl_client_socket_context,
+      SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+      NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
   CommonConnectJobParams(const CommonConnectJobParams& other);
@@ -62,8 +67,10 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   bool respect_limits;
 
   ClientSocketFactory* client_socket_factory;
-  SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
   HostResolver* host_resolver;
+  SSLClientSocketContext ssl_client_socket_context;
+  SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
+  NetworkQualityEstimator* network_quality_estimator;
   NetLog* net_log;
 
   // This must only be non-null for WebSockets.
@@ -164,11 +171,17 @@ class NET_EXPORT_PRIVATE ConnectJob {
   ClientSocketFactory* client_socket_factory() {
     return common_connect_job_params_.client_socket_factory;
   }
+  HostResolver* host_resolver() {
+    return common_connect_job_params_.host_resolver;
+  }
+  const SSLClientSocketContext& ssl_client_socket_context() {
+    return common_connect_job_params_.ssl_client_socket_context;
+  }
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory() {
     return common_connect_job_params_.socket_performance_watcher_factory;
   }
-  HostResolver* host_resolver() {
-    return common_connect_job_params_.host_resolver;
+  NetworkQualityEstimator* network_quality_estimator() {
+    return common_connect_job_params_.network_quality_estimator;
   }
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager() {
     return common_connect_job_params_.websocket_endpoint_lock_manager;

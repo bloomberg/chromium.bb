@@ -16,15 +16,22 @@
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
+#include "net/socket/ssl_client_socket.h"
 
 namespace net {
 
+class CertVerifier;
+class ChannelIDService;
 class ClientSocketFactory;
+class CTVerifier;
+class CTPolicyEnforcer;
 class HostResolver;
 class NetLog;
 class NetLogWithSource;
+class NetworkQualityEstimator;
 class SocketPerformanceWatcherFactory;
 class SOCKSSocketParams;
+class TransportSecurityState;
 class TransportSocketParams;
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
@@ -73,9 +80,16 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
   TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
+      HostResolver* host_resolver,
+      CertVerifier* cert_verifier,
+      ChannelIDService* channel_id_service,
+      TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
+      CTPolicyEnforcer* ct_policy_enforcer,
+      const std::string& ssl_session_cache_shard,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+      NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log);
 
   ~TransportClientSocketPool() override;
@@ -137,12 +151,16 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
     TransportConnectJobFactory(
         ClientSocketFactory* client_socket_factory,
         HostResolver* host_resolver,
+        const SSLClientSocketContext& ssl_client_socket_context,
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+        NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log)
         : client_socket_factory_(client_socket_factory),
+          host_resolver_(host_resolver),
+          ssl_client_socket_context_(ssl_client_socket_context),
           socket_performance_watcher_factory_(
               socket_performance_watcher_factory),
-          host_resolver_(host_resolver),
+          network_quality_estimator_(network_quality_estimator),
           net_log_(net_log) {}
 
     ~TransportConnectJobFactory() override {}
@@ -156,9 +174,11 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
 
    private:
     ClientSocketFactory* const client_socket_factory_;
-    SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
     HostResolver* const host_resolver_;
-    NetLog* net_log_;
+    const SSLClientSocketContext ssl_client_socket_context_;
+    SocketPerformanceWatcherFactory* const socket_performance_watcher_factory_;
+    NetworkQualityEstimator* const network_quality_estimator_;
+    NetLog* const net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);
   };

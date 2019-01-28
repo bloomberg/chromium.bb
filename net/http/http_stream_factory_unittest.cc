@@ -458,7 +458,19 @@ CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
     TransportSecurityState*,
     CTVerifier*,
     CTPolicyEnforcer*)
-    : ParentPool(0, 0, host_resolver, nullptr, nullptr, nullptr),
+    : ParentPool(0,
+                 0,
+                 nullptr /* socket_factory */,
+                 host_resolver,
+                 nullptr /* cert_verifier */,
+                 nullptr /* channel_id_server */,
+                 nullptr /* transport_security_state */,
+                 nullptr /* cert_transparency_verifier */,
+                 nullptr /* ct_policy_enforcer */,
+                 std::string() /* ssl_session_cache_shard */,
+                 nullptr /* socket_performance_watcher_factory */,
+                 nullptr /* network_quality_estimator */,
+                 nullptr /* netlog */),
       last_num_streams_(-1) {}
 
 template <>

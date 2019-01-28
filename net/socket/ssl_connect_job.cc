@@ -91,42 +91,26 @@ SSLSocketParams::GetHttpProxyConnectionParams() const {
 // Timeout for the SSL handshake portion of the connect.
 static const int kSSLHandshakeTimeoutInSeconds = 30;
 
-SSLConnectJob::SSLConnectJob(const std::string& group_name,
-                             RequestPriority priority,
-                             const SocketTag& socket_tag,
-                             bool respect_limits,
-                             const scoped_refptr<SSLSocketParams>& params,
-                             TransportClientSocketPool* transport_pool,
-                             TransportClientSocketPool* socks_pool,
-                             HttpProxyClientSocketPool* http_proxy_pool,
-                             ClientSocketFactory* client_socket_factory,
-                             const SSLClientSocketContext& context,
-                             NetworkQualityEstimator* network_quality_estimator,
-                             Delegate* delegate,
-                             NetLog* net_log)
-    : ConnectJob(
-          group_name,
-          ConnectionTimeout(*params, network_quality_estimator),
-          priority,
-          socket_tag,
-          respect_limits,
-          delegate,
-          NetLogWithSource::Make(net_log, NetLogSourceType::SSL_CONNECT_JOB)),
+SSLConnectJob::SSLConnectJob(
+    RequestPriority priority,
+    const CommonConnectJobParams& common_connect_job_params,
+    const scoped_refptr<SSLSocketParams>& params,
+    TransportClientSocketPool* transport_pool,
+    TransportClientSocketPool* socks_pool,
+    HttpProxyClientSocketPool* http_proxy_pool,
+    Delegate* delegate)
+    : ConnectJob(priority,
+                 ConnectionTimeout(
+                     *params,
+                     common_connect_job_params.network_quality_estimator),
+                 common_connect_job_params,
+                 delegate,
+                 NetLogWithSource::Make(common_connect_job_params.net_log,
+                                        NetLogSourceType::SSL_CONNECT_JOB)),
       params_(params),
       transport_pool_(transport_pool),
       socks_pool_(socks_pool),
       http_proxy_pool_(http_proxy_pool),
-      client_socket_factory_(client_socket_factory),
-      context_(context.cert_verifier,
-               context.channel_id_service,
-               context.transport_security_state,
-               context.cert_transparency_verifier,
-               context.ct_policy_enforcer,
-               (context.ssl_session_cache_shard.empty()
-                    ? context.ssl_session_cache_shard
-                    : (params->privacy_mode() == PRIVACY_MODE_ENABLED
-                           ? "pm/" + context.ssl_session_cache_shard
-                           : context.ssl_session_cache_shard))),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))) {}
 
@@ -343,9 +327,23 @@ int SSLConnectJob::DoSSLConnect() {
 
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
-  ssl_socket_ = client_socket_factory_->CreateSSLClientSocket(
+  // If privacy mode is enabled and the session shard is non-empty, prefix the
+  // SSL session shard with "pm/"
+  // TODO(mmenke): Consider moving this up to the socket pool layer, after
+  // giving socket pools knowledge of privacy mode.
+  SSLClientSocketContext context_with_privacy_mode(
+      ssl_client_socket_context().cert_verifier,
+      ssl_client_socket_context().channel_id_service,
+      ssl_client_socket_context().transport_security_state,
+      ssl_client_socket_context().cert_transparency_verifier,
+      ssl_client_socket_context().ct_policy_enforcer,
+      (!ssl_client_socket_context().ssl_session_cache_shard.empty() &&
+               params_->privacy_mode() == PRIVACY_MODE_ENABLED
+           ? "pm/" + ssl_client_socket_context().ssl_session_cache_shard
+           : ssl_client_socket_context().ssl_session_cache_shard));
+  ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
       std::move(transport_socket_handle_), params_->host_and_port(),
-      params_->ssl_config(), context_);
+      params_->ssl_config(), context_with_privacy_mode);
   return ssl_socket_->Connect(callback_);
 }
 
