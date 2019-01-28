@@ -47,6 +47,10 @@ class JSONTraceExporter : public perfetto::Consumer {
                                    bool has_more)>;
   void StopAndFlush(OnTraceEventJSONCallback callback);
 
+  using OnTraceStatsCallback =
+      base::OnceCallback<void(bool success, const perfetto::TraceStats& stats)>;
+  void GetTraceStats(OnTraceStatsCallback callback);
+
   // perfetto::Consumer implementation.
   // This gets called by the Perfetto service as control signals,
   // and to send finished protobufs over.
@@ -61,6 +65,7 @@ class JSONTraceExporter : public perfetto::Consumer {
 
  private:
   OnTraceEventJSONCallback json_callback_;
+  OnTraceStatsCallback stats_callback_;
   bool has_output_json_preamble_ = false;
   bool has_output_first_event_ = false;
   std::string config_;
