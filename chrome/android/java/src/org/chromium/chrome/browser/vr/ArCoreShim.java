@@ -24,7 +24,12 @@ public interface ArCoreShim {
      * For detailed description, please see:
      * https://developers.google.com/ar/reference/java/arcore/reference/com/google/ar/core/ArCoreApk.InstallStatus
      */
-    public enum InstallStatus { INSTALLED, INSTALL_REQUESTED }
+    @IntDef({InstallStatus.INSTALLED, InstallStatus.INSTALL_REQUESTED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InstallStatus {
+        int INSTALLED = 0;
+        int INSTALL_REQUESTED = 1;
+    }
 
     /**
      * Equivalent of ArCoreApk.Availability enum.
@@ -55,7 +60,7 @@ public interface ArCoreShim {
     /**
      * Equivalent of ArCoreApk.requestInstall.
      */
-    public InstallStatus requestInstall(Activity activity, boolean userRequestedInstall)
+    public @InstallStatus int requestInstall(Activity activity, boolean userRequestedInstall)
             throws UnavailableDeviceNotCompatibleException,
                    UnavailableUserDeclinedInstallationException;
 
