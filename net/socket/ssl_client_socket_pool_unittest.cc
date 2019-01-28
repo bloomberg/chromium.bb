@@ -400,6 +400,7 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
@@ -477,6 +478,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
@@ -546,6 +548,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);

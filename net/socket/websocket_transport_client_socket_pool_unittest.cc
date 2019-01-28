@@ -77,6 +77,7 @@ class WebSocketTransportClientSocketPoolTest
               nullptr /* cert_transparency_verifier */,
               nullptr /* ct_policy_enforcer */,
               std::string() /* ssl_session_cache_shard */,
+              nullptr /* ssl_config_service */,
               nullptr /* network_quality_estimator */,
               &websocket_endpoint_lock_manager_,
               nullptr /* netlog */) {
@@ -542,7 +543,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
@@ -587,7 +588,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
@@ -631,7 +632,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
@@ -667,7 +668,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
@@ -704,7 +705,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
@@ -745,7 +746,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
@@ -794,7 +795,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
@@ -837,7 +838,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
@@ -884,7 +885,7 @@ TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
-      nullptr /* network_quality_estimator */,
+      nullptr /* ssl_config_service */, nullptr /* network_quality_estimator */,
       &websocket_endpoint_lock_manager_, nullptr /* netlog */);
   const base::TimeDelta connect_job_timeout =
       TransportConnectJob::ConnectionTimeout();

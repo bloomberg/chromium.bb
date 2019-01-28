@@ -89,10 +89,11 @@ TransportClientSocketPool::TransportClientSocketPool(
     CTVerifier* cert_transparency_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     const std::string& ssl_session_cache_shard,
+    SSLConfigService* ssl_config_service,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
-    : base_(NULL,
+    : base_(nullptr,
             max_sockets,
             max_sockets_per_group,
             ClientSocketPool::unused_idle_socket_timeout(),
@@ -109,11 +110,17 @@ TransportClientSocketPool::TransportClientSocketPool(
                 socket_performance_watcher_factory,
                 network_quality_estimator,
                 net_log)),
-      client_socket_factory_(client_socket_factory) {
+      client_socket_factory_(client_socket_factory),
+      ssl_config_service_(ssl_config_service) {
   base_.EnableConnectBackupJobs();
+  if (ssl_config_service_)
+    ssl_config_service_->AddObserver(this);
 }
 
-TransportClientSocketPool::~TransportClientSocketPool() = default;
+TransportClientSocketPool::~TransportClientSocketPool() {
+  if (ssl_config_service_)
+    ssl_config_service_->RemoveObserver(this);
+}
 
 int TransportClientSocketPool::RequestSocket(const std::string& group_name,
                                              const void* params,
@@ -225,6 +232,12 @@ void TransportClientSocketPool::AddHigherLayeredPool(
 void TransportClientSocketPool::RemoveHigherLayeredPool(
     HigherLayeredPool* higher_pool) {
   base_.RemoveHigherLayeredPool(higher_pool);
+}
+
+void TransportClientSocketPool::OnSSLConfigChanged() {
+  // When the user changes the SSL config, flush all idle sockets so they won't
+  // get re-used.
+  FlushWithError(ERR_NETWORK_CHANGED);
 }
 
 }  // namespace net

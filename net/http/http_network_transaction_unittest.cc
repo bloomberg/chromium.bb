@@ -704,6 +704,7 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
                  "",
                  NULL,
                  NULL,
+                 NULL,
                  NULL) {}
 
 template <>
@@ -14257,6 +14258,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       session_deps_.cert_transparency_verifier.get(),
       session_deps_.ct_policy_enforcer.get(),
       std::string() /* ssl_cache_shard */,
+      session_deps_.ssl_config_service.get(),
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, session_deps_.net_log);
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();

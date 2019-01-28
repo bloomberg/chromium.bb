@@ -34,6 +34,7 @@ class ClientSocketFactory;
 class HostResolver;
 class NetLog;
 class NetworkQualityEstimator;
+class SSLConfigService;
 class WebSocketEndpointLockManager;
 class WebSocketTransportConnectJob;
 
@@ -51,6 +52,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
       const std::string& ssl_session_cache_shard,
+      SSLConfigService* ssl_config_service,
       NetworkQualityEstimator* network_quality_estimator,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       NetLog* net_log);
