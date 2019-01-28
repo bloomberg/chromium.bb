@@ -91,7 +91,6 @@ blink_platform_sources("loader") {
     "fetch/source_keyed_cached_metadata_handler.h",
     "fetch/stale_revalidation_resource_client.cc",
     "fetch/stale_revalidation_resource_client.h",
-    "fetch/substitute_data.h",
     "fetch/text_resource_decoder_options.cc",
     "fetch/text_resource_decoder_options.h",
     "fetch/unique_identifier.cc",
