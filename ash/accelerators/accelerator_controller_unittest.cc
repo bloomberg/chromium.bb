@@ -1641,7 +1641,7 @@ class MediaSessionAcceleratorTest
   DISALLOW_COPY_AND_ASSIGN(MediaSessionAcceleratorTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     MediaSessionAcceleratorTest,
     testing::Values(
