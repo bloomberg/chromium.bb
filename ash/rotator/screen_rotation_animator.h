@@ -6,6 +6,7 @@
 #define ASH_ROTATOR_SCREEN_ROTATION_ANIMATOR_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/display_configuration_controller.h"
@@ -28,6 +29,7 @@ class CopyOutputResult;
 namespace ui {
 class AnimationMetricsReporter;
 class LayerTreeOwner;
+class ScopedAnimationDurationScaleMode;
 }  // namespace ui
 
 namespace ash {
@@ -189,6 +191,7 @@ class ASH_EXPORT ScreenRotationAnimator {
   std::unique_ptr<ScreenRotationRequest> last_pending_request_;
   base::Optional<ScreenRotationRequest> current_async_rotation_request_;
   display::Display::Rotation target_rotation_ = display::Display::ROTATE_0;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> animation_scale_mode_;
   base::WeakPtrFactory<ScreenRotationAnimator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimator);

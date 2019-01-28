@@ -432,7 +432,7 @@ void OverviewGrid::PositionWindows(
     bool animate,
     OverviewItem* ignored_item,
     OverviewSession::OverviewTransition transition) {
-  if (!overview_session_)
+  if (!overview_session_ || suspend_reposition_)
     return;
 
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);

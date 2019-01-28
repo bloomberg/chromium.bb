@@ -237,6 +237,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
     return drop_target_widget_.get();
   }
 
+  void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
+
  private:
   class ShieldView;
   class TargetWindowObserver;
@@ -370,6 +372,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Collection of the items which should be nudged. This should only be
   // non-empty if a nudge is in progress.
   std::vector<NudgeData> nudge_data_;
+
+  // True to skip |PositionWindows()|. Used to avoid O(n^2) layout
+  // when reposition windows in tablet overview mode.
+  bool suspend_reposition_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };

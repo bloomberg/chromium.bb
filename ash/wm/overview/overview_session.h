@@ -221,6 +221,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Gets the window which keeps focus for the duration of overview mode.
   aura::Window* GetOverviewFocusWindow();
 
+  // Suspends/Resumes window re-positiong in overview.
+  void SuspendReposition();
+  void ResumeReposition();
+
   OverviewDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {

@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
@@ -202,11 +203,18 @@ void TabletModeWindowManager::OnWindowBoundsChanged(
     ui::PropertyChangeReason reason) {
   if (!IsContainerWindow(window))
     return;
+
+  auto* session = Shell::Get()->overview_controller()->overview_session();
+  if (session)
+    session->SuspendReposition();
+
   // Reposition all non maximizeable windows.
   for (auto& pair : window_state_map_) {
     pair.second->UpdateWindowPosition(wm::GetWindowState(pair.first),
                                       /*animate=*/false);
   }
+  if (session)
+    session->ResumeReposition();
 }
 
 void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
