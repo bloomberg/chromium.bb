@@ -1492,3 +1492,81 @@ class PortageqMatchTest(cros_test_lib.MockTestCase):
 
     self.assertIsInstance(portage_util.PortageqMatch('cat/pkg'),
                           portage_util.CPV)
+
+
+class FindEbuildTest(cros_test_lib.RunCommandTestCase):
+  """Tests for FindEbuildsForPackages and FindEbuildsForPackages."""
+
+  def testFindEbuildsForPackagesReturnResultsSimple(self):
+    equery_output = ('/chromeos-overlay/misc/foo/foo.ebuild\n'
+                     '/chromeos-overlay/misc/bar/bar.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'misc/foo', 'misc/bar'],
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildsForPackages(['misc/foo', 'misc/bar'],
+                                            sysroot='/build/nami'),
+        {'misc/bar': '/chromeos-overlay/misc/bar/bar.ebuild',
+         'misc/foo': '/chromeos-overlay/misc/foo/foo.ebuild'})
+
+  def testFindEbuildsForPackagesReturnResultsComplexPackages(self):
+    ebuild_path = (
+        '/portage-stable/sys-libs/timezone-data/timezone-data-2018i.ebuild')
+    equery_output = '\n'.join([ebuild_path] * 4)
+    packages = [
+        # CATEGORY/PN
+        'sys-libs/timezone-data',
+        # CATEGORY/P
+        'sys-libs/timezone-data-2018i',
+        # CATEGORY/PN:SLOT
+        'sys-libs/timezone-data:0',
+        # CATEGORY/P:SLOT
+        'sys-libs/timezone-data-2018i:0',
+    ]
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which'] + packages,
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildsForPackages(packages,
+                                            sysroot='/build/nami'),
+        {'sys-libs/timezone-data': ebuild_path,
+         'sys-libs/timezone-data-2018i:0': ebuild_path,
+         'sys-libs/timezone-data:0': ebuild_path,
+         'sys-libs/timezone-data-2018i': ebuild_path,
+        })
+
+  def testFindEbuildsForPackagesReturnNone(self):
+    # Result for package 'bar' is missing.
+    equery_output = ('/chromeos-overlay/bar/bar.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'foo', 'bar'],
+        output=equery_output, returncode=1)
+    self.assertEqual(portage_util.FindEbuildsForPackages(
+        ['foo', 'bar'], sysroot='/build/nami'), {})
+
+  def testFindEbuildsForPackagesInvalidEbuildsOrder(self):
+    equery_output = ('/chromeos-overlay/bar/bar.ebuild\n'
+                     '/chromeos-overlay/foo/foo.ebuild\n')
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'foo', 'bar'],
+        output=equery_output)
+    with self.assertRaises(AssertionError):
+      portage_util.FindEbuildsForPackages(
+          ['foo', 'bar'], sysroot='/build/nami')
+
+  def testFindEbuildForPackageReturnResults(self):
+    equery_output = '/chromeos-overlay/misc/foo/foo-9999.ebuild\n'
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'misc/foo'],
+        output=equery_output)
+    self.assertEqual(
+        portage_util.FindEbuildForPackage('misc/foo', sysroot='/build/nami'),
+        '/chromeos-overlay/misc/foo/foo-9999.ebuild')
+
+  def testFindEbuildForPackageReturnNone(self):
+    equery_output = "Cannot find ebuild for package 'foo'\n"
+    self.rc.AddCmdResult(
+        ['/build/nami/build/bin/equery', 'which', 'foo'],
+        output=equery_output, returncode=1)
+    self.assertEqual(portage_util.FindEbuildForPackage(
+        'foo', sysroot='/build/nami'), None)

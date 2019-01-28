@@ -1769,6 +1769,56 @@ def FindEbuildForBoardPackage(pkg_str, board):
       capture_output=True).output.strip()
 
 
+def FindEbuildsForPackages(packages_list, sysroot, include_masked=False,
+                           extra_env=None, error_code_ok=True):
+  """Returns paths to the ebuilds for the packages in |packages_list|.
+
+  Args:
+    packages_list: The list of package (string) names with optional category,
+      version, and slot.
+    sysroot: The root directory being inspected.
+    include_masked: True iff we should include masked ebuilds in our query.
+    extra_env: optional dictionary of extra string/string pairs to use as the
+      environment of equery command.
+    error_code_ok: If true, do not raise an exception when RunCommand returns
+      a non-zero exit code.
+      If any package does not exist causing the RunCommand to fail, we will
+      return information for none of the packages, i.e: return an
+      empty dictionary.
+
+  Returns:
+    A map from packages in |packages_list| to their corresponding ebuilds.
+  """
+  cmd = [cros_build_lib.GetSysrootToolPath(sysroot, 'equery'), 'which']
+  if include_masked:
+    cmd += ['--include-masked']
+  cmd += packages_list
+
+  result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
+                                     capture_output=True,
+                                     error_code_ok=error_code_ok)
+
+  if result.returncode:
+    return {}
+
+  ebuilds_results = result.output.strip().splitlines()
+  # Asserting the directory name of the ebuild matches the package name.
+  mismatches = []
+  ret = dict(zip(packages_list, ebuilds_results))
+  for full_package_name, ebuild_path in ret.iteritems():
+    cpv = SplitCPV(full_package_name, strict=False)
+    path_category, path_package_name, _ = SplitEbuildPath(ebuild_path)
+    if not (path_category == cpv.category and
+            cpv.package.startswith(path_package_name)):
+      mismatches.append(
+          "%s doesn't match %s" % (ebuild_path, full_package_name))
+
+  assert not mismatches, ('Detected mismatches between the package & '
+                          'corresponding ebuilds: %s' % '\n'.join(mismatches))
+
+  return ret
+
+
 def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
                          extra_env=None, error_code_ok=True):
   """Returns a path to an ebuild responsible for package matching |pkg_str|.
@@ -1780,24 +1830,17 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
     error_code_ok: If true, do not raise an exception when RunCommand returns
-      a non-zero exit code. Instead, return the CommandResult object containing
-      the exit code.
+      a non-zero exit code. Instead, return None.
 
   Returns:
     Path to ebuild for this package.
   """
-  cmd = [cros_build_lib.GetSysrootToolPath(sysroot, 'equery'), 'which']
-  if include_masked:
-    cmd += ['--include-masked']
-  cmd += [pkg_str]
-
-  result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
-                                     capture_output=True,
-                                     error_code_ok=error_code_ok)
-
-  if result.returncode:
+  ebuilds_map = FindEbuildsForPackages(
+      [pkg_str], sysroot, include_masked, extra_env,
+      error_code_ok=error_code_ok)
+  if not ebuilds_map:
     return None
-  return result.output.strip()
+  return ebuilds_map[pkg_str]
 
 
 def GetInstalledPackageUseFlags(pkg_str, board=None):
