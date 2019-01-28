@@ -439,7 +439,7 @@ void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
 }
 
 bool LayerTreeHost::IsUsingLayerLists() const {
-  return settings_.use_layer_lists;
+  return settings_.use_layer_lists && !force_use_property_tree_builder_;
 }
 
 void LayerTreeHost::CommitComplete() {
@@ -662,10 +662,11 @@ bool LayerTreeHost::UpdateLayers() {
     property_trees_.clear();
     return false;
   }
+
   DCHECK(!root_layer()->parent());
   base::ElapsedTimer timer;
 
-  bool result = DoUpdateLayers(root_layer());
+  bool result = DoUpdateLayers();
   micro_benchmark_controller_.DidUpdateLayers();
 
   if (const char* client_name = GetClientNameForMetrics()) {
@@ -736,7 +737,7 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
   gpu_rasterization_histogram_recorded_ = true;
 }
 
-bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
+bool LayerTreeHost::DoUpdateLayers() {
   TRACE_EVENT1("cc,benchmark", "LayerTreeHost::DoUpdateLayers",
                "source_frame_number", SourceFrameNumber());
 
@@ -750,13 +751,13 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     Layer* root_scroll =
-        PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
+        PropertyTreeBuilder::FindFirstScrollableLayer(root_layer_.get());
     Layer* page_scale_layer = viewport_layers_.page_scale.get();
     if (!page_scale_layer && root_scroll)
       page_scale_layer = root_scroll->parent();
     gfx::Transform identity_transform;
     PropertyTreeBuilder::BuildPropertyTrees(
-        root_layer, page_scale_layer, inner_viewport_scroll_layer(),
+        root_layer_.get(), page_scale_layer, inner_viewport_scroll_layer(),
         outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
         elastic_overscroll_, page_scale_factor_, device_scale_factor_,
         gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
@@ -792,6 +793,11 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
     DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
   }
+#else
+  // This is a quick sanity check for readiness of paint properties.
+  // TODO(crbug.com/913464): This is to help analysis of crashes of the bug.
+  // Remove this CHECK when we close the bug.
+  CHECK(property_trees_.effect_tree.Node(root_layer_->effect_tree_index()));
 #endif
 
   draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
@@ -1047,7 +1053,18 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   content_has_non_aa_paint_ = false;
   gpu_rasterization_histogram_recorded_ = false;
 
+  force_use_property_tree_builder_ = false;
+
   SetNeedsFullTreeSync();
+}
+
+void LayerTreeHost::SetNonBlinkManagedRootLayer(
+    scoped_refptr<Layer> root_layer) {
+  SetRootLayer(std::move(root_layer));
+
+  DCHECK(root_layer_->children().empty());
+  if (IsUsingLayerLists() && root_layer_)
+    force_use_property_tree_builder_ = true;
 }
 
 LayerTreeHost::ViewportLayers::ViewportLayers() = default;

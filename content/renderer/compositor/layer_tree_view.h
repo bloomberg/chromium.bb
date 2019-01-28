@@ -132,6 +132,7 @@ class LayerTreeView : public blink::WebLayerTreeView,
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
+  void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
   gfx::Size GetViewportSize() const override;
