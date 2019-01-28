@@ -293,6 +293,10 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMediaAccessRequest) {
       *media_observer_,
       OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
                                  MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_AUDIO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
   media_stream_manager_->CancelRequest(label);
   run_loop_.RunUntilIdle();
 }
@@ -354,6 +358,10 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
   EXPECT_CALL(
       *media_observer_,
       OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                                 MEDIA_REQUEST_STATE_CLOSING));
+  EXPECT_CALL(
+      *media_observer_,
+      OnMediaRequestStateChanged(_, _, _, _, blink::MEDIA_DISPLAY_AUDIO_CAPTURE,
                                  MEDIA_REQUEST_STATE_CLOSING));
 
   media_stream_manager_->CancelRequest(label1);
