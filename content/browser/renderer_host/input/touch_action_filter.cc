@@ -137,9 +137,16 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     return FilterGestureEventResult::kFilterGestureEventDelayed;
   }
 
-  base::Optional<cc::TouchAction> touch_action =
-      active_touch_action_.has_value() ? active_touch_action_
-                                       : white_listed_touch_action_;
+  base::Optional<cc::TouchAction> touch_action;
+  if (gesture_event->GetType() == WebInputEvent::kGestureTapDown) {
+    touch_action = allowed_touch_action_.has_value()
+                       ? allowed_touch_action_
+                       : white_listed_touch_action_;
+  } else {
+    touch_action = active_touch_action_.has_value()
+                       ? active_touch_action_
+                       : white_listed_touch_action_;
+  }
 
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
