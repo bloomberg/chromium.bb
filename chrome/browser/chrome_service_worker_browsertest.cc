@@ -983,10 +983,10 @@ IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
   EXPECT_FALSE(HasHeader(received_request(), "Cookie"));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ChromeServiceWorkerNavigationPreloadTest,
-                        ::testing::Values(ServicifiedFeatures::kNone,
-                                          ServicifiedFeatures::kServiceWorker,
-                                          ServicifiedFeatures::kNetwork));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ChromeServiceWorkerNavigationPreloadTest,
+                         ::testing::Values(ServicifiedFeatures::kNone,
+                                           ServicifiedFeatures::kServiceWorker,
+                                           ServicifiedFeatures::kNetwork));
 
 }  // namespace chrome_service_worker_browser_test
