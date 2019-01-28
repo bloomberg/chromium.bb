@@ -552,9 +552,9 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SecurityStateTabHelperTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SecurityStateTabHelperTest,
+                         ::testing::Values(false, true));
 
 // Same as SecurityStateTabHelperTest, but with Incognito enabled.
 class SecurityStateTabHelperIncognitoTest : public SecurityStateTabHelperTest {
@@ -571,9 +571,9 @@ class SecurityStateTabHelperIncognitoTest : public SecurityStateTabHelperTest {
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperIncognitoTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SecurityStateTabHelperIncognitoTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SecurityStateTabHelperIncognitoTest,
+                         ::testing::Values(false, true));
 
 class DidChangeVisibleSecurityStateTest
     : public InProcessBrowserTest,
@@ -605,9 +605,9 @@ class DidChangeVisibleSecurityStateTest
   DISALLOW_COPY_AND_ASSIGN(DidChangeVisibleSecurityStateTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        DidChangeVisibleSecurityStateTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         DidChangeVisibleSecurityStateTest,
+                         ::testing::Values(false, true));
 
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpPage) {
   ui_test_utils::NavigateToURL(
@@ -1242,7 +1242,7 @@ class PKPModelClientTest : public SecurityStateTabHelperTest {
       transport_security_state_source_;
 };
 
-INSTANTIATE_TEST_CASE_P(, PKPModelClientTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, PKPModelClientTest, ::testing::Values(false, true));
 
 IN_PROC_BROWSER_TEST_P(PKPModelClientTest, PKPBypass) {
   content::WebContents* web_contents =
@@ -1343,9 +1343,9 @@ class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
   DISALLOW_COPY_AND_ASSIGN(SecurityStateLoadingTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SecurityStateLoadingTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SecurityStateLoadingTest,
+                         ::testing::Values(false, true));
 
 // Tests that navigation state changes cause the security state to be
 // updated.

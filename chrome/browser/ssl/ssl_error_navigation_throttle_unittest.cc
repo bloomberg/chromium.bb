@@ -172,8 +172,8 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithCertError) {
   EXPECT_TRUE(deferred_result_.error_page_content().has_value());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLErrorNavigationThrottleTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLErrorNavigationThrottleTest,
+                         ::testing::Values(false, true));
 
 }  // namespace
