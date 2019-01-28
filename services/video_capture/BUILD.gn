@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
@@ -18,11 +17,6 @@ service_executable("video_capture") {
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/mojom",
   ]
-}
-
-service_manifest("manifest") {
-  name = "video_capture"
-  source = "service_manifest.json"
 }
 
 source_set("lib") {
@@ -102,13 +96,13 @@ source_set("tests") {
 
   deps = [
     ":lib",
-    ":tests_catalog_source",
     ":video_capture",
     "//base/test:test_support",
     "//media/capture:test_support",
     "//media/capture/mojom:video_capture",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//services/video_capture/public/cpp:manifest",
     "//services/video_capture/public/cpp:mocks",
     "//testing/gmock",
     "//testing/gtest",
@@ -118,21 +112,4 @@ source_set("tests") {
   data_deps = [
     ":video_capture",
   ]
-}
-
-service_manifest("unittest_manifest") {
-  name = "video_capture_unittests"
-  source = "test/service_unittest_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
-  standalone_services = [ ":manifest" ]
-}
-
-catalog_cpp_source("tests_catalog_source") {
-  testonly = true
-  catalog = ":tests_catalog"
-  generated_function_name = "video_capture::CreateTestCatalog"
 }

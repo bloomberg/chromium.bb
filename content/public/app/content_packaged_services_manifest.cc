@@ -20,7 +20,7 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/shape_detection/manifest.h"
 #include "services/tracing/manifest.h"
-#include "services/video_capture/manifest.h"
+#include "services/video_capture/public/cpp/manifest.h"
 #include "services/viz/manifest.h"
 
 #if defined(OS_LINUX)

@@ -236,7 +236,7 @@ source_set("content_packaged_services_manifest") {
     "//services/resource_coordinator:manifest",
     "//services/shape_detection:manifest",
     "//services/tracing:manifest",
-    "//services/video_capture:manifest",
+    "//services/video_capture/public/cpp:manifest",
     "//services/viz:manifest",
   ]
 
