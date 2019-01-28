@@ -117,33 +117,12 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &PlatformNotificationContext::
-              ReadAllNotificationDataForServiceWorkerRegistration,
-          notification_context, origin, service_worker_registration_id,
-          base::Bind(&PushMessagingNotificationManager::
-                         DidGetNotificationsFromDatabaseIOProxy,
-                     weak_factory_.GetWeakPtr(), origin,
-                     service_worker_registration_id, message_handled_closure)));
-}
-
-// static
-void PushMessagingNotificationManager::DidGetNotificationsFromDatabaseIOProxy(
-    const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
-    const GURL& origin,
-    int64_t service_worker_registration_id,
-    const base::Closure& message_handled_closure,
-    bool success,
-    const std::vector<NotificationDatabaseData>& data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
+  notification_context->ReadAllNotificationDataForServiceWorkerRegistration(
+      origin, service_worker_registration_id,
+      base::BindRepeating(
           &PushMessagingNotificationManager::DidGetNotificationsFromDatabase,
-          ui_weak_ptr, origin, service_worker_registration_id,
-          message_handled_closure, success, data));
+          weak_factory_.GetWeakPtr(), origin, service_worker_registration_id,
+          message_handled_closure));
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
@@ -283,33 +262,14 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   int64_t next_persistent_notification_id =
       PlatformNotificationServiceImpl::GetInstance()
           ->ReadNextPersistentNotificationId(profile_);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&PlatformNotificationContext::WriteNotificationData,
-                     notification_context, next_persistent_notification_id,
-                     service_worker_registration_id, origin, database_data,
-                     base::Bind(&PushMessagingNotificationManager::
-                                    DidWriteNotificationDataIOProxy,
-                                weak_factory_.GetWeakPtr(), origin,
-                                database_data.notification_data,
-                                message_handled_closure)));
-}
 
-// static
-void PushMessagingNotificationManager::DidWriteNotificationDataIOProxy(
-    const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,
-    const GURL& origin,
-    const blink::PlatformNotificationData& notification_data,
-    const base::Closure& message_handled_closure,
-    bool success,
-    const std::string& notification_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
+  notification_context->WriteNotificationData(
+      next_persistent_notification_id, service_worker_registration_id, origin,
+      database_data,
+      base::BindRepeating(
           &PushMessagingNotificationManager::DidWriteNotificationData,
-          ui_weak_ptr, origin, notification_data, message_handled_closure,
-          success, notification_id));
+          weak_factory_.GetWeakPtr(), origin, database_data.notification_data,
+          message_handled_closure));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(

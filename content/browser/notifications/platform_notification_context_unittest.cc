@@ -45,8 +45,7 @@ class NotificationBrowserClient : public TestContentBrowserClient {
 
 class PlatformNotificationContextTest : public ::testing::Test {
  public:
-  PlatformNotificationContextTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP), success_(false) {}
+  PlatformNotificationContextTest() : success_(false) {}
 
   // Callback to provide when reading a single notification from the database.
   void DidReadNotificationData(bool success,
