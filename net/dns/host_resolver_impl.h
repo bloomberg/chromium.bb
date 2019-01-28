@@ -216,7 +216,6 @@ class NET_EXPORT HostResolverImpl
   class LoopbackProbeJob;
   class DnsTask;
   class RequestImpl;
-  class LegacyRequestImpl;
   using Key = HostCache::Key;
   using JobMap = std::map<Key, std::unique_ptr<Job>>;
 

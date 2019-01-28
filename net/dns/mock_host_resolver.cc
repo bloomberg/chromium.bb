@@ -134,6 +134,10 @@ class MockHostResolverBase::RequestImpl
     return staleness_;
   }
 
+  void ChangeRequestPriority(RequestPriority priority) override {
+    priority_ = priority;
+  }
+
   void set_address_results(
       const AddressList& address_results,
       base::Optional<HostCache::EntryStaleness> staleness) {
@@ -168,8 +172,6 @@ class MockHostResolverBase::RequestImpl
 
   RequestPriority priority() const { return priority_; }
 
-  void set_priority(RequestPriority priority) { priority_ = priority; }
-
   void set_id(size_t id) {
     DCHECK_GT(id, 0u);
     DCHECK_EQ(0u, id_);
@@ -198,63 +200,6 @@ class MockHostResolverBase::RequestImpl
   bool complete_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestImpl);
-};
-
-class MockHostResolverBase::LegacyRequestImpl : public HostResolver::Request {
- public:
-  explicit LegacyRequestImpl(std::unique_ptr<RequestImpl> inner_request)
-      : inner_request_(std::move(inner_request)) {
-    DCHECK_EQ(0u, inner_request_->id());
-    DCHECK(!inner_request_->complete());
-  }
-
-  ~LegacyRequestImpl() override {}
-
-  void ChangeRequestPriority(RequestPriority priority) override {
-    inner_request_->set_priority(priority);
-  }
-
-  int Start() {
-    return inner_request_->Start(base::BindOnce(
-        &LegacyRequestImpl::LegacyApiCallback, base::Unretained(this)));
-  }
-
-  void AssignCallback(CompletionOnceCallback callback,
-                      AddressList* addresses_result_ptr) {
-    DCHECK(callback);
-    DCHECK(addresses_result_ptr);
-    DCHECK_GT(inner_request_->id(), 0u);
-    DCHECK(!inner_request_->complete());
-
-    callback_ = std::move(callback);
-    addresses_result_ptr_ = addresses_result_ptr;
-  }
-
-  const RequestImpl& inner_request() const { return *inner_request_; }
-
- private:
-  void LegacyApiCallback(int error) {
-    // Must call AssignCallback() before async results.
-    DCHECK(callback_);
-
-    if (error == OK && !inner_request_->parameters().is_speculative) {
-      // Legacy API does not allow non-address results (eg TXT), so AddressList
-      // is always expected to be present on OK.
-      DCHECK(inner_request_->GetAddressResults());
-      *addresses_result_ptr_ = inner_request_->GetAddressResults().value();
-    }
-    addresses_result_ptr_ = nullptr;
-    std::move(callback_).Run(error);
-  }
-
-  const std::unique_ptr<RequestImpl> inner_request_;
-
-  CompletionOnceCallback callback_;
-  // This is a caller-provided pointer and should not be used once |callback_|
-  // is invoked.
-  AddressList* addresses_result_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(LegacyRequestImpl);
 };
 
 class MockHostResolverBase::MdnsListenerImpl
@@ -345,20 +290,8 @@ int MockHostResolverBase::Resolve(const RequestInfo& info,
   auto request = std::make_unique<RequestImpl>(
       info.host_port_pair(), RequestInfoToResolveHostParameters(info, priority),
       AsWeakPtr());
-  auto wrapped_request =
-      std::make_unique<LegacyRequestImpl>(std::move(request));
-
-  int rv = wrapped_request->Start();
-
-  if (rv == OK) {
-    DCHECK(wrapped_request->inner_request().GetAddressResults());
-    *addresses = wrapped_request->inner_request().GetAddressResults().value();
-  } else if (rv == ERR_IO_PENDING) {
-    wrapped_request->AssignCallback(std::move(callback), addresses);
-    *out_request = std::move(wrapped_request);
-  }
-
-  return rv;
+  return LegacyResolve(std::move(request), info.is_speculative(), addresses,
+                       std::move(callback), out_request);
 }
 
 int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
