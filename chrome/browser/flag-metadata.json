@@ -68,7 +68,7 @@
   },
   {
     "name": "allow-insecure-localhost",
-    // "owners": [ "your-team" ],
+    "owners": [ "security-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -1694,7 +1694,7 @@
   },
   {
     "name": "enable-potentially-annoying-security-features",
-    // "owners": [ "your-team" ],
+    "owners": [ "security-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -3255,7 +3255,7 @@
   },
   {
     "name": "unsafely-treat-insecure-origin-as-secure",
-    // "owners": [ "your-team" ],
+    "owners": [ "security-dev" ],
     "expiry_milestone": 76
   },
   {
