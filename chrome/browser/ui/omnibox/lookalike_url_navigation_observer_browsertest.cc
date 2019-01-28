@@ -264,10 +264,10 @@ class LookalikeUrlNavigationObserverBrowserTest
   base::SimpleTestClock test_clock_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        LookalikeUrlNavigationObserverBrowserTest,
-                        ::testing::Values(UIEnabled::kDisabled,
-                                          UIEnabled::kEnabled));
+INSTANTIATE_TEST_SUITE_P(,
+                         LookalikeUrlNavigationObserverBrowserTest,
+                         ::testing::Values(UIEnabled::kDisabled,
+                                           UIEnabled::kEnabled));
 
 // Navigating to a non-IDN shouldn't show an infobar or record metrics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationObserverBrowserTest,
