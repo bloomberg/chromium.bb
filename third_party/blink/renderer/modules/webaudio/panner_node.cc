@@ -495,8 +495,13 @@ void PannerHandler::CalculateAzimuthElevation(
   float up_projection = source_listener.Dot(up);
 
   FloatPoint3D projected_source = source_listener - up_projection * up;
+  projected_source.Normalize();
 
-  double azimuth = rad2deg(projected_source.AngleBetween(listener_right));
+  // Don't use AngleBetween here.  It produces the wrong value when one of the
+  // vectors has zero length.  We know here that |projected_source| and
+  // |listener_right| are "normalized", so the dot product is good enough.
+  double azimuth =
+      rad2deg(acos(clampTo(projected_source.Dot(listener_right), -1.0f, 1.0f)));
   FixNANs(azimuth);  // avoid illegal values
 
   // Source  in front or behind the listener
