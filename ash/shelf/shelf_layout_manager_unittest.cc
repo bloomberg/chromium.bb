@@ -2582,6 +2582,56 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
 }
 
+// Tests that swiping up on the AUTO_HIDE_HIDDEN shelf, with various speeds,
+// offsets, and angles, always shows the shelf.
+TEST_F(ShelfLayoutManagerTest, SwipeUpAutoHideHiddenShelf) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  Shelf* shelf = GetPrimaryShelf();
+
+  // Create a window so that the shelf will hide.
+  const aura::Window* window = CreateTestWidget()->GetNativeWindow();
+  const gfx::Point tap_to_hide_shelf_location =
+      window->GetBoundsInScreen().CenterPoint();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  const int time_deltas[] = {10, 50, 100, 500};
+  const int num_scroll_steps[] = {2, 5, 10, 50};
+  const int y_bezel_start_offsets[] = {5, 10, 50};
+  const int x_offsets[] = {10, 20, 50};
+  const int y_offsets[] = {70, 100, 300, 500};
+
+  for (int time_delta : time_deltas) {
+    for (int num_scroll_steps : num_scroll_steps) {
+      for (int x_offset : x_offsets) {
+        for (int y_offset : y_offsets) {
+          for (int y_bezel_start_offset : y_bezel_start_offsets) {
+            const gfx::Point start(display_bounds.bottom_center() +
+                                   gfx::Vector2d(0, y_bezel_start_offset));
+            const gfx::Point end(start + gfx::Vector2d(x_offset, -y_offset));
+            generator->GestureScrollSequence(
+                start, end, base::TimeDelta::FromMilliseconds(time_delta),
+                num_scroll_steps);
+            EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState())
+                << "Failure to show shelf after a swipe up in " << time_delta
+                << "ms, " << num_scroll_steps << " steps, "
+                << y_bezel_start_offset << " Y bezel start offset, " << x_offset
+                << " X-offset and " << y_offset << " Y-offset.";
+            generator->GestureTapAt(tap_to_hide_shelf_location);
+            EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+          }
+        }
+      }
+    }
+  }
+}
+
 // Tests the auto-hide shelf status with mouse events.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
   views::Widget* widget = CreateTestWidget();
