@@ -8,10 +8,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/services/leveldb/leveldb_service_unittests_catalog_source.h"
+#include "components/services/leveldb/public/cpp/manifest.h"
 #include "components/services/leveldb/public/cpp/remote_iterator.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,12 +43,18 @@ base::Callback<void(const base::UnguessableToken&)> CaptureToken(
                     quit_closure);
 }
 
+const char kTestServiceName[] = "leveldb_service_unittests";
+
 class RemoteIteratorTest : public testing::Test {
  public:
   RemoteIteratorTest()
-      : test_service_manager_(test::CreateTestCatalog()),
-        test_service_(test_service_manager_.RegisterTestInstance(
-            "leveldb_service_unittests")) {}
+      : test_service_manager_(
+            {GetManifest(), service_manager::ManifestBuilder()
+                                .WithServiceName(kTestServiceName)
+                                .RequireCapability("leveldb", "leveldb:leveldb")
+                                .Build()}),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
   ~RemoteIteratorTest() override = default;
 
  protected:

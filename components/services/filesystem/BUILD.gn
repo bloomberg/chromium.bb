@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 static_library("lib") {
@@ -52,11 +50,6 @@ if (!is_ios) {
     ]
   }
 
-  service_manifest("manifest") {
-    name = "filesystem"
-    source = "manifest.json"
-  }
-
   test("filesystem_service_unittests") {
     sources = [
       "directory_impl_unittest.cc",
@@ -66,9 +59,9 @@ if (!is_ios) {
     ]
 
     deps = [
-      ":filesystem_service_unittests_catalog_source",
       "//base",
       "//base/test:test_support",
+      "//components/services/filesystem/public/cpp:manifest",
       "//components/services/filesystem/public/interfaces",
       "//mojo/core/test:run_all_unittests",
       "//mojo/public/cpp/bindings",
@@ -81,21 +74,5 @@ if (!is_ios) {
     data_deps = [
       ":filesystem",
     ]
-  }
-
-  service_manifest("test_manifest") {
-    name = "filesystem_service_unittests"
-    source = "test_manifest.json"
-  }
-
-  catalog("filesystem_service_unittests_catalog") {
-    embedded_services = [ ":test_manifest" ]
-    standalone_services = [ ":manifest" ]
-  }
-
-  catalog_cpp_source("filesystem_service_unittests_catalog_source") {
-    testonly = true
-    catalog = ":filesystem_service_unittests_catalog"
-    generated_function_name = "filesystem::test::CreateTestCatalog"
   }
 }

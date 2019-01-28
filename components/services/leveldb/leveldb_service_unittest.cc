@@ -7,13 +7,15 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/services/filesystem/public/cpp/manifest.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "components/services/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
-#include "components/services/leveldb/leveldb_service_unittests_catalog_source.h"
+#include "components/services/leveldb/public/cpp/manifest.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -134,12 +136,20 @@ void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
   run_loop.Run();
 }
 
+const char kTestServiceName[] = "leveldb_service_unittests";
+
 class LevelDBServiceTest : public testing::Test {
  public:
   LevelDBServiceTest()
-      : test_service_manager_(test::CreateTestCatalog()),
-        test_service_(test_service_manager_.RegisterTestInstance(
-            "leveldb_service_unittests")) {}
+      : test_service_manager_(
+            {GetManifest(), filesystem::GetManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability("filesystem", "filesystem:filesystem")
+                 .RequireCapability("leveldb", "leveldb:leveldb")
+                 .Build()}),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
   ~LevelDBServiceTest() override = default;
 
  protected:
