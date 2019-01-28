@@ -386,6 +386,13 @@ BASE_EXPORT NSString* FilePathToNSString(const FilePath& path);
 // Converts |str| to a FilePath. Returns an empty path if |str| is nil.
 BASE_EXPORT FilePath NSStringToFilePath(NSString* str);
 
+// Converts a non-null |path| to a CFURLRef. |path| must not be empty.
+//
+// This function only uses manually-owned resources, so it does not depend on an
+// NSAutoreleasePool being set up on the current thread.
+BASE_EXPORT base::ScopedCFTypeRef<CFURLRef> FilePathToCFURL(
+    const FilePath& path);
+
 #if defined(__OBJC__)
 // Converts |range| to an NSRange, returning the new range in |range_out|.
 // Returns true if conversion was successful, false if the values of |range|

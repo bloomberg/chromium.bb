@@ -212,18 +212,20 @@ void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode) {
   SetUIMode();
 }
 
-bool SetFileBackupExclusion(const FilePath& file_path) {
-  NSString* file_path_ns = base::mac::FilePathToNSString(file_path);
-  NSURL* file_url = [NSURL fileURLWithPath:file_path_ns];
+bool GetFileBackupExclusion(const FilePath& file_path) {
+  return CSBackupIsItemExcluded(FilePathToCFURL(file_path), nullptr);
+}
 
+bool SetFileBackupExclusion(const FilePath& file_path) {
   // When excludeByPath is true the application must be running with root
   // privileges (admin for 10.6 and earlier) but the URL does not have to
   // already exist. When excludeByPath is false the URL must already exist but
   // can be used in non-root (or admin as above) mode. We use false so that
   // non-root (or admin) users don't get their TimeMachine drive filled up with
   // unnecessary backups.
-  OSStatus os_err =
-      CSBackupSetItemExcluded(base::mac::NSToCFCast(file_url), TRUE, FALSE);
+  OSStatus os_err = CSBackupSetItemExcluded(FilePathToCFURL(file_path),
+                                            /*exclude=*/TRUE,
+                                            /*excludeByPath=*/FALSE);
   if (os_err != noErr) {
     OSSTATUS_DLOG(WARNING, os_err)
         << "Failed to set backup exclusion for file '"
