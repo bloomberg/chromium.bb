@@ -67,6 +67,10 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   String validationMessage() const override;
   String ValidationSubMessage() const override;
   void DisabledStateMightBeChanged() override;
+  bool ClassSupportsStateRestore() const override;
+  bool ShouldSaveAndRestoreFormControlState() const override;
+  FormControlState SaveFormControlState() const override;
+  void RestoreFormControlState(const FormControlState& state) override;
 
   Member<HTMLElement> target_;
 

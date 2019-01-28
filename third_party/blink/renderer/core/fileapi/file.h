@@ -39,6 +39,7 @@ class ExceptionState;
 class ExecutionContext;
 class FilePropertyBag;
 class FileMetadata;
+class FormControlState;
 class KURL;
 
 class CORE_EXPORT File final : public Blob {
@@ -101,6 +102,13 @@ class CORE_EXPORT File final : public Blob {
                                       true, size, last_modified,
                                       std::move(blob_data_handle));
   }
+
+  // For session restore feature.
+  // See also AppendToControlState().
+  static File* CreateFromControlState(const FormControlState& state,
+                                      wtf_size_t& index);
+  static String PathFromControlState(const FormControlState& state,
+                                     wtf_size_t& index);
 
   static File* CreateWithRelativePath(const String& path,
                                       const String& relative_path);
@@ -219,6 +227,9 @@ class CORE_EXPORT File final : public Blob {
   // Returns true if the sources (file path, file system URL, or blob handler)
   // of the file objects are same or not.
   bool HasSameSource(const File& other) const;
+
+  // Return false if this File instance is not serializable to FormControlState.
+  bool AppendToControlState(FormControlState& state);
 
  private:
   void InvalidateSnapshotMetadata() { snapshot_size_ = -1; }

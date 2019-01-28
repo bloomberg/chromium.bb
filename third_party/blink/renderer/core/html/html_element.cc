@@ -1531,6 +1531,12 @@ bool HTMLElement::IsLabelable() const {
   return IsFormAssociatedCustomElement();
 }
 
+void HTMLElement::FinishParsingChildren() {
+  Element::FinishParsingChildren();
+  if (IsFormAssociatedCustomElement())
+    EnsureElementInternals().TakeStateAndRestore();
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG

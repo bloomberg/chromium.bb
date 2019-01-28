@@ -179,6 +179,7 @@ class CORE_EXPORT HTMLElement : public Element {
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode& insertion_point) override;
   void DidMoveToNewDocument(Document& old_document) override;
+  void FinishParsingChildren() override;
 
  private:
   String DebugNodeName() const final;
