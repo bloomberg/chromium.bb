@@ -2248,7 +2248,7 @@ class ShelfViewMenuTest : public ShelfViewTest,
   DISALLOW_COPY_AND_ASSIGN(ShelfViewMenuTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, ShelfViewMenuTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, ShelfViewMenuTest, testing::Bool());
 
 // Tests that menu anchor points are aligned with the shelf button bounds.
 TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {
@@ -2414,10 +2414,10 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
   CheckAllItemsAreInBounds();
 }
 
-INSTANTIATE_TEST_CASE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
-INSTANTIATE_TEST_CASE_P(VisibleBounds,
-                        ShelfViewVisibleBoundsTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(LtrRtl, ShelfViewTextDirectionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(VisibleBounds,
+                         ShelfViewVisibleBoundsTest,
+                         testing::Bool());
 
 namespace {
 
@@ -3214,7 +3214,7 @@ class OverflowButtonTextDirectionTest
   DISALLOW_COPY_AND_ASSIGN(OverflowButtonTextDirectionTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* prefix intentionally left blank due to only one parameterization */,
     OverflowButtonTextDirectionTest,
     testing::Bool());
