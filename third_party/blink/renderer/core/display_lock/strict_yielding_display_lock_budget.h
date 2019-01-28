@@ -34,7 +34,7 @@ class CORE_EXPORT StrictYieldingDisplayLockBudget final
 
  protected:
   base::Optional<Phase> last_completed_phase_;
-  bool completed_new_phase_this_cycle_;
+  bool completed_new_phase_this_cycle_ = false;
 };
 
 }  // namespace blink
