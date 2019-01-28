@@ -2065,7 +2065,6 @@
     'cc-resources': ['danakj+watch@chromium.org'],
     'cc-scheduler': ['scheduler-bugs+cc@chromium.org'],
     'certificate_transparency': ['certificate-transparency-chrome@googlegroups.com',
-                                 'eranm@chromium.org',
                                  'martijn+crwatch@martijnc.be',
                                  'rsleevi+watch@chromium.org'],
     'chrome_cleaner': ['csharp+watch@chromium.org',
