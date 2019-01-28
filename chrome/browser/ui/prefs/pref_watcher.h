@@ -9,15 +9,11 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 
 class Profile;
 class PrefsTabHelper;
-
-namespace content {
-class RendererPreferenceWatcher;
-}  // namespace content
 
 // Watches updates in WebKitPreferences and blink::mojom::RendererPreferences,
 // and notifies tab helpers and watchers for workers of those updates.
@@ -31,7 +27,7 @@ class PrefWatcher : public KeyedService {
   void RegisterHelper(PrefsTabHelper* helper);
   void UnregisterHelper(PrefsTabHelper* helper);
   void RegisterWatcherForWorkers(
-      content::mojom::RendererPreferenceWatcherPtr worker_watcher);
+      blink::mojom::RendererPreferenceWatcherPtr worker_watcher);
 
  private:
   // KeyedService overrides:
@@ -48,7 +44,7 @@ class PrefWatcher : public KeyedService {
   std::set<PrefsTabHelper*> tab_helpers_;
 
   // |worker_watchers_| observe changes in blink::mojom::RendererPreferences.
-  mojo::InterfacePtrSet<content::mojom::RendererPreferenceWatcher>
+  mojo::InterfacePtrSet<blink::mojom::RendererPreferenceWatcher>
       worker_watchers_;
 };
 

@@ -3729,8 +3729,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
 
-  mojom::RendererPreferenceWatcherPtr watcher;
-  mojom::RendererPreferenceWatcherRequest watcher_request =
+  blink::mojom::RendererPreferenceWatcherPtr watcher;
+  blink::mojom::RendererPreferenceWatcherRequest watcher_request =
       mojo::MakeRequest(&watcher);
   render_view()->RegisterRendererPreferenceWatcherForWorker(std::move(watcher));
 

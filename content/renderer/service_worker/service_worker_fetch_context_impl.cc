@@ -30,7 +30,7 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
-    mojom::RendererPreferenceWatcherRequest preference_watcher_request)
+    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request)
     : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),

@@ -525,7 +525,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
     mojom::EmbeddedWorkerStartTimingPtr start_timing,
-    mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+    blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),

@@ -10,7 +10,6 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -19,6 +18,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -47,7 +47,7 @@ class WebSocketHandshakeThrottleProvider;
 class CONTENT_EXPORT WebWorkerFetchContextImpl
     : public blink::WebWorkerFetchContext,
       public blink::mojom::ServiceWorkerWorkerClient,
-      public mojom::RendererPreferenceWatcher {
+      public blink::mojom::RendererPreferenceWatcher {
  public:
   // Creates a new fetch context for a worker.
   //
@@ -70,7 +70,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
       ServiceWorkerNetworkProvider* network_provider,
       blink::mojom::RendererPreferences renderer_preferences,
-      mojom::RendererPreferenceWatcherRequest watcher_request,
+      blink::mojom::RendererPreferenceWatcherRequest watcher_request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           fallback_factory_info);
@@ -140,7 +140,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Regarding the rest of params, see the comments on Create().
   WebWorkerFetchContextImpl(
       blink::mojom::RendererPreferences renderer_preferences,
-      mojom::RendererPreferenceWatcherRequest watcher_request,
+      blink::mojom::RendererPreferenceWatcherRequest watcher_request,
       blink::mojom::ServiceWorkerWorkerClientRequest
           service_worker_client_request,
       blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
@@ -167,7 +167,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // controlled by a service worker.
   void ResetServiceWorkerURLLoaderFactory();
 
-  // Implements mojom::RendererPreferenceWatcher.
+  // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
   mojo::Binding<blink::mojom::ServiceWorkerWorkerClient> binding_;
@@ -243,11 +243,12 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
 
   // |watcher_binding_| and |child_preference_watchers_| are for keeping track
   // of updates in the renderer preferences.
-  mojo::Binding<mojom::RendererPreferenceWatcher> preference_watcher_binding_;
+  mojo::Binding<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_binding_;
   // Kept while staring up the worker thread. Valid until
   // InitializeOnWorkerThread().
-  mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
-  mojo::InterfacePtrSet<mojom::RendererPreferenceWatcher>
+  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::InterfacePtrSet<blink::mojom::RendererPreferenceWatcher>
       child_preference_watchers_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.

@@ -1684,7 +1684,7 @@ void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
 }
 
 void RenderViewImpl::RegisterRendererPreferenceWatcherForWorker(
-    mojom::RendererPreferenceWatcherPtr watcher) {
+    blink::mojom::RendererPreferenceWatcherPtr watcher) {
   renderer_preference_watchers_.AddPtr(std::move(watcher));
 }
 
@@ -1912,7 +1912,7 @@ void RenderViewImpl::OnSetRendererPrefs(
   renderer_preferences_ = renderer_prefs;
 
   renderer_preference_watchers_.ForAllPtrs(
-      [&renderer_prefs](mojom::RendererPreferenceWatcher* watcher) {
+      [&renderer_prefs](blink::mojom::RendererPreferenceWatcher* watcher) {
         watcher->NotifyUpdate(renderer_prefs.Clone());
       });
 

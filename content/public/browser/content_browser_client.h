@@ -30,7 +30,6 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom.h"
@@ -51,6 +50,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 #include "third_party/blink/public/web/window_features.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -1406,7 +1406,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // watchers are for shared workers and service workers.
   virtual void RegisterRendererPreferenceWatcherForWorkers(
       BrowserContext* browser_context,
-      mojom::RendererPreferenceWatcherPtr watcher);
+      blink::mojom::RendererPreferenceWatcherPtr watcher);
 
   // Returns the HTML content of the error page for Origin Policy related
   // errors.

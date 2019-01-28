@@ -10,12 +10,12 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
@@ -63,7 +63,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const blink::mojom::RendererPreferences& renderer_preferences,
-      mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
@@ -118,7 +118,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   blink::mojom::RendererPreferences renderer_preferences_;
   // Set on ctor and passed to the fetch context created when
   // CreateWorkerFetchContext() is called.
-  mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
   std::unique_ptr<blink::WebSharedWorker> impl_;
 
   using PendingChannel =
