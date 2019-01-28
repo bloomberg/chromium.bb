@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.support.v4.graphics.ColorUtils;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.StateSet;
 import android.view.View;
@@ -71,9 +72,9 @@ class RippleBackgroundHelper {
             @DimenRes int borderSizeDimenId) {
         mView = view;
 
-        int paddingLeft = mView.getPaddingLeft();
+        int paddingStart = ViewCompat.getPaddingStart(mView);
         int paddingTop = mView.getPaddingTop();
-        int paddingRight = mView.getPaddingRight();
+        int paddingEnd = ViewCompat.getPaddingEnd(mView);
         int paddingBottom = mView.getPaddingBottom();
         mView.setBackground(createBackgroundDrawable(
                 AppCompatResources.getColorStateList(view.getContext(), rippleColorResId),
@@ -85,7 +86,8 @@ class RippleBackgroundHelper {
         // On KitKat, setting the background on the view can cause padding reset. Save the padding
         // and re-apply after background is set.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            mView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+            ViewCompat.setPaddingRelative(
+                    mView, paddingStart, paddingTop, paddingEnd, paddingBottom);
         }
     }
 

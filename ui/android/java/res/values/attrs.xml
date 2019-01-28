@@ -26,6 +26,8 @@
         <attr name="cornerRadius" format="reference|dimension"/>
         <attr name="iconWidth" format="reference|dimension"/>
         <attr name="iconHeight" format="reference|dimension"/>
+        <attr name="primaryTextAppearance" format="reference"/>
+        <attr name="secondaryTextAppearance" format="reference"/>
         <attr name="rippleColor" format="color"/>
     </declare-styleable>
 

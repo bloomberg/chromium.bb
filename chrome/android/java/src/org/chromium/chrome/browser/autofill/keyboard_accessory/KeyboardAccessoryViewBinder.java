@@ -75,7 +75,7 @@ class KeyboardAccessoryViewBinder {
         @Override
         public void bind(BarItem barItem, TextView textView) {
             KeyboardAccessoryData.Action action = barItem.getAction();
-            assert action != null : "";
+            assert action != null : "Tried to bind item without action. Chose a wrong ViewHolder?";
             textView.setText(action.getCaption());
             textView.setOnClickListener(view -> action.getCallback().onResult(action));
         }
