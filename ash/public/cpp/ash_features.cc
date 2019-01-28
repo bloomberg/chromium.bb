@@ -60,10 +60,6 @@ const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
 const base::Feature kSupervisedUserDeprecationNotice{
     "SupervisedUserDeprecationNotice", base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool IsDockedMagnifierEnabled() {
-  return base::FeatureList::IsEnabled(kDockedMagnifier);
-}
-
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
 }
@@ -75,10 +71,6 @@ bool IsLockScreenInlineReplyEnabled() {
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
-}
-
-bool IsNightLightEnabled() {
-  return base::FeatureList::IsEnabled(kNightLight);
 }
 
 bool IsNotificationExpansionAnimationEnabled() {

@@ -12,7 +12,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnifier_test_utils.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
@@ -27,7 +26,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window.h"
@@ -72,9 +70,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    // Explicitly enable the Docked Magnifier feature for the tests.
-    scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
-
     // Explicitly enable --ash-constrain-pointer-to-root to be able to test
     // mouse cursor confinement outside the magnifier viewport.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -140,8 +135,6 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };
 

@@ -10,7 +10,6 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -20,7 +19,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
@@ -474,12 +472,6 @@ class AccessibilityControllerSigninTest
   AccessibilityControllerSigninTest() = default;
   ~AccessibilityControllerSigninTest() = default;
 
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
-    NoSessionAshTestBase::SetUp();
-  }
-
   void SimulateLogin() {
     constexpr char kUserEmail[] = "user1@test.com";
     switch (GetParam()) {
@@ -498,8 +490,6 @@ class AccessibilityControllerSigninTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerSigninTest);
 };
 

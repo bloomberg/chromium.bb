@@ -90,12 +90,10 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(screen_magnifier_view_,
                                             screen_magnifier_enabled_);
 
-  if (features::IsDockedMagnifierEnabled()) {
-    docked_magnifier_enabled_ =
-        Shell::Get()->docked_magnifier_controller()->GetEnabled();
-    TrayPopupUtils::UpdateCheckMarkVisibility(docked_magnifier_view_,
-                                              docked_magnifier_enabled_);
-  }
+  docked_magnifier_enabled_ =
+      Shell::Get()->docked_magnifier_controller()->GetEnabled();
+  TrayPopupUtils::UpdateCheckMarkVisibility(docked_magnifier_view_,
+                                            docked_magnifier_enabled_);
 
   autoclick_enabled_ = controller->autoclick_enabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(autoclick_view_,
@@ -173,7 +171,6 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
       screen_magnifier_enabled_);
 
-  if (features::IsDockedMagnifierEnabled()) {
     docked_magnifier_enabled_ =
         Shell::Get()->docked_magnifier_controller()->GetEnabled();
     docked_magnifier_view_ = AddScrollListCheckableItem(
@@ -181,7 +178,6 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DOCKED_MAGNIFIER),
         docked_magnifier_enabled_);
-  }
 
   autoclick_enabled_ = controller->autoclick_enabled();
   autoclick_view_ = AddScrollListCheckableItem(
@@ -275,8 +271,7 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      ? UserMetricsAction("StatusArea_MagnifierDisabled")
                      : UserMetricsAction("StatusArea_MagnifierEnabled"));
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
-  } else if (features::IsDockedMagnifierEnabled() &&
-             view == docked_magnifier_view_) {
+  } else if (view == docked_magnifier_view_) {
     auto* docked_magnifier_controller =
         Shell::Get()->docked_magnifier_controller();
     const bool new_state = !docked_magnifier_controller->GetEnabled();

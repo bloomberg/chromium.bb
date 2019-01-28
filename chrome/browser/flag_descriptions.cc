@@ -559,10 +559,6 @@ const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"
     "Apps (e.g Settings, Discover).";
 
-const char kEnableDockedMagnifierName[] = "Docked Magnifier";
-const char kEnableDockedMagnifierDescription[] =
-    "Enables the Docked Magnifier (a.k.a. picture-in-picture magnifier).";
-
 const char kEnforceTLS13DowngradeName[] = "TLS 1.3 downgrade hardening";
 const char kEnforceTLS13DowngradeDescription[] =
     "This option enables the TLS 1.3 downgrade hardening mechanism. This "
@@ -690,11 +686,6 @@ const char kEnableNetworkServiceInProcessName[] =
     "Runs network service in-process";
 const char kEnableNetworkServiceInProcessDescription[] =
     "Runs the network service in the browser process.";
-
-const char kEnableNightLightName[] = "Enable Night Light";
-const char kEnableNightLightDescription[] =
-    "Enable the Night Light feature which controls the color temperature of "
-    "the screen.";
 
 const char kEnableNotificationScrollBarName[] =
     "Enable notification list scroll bar";
