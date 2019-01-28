@@ -161,6 +161,16 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   client_->CountFeature(feature);
 }
 
+void WebSharedWorkerImpl::DidFetchScript() {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptLoaded();
+}
+
+void WebSharedWorkerImpl::DidEvaluateClassicScript(bool success) {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptEvaluated(success);
+}
+
 void WebSharedWorkerImpl::DidCloseWorkerGlobalScope() {
   DCHECK(IsMainThread());
   client_->WorkerContextClosed();
@@ -252,6 +262,10 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     // |this| is deleted at this point.
     return;
   }
+  DidFetchScript();
+  probe::scriptImported(shadow_page_->GetDocument(),
+                        main_script_loader_->Identifier(),
+                        main_script_loader_->SourceText());
 
   // S13nServiceWorker: The browser process is expected to send a
   // SetController IPC before sending the script response, but there is no
@@ -337,8 +351,6 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   StartWorkerThread(std::move(global_scope_creation_params),
                     script_response_url, main_script_loader_->SourceText());
 
-  probe::scriptImported(document, main_script_loader_->Identifier(),
-                        main_script_loader_->SourceText());
   main_script_loader_ = nullptr;
 }
 

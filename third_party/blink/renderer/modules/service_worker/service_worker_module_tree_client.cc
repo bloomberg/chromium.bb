@@ -38,6 +38,7 @@ void ServiceWorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     worker_global_scope->close();
     return;
   }
+  worker_reporting_proxy.DidFetchScript();
 
   // (In the update case) Step 9: "Else, continue the rest of these steps after
   // the algorithm's asynchronous completion, with script being the asynchronous

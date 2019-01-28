@@ -35,9 +35,11 @@ class SharedWorkerReportingProxy final
                             MessageLevel,
                             const String& message,
                             SourceLocation*) override;
+  void DidFetchScript() override;
   void DidFailToFetchClassicScript() override;
   void DidFailToFetchModuleScript() override;
-  void DidEvaluateClassicScript(bool success) override {}
+  void DidEvaluateClassicScript(bool success) override;
+  void DidEvaluateModuleScript(bool success) override;
   void DidCloseWorkerGlobalScope() override;
   void WillDestroyWorkerGlobalScope() override {}
   void DidTerminateWorkerThread() override;
