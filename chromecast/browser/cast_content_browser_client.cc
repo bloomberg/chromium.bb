@@ -326,6 +326,13 @@ CastContentBrowserClient::CreateAudioManager(
 
 bool CastContentBrowserClient::OverridesAudioManager() {
   // See CreateAudioManager().
+#if defined(OS_ANDROID)
+  // Disable CMA backend on builds older than N.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_NOUGAT) {
+    return false;
+  }
+#endif  // defined(OS_ANDROID)
   return true;
 }
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
