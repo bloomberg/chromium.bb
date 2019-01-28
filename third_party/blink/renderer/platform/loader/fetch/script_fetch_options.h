@@ -44,8 +44,7 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
                      ParserDisposition parser_state,
                      network::mojom::FetchCredentialsMode credentials_mode,
                      network::mojom::ReferrerPolicy referrer_policy,
-                     mojom::FetchImportanceMode importance =
-                         mojom::FetchImportanceMode::kImportanceAuto)
+                     mojom::FetchImportanceMode importance)
       : nonce_(nonce),
         integrity_metadata_(integrity_metadata),
         integrity_attribute_(integrity_attribute),
@@ -97,7 +96,9 @@ class PLATFORM_EXPORT ScriptFetchOptions final {
   const network::mojom::ReferrerPolicy referrer_policy_;
 
   // Priority Hints and a request's "importance" mode are currently
-  // non-standard. See https://crbug.com/821464.
+  // non-standard. See https://crbug.com/821464, and the HTML Standard issue
+  // https://github.com/whatwg/html/issues/3670 for some discussion on adding an
+  // "importance" member to the script fetch options struct.
   const mojom::FetchImportanceMode importance_;
 };
 

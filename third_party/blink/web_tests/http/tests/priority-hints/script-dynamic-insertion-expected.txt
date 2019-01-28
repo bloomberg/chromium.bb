@@ -8,6 +8,6 @@ PASS high importance on dynamically-inserted module <script>s has no effect on r
 FAIL low importance on dynamically-inserted module <script>s translates to kLow resource load priority assert_equals: expected 3 but got 1
 PASS auto importance on dynamically-inserted module <script>s has no effect on resource load priority
 PASS invalid importance on dynamically-inserted module <script>s has no effect on resource load priority
-PASS missing importance on module dynamica-inserted <script>s has no effect on resource load priority
+PASS missing importance on dynamically-inserted module <script>s has no effect on resource load priority
 Harness: the test ran to completion.
 

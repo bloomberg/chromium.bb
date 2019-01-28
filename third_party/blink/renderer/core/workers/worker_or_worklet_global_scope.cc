@@ -248,9 +248,15 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   ParserDisposition parser_state = kNotParserInserted;
   // credentials mode is credentials mode, and referrer policy is the empty
   // string."
+  // TODO(domfarolino): Module worker scripts are fetched with kImportanceAuto.
+  // Priority Hints is currently non-standard, but we can assume "fetch a module
+  // worker script tree" sets the script fetch options struct's "importance" to
+  // "auto". See https://github.com/whatwg/html/issues/3670 and
+  // https://crbug.com/821464.
   ScriptFetchOptions options(nonce, IntegrityMetadataSet(), integrity_attribute,
                              parser_state, credentials_mode,
-                             network::mojom::ReferrerPolicy::kDefault);
+                             network::mojom::ReferrerPolicy::kDefault,
+                             mojom::FetchImportanceMode::kImportanceAuto);
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."

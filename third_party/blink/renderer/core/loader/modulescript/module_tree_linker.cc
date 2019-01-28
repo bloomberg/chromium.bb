@@ -369,11 +369,16 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   // the descendant script fetch options are a new script fetch options whose
   // items all have the same values, except for the integrity metadata, which is
   // instead the empty string.
+  // TODO(domfarolino): It has not yet been decided how a root module script's
+  // "importance" mode should trickle down to imports. There is discussion of
+  // this at https://github.com/whatwg/html/issues/3670, but for now, descendant
+  // scripts get "auto" importance (Also see https://crbug.com/821464).
   ScriptFetchOptions options(module_script->FetchOptions().Nonce(),
                              IntegrityMetadataSet(), String(),
                              module_script->FetchOptions().ParserState(),
                              module_script->FetchOptions().CredentialsMode(),
-                             module_script->FetchOptions().GetReferrerPolicy());
+                             module_script->FetchOptions().GetReferrerPolicy(),
+                             mojom::FetchImportanceMode::kImportanceAuto);
 
   // [FD] Step 7. For each url in urls, ...
   //

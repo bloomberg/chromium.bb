@@ -14,14 +14,18 @@
     // Dynamically-inserted <script type=module> tests.
     {test: async_test('high importance on dynamically-inserted module <script>s has no effect on resource load priority'),
      importance: 'high', module: true, expected_priority: kHigh},
+     // This test below actually fails because ResourceFetcher currently does
+     // not make it easy to down-prioritize ResourceRequests whose priority is
+     // pre-set, and module scripts have their priority set to kHigh before they
+     // reach ResourceFetcher. This is related to crbug.com/882344.
     {test: async_test('low importance on dynamically-inserted module <script>s translates to kLow resource load priority'),
      importance: 'low', module: true, expected_priority: kLow},
     {test: async_test('auto importance on dynamically-inserted module <script>s has no effect on resource load priority'),
      importance: 'auto', module: true, expected_priority: kHigh},
     {test: async_test('invalid importance on dynamically-inserted module <script>s has no effect on resource load priority'),
      importance: 'xyz', module: true, expected_priority: kHigh},
-    {test: async_test('missing importance on module dynamica-inserted <script>s has no effect on resource load priority'),
-     expected_priority: kLow}
+    {test: async_test('missing importance on dynamically-inserted module <script>s has no effect on resource load priority'),
+     module: true, expected_priority: kHigh}
 
   ];
 
