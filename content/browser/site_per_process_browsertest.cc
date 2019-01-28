@@ -14931,4 +14931,55 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   shutdown_B.Wait();
 }
 
+// This test verifies that plugin elements containing cross-process-frames do
+// not become unresponsive during style changes. (see https://crbug.com/781880).
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       PluginElementResponsiveInCrossProcessNavigations) {
+  GURL main_frame_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
+  GURL cross_origin(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  std::string msg =
+      EvalJsWithManualReply(
+          shell(), JsReplace("var object = document.createElement('object');"
+                             "document.body.appendChild(object);"
+                             "object.data = $1;"
+                             "object.type='text/html';"
+                             "object.notify = true;"
+                             "object.onload = () => {"
+                             "  if (!object.notify) return;"
+                             "  object.notify = false;"
+                             "  window.domAutomationController.send('done');"
+                             "};",
+                             cross_origin.spec().c_str()))
+          .ExtractString();
+  ASSERT_EQ("done", msg);
+  // To track the frame's visibility an EmbeddedContentView is needed. The
+  // following steps make sure the visibility is tracked properly on the browser
+  // side.
+  auto* frame_connector = web_contents()
+                              ->GetFrameTree()
+                              ->root()
+                              ->child_at(0)
+                              ->render_manager()
+                              ->GetProxyToParent()
+                              ->cross_process_frame_connector();
+  ASSERT_FALSE(frame_connector->IsHidden());
+  ASSERT_TRUE(ExecJs(
+      shell(), "document.querySelector('object').style.display = 'none';"));
+  while (!frame_connector->IsHidden()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+  ASSERT_TRUE(ExecJs(
+      shell(), "document.querySelector('object').style.display = 'block';"));
+  while (frame_connector->IsHidden()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
+
 }  // namespace content
