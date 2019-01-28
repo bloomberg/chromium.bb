@@ -2927,6 +2927,30 @@ TEST_F(ShelfViewInkDropTest, ShelfButtonWithMenuPressRelease) {
                           views::InkDropState::DEACTIVATED));
 }
 
+TEST_F(ShelfViewInkDropTest, DismissingMenuWithDoubleClickDoesntShowInkDrop) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  InitBrowserButtonInkDrop();
+
+  views::Button* button = browser_button_;
+
+  // Show a context menu on the app list button.
+  generator->MoveMouseTo(
+      shelf_view_->GetAppListButton()->GetBoundsInScreen().CenterPoint());
+  generator->PressRightButton();
+  generator->ReleaseRightButton();
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+
+  // Now check that double-clicking on the browser button dismisses the context
+  // menu, and does not show an ink drop.
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+  generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  generator->DoubleClickLeftButton();
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            browser_button_ink_drop_->GetTargetInkDropState());
+}
+
 // Test fixture for testing material design ink drop on overflow button.
 class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
  public:

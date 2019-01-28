@@ -620,8 +620,10 @@ void ShelfView::ButtonPressed(views::Button* sender,
 
   // None of the checks in ShouldEventActivateButton() affects overflow button.
   // So, it is safe to be checked after handling overflow button.
-  if (!ShouldEventActivateButton(sender, event))
+  if (!ShouldEventActivateButton(sender, event)) {
+    ink_drop->SnapToHidden();
     return;
+  }
 
   // Prevent concurrent requests that may show application or context menus.
   // If a second request is sent before the first one can respond, the Chrome
