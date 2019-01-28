@@ -69,7 +69,7 @@
             },
             {
                 "domain": "Memory",
-                "include": ["getDOMCounters", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"]
+                "include": ["getDOMCounters", "forciblyPurgeJavaScriptMemory", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"]
             },
             {
                 "domain": "Page",

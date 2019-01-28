@@ -38,6 +38,8 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
@@ -60,6 +62,16 @@ Response InspectorMemoryAgent::getDOMCounters(int* documents,
   *nodes = InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
   *js_event_listeners =
       InstanceCounters::CounterValue(InstanceCounters::kJSEventListenerCounter);
+  return Response::OK();
+}
+
+Response InspectorMemoryAgent::forciblyPurgeJavaScriptMemory() {
+  for (const auto& page : Page::OrdinaryPages()) {
+    if (page->MainFrame()->IsLocalFrame())
+      ToLocalFrame(page->MainFrame())->ForciblyPurgeV8Memory();
+  }
+  V8PerIsolateData::MainThreadIsolate()->MemoryPressureNotification(
+      v8::MemoryPressureLevel::kCritical);
   return Response::OK();
 }
 
