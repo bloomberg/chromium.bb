@@ -878,7 +878,7 @@ IN_PROC_BROWSER_TEST_F(
                     expect_success, error_message);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     _,
     WebrtcLoggingPrivateApiStartEventLoggingTestFeatureAndPolicyEnabled,
     ::testing::Bool());
@@ -920,7 +920,7 @@ IN_PROC_BROWSER_TEST_P(
                     expect_success, error_message);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     FeatureEnabled,
     WebrtcLoggingPrivateApiStartEventLoggingTestFeatureOrPolicyDisabled,
     ::testing::Bool());
