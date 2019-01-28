@@ -41,8 +41,6 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
 
   // ModelTypeSyncBridge implementation.
-  void OnSyncStarting(
-      const syncer::DataTypeActivationRequest& request) override;
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
   base::Optional<syncer::ModelError> MergeSyncData(

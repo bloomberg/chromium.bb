@@ -178,11 +178,6 @@ void PasswordSyncBridge::ActOnPasswordStoreChanges(
   }
 }
 
-void PasswordSyncBridge::OnSyncStarting(
-    const syncer::DataTypeActivationRequest& request) {
-  NOTIMPLEMENTED();
-}
-
 std::unique_ptr<syncer::MetadataChangeList>
 PasswordSyncBridge::CreateMetadataChangeList() {
   return std::make_unique<syncer::InMemoryMetadataChangeList>();
