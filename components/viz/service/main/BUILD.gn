@@ -4,8 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//components/ui_devtools/devtools.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("main") {
