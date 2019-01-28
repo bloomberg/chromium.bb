@@ -93,12 +93,17 @@ SSLClientSocketPool::SSLConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  return std::unique_ptr<ConnectJob>(new SSLConnectJob(
-      group_name, request.priority(), request.socket_tag(),
-      request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
+  return std::make_unique<SSLConnectJob>(
+      request.priority(),
+      CommonConnectJobParams(
+          group_name, request.socket_tag(),
+          request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
+          client_socket_factory_, nullptr /* host_resolver */, context_,
+          nullptr /* socket_performance_watcher_factory */,
+          network_quality_estimator_, net_log_,
+          nullptr /* websocket_endpoint_lock_manager */),
       request.params(), transport_pool_, socks_pool_, http_proxy_pool_,
-      client_socket_factory_, context_, network_quality_estimator_, delegate,
-      net_log_));
+      delegate);
 }
 
 int SSLClientSocketPool::RequestSocket(const std::string& group_name,

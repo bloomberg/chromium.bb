@@ -102,9 +102,16 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       OnHostResolutionCallback())),
         transport_socket_pool_(kMaxSockets,
                                kMaxSocketsPerGroup,
-                               &host_resolver_,
                                &socket_factory_,
+                               &host_resolver_,
+                               nullptr /* cert_verifier */,
+                               nullptr /* channel_id_server */,
+                               nullptr /* transport_security_state */,
+                               nullptr /* cert_transparency_verifier */,
+                               nullptr /* ct_policy_enforcer */,
+                               std::string() /* ssl_session_cache_shard */,
                                nullptr /* socket_performance_watcher_factory */,
+                               nullptr /* network_quality_estimator */,
                                nullptr /* net_log */),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
@@ -149,7 +156,13 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
       ProxyServer::Scheme proxy_scheme = ProxyServer::SCHEME_DIRECT,
       RequestPriority priority = DEFAULT_PRIORITY) {
     return std::make_unique<SSLConnectJob>(
-        kGroupName, priority, SocketTag(), true /* respect_limits */,
+        priority,
+        CommonConnectJobParams(
+            kGroupName, SocketTag(), true /* respect_limits */,
+            &socket_factory_, &host_resolver_, ssl_client_socket_context_,
+            nullptr /* socket_performance_watcher */,
+            nullptr /* network_quality_estimator */, nullptr /* net_log */,
+            nullptr /* websocket_lock_endpoint_manager */),
         SSLParams(proxy_scheme),
         proxy_scheme == ProxyServer::SCHEME_DIRECT ? &transport_socket_pool_
                                                    : nullptr,
@@ -157,9 +170,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                                    : nullptr,
         proxy_scheme == ProxyServer::SCHEME_HTTP ? &http_proxy_socket_pool_
                                                  : nullptr,
-        &socket_factory_, ssl_client_socket_context_,
-        nullptr /* network_quality_estimator */, test_delegate,
-        nullptr /* net_log */);
+        test_delegate);
   }
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy) {

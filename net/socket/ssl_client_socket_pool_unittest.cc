@@ -393,8 +393,15 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
 
   TransportClientSocketPool tcp_pool(
-      kMaxSockets, kMaxSocketsPerGroup, &host_resolver_,
-      ClientSocketFactory::GetDefaultFactory(), NULL, NULL);
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
   SSLClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
                            cert_verifier_.get(), NULL /* channel_id_service */,
@@ -463,8 +470,15 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
   ASSERT_TRUE(test_server.Start());
 
   TransportClientSocketPool tcp_pool(
-      kMaxSockets, kMaxSocketsPerGroup, &host_resolver_,
-      ClientSocketFactory::GetDefaultFactory(), NULL, NULL);
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
   SSLClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
                            cert_verifier_.get(), NULL /* channel_id_service */,
@@ -525,8 +539,15 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   ASSERT_TRUE(test_server.Start());
 
   TransportClientSocketPool tcp_pool(
-      kMaxSockets, kMaxSocketsPerGroup, &host_resolver_,
-      ClientSocketFactory::GetDefaultFactory(), NULL, NULL);
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
+      nullptr /* cert_verifier */, nullptr /* channel_id_server */,
+      nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
   SSLClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
                            cert_verifier_.get(), NULL /* channel_id_service */,

@@ -21,6 +21,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 
 namespace base {
@@ -32,6 +33,7 @@ namespace net {
 class ClientSocketFactory;
 class HostResolver;
 class NetLog;
+class NetworkQualityEstimator;
 class WebSocketEndpointLockManager;
 class WebSocketTransportConnectJob;
 
@@ -41,8 +43,15 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   WebSocketTransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
+      HostResolver* host_resolver,
+      CertVerifier* cert_verifier,
+      ChannelIDService* channel_id_service,
+      TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
+      CTPolicyEnforcer* ct_policy_enforcer,
+      const std::string& ssl_session_cache_shard,
+      NetworkQualityEstimator* network_quality_estimator,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       NetLog* net_log);
 
@@ -186,6 +195,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   NetLog* const pool_net_log_;
   ClientSocketFactory* const client_socket_factory_;
   HostResolver* const host_resolver_;
+  const SSLClientSocketContext ssl_client_socket_context_;
+  NetworkQualityEstimator* const network_quality_estimator_;
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;
   const int max_sockets_;
   int handed_out_socket_count_;

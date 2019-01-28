@@ -692,7 +692,19 @@ template <typename ParentPool>
 CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
     HostResolver* host_resolver,
     CertVerifier* /* cert_verifier */)
-    : ParentPool(0, 0, host_resolver, NULL, NULL, NULL) {}
+    : ParentPool(0,
+                 0,
+                 NULL,
+                 host_resolver,
+                 NULL,
+                 NULL,
+                 NULL,
+                 NULL,
+                 NULL,
+                 "",
+                 NULL,
+                 NULL,
+                 NULL) {}
 
 template <>
 CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
@@ -14239,8 +14251,14 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   TransportClientSocketPool* transport_pool = new TransportClientSocketPool(
       50,  // Max sockets for pool
       1,   // Max sockets per group
-      session_deps_.host_resolver.get(), session_deps_.socket_factory.get(),
-      NULL, session_deps_.net_log);
+      session_deps_.socket_factory.get(), session_deps_.host_resolver.get(),
+      session_deps_.cert_verifier.get(), session_deps_.channel_id_service.get(),
+      session_deps_.transport_security_state.get(),
+      session_deps_.cert_transparency_verifier.get(),
+      session_deps_.ct_policy_enforcer.get(),
+      std::string() /* ssl_cache_shard */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, session_deps_.net_log);
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetTransportSocketPool(transport_pool);
   session_peer.SetClientSocketPoolManager(std::move(mock_pool_manager));

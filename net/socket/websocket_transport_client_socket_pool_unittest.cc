@@ -69,10 +69,17 @@ class WebSocketTransportClientSocketPoolTest
         client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
-              host_resolver_.get(),
               &client_socket_factory_,
+              host_resolver_.get(),
+              nullptr /* cert_verifier */,
+              nullptr /* channel_id_server */,
+              nullptr /* transport_security_state */,
+              nullptr /* cert_transparency_verifier */,
+              nullptr /* ct_policy_enforcer */,
+              std::string() /* ssl_session_cache_shard */,
+              nullptr /* network_quality_estimator */,
               &websocket_endpoint_lock_manager_,
-              nullptr) {
+              nullptr /* netlog */) {
     websocket_endpoint_lock_manager_.SetUnlockDelayForTesting(
         base::TimeDelta());
   }
@@ -529,8 +536,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6FallbackSocketIPv4FinishesFirst) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
       // This is the IPv6 socket.
@@ -568,8 +581,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6FallbackSocketIPv6FinishesFirst) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
       // This is the IPv6 socket.
@@ -606,8 +625,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 TEST_F(WebSocketTransportClientSocketPoolTest,
        IPv6NoIPv4AddressesToFallbackTo) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
@@ -636,8 +661,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest,
 
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_CLIENT_SOCKET);
@@ -667,8 +698,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv4HasNoFallback) {
 // proceeed immediately.
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
       // First IPv6 socket.
@@ -702,8 +739,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6InstantFail) {
 // connections proceed immediately.
 TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   MockTransportClientSocketFactory::ClientSocketType case_types[] = {
       // First IPv6 socket.
@@ -745,8 +788,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest, IPv6RapidFail) {
 // type do not race).
 TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_TRIGGERABLE_CLIENT_SOCKET);
@@ -782,8 +831,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest, FirstSuccessWins) {
 // We should not report failure until all connections have failed.
 TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
 
   client_socket_factory_.set_default_client_socket_type(
       MockTransportClientSocketFactory::MOCK_DELAYED_FAILING_CLIENT_SOCKET);
@@ -823,8 +878,14 @@ TEST_F(WebSocketTransportClientSocketPoolTest, LastFailureWins) {
 // want to run it.
 TEST_F(WebSocketTransportClientSocketPoolTest, DISABLED_OverallTimeoutApplies) {
   WebSocketTransportClientSocketPool pool(
-      kMaxSockets, kMaxSocketsPerGroup, host_resolver_.get(),
-      &client_socket_factory_, &websocket_endpoint_lock_manager_, nullptr);
+      kMaxSockets, kMaxSocketsPerGroup, &client_socket_factory_,
+      host_resolver_.get(), nullptr /* cert_verifier */,
+      nullptr /* channel_id_server */, nullptr /* transport_security_state */,
+      nullptr /* cert_transparency_verifier */,
+      nullptr /* ct_policy_enforcer */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* network_quality_estimator */,
+      &websocket_endpoint_lock_manager_, nullptr /* netlog */);
   const base::TimeDelta connect_job_timeout =
       TransportConnectJob::ConnectionTimeout();
 

@@ -74,16 +74,30 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                                  ? new WebSocketTransportClientSocketPool(
                                        max_sockets_per_pool(pool_type),
                                        max_sockets_per_group(pool_type),
-                                       host_resolver,
                                        socket_factory_,
+                                       host_resolver,
+                                       cert_verifier,
+                                       channel_id_service,
+                                       transport_security_state,
+                                       cert_transparency_verifier,
+                                       ct_policy_enforcer,
+                                       ssl_session_cache_shard,
+                                       network_quality_estimator,
                                        websocket_endpoint_lock_manager,
                                        net_log)
                                  : new TransportClientSocketPool(
                                        max_sockets_per_pool(pool_type),
                                        max_sockets_per_group(pool_type),
-                                       host_resolver,
                                        socket_factory_,
+                                       host_resolver,
+                                       cert_verifier,
+                                       channel_id_service,
+                                       transport_security_state,
+                                       cert_transparency_verifier,
+                                       ct_policy_enforcer,
+                                       ssl_session_cache_shard,
                                        socket_performance_watcher_factory_,
+                                       network_quality_estimator,
                                        net_log)),
       ssl_socket_pool_(new SSLClientSocketPool(max_sockets_per_pool(pool_type),
                                                max_sockets_per_group(pool_type),
@@ -198,9 +212,12 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
       proxy_socket_pools_.insert(std::make_pair(
           proxy_server,
           std::make_unique<TransportClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group, host_resolver_,
-              socket_factory_, nullptr /* socket_performance_watcher */,
-              net_log_)));
+              sockets_per_proxy_server, sockets_per_group, socket_factory_,
+              host_resolver_, cert_verifier_, channel_id_service_,
+              transport_security_state_, cert_transparency_verifier_,
+              ct_policy_enforcer_, ssl_session_cache_shard_,
+              nullptr /* socket_performance_watcher */,
+              network_quality_estimator_, net_log_)));
 
   return ret.first->second.get();
 }
@@ -235,16 +252,24 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
       transport_socket_pools_for_http_proxies_.insert(std::make_pair(
           http_proxy,
           std::make_unique<TransportClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group, host_resolver_,
-              socket_factory_, socket_performance_watcher_factory_, net_log_)));
+              sockets_per_proxy_server, sockets_per_group, socket_factory_,
+              host_resolver_, cert_verifier_, channel_id_service_,
+              transport_security_state_, cert_transparency_verifier_,
+              ct_policy_enforcer_, ssl_session_cache_shard_,
+              socket_performance_watcher_factory_, network_quality_estimator_,
+              net_log_)));
   DCHECK(tcp_http_ret.second);
 
   std::pair<TransportSocketPoolMap::iterator, bool> tcp_https_ret =
       transport_socket_pools_for_https_proxies_.insert(std::make_pair(
           http_proxy,
           std::make_unique<TransportClientSocketPool>(
-              sockets_per_proxy_server, sockets_per_group, host_resolver_,
-              socket_factory_, socket_performance_watcher_factory_, net_log_)));
+              sockets_per_proxy_server, sockets_per_group, socket_factory_,
+              host_resolver_, cert_verifier_, channel_id_service_,
+              transport_security_state_, cert_transparency_verifier_,
+              ct_policy_enforcer_, ssl_session_cache_shard_,
+              socket_performance_watcher_factory_, network_quality_estimator_,
+              net_log_)));
   DCHECK(tcp_https_ret.second);
 
   std::pair<SSLSocketPoolMap::iterator, bool> ssl_https_ret =

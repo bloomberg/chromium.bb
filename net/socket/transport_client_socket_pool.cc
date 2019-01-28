@@ -72,28 +72,43 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
       CommonConnectJobParams(
           group_name, request.socket_tag(),
           request.respect_limits() == ClientSocketPool::RespectLimits::ENABLED,
-          client_socket_factory_, socket_performance_watcher_factory_,
-          host_resolver_, net_log_,
-          nullptr /* websocket_endpoint_lock_manager */),
+          client_socket_factory_, host_resolver_, ssl_client_socket_context_,
+          socket_performance_watcher_factory_, network_quality_estimator_,
+          net_log_, nullptr /* websocket_endpoint_lock_manager */),
       delegate);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
-    HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
+    HostResolver* host_resolver,
+    CertVerifier* cert_verifier,
+    ChannelIDService* channel_id_service,
+    TransportSecurityState* transport_security_state,
+    CTVerifier* cert_transparency_verifier,
+    CTPolicyEnforcer* ct_policy_enforcer,
+    const std::string& ssl_session_cache_shard,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
+    NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
     : base_(NULL,
             max_sockets,
             max_sockets_per_group,
             ClientSocketPool::unused_idle_socket_timeout(),
             ClientSocketPool::used_idle_socket_timeout(),
-            new TransportConnectJobFactory(client_socket_factory,
-                                           host_resolver,
-                                           socket_performance_watcher_factory,
-                                           net_log)),
+            new TransportConnectJobFactory(
+                client_socket_factory,
+                host_resolver,
+                SSLClientSocketContext(cert_verifier,
+                                       channel_id_service,
+                                       transport_security_state,
+                                       cert_transparency_verifier,
+                                       ct_policy_enforcer,
+                                       ssl_session_cache_shard),
+                socket_performance_watcher_factory,
+                network_quality_estimator,
+                net_log)),
       client_socket_factory_(client_socket_factory) {
   base_.EnableConnectBackupJobs();
 }
