@@ -320,6 +320,11 @@ void LayerTreeView::ClearRootLayer() {
   layer_tree_host_->SetRootLayer(nullptr);
 }
 
+void LayerTreeView::SetNonBlinkManagedRootLayer(
+    scoped_refptr<cc::Layer> layer) {
+  layer_tree_host_->SetNonBlinkManagedRootLayer(std::move(layer));
+}
+
 cc::AnimationHost* LayerTreeView::CompositorAnimationHost() {
   return animation_host_.get();
 }
