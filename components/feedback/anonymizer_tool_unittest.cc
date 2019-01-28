@@ -6,7 +6,6 @@
 
 #include <gtest/gtest.h>
 
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 
 namespace feedback {
@@ -132,7 +131,7 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
   EXPECT_EQ("[<IPv6: 2>]",
             AnonymizeCustomPatterns("[2001:db8:0:0:0:ff00:42:8329]"));
   EXPECT_EQ("[<IPv6: 3>]", AnonymizeCustomPatterns("[2001:db8::ff00:42:8329]"));
-  EXPECT_EQ("[<IPv6: 4>]", AnonymizeCustomPatterns("[::1]"));
+  EXPECT_EQ("[<IPv6: 4>]", AnonymizeCustomPatterns("[aa::bb]"));
   EXPECT_EQ("<IPv4: 1>", AnonymizeCustomPatterns("192.160.0.1"));
 
   EXPECT_EQ("<URL: 1>",
@@ -228,6 +227,10 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "192.169.2.120\n"           // IP address.
       "169.254.0.1\n"             // Link local.
       "169.200.0.1\n"             // IP address.
+      "fe80::\n"                  // Link local.
+      "fe80::ffff\n"              // Link local.
+      "febf:ffff::ffff\n"         // Link local.
+      "fecc::1111\n"              // IP address.
       "224.0.0.24\n"              // Multicast.
       "240.0.0.0\n"               // IP address.
       "255.255.255.255\n"         // Broadcast.
@@ -243,7 +246,30 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "11:11;11::11\n"            // IP address.
       "11::11\n"                  // IP address.
       "11:11:abcdef:0:0:0:0:0\n"  // No PII.
-      "aa:aa:aa:aa:aa:aa";        // MAC address (BSSID).
+      "::\n"                      // Unspecified.
+      "::1\n"                     // Local host.
+      "Instance::Set\n"           // Ignore match, no PII.
+      "Instant::ff\n"             // Ignore match, no PII.
+      "net::ERR_CONN_TIMEOUT\n"   // Ignore match, no PII.
+      "ff01::1\n"                 // All nodes address (interface local).
+      "ff01::2\n"                 // All routers (interface local).
+      "ff01::3\n"                 // Multicast (interface local).
+      "ff02::1\n"                 // All nodes address (link local).
+      "ff02::2\n"                 // All routers (link local).
+      "ff02::3\n"                 // Multicast (link local).
+      "ff02::fb\n"                // mDNSv6 (link local).
+      "ff08::fb\n"                // mDNSv6.
+      "ff0f::101\n"               // All NTP servers.
+      "::ffff:cb0c:10ea\n"        // IPv4-mapped IPV6 (IP address).
+      "::ffff:a0a:a0a\n"          // IPv4-mapped IPV6 (private class A).
+      "::ffff:a0a:a0a\n"          // Intentional duplicate.
+      "::ffff:ac1e:1e1e\n"        // IPv4-mapped IPV6 (private class B).
+      "::ffff:c0a8:640a\n"        // IPv4-mapped IPV6 (private class C).
+      "::ffff:6473:5c01\n"        // IPv4-mapped IPV6 (Chrome).
+      "64:ff9b::a0a:a0a\n"       // IPv4-translated 6to4 IPV6 (private class A).
+      "64:ff9b::6473:5c01\n"     // IPv4-translated 6to4 IPV6 (Chrome).
+      "::0101:ffff:c0a8:640a\n"  // IP address.
+      "aa:aa:aa:aa:aa:aa";       // MAC address (BSSID).
   std::string result =
       "aaaaaaaa [SSID=1]aaaaa\n"
       "aaaaaaaa<URL: 1>\n"
@@ -268,6 +294,10 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "<IPv4: 16>\n"
       "<169.254.0.0/16: 17>\n"
       "<IPv4: 18>\n"
+      "<fe80::/10: 1>\n"
+      "<fe80::/10: 2>\n"
+      "<fe80::/10: 3>\n"
+      "<IPv6: 4>\n"
       "<224.0.0.0/4: 19>\n"
       "<IPv4: 20>\n"
       "255.255.255.255\n"
@@ -280,9 +310,32 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "255.255.259.255\n"
       "255.300.255.255\n"
       "aaaa<IPv4: 28>aaa\n"
-      "11:11;<IPv6: 1>\n"
-      "<IPv6: 1>\n"
+      "11:11;<IPv6: 5>\n"
+      "<IPv6: 5>\n"
       "11:11:abcdef:0:0:0:0:0\n"
+      "::\n"
+      "::1\n"
+      "Instance::Set\n"
+      "Instant::ff\n"
+      "net::ERR_CONN_TIMEOUT\n"
+      "ff01::1\n"
+      "ff01::2\n"
+      "<ff01::/16: 13>\n"
+      "ff02::1\n"
+      "ff02::2\n"
+      "<ff02::/16: 16>\n"
+      "<ff02::/16: 17>\n"
+      "<IPv6: 18>\n"
+      "<IPv6: 19>\n"
+      "<IPv6: 20>\n"
+      "<M 10.0.0.0/8: 21>\n"
+      "<M 10.0.0.0/8: 21>\n"
+      "<M 172.16.0.0/12: 22>\n"
+      "<M 192.168.0.0/16: 23>\n"
+      "<M 100.115.92.1: 24>\n"
+      "<T 10.0.0.0/8: 25>\n"
+      "<T 100.115.92.1: 26>\n"
+      "<IPv6: 27>\n"
       "aa:aa:aa:00:00:01";
   EXPECT_EQ(result, anonymizer_.Anonymize(data));
 }
