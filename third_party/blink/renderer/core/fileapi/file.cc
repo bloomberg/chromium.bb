@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/fileapi/file_property_bag.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -148,6 +149,31 @@ File* File::Create(
   long long file_size = blob_data->length();
   return File::Create(file_name, last_modified,
                       BlobDataHandle::Create(std::move(blob_data), file_size));
+}
+
+File* File::CreateFromControlState(const FormControlState& state,
+                                   wtf_size_t& index) {
+  if (index + 2 >= state.ValueSize()) {
+    index = state.ValueSize();
+    return nullptr;
+  }
+  String path = state[index++];
+  String name = state[index++];
+  String relative_path = state[index++];
+  if (relative_path.IsEmpty())
+    return File::CreateForUserProvidedFile(path, name);
+  return File::CreateWithRelativePath(path, relative_path);
+}
+
+String File::PathFromControlState(const FormControlState& state,
+                                  wtf_size_t& index) {
+  if (index + 2 >= state.ValueSize()) {
+    index = state.ValueSize();
+    return String();
+  }
+  String path = state[index];
+  index += 3;
+  return path;
 }
 
 File* File::CreateWithRelativePath(const String& path,
@@ -384,6 +410,16 @@ bool File::HasSameSource(const File& other) const {
     return file_system_url_ == other.file_system_url_;
 
   return Uuid() == other.Uuid();
+}
+
+bool File::AppendToControlState(FormControlState& state) {
+  // FIXME: handle Blob-backed File instances, see http://crbug.com/394948
+  if (!HasBackingFile())
+    return false;
+  state.Append(GetPath());
+  state.Append(name());
+  state.Append(webkitRelativePath());
+  return true;
 }
 
 }  // namespace blink

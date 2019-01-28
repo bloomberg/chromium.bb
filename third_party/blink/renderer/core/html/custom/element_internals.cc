@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/validity_state_flags.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
@@ -63,6 +64,7 @@ void ElementInternals::setFormValue(const FileOrUSVString& value,
   }
   value_ = value;
   entry_source_ = MakeGarbageCollected<FormData>(*entry_source);
+  NotifyFormStateChanged();
 }
 
 HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
@@ -186,6 +188,8 @@ void ElementInternals::DidUpgrade() {
         lists->InvalidateCaches(nullptr);
     }
   }
+  Target().GetDocument().GetFormController().RestoreControlStateOnUpgrade(
+      *this);
 }
 
 bool ElementInternals::IsTargetFormAssociated() const {
@@ -290,6 +294,43 @@ void ElementInternals::DisabledStateMightBeChanged() {
     return;
   is_disabled_ = new_disabled;
   CustomElement::EnqueueDisabledStateChangedCallback(Target(), new_disabled);
+}
+
+bool ElementInternals::ClassSupportsStateRestore() const {
+  return true;
+}
+
+bool ElementInternals::ShouldSaveAndRestoreFormControlState() const {
+  // We don't save/restore control state in a form with autocomplete=off.
+  return Target().isConnected() && (!Form() || Form()->ShouldAutocomplete());
+}
+
+FormControlState ElementInternals::SaveFormControlState() const {
+  FormControlState state;
+  if (value_.IsUSVString()) {
+    state.Append("USVString");
+    state.Append(value_.GetAsUSVString());
+  } else if (value_.IsFile()) {
+    state.Append("File");
+    File* file = value_.GetAsFile();
+    file->AppendToControlState(state);
+  }
+  // Add nothing if value_.IsNull().
+  return state;
+}
+
+void ElementInternals::RestoreFormControlState(const FormControlState& state) {
+  if (state.ValueSize() < 2)
+    return;
+  if (state[0] == "USVString") {
+    value_ = FileOrUSVString::FromUSVString(state[1]);
+  } else if (state[0] == "File") {
+    wtf_size_t i = 1;
+    if (auto* file = File::CreateFromControlState(state, i))
+      value_ = FileOrUSVString::FromFile(file);
+  }
+  if (!value_.IsNull())
+    CustomElement::EnqueueRestoreValueCallback(Target(), value_);
 }
 
 }  // namespace blink

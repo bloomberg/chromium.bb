@@ -111,6 +111,8 @@ class CORE_EXPORT FormController final
   void WillDeleteForm(HTMLFormElement*);
   void RestoreControlStateFor(ListedElement&);
   void RestoreControlStateIn(HTMLFormElement&);
+  // For a upgraded form-associated custom element.
+  void RestoreControlStateOnUpgrade(ListedElement&);
 
   static Vector<String> GetReferencedFilePaths(
       const Vector<String>& state_vector);

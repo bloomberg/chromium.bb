@@ -28,6 +28,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -51,7 +53,9 @@ inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
 }
 
 const AtomicString& ControlType(const ListedElement& control) {
-  return ToHTMLFormControlElement(control).type();
+  if (auto* control_element = ToHTMLFormControlElementOrNull(control))
+    return control_element->type();
+  return To<ElementInternals>(control).Target().localName();
 }
 
 }  // namespace
@@ -245,7 +249,8 @@ std::unique_ptr<SavedFormState> SavedFormState::Deserialize(
     String type = state_vector[index++];
     FormControlState state = FormControlState::Deserialize(state_vector, index);
     if (type.IsEmpty() ||
-        type.Find(IsNotFormControlTypeCharacter) != kNotFound ||
+        (type.Find(IsNotFormControlTypeCharacter) != kNotFound &&
+         !CustomElement::IsValidName(AtomicString(type))) ||
         state.IsFailure())
       return nullptr;
     saved_form_state->AppendControlState(AtomicString(name), AtomicString(type),
@@ -573,6 +578,15 @@ void FormController::RestoreControlStateIn(HTMLFormElement& form) {
       control->RestoreFormControlState(state);
     }
   }
+}
+
+void FormController::RestoreControlStateOnUpgrade(ListedElement& control) {
+  DCHECK(control.ClassSupportsStateRestore());
+  if (!control.ShouldSaveAndRestoreFormControlState())
+    return;
+  FormControlState state = TakeStateForFormElement(control);
+  if (state.ValueSize() > 0)
+    control.RestoreFormControlState(state);
 }
 
 Vector<String> FormController::GetReferencedFilePaths(
