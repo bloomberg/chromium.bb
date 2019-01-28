@@ -120,11 +120,10 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
     quit_task.Run();
   }
 
-  void DisplayedNotifications(
-      const base::RepeatingClosure& quit_task,
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization) {
-    displayed_notifications_ = *displayed_notifications;
+  void DisplayedNotifications(const base::RepeatingClosure& quit_task,
+                              std::set<std::string> displayed_notifications,
+                              bool supports_synchronization) {
+    displayed_notifications_ = std::move(displayed_notifications);
     quit_task.Run();
   }
 

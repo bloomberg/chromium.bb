@@ -208,11 +208,10 @@ void StubNotificationDisplayService::Close(
 
 void StubNotificationDisplayService::GetDisplayed(
     DisplayedNotificationsCallback callback) {
-  std::unique_ptr<std::set<std::string>> notifications =
-      std::make_unique<std::set<std::string>>();
+  std::set<std::string> notifications;
 
   for (const auto& notification_data : notifications_)
-    notifications->insert(notification_data.notification.id());
+    notifications.insert(notification_data.notification.id());
 
   std::move(callback).Run(std::move(notifications),
                           true /* supports_synchronization */);

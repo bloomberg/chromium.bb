@@ -248,11 +248,10 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     std::move(quit_closure).Run();
   }
 
-  void DidGetDisplayedNotifications(
-      base::OnceClosure quit_closure,
-      std::unique_ptr<std::set<std::string>> notification_ids,
-      bool supports_synchronization) {
-    get_displayed_callback_result_ = *notification_ids;
+  void DidGetDisplayedNotifications(base::OnceClosure quit_closure,
+                                    std::set<std::string> notification_ids,
+                                    bool supports_synchronization) {
+    get_displayed_callback_result_ = std::move(notification_ids);
     std::move(quit_closure).Run();
   }
 
@@ -312,7 +311,7 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     base::RunLoop run_loop;
     mock_platform_service_.GetDisplayedNotifications(
         &browser_context_,
-        base::Bind(
+        base::BindOnce(
             &BlinkNotificationServiceImplTest::DidGetDisplayedNotifications,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();

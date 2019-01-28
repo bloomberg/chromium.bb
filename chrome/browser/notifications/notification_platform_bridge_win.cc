@@ -549,7 +549,7 @@ class NotificationPlatformBridgeWinImpl
     std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
         notifications = GetNotifications(profile_id, incognito);
 
-    auto displayed_notifications = std::make_unique<std::set<std::string>>();
+    std::set<std::string> displayed_notifications;
     for (const auto& notification : notifications) {
       NotificationLaunchId launch_id(
           GetNotificationLaunchId(notification.Get()));
@@ -564,7 +564,7 @@ class NotificationPlatformBridgeWinImpl
         continue;
       }
       LogGetDisplayedLaunchIdStatus(GetDisplayedLaunchIdStatus::SUCCESS);
-      displayed_notifications->insert(launch_id.notification_id());
+      displayed_notifications.insert(launch_id.notification_id());
     }
 
     base::PostTaskWithTraits(

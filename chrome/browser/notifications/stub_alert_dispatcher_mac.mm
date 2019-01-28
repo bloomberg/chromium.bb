@@ -54,20 +54,19 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
                      incognito:(BOOL)incognito
             notificationCenter:(NSUserNotificationCenter*)notificationCenter
                       callback:(GetDisplayedNotificationsCallback)callback {
-  std::unique_ptr<std::set<std::string>> displayedNotifications =
-      std::make_unique<std::set<std::string>>();
+  std::set<std::string> displayedNotifications;
   for (NSUserNotification* toast in
        [notificationCenter deliveredNotifications]) {
     NSString* toastProfileId = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
     if ([toastProfileId isEqualToString:profileId]) {
-      displayedNotifications->insert(base::SysNSStringToUTF8([toast.userInfo
+      displayedNotifications.insert(base::SysNSStringToUTF8([toast.userInfo
           objectForKey:notification_constants::kNotificationId]));
     }
   }
 
-  callback.Run(std::move(displayedNotifications),
-               true /* supports_synchronization */);
+  std::move(callback).Run(std::move(displayedNotifications),
+                          true /* supports_synchronization */);
 }
 
 - (NSArray*)alerts {

@@ -67,7 +67,7 @@ class PlatformNotificationServiceImpl
                                    const std::string& notification_id) override;
   void GetDisplayedNotifications(
       content::BrowserContext* browser_context,
-      const DisplayedNotificationsCallback& callback) override;
+      DisplayedNotificationsCallback callback) override;
   int64_t ReadNextPersistentNotificationId(
       content::BrowserContext* browser_context) override;
   void RecordNotificationUkmEvent(

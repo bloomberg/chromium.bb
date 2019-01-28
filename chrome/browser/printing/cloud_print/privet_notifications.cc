@@ -252,12 +252,12 @@ void PrivetNotificationService::PrivetNotify(int devices_active,
 void PrivetNotificationService::AddNotification(
     int devices_active,
     bool device_added,
-    std::unique_ptr<std::set<std::string>> displayed_notifications,
+    std::set<std::string> displayed_notifications,
     bool supports_synchronization) {
   // If the UI is already open or a device was removed, we'll update the
   // existing notification but not add a new one.
   const bool notification_exists =
-      base::ContainsKey(*displayed_notifications, kPrivetNotificationID);
+      base::ContainsKey(displayed_notifications, kPrivetNotificationID);
   const bool add_new_notification =
       device_added &&
       !local_discovery::LocalDiscoveryUIHandler::GetHasVisible();
