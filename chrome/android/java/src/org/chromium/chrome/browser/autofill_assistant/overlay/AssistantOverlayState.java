@@ -72,8 +72,7 @@ public abstract class AssistantOverlayState {
     private static class Partial extends AssistantOverlayState {
         private final List<RectF> mBoxes;
 
-        private Partial(List<RectF> boxes /*, float[] coords*/) {
-            // this.coords = coords;
+        private Partial(List<RectF> boxes) {
             mBoxes = boxes;
         }
 

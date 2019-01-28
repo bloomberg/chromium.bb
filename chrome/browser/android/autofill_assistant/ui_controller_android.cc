@@ -39,6 +39,7 @@
 #include "jni/AssistantDetails_jni.h"
 #include "jni/AssistantHeaderModel_jni.h"
 #include "jni/AssistantModel_jni.h"
+#include "jni/AssistantOverlayModel_jni.h"
 #include "jni/AutofillAssistantUiController_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -158,16 +159,6 @@ void UiControllerAndroid::HideProgressBar() {
   // TODO(crbug.com/806868): Remove calls to this function.
 }
 
-void UiControllerAndroid::ShowOverlay() {
-  Java_AutofillAssistantUiController_onShowOverlay(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-}
-
-void UiControllerAndroid::HideOverlay() {
-  Java_AutofillAssistantUiController_onHideOverlay(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
-}
-
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
   Java_AutofillAssistantUiController_onAllowShowingSoftKeyboard(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_, enabled);
@@ -254,6 +245,36 @@ void UiControllerAndroid::OnChipSelected(int index) {
     SetProgressPulsingEnabled(false);
     std::move(callback).Run();
   }
+}
+
+// Overlay related methods.
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetOverlayModel() {
+  return Java_AssistantModel_getOverlayModel(AttachCurrentThread(), GetModel());
+}
+
+void UiControllerAndroid::ShowOverlay() {
+  Java_AssistantOverlayModel_setFull(AttachCurrentThread(), GetOverlayModel());
+}
+
+void UiControllerAndroid::HideOverlay() {
+  Java_AssistantOverlayModel_setHidden(AttachCurrentThread(),
+                                       GetOverlayModel());
+}
+
+void UiControllerAndroid::UpdateTouchableArea(bool enabled,
+                                              const std::vector<RectF>& areas) {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<float> flattened;
+  for (const auto& rect : areas) {
+    flattened.emplace_back(rect.left);
+    flattened.emplace_back(rect.top);
+    flattened.emplace_back(rect.right);
+    flattened.emplace_back(rect.bottom);
+  }
+  Java_AssistantOverlayModel_setPartial(
+      env, GetOverlayModel(), base::android::ToJavaFloatArray(env, flattened));
 }
 
 // Other methods.
@@ -398,20 +419,5 @@ void UiControllerAndroid::Stop(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   client_->Stop();
-}
-
-void UiControllerAndroid::UpdateTouchableArea(bool enabled,
-                                              const std::vector<RectF>& areas) {
-  JNIEnv* env = AttachCurrentThread();
-  std::vector<float> flattened;
-  for (const auto& rect : areas) {
-    flattened.emplace_back(rect.left);
-    flattened.emplace_back(rect.top);
-    flattened.emplace_back(rect.right);
-    flattened.emplace_back(rect.bottom);
-  }
-  Java_AutofillAssistantUiController_updateTouchableArea(
-      env, java_autofill_assistant_ui_controller_, enabled,
-      base::android::ToJavaFloatArray(env, flattened));
 }
 }  // namespace autofill_assistant.
