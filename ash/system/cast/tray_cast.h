@@ -25,10 +25,6 @@ class CastDetailedView : public TrayDetailedView {
                    const std::vector<mojom::SinkAndRoutePtr>& sinks_and_routes);
   ~CastDetailedView() override;
 
-  // Makes the detail view think the view associated with the given receiver_id
-  // was clicked. This will start a cast.
-  void SimulateViewClickedForTest(const std::string& receiver_id);
-
   // Updates the list of available receivers.
   void UpdateReceiverList(
       const std::vector<mojom::SinkAndRoutePtr>& sinks_routes);
