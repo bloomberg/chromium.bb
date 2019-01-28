@@ -24,6 +24,8 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
 
   String DebugName() const final { return "ForeignLayer"; }
 
+  DOMNodeId OwnerNodeId() const final { return layer_->owner_node_id(); }
+
   LayoutRect VisualRect() const final {
     const auto& offset = layer_->offset_to_transform_parent();
     return LayoutRect(LayoutPoint(offset.x(), offset.y()),

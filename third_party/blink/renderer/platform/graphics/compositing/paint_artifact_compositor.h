@@ -155,6 +155,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     // to the chunks as Skia commands.
     void Upcast(const PropertyTreeState&);
 
+    const PaintChunk& FirstPaintChunk(const PaintArtifact&) const;
+
     FloatRect bounds;
     Vector<wtf_size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;

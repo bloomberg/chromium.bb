@@ -386,6 +386,11 @@ void PaintArtifactCompositor::PendingLayer::Upcast(
   rect_known_to_be_opaque = FloatRect();
 }
 
+const PaintChunk& PaintArtifactCompositor::PendingLayer::FirstPaintChunk(
+    const PaintArtifact& paint_artifact) const {
+  return paint_artifact.PaintChunks()[paint_chunk_indices[0]];
+}
+
 static bool IsNonCompositingAncestorOf(
     const TransformPaintPropertyNode* unaliased_ancestor,
     const TransformPaintPropertyNode* node) {
@@ -884,9 +889,11 @@ void PaintArtifactCompositor::Update(
     layer->SetEffectTreeIndex(effect_id);
     bool backface_hidden = property_state.Transform()->IsBackfaceHidden();
     layer->SetDoubleSided(!backface_hidden);
-    // TODO(wangxianzhu): cc::PropertyTreeBuilder has a more sophisticated
-    // condition for this. Do we need to do the same here?
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
+
+    layer->set_owner_node_id(
+        pending_layer.FirstPaintChunk(*paint_artifact).id.client.OwnerNodeId());
+    // TODO(wangxianzhu): cc_picture_layer_->set_compositing_reasons(...);
 
     InsertAncestorElementIds(property_state.Effect(), composited_element_ids);
     InsertAncestorElementIds(transform, composited_element_ids);

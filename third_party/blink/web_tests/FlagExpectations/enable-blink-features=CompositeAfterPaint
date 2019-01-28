@@ -2,7 +2,6 @@
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 # We are focused on fast/, compositing/, and svg/ with all other directories skipped (for now).
 Bug(none) editing/input [ Skip ]
-Bug(none) http/tests/devtools/layers/ [ Skip ]
 Bug(none) http/tests/devtools/tracing/ [ Skip ]
 Bug(none) printing/ [ Skip ]
 Bug(none) scrollbars/ [ Skip ]
@@ -182,8 +181,6 @@ Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 Bug(none) http/tests/misc/slow-loading-mask.html [ Failure ]
-Bug(none) inspector-protocol/layers/paint-profiler.js [ Failure ]
-Bug(none) inspector-protocol/layers/get-layers.js [ Timeout ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
@@ -304,7 +301,6 @@ Bug(none) css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
 Bug(none) fast/borders/overflow-hidden-border-radius-force-backing-store.html [ Failure ]
 
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
-Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
 Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Failure ]
 Bug(none) virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Timeout ]
@@ -445,3 +441,11 @@ crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html
 Bug(none) css3/filters/blur-filter-page-scroll-self.html [ Failure ]
 
 crbug.com/921729 paint/invalidation/compositing/composited-layer-move.html [ Failure ]
+
+# Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.
+Bug(none) http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
+Bug(none) http/tests/devtools/layers/layer-replay-scale.js [ Crash ]
+# Missing compositing reasons
+Bug(none) http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
+# Missing WheelEventHandler
+Bug(none) http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]

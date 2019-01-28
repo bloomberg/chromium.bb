@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_CLIENT_H_
 
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -40,6 +41,12 @@ class PLATFORM_EXPORT DisplayItemClient {
 #endif
 
   virtual String DebugName() const = 0;
+
+  // Needed for paint chunk clients only. Returns the id of the DOM node
+  // associated with this DisplayItemClient, or kInvalidDOMNodeId if there is no
+  // associated DOM node or this DisplayItemClient is never used as a paint
+  // chunk client.
+  virtual DOMNodeId OwnerNodeId() const { return kInvalidDOMNodeId; }
 
   // The visual rect of this DisplayItemClient. For SPv1, it's in the object
   // space of the object that owns the GraphicsLayer, i.e. offset by

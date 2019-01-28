@@ -375,7 +375,8 @@ Bug(none) virtual/stable/compositing/masks/mask-with-added-filters.html [ Failur
 Bug(none) virtual/stable/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 Bug(none) virtual/stable/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 
-# These tests are no longer applicable with layer list mode (BGPT). Move to NeverFixTests later.
+# These tests are no longer applicable with layer list mode (BGPT).
+# TODO(wangxianzhu): Remove them when we remove non-BGPT code.
 Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 

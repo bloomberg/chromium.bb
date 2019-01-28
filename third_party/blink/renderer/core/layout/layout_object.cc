@@ -1550,6 +1550,10 @@ String LayoutObject::DebugName() const {
   return name.ToString();
 }
 
+DOMNodeId LayoutObject::OwnerNodeId() const {
+  return GetNode() ? DOMNodeIds::IdForNode(GetNode()) : kInvalidDOMNodeId;
+}
+
 LayoutRect LayoutObject::FragmentsVisualRectBoundingBox() const {
   if (!fragment_.NextFragment())
     return fragment_.VisualRect();

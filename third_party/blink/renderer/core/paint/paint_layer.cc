@@ -235,6 +235,10 @@ String PaintLayer::DebugName() const {
   return GetLayoutObject().DebugName();
 }
 
+DOMNodeId PaintLayer::OwnerNodeId() const {
+  return static_cast<const DisplayItemClient&>(GetLayoutObject()).OwnerNodeId();
+}
+
 LayoutRect PaintLayer::VisualRect() const {
   return layout_object_.FragmentsVisualRectBoundingBox();
 }

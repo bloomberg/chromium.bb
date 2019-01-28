@@ -560,7 +560,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
     AttachRootLayerViaChromeClient();
 
   // Inform the inspector that the layer tree has changed.
-  if (IsMainFrame())
+  if (IsMainFrame() && !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     probe::layerTreeDidChange(layout_view_.GetFrame());
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);

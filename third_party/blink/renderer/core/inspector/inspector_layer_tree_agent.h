@@ -44,7 +44,6 @@ class Layer;
 
 namespace blink {
 
-class GraphicsContext;
 class InspectedFrames;
 class LayoutRect;
 class PictureSnapshot;
@@ -72,7 +71,8 @@ class CORE_EXPORT InspectorLayerTreeAgent final
 
   // Called from InspectorInstrumentation
   void LayerTreeDidChange();
-  void DidPaint(const cc::Layer*, GraphicsContext&, const LayoutRect&);
+  void DidPaint(const cc::Layer*, const LayoutRect&);
+  void LayerTreePainted();
 
   // Called from the front-end.
   protocol::Response enable() override;

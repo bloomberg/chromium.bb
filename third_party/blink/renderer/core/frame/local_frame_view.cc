@@ -2746,6 +2746,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,
       viewport_properties, settings);
+
+  probe::layerTreePainted(&GetFrame());
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
