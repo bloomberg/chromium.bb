@@ -1882,7 +1882,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)                          \
-  INSTANTIATE_TEST_CASE_P(                                                \
+  INSTANTIATE_TEST_SUITE_P(                                               \
       OnDiskApp, TestFixture,                                             \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
                                   NetworkContextType::kOnDiskApp}),       \
@@ -1891,7 +1891,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                         TestCase({NetworkServiceState::kRestarted,        \
                                   NetworkContextType::kOnDiskApp})));     \
                                                                           \
-  INSTANTIATE_TEST_CASE_P(                                                \
+  INSTANTIATE_TEST_SUITE_P(                                               \
       InMemoryApp, TestFixture,                                           \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
                                   NetworkContextType::kInMemoryApp}),     \
@@ -1900,7 +1900,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                         TestCase({NetworkServiceState::kRestarted,        \
                                   NetworkContextType::kInMemoryApp})));   \
                                                                           \
-  INSTANTIATE_TEST_CASE_P(                                                \
+  INSTANTIATE_TEST_SUITE_P(                                               \
       OnDiskAppWithIncognitoProfile, TestFixture,                         \
       ::testing::Values(                                                  \
           TestCase({NetworkServiceState::kDisabled,                       \
@@ -1915,7 +1915,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 
 #define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
   INSTANTIATE_EXTENSION_TESTS(TestFixture)                                 \
-  INSTANTIATE_TEST_CASE_P(                                                 \
+  INSTANTIATE_TEST_SUITE_P(                                                \
       SystemNetworkContext, TestFixture,                                   \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
                                   NetworkContextType::kSystem}),           \
@@ -1924,7 +1924,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                         TestCase({NetworkServiceState::kRestarted,         \
                                   NetworkContextType::kSystem})));         \
                                                                            \
-  INSTANTIATE_TEST_CASE_P(                                                 \
+  INSTANTIATE_TEST_SUITE_P(                                                \
       SafeBrowsingNetworkContext, TestFixture,                             \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
                                   NetworkContextType::kSafeBrowsing}),     \
@@ -1933,7 +1933,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                         TestCase({NetworkServiceState::kRestarted,         \
                                   NetworkContextType::kSafeBrowsing})));   \
                                                                            \
-  INSTANTIATE_TEST_CASE_P(                                                 \
+  INSTANTIATE_TEST_SUITE_P(                                                \
       ProfileMainNetworkContext, TestFixture,                              \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
                                   NetworkContextType::kProfile}),          \
@@ -1942,7 +1942,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
                         TestCase({NetworkServiceState::kRestarted,         \
                                   NetworkContextType::kProfile})));        \
                                                                            \
-  INSTANTIATE_TEST_CASE_P(                                                 \
+  INSTANTIATE_TEST_SUITE_P(                                                \
       IncognitoProfileMainNetworkContext, TestFixture,                     \
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
                                   NetworkContextType::kIncognitoProfile}), \
