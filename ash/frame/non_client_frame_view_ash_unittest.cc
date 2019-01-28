@@ -904,6 +904,8 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
 }
 
 // Run frame color tests with and without custom wm::WindowStateDelegate.
-INSTANTIATE_TEST_CASE_P(, NonClientFrameViewAshFrameColorTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         NonClientFrameViewAshFrameColorTest,
+                         testing::Bool());
 
 }  // namespace ash
