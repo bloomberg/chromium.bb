@@ -71,6 +71,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/main:tab_switcher",
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings:test_support",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/tabs",

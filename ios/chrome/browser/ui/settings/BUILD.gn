@@ -2,6 +2,40 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("settings_root") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "bar_button_activity_indicator.h",
+    "bar_button_activity_indicator.mm",
+    "settings_navigation_controller.h",
+    "settings_root_collection_view_controller.h",
+    "settings_root_collection_view_controller.mm",
+    "settings_root_table_view_controller.h",
+    "settings_root_table_view_controller.mm",
+    "settings_root_view_controlling.h",
+  ]
+  deps = [
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view:styler",
+    "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui_util",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/third_party/material_components_ios",
+    "//ui/base",
+  ]
+}
+
 source_set("settings") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -22,20 +56,8 @@ source_set("settings") {
     "autofill_profile_table_view_controller.mm",
     "bandwidth_management_table_view_controller.h",
     "bandwidth_management_table_view_controller.mm",
-    "bar_button_activity_indicator.h",
-    "bar_button_activity_indicator.mm",
     "block_popups_table_view_controller.h",
     "block_popups_table_view_controller.mm",
-    "clear_browsing_data_collection_view_controller.h",
-    "clear_browsing_data_collection_view_controller.mm",
-    "clear_browsing_data_consumer.h",
-    "clear_browsing_data_local_commands.h",
-    "clear_browsing_data_manager.h",
-    "clear_browsing_data_manager.mm",
-    "clear_browsing_data_table_view_controller.h",
-    "clear_browsing_data_table_view_controller.mm",
-    "clear_browsing_data_ui_constants.h",
-    "clear_browsing_data_ui_constants.mm",
     "content_settings_table_view_controller.h",
     "content_settings_table_view_controller.mm",
     "dataplan_usage_table_view_controller.h",
@@ -76,13 +98,7 @@ source_set("settings") {
     "reauthentication_protocol.h",
     "search_engine_table_view_controller.h",
     "search_engine_table_view_controller.mm",
-    "settings_navigation_controller.h",
     "settings_navigation_controller.mm",
-    "settings_root_collection_view_controller.h",
-    "settings_root_collection_view_controller.mm",
-    "settings_root_table_view_controller.h",
-    "settings_root_table_view_controller.mm",
-    "settings_root_view_controlling.h",
     "settings_table_view_controller.h",
     "settings_table_view_controller.mm",
     "settings_utils.h",
@@ -97,14 +113,13 @@ source_set("settings") {
     "sync_settings_collection_view_controller.mm",
     "table_cell_catalog_view_controller.h",
     "table_cell_catalog_view_controller.mm",
-    "time_range_selector_collection_view_controller.h",
-    "time_range_selector_collection_view_controller.mm",
     "translate_table_view_controller.h",
     "translate_table_view_controller.mm",
     "voice_search_table_view_controller.h",
     "voice_search_table_view_controller.mm",
   ]
   deps = [
+    ":settings_root",
     "resources:app_icon_placeholder",
     "resources:encryption_error",
     "resources:settings_about_chrome",
@@ -189,6 +204,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/payments/cells",
     "//ios/chrome/browser/ui/settings/cells",
+    "//ios/chrome/browser/ui/settings/clear_browsing_data",
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/signin_interaction",
@@ -215,6 +231,7 @@ source_set("settings") {
     "//url",
   ]
   public_deps = [
+    ":settings_root",
     "//ios/chrome/browser/ui/collection_view/cells",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
@@ -239,6 +256,7 @@ source_set("test_support") {
   ]
   deps = [
     ":settings",
+    ":settings_root",
     "//base",
     "//components/autofill/core/browser",
     "//components/browser_sync",
@@ -273,8 +291,6 @@ source_set("unit_tests") {
     "autofill_profile_table_view_controller_unittest.mm",
     "bandwidth_management_table_view_controller_unittest.mm",
     "block_popups_table_view_controller_unittest.mm",
-    "clear_browsing_data_collection_view_controller_unittest.mm",
-    "clear_browsing_data_manager_unittest.mm",
     "content_settings_table_view_controller_unittest.mm",
     "dataplan_usage_table_view_controller_unittest.mm",
     "import_data_table_view_controller_unittest.mm",
@@ -291,19 +307,18 @@ source_set("unit_tests") {
     "sync_encryption_passphrase_table_view_controller_unittest.mm",
     "sync_encryption_table_view_controller_unittest.mm",
     "sync_settings_collection_view_controller_unittest.mm",
-    "time_range_selector_collection_view_controller_unittest.mm",
     "translate_table_view_controller_unittest.mm",
     "voice_search_table_view_controller_unittest.mm",
   ]
   deps = [
     ":settings",
+    ":settings_root",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/browser_sync:test_support",
-    "//components/browsing_data/core",
     "//components/content_settings/core/browser",
     "//components/google/core/browser",
     "//components/handoff",
@@ -375,7 +390,6 @@ source_set("eg_tests") {
     "autofill_credit_card_settings_egtest.mm",
     "autofill_profile_settings_egtest.mm",
     "block_popups_egtest.mm",
-    "clear_browsing_data_egtest.mm",
     "passwords_settings_egtest.mm",
     "settings_egtest.mm",
     "signin_settings_egtest.mm",

@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_CLEAR_BROWSING_DATA_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_local_commands.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 
 @protocol ApplicationCommands;
 @protocol UrlLoader;

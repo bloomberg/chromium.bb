@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_collection_view_controller.h"
 
 #include "base/files/file_path.h"
 #include "base/test/scoped_task_environment.h"
@@ -125,8 +125,8 @@ TEST_F(TimeRangeSelectorCollectionViewControllerTest, TestUpdatePrefValue) {
   UICollectionView* collectionView =
       time_range_selector_controller_.collectionView;
   for (NSInteger checkedItem = 0; checkedItem < kNumberOfItems; ++checkedItem) {
-    NSIndexPath* indexPath =
-        [NSIndexPath indexPathForItem:checkedItem inSection:0];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForItem:checkedItem
+                                                 inSection:0];
     [[delegate_ expect]
         timeRangeSelectorViewController:time_range_selector_controller_
                     didSelectTimePeriod:static_cast<browsing_data::TimePeriod>(

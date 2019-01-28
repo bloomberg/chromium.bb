@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CONSUMER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_CONSUMER_H_
 
 #import <Foundation/Foundation.h>
 
@@ -21,7 +21,7 @@ enum class TimePeriod;
 
 enum class BrowsingDataRemoveMask;
 
-@protocol ClearBrowsingDataConsumer<NSObject>
+@protocol ClearBrowsingDataConsumer <NSObject>
 // Execute action to clear browsing data.
 - (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
@@ -40,4 +40,4 @@ enum class BrowsingDataRemoveMask;
 - (void)updateCounter:(NSInteger)itemType detailText:(NSString*)detailText;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_CONSUMER_H_
