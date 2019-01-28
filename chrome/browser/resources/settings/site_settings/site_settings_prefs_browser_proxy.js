@@ -114,24 +114,6 @@ let MediaPickerEntry;
 let ProtocolHandlerEntry;
 
 /**
- * @typedef {{name: string,
- *            product-id: Number,
- *            serial-number: string,
- *            vendor-id: Number}}
- */
-let UsbDeviceDetails;
-
-/**
- * @typedef {{embeddingOrigin: string,
- *            object: UsbDeviceDetails,
- *            objectName: string,
- *            origin: string,
- *            setting: string,
- *            source: string}}
- */
-let UsbDeviceEntry;
-
-/**
  * @typedef {{origin: string,
  *            setting: string,
  *            source: string,
@@ -331,22 +313,6 @@ cr.define('settings', function() {
     removeProtocolHandler(protocol, url) {}
 
     /**
-     * Fetches a list of all USB devices and the sites permitted to use them.
-     * @return {!Promise<!Array<!UsbDeviceEntry>>} The list of USB devices.
-     */
-    fetchUsbDevices() {}
-
-    /**
-     * Removes a particular USB device object permission by origin and embedding
-     * origin.
-     * @param {string} origin The origin to look up the permission for.
-     * @param {string} embeddingOrigin the embedding origin to look up.
-     * @param {!UsbDeviceDetails} usbDevice The USB device to revoke permission
-     *     for.
-     */
-    removeUsbDevice(origin, embeddingOrigin, usbDevice) {}
-
-    /**
      * Fetches the incognito status of the current profile (whether an incognito
      * profile exists). Returns the results via onIncognitoStatusChanged.
      */
@@ -505,16 +471,6 @@ cr.define('settings', function() {
     /** @override */
     removeProtocolHandler(protocol, url) {
       chrome.send('removeHandler', [protocol, url]);
-    }
-
-    /** @override */
-    fetchUsbDevices() {
-      return cr.sendWithPromise('fetchUsbDevices');
-    }
-
-    /** @override */
-    removeUsbDevice(origin, embeddingOrigin, usbDevice) {
-      chrome.send('removeUsbDevice', [origin, embeddingOrigin, usbDevice]);
     }
 
     /** @override */

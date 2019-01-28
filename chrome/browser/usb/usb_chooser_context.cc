@@ -32,6 +32,7 @@ constexpr char kGuidKey[] = "ephemeral-guid";
 constexpr char kProductIdKey[] = "product-id";
 constexpr char kSerialNumberKey[] = "serial-number";
 constexpr char kVendorIdKey[] = "vendor-id";
+constexpr int kDeviceIdWildcard = -1;
 
 // Reasons a permission may be closed. These are used in histograms so do not
 // remove/reorder entries. Only add at the end just before
@@ -66,12 +67,6 @@ std::pair<int, int> GetDeviceIds(const base::DictionaryValue& object) {
 }
 
 base::string16 GetDeviceNameFromIds(int vendor_id, int product_id) {
-// This is currently using the UI strings used for the chooser prompt. This is
-// fine for now since the policy allowed devices are not being displayed in
-// Site Settings yet. However, policy allowed devices can contain wildcards for
-// the IDs, so more specific UI string need to be defined.
-// TODO(https://crbug.com/854329): Add UI strings that are more specific to
-// the Site Settings UI.
 #if !defined(OS_ANDROID)
   const char* product_name =
       device::UsbIds::GetProductName(vendor_id, product_id);
@@ -80,15 +75,31 @@ base::string16 GetDeviceNameFromIds(int vendor_id, int product_id) {
 
   const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
   if (vendor_name) {
+    if (product_id == kDeviceIdWildcard) {
+      return l10n_util::GetStringFUTF16(IDS_DEVICE_DESCRIPTION_FOR_VENDOR_NAME,
+                                        base::UTF8ToUTF16(vendor_name));
+    }
+
     return l10n_util::GetStringFUTF16(
-        IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME,
+        IDS_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_NAME,
+        base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
         base::UTF8ToUTF16(vendor_name));
   }
 #endif  // !defined(OS_ANDROID)
+
+  if (product_id == kDeviceIdWildcard) {
+    if (vendor_id == kDeviceIdWildcard)
+      return l10n_util::GetStringUTF16(IDS_DEVICE_DESCRIPTION_FOR_ANY_VENDOR);
+
+    return l10n_util::GetStringFUTF16(
+        IDS_DEVICE_DESCRIPTION_FOR_VENDOR_ID,
+        base::ASCIIToUTF16(base::StringPrintf("0x%04X", vendor_id)));
+  }
+
   return l10n_util::GetStringFUTF16(
-      IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID,
-      base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id)),
-      base::ASCIIToUTF16(base::StringPrintf("%04x", product_id)));
+      IDS_DEVICE_DESCRIPTION_FOR_PRODUCT_ID_AND_VENDOR_ID,
+      base::ASCIIToUTF16(base::StringPrintf("0x%04X", product_id)),
+      base::ASCIIToUTF16(base::StringPrintf("0x%04X", vendor_id)));
 }
 
 std::unique_ptr<base::DictionaryValue> DeviceIdsToDictValue(int vendor_id,

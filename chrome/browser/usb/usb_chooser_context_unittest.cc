@@ -640,21 +640,21 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/kDeviceIdWildcard,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device [ffffffff:ffffffff]");
+                          /*name=*/"Devices from any vendor");
   ExpectChooserObjectInfo(objects[1].get(),
                           /*requesting_origin=*/kVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Devices from Google Inc.");
   ExpectChooserObjectInfo(objects[2].get(),
                           /*requesting_origin=*/kProductVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/5678,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Unknown product 0x162E from Google Inc.");
   ExpectChooserObjectInfo(objects[3].get(),
                           /*requesting_origin=*/kGadgetOrigin,
                           /*embedding_origin=*/kCoolOrigin,
@@ -662,7 +662,7 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/6354,
                           /*product_id=*/1357,
-                          /*name=*/"Unknown device [18d2:054d]");
+                          /*name=*/"Unknown product 0x054D from vendor 0x18D2");
 }
 
 TEST_F(UsbChooserContextTest,
@@ -720,21 +720,21 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/kDeviceIdWildcard,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device [ffffffff:ffffffff]");
+                          /*name=*/"Devices from any vendor");
   ExpectChooserObjectInfo(objects[3].get(),
                           /*requesting_origin=*/kVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Devices from Google Inc.");
   ExpectChooserObjectInfo(objects[4].get(),
                           /*requesting_origin=*/kProductVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/5678,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Unknown product 0x162E from Google Inc.");
   ExpectChooserObjectInfo(objects[5].get(),
                           /*requesting_origin=*/kGadgetOrigin,
                           /*embedding_origin=*/kCoolOrigin,
@@ -742,7 +742,7 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/6354,
                           /*product_id=*/1357,
-                          /*name=*/"Unknown device [18d2:054d]");
+                          /*name=*/"Unknown product 0x054D from vendor 0x18D2");
 }
 
 TEST_F(UsbChooserContextTest,
@@ -775,14 +775,14 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/kDeviceIdWildcard,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device [ffffffff:ffffffff]");
+                          /*name=*/"Devices from any vendor");
   ExpectChooserObjectInfo(objects[1].get(),
                           /*requesting_origin=*/kVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Devices from Google Inc.");
   ExpectChooserObjectInfo(objects[2].get(),
                           /*requesting_origin=*/kProductVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
@@ -797,7 +797,7 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/6354,
                           /*product_id=*/1357,
-                          /*name=*/"Unknown device [18d2:054d]");
+                          /*name=*/"Unknown product 0x054D from vendor 0x18D2");
   ASSERT_TRUE(persistent_device_info->product_name);
   EXPECT_EQ(base::UTF8ToUTF16(store->GetObjectName(objects[2]->value)),
             persistent_device_info->product_name.value());
@@ -833,21 +833,21 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/kDeviceIdWildcard,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device [ffffffff:ffffffff]");
+                          /*name=*/"Devices from any vendor");
   ExpectChooserObjectInfo(objects[1].get(),
                           /*requesting_origin=*/kVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Devices from Google Inc.");
   ExpectChooserObjectInfo(objects[2].get(),
                           /*requesting_origin=*/kProductVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/5678,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Unknown product 0x162E from Google Inc.");
   ExpectChooserObjectInfo(objects[3].get(),
                           /*requesting_origin=*/kGadgetOrigin,
                           /*embedding_origin=*/kCoolOrigin,
@@ -855,7 +855,7 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/6354,
                           /*product_id=*/1357,
-                          /*name=*/"Unknown device [18d2:054d]");
+                          /*name=*/"Unknown product 0x054D from vendor 0x18D2");
 }
 
 TEST_F(UsbChooserContextTest,
@@ -888,21 +888,21 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/kDeviceIdWildcard,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device [ffffffff:ffffffff]");
+                          /*name=*/"Devices from any vendor");
   ExpectChooserObjectInfo(objects[1].get(),
                           /*requesting_origin=*/kVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/kDeviceIdWildcard,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Devices from Google Inc.");
   ExpectChooserObjectInfo(objects[2].get(),
                           /*requesting_origin=*/kProductVendorOrigin,
                           /*source=*/content_settings::SETTING_SOURCE_POLICY,
                           /*incognito=*/false,
                           /*vendor_id=*/6353,
                           /*product_id=*/5678,
-                          /*name=*/"Unknown device from Google Inc.");
+                          /*name=*/"Unknown product 0x162E from Google Inc.");
   ExpectChooserObjectInfo(objects[3].get(),
                           /*requesting_origin=*/kGadgetOrigin,
                           /*embedding_origin=*/kCoolOrigin,
@@ -910,5 +910,5 @@ TEST_F(UsbChooserContextTest,
                           /*incognito=*/false,
                           /*vendor_id=*/6354,
                           /*product_id=*/1357,
-                          /*name=*/"Unknown device [18d2:054d]");
+                          /*name=*/"Unknown product 0x054D from vendor 0x18D2");
 }

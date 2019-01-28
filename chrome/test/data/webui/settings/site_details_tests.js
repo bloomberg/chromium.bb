@@ -86,9 +86,12 @@ suite('SiteDetails', function() {
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.PAYMENT_HANDLER,
           [test_util.createRawSiteException('https://foo.com:443')]),
+    ], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.USB_DEVICES,
-          [test_util.createRawSiteException('https://foo.com:443')]),
+          [test_util.createRawChooserException(
+              settings.ChooserType.USB_DEVICES,
+              [test_util.createRawSiteException('https://foo.com:443')])]),
     ]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();

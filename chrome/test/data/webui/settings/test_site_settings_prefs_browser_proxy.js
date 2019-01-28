@@ -26,7 +26,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     super([
       'clearFlashPref',
       'fetchBlockAutoplayStatus',
-      'fetchUsbDevices',
       'fetchZoomLevels',
       'getAllSites',
       'getChooserExceptionList',
@@ -40,7 +39,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'observeProtocolHandlersEnabledState',
       'removeIgnoredHandler',
       'removeProtocolHandler',
-      'removeUsbDevice',
       'removeZoomLevel',
       'resetCategoryPermissionForPattern',
       'resetChooserExceptionForSite',
@@ -60,9 +58,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {!Array<ZoomLevelEntry>} */
     this.zoomList_ = [];
-
-    /** @private {!Array<!UsbDeviceEntry>} */
-    this.usbDevices_ = [];
 
     /** @private {!Array<!ProtocolEntry>} */
     this.protocolHandlers_ = [];
@@ -142,15 +137,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
    */
   setZoomList(list) {
     this.zoomList_ = list;
-  }
-
-  /**
-   * Sets the prefs to use when testing.
-   * @param {!Array<UsbDeviceEntry>} list The usb device entry list to set.
-   */
-  setUsbDevices(list) {
-    // Shallow copy of the passed-in array so mutation won't impact the source
-    this.usbDevices_ = list.slice();
   }
 
   /**
@@ -360,13 +346,28 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     contentTypes.forEach(function(contentType) {
       let setting;
       let source;
-      this.prefs_.exceptions[contentType].some((originPrefs) => {
+      let isSet = this.prefs_.exceptions[contentType].some(originPrefs => {
         if (originPrefs.origin == origin) {
           setting = originPrefs.setting;
           source = originPrefs.source;
           return true;
         }
+        return false;
       });
+
+      if (!isSet) {
+        this.prefs_.chooserExceptions[contentType].some(chooserException => {
+          return chooserException.sites.some(originPrefs => {
+            if (originPrefs.origin == origin) {
+              setting = originPrefs.setting;
+              source = originPrefs.source;
+              return true;
+            }
+            return false;
+          });
+        });
+      }
+
       assert(
           setting != undefined,
           'There was no exception set for origin: ' + origin +
@@ -402,17 +403,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   removeZoomLevel(host) {
     this.methodCalled('removeZoomLevel', [host]);
-  }
-
-  /** @override */
-  fetchUsbDevices() {
-    this.methodCalled('fetchUsbDevices');
-    return Promise.resolve(this.usbDevices_);
-  }
-
-  /** @override */
-  removeUsbDevice() {
-    this.methodCalled('removeUsbDevice', arguments);
   }
 
   /** @override */

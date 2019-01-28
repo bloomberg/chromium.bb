@@ -147,12 +147,6 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Deletes the storage being used for a given host.
   void HandleClearUsage(const base::ListValue* args);
 
-  // Handles the request for a list of all USB devices.
-  void HandleFetchUsbDevices(const base::ListValue* args);
-
-  // Removes a particular USB device permission.
-  void HandleRemoveUsbDevice(const base::ListValue* args);
-
   // Gets and sets the default value for a particular content settings type.
   void HandleSetDefaultValueForContentType(const base::ListValue* args);
   void HandleGetDefaultValueForContentType(const base::ListValue* args);
