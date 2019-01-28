@@ -169,8 +169,7 @@ TEST_F(PaintOpPerfTest, TextOps) {
 
   SkTextBlobBuilder builder;
   int glyph_count = 5;
-  SkRect rect = SkRect::MakeXYWH(1, 1, 1, 1);
-  const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f, &rect);
+  const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
   std::fill(run.glyphs, run.glyphs + glyph_count, 0);
   auto blob = builder.make();
 
