@@ -72,7 +72,7 @@ PersistentNotificationStatus ConvertServiceWorkerStatus(
       return PersistentNotificationStatus::kServiceWorkerError;
   }
   NOTREACHED();
-  return PersistentNotificationStatus::kSuccess;
+  return PersistentNotificationStatus::kServiceWorkerError;
 }
 
 // To be called when a notification event has finished with a
