@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 207 tests; 188 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 215 tests; 185 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -29,9 +29,8 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: attribute mode
 PASS XRSession interface: attribute outputContext
 PASS XRSession interface: attribute environmentBlendMode
-PASS XRSession interface: attribute depthNear
-PASS XRSession interface: attribute depthFar
-PASS XRSession interface: attribute baseLayer
+FAIL XRSession interface: attribute renderState assert_true: The prototype object must have a property "renderState" expected true got false
+FAIL XRSession interface: operation updateRenderState(XRRenderStateInit) assert_own_property: interface prototype object missing non-static operation expected property "updateRenderState" missing
 PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceOptions)
 PASS XRSession interface: operation getInputSources()
 PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)
@@ -44,6 +43,15 @@ FAIL XRSession interface: attribute onselect assert_true: The prototype object m
 FAIL XRSession interface: attribute oninputsourceschange assert_true: The prototype object must have a property "oninputsourceschange" expected true got false
 FAIL XRSession interface: attribute onselectstart assert_true: The prototype object must have a property "onselectstart" expected true got false
 FAIL XRSession interface: attribute onselectend assert_true: The prototype object must have a property "onselectend" expected true got false
+FAIL XRRenderState interface: existence and properties of interface object assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface object length assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface object name assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface: attribute depthNear assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface: attribute depthFar assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
+FAIL XRRenderState interface: attribute baseLayer assert_own_property: self does not have own property "XRRenderState" expected property "XRRenderState" missing
 PASS XRFrame interface: existence and properties of interface object
 PASS XRFrame interface object length
 PASS XRFrame interface object name
