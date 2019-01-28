@@ -263,9 +263,9 @@ class CertificateReportingServiceBrowserTest
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CertificateReportingServiceBrowserTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         CertificateReportingServiceBrowserTest,
+                         ::testing::Values(false, true));
 
 // Tests that report send attempt should be cancelled when extended
 // reporting is not opted in.
