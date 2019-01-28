@@ -22,6 +22,9 @@ const char* const kBaseAllowedArgs[] = {"blocking_type", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
 const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
+const char* const kRendererHostAllowedArgs[] = {
+    "class",           "line", "should_background", "has_pending_views",
+    "bytes_allocated", nullptr};
 const char* const kV8GCAllowedArgs[] = {"num_items", "num_tasks", nullptr};
 
 const WhitelistEntry kEventArgsWhitelist[] = {
@@ -38,6 +41,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"ipc", "GpuChannelHost::Send", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
+    {"renderer_host", "*", kRendererHostAllowedArgs},
     {"shutdown", "*", nullptr},
     {"startup", "PrefProvider::PrefProvider", nullptr},
     {"task_scheduler", "*", nullptr},
