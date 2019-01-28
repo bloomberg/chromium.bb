@@ -2231,8 +2231,6 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_DESCRIPTION},
       {"googleAssistantVoiceSettingsRetrainButton",
        IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_RETRAIN},
-      {"googleAssistantVoiceSettingsDeleteButton",
-       IDS_SETTINGS_GOOGLE_ASSISTANT_VOICE_SETTINGS_DELETE},
       {"googleAssistantEnableHotwordWithoutDspDescription",
        IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_WITHOUT_DSP_DESCRIPTION},
       {"googleAssistantEnableHotwordWithoutDspRecommended",

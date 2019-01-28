@@ -15,9 +15,6 @@ cr.define('settings', function() {
 
     /** Retrain the Assistant voice model. */
     retrainAssistantVoiceModel() {}
-
-    /** Delete the Assistant voice model. */
-    deleteAssistantVoiceModel() {}
   }
 
   /** @implements {settings.GoogleAssistantBrowserProxy} */
@@ -30,11 +27,6 @@ cr.define('settings', function() {
     /** @override */
     retrainAssistantVoiceModel() {
       chrome.send('retrainAssistantVoiceModel');
-    }
-
-    /** @override */
-    deleteAssistantVoiceModel() {
-      chrome.send('deleteAssistantVoiceModel');
     }
   }
 

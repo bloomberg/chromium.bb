@@ -164,41 +164,6 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
       });
 }
 
-void AssistantSettingsManagerImpl::RemoveSpeakerIdEnrollmentData(
-    RemoveSpeakerIdEnrollmentDataCallback callback) {
-  DCHECK(assistant_manager_service_->GetState() ==
-         AssistantManagerService::State::RUNNING);
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
-
-  if (!assistant_manager_service_->assistant_manager_internal()) {
-    std::move(callback).Run();
-    return;
-  }
-
-  const std::string device_id =
-      assistant_manager_service_->assistant_manager()->GetDeviceId();
-  if (device_id.empty())
-    return;
-
-  // Update device id and device type.
-  assistant::SettingsUiUpdate update;
-  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
-      update.mutable_assistant_device_settings_update()
-          ->add_assistant_device_settings_update();
-  device_settings_update->set_device_id(device_id);
-  device_settings_update->set_assistant_device_type(
-      assistant::AssistantDevice::CROS);
-
-  device_settings_update->mutable_device_settings()->set_speaker_id_enabled(
-      false);
-
-  UpdateSettings(
-      update.SerializeAsString(),
-      base::BindOnce(
-          &AssistantSettingsManagerImpl::HandleRemoveSpeakerIdEnrollmentData,
-          weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
     const assistant_client::SpeakerIdEnrollmentUpdate& update) {
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
@@ -256,14 +221,6 @@ void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentStatusSync(
     case SpeakerIdEnrollmentState::FETCH:
       break;
   }
-}
-
-void AssistantSettingsManagerImpl::HandleRemoveSpeakerIdEnrollmentData(
-    RemoveSpeakerIdEnrollmentDataCallback callback,
-    const std::string& result) {
-  // Device settings update result is not handled because it is not included in
-  // the SettingsUiUpdateResult.
-  std::move(callback).Run();
 }
 
 void AssistantSettingsManagerImpl::HandleStopSpeakerIdEnrollment(
