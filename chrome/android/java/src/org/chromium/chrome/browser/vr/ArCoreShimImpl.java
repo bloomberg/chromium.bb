@@ -19,7 +19,7 @@ class ArCoreShimImpl implements ArCoreShim {
     public ArCoreShimImpl() {}
 
     @Override
-    public InstallStatus requestInstall(Activity activity, boolean userRequestedInstall)
+    public @InstallStatus int requestInstall(Activity activity, boolean userRequestedInstall)
             throws UnavailableDeviceNotCompatibleException,
                    UnavailableUserDeclinedInstallationException {
         try {
@@ -40,7 +40,7 @@ class ArCoreShimImpl implements ArCoreShim {
         return mapArCoreApkAvailability(availability);
     }
 
-    private InstallStatus mapArCoreApkInstallStatus(ArCoreApk.InstallStatus installStatus) {
+    private @InstallStatus int mapArCoreApkInstallStatus(ArCoreApk.InstallStatus installStatus) {
         switch (installStatus) {
             case INSTALLED:
                 return InstallStatus.INSTALLED;

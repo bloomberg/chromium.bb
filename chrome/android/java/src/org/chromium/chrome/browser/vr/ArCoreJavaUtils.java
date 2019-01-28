@@ -203,8 +203,8 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
             public boolean onInfoBarButtonClicked(boolean isPrimary) {
                 try {
                     assert sRequestInstallInstance == null;
-                    ArCoreShim.InstallStatus installStatus =
-                            getArCoreShimInstance().requestInstall(activity, true);
+                    @ArCoreShim.InstallStatus
+                    int installStatus = getArCoreShimInstance().requestInstall(activity, true);
 
                     if (installStatus == ArCoreShim.InstallStatus.INSTALL_REQUESTED) {
                         // Install flow will resume in onArCoreRequestInstallReturned, mark that
