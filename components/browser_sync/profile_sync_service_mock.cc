@@ -34,7 +34,6 @@ bool ProfileSyncServiceMock::IsAuthenticatedAccountPrimary() const {
 
 syncer::ModelTypeSet ProfileSyncServiceMock::GetPreferredDataTypes() const {
   return syncer::SyncPrefs::ResolvePrefGroups(
-      /*registered_types=*/syncer::ModelTypeSet::All(),
       user_settings_.GetChosenDataTypes());
 }
 

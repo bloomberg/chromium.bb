@@ -49,7 +49,7 @@ ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
   // elsewhere in the file).
   for (ModelType st : selectable_types) {
     const ModelTypeSet grouped_types =
-        SyncPrefs::ResolvePrefGroups(registered_types, ModelTypeSet(st));
+        SyncPrefs::ResolvePrefGroups(ModelTypeSet(st));
     for (ModelType gt : grouped_types) {
       if (seen.Has(gt)) {
         multi.Put(gt);
@@ -58,6 +58,7 @@ ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
       }
     }
   }
+  multi.RetainAll(registered_types);
   return multi;
 }
 
@@ -139,9 +140,11 @@ class EnableDisableSingleClientTest : public SyncTest {
   }
 
   ModelTypeSet ResolveGroup(ModelType type) {
-    return Difference(
-        SyncPrefs::ResolvePrefGroups(registered_types_, ModelTypeSet(type)),
-        ProxyTypes());
+    ModelTypeSet grouped_types =
+        SyncPrefs::ResolvePrefGroups(ModelTypeSet(type));
+    grouped_types.RetainAll(registered_types_);
+    grouped_types.RemoveAll(ProxyTypes());
+    return grouped_types;
   }
 
   ModelTypeSet WithoutMultiTypes(const ModelTypeSet& input) {
