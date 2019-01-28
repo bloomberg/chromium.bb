@@ -619,12 +619,12 @@ TEST_P(ProcessMemoryMetricsEmitterTest, CollectsSingleProcessUKMs) {
   CheckMemoryUkmEntryMetrics(expected_entries);
 }
 
-INSTANTIATE_TEST_CASE_P(SinglePtype,
-                        ProcessMemoryMetricsEmitterTest,
-                        testing::Values(ProcessType::BROWSER,
-                                        ProcessType::RENDERER,
-                                        ProcessType::GPU,
-                                        ProcessType::UTILITY));
+INSTANTIATE_TEST_SUITE_P(SinglePtype,
+                         ProcessMemoryMetricsEmitterTest,
+                         testing::Values(ProcessType::BROWSER,
+                                         ProcessType::RENDERER,
+                                         ProcessType::GPU,
+                                         ProcessType::UTILITY));
 
 TEST_F(ProcessMemoryMetricsEmitterTest, CollectsExtensionProcessUKMs) {
   MetricMap expected_metrics = GetExpectedRendererMetrics();

@@ -132,6 +132,6 @@ IN_PROC_BROWSER_TEST_P(MetricsReportingStateTest, ChangeMetricsReportingState) {
   EXPECT_EQ(!is_metrics_reporting_enabled_initial_value(), value_after_change);
 }
 
-INSTANTIATE_TEST_CASE_P(MetricsReportingStateTests,
-                        MetricsReportingStateTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(MetricsReportingStateTests,
+                         MetricsReportingStateTest,
+                         testing::Bool());

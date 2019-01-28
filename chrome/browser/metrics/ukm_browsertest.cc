@@ -1095,7 +1095,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, HistoryDeleteCheck) {
 }
 
 // Run UKM browser test suite with Unified Consent enabled and disabled.
-INSTANTIATE_TEST_CASE_P(, UkmBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, UkmBrowserTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport, SyncFeatureCheck) {
   MetricsConsentOverride metrics_consent(true);
@@ -1197,7 +1197,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
 #endif  // !OS_CHROMEOS
 
 // Run UKM browser test suite with Unified Consent enabled and disabled.
-INSTANTIATE_TEST_CASE_P(, UkmBrowserTestWithSyncTransport, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, UkmBrowserTestWithSyncTransport, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
   // Note we are not using the synthetic MetricsConsentOverride since we are
@@ -1222,8 +1222,8 @@ IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
 }
 
 // Verify UKM is enabled/disabled for both potential settings of group policy.
-INSTANTIATE_TEST_CASE_P(UkmConsentParamBrowserTests,
-                        UkmConsentParamBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(UkmConsentParamBrowserTests,
+                         UkmConsentParamBrowserTest,
+                         testing::Bool());
 
 }  // namespace metrics
