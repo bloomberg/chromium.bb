@@ -219,7 +219,12 @@ void StreamTexture::OnForwardForSurfaceRequest(
                                              surface_owner_.get());
 }
 
+StreamTexture::BindOrCopy StreamTexture::ShouldBindOrCopy() {
+  return COPY;
+}
+
 bool StreamTexture::BindTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 

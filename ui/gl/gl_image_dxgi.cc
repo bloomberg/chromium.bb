@@ -148,6 +148,10 @@ GLImageDXGI* GLImageDXGI::FromGLImage(GLImage* image) {
   return static_cast<GLImageDXGI*>(image);
 }
 
+GLImageDXGI::BindOrCopy GLImageDXGI::ShouldBindOrCopy() {
+  return BIND;
+}
+
 bool GLImageDXGI::BindTexImage(unsigned target) {
   if (!handle_.Get())
     return true;
@@ -180,6 +184,7 @@ bool GLImageDXGI::BindTexImage(unsigned target) {
 }
 
 bool GLImageDXGI::CopyTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 

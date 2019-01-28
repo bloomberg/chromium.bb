@@ -1690,9 +1690,10 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
       if (image) {
         api()->glBindTextureFn(source_texture->target(),
                                source_texture->service_id());
-        if (!image->BindTexImage(source_texture->target())) {
+        if (image->ShouldBindOrCopy() == gl::GLImage::BIND)
+          image->BindTexImage(source_texture->target());
+        else
           image->CopyTexImage(source_texture->target());
-        }
         source_texture->set_is_bind_pending(false);
       }
     }
@@ -1961,7 +1962,10 @@ void RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture,
           "RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded",
           error_state_.get());
       api()->glBindTextureFn(textarget, texture->service_id());
-      if (!image->BindTexImage(textarget)) {
+      if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
+        bool rv = image->BindTexImage(textarget);
+        DCHECK(rv) << "BindTexImage() failed";
+      } else {
         // Note: We update the state to COPIED prior to calling CopyTexImage()
         // as that allows the GLImage implemenatation to set it back to
         // UNBOUND and ensure that CopyTexImage() is called each time the

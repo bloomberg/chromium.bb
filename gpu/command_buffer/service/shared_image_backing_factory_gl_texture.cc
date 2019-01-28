@@ -348,8 +348,10 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
       return;
     image->ReleaseTexImage(target);
     gles2::Texture::ImageState new_state = gles2::Texture::UNBOUND;
-    if (image->BindTexImage(target))
+    if (image->ShouldBindOrCopy() == gl::GLImage::BIND &&
+        image->BindTexImage(target)) {
       new_state = gles2::Texture::BOUND;
+    }
     if (old_state != new_state)
       texture_->SetLevelImage(target, 0, image, new_state);
   }
@@ -449,7 +451,9 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
     if (!image)
       return;
     image->ReleaseTexImage(target);
-    if (!image->BindTexImage(target))
+    if (image->ShouldBindOrCopy() == gl::GLImage::BIND)
+      image->BindTexImage(target);
+    else
       image->CopyTexImage(target);
   }
 
@@ -718,6 +722,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
         &is_cleared);
+    // A SCANOUT image should not require copy.
+    DCHECK(!image || image->ShouldBindOrCopy() == gl::GLImage::BIND);
     if (!image || !image->BindTexImage(target)) {
       LOG(ERROR) << "CreateSharedImage: Failed to create image";
       api->glDeleteTexturesFn(1, &service_id);
@@ -811,7 +817,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   // TODO(piman): RGB emulation
   gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
-  if (image->BindTexImage(target)) {
+  if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
+    if (!image->BindTexImage(target)) {
+      LOG(ERROR) << "Failed to bind image to target.";
+      api->glDeleteTexturesFn(1, &service_id);
+      return nullptr;
+    }
     image_state = gles2::Texture::BOUND;
   } else if (use_passthrough_) {
     image->CopyTexImage(target);

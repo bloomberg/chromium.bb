@@ -16,6 +16,7 @@ class TextureImage : public gl::GLImage {
 
   gfx::Size GetSize() override { return size_; }
   unsigned GetInternalFormat() override { return GL_RGBA; }
+  BindOrCopy ShouldBindOrCopy() override { return BIND; }
   bool BindTexImage(unsigned target) override {
     glTexImage2D(target,
                  0,  // mip level
@@ -25,7 +26,10 @@ class TextureImage : public gl::GLImage {
     return true;
   }
   void ReleaseTexImage(unsigned target) override {}
-  bool CopyTexImage(unsigned target) override { return false; }
+  bool CopyTexImage(unsigned target) override {
+    NOTREACHED();
+    return false;
+  }
   bool CopyTexSubImage(unsigned target,
                        const gfx::Point& offset,
                        const gfx::Rect& rect) override {

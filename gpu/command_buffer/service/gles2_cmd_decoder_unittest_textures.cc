@@ -3766,6 +3766,7 @@ class MockGLImage : public gl::GLImage {
   // Overridden from gl::GLImage:
   MOCK_METHOD0(GetSize, gfx::Size());
   MOCK_METHOD0(GetInternalFormat, unsigned());
+  MOCK_METHOD0(ShouldBindOrCopy, gl::GLImage::BindOrCopy());
   MOCK_METHOD1(BindTexImage, bool(unsigned));
   MOCK_METHOD1(ReleaseTexImage, void(unsigned));
   MOCK_METHOD1(CopyTexImage, bool(unsigned));
@@ -3806,9 +3807,10 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   GetImageManagerForTest()->AddImage(image.get(), kImageId);
 
   // Bind image to texture.
+  EXPECT_CALL(*image.get(), ShouldBindOrCopy())
+      .WillRepeatedly(Return(gl::GLImage::COPY));
   EXPECT_CALL(*image.get(), BindTexImage(GL_TEXTURE_2D))
-      .Times(1)
-      .WillRepeatedly(Return(false))
+      .Times(0)
       .RetiresOnSaturation();
   EXPECT_CALL(*image.get(), GetSize())
       .Times(1)
@@ -3845,8 +3847,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*image.get(), BindTexImage(GL_TEXTURE_2D))
-        .Times(1)
-        .WillRepeatedly(Return(false))
+        .Times(0)
         .RetiresOnSaturation();
     EXPECT_CALL(*image.get(), CopyTexImage(GL_TEXTURE_2D))
         .Times(1)
@@ -3873,8 +3874,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImage) {
   release_tex_image_2d_cmd.Init(GL_TEXTURE_2D, kImageId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(release_tex_image_2d_cmd));
   EXPECT_CALL(*image.get(), BindTexImage(GL_TEXTURE_2D))
-      .Times(2)
-      .WillRepeatedly(Return(false))
+      .Times(0)
       .RetiresOnSaturation();
   EXPECT_CALL(*image.get(), GetSize())
       .Times(1)

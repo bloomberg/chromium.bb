@@ -526,6 +526,8 @@ class StubImage : public gl::GLImageStub {
     return InternalFormatForGpuMemoryBufferFormat(format_);
   }
 
+  BindOrCopy ShouldBindOrCopy() override { return BIND; }
+
   bool BindTexImage(unsigned target) override {
     if (!bound_) {
       bound_ = true;

@@ -16,10 +16,15 @@ gfx::Size GLStreamTextureImageStub::GetSize() {
 unsigned GLStreamTextureImageStub::GetInternalFormat() {
   return 0;
 }
+GLStreamTextureImageStub::BindOrCopy
+GLStreamTextureImageStub::ShouldBindOrCopy() {
+  return BIND;
+}
 bool GLStreamTextureImageStub::BindTexImage(unsigned target) {
   return false;
 }
 bool GLStreamTextureImageStub::CopyTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 bool GLStreamTextureImageStub::CopyTexSubImage(unsigned target,

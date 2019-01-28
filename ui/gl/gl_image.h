@@ -57,6 +57,12 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Get the internal format of the image.
   virtual unsigned GetInternalFormat() = 0;
 
+  enum BindOrCopy { BIND, COPY };
+  // Returns whether this image is meant to be bound or copied to textures. The
+  // suggested method is not guaranteed to succeed, but the alternative will
+  // definitely fail.
+  virtual BindOrCopy ShouldBindOrCopy() = 0;
+
   // Bind image to texture currently bound to |target|. Returns true on success.
   // It is valid for an implementation to always return false.
   virtual bool BindTexImage(unsigned target) = 0;

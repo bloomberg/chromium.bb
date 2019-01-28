@@ -244,6 +244,13 @@ unsigned GLImageIOSurface::GetInternalFormat() {
   return internalformat_;
 }
 
+GLImageIOSurface::BindOrCopy GLImageIOSurface::ShouldBindOrCopy() {
+  // YUV_420_BIPLANAR is not supported by BindTexImage.
+  // CopyTexImage is supported by this format as that performs conversion to RGB
+  // as part of the copy operation.
+  return format_ == gfx::BufferFormat::YUV_420_BIPLANAR ? COPY : BIND;
+}
+
 bool GLImageIOSurface::BindTexImage(unsigned target) {
   return BindTexImageWithInternalformat(target, 0);
 }
@@ -251,14 +258,9 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
 bool GLImageIOSurface::BindTexImageWithInternalformat(unsigned target,
                                                       unsigned internalformat) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(BIND, ShouldBindOrCopy());
   TRACE_EVENT0("gpu", "GLImageIOSurface::BindTexImage");
   base::TimeTicks start_time = base::TimeTicks::Now();
-
-  // YUV_420_BIPLANAR is not supported by BindTexImage.
-  // CopyTexImage is supported by this format as that performs conversion to RGB
-  // as part of the copy operation.
-  if (format_ == gfx::BufferFormat::YUV_420_BIPLANAR)
-    return false;
 
   if (target != GL_TEXTURE_RECTANGLE_ARB) {
     // This might be supported in the future. For now, perform strict
@@ -299,9 +301,7 @@ bool GLImageIOSurface::BindTexImageImpl(unsigned internalformat) {
 
 bool GLImageIOSurface::CopyTexImage(unsigned target) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (format_ != gfx::BufferFormat::YUV_420_BIPLANAR)
-    return false;
+  DCHECK_EQ(COPY, ShouldBindOrCopy());
 
   GLContext* gl_context = GLContext::GetCurrent();
   DCHECK(gl_context);
