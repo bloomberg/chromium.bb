@@ -559,10 +559,6 @@ void SessionControllerClient::SendUserSessionForProfile(Profile* profile) {
 }
 
 void SessionControllerClient::ConnectToSessionController() {
-  // Tests may bind to their own SessionController.
-  if (session_controller_)
-    return;
-
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &session_controller_);

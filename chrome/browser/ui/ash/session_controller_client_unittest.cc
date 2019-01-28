@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/ui/ash/test_session_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -33,6 +34,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -101,78 +103,6 @@ class TestChromeUserManager : public FakeChromeUserManager {
   DISALLOW_COPY_AND_ASSIGN(TestChromeUserManager);
 };
 
-// A session controller interface implementation that tracks sessions and users.
-class TestSessionController : public ash::mojom::SessionController {
- public:
-  TestSessionController() : binding_(this) {}
-  ~TestSessionController() override {}
-
-  ash::mojom::SessionControllerPtr CreateInterfacePtrAndBind() {
-    ash::mojom::SessionControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  ash::mojom::SessionInfo* last_session_info() {
-    return last_session_info_.get();
-  }
-
-  ash::mojom::UserSession* last_user_session() {
-    return last_user_session_.get();
-  }
-
-  int update_user_session_count() { return update_user_session_count_; }
-
-  // ash::mojom::SessionController:
-  void SetClient(ash::mojom::SessionControllerClientPtr client) override {}
-  void SetSessionInfo(ash::mojom::SessionInfoPtr info) override {
-    last_session_info_ = info->Clone();
-  }
-  void UpdateUserSession(ash::mojom::UserSessionPtr user_session) override {
-    last_user_session_ = user_session->Clone();
-    update_user_session_count_++;
-  }
-  void SetUserSessionOrder(
-      const std::vector<uint32_t>& user_session_order) override {}
-  void PrepareForLock(PrepareForLockCallback callback) override {}
-  void StartLock(StartLockCallback callback) override {}
-  void NotifyChromeLockAnimationsComplete() override {}
-  void RunUnlockAnimation(RunUnlockAnimationCallback callback) override {}
-  void NotifyChromeTerminating() override {}
-  void SetSessionLengthLimit(base::TimeDelta length_limit,
-                             base::TimeTicks start_time) override {
-    last_session_length_limit_ = length_limit;
-    last_session_start_time_ = start_time;
-  }
-  void CanSwitchActiveUser(CanSwitchActiveUserCallback callback) override {
-    std::move(callback).Run(true);
-  }
-  void ShowMultiprofilesIntroDialog(
-      ShowMultiprofilesIntroDialogCallback callback) override {
-    std::move(callback).Run(true, false);
-  }
-  void ShowTeleportWarningDialog(
-      ShowTeleportWarningDialogCallback callback) override {
-    std::move(callback).Run(true, false);
-  }
-  void ShowMultiprofilesSessionAbortedDialog(
-      const std::string& user_email) override {}
-  void AddSessionActivationObserverForAccountId(
-      const AccountId& account_id,
-      ash::mojom::SessionActivationObserverPtr observer) override {}
-
-  base::TimeDelta last_session_length_limit_;
-  base::TimeTicks last_session_start_time_;
-
- private:
-  mojo::Binding<ash::mojom::SessionController> binding_;
-
-  ash::mojom::SessionInfoPtr last_session_info_;
-  ash::mojom::UserSessionPtr last_user_session_;
-  int update_user_session_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSessionController);
-};
 
 }  // namespace
 
@@ -261,6 +191,7 @@ class SessionControllerClientTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle threads_;
+  content::TestServiceManagerContext context_;
   std::unique_ptr<network::CertVerifierWithTrustAnchors> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   session_manager::SessionManager session_manager_;
@@ -294,7 +225,6 @@ TEST_F(SessionControllerClientTest, CyclingThreeUsers) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
 
   const AccountId first_user =
@@ -475,7 +405,6 @@ TEST_F(SessionControllerClientTest, SendUserSession) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
   SessionControllerClient::FlushForTesting();
 
@@ -514,7 +443,6 @@ TEST_F(SessionControllerClientTest, SupervisedUser) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
   SessionControllerClient::FlushForTesting();
 
@@ -577,7 +505,6 @@ TEST_F(SessionControllerClientTest, DeviceOwner) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
 
   const AccountId owner =
@@ -600,7 +527,6 @@ TEST_F(SessionControllerClientTest, UserBecomesDeviceOwner) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
 
   const AccountId owner =
@@ -621,7 +547,6 @@ TEST_F(SessionControllerClientTest, UserPrefsChange) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
   SessionControllerClient::FlushForTesting();
 
@@ -650,7 +575,6 @@ TEST_F(SessionControllerClientTest, UserPrefsChange) {
   user_prefs->SetBoolean(ash::prefs::kAllowScreenLock, false);
   SessionControllerClient::FlushForTesting();
   EXPECT_FALSE(session_controller.last_session_info()->can_lock_screen);
-
   user_prefs->SetBoolean(ash::prefs::kEnableAutoScreenLock, true);
   SessionControllerClient::FlushForTesting();
   EXPECT_TRUE(
@@ -665,13 +589,12 @@ TEST_F(SessionControllerClientTest, SessionLengthLimit) {
   // Create an object to test and connect it to our test interface.
   SessionControllerClient client;
   TestSessionController session_controller;
-  client.session_controller_ = session_controller.CreateInterfacePtrAndBind();
   client.Init();
   SessionControllerClient::FlushForTesting();
 
   // By default there is no session length limit.
-  EXPECT_TRUE(session_controller.last_session_length_limit_.is_zero());
-  EXPECT_TRUE(session_controller.last_session_start_time_.is_null());
+  EXPECT_TRUE(session_controller.last_session_length_limit().is_zero());
+  EXPECT_TRUE(session_controller.last_session_start_time().is_null());
 
   // Setting a session length limit in local state sends it to ash.
   const base::TimeDelta length_limit = base::TimeDelta::FromHours(1);
@@ -681,6 +604,6 @@ TEST_F(SessionControllerClientTest, SessionLengthLimit) {
                           length_limit.InMilliseconds());
   local_state->SetInt64(prefs::kSessionStartTime, start_time.ToInternalValue());
   SessionControllerClient::FlushForTesting();
-  EXPECT_EQ(length_limit, session_controller.last_session_length_limit_);
-  EXPECT_EQ(start_time, session_controller.last_session_start_time_);
+  EXPECT_EQ(length_limit, session_controller.last_session_length_limit());
+  EXPECT_EQ(start_time, session_controller.last_session_start_time());
 }

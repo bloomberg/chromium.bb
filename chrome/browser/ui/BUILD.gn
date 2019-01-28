@@ -3719,6 +3719,8 @@ static_library("test_support") {
     sources += [
       "ash/fake_tablet_mode_controller.cc",
       "ash/fake_tablet_mode_controller.h",
+      "ash/test_session_controller.cc",
+      "ash/test_session_controller.h",
       "ash/test_wallpaper_controller.cc",
       "ash/test_wallpaper_controller.h",
     ]
