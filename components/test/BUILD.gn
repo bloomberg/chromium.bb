@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import("//printing/buildflags/buildflags.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//ui/base/ui_features.gni")
 
 source_set("test_support") {
