@@ -12,8 +12,10 @@
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
+
 class ResolveTask;
 class SerializedScriptValue;
+class V8Function;
 
 // Runs |function| with |arguments| on a thread from the given ThreadPool.
 // Scans |arguments| for Task objects, and registers those as dependencies,
@@ -34,7 +36,7 @@ class TaskBase : public GarbageCollectedMixin {
 
   TaskBase(TaskType,
            ScriptState*,
-           const ScriptValue& function,
+           V8Function* function,
            const String& function_name);
 
   void InitializeArgumentsOnMainThread(ThreadPoolThreadProvider*,
@@ -158,7 +160,7 @@ class Task final : public ScriptWrappable, public TaskBase {
   // Called on main thread
   Task(ThreadPoolThreadProvider* thread_provider,
        ScriptState* script_state,
-       const ScriptValue& function,
+       V8Function* function,
        const Vector<ScriptValue>& arguments,
        TaskType task_type)
       : TaskBase(task_type, script_state, function, String()) {
@@ -169,7 +171,7 @@ class Task final : public ScriptWrappable, public TaskBase {
        const String& function_name,
        const Vector<ScriptValue>& arguments,
        TaskType task_type)
-      : TaskBase(task_type, script_state, ScriptValue(), function_name) {
+      : TaskBase(task_type, script_state, nullptr, function_name) {
     InitializeArgumentsOnMainThread(thread_provider, script_state, arguments);
   }
 

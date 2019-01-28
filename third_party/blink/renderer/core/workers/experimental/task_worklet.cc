@@ -49,9 +49,8 @@ static const size_t kMaxTaskWorkletThreads = 4;
 TaskWorklet::TaskWorklet(Document* document) : Worklet(document) {}
 
 Task* TaskWorklet::postTask(ScriptState* script_state,
-                            const ScriptValue& function,
+                            V8Function* function,
                             const Vector<ScriptValue>& arguments) {
-  DCHECK(function.IsFunction());
   // TODO(japhet): Here and below: it's unclear what task type should be used,
   // and whether the API should allow it to be configured. Using kIdleTask as a
   // placeholder for now.
