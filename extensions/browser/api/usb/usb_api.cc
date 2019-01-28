@@ -17,7 +17,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/usb_utils.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
@@ -25,8 +27,8 @@
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
-#include "extensions/browser/api/usb/usb_guid_map.h"
 #include "extensions/browser/extension_function_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/api/usb.h"
@@ -630,12 +632,14 @@ ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
 void UsbGetDevicesFunction::OnGetDevicesComplete(
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
-  UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
+  UsbDeviceManager* device_manager = UsbDeviceManager::Get(browser_context());
   for (const scoped_refptr<UsbDevice>& device : devices) {
     if (UsbDeviceFilterMatchesAny(filters_, *device) &&
         HasDevicePermission(device)) {
       Device api_device;
-      guid_map->GetApiDevice(device, &api_device);
+      DCHECK(device);
+      auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+      device_manager->GetApiDevice(*device_info, &api_device);
       result->Append(api_device.ToValue());
     }
   }
@@ -691,10 +695,12 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
 void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
-  UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
+  UsbDeviceManager* device_manager = UsbDeviceManager::Get(browser_context());
   for (const auto& device : devices) {
     Device api_device;
-    guid_map->GetApiDevice(device, &api_device);
+    DCHECK(device);
+    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+    device_manager->GetApiDevice(*device_info, &api_device);
     result->Append(api_device.ToValue());
   }
 
@@ -716,7 +722,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
   }
 
   std::string guid;
-  if (!UsbGuidMap::Get(browser_context())
+  if (!UsbDeviceManager::Get(browser_context())
            ->GetGuidFromId(parameters->device.device, &guid)) {
     return RespondNow(Error(kErrorNoDevice));
   }
@@ -775,7 +781,7 @@ ExtensionFunction::ResponseAction UsbOpenDeviceFunction::Run() {
   }
 
   std::string guid;
-  if (!UsbGuidMap::Get(browser_context())
+  if (!UsbDeviceManager::Get(browser_context())
            ->GetGuidFromId(parameters->device.device, &guid)) {
     return RespondNow(Error(kErrorNoDevice));
   }
