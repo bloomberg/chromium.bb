@@ -70,8 +70,7 @@ void TestSyncUserSettings::SetChosenDataTypes(bool sync_everything,
   if (sync_everything_enabled_) {
     preferred_types = syncer::ModelTypeSet::All();
   } else {
-    preferred_types = syncer::SyncPrefs::ResolvePrefGroups(
-        /*registered_types=*/syncer::ModelTypeSet::All(), types);
+    preferred_types = syncer::SyncPrefs::ResolvePrefGroups(types);
   }
   service_->SetPreferredDataTypes(preferred_types);
 }

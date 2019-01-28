@@ -225,10 +225,9 @@ class SyncPrefs : public CryptoSyncPrefs,
   bool IsLocalSyncEnabled() const;
 
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
-  // (see |pref_groups_|), but as a subset of |registered_types|.
+  // (see |pref_groups_|).
   // Exposed for testing.
-  static ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
-                                        ModelTypeSet types);
+  static ModelTypeSet ResolvePrefGroups(ModelTypeSet types);
 
  private:
   static void RegisterDataTypePreferredPref(

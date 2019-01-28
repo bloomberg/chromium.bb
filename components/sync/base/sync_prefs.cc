@@ -283,7 +283,10 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
       preferred_types.Put(type);
     }
   }
-  return ResolvePrefGroups(registered_types, preferred_types);
+
+  preferred_types = ResolvePrefGroups(preferred_types);
+  preferred_types.RetainAll(registered_types);
+  return preferred_types;
 }
 
 void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
@@ -292,9 +295,10 @@ void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
-  ModelTypeSet preferred_types =
-      ResolvePrefGroups(registered_types, chosen_types);
-  DCHECK(registered_types.HasAll(preferred_types));
+
+  ModelTypeSet preferred_types = ResolvePrefGroups(chosen_types);
+  preferred_types.RetainAll(registered_types);
+
   for (ModelType type : registered_types) {
     SetDataTypePreferred(type, preferred_types.Has(type));
   }
@@ -492,15 +496,13 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
 }
 
 // static
-ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet registered_types,
-                                          ModelTypeSet types) {
+ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet types) {
   ModelTypeSet types_with_groups = types;
   for (const auto& pref_group : ComputePrefGroups()) {
     if (types.Has(pref_group.first)) {
       types_with_groups.PutAll(pref_group.second);
     }
   }
-  types_with_groups.RetainAll(registered_types);
   return types_with_groups;
 }
 
