@@ -215,14 +215,13 @@ static void BoundingBoxForArc(const FloatPoint3D& point,
                      to_degrees);
 
   FloatPoint3D from_point = from_matrix.MapPoint(point);
-  FloatPoint3D to_point = to_matrix.MapPoint(point);
 
   if (box.IsEmpty())
     box.SetOrigin(from_point);
   else
     box.ExpandTo(from_point);
 
-  box.ExpandTo(to_point);
+  box.ExpandTo(to_matrix.MapPoint(point));
 
   switch (from_transform.GetType()) {
     case TransformOperation::kRotateX:
@@ -415,14 +414,14 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
 
         FloatBox from_box = *bounds;
         bool first = true;
-        for (size_t i = 0; i < 2; ++i) {
-          for (size_t j = 0; j < 2; ++j) {
-            for (size_t k = 0; k < 2; ++k) {
+        for (size_t j = 0; j < 2; ++j) {
+          for (size_t k = 0; k < 2; ++k) {
+            for (size_t m = 0; m < 2; ++m) {
               FloatBox bounds_for_arc;
               FloatPoint3D corner(from_box.X(), from_box.Y(), from_box.Z());
               corner +=
-                  FloatPoint3D(i * from_box.Width(), j * from_box.Height(),
-                               k * from_box.Depth());
+                  FloatPoint3D(j * from_box.Width(), k * from_box.Height(),
+                               m * from_box.Depth());
               BoundingBoxForArc(corner, *from_rotation, *to_rotation,
                                 min_progress, max_progress, bounds_for_arc);
               if (first) {

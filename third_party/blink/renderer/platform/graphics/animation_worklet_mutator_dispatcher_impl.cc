@@ -21,9 +21,9 @@ namespace blink {
 
 namespace {
 
-int next_async_mutation_id = 0;
+int g_next_async_mutation_id = 0;
 int GetNextAsyncMutationId() {
-  return next_async_mutation_id++;
+  return g_next_async_mutation_id++;
 }
 
 }  // end namespace
