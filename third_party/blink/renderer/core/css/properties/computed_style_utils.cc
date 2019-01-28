@@ -1552,13 +1552,13 @@ CSSValueList* ComputedStyleUtils::ValuesForBorderRadiusCorner(
     const LengthSize& radius,
     const ComputedStyle& style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (radius.Width().GetType() == kPercent) {
+  if (radius.Width().IsPercent()) {
     list->Append(*CSSPrimitiveValue::Create(
         radius.Width().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   } else {
     list->Append(*ZoomAdjustedPixelValueForLength(radius.Width(), style));
   }
-  if (radius.Height().GetType() == kPercent) {
+  if (radius.Height().IsPercent()) {
     list->Append(*CSSPrimitiveValue::Create(
         radius.Height().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   } else {

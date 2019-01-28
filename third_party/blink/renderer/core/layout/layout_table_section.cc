@@ -66,7 +66,7 @@ void LayoutTableSection::TableGridRow::UpdateLogicalHeightForCell(
           logical_height = cell_logical_height;
         break;
       case kFixed:
-        if (logical_height.GetType() < kPercent ||
+        if (logical_height.IsAuto() ||
             (logical_height.IsFixed() &&
              logical_height.Value() < cell_logical_height.Value()))
           logical_height = cell_logical_height;

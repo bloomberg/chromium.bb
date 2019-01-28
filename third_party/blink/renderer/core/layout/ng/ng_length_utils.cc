@@ -135,7 +135,7 @@ LayoutUnit ResolveInlineLength(
   // Check if we shouldn't resolve a percentage/calc()/-webkit-fill-available
   // if we are in the intrinsic sizes phase.
   if (phase == LengthResolvePhase::kIntrinsic &&
-      (length.IsPercentOrCalc() || length.GetType() == kFillAvailable)) {
+      (length.IsPercentOrCalc() || length.IsFillAvailable())) {
     // min-width/min-height should be "0", i.e. no min limit is applied.
     if (type == LengthResolveType::kMinSize)
       return border_and_padding.InlineSum();
@@ -241,7 +241,7 @@ LayoutUnit ResolveBlockLength(
     size_is_unresolvable =
         phase == LengthResolvePhase::kIntrinsic ||
         constraint_space.PercentageResolutionBlockSize() == NGSizeIndefinite;
-  } else if (length.GetType() == kFillAvailable) {
+  } else if (length.IsFillAvailable()) {
     size_is_unresolvable =
         phase == LengthResolvePhase::kIntrinsic ||
         constraint_space.AvailableSize().block_size == NGSizeIndefinite;
@@ -365,8 +365,7 @@ MinMaxSize ComputeMinAndMaxContentContribution(
                                   ? style.Width()
                                   : style.Height();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
-      inline_size.GetType() == kFillAvailable ||
-      inline_size.GetType() == kFitContent) {
+      inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
     CHECK(min_and_max.has_value());
     computed_sizes = *min_and_max;
   } else {
@@ -489,7 +488,7 @@ LayoutUnit ComputeInlineSizeForFragment(
   if (!box->PreferredLogicalWidthsDirty() && !override_minmax &&
       !style.LogicalMinWidth().IsPercentOrCalc() &&
       !style.LogicalMaxWidth().IsPercentOrCalc()) {
-    if (logical_width.GetType() == kFitContent) {
+    if (logical_width.IsFitContent()) {
       // This is not as easy as {min, max}.ShrinkToFit() because we also need
       // to subtract inline margins from the available size. The code in
       // ResolveInlineLength knows how to handle that, just call that.
@@ -500,9 +499,9 @@ LayoutUnit ComputeInlineSizeForFragment(
                                  LengthResolveType::kContentSize,
                                  LengthResolvePhase::kLayout);
     }
-    if (logical_width.GetType() == kMinContent)
+    if (logical_width.IsMinContent())
       return box->MinPreferredLogicalWidth();
-    if (logical_width.GetType() == kMaxContent)
+    if (logical_width.IsMaxContent())
       return box->MaxPreferredLogicalWidth();
   }
 

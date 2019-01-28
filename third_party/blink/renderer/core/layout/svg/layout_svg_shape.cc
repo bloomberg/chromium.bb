@@ -213,8 +213,8 @@ static inline bool TransformOriginIsFixed(const ComputedStyle& style) {
   // is does not depend on the reference box. For fill-box, the origin will
   // always move with the bounding box.
   return style.TransformBox() == ETransformBox::kViewBox &&
-         style.TransformOriginX().GetType() == kFixed &&
-         style.TransformOriginY().GetType() == kFixed;
+         style.TransformOriginX().IsFixed() &&
+         style.TransformOriginY().IsFixed();
 }
 
 static inline bool TransformDependsOnReferenceBox(const ComputedStyle& style) {

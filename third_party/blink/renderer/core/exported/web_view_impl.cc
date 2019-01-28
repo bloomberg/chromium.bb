@@ -2550,7 +2550,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
               DeviceScaleFactor() <=
           1) {
     if (description.max_width == Length(kDeviceWidth) ||
-        (description.max_width.GetType() == kAuto &&
+        (description.max_width.IsAuto() &&
          GetPageScaleConstraintsSet().PageDefinedConstraints().initial_scale ==
              1.0f))
       SetInitialPageScaleOverride(-1);

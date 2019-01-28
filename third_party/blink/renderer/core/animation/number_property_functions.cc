@@ -65,7 +65,7 @@ base::Optional<double> NumberPropertyFunctions::GetNumber(
     case CSSPropertyLineHeight: {
       const Length& length = style.SpecifiedLineHeight();
       // Numbers are represented by percentages.
-      if (length.GetType() != kPercent)
+      if (!length.IsPercent())
         return base::Optional<double>();
       double value = length.Value();
       // -100% represents the keyword "normal".
