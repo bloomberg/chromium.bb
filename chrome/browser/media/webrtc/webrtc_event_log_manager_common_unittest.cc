@@ -466,7 +466,7 @@ TEST_P(LogFileWriterTest, PathReturnsTheCorrectPath) {
   ASSERT_EQ(writer->path(), path_);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Compression,
     LogFileWriterTest,
     ::testing::Values(WebRtcEventLogCompression::NONE,
