@@ -97,10 +97,7 @@ class ThreadLocalOwnedPointer {
   ~ThreadLocalOwnedPointer() {
     // Assume that this thread is the only one with potential state left. This
     // is verified in ~CheckedThreadLocalOwnedPointer().
-    // TODO: Consider making ThreadLocalStorage::Slot::Set() be side-effect free
-    // if the slot isn't initialized and nullptr is passed.
-    if (Get())
-      Set(nullptr);
+    Set(nullptr);
   }
 
   T* Get() const { return static_cast<T*>(slot_.Get()); }
