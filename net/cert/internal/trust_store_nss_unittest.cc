@@ -331,15 +331,15 @@ class TrustStoreNSSTestDelegate {
   unsigned int nickname_counter_ = 0;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(TrustStoreNSSTest2,
-                              CertIssuerSourceSyncTest,
-                              TrustStoreNSSTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(TrustStoreNSSTest2,
+                               CertIssuerSourceSyncTest,
+                               TrustStoreNSSTestDelegate);
 
 // NSS doesn't normalize UTF8String values, so use the not-normalized version of
 // those tests.
-INSTANTIATE_TYPED_TEST_CASE_P(TrustStoreNSSNotNormalizedTest,
-                              CertIssuerSourceSyncNotNormalizedTest,
-                              TrustStoreNSSTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(TrustStoreNSSNotNormalizedTest,
+                               CertIssuerSourceSyncNotNormalizedTest,
+                               TrustStoreNSSTestDelegate);
 
 }  // namespace
 

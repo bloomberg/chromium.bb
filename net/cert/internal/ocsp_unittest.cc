@@ -123,10 +123,10 @@ struct PrintTestName {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CheckOCSPTest,
-                        ::testing::ValuesIn(kTestParams),
-                        PrintTestName());
+INSTANTIATE_TEST_SUITE_P(,
+                         CheckOCSPTest,
+                         ::testing::ValuesIn(kTestParams),
+                         PrintTestName());
 
 TEST_P(CheckOCSPTest, FromFile) {
   const TestParams& params = GetParam();
@@ -308,9 +308,9 @@ base::StringPiece kGetURLTestParams[] = {
 class CreateOCSPGetURLTest
     : public ::testing::TestWithParam<base::StringPiece> {};
 
-INSTANTIATE_TEST_CASE_P(,
-                        CreateOCSPGetURLTest,
-                        ::testing::ValuesIn(kGetURLTestParams));
+INSTANTIATE_TEST_SUITE_P(,
+                         CreateOCSPGetURLTest,
+                         ::testing::ValuesIn(kGetURLTestParams));
 
 TEST_P(CreateOCSPGetURLTest, Basic) {
   std::string ca_data;

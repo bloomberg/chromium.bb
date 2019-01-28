@@ -543,10 +543,10 @@ TEST_P(CTLogVerifierConsistencyProofTest, VerifiesValidConsistencyProof) {
                               HexToBytes(new_root), proof);
 }
 
-INSTANTIATE_TEST_CASE_P(KnownGoodProofs,
-                        CTLogVerifierConsistencyProofTest,
-                        ::testing::Range(size_t(0),
-                                         base::size(kConsistencyProofs)));
+INSTANTIATE_TEST_SUITE_P(KnownGoodProofs,
+                         CTLogVerifierConsistencyProofTest,
+                         ::testing::Range(size_t(0),
+                                          base::size(kConsistencyProofs)));
 
 class CTLogVerifierAuditProofTest
     : public CTLogVerifierTest,
@@ -563,9 +563,9 @@ TEST_P(CTLogVerifierAuditProofTest, VerifiesValidAuditProofs) {
                         HexToBytes(kLeafHashes[test_vector.leaf]));
 }
 
-INSTANTIATE_TEST_CASE_P(KnownGoodProofs,
-                        CTLogVerifierAuditProofTest,
-                        ::testing::Range(size_t(0), base::size(kAuditProofs)));
+INSTANTIATE_TEST_SUITE_P(KnownGoodProofs,
+                         CTLogVerifierAuditProofTest,
+                         ::testing::Range(size_t(0), base::size(kAuditProofs)));
 
 TEST_F(CTLogVerifierTest, VerifiesAuditProofEdgeCases_InvalidLeafIndex) {
   std::vector<std::string> proof;
@@ -753,9 +753,9 @@ TEST_P(CTLogVerifierTestUsingGenerator, VerifiesValidAuditProofs) {
 
 // Test verification of consistency proofs and audit proofs for all tree sizes
 // from 0 to 128.
-INSTANTIATE_TEST_CASE_P(RangeOfTreeSizes,
-                        CTLogVerifierTestUsingGenerator,
-                        testing::Range(size_t(0), size_t(129)));
+INSTANTIATE_TEST_SUITE_P(RangeOfTreeSizes,
+                         CTLogVerifierTestUsingGenerator,
+                         testing::Range(size_t(0), size_t(129)));
 
 }  // namespace
 

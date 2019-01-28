@@ -80,43 +80,42 @@ class PathBuilderPkitsTestDelegate {
 
 }  // namespace
 
-
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest01SignatureVerification,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest02ValidityPeriods,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest03VerifyingNameChaining,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest06VerifyingBasicConstraints,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest07KeyUsage,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest08CertificatePolicies,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest09RequireExplicitPolicy,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest10PolicyMappings,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest11InhibitPolicyMapping,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest12InhibitAnyPolicy,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest13NameConstraints,
-                              PathBuilderPkitsTestDelegate);
-INSTANTIATE_TYPED_TEST_CASE_P(PathBuilder,
-                              PkitsTest16PrivateCertificateExtensions,
-                              PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest01SignatureVerification,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest02ValidityPeriods,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest03VerifyingNameChaining,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest06VerifyingBasicConstraints,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest07KeyUsage,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest08CertificatePolicies,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest09RequireExplicitPolicy,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest10PolicyMappings,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest11InhibitPolicyMapping,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest12InhibitAnyPolicy,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest13NameConstraints,
+                               PathBuilderPkitsTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(PathBuilder,
+                               PkitsTest16PrivateCertificateExtensions,
+                               PathBuilderPkitsTestDelegate);
 
 // TODO(mattm): CRL support: PkitsTest04BasicCertificateRevocationTests,
 // PkitsTest05VerifyingPathswithSelfIssuedCertificates,

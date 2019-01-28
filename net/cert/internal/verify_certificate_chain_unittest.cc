@@ -35,8 +35,8 @@ class VerifyCertificateChainTestDelegate {
 
 }  // namespace
 
-INSTANTIATE_TYPED_TEST_CASE_P(VerifyCertificateChain,
-                              VerifyCertificateChainSingleRootTest,
-                              VerifyCertificateChainTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(VerifyCertificateChain,
+                               VerifyCertificateChainSingleRootTest,
+                               VerifyCertificateChainTestDelegate);
 
 }  // namespace net

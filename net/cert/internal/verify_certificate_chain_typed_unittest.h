@@ -41,7 +41,7 @@ template <typename TestDelegate>
 class VerifyCertificateChainSingleRootTest
     : public VerifyCertificateChainTest<TestDelegate> {};
 
-TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest);
+TYPED_TEST_SUITE_P(VerifyCertificateChainSingleRootTest);
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Simple) {
   this->RunTest("target-and-intermediate/main.test");
@@ -196,25 +196,25 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ManyNames) {
 // TODO(eroman): Add test that invalid validity dates where the day or month
 // ordinal not in range, like "March 39, 2016" are rejected.
 
-REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
-                           Simple,
-                           BasicConstraintsCa,
-                           BasicConstraintsPathlen,
-                           UnknownExtension,
-                           WeakSignature,
-                           WrongSignature,
-                           LastCertificateNotTrusted,
-                           WeakPublicKey,
-                           TargetSignedUsingEcdsa,
-                           Expired,
-                           TargetNotEndEntity,
-                           KeyUsage,
-                           ExtendedKeyUsage,
-                           IssuerAndSubjectNotByteForByteEqual,
-                           TrustAnchorNotSelfSigned,
-                           KeyRollover,
-                           Policies,
-                           ManyNames);
+REGISTER_TYPED_TEST_SUITE_P(VerifyCertificateChainSingleRootTest,
+                            Simple,
+                            BasicConstraintsCa,
+                            BasicConstraintsPathlen,
+                            UnknownExtension,
+                            WeakSignature,
+                            WrongSignature,
+                            LastCertificateNotTrusted,
+                            WeakPublicKey,
+                            TargetSignedUsingEcdsa,
+                            Expired,
+                            TargetNotEndEntity,
+                            KeyUsage,
+                            ExtendedKeyUsage,
+                            IssuerAndSubjectNotByteForByteEqual,
+                            TrustAnchorNotSelfSigned,
+                            KeyRollover,
+                            Policies,
+                            ManyNames);
 
 }  // namespace net
 
