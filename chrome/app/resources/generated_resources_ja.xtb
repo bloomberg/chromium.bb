@@ -367,6 +367,7 @@
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1538729222189715449">[Linux ファイル] を開いています...</translation>
 <translation id="1540605929960647700">デモモードの有効化</translation>
+<translation id="1541396123399225659">新しいグループに追加</translation>
 <translation id="1542514202066550870">このタブは VR コンテンツをヘッドセットに配信しています。</translation>
 <translation id="1543284117603151572">Edge からインポート</translation>
 <translation id="1545177026077493356">自動キオスク モード</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">フォーマット中...</translation>
 <translation id="159359590073980872">画像キャッシュ</translation>
 <translation id="1593926297800505364">お支払い方法を保存</translation>
+<translation id="1595492813686795610">Linux をアップグレードしています</translation>
 <translation id="1598233202702788831">更新は管理者によって無効になっています。</translation>
 <translation id="1600857548979126453">ページ デバッガ バックエンドにアクセスする</translation>
 <translation id="1601560923496285236">適用</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">テーマを有効にする</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome ウェブストアのページに移動</translation>
-<translation id="1761588866118490543">音声モデル</translation>
 <translation id="176193854664720708">指紋認証センサーは電源ボタンに搭載されています。いずれかの指で軽く触れてください。</translation>
 <translation id="1763046204212875858">アプリケーションのショートカットを作成</translation>
 <translation id="1763108912552529023">さらに確認</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">システム ダイアログを使用して印刷... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">送信する前に確認する（推奨）</translation>
 <translation id="2384436799579181135">エラーが発生しました。プリンタを確認してもう一度お試しください。</translation>
+<translation id="2386926718981642523">「OK Google」と話すといつでもアシスタントにアクセスできます</translation>
 <translation id="2387458720915042159">プロキシ接続タイプ</translation>
 <translation id="2391419135980381625">標準フォント</translation>
 <translation id="2391762656119864333">取り消し</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> は <ph name="NETWORK_ID" /> に接続できませんでした。別のネットワークを選択するか、もう一度お試しください。</translation>
 <translation id="2553440850688409052">このプラグインを表示しない</translation>
 <translation id="2554553592469060349">選択したファイルが大きすぎます（最大サイズ: 3 MB）。</translation>
+<translation id="255747371423522804">既存のグループに追加</translation>
 <translation id="2558896001721082624">システム メニューにユーザー補助オプションを常に表示する</translation>
 <translation id="2562685439590298522">ドキュメント</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> にログインしていません</translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2972642118232180842">重要なコンテンツのみを実行する（推奨）</translation>
 <translation id="2973324205039581528">サイトをミュート</translation>
+<translation id="2977480621796371840">グループから削除</translation>
 <translation id="2979639724566107830">新しいウィンドウで開く</translation>
 <translation id="2981113813906970160">大きいマウス カーソルを表示する</translation>
 <translation id="2982970937345031">匿名で報告</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">セパレータ</translation>
 <translation id="3389312115541230716">タスクバーで <ph name="SMALL_PRODUCT_LOGO" /> アイコンを右クリックします</translation>
+<translation id="3393352139658145068">「OK Google」と話すとアシスタントを起動できます。バッテリー消費を抑えるため、お使いのデバイスがコンセントに接続されている場合にのみ「OK Google」に反応します。</translation>
 <translation id="3396800784455899911">[同意して続行] をクリックすると、これらの Google サービスに関する上記の処理内容に同意したことになります。</translation>
 <translation id="3399432415385675819">通知が無効になります</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />、<ph name="TIME_LEFT" /></translation>
@@ -3167,6 +3172,7 @@
 <translation id="5816434091619127343">リクエストされた変更を行うと、プリンタを使用できなくります。</translation>
 <translation id="5817918615728894473">ペア設定</translation>
 <translation id="5821565227679781414">ショートカットを作成</translation>
+<translation id="5825412242012995131">オン（推奨）</translation>
 <translation id="5826507051599432481">一般名（CN）</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">印刷中...</translation>
@@ -3414,7 +3420,7 @@
 <translation id="6163363155248589649">標準(&amp;N)</translation>
 <translation id="6163522313638838258">すべてを展開...</translation>
 <translation id="6164005077879661055">この監視対象ユーザーを削除すると、このユーザーに関連付けられたすべてのファイルとローカル データも完全に削除されます。この監視対象ユーザーがアクセスしたウェブサイトやこのユーザーの設定は引き続き、管理者が <ph name="MANAGEMENT_URL" /> で見ることができます。</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6165508094623778733">詳細</translation>
 <translation id="6166185671393271715">Chrome にパスワードをインポート</translation>
 <translation id="6169040057125497443">マイクを確認してください。</translation>
 <translation id="6169666352732958425">デスクトップをキャストできません。</translation>
@@ -3711,6 +3717,11 @@
 <translation id="6629841649550503054">すべて <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップ済みです</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> が、自身を自動的に認証できるよう、証明書への恒久的なアクセス許可を求めています。</translation>
 <translation id="6635956300022133031">テキスト読み上げ用の音声を選択してカスタマイズします</translation>
+<translation id="6637585982786704944">許可している場合、アプリやウェブサイトは正しく動作するために必要なアカウント情報にアクセスできます。
+
+    アカウントを追加したくない場合は、ゲストとしてログインするか、シークレット ウィンドウを開いてウェブ閲覧を行ってください。
+
+    すべてのアカウントの確認と管理は、[設定] -&gt; [Google アカウント] で行っていただけます。</translation>
 <translation id="6639554308659482635">SQLite メモリ</translation>
 <translation id="6641138807883536517">ランダム生成のセキュア モジュール パスワードが使用できなくなっています。これは Powerwash の実行後に通常起こることです。</translation>
 <translation id="6643016212128521049">クリア</translation>
@@ -3912,6 +3923,7 @@
 <translation id="6957231940976260713">サービス名</translation>
 <translation id="696203921837389374">モバイルデータとの同期を有効にする</translation>
 <translation id="6964390816189577014">ヒーロー</translation>
+<translation id="6964760285928603117">グループから削除</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">ポート</translation>
 <translation id="6965978654500191972">デバイス</translation>
@@ -4021,6 +4033,7 @@
 <translation id="7109543803214225826">ショートカットを削除しました</translation>
 <translation id="7113502843173351041">メールアドレスの読み取り</translation>
 <translation id="7114054701490058191">パスワードが一致しません</translation>
+<translation id="7114648273807173152">Smart Lock を使用して Google アカウントにログインするには、[設定] &gt; [接続済みのデバイス] &gt; [スマートフォン] &gt; [Smart Lock] に移動します。</translation>
 <translation id="7117228822971127758">しばらくしてからもう一度お試しください</translation>
 <translation id="7117247127439884114">もう一度ログインする...</translation>
 <translation id="711840821796638741">管理対象のブックマークを表示</translation>
@@ -4176,6 +4189,7 @@
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="735361434055555355">Linux をインストールしています...</translation>
+<translation id="7353887511974462734">既存のグループに追加</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをコピーしています...</translation>
 <translation id="7359588939039777303">広告がブロックされました。</translation>
@@ -4239,7 +4253,6 @@
 <translation id="7456847797759667638">場所を開く...</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="7463006580194749499">ユーザーを追加</translation>
-<translation id="7464902436585505072">「OK Google」音声モデル</translation>
 <translation id="7465778193084373987">Netscape 証明書取り消し URL</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
 <translation id="747114903913869239">エラー: 拡張機能をデコードできません</translation>
@@ -4809,6 +4822,7 @@
 <translation id="827097179112817503">ホームボタンを表示する</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 個のブックマークが削除されました}other{# 個のブックマークが削除されました}}</translation>
 <translation id="8272443605911821513">拡張機能を管理するには、[その他のツール] メニューの [拡張機能] をクリックします。</translation>
+<translation id="8272966760965438857">Google アカウントを 1 か所で管理</translation>
 <translation id="8274332263553132018">ファイルをキャスト</translation>
 <translation id="8274924778568117936">アップデートが完了するまでは、<ph name="DEVICE_TYPE" /> の電源を切ったり蓋を閉じたりしないでください。インストールが完了すると、<ph name="DEVICE_TYPE" /> は再起動します。</translation>
 <translation id="8275038454117074363">インポート</translation>
@@ -5195,6 +5209,7 @@
 <translation id="8883847527783433352">別のアカウントに同期</translation>
 <translation id="8885197664446363138">Smart Lock は使用できません</translation>
 <translation id="88870264962436283">「<ph name="APP_NAME" />」で Touch ID を使用</translation>
+<translation id="8888253246822647887">アップグレードが完了するとアプリが起動します。アップグレードには数分かかることがあります。</translation>
 <translation id="8888432776533519951">色:</translation>
 <translation id="8890516388109605451">ソース</translation>
 <translation id="8892168913673237979">設定完了。</translation>

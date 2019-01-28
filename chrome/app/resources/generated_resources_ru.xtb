@@ -366,6 +366,7 @@
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1538729222189715449">Файлы Linux открываются…</translation>
 <translation id="1540605929960647700">Демонстрационный режим</translation>
+<translation id="1541396123399225659">Добавить в новую группу</translation>
 <translation id="1542514202066550870">VR-контент с этой вкладки сейчас транслируется на очки.</translation>
 <translation id="1543284117603151572">Импортированные из Microsoft Edge</translation>
 <translation id="1545177026077493356">Автоматическое включение режима киоска</translation>
@@ -404,6 +405,7 @@
 <translation id="1593594475886691512">Форматирование...</translation>
 <translation id="159359590073980872">Кеш изображений</translation>
 <translation id="1593926297800505364">Сохранить способ оплаты</translation>
+<translation id="1595492813686795610">Обновление Linux…</translation>
 <translation id="1598233202702788831">Функция обновления отключена администратором.</translation>
 <translation id="1600857548979126453">Доступ к работе отладчика страниц</translation>
 <translation id="1601560923496285236">Применить</translation>
@@ -515,7 +517,6 @@
 <translation id="175772926354468439">Включить тему</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Перейти в Интернет-магазин Chrome</translation>
-<translation id="1761588866118490543">Образец голоса</translation>
 <translation id="176193854664720708">Сканер отпечатков пальцев встроен в кнопку питания. Несильно нажмите на нее любым пальцем.</translation>
 <translation id="1763046204212875858">Создание ярлыков приложений</translation>
 <translation id="1763108912552529023">Дополнительные сведения</translation>
@@ -937,6 +938,7 @@
 <translation id="2379281330731083556">Печатать с помощью системного диалогового окна <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Спрашивать разрешение перед отправкой (рекомендуется)</translation>
 <translation id="2384436799579181135">Произошла ошибка. Проверьте принтер и повторите попытку.</translation>
+<translation id="2386926718981642523">Чтобы обратиться к Ассистенту, скажите "Окей, Google"</translation>
 <translation id="2387458720915042159">Тип подключения через прокси-сервер</translation>
 <translation id="2391419135980381625">Стандартный шрифт</translation>
 <translation id="2391762656119864333">Отменить</translation>
@@ -1041,6 +1043,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> не удалось подключиться к <ph name="NETWORK_ID" />. Выберите другую сеть или повторите попытку.</translation>
 <translation id="2553440850688409052">Скрыть подключаемый модуль</translation>
 <translation id="2554553592469060349">Выбранный файл слишком большой (максимальный размер: 3 МБ).</translation>
+<translation id="255747371423522804">Добавить в существующую группу</translation>
 <translation id="2558896001721082624">Показывать специальные возможности в системном меню</translation>
 <translation id="2562685439590298522">Документы</translation>
 <translation id="2562743677925229011">Не выполнен вход в <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;Повторить</translation>
 <translation id="2972642118232180842">Запускать только важный контент (рекомендуется)</translation>
 <translation id="2973324205039581528">Отключить звук на сайте</translation>
+<translation id="2977480621796371840">Удалить из группы</translation>
 <translation id="2979639724566107830">Открыть в новом окне</translation>
 <translation id="2981113813906970160">Показывать большой курсор мыши</translation>
 <translation id="2982970937345031">Отправить анонимный отзыв</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Разделитель</translation>
 <translation id="3389312115541230716">Правой кнопкой мыши выберите <ph name="SMALL_PRODUCT_LOGO" /> на панели задач</translation>
+<translation id="3393352139658145068">Запускать Ассистента, когда кто-то произносит фразу "Окей, Google". Для экономии заряда батареи эта функция будет активна, только когда устройство подключено к источнику питания.</translation>
 <translation id="3396800784455899911">Нажимая кнопку "Принять условия и продолжить", вы соглашаетесь с Условиями использования сервисов Google, описанными выше.</translation>
 <translation id="3399432415385675819">Уведомления будут отключены</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3167,6 +3172,7 @@
 <translation id="5816434091619127343">Если применить запрошенные изменения, принтер станет непригодным для использования.</translation>
 <translation id="5817918615728894473">Подключить</translation>
 <translation id="5821565227679781414">Создать ярлык</translation>
+<translation id="5825412242012995131">Вкл. (рекомендуется)</translation>
 <translation id="5826507051599432481">Общее имя (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Печать...</translation>
@@ -3711,6 +3717,11 @@
 <translation id="6629841649550503054">Данные сохранены на <ph name="BEGIN_LINK" />Google Диске<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409">Расширение "<ph name="EXTENSION_NAME" />" запрашивает постоянный доступ к сертификату для прохождения аутентификации от вашего имени.</translation>
 <translation id="6635956300022133031">Выбор и настройка голоса</translation>
+<translation id="6637585982786704944">Приложения и сайты, которым вы предоставили соответствующие разрешения, могут получать доступ к данным аккаунта, необходимым для корректной работы.
+
+    Если вы не хотите добавлять аккаунт, используйте для просмотра веб-страниц гостевой режим или окно в режиме инкогнито.
+
+    Чтобы посмотреть список аккаунтов и управлять ими, нажмите "Настройки &gt; Аккаунты Google".</translation>
 <translation id="6639554308659482635">Память SQLite</translation>
 <translation id="6641138807883536517">Случайно сгенерированный пароль безопасного модуля недоступен после выполнения функции Powerwash.</translation>
 <translation id="6643016212128521049">Очистить</translation>
@@ -3912,6 +3923,7 @@
 <translation id="6957231940976260713">Название службы</translation>
 <translation id="696203921837389374">Синхронизировать по мобильной сети</translation>
 <translation id="6964390816189577014">Герой</translation>
+<translation id="6964760285928603117">Удалить из группы</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6965648386495488594">Порт</translation>
 <translation id="6965978654500191972">Устройство</translation>
@@ -4021,6 +4033,7 @@
 <translation id="7109543803214225826">Ярлык удален</translation>
 <translation id="7113502843173351041">Доступ к вашему адресу электронной почты</translation>
 <translation id="7114054701490058191">Пароли не совпадают</translation>
+<translation id="7114648273807173152">Чтобы использовать Smart Lock для входа в аккаунт Google, нажмите "Настройки &gt; Подключенные устройства &gt; Телефон &gt; Smart Lock".</translation>
 <translation id="7117228822971127758">Повторите попытку позже.</translation>
 <translation id="7117247127439884114">Войти снова</translation>
 <translation id="711840821796638741">Показать управляемые закладки</translation>
@@ -4176,6 +4189,7 @@
 <translation id="7348093485538360975">Экранная клавиатура</translation>
 <translation id="7352651011704765696">Ошибка</translation>
 <translation id="735361434055555355">Установка Linux...</translation>
+<translation id="7353887511974462734">Добавить в существующую группу</translation>
 <translation id="735745346212279324">VPN-соединение прервано</translation>
 <translation id="7359359531237882347">Копирование объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7359588939039777303">Реклама заблокирована.</translation>
@@ -4238,7 +4252,6 @@
 <translation id="7456847797759667638">Открыть адрес...</translation>
 <translation id="7461924472993315131">Закрепить</translation>
 <translation id="7463006580194749499">Добавить пользователя</translation>
-<translation id="7464902436585505072">Образец голоса с командой "Окей, Google"</translation>
 <translation id="7465778193084373987">URL отзыва сертификатов Netscape</translation>
 <translation id="7469894403370665791">Автоматически подключаться к этой сети</translation>
 <translation id="747114903913869239">Ошибка: не удается расшифровать расширение</translation>
@@ -4807,6 +4820,7 @@
 <translation id="827097179112817503">Показывать кнопку "Главная страница"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Удалена 1 закладка}one{Удалена # закладка}few{Удалено # закладки}many{Удалено # закладок}other{Удалено # закладки}}</translation>
 <translation id="8272443605911821513">Управляйте расширениями в соответствующем разделе в меню дополнительных инструментов.</translation>
+<translation id="8272966760965438857">Централизованно управляйте своими аккаунтами Google</translation>
 <translation id="8274332263553132018">Файл для трансляции</translation>
 <translation id="8274924778568117936">Не выключайте и не закрывайте <ph name="DEVICE_TYPE" />, выполняется обновление. После завершения установки <ph name="DEVICE_TYPE" /> перезагрузится.</translation>
 <translation id="8275038454117074363">Импорт</translation>
@@ -5193,6 +5207,7 @@
 <translation id="8883847527783433352">Синхронизировать с другим аккаунтом</translation>
 <translation id="8885197664446363138">Функция Smart Lock недоступна</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" />: вход с помощью Touch ID</translation>
+<translation id="8888253246822647887">Приложение откроется, когда завершится обновление. Это может занять несколько минут.</translation>
 <translation id="8888432776533519951">Цвет:</translation>
 <translation id="8890516388109605451">Источники</translation>
 <translation id="8892168913673237979">Все готово!</translation>

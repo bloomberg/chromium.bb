@@ -129,6 +129,7 @@
 <translation id="1656489000284462475">তুলে নিন</translation>
 <translation id="1662550410081243962">পেমেন্টের পদ্ধতিগুলি পূরণ করে সেভ করুন</translation>
 <translation id="1663943134801823270">Chrome থেকে কার্ড এবং ঠিকানাগুলি এসেছে। আপনি <ph name="BEGIN_LINK" />সেটিংস<ph name="END_LINK" /> এ এগুলি পরিচালনা করতে পারবেন।</translation>
+<translation id="1671391448414634642">এখন থেকে <ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠা <ph name="TARGET_LANGUAGE" /> ভাষায় অনুবাদ করা হবে।</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> সাধারণত আপনার তথ্য সুরক্ষিত রাখতে এনক্রিপশন ব্যবহার করে। এবার যখন Google Chrome <ph name="SITE" />-এর সাথে সংযোগ স্থাপন করার চেষ্টা করেছে, তখন ওয়েবসাইটটি অস্বাভাবিক এবং ভুল সার্টিফিকেট পাঠিয়েছে। হয় একজন আক্রমণকারী <ph name="SITE" /> হওয়ার ভান করছে অথবা কোনও ওয়াই-ফাই সাইন-ইন স্ক্রিণ সংযোগকে বাধা দেওয়া হয়েছে। আপনার তথ্য এখনো নিরাপদ আছে কারণ কোনও ডেটা আদানপ্রদানের আগেই Google Chrome সংযোগটিকে বন্ধ করে দিয়েছে।</translation>
 <translation id="168841957122794586">সার্ভার সার্টিফিকেটে একটি দুর্বল ক্রিপ্টোগ্রাফিক কী আছে৷</translation>
 <translation id="1697532407822776718">আপনার সমস্ত সেট আছে!</translation>
@@ -183,6 +184,7 @@
 <translation id="2025186561304664664">স্বতঃ কনফিগার করতে প্রক্সি সেট করা হয়৷</translation>
 <translation id="2030481566774242610">আপনি কি <ph name="LINK" /> বোঝাতে চেয়েছিলেন?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />প্রক্সি এবং ফায়ারওয়াল পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
+<translation id="2053111141626950936"><ph name="LANGUAGE" /> ভাষার পৃষ্ঠা অনুবাদ করা হবে না।</translation>
 <translation id="2053553514270667976">পিন কোড</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{১টি প্রস্তাব}one{#টি প্রস্তাব}other{#টি প্রস্তাব}}</translation>
 <translation id="2068663545051464999">ক্র্যাশ রিপোর্ট আইডি <ph name="CRASH_ID" /> আপলোড করা হয়েছে (স্থানীয় প্রসঙ্গ: <ph name="CRASH_LOCAL_ID" />)</translation>
@@ -567,6 +569,7 @@
 <translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
 <translation id="445100540951337728">ডেবিট কার্ড গ্রহণ করা হয়</translation>
+<translation id="4482953324121162758">এই সাইটটি অনুবাদ করা হবে না।</translation>
 <translation id="4506176782989081258">যাচাইকরণের ত্রুটি: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">সিস্টেম প্রশাসকের সাথে যোগাযোগ করে দেখুন</translation>
 <translation id="450710068430902550">প্রশাসকের সাথে ভাগ করছে</translation>
@@ -758,6 +761,7 @@
 <translation id="5786044859038896871">আপনি কি আপনার কার্ডের তথ্য পূরণ করতে চান?</translation>
 <translation id="5798683403665926540">Chrome সেটিংসে হোম পৃষ্ঠা পরিবর্তন করুন</translation>
 <translation id="5803412860119678065">আপনি কি আপনার <ph name="CARD_DETAIL" /> এর তথ্য পূরণ করতে চান?</translation>
+<translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />-এ আপনার সংযোগ একটি অপ্রচলিত সাইফার স্যুট ব্যবহার করে এনক্রিপ্ট করা হয়েছে৷</translation>
 <translation id="5813119285467412249">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="5838278095973806738">এই সাইটে আপনার কোনো সংবেদনশীল তথ্য দেওয়া উচিত হবে না (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড) কারণ আক্রমণকারীরা এগুলি চুরি করতে পারে।</translation>
@@ -779,6 +783,7 @@
 <translation id="5967592137238574583">পরিচিতির তথ্য সম্পাদনা করুন</translation>
 <translation id="5967867314010545767">ইতিহাস থেকে সরান</translation>
 <translation id="5975083100439434680">জুম কমান</translation>
+<translation id="5977976211062815271">এই ডিভাইসে</translation>
 <translation id="598637245381783098">পেমেন্ট অ্যাপ খোলা যাচ্ছে না</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="5990559369517809815">সার্ভারে অনুরোধগুলি একটি এক্সটেনশন দিয়ে ব্লক করা আছে৷</translation>
@@ -875,6 +880,7 @@
 <translation id="6710594484020273272">&lt;সার্চের পদ লিখুন&gt;</translation>
 <translation id="671076103358959139">নথিভুক্ত করার জন্য টোকেন:</translation>
 <translation id="6711464428925977395">প্রক্সী সার্ভারের কোনো সমস্যা হয়েছে, অথবা ঠিকানাটি ভুল।</translation>
+<translation id="6723740634201835758">আপনার Google অ্যাকাউন্টে</translation>
 <translation id="674375294223700098">অজানা সার্ভার সার্টিফিকেট ত্রুটি৷</translation>
 <translation id="6744009308914054259">কানেকশনের জন্য অপেক্ষা করার সময়, আপনি ডাউনলোডে গিয়ে অফলাইন নিবন্ধগুলি পড়তে পারেন।</translation>
 <translation id="6753269504797312559">নীতি মান</translation>
@@ -915,6 +921,7 @@
 <translation id="6979440798594660689">মিউট (ডিফল্ট)</translation>
 <translation id="6984479912851154518">এক্সটার্নাল অ্যাপ্লিকেশনের মাধ্যমে পেমেন্ট করার জন্য ব্যক্তিগত মোড থেকে বেরিয়ে যাচ্ছে। চালিয়ে যেতে চান?</translation>
 <translation id="6989763994942163495">উন্নত সেটিংস দেখান ...</translation>
+<translation id="6996312675313362352"><ph name="ORIGINAL_LANGUAGE" /> ভাষায় থাকলে সবসময় অনুবাদ করা হবে</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">এই চার্জটি একবার করা হতে পারে অথবা বারবার করা হতে পারে এবং স্পষ্টভাবে তথ্য নাও থাকতে পারে।</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>

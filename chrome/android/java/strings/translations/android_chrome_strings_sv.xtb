@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1006017844123154345">Öppna onlineversionen</translation>
+<translation id="1023450834687746199">Du har rensat data för <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Lägger till <ph name="WEBAPK_NAME" /> …</translation>
 <translation id="1041308826830691739">Från webbplatser</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -142,6 +143,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2021896219286479412">Helskärmskontroller på webbsidan</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
+<translation id="204321170514947529">Data för <ph name="APP_NAME" /> finns även i Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB används av övriga appar</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2063713494490388661">Tryck för att söka</translation>
@@ -165,7 +167,6 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2154484045852737596">Redigera kortet</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">Kontrollera internetanslutningen</translation>
 <translation id="2197557662829090533">Tillåt att webbplatser som du har besökt visas i Digitalt välmående</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
@@ -242,6 +243,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="2779651927720337254">misslyckades</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
 <translation id="2784212955220061919">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent. Sidorna du besöker optimeras med Googles molnteknik.</translation>
+<translation id="2785336755839207516">Du har avinstallerat <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Sparade lösenord och lösenordsalternativ visas</translation>
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
@@ -283,6 +285,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3115898365077584848">Visa info</translation>
 <translation id="3123473560110926937">Blockeras på vissa webbplatser</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
+<translation id="3143515551205905069">Avbryt synkronisering</translation>
 <translation id="3148434565183091099">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla enheter.</translation>
 <translation id="3157842584138209013">Under Fler alternativ kan du se hur mycket data du har sparat</translation>
 <translation id="3166827708714933426">Kortkommandon för flikar och fönster</translation>
@@ -301,6 +304,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3269093882174072735">Läs in bild</translation>
 <translation id="3269956123044984603">Aktivera Automatisk synkronisering av data i kontoinställningarna för Android om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
+<translation id="3288003805934695103">läsa in sidan igen</translation>
 <translation id="32895400574683172">Aviseringar tillåts</translation>
 <translation id="3295530008794733555">Surfa snabbare. Förbruka mindre data.</translation>
 <translation id="3295602654194328831">Dölj info</translation>
@@ -370,6 +374,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3819562311292413223">Ladda ned artiklar för dig</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
+<translation id="385051799172605136">Bakåt</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
@@ -381,6 +386,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="395206256282351086">Sök- och webbplatsförslag har inaktiverats</translation>
 <translation id="3955193568934677022">Tillåt att skyddat innehåll spelas upp på webbplatser (rekommenderas)</translation>
+<translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Sidan läses in i Chrome när den blir tillgänglig}other{Sidorna läses in i Chrome när de blir tillgängliga}}</translation>
 <translation id="3963007978381181125">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras. Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenfrasen skickas inte till och sparas inte av Google. Om du glömmer lösenfrasen måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Nedladdning slutförd</translation>
 <translation id="397583555483684758">Synkroniseringen har slutat fungera</translation>
@@ -431,6 +437,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
 <translation id="429312253194641664">Media spelas upp på en webbplats</translation>
+<translation id="4298388696830689168">Länkade webbplatser</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4314815835985389558">Hantera synkronisering</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
@@ -699,6 +706,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
+<translation id="624789221780392884">Uppdateringen är klar</translation>
 <translation id="6255999984061454636">Förslag på innehåll</translation>
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
@@ -734,6 +742,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6475951671322991020">Ladda ned video</translation>
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
 <translation id="6496823230996795692">Du behöver vara ansluten till internet när du använder <ph name="APP_NAME" /> för första gången.</translation>
+<translation id="6508722015517270189">Starta om Chrome</translation>
 <translation id="6527303717912515753">Dela</translation>
 <translation id="6534565668554028783">Google tog för lång tid på sig att svara</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB har laddats ned</translation>
@@ -832,7 +841,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
-<translation id="7221869452894271364">Hämta sidan igen</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
@@ -919,6 +927,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7854964836418414587">Stäng Fler liknande</translation>
+<translation id="7871791972254842204">Läs igenom och godkänn användarvillkoren på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> senare</translation>
 <translation id="7875915731392087153">Skapa ett e-postmeddelande</translation>
 <translation id="7876243839304621966">Ta bort alla</translation>
 <translation id="7882131421121961860">Ingen historik hittades</translation>
@@ -969,6 +978,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB används av nedladdningar</translation>
+<translation id="8232956427053453090">Behåll data</translation>
 <translation id="8249310407154411074">Flytta högst upp</translation>
 <translation id="8250920743982581267">Dokument</translation>
 <translation id="825412236959742607">Den här sidan använder för mycket minne, så en del innehåll har tagits bort.</translation>
@@ -1022,10 +1032,12 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="860043288473659153">Namn på kortinnehavare</translation>
 <translation id="8604763363205185560">Hjälp till att göra Chrome bättre och säkrare</translation>
 <translation id="8609465669617005112">Flytta upp</translation>
+<translation id="8611192991944347781">Hantera data</translation>
 <translation id="8616006591992756292">Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vill du öppna den föreslagna webbadressen i det nedladdade innehållet?</translation>
 <translation id="8636825310635137004">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="8641930654639604085">Försök blockera webbplatser med innehåll för vuxna</translation>
+<translation id="8655129584991699539">Du kan rensa data i Chrome-inställningarna</translation>
 <translation id="8662811608048051533">Du loggas ut från de flesta webbplatser.</translation>
 <translation id="8664979001105139458">Filnamnet finns redan</translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
@@ -1033,6 +1045,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="868929229000858085">Sök bland kontakterna</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
+<translation id="8723954843026426558">Jag godkänner användarvillkor, sekretesspolicy och ångerrätt på <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8728487861892616501">Genom att fortsätta att använda programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" /> och <ph name="BEGIN_LINK3" />sekretessmeddelandet för Google-konton som hanteras via Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Klart</translation>

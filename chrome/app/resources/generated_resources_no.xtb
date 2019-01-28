@@ -364,6 +364,7 @@
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1538729222189715449">Åpner Linux-filer …</translation>
 <translation id="1540605929960647700">Slå på demomodus</translation>
+<translation id="1541396123399225659">Legg til i en ny gruppe</translation>
 <translation id="1542514202066550870">Denne fanen sender VR-innhold til VR-briller.</translation>
 <translation id="1543284117603151572">Importert fra Edge</translation>
 <translation id="1545177026077493356">Automatisk kioskmodus</translation>
@@ -402,6 +403,7 @@
 <translation id="1593594475886691512">Formaterer …</translation>
 <translation id="159359590073980872">Bildebuffer</translation>
 <translation id="1593926297800505364">Lagre betalingsmåten</translation>
+<translation id="1595492813686795610">Linux oppgraderes</translation>
 <translation id="1598233202702788831">Administratoren din har slått av oppdateringer.</translation>
 <translation id="1600857548979126453">få tilgang til bakdata for sidefeilsøkingsprogrammet</translation>
 <translation id="1601560923496285236">Bruk</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">Aktiver temaet</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Se i Chrome Nettmarked</translation>
-<translation id="1761588866118490543">Stemmemodell</translation>
 <translation id="176193854664720708">Fingeravtrykkssensoren er i av/på-knappen. Trykk på den forsiktig.</translation>
 <translation id="1763046204212875858">Opprett snarveier</translation>
 <translation id="1763108912552529023">Fortsett å utforske</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">Skriv ut med systemdialogen <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spør før noe sendes (anbefales).</translation>
 <translation id="2384436799579181135">Det har oppstått en feil. Sjekk skriveren og prøv på nytt.</translation>
+<translation id="2386926718981642523">Du kan når som helst snakke til assistenten ved å si «Ok Google»</translation>
 <translation id="2387458720915042159">Tilkoblingstype for proxy-tjener</translation>
 <translation id="2391419135980381625">Standardskrift</translation>
 <translation id="2391762656119864333">Opphev</translation>
@@ -1040,6 +1042,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kan ikke koble til <ph name="NETWORK_ID" />. Velg et annet nettverk eller prøv på nytt senere.</translation>
 <translation id="2553440850688409052">Skjul dette programtillegget</translation>
 <translation id="2554553592469060349">Den valgte filen er for stor (maksimal størrelse: 3 MB).</translation>
+<translation id="255747371423522804">Legg til i en eksisterende gruppe</translation>
 <translation id="2558896001721082624">Vis alltid alternativene for tilgjengelighet i systemmenyen</translation>
 <translation id="2562685439590298522">Google Dokumenter</translation>
 <translation id="2562743677925229011">Ikke logget på <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1311,6 +1314,7 @@
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="2972642118232180842">Kjør bare viktig innhold (anbefales)</translation>
 <translation id="2973324205039581528">Kutt lyden for nettsted</translation>
+<translation id="2977480621796371840">Fjern fra gruppen</translation>
 <translation id="2979639724566107830">Åpne i nytt vindu</translation>
 <translation id="2981113813906970160">Vis stor musepeker</translation>
 <translation id="2982970937345031">Rapporér anonymt</translation>
@@ -1560,6 +1564,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Skillelinje</translation>
 <translation id="3389312115541230716">Høyreklikk på <ph name="SMALL_PRODUCT_LOGO" />-ikonet på oppgavelinjen</translation>
+<translation id="3393352139658145068">Aktivér assistenten når noen sier «Ok Google». For å spare batteri er «Ok Google» bare på når enheten er koblet til en ekstern strømkilde.</translation>
 <translation id="3396800784455899911">Ved å klikke på «Godta og fortsett»-knappen godtar du behandlingen som beskrives ovenfor, for disse Google-tjenestene.</translation>
 <translation id="3399432415385675819">Varsler slås av</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3160,6 +3165,7 @@
 <translation id="5816434091619127343">De forespurte skriverendringene gjør at du ikke kan bruke skriveren.</translation>
 <translation id="5817918615728894473">Koble sammen</translation>
 <translation id="5821565227679781414">Opprett snarvei</translation>
+<translation id="5825412242012995131">På (anbefales)</translation>
 <translation id="5826507051599432481">Vanlig navn (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Skriver ut …</translation>
@@ -3407,7 +3413,7 @@
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Utvid alle</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Les mer</translation>
+<translation id="6165508094623778733">Finn ut mer</translation>
 <translation id="6166185671393271715">Importér passord i Chrome</translation>
 <translation id="6169040057125497443">Sjekk mikrofonen din.</translation>
 <translation id="6169666352732958425">Kan ikke caste skrivebordet.</translation>
@@ -3704,6 +3710,11 @@
 <translation id="6629841649550503054">Alt er sikkerhetskopiert til <ph name="BEGIN_LINK" />Google Disk<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> vil ha permanent tilgang til et sertifikat for å autentisere seg på dine vegne.</translation>
 <translation id="6635956300022133031">Velg og tilpass tekst til tale-stemmer</translation>
+<translation id="6637585982786704944">Apper og nettsteder du gir tillatelse, får tilgang til kontoinformasjonen de trenger for å fungere som de skal.
+
+    Hvis du ikke vil legge til noen konto, kan du logge på som gjest eller åpne et inkognitovindu.
+
+    Du kan gå til Innstillinger -&gt; Google-kontoer for å se og administrere alle kontoer.</translation>
 <translation id="6639554308659482635">SQLite-minne</translation>
 <translation id="6641138807883536517">Det tilfeldig genererte sikker modul-passordet er ikke tilgjengelig. Dette er vanlig etter en Powerwash.</translation>
 <translation id="6643016212128521049">Tøm</translation>
@@ -3905,6 +3916,7 @@
 <translation id="6957231940976260713">Tjenestenavn</translation>
 <translation id="696203921837389374">Aktivér synkronisering via mobildata</translation>
 <translation id="6964390816189577014">Helt</translation>
+<translation id="6964760285928603117">Fjern fra gruppen</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Port</translation>
 <translation id="6965978654500191972">Enhet</translation>
@@ -4014,6 +4026,7 @@
 <translation id="7109543803214225826">Snarveien er fjernet</translation>
 <translation id="7113502843173351041">se e-postadressen din</translation>
 <translation id="7114054701490058191">Passordene samsvarer ikke</translation>
+<translation id="7114648273807173152">For å bruke Smart Lock til å logge på Google-kontoen din, gå til Innstillinger &gt; Tilkoblede enheter &gt; Telefonen din &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Prøv igjen senere</translation>
 <translation id="7117247127439884114">Logg på igjen</translation>
 <translation id="711840821796638741">Vis administrerte bokmerker</translation>
@@ -4169,6 +4182,7 @@
 <translation id="7348093485538360975">Skjermtastatur</translation>
 <translation id="7352651011704765696">Noe gikk galt</translation>
 <translation id="735361434055555355">Installerer Linux ...</translation>
+<translation id="7353887511974462734">Legg til i en eksisterende gruppe</translation>
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="7359359531237882347">Kopierer <ph name="NUMBER_OF_ITEMS" /> elementer …</translation>
 <translation id="7359588939039777303">Annonser er blokkert.</translation>
@@ -4231,7 +4245,6 @@
 <translation id="7456847797759667638">Åpne sted</translation>
 <translation id="7461924472993315131">Fest</translation>
 <translation id="7463006580194749499">Legg til person</translation>
-<translation id="7464902436585505072">Stemmemodell for «Ok Google»</translation>
 <translation id="7465778193084373987">Nettadresse for tilbakekalling av Netscape-sertifikat</translation>
 <translation id="7469894403370665791">Koble til dette nettverket automatisk</translation>
 <translation id="747114903913869239">Feil: Kan ikke avkode etternavnet</translation>
@@ -4799,6 +4812,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="827097179112817503">Vis startsideknapp</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bokmerke er slettet}other{# bokmerker er slettet}}</translation>
 <translation id="8272443605911821513">Administrer utvidelsene dine ved å klikke på Utvidelser i Flere verktøy-menyen.</translation>
+<translation id="8272966760965438857">Administrer Google-kontoene dine på ett sted</translation>
 <translation id="8274332263553132018">Cast en fil</translation>
 <translation id="8274924778568117936">Du må ikke slå av eller lukke <ph name="DEVICE_TYPE" />-enheten din før oppdateringen er ferdig. <ph name="DEVICE_TYPE" />-enheten starter på nytt når installasjonen er ferdig.</translation>
 <translation id="8275038454117074363">Importer</translation>
@@ -5185,6 +5199,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8883847527783433352">Synkroniser til en annen konto</translation>
 <translation id="8885197664446363138">Smart Lock er utilgjengelig</translation>
 <translation id="88870264962436283">Bruk Touch ID med <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Appen åpnes når oppgraderingen er ferdig. Oppgraderinger kan ta noen minutter.</translation>
 <translation id="8888432776533519951">Farge:</translation>
 <translation id="8890516388109605451">Kilder</translation>
 <translation id="8892168913673237979">Alt er klart!</translation>

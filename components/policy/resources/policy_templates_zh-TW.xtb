@@ -335,7 +335,8 @@
       如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1839060937202387559">回報儲存裝置的硬體統計資料和 ID。
 
-      如果將這項政策設為 False，系統不會回報統計資料。如果設為 True 或不設定，則系統會回報統計資料。</translation>
+      如果將這項政策設為 False，系統不會回報統計資料。
+      如果設為 True 或不設定，則系統會回報統計資料。</translation>
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
 <translation id="1847960418907100918">指定使用 POST 執行互動智慧搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
@@ -772,6 +773,7 @@
           如果停用這項設定，且防火牆會篩出外傳 UDP 連線，則這台電腦只會自動允許來自區域網路用戶端電腦的連線。
 
           如果未設定這項政策，系統會啟用這項設定。</translation>
+<translation id="2813281962735757923">這項政策可控管針對 <ph name="PRODUCT_OS_NAME" /> 裝置封鎖自動檢查更新的時間範圍。將這項政策設為非空白的時間間隔清單時：在指定的時間間隔內，裝置將無法自動檢查更新。如果裝置需要復原至先前的版本，或是目前的 <ph name="PRODUCT_OS_NAME" /> 版本低於最低需求，則不受這項政策影響，以免發生潛在的安全性問題。此外，這項政策不會封鎖由使用者或系統管理員要求的更新檢查。若不設定這項政策，或政策中不包含時間間隔時：這項政策將不會封鎖任何自動更新檢查，但自動更新檢查仍可能遭到其他政策封鎖。只有在設為自動啟動資訊站的 Chrome 裝置上，這項功能才會啟用。其他裝置將不會受到這項政策限制。</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />用戶端的 Windows 登錄檔位置：</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
 <translation id="2838830882081735096">不允許資料遷移和 ARC</translation>
@@ -1061,6 +1063,7 @@
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="355118380775352753">要在替代瀏覽器中開啟的網站</translation>
 <translation id="3577251398714997599">含侵入式廣告的網站的廣告設定</translation>
+<translation id="3591527072193107424">啟用「舊版瀏覽器支援」功能。</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3624171042292187668">
       想讓兩者皆發揮最佳成效，並透過適度隔離減少對使用者的影響，建議你查看 IsolateOrigins 政策，從中設定要隔離的網站清單。SitePerProcess 這項設定會隔離所有網站。
@@ -1242,6 +1245,7 @@
 <translation id="3965339130942650562">逾時直到閒置使用者登出</translation>
 <translation id="3973371701361892765">永不自動隱藏檔案櫃</translation>
 <translation id="3984028218719007910">決定登出後 <ph name="PRODUCT_OS_NAME" /> 是否要保留本機帳戶資料。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 不會保留任何永久帳戶，並且在登出後會刪除使用者工作階段的所有資料。如果這項政策設為 False 或未設定，裝置會保留 (加密) 本機使用者資料。</translation>
+<translation id="398475542699441679">這項政策可控管是否要啟用「舊版瀏覽器支援」功能。如果不設定這項政策，或將這項政策設為 False，Chrome 不會嘗試在替代瀏覽器中啟動指定網址。如果將這項政策設為 True，則 Chrome 會嘗試在替代瀏覽器 (例如 Internet Explorer) 中啟動部分網址。系統會使用 <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" /> 群組中的政策設定這項功能。這項功能是用於取代「<ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />」擴充功能，並會沿用該擴充功能的設定，但我們強烈建議你改用 Chrome 政策，以確保日後有更好的相容性。</translation>
 <translation id="3997519162482760140">可在 SAML 登入網頁取得錄影裝置存取權的網址</translation>
 <translation id="4001275826058808087">企業裝置的 IT 管理員可使用這個標記來控制是否允許使用者透過註冊 Chrome 作業系統來兌換優惠。
 
@@ -1481,6 +1485,7 @@
 
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">開啟網址清單</translation>
+<translation id="4674871290487541952">針對擴充功能更新與安裝作業進行完整性檢查時，允許使用不安全的演算法</translation>
 <translation id="4680936297850947973">自 M68 起已淘汰，請改用 DefaultPopupsSetting。
 
       如需完整說明，請前往  https://www.chromestatus.com/features/5675755719622656。
@@ -2460,6 +2465,7 @@
       如果將這項政策設為 False，系統會停用背景模式，且使用者無法在瀏覽器設定中控制這項行為。
 
       如果未設定這項政策，起初會停用背景模式，而使用者可以在瀏覽器設定中控制這項行為。</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> 可讓你安全地更新及安裝擴充功能。不過，某些擴充功能並不是由 Chrome 線上應用程式商店代管，因此這些擴充功能的內容可能只受到 SHA1 這類不安全的簽署或雜湊演算法保護。如果停用這項政策，Chrome 會禁止安裝與更新這類擴充功能 (直到擴充功能開發人員以更安全的演算法重建這些擴充功能)。如果啟用這項政策，Chrome 將允許安裝與更新這類擴充功能。如果不設定這項政策，Chrome 會預設採用政策啟用時的行為。從 <ph name="PRODUCT_NAME" /> 75 版本開始，如果不設定這項政策，Chrome 會預設採用政策停用時的行為。從 <ph name="PRODUCT_NAME" /> 77 版本開始，Chrome 會忽略這項政策，並將政策視為已停用。</translation>
 <translation id="7126716959063786004">允許在工作管理員中結束處理程序</translation>
 <translation id="7127892035367404455">復原至目標版本</translation>
 <translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME" /> 在啟動器列中顯示為固定應用程式的應用程式識別碼。
@@ -2982,7 +2988,10 @@
 <translation id="8274603902181597201">清除使用者的 eCryptfs 主目錄，改用全新的 Ext4 加密主目錄。</translation>
 <translation id="8285435910062771358">已啟用全螢幕放大鏡</translation>
 <translation id="8288199156259560552">啟用 Android Google 定位服務</translation>
-<translation id="8292322992383748446">回報 SoC 元件的硬體統計資料。如果將這項政策設為 False，系統不會回報統計資料。如果設為 True 或不設定，則系統會回報統計資料。</translation>
+<translation id="8292322992383748446">回報 SoC 元件的硬體統計資料。
+
+      如果將這項政策設為 False，系統不會回報統計資料。
+      如果設為 True 或不設定，則系統會回報統計資料。</translation>
 <translation id="8294750666104911727">無論「ChromeFrameRendererSettings」政策為何，一般而言，X-UA-Compatible 設為 chrome=1 的網頁將會在 <ph name="PRODUCT_FRAME_NAME" /> 中開啟。
 
           如果你啟用這項設定，系統將不會掃描網頁的中繼標記。
@@ -3008,7 +3017,8 @@
 <translation id="8367209241899435947">在 Windows 裝置上啟用 Chrome 清理功能</translation>
 <translation id="8369602308428138533">在 AC 供電環境下執行時的螢幕關閉延遲時間</translation>
 <translation id="8371178326720637170">啟用受管理擴充功能以使用 Enterprise Hardware Platform API</translation>
-<translation id="8374747520743832795">回報與電源相關的硬體統計資料和 ID。如果將這項政策設為 False，系統不會回報統計資料。如果設為 True 或不設定，則系統會回報統計資料。</translation>
+<translation id="8374747520743832795">回報與電源相關的硬體統計資料和 ID。如果將這項政策設為 False，系統不會回報統計資料。
+      如果設為 True 或不設定，則系統會回報統計資料。</translation>
 <translation id="8377433219608936819">
       如果將這項政策設為 True，當雲端政策與裝置政策發生衝突時，系統會優先採用前者。
       如果將這項政策設為 False 或不予設定，系統則會優先採用後者。

@@ -367,6 +367,7 @@
 <translation id="15373452373711364">Cursor grande do mouse</translation>
 <translation id="1538729222189715449">Abrindo arquivos do Linux…</translation>
 <translation id="1540605929960647700">Ativar modo de demonstração</translation>
+<translation id="1541396123399225659">Adicionar a um novo grupo</translation>
 <translation id="1542514202066550870">Esta guia está apresentando conteúdo de RV em um headset.</translation>
 <translation id="1543284117603151572">Importados do Edge</translation>
 <translation id="1545177026077493356">Modo de quiosque automático</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Formatando...</translation>
 <translation id="159359590073980872">Cache de imagem</translation>
 <translation id="1593926297800505364">Salvar forma de pagamento</translation>
+<translation id="1595492813686795610">O Linux está sendo atualizado</translation>
 <translation id="1598233202702788831">As atualizações foram desativadas pelo seu administrador.</translation>
 <translation id="1600857548979126453">Acessar back-end do depurador de página</translation>
 <translation id="1601560923496285236">Aplicar</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">Ativar tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Ver na Chrome Web Store</translation>
-<translation id="1761588866118490543">Modelo de voz</translation>
 <translation id="176193854664720708">O sensor de impressão digital fica no botão liga/desliga. Toque levemente com qualquer dedo.</translation>
 <translation id="1763046204212875858">Criar atalhos para aplicativos</translation>
 <translation id="1763108912552529023">Continuar explorando</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2384436799579181135">Ocorreu um erro. Verifique sua impressora e tente novamente.</translation>
+<translation id="2386926718981642523">Acessar seu Assistente sempre que você disser "Ok Google"</translation>
 <translation id="2387458720915042159">Tipo de conexão proxy</translation>
 <translation id="2391419135980381625">Fonte padrão</translation>
 <translation id="2391762656119864333">Revogar</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> não pôde se conectar a <ph name="NETWORK_ID" />. Selecione outra rede ou tente novamente.</translation>
 <translation id="2553440850688409052">Ocultar este plug-in</translation>
 <translation id="2554553592469060349">O arquivo selecionado é muito grande (tamanho máximo: 3 MB).</translation>
+<translation id="255747371423522804">Adicionar a um grupo existente</translation>
 <translation id="2558896001721082624">Sempre mostrar as opções de acessibilidade no menu do sistema</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">Não conectado a <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;Refazer</translation>
 <translation id="2972642118232180842">Executar apenas conteúdos importantes (recomendado)</translation>
 <translation id="2973324205039581528">Desativar som do site</translation>
+<translation id="2977480621796371840">Remover do grupo</translation>
 <translation id="2979639724566107830">Abrir em uma nova janela</translation>
 <translation id="2981113813906970160">Mostrar cursor grande do mouse</translation>
 <translation id="2982970937345031">Enviar feedback anonimamente</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389312115541230716">Clique com o botão direito do mouse no ícone <ph name="SMALL_PRODUCT_LOGO" /> na barra de tarefas</translation>
+<translation id="3393352139658145068">Ativar o Assistente quando alguém disser “Ok Google”. Para economizar bateria, a hotword “Ok Google” só é ativada quando o dispositivo está conectado a uma fonte de energia.</translation>
 <translation id="3396800784455899911">Ao clicar no botão "Aceitar e concluir", você aceita o processo descrito acima para esses serviços do Google.</translation>
 <translation id="3399432415385675819">As notificações serão desativadas</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3168,6 +3173,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5816434091619127343">As alterações solicitadas inutilizariam a impressora.</translation>
 <translation id="5817918615728894473">Parear</translation>
 <translation id="5821565227679781414">Criar atalho</translation>
+<translation id="5825412242012995131">Ativado (recomendado)</translation>
 <translation id="5826507051599432481">Nome comum (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Imprimindo...</translation>
@@ -3713,6 +3719,11 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6629841649550503054">Backup completo para o <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> deseja acesso permanente a um certificado para autenticar-se no seu nome.</translation>
 <translation id="6635956300022133031">Selecionar e personalizar as vozes da conversão de texto em voz</translation>
+<translation id="6637585982786704944">Apps e sites que têm sua permissão podem acessar as informações da conta necessárias para o funcionamento adequado.
+
+    Se você não quiser adicionar uma conta, faça login como convidado ou abra uma janela anônima para navegar na Web.
+
+    Acesse Configurações -&gt; Contas do Google para ver e gerenciar todas as contas.</translation>
 <translation id="6639554308659482635">Memória SQLite</translation>
 <translation id="6641138807883536517">A senha do módulo de segurança gerada aleatoriamente não está disponível. Isso é normal após um Powerwash.</translation>
 <translation id="6643016212128521049">Limpar</translation>
@@ -3914,6 +3925,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6957231940976260713">Nome do serviço</translation>
 <translation id="696203921837389374">Ativar a sincronização de dados móveis</translation>
 <translation id="6964390816189577014">Hero</translation>
+<translation id="6964760285928603117">Remover do grupo</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Porta</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
@@ -4023,6 +4035,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7109543803214225826">Atalho removido</translation>
 <translation id="7113502843173351041">Saiba seu endereço de e-mail</translation>
 <translation id="7114054701490058191">As senhas não correspondem</translation>
+<translation id="7114648273807173152">Para usar o Smart Lock para fazer login na sua Conta do Google, acesse Config. &gt; Dispositivos conectados &gt; Seu smartphone &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Tente novamente mais tarde</translation>
 <translation id="7117247127439884114">Fazer login novamente...</translation>
 <translation id="711840821796638741">Mostrar favoritos gerenciados</translation>
@@ -4178,6 +4191,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7348093485538360975">Teclado virtual</translation>
 <translation id="7352651011704765696">Algo deu errado</translation>
 <translation id="735361434055555355">Instalando o Linux…</translation>
+<translation id="7353887511974462734">Adicionar a um grupo existente</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="7359588939039777303">Anúncios bloqueados.</translation>
@@ -4240,7 +4254,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7456847797759667638">Abrir local...</translation>
 <translation id="7461924472993315131">Fixar</translation>
 <translation id="7463006580194749499">Adicionar pessoa</translation>
-<translation id="7464902436585505072">Modelo de voz "Ok Google"</translation>
 <translation id="7465778193084373987">URL da revogação do certificado do Netscape</translation>
 <translation id="7469894403370665791">Conectar-se automaticamente a esta rede</translation>
 <translation id="747114903913869239">Erro: Não foi possível decodificar a extensão</translation>
@@ -4810,6 +4823,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="827097179112817503">Mostrar botão "Página inicial"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{ favorito excluído}one{# favorito excluído}other{# favoritos excluídos}}</translation>
 <translation id="8272443605911821513">Gerencie suas extensões clicando em "Extensões" no menu "Mais ferramentas".</translation>
+<translation id="8272966760965438857">Gerencie suas Contas do Google em um só lugar</translation>
 <translation id="8274332263553132018">Transmitir arquivo</translation>
 <translation id="8274924778568117936">Não desligue ou feche seu <ph name="DEVICE_TYPE" /> até que a atualização termine. O <ph name="DEVICE_TYPE" /> será reiniciado depois que a instalação for concluída.</translation>
 <translation id="8275038454117074363">Importar</translation>
@@ -5197,6 +5211,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8883847527783433352">Sincronizar com outra conta</translation>
 <translation id="8885197664446363138">O Smart Lock não está disponível</translation>
 <translation id="88870264962436283">Usar Touch ID com <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">O app será aberto após a conclusão do upgrade. Os upgrades podem levar alguns minutos.</translation>
 <translation id="8888432776533519951">Cor:</translation>
 <translation id="8890516388109605451">Fontes</translation>
 <translation id="8892168913673237979">Tudo pronto!</translation>

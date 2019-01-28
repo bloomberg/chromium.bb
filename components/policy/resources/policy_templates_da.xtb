@@ -771,6 +771,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, vil denne computer kun tillade forbindelser fra klientcomputere på det lokale netværk.
  
           Hvis denne politik ikke er angivet, aktiveres denne indstilling.</translation>
+<translation id="2813281962735757923">Denne politik styrer de tidsrum, hvor <ph name="PRODUCT_OS_NAME" />-enheden ikke har tilladelse til automatisk at søge efter opdateringer.
+      Hvis politikken er konfigureret med en liste over tidsintervaller, som ikke er tom:
+      Enheder kan ikke automatisk søge efter opdateringer i de angivne tidsintervaller. Enheder, der kræver en tilbagetrækning eller er ældre end minimumsversionen for <ph name="PRODUCT_OS_NAME" />, berøres ikke af denne politik på grund af potentielle sikkerhedsproblemer. Derudover blokerer politikken ikke for søgning efter opdateringer, hvis brugere eller administratorer anmoder om dette.
+      Hvis politikken ikke er konfigureret eller ikke indeholder tidsintervaller:
+      Automatiske søgninger efter opdateringer blokeres ikke af denne politik, men blokeres muligvis af andre politikker. Denne funktion er kun aktiveret på Chrome-enheder, der er konfigureret som terminaler med automatisk opstart. Andre enheder begrænses ikke af denne politik.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />-klienters placering i Windows-registreringsdatabasen:</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
 <translation id="2838830882081735096">Tillad ikke datamigrering og ARC</translation>
@@ -1062,6 +1067,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="355118380775352753">Websites, der skal åbnes i en alternativ browser</translation>
 <translation id="3577251398714997599">Annonceindstilling for websites med påtrængende annoncer</translation>
+<translation id="3591527072193107424">Aktivér funktionen Emulator til ældre websites.</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
 <translation id="3624171042292187668">
       Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling, SitePerProcess, isolerer alle websites.
@@ -1249,6 +1255,13 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
 <translation id="3965339130942650562">Timeout, indtil brugeren logges ud på grund af inaktivitet</translation>
 <translation id="3973371701361892765">Skjul aldrig hylden automatisk</translation>
 <translation id="3984028218719007910">Bestemmer, om <ph name="PRODUCT_OS_NAME" /> bevarer lokale kontodata efter logout. Hvis den er angivet til sand, er der ingen vedvarende konti, der bevares af <ph name="PRODUCT_OS_NAME" />, og alle data fra brugersessionen kasseres efter logout. Hvis denne politik er angivet til falsk eller ikke er konfigureret, kan enheden beholde (krypterede) lokale brugerdata.</translation>
+<translation id="398475542699441679">Denne politik styrer, om Emulator til ældre websites skal aktiveres.
+
+      Hvis politikken angives som falsk eller ikke konfigureres, forsøger Chrome ikke at starte angivne webadresser i en alternativ browser.
+
+      Hvis politikken angives som sand, forsøger Chrome at starte nogle webadresser i en alternativ browser (f.eks. Internet Explorer). Denne funktion konfigureres via politikkerne i gruppen <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Denne funktion erstatter udvidelsen <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Konfigurationen fra udvidelsen overføres til denne funktion, men vi anbefaler på det kraftigste, at du bruger Chrome-politikker i stedet. Dette sikrer en bedre kompatibilitet fremover.</translation>
 <translation id="3997519162482760140">Webadresser, der får adgang til videooptagelsesenheder på SAML-loginsider</translation>
 <translation id="4001275826058808087">It-administratorer for virksomhedsenheder kan bruge denne markering til at kontrollere, om brugerne skal have tilladelse til at indløse tilbud via Chrome OS-registrering.
 
@@ -1490,6 +1503,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Du kan se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Åbn en liste over webadresser</translation>
+<translation id="4674871290487541952">Tillad usikre algoritmer i integritetstjek ved opdateringer og installationer af udvidelser</translation>
 <translation id="4680936297850947973">Udfaset i M68. Brug DefaultPopupsSetting i stedet.
 
       Få en fuld forklaring på https://www.chromestatus.com/features/5675755719622656.
@@ -2487,6 +2501,12 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er angivet til Falsk, er baggrundstilstanden deaktiveret og kan ikke styres af brugeren i browserindstillingerne.
 
       Hvis denne politik ikke er indstillet, er baggrundstillingen i første omgang deaktiveret og kan styres af brugeren i browserindstillingerne.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> giver sikker opdatering og installation af udvidelser. Indholdet i nogle udvidelser, der hostes uden for Chrome Webshop, er dog muligvis kun beskyttet af usikkert login eller hashing-algoritmer som f.eks. SHA1. Hvis politikken deaktiveres, tillader Chrome ikke nye installationer og opdateringer af sådanne udvidelser (indtil udvidelsernes udviklere har genopbygget udvidelserne med stærkere algoritmer). Hvis politikken aktiveres, tillades installation og opdateringer af sådanne udvidelser.
+
+          Hvis den ikke konfigureres, anvendes den aktiverede adfærd som standard.
+          Hvis den ikke konfigureres, anvendes den deaktiverede adfærd som standard fra og med <ph name="PRODUCT_NAME" /> 75.
+
+          Politikken ignoreres og behandles som deaktiveret fra og med <ph name="PRODUCT_NAME" /> 77.</translation>
 <translation id="7126716959063786004">Gør det muligt at afslutte processer via Jobliste</translation>
 <translation id="7127892035367404455">Gå tilbage til målversion</translation>
 <translation id="7128918109610518786">Angiver applikationsid'er på en liste, som <ph name="PRODUCT_OS_NAME" /> viser som fastgjorte apps på applisten.

@@ -807,6 +807,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu cài đặt này bị tắt và kết nối UDP đi bị lọc bởi tường lửa, máy tính này sẽ chỉ cho phép kết nối từ các máy khách trong mạng cục bộ.
 
           Nếu không đặt chính sách này, cài đặt này sẽ được bật.</translation>
+<translation id="2813281962735757923">Chính sách này kiểm soát khung thời gian mà thiết bị <ph name="PRODUCT_OS_NAME" /> không được phép tự động kiểm tra bản cập nhật.
+      Khi bạn đặt chính sách này thành một danh sách chứa các khoảng thời gian (tức là không trống), thì:
+      Thiết bị sẽ không thể tự động kiểm tra bản cập nhật trong khoảng thời gian chỉ định. Chính sách này sẽ không ảnh hưởng đến các thiết bị yêu cầu hạ cấp hệ điều hành hoặc thiết bị chạy phiên bản <ph name="PRODUCT_OS_NAME" /> tối thiểu trở xuống do các vấn đề bảo mật tiềm ẩn. Ngoài ra, chính sách này sẽ không chặn hoạt động kiểm tra bản cập nhật do người dùng hoặc quản trị viên yêu cầu.
+      Khi chính sách này không được đặt hoặc không chứa khoảng thời gian nào, thì:
+      Chính sách này sẽ không chặn hoạt động kiểm tra bản cập nhật tự động, nhưng các chính sách khác vẫn có thể chặn hoạt động này. Tính năng này chỉ được hỗ trợ trên thiết bị Chrome đã định cấu hình thành kiosk tự động chạy. Chính sách này sẽ không hạn chế các thiết bị khác.</translation>
 <translation id="2823870601012066791">Vị trí sổ đăng ký Windows cho các ứng dụng <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Bật chế độ Ẩn danh</translation>
 <translation id="2838830882081735096">Không cho phép di chuyển dữ liệu và ARC</translation>
@@ -1102,6 +1107,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="355118380775352753">Các trang web sẽ mở trong trình duyệt thay thế</translation>
 <translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web chứa quảng cáo xâm nhập</translation>
+<translation id="3591527072193107424">Bật tính năng Hỗ trợ trình duyệt cũ.</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
 <translation id="3624171042292187668">
       Có lẽ bạn nên xem xét tùy chọn cài đặt chính sách IsolateOrigins để khai thác tối đa cả hai chính sách (cách ly và tác động có giới hạn đối với người dùng) bằng cách sử dụng IsolateOrigins với danh sách trang web mà bạn muốn cách ly. Tùy chọn cài đặt SitePerProcess này sẽ cách ly tất cả các trang web.
@@ -1290,6 +1296,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3965339130942650562">Thời gian chờ cho tới khi đăng xuất của người dùng không hoạt động được thực thi</translation>
 <translation id="3973371701361892765">Không bao giờ tự động ẩn giá</translation>
 <translation id="3984028218719007910">Xác định liệu <ph name="PRODUCT_OS_NAME" /> có lưu dữ liệu tài khoản trên máy sau khi đăng xuất hay không. Nếu được đặt thành đúng, không có tài khoản lâu dài nào được <ph name="PRODUCT_OS_NAME" /> lưu và tất cả các dữ liệu từ phiên của người dùng sẽ bị hủy bỏ sau khi đăng xuất. Nếu chính sách này được đặt thành sai hoặc không được định cấu hình, thiết bị có thể lưu lại dữ liệu người dùng trên máy (được mã hóa).</translation>
+<translation id="398475542699441679">Chính sách này kiểm soát việc có nên bật tính năng Hỗ trợ trình duyệt cũ hay không.
+
+      Khi bạn không đặt chính sách này hoặc đặt thành false, thì Chrome sẽ không tìm cách khởi chạy các URL đã chỉ định trong một trình duyệt thay thế.
+
+      Khi bạn đặt chính sách này thành true, thì Chrome sẽ tìm cách khởi chạy một số URL trong trình duyệt thay thế (chẳng hạn như Internet Explorer). Tính năng này được định cấu hình bằng các chính sách trong nhóm <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Tính năng này thay thế cho tiện ích <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Mặc dù cấu hình từ tiện ích sẽ được chuyển sang tính năng này, chúng tôi đặc biệt khuyên bạn nên sử dụng các chính sách của Chrome. Điều này đảm bảo khả năng tương thích cao hơn trong tương lai.</translation>
 <translation id="3997519162482760140">URL sẽ được cấp quyền truy cập thiết bị quay video trên các trang đăng nhập SAML</translation>
 <translation id="4001275826058808087">Quản trị viên CNTT của thiết bị doanh nghiệp có thể sử dụng cờ này để kiểm soát xem có cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS hay không.
 
@@ -1540,6 +1553,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Mở một danh sách URL</translation>
+<translation id="4674871290487541952">Cho phép thuật toán không an toàn trong quá trình kiểm tra tính toàn vẹn đối với các bản cập nhật và cài đặt tiện ích</translation>
 <translation id="4680936297850947973">Không còn dùng trong M68. Hãy sử dụng tùy chọn DefaultPopupsSetting để thay thế.
 
       Để biết thông tin giải thích đầy đủ, hãy truy cập vào https://www.chromestatus.com/features/5675755719622656.
@@ -2586,6 +2600,12 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu chính sách được đặt thành False thì chế độ nền sẽ bị tắt và người dùng không thể kiểm soát chế độ này trong trong cài đặt trình duyệt.
 
       Nếu chính sách này không được đặt thì chế độ nền sẽ bị tắt ban đầu và người dùng có thể kiểm soát chế độ này trong cài đặt trình duyệt.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> cung cấp bản cập nhật và cài đặt an toàn cho tiện ích. Tuy nhiên, bạn chỉ có thể bảo vệ nội dung của một số tiện ích lưu trữ bên ngoài Cửa hàng Chrome trực tuyến bằng các thuật toán ký hoặc băm không an toàn như SHA1. Nếu bạn tắt chính sách này, thì Chrome sẽ không cho phép thực hiện quá trình cài đặt và cập nhật mới đối với những tiện ích đó (cho đến khi nhà phát triển tiện ích tạo lại tiện ích có thuật toán mạnh hơn). Khi bạn bật chính sách này, thì Chrome sẽ cho phép thực hiện quá trình cài đặt và cập nhật đối với những tiện ích đó.
+
+          Chính sách này sẽ bật theo mặc định khi không được đặt.
+          Bắt đầu từ <ph name="PRODUCT_NAME" /> 75, chính sách này sẽ tắt theo mặc định khi không được đặt.
+
+          Bắt đầu từ <ph name="PRODUCT_NAME" /> 77, chính sách này sẽ bị bỏ qua và coi như là đã tắt.</translation>
 <translation id="7126716959063786004">Cho phép kết thúc các quá trình trong Trình quản lý tác vụ</translation>
 <translation id="7127892035367404455">Khôi phục về phiên bản đích</translation>
 <translation id="7128918109610518786">Liệt kê số nhận dạng ứng dụng mà <ph name="PRODUCT_OS_NAME" /> hiển thị dưới dạng ứng dụng được ghim trong thanh trình chạy.

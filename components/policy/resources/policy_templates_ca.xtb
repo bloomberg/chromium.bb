@@ -768,6 +768,11 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si aquesta opció de configuració està desactivada i el tallafocs filtra les connexions UDP sortints, aquest ordinador només permetrà les connexions de màquines de client a la xarxa local.
 
           Si aquesta política no es defineix, la configuració s'activarà.</translation>
+<translation id="2813281962735757923">Aquesta política controla els intervals de temps en què no es permet que el dispositiu <ph name="PRODUCT_OS_NAME" /> cerqui actualitzacions automàticament.
+      Si aquesta política s'estableix en una llista no buida d'intervals de temps:
+      Els dispositius no podran cercar actualitzacions automàticament durant els intervals de temps especificats. Aquesta política no afectarà els dispositius <ph name="PRODUCT_OS_NAME" /> que s'hagin de revertir a una versió anterior o que tinguin una versió anterior a la mínima, ja que podria provocar problemes de seguretat. A més, aquesta política no bloquejarà les cerques d'actualitzacions sol·licitades per usuaris o administradors.
+      Si aquesta política no s'estableix o no conté cap interval de temps:
+      La política no bloquejarà les cerques automàtiques d'actualitzacions, però pot ser que hi hagi altres polítiques que sí que les bloquegin. Aquesta funció només s'activa en dispositius Chrome configurats com a quioscos d'inici automàtic. Aquesta política no restringirà altres dispositius.</translation>
 <translation id="2823870601012066791">Ubicació del registre de Windows per a clients amb <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2838830882081735096">No permetis la migració de dades i ARC</translation>
@@ -1058,6 +1063,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
+<translation id="3591527072193107424">Activa la funció Compatibilitat amb navegadors antics.</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3624171042292187668">
       Pots utilitzar la política IsolateOrigins amb una llista dels llocs web que vols aïllar per treure el màxim partit de les dues opcions: aïllar llocs web amb el mínim impacte possible per als usuaris. L'opció de configuració SitePerProcessAndroid aïlla tots els llocs web.
@@ -1241,6 +1247,13 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3965339130942650562">Temps d'espera fins que s'executi el tancament de sessió de l'usuari inactiu</translation>
 <translation id="3973371701361892765">No amaguis mai el prestatge automàticament</translation>
 <translation id="3984028218719007910">Determina si <ph name="PRODUCT_OS_NAME" /> conserva les dades de comptes locals després de tancar la sessió. Si es defineix a «true» (cert), <ph name="PRODUCT_OS_NAME" /> no conserva cap compte persistent i es descartaran totes les dades de la sessió de l'usuari després de tancar la sessió. Si aquesta política es defineix a «false» (fals) o no es configura, el dispositiu pot conservar dades d'usuari locals (xifrades).</translation>
+<translation id="398475542699441679">Aquesta política controla si s'activa l'extensió Compatibilitat amb navegadors antics.
+
+      Si aquesta política es deixa sense establir o s'estableix en "false", Chrome no provarà d'iniciar URL designats en un altre navegador.
+
+      Si aquesta política s'estableix en "true", Chrome provarà d'iniciar alguns URL en un altre navegador (com ara Internet Explorer). Aquesta funció està configurada mitjançant les polítiques del grup <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Aquesta funció substitueix l'extensió <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. La configuració de l'extensió inclou aquesta funció, però et recomanem que utilitzis les polítiques de Chrome en lloc seu. Això garantirà una millor compatibilitat en el futur.</translation>
 <translation id="3997519162482760140">URL que obtindran permís per accedir a dispositius de captura de vídeo en pàgines d'inici de sessió amb SAML</translation>
 <translation id="4001275826058808087">Els administradors de TI de dispositius empresarials poden utilitzar aquesta marca per controlar si es permet als usuaris bescanviar ofertes mitjançant el registre de Chrome OS.
 
@@ -1483,6 +1496,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Per veure patrons d'exemple, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Obre una llista d'URL</translation>
+<translation id="4674871290487541952">Permet els algoritmes insegurs en comprovar la integritat de les instal·lacions i actualitzacions de l'extensió</translation>
 <translation id="4680936297850947973">Aquesta política es considera obsoleta a M68. Substitueix-la per DefaultPopupsSetting.
 
       Per veure l'explicació completa, consulta https://www.chromestatus.com/features/5675755719622656.
@@ -2461,6 +2475,12 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en False, el mode de segon pla es desactiva i l'usuari no el pot controlar a la configuració del navegador.
 
       Si aquesta política es deixa sense establir, el mode de segon pla es desactiva en un primer moment i l'usuari el pot controlar a la configuració del navegador.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> permet actualitzar i instal·lar les extensions de manera segura. Tanmateix, pot ser que el contingut d'algunes extensions allotjades fora de Chrome Web Store només estigui protegit per algoritmes de resum o de signatura poc segurs, com ara SHA1. Si aquesta política es desactiva, Chrome no permetrà que tornis a instal·lar ni que actualitzis aquestes extensions fins que els seus desenvolupadors no les tornin a crear amb algoritmes més segurs. Si aquesta política s'activa, s'admetrà la instal·lació i les actualitzacions d'aquest tipus d'extensions.
+
+          Aquest comportament serà el predeterminat si la política no s'estableix.
+          A partir de <ph name="PRODUCT_NAME" /> 75, si la política no s'estableix, es desactivarà de manera predeterminada.
+
+          A partir de <ph name="PRODUCT_NAME" /> 77, aquesta política s'ignorarà i es considerarà desactivada.</translation>
 <translation id="7126716959063786004">Activa la finalització de processos al gestor de tasques</translation>
 <translation id="7127892035367404455">Torna a la versió de destinació</translation>
 <translation id="7128918109610518786">Enumera els identificadors de les aplicacions que <ph name="PRODUCT_OS_NAME" /> mostra com a aplicacions fixades a la barra d'execució ràpida.

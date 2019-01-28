@@ -335,10 +335,10 @@
       Bu politika geçerli bir URL'ye ayarlandığında, <ph name="PRODUCT_NAME" />, site listesini o URL'den indirir ve kuralları, <ph name="SITELIST_POLICY_NAME" /> politikasıyla yapılandırılmışlar gibi uygular.
 
       Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikası hakkında daha fazla bilgiyi https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode adresinde bulabilirsiniz</translation>
-<translation id="1839060937202387559">Depolama cihazlarına ait donanım istatistiklerini ve tanımlayıcıları bildirin.
+<translation id="1839060937202387559">Depolama cihazlarına ait donanım istatistiklerini ve tanımlayıcıları bildirir.
 
-      Politika yanlış değerine ayarlanırsa istatistikler bildirilmez.
-      Politika doğru değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
+      Politika false (yanlış) değerine ayarlanırsa istatistikler bildirilmez.
+      Politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
 <translation id="1843117931376765605">Kullanıcı politikası için yenileme hızı</translation>
 <translation id="1844620919405873871">Hızlı kilit açmayla ilgili politikaları yapılandırır.</translation>
 <translation id="1847960418907100918">POST ile anında arama yaparken kullanılan parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise, gerçek arama terimleri verisiyle değiştirilir.
@@ -795,6 +795,11 @@
           Bu ayar devre dışı bırakılırsa ve giden UDP bağlantıları güvenlik duvarı tarafından filtreleniyorsa, bu makine yalnızca yerel ağ içindeki istemci makinelerden gelen bağlantılara izin verir.
 
           Bu politika ayarlanmadan bırakılırsa, ayar etkinleşir.</translation>
+<translation id="2813281962735757923">Bu politika, <ph name="PRODUCT_OS_NAME" /> cihazının güncellemeleri otomatik olarak denetlemesine izin verilmeyen zaman aralıklarını kontrol eder.
+      Bu politika, boş olmayan bir zaman aralıkları listesine ayarlandığında:
+      Cihazlar, belirtilen zaman aralıkları sırasında güncellemeleri otomatik olarak kontrol edemez. Geri alma işleminin yapılmasını gerektiren ve minimum <ph name="PRODUCT_OS_NAME" /> sürümünün altındaki cihazlar, olası güvenlik sorunlarından dolayı bu politikadan etkilenmez. Bununla birlikte, bu politika kullanıcılar veya yöneticiler tarafından istenen güncelleme kontrollerini engellemez.
+      Bu politika ayarlanmazsa veya herhangi bir zaman aralığı içermezse:
+      Hiçbir otomatik güncelleme kontrolü bu politika tarafından engellenmez, ancak kontroller diğer politikalar tarafından engellenebilir. Bu özellik yalnızca otomatik başlatma kioskları olarak yapılandırılan Chrome cihazlarda etkindir. Bu politika diğer cihazları kısıtlamak için kullanılamaz.</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> istemcileri için Windows kayıt defteri konumu:</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
 <translation id="2838830882081735096">Veri taşıma ve ARC'ye izin verme</translation>
@@ -1048,7 +1053,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           Bu politika isteğe bağlıdır. Ayarlanmazsa hiçbir yeni sekme sayfası sağlanmaz.
 
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse geçerli olur.</translation>
-<translation id="3461279434465463233">Güç durumunu bildirme</translation>
+<translation id="3461279434465463233">Güç durumunu bildir</translation>
 <translation id="346731943813722404">Bir oturumda güç yönetimi gecikmelerinin ve oturum süresi sınırının sadece kullanıcı ilk etkinliğinin gözlenmesinden sonra çalışmaya başlayıp başlamayacağını belirler.
 
           Bu politika Doğru seçeneğine ayarlanırsa bir oturumda güç yönetimi gecikmeleri ve oturum süresi sınırı kullanıcının ilk etkinliğinin gözlenmesine kadar çalışmaya başlamaz.
@@ -1089,6 +1094,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="355118380775352753">Alternatif tarayıcıda açılacak web siteleri</translation>
 <translation id="3577251398714997599">Araya giren reklamların yer aldığı siteler için reklam ayarı</translation>
+<translation id="3591527072193107424">Eski Tarayıcı Desteği özelliğini etkinleştir.</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
 <translation id="3624171042292187668">
       Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
@@ -1274,6 +1280,13 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="3965339130942650562">Boştaki kullanıcının çıkış yapması için geçecek zaman aşımı süresi</translation>
 <translation id="3973371701361892765">Rafı hiçbir zaman otomatik olarak gizleme</translation>
 <translation id="3984028218719007910">Çıkış yapıldıktan sonra yerel hesap verilerinin <ph name="PRODUCT_OS_NAME" /> tarafından korunup korunmayacağını belirler. True değerine ayarlanırsa, kalıcı hesaplar <ph name="PRODUCT_OS_NAME" /> tarafından korunmaz ve çıkış yapıldıktan sonra kullanıcı oturumuna ilişkin tüm veriler kaybedilir. Bu politika false değerine ayarlanırsa veya hiçbir şekilde ayarlanmazsa, cihaz (şifreli) yerel kullanıcı verilerini koruyabilir.</translation>
+<translation id="398475542699441679">Bu politika, Eski Tarayıcı Desteğinin etkinleştirilip etkinleştirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılırsa veya false (yanlış) değerine ayarlanırsa, Chrome tanımlanan URL'leri alternatif tarayıcıda açma girişiminde bulunmaz.
+
+      Bu politika true (doğru) değerine ayarlanırsa, Chrome bazı URL'leri alternatif tarayıcıda (ör. Internet Explorer) açma girişiminde bulunur. Bu özellik, <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" /> grubundaki politikalar kullanılarak yapılandırılır.
+
+      Bu özellik, <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" /> uzantısının yerini almaktadır. Uzantıdan gerçekleştirilen yapılandırma bu özelliğe aktarılır, ancak bunun yerine Chrome politikalarının kullanılması önemle tavsiye edilir. Böylece ileride daha iyi uyumluluk sağlanabilir.</translation>
 <translation id="3997519162482760140">SAML oturum açma sayfalarında video yakalama cihazlarına erişimin verileceği URL'ler</translation>
 <translation id="4001275826058808087">Kurumsal cihazların BT yöneticileri, kullanıcıların Chrome OS Kaydı'nı kullanarak tekliflerden yararlanıp yararlanamayacağını belirlemek için bu bayrağı kullanabilirler.
 
@@ -1526,6 +1539,7 @@ politikayı geçersiz kılamaz.
 
           Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started adresine bakın.</translation>
 <translation id="467449052039111439">URL listesi aç</translation>
+<translation id="4674871290487541952">Uzantı güncelleme ve yükleme işlemleriyle ilgili bütünlük kontrollerinde güvenli olmayan algoritmalara izin verme</translation>
 <translation id="4680936297850947973">M68 sürümünde kullanımdan kaldırılmıştır. Bunun yerine DefaultPopupsSetting politikasını kullanın.
 
       Tam açıklama için https://www.chromestatus.com/features/5675755719622656 adresine bakın.
@@ -2297,7 +2311,7 @@ politikayı geçersiz kılamaz.
 <translation id="6573305661369899995">URL kısıtlamaları için harici kaynak ayarla</translation>
 <translation id="6598235178374410284">Kullanıcı avatarı resmi</translation>
 <translation id="6603004149426829878">Saat dilimini çözümlerken kullanılabilir konum sinyallerini her zaman sunucuya gönder</translation>
-<translation id="6628120204569232711">Depolama durumunu bildirme</translation>
+<translation id="6628120204569232711">Depolama durumunu bildir</translation>
 <translation id="6628646143828354685">Web sitelerinin yakınlardaki Bluetooth cihazlarına erişim sağlamalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Erişim tamamıyla engellenebilir veya bir web sitesinin yakınlardaki Bluetooth cihazlarına erişim sağlamak istediği her defasında, kullanıcıya onay verip vermediği sorulabilir.
 
           Bu politika ayarlanmadan bırakılırsa "3" değeri kullanılır ve kullanıcı, bu değeri değiştirebilir.</translation>
@@ -2555,6 +2569,12 @@ politikayı geçersiz kılamaz.
       Bu politika Yanlış seçeneğine ayarlanırsa arka plan modu devre dışı bırakılır ve tarayıcı ayarlarında kullanıcı tarafından kontrol edilemez.
 
       Bu politika ayarlanmadan bırakılırsa arka plan modu ilk başta devre dışı bırakılır ve tarayıcı ayarlarında kullanıcı tarafından kontrol edilebilir.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" />, uzantıların güvenli bir şekilde güncellenmesini ve yüklenmesini sağlar. Ancak Chrome Web Mağazası'nın dışında barındırılan bazı uzantıların içeriği yalnızca SHA1 gibi güvenli olmayan imzalama veya karma oluşturma algoritmaları ile korunabilir. Bu politika devre dışı bırakılırsa, Chrome bu tür uzantıların sıfırdan yüklenmesine veya güncellenmesine izin vermez (uzantının geliştiricileri uzantıyı daha güçlü algoritmalarla yeniden oluşturana kadar). Bu politika etkinleştirilirse bu tür uzantıların yüklenmesine ve güncellenmesine izin verilir.
+
+          Bu politika ayarlanmadan bırakılırsa, varsayılan etkin davranış olarak ayarlanır.
+          <ph name="PRODUCT_NAME" /> 75 sürümünden itibaren, bu politika ayarlanmadan bırakılırsa varsayılan devre dışı davranış olarak ayarlanır.
+
+          <ph name="PRODUCT_NAME" /> 77 sürümünden itibaren, bu politika yoksayılır ve devre dışı olarak değerlendirilir.</translation>
 <translation id="7126716959063786004">Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini etkinleştir</translation>
 <translation id="7127892035367404455">Hedef sürüme geri dönme</translation>
 <translation id="7128918109610518786"><ph name="PRODUCT_OS_NAME" /> tarafından başlatıcı çubuğunda sabitlenmiş uygulamalar olarak gösterilen uygulama tanımlayıcılarını listeler.
@@ -3106,10 +3126,10 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8274603902181597201">Kullanıcının ecryptfs ana dizinini sil ve yeni bir ext4-encrypted ana diziniyle başla.</translation>
 <translation id="8285435910062771358">Tam ekran büyüteci etkin</translation>
 <translation id="8288199156259560552">Android Google Konum Hizmetini Etkinleştir</translation>
-<translation id="8292322992383748446">SoC bileşenlerine ait donanım istatistiklerini bildirin.
+<translation id="8292322992383748446">SoC bileşenlerine ait donanım istatistiklerini bildirir.
 
-      Politika yanlış değerine ayarlanırsa istatistikler bildirilmez.
-      Politika doğru değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
+      Politika false (yanlış) değerine ayarlanırsa istatistikler bildirilmez.
+      Politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
 <translation id="8294750666104911727">Normalde, "ChromeFrameRendererSettings" politikası ne olursa olsun, chrome=1 olarak ayarlanmış X-UA Uyumlu sayfalar <ph name="PRODUCT_FRAME_NAME" /> ile oluşturulur.
 
           Bu ayarı etkinleştirirseniz sayfalarda meta etiketler taranmaz.
@@ -3135,10 +3155,10 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="8367209241899435947">Windows'da Chrome Temizleme Aracı'nı etkinleştir</translation>
 <translation id="8369602308428138533">AC güçle çalışırken ekran kapatma gecikmesi</translation>
 <translation id="8371178326720637170">Yönetilen uzantıların Kurumsal Donanım Platformu API'sini kullanmasını sağlar</translation>
-<translation id="8374747520743832795">Güçle ilgili donanım istatistiklerini ve tanımlayıcıları bildirin.
+<translation id="8374747520743832795">Güçle ilgili donanım istatistiklerini ve tanımlayıcıları bildirir.
 
-      Politika yanlış değerine ayarlanırsa istatistikler bildirilmez.
-      Politika doğru değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
+      Politika false (yanlış) değerine ayarlanırsa istatistikler bildirilmez.
+      Politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilir.</translation>
 <translation id="8377433219608936819">
       Bu politika true (doğru) değerine ayarlanırsa, makine politikasıyla çelişmesi halinde bulut politikası öncelikli olur.
       Bu politika false (yanlış) değerine ayarlanırsa veya yapılandırılmazsa, bulut politikasıyla çelişmesi halinde makine politikası öncelikli olur.

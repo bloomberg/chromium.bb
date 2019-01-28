@@ -367,7 +367,8 @@
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
 <translation id="1538729222189715449">Linux-bestanden openen…</translation>
 <translation id="1540605929960647700">Demomodus inschakelen</translation>
-<translation id="1542514202066550870">Dit tabblad presenteert VR-content op een headset.</translation>
+<translation id="1541396123399225659">Toevoegen aan nieuwe groep</translation>
+<translation id="1542514202066550870">Op dit tabblad wordt VR-content voor een headset getoond.</translation>
 <translation id="1543284117603151572">Geïmporteerd uit Edge</translation>
 <translation id="1545177026077493356">Automatische kioskmodus</translation>
 <translation id="1545775234664667895">Geïnstalleerd thema: '<ph name="THEME_NAME" />'</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Formatteren...</translation>
 <translation id="159359590073980872">Cache met afbeeldingen</translation>
 <translation id="1593926297800505364">Betaalmethode opslaan</translation>
+<translation id="1595492813686795610">Linux wordt geüpgraded</translation>
 <translation id="1598233202702788831">Updates zijn uitgeschakeld door je beheerder.</translation>
 <translation id="1600857548979126453">Back-end voor foutopsporing van pagina openen</translation>
 <translation id="1601560923496285236">Toepassen</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">Thema inschakelen</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Bekijken in de Chrome Web Store</translation>
-<translation id="1761588866118490543">Spraakmodel</translation>
 <translation id="176193854664720708">De vingerafdruksensor bevindt zich in de aan/uit-knop. Raak deze kort aan met een vinger.</translation>
 <translation id="1763046204212875858">Applicatiesnelkoppelingen maken</translation>
 <translation id="1763108912552529023">Blijf ontdekken</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">Afdrukken via systeemdialoogvenster... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vragen vóór verzenden (aanbevolen)</translation>
 <translation id="2384436799579181135">Er is een fout opgetreden. Controleer je printer en probeer het opnieuw.</translation>
+<translation id="2386926718981642523">Open je Assistent door 'Oké Google' te zeggen</translation>
 <translation id="2387458720915042159">Proxyverbindingstype</translation>
 <translation id="2391419135980381625">Standaard lettertype</translation>
 <translation id="2391762656119864333">Intrekken</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> kan geen verbinding maken met <ph name="NETWORK_ID" />. Probeer een ander netwerk of probeer het opnieuw.</translation>
 <translation id="2553440850688409052">Deze plugin verbergen</translation>
 <translation id="2554553592469060349">Het geselecteerde bestand is te groot (max. grootte: 3 MB).</translation>
+<translation id="255747371423522804">Toevoegen aan bestaande groep</translation>
 <translation id="2558896001721082624">Toegankelijkheidsopties altijd weergeven in het systeemmenu</translation>
 <translation id="2562685439590298522">Documenten</translation>
 <translation id="2562743677925229011">Niet ingelogd bij <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
 <translation id="2972642118232180842">Alleen belangrijke content uitvoeren (aanbevolen)</translation>
 <translation id="2973324205039581528">Geluid van site dempen</translation>
+<translation id="2977480621796371840">Uit groep verwijderen</translation>
 <translation id="2979639724566107830">Openen in nieuw venster</translation>
 <translation id="2981113813906970160">Grote muisaanwijzer weergeven</translation>
 <translation id="2982970937345031">Anoniem melden</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3389312115541230716">Klik met de rechtermuisknop op het pictogram <ph name="SMALL_PRODUCT_LOGO" /> in de taakbalk</translation>
+<translation id="3393352139658145068">Activeer de Assistent wanneer iemand 'Oké Google' zegt. 'Oké Google' is alleen ingeschakeld wanneer je apparaat op een voedingsbron is aangesloten om de batterij te sparen.</translation>
 <translation id="3396800784455899911">Door op de knop 'Accepteren en doorgaan' te klikken, ga je akkoord met de bovengenoemde verwerking voor deze Google-services.</translation>
 <translation id="3399432415385675819">Meldingen worden uitgeschakeld</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3168,6 +3173,7 @@
 <translation id="5816434091619127343">Met de aangevraagde printerwijzigingen wordt de printer wordt onbruikbaar.</translation>
 <translation id="5817918615728894473">Koppelen</translation>
 <translation id="5821565227679781414">Snelle link maken</translation>
+<translation id="5825412242012995131">Aan (aanbevolen)</translation>
 <translation id="5826507051599432481">Algemene naam (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Bezig met afdrukken....</translation>
@@ -3712,6 +3718,11 @@
 <translation id="6629841649550503054">Er is een back-up van alles gemaakt in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> wil permanente toegang tot een certificaat om zichzelf names jou te verifiëren.</translation>
 <translation id="6635956300022133031">Stemmen voor tekst-naar-spraak selecteren en aanpassen</translation>
+<translation id="6637585982786704944">Apps en websites die je daarvoor toestemming hebt gegeven, hebben toegang tot de accountgegevens die ze nodig hebben om goed te kunnen werken.
+
+    Als je geen account wilt toevoegen, log je in als gast of open je een incognitovenster om te browsen op internet.
+
+    Ga naar Instellingen -&gt; Google-accounts om alle accounts te bekijken en beheren.</translation>
 <translation id="6639554308659482635">SQLite-geheugen</translation>
 <translation id="6641138807883536517">Het willekeurig gegenereerde wachtwoord voor de beveiligde module is niet beschikbaar. Dit is normaal nadat de Powerwash-functie is uitgevoerd.</translation>
 <translation id="6643016212128521049">Wissen</translation>
@@ -3913,6 +3924,7 @@
 <translation id="6957231940976260713">Servicenaam</translation>
 <translation id="696203921837389374">Synchroniseren via mobiele data inschakelen</translation>
 <translation id="6964390816189577014">Held</translation>
+<translation id="6964760285928603117">Uit groep verwijderen</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Poort</translation>
 <translation id="6965978654500191972">Apparaat</translation>
@@ -4022,6 +4034,7 @@
 <translation id="7109543803214225826">Snelkoppeling verwijderd</translation>
 <translation id="7113502843173351041">Toegang krijgen tot je e-mailadres</translation>
 <translation id="7114054701490058191">Wachtwoorden komen niet overeen</translation>
+<translation id="7114648273807173152">Als je Smart Lock wilt gebruiken om in te loggen op je Google-account, ga je naar Instellingen &gt; Verbonden apparaten &gt; Je telefoon &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Probeer het later opnieuw</translation>
 <translation id="7117247127439884114">Opnieuw inloggen...</translation>
 <translation id="711840821796638741">Beheerde bladwijzers weergeven</translation>
@@ -4177,6 +4190,7 @@
 <translation id="7348093485538360975">Schermtoetsenbord</translation>
 <translation id="7352651011704765696">Er is iets misgegaan</translation>
 <translation id="735361434055555355">Linux installeren...</translation>
+<translation id="7353887511974462734">Toevoegen aan bestaande groep</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> items kopiëren...</translation>
 <translation id="7359588939039777303">Advertenties geblokkeerd.</translation>
@@ -4239,7 +4253,6 @@
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="7461924472993315131">Vastzetten</translation>
 <translation id="7463006580194749499">Persoon toevoegen</translation>
-<translation id="7464902436585505072">'Oké Google'-spraakmodel</translation>
 <translation id="7465778193084373987">URL voor intrekken van Netscape-certificaat</translation>
 <translation id="7469894403370665791">Automatisch verbinding maken met dit netwerk</translation>
 <translation id="747114903913869239">Fout: kan extensie niet decoderen</translation>
@@ -4808,6 +4821,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="827097179112817503">Knop 'Homepage' weergeven</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bladwijzer verwijderd}other{# bladwijzers verwijderd}}</translation>
 <translation id="8272443605911821513">Beheer je extensies door op 'Extensies' te klikken in het menu 'Meer tools'.</translation>
+<translation id="8272966760965438857">Je Google-accounts op één plaats beheren</translation>
 <translation id="8274332263553132018">Bestand casten</translation>
 <translation id="8274924778568117936">Je moet je <ph name="DEVICE_TYPE" /> niet uitschakelen of sluiten totdat de update is voltooid. Je <ph name="DEVICE_TYPE" /> wordt opnieuw opgestart nadat de installatie is voltooid.</translation>
 <translation id="8275038454117074363">Importeren</translation>
@@ -5195,6 +5209,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8883847527783433352">Synchroniseren met een ander account</translation>
 <translation id="8885197664446363138">Smart Lock is niet beschikbaar</translation>
 <translation id="88870264962436283">Touch ID gebruiken voor <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Je app wordt geopend wanneer de upgrade is voltooid. Upgrades kunnen enkele minuten duren.</translation>
 <translation id="8888432776533519951">Kleur:</translation>
 <translation id="8890516388109605451">Bronnen</translation>
 <translation id="8892168913673237979">Helemaal klaar!</translation>

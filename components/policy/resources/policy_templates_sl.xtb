@@ -808,6 +808,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, bo ta računalnik dovolil samo povezave iz odjemalskih računalnikov v lokalnem omrežju.
 
           Če ta pravilnik ni nastavljen, bo nastavitev omogočena.</translation>
+<translation id="2813281962735757923">Ta pravilnik nadzira obdobja, med katerimi napravi s sistemom <ph name="PRODUCT_OS_NAME" /> ni samodejno dovoljeno preverjati, ali so na voljo posodobitve.
+      Če je ta pravilnik na seznam časovnih intervalov, ki ni prazen:
+      Naprave med določenimi časovnimi intervali ne bodo mogle samodejno preveriti, ali so na voljo posodobitve. Na naprave, ki jih je treba povrniti v prejšnje stanje, ali uporabljajo nižjo različico operacijskega sistema <ph name="PRODUCT_OS_NAME" /> od najnižje zahtevane, zaradi morebitnih varnostnih težav ta pravilnik ne bo vplival. Poleg tega ta pravilnik ne bo blokiral zahtev za preverjanje, ali so na voljo posodobitve, ki jih izvedejo uporabniki ali skrbniki.
+      Če ta pravilnik ni nastavljen ali ne vsebuje časovnih intervalov:
+      Ta pravilnik ne bo blokiral samodejnih preverjanj, ali so na voljo posodobitve, vendar jih bodo morda blokirali drugi pravilniki. Ta funkcija je omogočena samo v napravah Chrome, ki so konfigurirane kot kioski s samodejnim zagonom. Drugih naprav ta pravilnik ne bo omejeval.</translation>
 <translation id="2823870601012066791">Lokacija registra sistema Windows za odjemalce s sistemom <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
 <translation id="2838830882081735096">Prepoved selitve podatkov in ARC-ja</translation>
@@ -1105,6 +1110,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="355118380775352753">Spletna mesta za odpiranje v nadomestnem brskalniku</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
+<translation id="3591527072193107424">Omogočanje funkcije podpore za zastarele brskalnike.</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
 <translation id="3624171042292187668">
       Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti prednosti obeh funkcij, osamitve in omejenega vpliva za uporabnike, tako da uporabite pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev, SitePerProcess, osami vsa spletna mesta.
@@ -1293,6 +1299,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3965339130942650562">Časovna omejitev za odjavo nedejavnega uporabnika</translation>
 <translation id="3973371701361892765">Nikoli samodejno ne skrij police</translation>
 <translation id="3984028218719007910">Določa, ali <ph name="PRODUCT_OS_NAME" /> po odjavi ohrani lokalne podatke o računu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> ne shrani trajnih računov in vsi podatki seje uporabnika se po odjavi izbrišejo. Če je pravilnik onemogočen ali ni nastavljen, lahko naprava hrani (šifrirane) lokalne podatke uporabnikov.</translation>
+<translation id="398475542699441679">Ta pravilnik nadzira, ali je omogočena podpora za zastarele brskalnike.
+
+      Če ta pravilnik ni nastavljen ali je nastavljen na »false«, Chrome ne bo poskusil odpreti določenih URL-jev v nadomestnem brskalniku.
+
+      Če je ta pravilnik nastavljen na »true«, bo Chrome poskusil odpreti nekatere URL-je v nadomestnem brskalniku (na primer Internet Explorerju). Ta funkcija je konfigurirana s pravilniki v skupini <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Ta funkcija nadomešča razširitev <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Konfiguracija iz razširitve se bo prenesla na to funkcijo, vendar zelo priporočamo, da namesto nje uporabljate Chromove pravilnike. S tem si zagotovite boljšo združljivost v prihodnje.</translation>
 <translation id="3997519162482760140">URL-ji, ki jim bo odobren dostop do naprav za zajem videa na straneh za prijavo SAML</translation>
 <translation id="4001275826058808087">Skrbniki za IT, ki upravljajo naprave v podjetju, lahko s to zastavico določijo, ali je uporabnikom dovoljeno unovčiti ponudbe prek registracije sistema Chrome OS.
 
@@ -1544,6 +1557,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Primere vzorcev si lahko ogledate na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Odpri seznam URL-jev</translation>
+<translation id="4674871290487541952">Omogočanje algoritmov, ki niso varni, pri preverjanju celovitosti posodobitev in namestitev razširitev</translation>
 <translation id="4680936297850947973">Zastarelo v M68. Uporabite pravilnik DefaultPopupsSetting.
 
       Podrobno pojasnilo je na strani https://www.chromestatus.com/features/5675755719622656.
@@ -2591,6 +2605,12 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik onemogočen, je način izvajanja v ozadju onemogočen in ga uporabnik ne more upravljati v nastavitvah brskalnika.
 
       Če ta pravilnik ni nastavljen, je način izvajanja v ozadju na začetku onemogočen in ga uporabnik lahko upravlja v nastavitvah brskalnika.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> zagotavlja varno posodabljanje in nameščanje razširitev. Kljub temu lahko vsebino nekaterih razširitev, ki gostujejo zunaj Spletne trgovine Chrome, ščitijo samo algoritmi za podpisovanje ali zgoščevanje, ki niso varni, na primer SHA1. Če je ta pravilnik onemogočen, Chrome ne bo dovolil sveže namestitve takšnih razširitev in njihovih posodobitev (dokler razvijalci razširitve ne predelajo z močnejšimi algoritmi). Če se je ta pravilnik omogočen, bodo namestitev in posodobitve takšnih razširitev dovoljene.
+
+          Če pravilnik ni nastavljen, je privzeto omogočeno delovanje.
+          Od brskalnika <ph name="PRODUCT_NAME" /> različice 75 bo privzeto omogočeno delovanje, če pravilnik ne bo nastavljen.
+
+          Od brskalnika <ph name="PRODUCT_NAME" /> različice 77 bo ta pravilnik prezrt in obravnavan kot onemogočen.</translation>
 <translation id="7126716959063786004">Omogoči končevanje procesov v upravitelju opravil</translation>
 <translation id="7127892035367404455">Povrnitev na ciljno različico</translation>
 <translation id="7128918109610518786">Prikaže identifikatorje aplikacij, ki jih <ph name="PRODUCT_OS_NAME" /> pokaže kot pripete aplikacije v vrstici zaganjalnika.

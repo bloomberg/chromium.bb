@@ -744,6 +744,11 @@
           此政策处于停用状态并且出站UDP连接会被防火墙阻止时，此机器将只允许通过本地网络内的客户端机器建立连接。
 
           如果此政策未设置，系统将启用此政策。</translation>
+<translation id="2813281962735757923">此政策用于控制不允许 <ph name="PRODUCT_OS_NAME" />设备在哪些时间范围内自动检查是否有更新。
+      当此政策设为非空的时间范围列表时：
+      相应设备将无法在指定的时间范围内自动检查是否有更新。由于存在潜在的安全问题，需要回滚的设备和低于最低 <ph name="PRODUCT_OS_NAME" />版本的设备都不会受到此政策的影响。另外，此政策不会阻止由用户或管理员请求的更新检查。
+      当此政策不含任何时间范围或未设置时：
+      此政策不会阻止任何自动进行的更新检查，但其他政策可能会阻止这类检查。只有那些已配置为自动启动型自助服务终端的 Chrome 设备才能启用此功能。其他设备均不受此政策的限制。</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />客户端的 Windows 注册表位置：</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
 <translation id="2838830882081735096">禁止数据迁移和 ARC</translation>
@@ -1029,6 +1034,7 @@
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="355118380775352753">要在替代浏览器中打开的网站</translation>
 <translation id="3577251398714997599">针对含侵扰性广告的网站的广告设置</translation>
+<translation id="3591527072193107424">启用“旧版浏览器支持”功能。</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3624171042292187668">
       要想做到两全其美，既能实现隔离，又能减少给用户带来的影响，不妨查看一下 IsolateOrigins 政策设置，您可以使用 IsolateOrigins 政策来指定想要隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
@@ -1210,6 +1216,13 @@
 <translation id="3965339130942650562">对待机用户执行退出操作前的超时时间</translation>
 <translation id="3973371701361892765">一律不自动隐藏任务栏</translation>
 <translation id="3984028218719007910">确定 <ph name="PRODUCT_OS_NAME" />是否要在退出后保留本地帐号数据。如果将此政策设置为 true，<ph name="PRODUCT_OS_NAME" />就不会持续保留帐号，且会在退出后舍弃用户会话中的所有数据。如果未配置此政策或将其设置为 false，设备就会保留（经过加密的）本地用户数据。</translation>
+<translation id="398475542699441679">此政策用于控制是否启用旧版浏览器支持。
+
+      当此政策设为 false 或未设置时，Chrome 不会尝试在备用浏览器中打开指定的网址。
+
+      当此政策设为 true 时，Chrome 会尝试在备用浏览器（例如 Internet Explorer）中打开某些网址。此功能是使用<ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />组中的政策配置的。
+
+      它将取代<ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />扩展程序。虽然该扩展程序中的配置会迁移至此功能中，但我们强烈建议您改用 Chrome 政策。这样有助于确保日后能实现更好的兼容性。</translation>
 <translation id="3997519162482760140">可通过 SAML 登录页面访问视频捕获设备的网址</translation>
 <translation id="4001275826058808087">企业设备的IT管理员可以使用此项控制是否允许用户通过注册Chrome操作系统兑换优惠。
 
@@ -1451,6 +1464,7 @@
 
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="467449052039111439">打开网址列表</translation>
+<translation id="4674871290487541952">允许使用不安全的算法对扩展程序更新和安装进行完整性检查</translation>
 <translation id="4680936297850947973">已在 M68 中弃用。请改用 DefaultPopupsSetting。
 
       如需完整说明，请访问 https://www.chromestatus.com/features/5675755719622656。
@@ -2422,6 +2436,12 @@
       如果此政策设为 False，系统将停用后台模式，并且用户无法在浏览器设置中控制该模式。
 
       如果此政策未设置，开始时系统将停用后台模式，但用户可以在浏览器设置中控制该模式。</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> 用于控制安全更新和安装扩展程序。不过，对于某些在 Chrome 网上应用店外部托管的扩展程序而言，它们的内容可能只会受到不安全的签名或哈希算法（例如 SHA1）的保护。当此政策处于停用状态时，Chrome 会禁止对这类扩展程序进行全新安装或更新（除非相应开发者使用更强大的算法重新构建了这些扩展程序）。当此政策处于启用状态时，Chrome 会允许安装和更新这类扩展程序。
+
+          当此政策未设置时，Chrome 的行为将会默认是此政策处于启用状态时的行为。
+          从 <ph name="PRODUCT_NAME" /> 75 开始，当此政策未设置时，Chrome 的行为将会默认是此政策处于停用状态时的行为。
+
+          从 <ph name="PRODUCT_NAME" /> 77 开始，此政策将会被忽略并会被视为已停用。</translation>
 <translation id="7126716959063786004">允许在任务管理器中结束进程</translation>
 <translation id="7127892035367404455">回滚到目标版本</translation>
 <translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME" />在启动程序栏中显示为固定应用的应用标识符。

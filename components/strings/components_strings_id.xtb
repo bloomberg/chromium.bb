@@ -759,6 +759,7 @@
 <translation id="5786044859038896871">Ingin mengisi informasi kartu?</translation>
 <translation id="5798683403665926540">Ubah halaman beranda di setelan Chrome</translation>
 <translation id="5803412860119678065">Ingin mengisi <ph name="CARD_DETAIL" />?</translation>
+<translation id="5804241973901381774">Izin</translation>
 <translation id="5810442152076338065">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
 <translation id="5838278095973806738">Jangan masukkan informasi sensitif apa pun di situs ini (misalnya, sandi atau kartu kredit), karena penyerang dapat mencurinya.</translation>
@@ -945,7 +946,7 @@
 <translation id="717330890047184534">ID GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}other{<ph name="SHIPPING_OPTION_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> lainnya}}</translation>
 <translation id="7179323680825933600">Simpan dan Isi Metode Pembayaran</translation>
-<translation id="7180611975245234373">Segarkan</translation>
+<translation id="7180611975245234373">Perbarui</translation>
 <translation id="7182878459783632708">Tidak ada kebijakan yang disetel</translation>
 <translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE" />ke<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="7192203810768312527">Sediakan ruang sebesar <ph name="SIZE" />. Sebagian situs mungkin dimuat lebih lambat pada kunjungan Anda berikutnya.</translation>

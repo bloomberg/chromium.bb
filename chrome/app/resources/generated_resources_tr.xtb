@@ -367,6 +367,7 @@
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1538729222189715449">Linux dosyaları açılıyor...</translation>
 <translation id="1540605929960647700">Demo modunu etkinleştir</translation>
+<translation id="1541396123399225659">Yeni Gruba ekle</translation>
 <translation id="1542514202066550870">Bu sekme bir başlığa VR içeriği sunuyor.</translation>
 <translation id="1543284117603151572">Edge'den Aktarıldı</translation>
 <translation id="1545177026077493356">Otomatik Kiosk Modu</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">Biçimlendiriliyor...</translation>
 <translation id="159359590073980872">Resim Önbelleği</translation>
 <translation id="1593926297800505364">Ödeme yöntemini kaydet</translation>
+<translation id="1595492813686795610">Linux yeni sürüme geçiriliyor</translation>
 <translation id="1598233202702788831">Güncellemeler yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="1600857548979126453">Sayfa hata ayıklayıcı arka ucuna erişme</translation>
 <translation id="1601560923496285236">Uygula</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">Temayı etkinleştir</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome Web Mağazası'nda göster</translation>
-<translation id="1761588866118490543">Ses modeli</translation>
 <translation id="176193854664720708">Parmak izi sensörü güç düğmesidir. Tek parmağınızla bu düğmeye hafifçe dokunun.</translation>
 <translation id="1763046204212875858">Uygulama kısayolları oluşturun</translation>
 <translation id="1763108912552529023">Keşfetmeye devam et</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">Sistem iletişim kutusunu kullanarak yazdır... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Göndermeden önce sor (önerilir)</translation>
 <translation id="2384436799579181135">Bir hata oluştu. Lütfen yazıcınızı kontrol edin ve tekrar deneyin.</translation>
+<translation id="2386926718981642523">"Ok Google" diyerek istediğiniz zaman Asistanınıza erişin</translation>
 <translation id="2387458720915042159">Proxy bağlantısı türü</translation>
 <translation id="2391419135980381625">Standart yazı tipi</translation>
 <translation id="2391762656119864333">İptal et</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />, <ph name="NETWORK_ID" /> ağına bağlanamadı. Lütfen başka bir ağ seçin veya tekrar deneyin.</translation>
 <translation id="2553440850688409052">Bu Eklentiyi Gizle</translation>
 <translation id="2554553592469060349">Seçili dosya çok büyük (maks. boyut: 3 MB).</translation>
+<translation id="255747371423522804">Mevcut gruba ekle</translation>
 <translation id="2558896001721082624">Sistem menüsünde erişilebilirlik seçeneklerini her zaman göster</translation>
 <translation id="2562685439590298522">Google Dokümanlar</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> oturumu açılmadı</translation>
@@ -1315,6 +1318,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
 <translation id="2972642118232180842">Yalnızca önemli içeriği çalıştır (önerilir)</translation>
 <translation id="2973324205039581528">Sitenin Sesini Kapat</translation>
+<translation id="2977480621796371840">Gruptan kaldır</translation>
 <translation id="2979639724566107830">Yeni pencerede aç</translation>
 <translation id="2981113813906970160">Büyük fare imleci göster</translation>
 <translation id="2982970937345031">Anonim olarak bildir</translation>
@@ -1565,6 +1569,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3385092118218578224">%<ph name="DISPLAY_ZOOM" /></translation>
 <translation id="338583716107319301">Ayırıcı</translation>
 <translation id="3389312115541230716">Görev çubuğunda <ph name="SMALL_PRODUCT_LOGO" /> simgesini sağ tıklayın</translation>
+<translation id="3393352139658145068">Birisi "Ok Google" dediğinde Asistan'ı etkinleştir. Pilden tasarruf etmek için, "Ok Google" özelliği yalnızca cihazınız güç kaynağına bağlıyken etkin olur.</translation>
 <translation id="3396800784455899911">"Kabul et ve devam et" düğmesini tıklayarak bu Google hizmetleri ile ilgili yukarıda açıklanan işlemleri kabul etmiş olursunuz.</translation>
 <translation id="3399432415385675819">Bildirimler devre dışı bırakılacak</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3168,6 +3173,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5816434091619127343">Yazıcıda yapılması istenen değişiklikler yazıcıyı kullanılamaz hale getirecekti.</translation>
 <translation id="5817918615728894473">Eşle</translation>
 <translation id="5821565227679781414">Kısayol Oluştur</translation>
+<translation id="5825412242012995131">Açık (Önerilen)</translation>
 <translation id="5826507051599432481">Genel Ad (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Yazdırılıyor...</translation>
@@ -3712,6 +3718,11 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6629841649550503054">Tümü <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklendi!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> sizin adınıza kendi kimlik doğrulamasını yapmak için bir sertifikaya kalıcı erişim izni istiyor.</translation>
 <translation id="6635956300022133031">Metin okuma seslerini seçer ve özelleştirir</translation>
+<translation id="6637585982786704944">İzin verdiğiniz uygulamalar ve web siteleri, düzgün çalışmaları için ihtiyaç duydukları hesap bilgilerine erişebilir.
+
+    Hesap eklemek istemiyorsanız web'e göz atmak için misafir olarak oturum açabilir veya gizli pencere açabilirsiniz.
+
+    Ayarlar -&gt; Google Hesapları bölümünden tüm hesapları görüntüleyebilir ve yönetebilirsiniz.</translation>
 <translation id="6639554308659482635">SQLite belleği</translation>
 <translation id="6641138807883536517">Rastgele oluşturulmuş güvenli modül şifresi kullanılamıyor. Powerwash sonrasında bu normaldir.</translation>
 <translation id="6643016212128521049">Temizle</translation>
@@ -3913,6 +3924,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6957231940976260713">Hizmet adı</translation>
 <translation id="696203921837389374">Mobil veriler üzerinden senkronizasyonu etkinleştir</translation>
 <translation id="6964390816189577014">Kahraman</translation>
+<translation id="6964760285928603117">Gruptan Kaldır</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6965648386495488594">Bağlantı noktası</translation>
 <translation id="6965978654500191972">Cihaz</translation>
@@ -4022,6 +4034,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7109543803214225826">Kısayol kaldırıldı</translation>
 <translation id="7113502843173351041">E-posta adresinizi öğrenme</translation>
 <translation id="7114054701490058191">Şifreler eşleşmiyor</translation>
+<translation id="7114648273807173152">Smart Lock'ı kullanarak Google Hesabınızda oturum açmak için Ayarlar &gt; Bağlı cihazlar &gt; Telefonunuz &gt; Smart Lock bölümüne gidin.</translation>
 <translation id="7117228822971127758">Lütfen daha sonra tekrar deneyin</translation>
 <translation id="7117247127439884114">Tekrar Oturum Açın...</translation>
 <translation id="711840821796638741">Yönetilen Yer İşaretlerini Göster</translation>
@@ -4177,6 +4190,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7348093485538360975">Ekran klavyesi</translation>
 <translation id="7352651011704765696">Bir şeyler ters gitti</translation>
 <translation id="735361434055555355">Linux yükleniyor...</translation>
+<translation id="7353887511974462734">Mevcut Gruba Ekle</translation>
 <translation id="735745346212279324">VPN bağlantısı kesildi</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> öğe kopyalanıyor.</translation>
 <translation id="7359588939039777303">Reklamlar engellendi.</translation>
@@ -4239,7 +4253,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7456847797759667638">Konumu Aç...</translation>
 <translation id="7461924472993315131">Sabitle</translation>
 <translation id="7463006580194749499">Kişi ekle</translation>
-<translation id="7464902436585505072">"OK Google" ses modeli</translation>
 <translation id="7465778193084373987">Netscape Sertifika İptali URL'si</translation>
 <translation id="7469894403370665791">Bu ağa otomatik olarak bağlan</translation>
 <translation id="747114903913869239">Hata: Uzantının kodu çözülemiyor</translation>
@@ -4808,6 +4821,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="827097179112817503">Ana Sayfa düğmesini göster</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 yer işareti silindi}other{# yer işareti silindi}}</translation>
 <translation id="8272443605911821513">"Diğer araçlar" menüsündeki Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
+<translation id="8272966760965438857">Google Hesaplarınızı tek bir yerden yönetin</translation>
 <translation id="8274332263553132018">Dosya yayınlayın</translation>
 <translation id="8274924778568117936">Güncelleme bitene kadar <ph name="DEVICE_TYPE" /> cihazınızı kapatmayın. Yükleme işlemi tamamlandıktan sonra <ph name="DEVICE_TYPE" /> cihazınız yeniden başlatılacaktır.</translation>
 <translation id="8275038454117074363">İçe aktar</translation>
@@ -5194,6 +5208,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8883847527783433352">Başka bir Hesapla Senkronize Et</translation>
 <translation id="8885197664446363138">Smart Lock kullanılamıyor</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" /> uygulamasında Touch ID'yi kullanın</translation>
+<translation id="8888253246822647887">Uygulamanız, yeni sürüme geçme işlemi tamamlandığında açılır. Yeni sürüme geçme işlemi birkaç dakika sürebilir.</translation>
 <translation id="8888432776533519951">Renk:</translation>
 <translation id="8890516388109605451">Kaynaklar</translation>
 <translation id="8892168913673237979">Her şey hazır!</translation>

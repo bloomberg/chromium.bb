@@ -131,7 +131,7 @@
 <translation id="1177138678118607465">खोज विज्ञापन और दूसरी Google सेवाओं को मनमुताबिक बनाने के लिए Google आपके ब्राउज़िंग इतिहास का इस्तेमाल कर सकता है. आप myaccount.google.com/activitycontrols/search में इसे कभी भी बदल सकते हैं</translation>
 <translation id="1177863135347784049">कस्टम</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>
-<translation id="1181037720776840403">निकालें</translation>
+<translation id="1181037720776840403">हटाएं</translation>
 <translation id="1183237619868651138">स्‍थानीय कैश में <ph name="EXTERNAL_CRX_FILE" /> इंस्‍टॉल नहीं कर सकते.</translation>
 <translation id="1185924365081634987">इस नेटवर्क गड़बड़ी को ठीक करने के लिए आप <ph name="GUEST_SIGNIN_LINK_START" />अतिथि के रूप में ब्राउज़ करें<ph name="GUEST_SIGNIN_LINK_END" /> को भी आज़मा सकते हैं.</translation>
 <translation id="1186771945450942097">नुकसान पहुंचाने वाला सॉफ़्टवेयर निकालें</translation>
@@ -367,6 +367,7 @@
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1538729222189715449">Linux फ़ाइलें खुल रही हैं...</translation>
 <translation id="1540605929960647700">'डेमो मोड' चालू करें</translation>
+<translation id="1541396123399225659">नए समूह में शामिल करें</translation>
 <translation id="1542514202066550870">यह टैब, हेडसेट में VR सामग्री को दिखाता है.</translation>
 <translation id="1543284117603151572">Edge से आयात किया गया</translation>
 <translation id="1545177026077493356">स्वचालित किओस्क मोड</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">फ़ॉर्मेट किया जा रहा है...</translation>
 <translation id="159359590073980872">चित्र संचय</translation>
 <translation id="1593926297800505364">भुगतान का तरीका सेव करें</translation>
+<translation id="1595492813686795610">Linux अपग्रेड हो रहा है</translation>
 <translation id="1598233202702788831">आपके व्‍यवस्‍थापक के द्वारा अपडेट अक्षम किए गए हैं</translation>
 <translation id="1600857548979126453">पेज डीबगर बैकएंड तक पहुंचें</translation>
 <translation id="1601560923496285236">लागू करें</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">थीम सक्षम करें</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome वेब स्टोर में देखें</translation>
-<translation id="1761588866118490543">आवाज़ का नमूना</translation>
 <translation id="176193854664720708">पावर बटन में फ़िंगरप्रिंट सेंसर मौजूद होता है. किसी भी उंगली से इसे हल्के से छुएं.</translation>
 <translation id="1763046204212875858">ऐप्स  शॉर्टकट बनाएं</translation>
 <translation id="1763108912552529023">एक्सप्लोर करते रहें</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">सिस्‍टम डॉयलॉग का उपयोग करके प्रिंट करें… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">भेजने से पहले पूछें (अनुशंसित)</translation>
 <translation id="2384436799579181135">कोई गड़बड़ी हुई है. कृपया अपना प्रिंटर देखें और दोबारा कोशिश करें.</translation>
+<translation id="2386926718981642523">बस "Ok Google" कहें और अपनी Assistant सेवा एक्सेस करें</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
 <translation id="2391419135980381625">मानक फ़ॉन्ट</translation>
 <translation id="2391762656119864333">निरस्‍त करें</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />, <ph name="NETWORK_ID" /> से कनेक्‍ट करने में असमर्थ था. कृपया कोई अन्‍य नेटवर्क चुनें या पुन: प्रयास करें.</translation>
 <translation id="2553440850688409052">यह प्लग इन छुपाएं</translation>
 <translation id="2554553592469060349">चुनी गई फ़ाइल बहुत बड़ी है (अधिकतम आकार: 3mb).</translation>
+<translation id="255747371423522804">मौजूदा समूह में जोड़ें</translation>
 <translation id="2558896001721082624">सिस्टम मेन्यू में सुलभता विकल्प हमेशा दिखाएं</translation>
 <translation id="2562685439590298522"> दस्तावेज़</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> में प्रवेश नहीं है</translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;फिर से करें</translation>
 <translation id="2972642118232180842">केवल ज़रूरी सामग्री चलाएं (सुझाया गया)</translation>
 <translation id="2973324205039581528">साइट म्यूट करें</translation>
+<translation id="2977480621796371840">समूह से हटाएं</translation>
 <translation id="2979639724566107830">नई विंडो में खोलें</translation>
 <translation id="2981113813906970160">बड़ा माउस कर्सर दिखाएं</translation>
 <translation id="2982970937345031">अनाम रूप से रिपोर्ट करें</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">विभाजक</translation>
 <translation id="3389312115541230716">टास्कबार में <ph name="SMALL_PRODUCT_LOGO" /> आइकॉन पर राइट क्लिक करें</translation>
+<translation id="3393352139658145068">जब कोई “Ok Google” कहे, तो Assistant चालू करें. बैटरी बचाने के लिए, “Ok Google” सिर्फ़ तब ही चालू होता है जब आपका डिवाइस किसी पावर स्रोत से कनेक्ट होता है.</translation>
 <translation id="3396800784455899911">"स्वीकार करें और जारी रखें" बटन पर क्लिक करके, आप पुष्टि करते हैं कि इन Google सेवाओं के लिए ऊपर बताई गई प्रोसेसिंग से आप सहमत हैं.</translation>
 <translation id="3399432415385675819">नोटिफ़िकेशन अक्षम हो जाएंगे</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3166,6 +3171,7 @@
 <translation id="5816434091619127343">प्रिंटर में जिन बदलावों का अनुरोध किया गया है, उनकी वजह से प्रिंटर का इस्तेमाल नहीं किया जा सकेगा.</translation>
 <translation id="5817918615728894473">युग्‍मित करें</translation>
 <translation id="5821565227679781414">शॉर्टकट बनाएं</translation>
+<translation id="5825412242012995131">चालू (सुुझाया गया)</translation>
 <translation id="5826507051599432481">सामान्य नाम (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">प्रिंट हो रहा है...</translation>
@@ -3325,7 +3331,7 @@
 <translation id="6041155700700864984">पूर्णस्‍क्रीन से बाहर निकलें</translation>
 <translation id="604124094241169006">स्वचालित</translation>
 <translation id="6042169520002885235">किसी प्रिंटर का निर्माता और मॉडल चुनें</translation>
-<translation id="6042308850641462728">अधिक</translation>
+<translation id="6042308850641462728">और ज़्यादा</translation>
 <translation id="6043317578411397101"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> के साथ Chrome टैब को शेयर कर रहा है.</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> के साथ Chrome टैब और ऑडियो शेयर कर रहा है.</translation>
 <translation id="6045021379489914695">आपका Chromebook और Android फ़ोन साथ मिलकर बेहतर काम करते हैं. उन्हें आपस में जोड़ें ताकि आप अपने कंप्यूटर से मैसेज (एसएमएस) भेज सकें, अपना इंटरनेट कनेक्शन शेयर कर सकें और अपने Chromebook को अपने फ़ोन से अनलॉक कर सकें.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
@@ -3413,7 +3419,7 @@
 <translation id="6163363155248589649">&amp;सामान्य</translation>
 <translation id="6163522313638838258">सभी को विस्तृत करें...</translation>
 <translation id="6164005077879661055">'निगरानी में रखे गए इस उपयोगकर्ता' को हटाने के बाद, निगरानी में रखे गए उपयोगकर्ता से जुड़ीं सभी फ़ाइलें और 'स्थानीय डेटा' हमेशा के लिए मिट जाएंगे. 'निगरानी में रखे गए इस उपयोगकर्ता' की देखी गईं वेबसाइटें और सेटिंग <ph name="MANAGEMENT_URL" /> पर प्रबंधक को अब भी दिखेंगी.</translation>
-<translation id="6165508094623778733">अधिक जानें</translation>
+<translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6166185671393271715">Chrome में पासवर्ड आयात करें</translation>
 <translation id="6169040057125497443">कृपया अपना माइक्रोफ़ोन जाँचें.</translation>
 <translation id="6169666352732958425">डेस्‍कटॉप कास्ट करने में असमर्थ.</translation>
@@ -3710,6 +3716,11 @@
 <translation id="6629841649550503054">सभी का <ph name="BEGIN_LINK" />Google डिस्‍क<ph name="END_LINK" /> में बैक अप लिया गया!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> को आपकी ओर से स्वयं को प्रमाणीकृत करने के लिए प्रमाणपत्र की स्थायी ऐक्सेस चाहिए.</translation>
 <translation id="6635956300022133031">लिखाई को बोली में बदलने वाली आवाज़ें चुनें और उन्हें पसंद के मुताबिक बनाएं</translation>
+<translation id="6637585982786704944">जिन ऐप्लिकेशन और वेबसाइटों को मंज़ूरी मिली हुई है, वे उस खाता जानकारी को एक्सेस कर सकते हैं, जो काम को ठीक तरीके से करने के लिए ज़रूरी है.
+
+    अगर आप खाता नहीं जोड़ना चाहते हैं, तो वेब ब्राउज़िंग के लिए मेहमान के तौर पर साइन इन करें या कोई गुप्त विडो खोलें.
+
+    सभी खातों को देखने और प्रबंधित करने के लिए आप सेटिंग -&gt; Google खाते पर जा सकते हैं.</translation>
 <translation id="6639554308659482635">SQLite मेमोरी</translation>
 <translation id="6641138807883536517">बिना किसी क्रम से जेनरेट किया गया सुरक्षित मॉड्यूल पासवर्ड उपलब्ध नहीं है. Powerwash के बाद आमतौर पर ऐसा होता है.</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
@@ -3911,6 +3922,7 @@
 <translation id="6957231940976260713">सेवा का नाम</translation>
 <translation id="696203921837389374">मोबाइल डेटा पर समन्‍वयन सक्षम करें</translation>
 <translation id="6964390816189577014">हीरो</translation>
+<translation id="6964760285928603117">समूह से हटाएं</translation>
 <translation id="6965382102122355670">ठीक है</translation>
 <translation id="6965648386495488594">पोर्ट</translation>
 <translation id="6965978654500191972">डिवाइस</translation>
@@ -4020,6 +4032,7 @@
 <translation id="7109543803214225826">शॉर्टकट हटाया गया</translation>
 <translation id="7113502843173351041">अपना ईमेल पता जानें</translation>
 <translation id="7114054701490058191">पासवर्ड मेल नहीं खाते</translation>
+<translation id="7114648273807173152">Smart Lock का इस्तेमाल करके अपने Google खाते में साइन इन करने के लिए, सेटिंग &gt; कनेक्ट किए हुए डिवाइस &gt; आपका फ़ोन &gt; Smart Lock पर जाएं.</translation>
 <translation id="7117228822971127758">कृपया बाद में फिर से कोशिश करें</translation>
 <translation id="7117247127439884114">पुन: प्रवेश करें...</translation>
 <translation id="711840821796638741">प्रबंधित बुकमार्क दिखाएं</translation>
@@ -4175,6 +4188,7 @@
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="7352651011704765696">कुछ गलत हुआ</translation>
 <translation id="735361434055555355">Linux इंस्टॉल किया जा रहा है...</translation>
+<translation id="7353887511974462734">मौजूदा समूह में जोड़ें</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> आइटम कॉपी किए जा रहे हैं...</translation>
 <translation id="7359588939039777303">विज्ञापन ब्लॉक हैं.</translation>
@@ -4237,7 +4251,6 @@
 <translation id="7456847797759667638">स्थान खोलें...</translation>
 <translation id="7461924472993315131">पिन करें</translation>
 <translation id="7463006580194749499">व्‍यक्ति जोड़ें</translation>
-<translation id="7464902436585505072">"Ok Google" आवाज़ का नमूना</translation>
 <translation id="7465778193084373987">Netscape प्रमाणपत्र रद्द करने संबंधी URL</translation>
 <translation id="7469894403370665791">इस नेटवर्क से अपने आप कनेक्ट करें</translation>
 <translation id="747114903913869239">गड़बड़ी: एक्सटेंशन डिकोड करने में असमर्थ</translation>
@@ -4807,6 +4820,7 @@
 <translation id="827097179112817503">होम बटन दिखाएं</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 बुकमार्क हटाया गया}one{# बुकमार्क हटाए गए}other{# बुकमार्क हटाए गए}}</translation>
 <translation id="8272443605911821513">"अधिक टूल" मेनू में एक्सटेंशन पर क्लिक करके अपने एक्सटेंशन प्रबंधित करें.</translation>
+<translation id="8272966760965438857">अपने Google खातों को एक ही जगह से प्रबंधित करें</translation>
 <translation id="8274332263553132018">फ़ाइल कास्ट करें</translation>
 <translation id="8274924778568117936">अपडेट पूरा होने तक अपना <ph name="DEVICE_TYPE" /> बंद न करें. इंस्टॉलेशन पूरा हो जाने के बाद आपका <ph name="DEVICE_TYPE" /> फिर से चालू हो जाएगा.</translation>
 <translation id="8275038454117074363">आयात करें</translation>
@@ -5193,6 +5207,7 @@
 <translation id="8883847527783433352">'किसी दूसरे खाते से सिंक करें'</translation>
 <translation id="8885197664446363138">Smart Lock अनुपलब्‍ध है</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" /> के साथ टच आईडी का इस्तेमाल करें</translation>
+<translation id="8888253246822647887">अपग्रेड पूरा होने पर आपका ऐप्लिकेशन खुल जाएगा. अपग्रेड में कुछ समय लग सकता है.</translation>
 <translation id="8888432776533519951">रंग:</translation>
 <translation id="8890516388109605451">स्रोत</translation>
 <translation id="8892168913673237979">बिल्कुल तैयार है!</translation>

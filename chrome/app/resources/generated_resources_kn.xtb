@@ -127,7 +127,7 @@
 <translation id="1177138678118607465">ಹುಡುಕಾಟ, ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಇತರ Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು Google ಬಳಸಬಹುದು. ನೀವು ಇದನ್ನು myaccount.google.com/activitycontrols/search ನಲ್ಲಿ ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು</translation>
 <translation id="1177863135347784049">ಕಸ್ಟಮ್</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
-<translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
+<translation id="1181037720776840403">ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1183237619868651138"><ph name="EXTERNAL_CRX_FILE" /> ಅನ್ನು ಸ್ಥಳೀಯ ಸಂಗ್ರಹದಲ್ಲಿ ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="1185924365081634987">ಈ ನೆಟ್‌ವರ್ಕ್‌ ದೋಷವನ್ನು ಬಗೆಹರಿಸಲು <ph name="GUEST_SIGNIN_LINK_START" />ಅತಿಥಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡುವುದನ್ನು<ph name="GUEST_SIGNIN_LINK_END" /> ಕೂಡಾ ನೀವು ಪ್ರಯತ್ನಿಸಬಹುದು.</translation>
 <translation id="1186771945450942097">ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ತೆಗೆದುಹಾಕಿ</translation>
@@ -364,6 +364,7 @@
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
 <translation id="1538729222189715449">Linux ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1540605929960647700">ಡೆಮೊ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="1541396123399225659">ಹೊಸ ಗುಂಪಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="1542514202066550870">ಈ ಟ್ಯಾಬ್ ಹೆಡ್‌ಸೆಟ್‌ಗೆ VR ವಿಷಯವನ್ನು ಪ್ರಸ್ತುತಪಡಿಸುತ್ತಿದೆ.</translation>
 <translation id="1543284117603151572">Edge ನಿಂದ ಆಮದು ಮಾಡಿಕೊಳ್ಳಲಾಗಿದೆ</translation>
 <translation id="1545177026077493356">ಸ್ವಯಂಚಾಲಿತ ಕಿಯೋಸ್ಕ್ ಮೋಡ್</translation>
@@ -402,6 +403,7 @@
 <translation id="1593594475886691512">ಸ್ವರೂಪಣೆ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="159359590073980872">ಚಿತ್ರದ ಸಂಗ್ರಹ</translation>
 <translation id="1593926297800505364">ಪಾವತಿ ವಿಧಾನವನ್ನು ಉಳಿಸಿ</translation>
+<translation id="1595492813686795610">Linux ಅಪ್‌ಗ್ರೇಡ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="1598233202702788831">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
 <translation id="1600857548979126453">ಡೀಬಗರ್ ಅನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳುವ ಪುಟವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1601560923496285236">ಅನ್ವಯಿಸು</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">ಥೀಮ್ ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Chrome ವೆಬ್‌ ಸ್ಟೋರ್‌ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ</translation>
-<translation id="1761588866118490543">ಧ್ವನಿ ಮಾದರಿ</translation>
 <translation id="176193854664720708">ಪವರ್ ಬಟನ್‌ನಲ್ಲಿ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಸೆನ್ಸರ್ ಇದೆ. ಯಾವುದೇ ಬೆರಳಿನಿಂದ ಅದನ್ನು ಲಘುವಾಗಿ ಸ್ಪರ್ಶಿಸಿ.</translation>
 <translation id="1763046204212875858">ಅಪ್ಲಿಕೇಶನ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ರಚಿಸಿ</translation>
 <translation id="1763108912552529023">ಅನ್ವೇಷಣೆ ಮುಂದುವರಿಸು</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">ಸಿಸ್ಟಂ ಸಂವಾದವನ್ನು ಬಳಸಿ ಮುದ್ರಿಸಿ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ಕಳುಹಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="2384436799579181135">ದೋಷ ಸಂಭವಿಸಿದೆ. ನಿಮ್ಮ ಪ್ರಿಂಟರ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="2386926718981642523">ಯಾವಾಗ ಬೇಕಾದರೂ "Ok Google" ಎಂದು ಹೇಳಿ ನಿಮ್ಮ ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="2387458720915042159">ಪ್ರಾಕ್ಸಿ ಪ್ರಕಾರ ಸಂಪರ್ಕ</translation>
 <translation id="2391419135980381625">ರೂಢಿಯಲ್ಲಿರುವ ಫಾಂಟ್</translation>
 <translation id="2391762656119864333">ಹಿಂತೆಗೆದುಕೊ</translation>
@@ -1039,6 +1041,7 @@
 <translation id="2553340429761841190"><ph name="NETWORK_ID" /> ಅನ್ನು ಸಂಪರ್ಕಿಸಲು <ph name="PRODUCT_NAME" /> ಗೆ ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಇನ್ನೊಂದು ನೆಟ್‌ವರ್ಕ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ ಅಥವಾ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2553440850688409052">ಈ ಪ್ಲಗ್‌ ಇನ್ ಅನ್ನು ಮರೆಮಾಡು</translation>
 <translation id="2554553592469060349">ಆಯ್ಕೆ ಮಾಡಿರುವ ಫೈಲ್ ತುಂಬಾ ದೊಡ್ಡದಾಗಿದೆ (ಗರಿಷ್ಠ ಗಾತ್ರ: 3mb).</translation>
+<translation id="255747371423522804">ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಗುಂಪಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="2558896001721082624">ಸಿಸ್ಟಂ ಮೆನುವಿನಲ್ಲಿ ಪ್ರವೇಶದ ಆಯ್ಕೆಗಳನ್ನು ಯಾವಾಗಲೂ ತೋರಿಸಿ</translation>
 <translation id="2562685439590298522">ಡಾಕ್ಸ್</translation>
 <translation id="2562743677925229011"><ph name="SHORT_PRODUCT_NAME" /> ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿಲ್ಲ</translation>
@@ -1311,6 +1314,7 @@
 <translation id="2972581237482394796">&amp;ಮತ್ತೆಮಾಡು</translation>
 <translation id="2972642118232180842">ಮುಖ್ಯ ವಿಷಯವನ್ನು ಮಾತ್ರ ರನ್ ಮಾಡಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="2973324205039581528">ಸೈಟ್‌ ಅನ್ನು ಮ್ಯೂಟ್‌ ಮಾಡಿ</translation>
+<translation id="2977480621796371840">ಗುಂಪಿನಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="2979639724566107830">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="2981113813906970160">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್ ತೋರಿಸು</translation>
 <translation id="2982970937345031">ಅನಾಮಧೇಯವಾಗಿ ವರದಿ ಮಾಡಿ</translation>
@@ -1561,6 +1565,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">ವಿಭಾಜಕ</translation>
 <translation id="3389312115541230716">ಕಾರ್ಯಪಟ್ಟಿಯಲ್ಲಿ <ph name="SMALL_PRODUCT_LOGO" /> ಐಕಾನ್ ಅನ್ನು ರೈಟ್ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
+<translation id="3393352139658145068">ಯಾರಾದರೂ "Ok Google" ಎಂದು ಹೇಳಿದಾಗ ಅಸಿಸ್ಟೆಂಟ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ. ಬ್ಯಾಟರಿ ಬಾಳಿಕೆಯನ್ನು ಉಳಿಸುವುದಕ್ಕಾಗಿ, ನಿಮ್ಮ ಸಾಧನವು ಪವರ್ ಮೂಲಕ್ಕೆ ಸಂಪರ್ಕಿತಗೊಂಡಾಗ ಮಾತ್ರ "Ok Google" ಆನ್ ಆಗಿರುತ್ತದೆ.</translation>
 <translation id="3396800784455899911">ಈ Google ಸೇವೆಗಳಿಗಾಗಿ "ಸ್ವೀಕರಿಸಿ ಮತ್ತು ಮುಂದುವರೆಸು" ಬಟನ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡುವುದರ ಮೂಲಕ, ನೀವು ಮೇಲೆ ವಿವರಿಸಿರುವ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುವಿಕೆಗೆ ಒಪ್ಪುತ್ತೀರಿ.</translation>
 <translation id="3399432415385675819">ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3165,6 +3170,7 @@
 <translation id="5816434091619127343">ವಿನಂತಿಸಿದ ಪ್ರಿಂಟರ್ ಬದಲಾವಣೆಗಳು ಪ್ರಿಂಟರ್ ಅನ್ನು ನಿಷ್ಪ್ರಯೋಜಕಗೊಳಿಸಬಹುದು.</translation>
 <translation id="5817918615728894473">ಜೋಡಿಸು</translation>
 <translation id="5821565227679781414">ಶಾರ್ಟ್‌ಕಟ್ ರಚಿಸಿ</translation>
+<translation id="5825412242012995131">ಆನ್‌ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="5826507051599432481">ಸಾಮಾನ್ಯ ಹೆಸರು (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">ಮುದ್ರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -3709,6 +3715,11 @@
 <translation id="6629841649550503054"><ph name="BEGIN_LINK" />Google ಡ್ರೈವ್<ph name="END_LINK" /> ಗೆ ಎಲ್ಲವನ್ನೂ ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ನಿಮ್ಮ ಪರವಾಗಿ ಸ್ವತಃ ಪ್ರಮಾಣೀಕರಿಸಲು ಪ್ರಮಾಣಪತ್ರಕ್ಕೆ ಶಾಶ್ವತ ಪ್ರವೇಶ ಬಯಸುತ್ತದೆ.</translation>
 <translation id="6635956300022133031">"ಪಠ್ಯದಿಂದ ಧ್ವನಿ" ಧ್ವನಿಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ ಮತ್ತು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ</translation>
+<translation id="6637585982786704944">ನಿಮ್ಮ ಅನುಮತಿ ಹೊಂದಿರುವ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಸಮರ್ಪಕವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸುವುದಕ್ಕಾಗಿ ತಮಗೆ ಅವಶ್ಯವಿರುವ ಖಾತೆ ಮಾಹಿತಿಯನ್ನು ಪ್ರವೇಶಿಸಬಹುದು.
+
+    ನೀವು ಖಾತೆಯೊಂದನ್ನು ಸೇರಿಸಲು ಬಯಸದಿದ್ದಲ್ಲಿ, ಓರ್ವ ಅತಿಥಿಯಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿ ಅಥವಾ ವೆಬ್ ಬ್ರೌಸಿಂಗ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಅದೃಶ್ಯ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ.
+
+    ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳು -&gt; Google ಖಾತೆಗಳು ಎಂಬಲ್ಲಿ ಹೋಗಿ, ಎಲ್ಲಾ ಖಾತೆಗಳನ್ನು ವೀಕ್ಷಿಸಬಹುದು ಮತ್ತು ನಿರ್ವಹಿಸಲೂ ಬಹುದು.</translation>
 <translation id="6639554308659482635">SQLite ಮೆಮೊರಿ</translation>
 <translation id="6641138807883536517">ರ‍್ಯಾಂಡಮ್‌‌ ಆಗಿ ರಚಿಸಲಾದ, ಸುಭದ್ರ ಮಾಡ್ಯೂಲ್ ಪಾಸ್‌ವರ್ಡ್ ಲಭ್ಯವಿಲ್ಲ. Powerwash ಬಳಿಕ ಹೀಗಾಗುವುದು ಸಾಮಾನ್ಯವಾಗಿದೆ.</translation>
 <translation id="6643016212128521049">ತೆರವುಗೊಳಿಸಿ</translation>
@@ -3909,6 +3920,7 @@
 <translation id="6957231940976260713">ಸೇವೆಯ ಹೆಸರು</translation>
 <translation id="696203921837389374">ಮೊಬೈಲ್ ಡೇಟಾ ಮೂಲಕ ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="6964390816189577014">ಹೀರೋ</translation>
+<translation id="6964760285928603117">ಗುಂಪಿನಿಂದ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="6965648386495488594">ಪೋರ್ಟ್</translation>
 <translation id="6965978654500191972">ಸಾಧನ</translation>
@@ -4019,6 +4031,7 @@
 <translation id="7109543803214225826">ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
 <translation id="7113502843173351041">ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ತಿಳಿದುಕೊಳ್ಳಿ</translation>
 <translation id="7114054701490058191">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ</translation>
+<translation id="7114648273807173152">ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು Smart Lock ಬಳಸುವುದಕ್ಕೆ, ಸೆಟ್ಟಿಂಗ್‌ಗಳು&gt; ಸಂಪರ್ಕಗೊಂಡಿರುವ ಸಾಧನಗಳು &gt; ನಿಮ್ಮ ಫೋನ್ &gt; Smart Lock ಎಂಬಲ್ಲಿ ಹೋಗಿ.</translation>
 <translation id="7117228822971127758">ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="7117247127439884114">ಪುನಃ ಸೈನ್ ಇನ್  ಮಾಡಿ...</translation>
 <translation id="711840821796638741">ನಿರ್ವಹಿಸಲಾದ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ತೋರಿಸು</translation>
@@ -4059,7 +4072,7 @@
 <translation id="7171559745792467651">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಿಂದ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> ಅನ್ನು ಕಾನ್ಫಿಗರ್‌ ಮಾಡಿ</translation>
 <translation id="7175353351958621980">ಇದರಿಂದ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ:</translation>
-<translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
+<translation id="7180611975245234373">ರಿಫ್ರೆಶ್</translation>
 <translation id="7180865173735832675">ಕಸ್ಟಮೈಸ್</translation>
 <translation id="7182359331070524176">Google ಫೋಟೋಗಳ ಆಲ್ಬಮ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="7186088072322679094">ಪರಿಕರಪಟ್ಟಿಯಲ್ಲಿ ಇರಿಸು</translation>
@@ -4174,6 +4187,7 @@
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7352651011704765696">ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ</translation>
 <translation id="735361434055555355">Linux ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="7353887511974462734">ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಗುಂಪಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="735745346212279324">VPN ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> ಐಟಂಗಳನ್ನು ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7359588939039777303">ಜಾಹೀರಾತುಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
@@ -4236,7 +4250,6 @@
 <translation id="7456847797759667638">ಸ್ಥಳವನ್ನು ತೆರೆ...</translation>
 <translation id="7461924472993315131">ಪಿನ್</translation>
 <translation id="7463006580194749499">ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸು</translation>
-<translation id="7464902436585505072">"ಓಕೆ Google" ಧ್ವನಿ ಮಾದರಿ</translation>
 <translation id="7465778193084373987">Netscape ಪ್ರಮಾಣಪತ್ರ ಹಿಂತೆಗೆದುಕೊಳ್ಳುವಿಕೆ URL</translation>
 <translation id="7469894403370665791">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="747114903913869239">ದೋಷ: ವಿಸ್ತರಣೆಯನ್ನು ಡಿಕೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
@@ -4797,6 +4810,7 @@
 <translation id="827097179112817503">ಮುಖಪುಟ ಬಟನ್‌ ತೋರಿಸು</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 ಬುಕ್‌ಮಾರ್ಕ್ ಅಳಿಸಲಾಗಿದೆ}one{# ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ}other{# ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ}}</translation>
 <translation id="8272443605911821513">"ಹೆಚ್ಚಿನ ಪರಿಕರಗಳು" ಮೆನುನಲ್ಲಿರುವ ‘ವಿಸ್ತರಣೆಗಳು’ಕ್ಲಿಕ್ ಮಾಡುವ ಮೂಲಕ ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.</translation>
+<translation id="8272966760965438857">ನಿಮ್ಮ Google ಖಾತೆಗಳನ್ನು ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ ನಿರ್ವಹಿಸಿ.</translation>
 <translation id="8274332263553132018">ಫೈಲ್‌ ಅನ್ನು ಬಿತ್ತರಿಸಿ</translation>
 <translation id="8274924778568117936">ಅಪ್‌ಡೇಟ್ ಮುಕ್ತಾಯಗೊಳ್ಳುವವರೆಗೆ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆಫ್ ಮಾಡಬೇಡಿ. ಇನ್‌ಸ್ಟಾಲೇಶನ್ ಪ್ರಕ್ರಿಯೆ ಪೂರ್ಣಗೊಂಡ ನಂತರ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ.</translation>
 <translation id="8275038454117074363">ಆಮದು</translation>
@@ -5186,6 +5200,7 @@
 <translation id="8883847527783433352">ಇನ್ನೊಂದು ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="8885197664446363138">Smart Lock ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="88870264962436283"><ph name="APP_NAME" /> ನೊಂದಿಗೆ ಸ್ಪರ್ಶ ಐಡಿ ಬಳಸಿ</translation>
+<translation id="8888253246822647887">ಅಪ್‌ಗ್ರೇಡ್‌ ಮಾಡುವುದು ಪೂರ್ಣಗೊಂಡಾಗ ನಿಮ್ಮ ಆ್ಯಪ್‌ ತೆರೆದುಕೊಳ್ಳುತ್ತದೆ. ಅಪ್‌ಗ್ರೇಡ್‌ಗಳನ್ನು ಮಾಡುವುದಕ್ಕೆ ಕೆಲವು ನಿಮಿಷಗಳು ಬೇಕಾಗಬಹುದು.</translation>
 <translation id="8888432776533519951">ಬಣ್ಣ:</translation>
 <translation id="8890516388109605451">ಮೂಲಗಳು</translation>
 <translation id="8892168913673237979">ಎಲ್ಲ ಹೊಂದಿಸಿ!</translation>

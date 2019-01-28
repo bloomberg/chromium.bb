@@ -780,6 +780,11 @@
           Ha ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a számítógép csak olyan kapcsolatokat fog engedélyezni az ügyfelek számítógépei felől, amelyek a helyi hálózaton belül találhatók.
 
           Ha a házirend nincs beállítva, akkor a rendszer engedélyezi a beállítást.</translation>
+<translation id="2813281962735757923">Ez a házirend szabályozza az időintervallumot, amely során a(z) <ph name="PRODUCT_OS_NAME" />-eszköz nem kereshet automatikusan frissítéseket.
+      Ha a házirend időintervallumok nem üres listájára van állítva:
+      Az eszközök nem tudnak automatikusan frissítéseket keresni a megadott időintervallumokon belül. A korábbi állapot visszaállítását igénylő és a minimális <ph name="PRODUCT_OS_NAME" />-verzió alatti eszközökre nem érvényes ez a házirend a lehetséges biztonsági problémák elkerülése érdekében. Továbbá a házirend nem tiltja a felhasználók és adminisztrátorok által kérelmezett frissítéskereséseket.
+      Ha a házirend nincs beállítva, vagy nem tartalmaz időintervallumokat:
+      Ez a házirend nem tiltja az automatikus frissítéskereséseket, más házirendek azonban tilthatják őket. Ez a funkció csak az automatikusan induló kioszkként beállított Chrome-eszközökön használható. A többi eszközt nem korlátozza ez a házirend.</translation>
 <translation id="2823870601012066791">A Windows beállításjegyzékének helye <ph name="PRODUCT_OS_NAME" />-ügyfelek esetében:</translation>
 <translation id="2824715612115726353">Inkognitómód engedélyezése</translation>
 <translation id="2838830882081735096">Adatmigráció és ARC letiltása</translation>
@@ -1069,6 +1074,7 @@
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="355118380775352753">Az alternatív böngészőben megnyíló webhelyek</translation>
 <translation id="3577251398714997599">Hirdetésbeállítások a tolakodó hirdetéseket tartalmazó webhelyekre vonatkozóan</translation>
+<translation id="3591527072193107424">A Régi böngészők támogatása funkció engedélyezése</translation>
 <translation id="3591584750136265240">Bejelentkezési hitelesítési viselkedés konfigurálása</translation>
 <translation id="3624171042292187668">
       Tekintse át az IsolateOrigins házirend beállításait, és annak érdekében, hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
@@ -1252,6 +1258,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="3965339130942650562">Időtúllépés, amely után a felhasználót a rendszer tétlenség esetén kijelentkezteti.</translation>
 <translation id="3973371701361892765">A polc soha ne legyen automatikusan elrejtve</translation>
 <translation id="3984028218719007910">Meghatározza, hogy a(z) <ph name="PRODUCT_OS_NAME" /> megtartja-e a helyi fiókadatokat a kijelentkezést követően. Ha a beállítás igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> nem tart meg állandó fiókokat, és a rendszer elveti a felhasználói munkamenet minden adatát a kijelentkezés után. Ha a házirend beállítása hamis, vagy nincs beállítva a házirend, akkor az eszköz megtarthatja a (titkosított) helyi felhasználói adatokat.</translation>
+<translation id="398475542699441679">Ez a házirend vezérli a Régi böngészők támogatása funkció engedélyezését.
+
+      Ha a házirend beállítatlanul marad, vagy értéke hamis, a Chrome nem próbálja meg másik böngészőben megnyitni a kijelölt URL-eket.
+
+      Ha a házirend értéke igaz, a Chrome alternatív böngészőben (pl. Internet Explorer) próbál meg megnyitni bizonyos URL-eket. Ez a funkció a(z) <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" /> csoportban található házirendek használatával konfigurálható.
+
+      A funkció a(z) <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" /> bővítmény helyébe lép. A rendszer a bővítmény konfigurációját alkalmazza erre a funkcióra, de erősen javasolt inkább a Chrome-házirendek használata. Ez biztosítja a jobb kompatibilitást a későbbiekben.</translation>
 <translation id="3997519162482760140">Azon URL-ek, amelyek hozzáférést kapnak a videórögzítő eszközökhöz a SAML bejelentkezési oldalakon</translation>
 <translation id="4001275826058808087">Vállalati eszközök rendszergazdái annak szabályozására használhatják ezt a jelölőt, hogy engedélyezik-e a felhasználóknak az ajánlatok beváltását Chrome OS-regisztráció útján.
 
@@ -1493,6 +1506,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Példamintákért lásd a következő címet: https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Nyisson meg egy URL-listát</translation>
+<translation id="4674871290487541952">Nem biztonságos algoritmusok engedélyezése a bővítmények frissítésekor és telepítésekor történő integritás-ellenőrzéseknél</translation>
 <translation id="4680936297850947973">Megszűnt az M68-as verzióban. Használja helyette a DefaultPopupsSetting házirendet.
 
       A teljes magyarázatot a következő linken találja: https://www.chromestatus.com/features/5675755719622656.
@@ -2493,6 +2507,12 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha a házirend értéke False (hamis), a háttérmód le van tiltva, a felhasználó pedig ezt nem tudja módosítani a böngésző beállításaiban.
 
       Ha a házirend nincs beállítva, a háttérmód először le van tiltva, és ezt a felhasználó módosítani tudja a böngésző beállításaiban.</translation>
+<translation id="7123266440503901785">A <ph name="PRODUCT_NAME" /> gondoskodik a bővítmények biztonságos frissítéséről és telepítéséről. Azonban előfordulhat, hogy bizonyos, a Chrome Internetes áruházon kívülről származó bővítmények tartalmának védelméről csak nem biztonságos aláíró vagy kivonatoló algoritmusok (pl. SHA1) gondoskodnak. Ha le van tiltva ez a házirend, a Chrome nem engedélyezi az ilyen bővítmények friss telepítését és frissítését (amíg a bővítmény fejlesztői újra el nem készítik a bővítményt erősebb algoritmusok használatával). Ha a házirend engedélyezve van, lehetséges az ilyen bővítmények telepítése és frissítése.
+
+          Ha a házirend nincs beállítva, a rendszer alapértelmezés szerint az engedélyezett viselkedést használja.
+          A <ph name="PRODUCT_NAME" /> 75-ös verziójától kezdve a rendszer alapértelmezés szerint a letiltott viselkedést használja, ha nincs beállítva a házirend.
+
+          A <ph name="PRODUCT_NAME" /> 77-es verziójától kezdve a rendszer figyelmen kívül hagyja és letiltottként kezeli a házirendet.</translation>
 <translation id="7126716959063786004">A folyamatok befejezésének engedélyezése a Feladatkezelőben</translation>
 <translation id="7127892035367404455">Visszaállítás célverzióra</translation>
 <translation id="7128918109610518786">Listázza a(z) <ph name="PRODUCT_OS_NAME" /> által az indítósávon rögzített alkalmazásként megjelenített alkalmazásazonosítókat.

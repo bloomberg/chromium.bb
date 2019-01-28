@@ -29,7 +29,7 @@
 <translation id="1375321115329958930">సేవ్ చెయ్యబడిన పాస్‌వర్డ్‌లు</translation>
 <translation id="1377255359165588604">సమకాలీకరణ పని చేయడం ఆపివేయబడింది.</translation>
 <translation id="1377321085342047638">కార్డ్ సంఖ్య</translation>
-<translation id="1383876407941801731">శోధించు</translation>
+<translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1389974829397082527">ఇక్కడ బుక్‌మార్క్‌లు ఏవీ లేవు</translation>
 <translation id="1400642268715879018">గత 4 వారాలు</translation>
 <translation id="1407135791313364759">అన్నీ తెరువు</translation>
@@ -283,7 +283,7 @@
 <translation id="5737974891429562743">ఖాతా సైన్-ఇన్ వివరాలు పాతవి. సింక్‌ను ప్రారంభించడానికి అప్‌డేట్ చేయండి.</translation>
 <translation id="5738887413654608789">దీని వలన మీరు మీ పరిసరాల ఆధారంగా సంబంధిత వెబ్‌ పేజీలను కనుగొనగలుగుతారు.</translation>
 <translation id="5771816112378578655">సెటప్ పురోగమనంలో ఉంది...</translation>
-<translation id="5816228676161003208">దీని వలన మీ వాయిస్‌ని ఉపయోగించి వేగంగా శోధించగలుగుతారు.</translation>
+<translation id="5816228676161003208">దీని వలన మీ వాయిస్‌ను ఉపయోగించి వేగంగా వెతకగలుగుతారు.</translation>
 <translation id="5846482154967366008">శోధన ఇంజిన్</translation>
 <translation id="5854790677617711513">30 రోజుల కన్నా పాతవి</translation>
 <translation id="5857090052475505287">క్రొత్త ఫోల్డర్</translation>
@@ -472,7 +472,7 @@
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="8840513115188359703">మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు.</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
-<translation id="8881801611828450202">ఈ చిత్రం కోసం <ph name="SEARCH_ENGINE" />ను వెతకండి</translation>
+<translation id="8881801611828450202">ఈ చిత్రం కోసం <ph name="SEARCH_ENGINE" />ని వెతకండి</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">ఒక సమస్యను నివేదించండి</translation>
 <translation id="8971089644512329999">సరే, అర్థమైంది</translation>

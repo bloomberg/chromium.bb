@@ -364,6 +364,7 @@
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1538729222189715449">Отварају се Linux датотеке…</translation>
 <translation id="1540605929960647700">Омогућите режим демонстрације</translation>
+<translation id="1541396123399225659">Додај у нову групу</translation>
 <translation id="1542514202066550870">ВР садржај ове картице приказује се преко хедсета.</translation>
 <translation id="1543284117603151572">Увезени из Edge-а</translation>
 <translation id="1545177026077493356">Аутоматски режим киоска</translation>
@@ -402,6 +403,7 @@
 <translation id="1593594475886691512">Форматирање...</translation>
 <translation id="159359590073980872">Кеш слике</translation>
 <translation id="1593926297800505364">Сачувајте начин плаћања</translation>
+<translation id="1595492813686795610">Linux се надограђује</translation>
 <translation id="1598233202702788831">Администратор је онемогућио ажурирања.</translation>
 <translation id="1600857548979126453">Приступ позадинском механизму програма за отклањање грешака на страници</translation>
 <translation id="1601560923496285236">Примени</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">Омогући тему</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Прикажи у Chrome веб-продавници</translation>
-<translation id="1761588866118490543">Гласовни модел</translation>
 <translation id="176193854664720708">Сензор за отисак прста је у дугмету за напајање. Лагано га додирните било којим прстом.</translation>
 <translation id="1763046204212875858">Направите пречице за апликације</translation>
 <translation id="1763108912552529023">Настави са истраживањем</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">Штампај помоћу системског дијалога... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Питај пре слања (препоручује се)</translation>
 <translation id="2384436799579181135">Дошло је до грешке. Проверите штампач и пробајте поново.</translation>
+<translation id="2386926718981642523">Приступајте Помоћнику сваки пут када кажете „Ок Google“</translation>
 <translation id="2387458720915042159">Тип везе са проксијем</translation>
 <translation id="2391419135980381625">Стандардни фонт</translation>
 <translation id="2391762656119864333">Опозови</translation>
@@ -1040,6 +1042,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> није успео да се повеже са мрежом <ph name="NETWORK_ID" />. Изаберите другу мрежу или покушајте поново.</translation>
 <translation id="2553440850688409052">Сакриј овај додатак</translation>
 <translation id="2554553592469060349">Изабрана датотека је превелика (максимална величина: 3 MB).</translation>
+<translation id="255747371423522804">Додајте у постојећу групу</translation>
 <translation id="2558896001721082624">Увек приказуј опције приступачности у системском менију</translation>
 <translation id="2562685439590298522">Документи</translation>
 <translation id="2562743677925229011">Нисте пријављени на <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1311,6 +1314,7 @@
 <translation id="2972581237482394796">&amp;Понови радњу</translation>
 <translation id="2972642118232180842">Покрећи само важан садржај (препоручено)</translation>
 <translation id="2973324205039581528">Искључи звук сајта</translation>
+<translation id="2977480621796371840">Уклони из групе</translation>
 <translation id="2979639724566107830">Отворите у новом прозору</translation>
 <translation id="2981113813906970160">Прикажи велики курсор</translation>
 <translation id="2982970937345031">Пошаљи извештај анонимно</translation>
@@ -1561,6 +1565,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Разделник</translation>
 <translation id="3389312115541230716">Кликните десним тастером на икону <ph name="SMALL_PRODUCT_LOGO" /> на траци задатака</translation>
+<translation id="3393352139658145068">Помоћник се активира када неко каже „Ок Google“. Да бисте уштедели батерију, функција „Ок Google“ је укључена само када је уређај повезан са извором напајања.</translation>
 <translation id="3396800784455899911">Ако кликнете на дугме „Прихвати и настави“, прихватате горенаведену обраду за ове Google услуге.</translation>
 <translation id="3399432415385675819">Обавештења ће бити онемогућена</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3165,6 +3170,7 @@
 <translation id="5816434091619127343">Тражене измене ће учинити штампач неупотребљивим.</translation>
 <translation id="5817918615728894473">Упари</translation>
 <translation id="5821565227679781414">Направи пречицу</translation>
+<translation id="5825412242012995131">Укључено (препоручено)</translation>
 <translation id="5826507051599432481">Опште име (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Штампање...</translation>
@@ -3709,6 +3715,11 @@
 <translation id="6629841649550503054">Резервне копије свих датотека су направљене на <ph name="BEGIN_LINK" />Google диску!<ph name="END_LINK" /></translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> жели трајни приступ сертификату да би потврдио сопствену аутентичност у ваше име.</translation>
 <translation id="6635956300022133031">Изаберите и прилагодите гласове за претварање текста у говор</translation>
+<translation id="6637585982786704944">Апликације и веб-сајтови који имају вашу дозволу могу да приступају информацијама о налогу које су им потребне за исправан рад.
+
+    Ако не желите да додате налог, пријавите се као гост или отворите прозор без архивирања ради прегледања веба.
+
+    Можете да одете на Подешавања -&gt; Google налози да бисте видели све налоге и управљали њима.</translation>
 <translation id="6639554308659482635">SQLite меморија</translation>
 <translation id="6641138807883536517">Насумично генерисана лозинка за безбедносни модул није доступна. То је нормално после Powerwash-а.</translation>
 <translation id="6643016212128521049">Обриши</translation>
@@ -3910,6 +3921,7 @@
 <translation id="6957231940976260713">Назив услуге</translation>
 <translation id="696203921837389374">Омогући синхронизацију преко мобилне везе за пренос података</translation>
 <translation id="6964390816189577014">Херој</translation>
+<translation id="6964760285928603117">Уклони из групе</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="6965648386495488594">Порт</translation>
 <translation id="6965978654500191972">Уређај</translation>
@@ -4019,6 +4031,7 @@
 <translation id="7109543803214225826">Пречица је уклоњена</translation>
 <translation id="7113502843173351041">Откривање ваше имејл адресе</translation>
 <translation id="7114054701490058191">Лозинке се не подударају</translation>
+<translation id="7114648273807173152">Да бисте користили Smart Lock за пријављивање на Google налог, идите на Подешавања &gt; Повезани уређаји &gt; Телефон &gt; Smart Lock.</translation>
 <translation id="7117228822971127758">Пробајте поново касније</translation>
 <translation id="7117247127439884114">Пријави ме поново...</translation>
 <translation id="711840821796638741">Прикажи управљане обележиваче</translation>
@@ -4174,6 +4187,7 @@
 <translation id="7348093485538360975">Тастатура на екрану</translation>
 <translation id="7352651011704765696">Нешто није у реду</translation>
 <translation id="735361434055555355">Инсталира се Linux...</translation>
+<translation id="7353887511974462734">Додајте у постојећу групу</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7359359531237882347">Копирају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7359588939039777303">Огласи су блокирани.</translation>
@@ -4236,7 +4250,6 @@
 <translation id="7456847797759667638">Отвори локацију...</translation>
 <translation id="7461924472993315131">Закачи</translation>
 <translation id="7463006580194749499">Додај особу</translation>
-<translation id="7464902436585505072">Гласовни модел „Ок Google“</translation>
 <translation id="7465778193084373987">URL за опозив Netscape сертификата</translation>
 <translation id="7469894403370665791">Аутоматски се повезуј са овом мрежом</translation>
 <translation id="747114903913869239">Грешка: Није могуће дешифровати додатак</translation>
@@ -4806,6 +4819,7 @@
 <translation id="827097179112817503">Прикажи дугме за почетну страницу</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 обележивач је избрисан}one{# обележивач је избрисан}few{# обележивача су избрисана}other{# обележивача је избрисано}}</translation>
 <translation id="8272443605911821513">Управљајте додацима кликом на Додаци у менију „Још алатки“.</translation>
+<translation id="8272966760965438857">Управљајте Google налозима на једном месту</translation>
 <translation id="8274332263553132018">Пребаците датотеку</translation>
 <translation id="8274924778568117936">Не искључујте и не затварајте <ph name="DEVICE_TYPE" /> док се ажурирање не заврши. <ph name="DEVICE_TYPE" /> ће се поново покренути када се инсталација заврши.</translation>
 <translation id="8275038454117074363">Увези</translation>
@@ -5192,6 +5206,7 @@
 <translation id="8883847527783433352">Синхронизујте са другим налогом</translation>
 <translation id="8885197664446363138">Smart Lock није доступно</translation>
 <translation id="88870264962436283">Користите Touch ID за апликацију <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Апликација ће се отворити када се надоградња заврши. Надоградње могу да трају неколико минута.</translation>
 <translation id="8888432776533519951">Боја:</translation>
 <translation id="8890516388109605451">Извори</translation>
 <translation id="8892168913673237979">Спремни сте!</translation>

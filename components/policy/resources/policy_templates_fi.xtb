@@ -783,6 +783,11 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien asiakaskoneiden yhteydet.
 
       Jos käytäntöä ei määritetä, asetus on käytössä.</translation>
+<translation id="2813281962735757923">Tämä käytäntö määrittää aikavälit, joiden aikana <ph name="PRODUCT_OS_NAME" /> ‑laite ei saa tarkastaa päivityksiä automaattisesti.
+      Kun tämän käytännön arvo on aikavälien luettelo, joka ei ole tyhjä:
+      Laitteet eivät voi tarkastaa päivityksiä automaattisesti määritettyinä aikoina. Jos laite on palautettava edelliseen versioon tai siinä on<ph name="PRODUCT_OS_NAME" /> ‑vähimmäisversiota vanhempi versio, tällä käytännöllä ei tietoturvasyistä ole vaikutusta. Tämä käytäntö ei myöskään estä käyttäjän tai järjestelmänvalvojan pyytämää päivitysten tarkastusta.
+      Jos tällä käytännöllä ei ole arvoa tai arvossa ei ole aikavälejä:
+      Tämä käytäntö ei estä automaattisia päivitysten tarkastuksia, mutta muut käytännöt voivat estää ne. Tämä ominaisuus on käytössä vain Chrome-laitteissa, jotka on määritetty automaattisesti käynnistyviksi kioskeiksi. Tämä käytäntö ei rajoita muita laitteita.</translation>
 <translation id="2823870601012066791">Käyttöjärjestelmässä <ph name="PRODUCT_OS_NAME" /> toimivien asiakkaiden sijainti Windows-rekisterissä:</translation>
 <translation id="2824715612115726353">Ota incognito-tila käyttöön</translation>
 <translation id="2838830882081735096">Estä tietojen siirtäminen ja ARC</translation>
@@ -1074,6 +1079,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="355118380775352753">Sivustot, jotka avataan vaihtoehtoisessa selaimessa</translation>
 <translation id="3577251398714997599">Häiritseviä mainoksia sisältävien sivustojen mainosasetukset</translation>
+<translation id="3591527072193107424">Ota Vanhojen selaimien tuki ‑ominaisuus käyttöön.</translation>
 <translation id="3591584750136265240">Määritä kirjautumistodennuksen käytös.</translation>
 <translation id="3624171042292187668">
       Suosittelemme tutustumaan IsolateOrigins-käytännön asetukseen saadaksesi molempien parhaat puolet, eristämisen ja rajallisen vaikutuksen käyttäjille, käyttämällä IsolateOrigins-käytäntöä eristettävien sivustojen luettelon kanssa. Tämä asetus, SitePerProcess, eristää kaikki sivustot.
@@ -1261,6 +1267,13 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="3965339130942650562">Käyttämättömän käyttökerran uloskirjausaika</translation>
 <translation id="3973371701361892765">Älä koskaan piilota hyllyä automaattisesti</translation>
 <translation id="3984028218719007910">Määrittää, säilyttääkö <ph name="PRODUCT_OS_NAME" /> paikalliset käyttäjätilitiedot uloskirjautumisen jälkeen. Jos asetus on tosi, <ph name="PRODUCT_OS_NAME" /> ei säilytä tilitietoja pysyvästi ja käyttökerran tiedot poistetaan uloskirjautumisen jälkeen. Jos käytännön asetus on epätosi tai sitä ei määritetä, paikalliset käyttäjätiedot voidaan tallentaa laitteelle salattuina.</translation>
+<translation id="398475542699441679">Tämä käytäntö määrittää, otetaanko Vanhojen selaimien tuki käyttöön vai ei.
+
+      Jos tätä käytäntöä ei ole määritetty tai sen arvoksi on asetettu epätosi, Chrome ei yritä käynnistää määritettyjä URL-osoitteita eri selaimessa.
+
+      Jos tämän käytännön arvoksi on asetettu tosi, Chrome yrittää käynnistää jotkin URL-osoitteet eri selaimessa (esim. Internet Explorerissa). Tämä ominaisuus on määritetty ryhmän <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" /> käytäntöjen mukaan.
+
+      Tämä ominaisuus korvaa <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" /> ‑laajennuksen. Laajennuksen määritykset siirtyvät tähän ominaisuuteen, mutta on erittäin suositeltavaa käyttää niiden sijaan Chromen käytäntöjä. Näin varmistat paremman yhteensopivuuden tulevaisuudessa.</translation>
 <translation id="3997519162482760140">URL-osoitteet, joille sallitaan videon kaappauslaitteiden käyttö SAML-kirjautumissivuilla</translation>
 <translation id="4001275826058808087">Yrityslaitteiden järjestelmänvalvojat voivat hallita tämän käytännön avulla, sallitaanko käyttäjien lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
 
@@ -1503,6 +1516,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 
           Esimerkkimalleja on osoitteessa http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Avaa seuraavat sivut:</translation>
+<translation id="4674871290487541952">Salli suojaamattomat algoritmit laajennuspäivitysten ja ‑asennusten aitoustarkistuksissa</translation>
 <translation id="4680936297850947973">Poistettu käytöstä M68:ssa. Ota sen sijaan käyttöön DefaultPopupsSetting.
 
       Saat lisätietoja osoitteesta https://www.chromestatus.com/features/5675755719622656.
@@ -2496,6 +2510,12 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos tämän käytännön arvo on Epätosi, taustatila on poissa käytöstä, eikä käyttäjä voi muokata sitä selaimen asetuksissa.
 
       Jos tätä käytäntöä ei aseteta, taustatila on oletuksena pois käytöstä, mutta käyttäjä voi muokata sitä selaimen asetuksissa.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> on tarkoitettu laajennusten turvalliseen päivitykseen ja asentamiseen. Joidenkin Chrome Web Storen ulkopuolella isännöityjen laajennusten sisältöä saatetaan kuitenkin suojata vain suojaamattomalla allekirjoituksella tai tiivistysalgoritmilla, kuten SHA1:llä. Jos käytäntö ei ole käytössä, Chrome ei salli tällaisten laajennusten tuoreita asennuksia ja päivityksiä (kunnes laajennuksen kehittäjät rakentavat laajennuksen uudelleen vahvemmilla algoritmeilla). Jos käytäntö on käytössä, tällaisten laajennusten asennus ja päivitys sallitaan.
+
+          Jos tätä ei ole määritetty, käytäntö on oletuksena käytössä.
+          Versiosta <ph name="PRODUCT_NAME" /> 75 alkaen käytäntö ei ole oletuksena käytössä, jos sitä ei ole määritetty.
+
+          Versiosta <ph name="PRODUCT_NAME" /> 77 alkaen käytäntö jätetään huomiotta ja sitä kohdellaan käytöstä poistettuna.</translation>
 <translation id="7126716959063786004">Ota käyttöön prosessien lopettaminen tehtävänhallinnasta</translation>
 <translation id="7127892035367404455">Palautus kohdeversioon</translation>
 <translation id="7128918109610518786">Näyttää sovellukset, jotka <ph name="PRODUCT_OS_NAME" /> näyttää kiinnitettyinä käynnistyspalkissa.

@@ -364,6 +364,7 @@
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1538729222189715449">Файловете за Linux се отварят...</translation>
 <translation id="1540605929960647700">Активиране на демонстрационния режим</translation>
+<translation id="1541396123399225659">Добавяне към нова група</translation>
 <translation id="1542514202066550870">Този раздел предава съдържание във VR към очила.</translation>
 <translation id="1543284117603151572">Импортирани от Edge</translation>
 <translation id="1545177026077493356">Автоматичен павилионен режим</translation>
@@ -402,6 +403,7 @@
 <translation id="1593594475886691512">Форматира се...</translation>
 <translation id="159359590073980872">Кеш за изображения</translation>
 <translation id="1593926297800505364">Запазване на начина на плащане</translation>
+<translation id="1595492813686795610">Извършва се надстройване на Linux</translation>
 <translation id="1598233202702788831">Актуализациите са деактивирани от администратора ви.</translation>
 <translation id="1600857548979126453">Достъп до задния слой на инструмента за откриване и отстраняване на грешки в страниците</translation>
 <translation id="1601560923496285236">Прилагане</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">Активиране на темата</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Преглед в уеб магазина на Chrome</translation>
-<translation id="1761588866118490543">Гласов модел</translation>
 <translation id="176193854664720708">Сензорът за отпечатъци е в бутона за включване/изключване. Докоснете го леко с който и да е пръст.</translation>
 <translation id="1763046204212875858">Създаване на преки пътища към приложението</translation>
 <translation id="1763108912552529023">Продължаване на изследването</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">Печат чрез системния диалогов прозорец... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Извеждане на запитване преди изпращане (препоръчително)</translation>
 <translation id="2384436799579181135">Възникна грешка. Моля, проверете принтера си и опитайте отново.</translation>
+<translation id="2386926718981642523">Осъществявайте достъп до Асистент всеки път, когато кажете „Ok Google“</translation>
 <translation id="2387458720915042159">Тип на връзката през прокси сървър</translation>
 <translation id="2391419135980381625">Стандартен шрифт</translation>
 <translation id="2391762656119864333">Оттегляне</translation>
@@ -1040,6 +1042,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> не успя да се свърже с: <ph name="NETWORK_ID" />. Моля, изберете друга мрежа или опитайте отново.</translation>
 <translation id="2553440850688409052">Скриване на тази приставка</translation>
 <translation id="2554553592469060349">Избраният файл е твърде голям (максимален размер: 3 МБ).</translation>
+<translation id="255747371423522804">Добавяне към съществуваща група</translation>
 <translation id="2558896001721082624">Опциите за достъпност винаги да се показват в системното меню</translation>
 <translation id="2562685439590298522">Документи</translation>
 <translation id="2562743677925229011">Не сте влезли в <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1312,6 +1315,7 @@
 <translation id="2972581237482394796">&amp;Възстановяване</translation>
 <translation id="2972642118232180842">Изпълняване само на важното съдържание (препоръчително)</translation>
 <translation id="2973324205039581528">Заглушаване на сайта</translation>
+<translation id="2977480621796371840">Премахване от групата</translation>
 <translation id="2979639724566107830">Отваряне в нов прозорец</translation>
 <translation id="2981113813906970160">Показване на голям курсор на мишката</translation>
 <translation id="2982970937345031">Подаване на анонимен сигнал</translation>
@@ -1562,6 +1566,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Разделител</translation>
 <translation id="3389312115541230716">Кликнете с десния бутон на мишката върху иконата <ph name="SMALL_PRODUCT_LOGO" /> в лентата на задачите</translation>
+<translation id="3393352139658145068">Активиране на Асистент, когато който и да е каже „Ok Google“. С цел икономия на батерия „Ok Google“ е активно само когато устройството е свързано със захранващ източник.</translation>
 <translation id="3396800784455899911">С кликването си върху бутона „Приемам и продължавам“ приемате описаното по-горе обработване за тези услуги на Google.</translation>
 <translation id="3399432415385675819">Известията ще бъдат деактивирани</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3167,6 +3172,7 @@
 <translation id="5816434091619127343">Заявените промени в принтера ще го направят неизползваем.</translation>
 <translation id="5817918615728894473">Сдвояване</translation>
 <translation id="5821565227679781414">Създаване на пряк път</translation>
+<translation id="5825412242012995131">Включено (препоръчително)</translation>
 <translation id="5826507051599432481">Общо име (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Отпечатва се...</translation>
@@ -3711,6 +3717,11 @@
 <translation id="6629841649550503054">На всичко бе създадено резервно копие в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" />!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> иска постоянен достъп до сертификат, за да се удостоверява от ваше име.</translation>
 <translation id="6635956300022133031">Избиране и персонализиране на гласовете за синтезиран говор</translation>
+<translation id="6637585982786704944">Приложенията и сайтовете, на които сте дали разрешение, имат достъп до информацията за профила, която им е необходима, за да работят правилно.
+
+    Ако не искате да добавите профил, влезте като гост или отворете прозорец в режим „инкогнито“, за да сърфирате в мрежата.
+
+    Можете да отворите „Настройки -&gt; Профили в Google“, за да прегледате и управлявате всички профили.</translation>
 <translation id="6639554308659482635">Памет за SQLite</translation>
 <translation id="6641138807883536517">Произволно генерираната чрез модула за сигурност парола не е налице. Това е нормално след извършване на Powerwash.</translation>
 <translation id="6643016212128521049">Изчистване</translation>
@@ -3912,6 +3923,7 @@
 <translation id="6957231940976260713">Имe на услугата</translation>
 <translation id="696203921837389374">Активиране на синхронизирането чрез мобилни данни</translation>
 <translation id="6964390816189577014">Герой</translation>
+<translation id="6964760285928603117">Премахване от групата</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965648386495488594">Порт</translation>
 <translation id="6965978654500191972">Устройство</translation>
@@ -4021,6 +4033,7 @@
 <translation id="7109543803214225826">Прекият път бе премахнат</translation>
 <translation id="7113502843173351041">Да осъществява достъп до имейл адреса ви</translation>
 <translation id="7114054701490058191">Паролите не са идентични</translation>
+<translation id="7114648273807173152">За да използвате Smart Lock за влизане в профила ви в Google, отворете „Настройки &gt; Свързани устройства &gt; Вашият телефон &gt; Smart Lock“.</translation>
 <translation id="7117228822971127758">Моля, опитайте отново по-късно</translation>
 <translation id="7117247127439884114">Влизане отново...</translation>
 <translation id="711840821796638741">Показване на управляваните отметки</translation>
@@ -4176,6 +4189,7 @@
 <translation id="7348093485538360975">Екранна клавиатура</translation>
 <translation id="7352651011704765696">Нещо се обърка</translation>
 <translation id="735361434055555355">Инсталира се Linux...</translation>
+<translation id="7353887511974462734">Добавяне към съществуваща група</translation>
 <translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> елемента се копират...</translation>
 <translation id="7359588939039777303">Рекламите са блокирани.</translation>
@@ -4238,7 +4252,6 @@
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7461924472993315131">Фиксиране</translation>
 <translation id="7463006580194749499">Добавяне на човек</translation>
-<translation id="7464902436585505072">Гласов модел на „Ok Google“</translation>
 <translation id="7465778193084373987">URL адрес за анулиране на сертификат на Netscape</translation>
 <translation id="7469894403370665791">Автоматично свързване с тази мрежа</translation>
 <translation id="747114903913869239">Грешка: Разширението не може да се декодира</translation>
@@ -4808,6 +4821,7 @@
 <translation id="827097179112817503">Показване на бутона за начална страница</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Изтрихте 1 отметка}other{Изтрихте # отметки}}</translation>
 <translation id="8272443605911821513">Управлявайте разширенията си, като кликнете върху „Разширения“ в менюто „Още инструменти“.</translation>
+<translation id="8272966760965438857">Управлявайте профилите си в Google от едно място</translation>
 <translation id="8274332263553132018">Предаване на файл</translation>
 <translation id="8274924778568117936">Не изключвайте, нито затваряйте устройството си <ph name="DEVICE_TYPE" />, докато актуализирането не завърши. <ph name="DEVICE_TYPE" /> ще се рестартира след завършване на инсталирането.</translation>
 <translation id="8275038454117074363">Импортиране</translation>
@@ -5194,6 +5208,7 @@
 <translation id="8883847527783433352">Синхронизиране с друг профил</translation>
 <translation id="8885197664446363138">Няма достъп до Smart Lock</translation>
 <translation id="88870264962436283">Използване на Touch ID за <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">Приложението ще се отвори, щом надстройването завърши. Това може да отнеме няколко минути.</translation>
 <translation id="8888432776533519951">Цвят:</translation>
 <translation id="8890516388109605451">Източници</translation>
 <translation id="8892168913673237979">Готово!</translation>

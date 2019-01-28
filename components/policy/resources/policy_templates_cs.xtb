@@ -772,6 +772,11 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
           Pokud je toto nastavení deaktivováno a odchozí připojení UDP jsou filtrována bránou firewall, lze se k tomuto počítači připojit pouze z klientských počítačů v místní síti.
 
           Pokud tato zásada není nastavena, bude nastavení aktivováno.</translation>
+<translation id="2813281962735757923">Tato zásada určuje časové rámce, v nichž zařízení se systémem <ph name="PRODUCT_OS_NAME" /> nemá povoleno automaticky kontrolovat dostupnost aktualizací.
+      Když je tato zásada nastavená na neprázdný seznam časových intervalů:
+      Zařízení během zadaných časových intervalů nebudou moci automaticky kontrolovat dostupnost aktualizací. Tato zásada vzhledem k možným bezpečnostním problémům nebude mít vliv na zařízení, která vyžadují vrácení na starší verzi nebo v nichž je nižší než minimální verze systému <ph name="PRODUCT_OS_NAME" />. Nebude také blokovat kontroly dostupnosti aktualizací, o které požádají uživatelé nebo administrátoři.
+      Když tato zásada není nastavená nebo neobsahuje žádné časové intervaly:
+      Tato zásada nebude blokovat automatické kontroly dostupnosti aktualizací, mohou je však blokovat jiné zásady. Tato funkce je aktivovaná jen na zařízeních Chrome, která jsou nakonfigurována jako automaticky spouštěné terminály. Ostatní zařízení touto zásadou omezena nebudou.</translation>
 <translation id="2823870601012066791">Umístění v registru systému Windows pro klienty <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
 <translation id="2838830882081735096">Zakázat migraci dat a rozšíření ARC</translation>
@@ -1064,6 +1069,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="355118380775352753">Weby, které se mají otevírat v alternativním prohlížeči</translation>
 <translation id="3577251398714997599">Nastavení reklam pro weby s rušivými reklamami</translation>
+<translation id="3591527072193107424">Aktivovat funkci Podpora starších prohlížečů.</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3624171042292187668">
       Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení (SitePerProcess) izoluje všechny weby.
@@ -1249,6 +1255,13 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
 <translation id="3965339130942650562">Časový limit před odhlášením nečinného uživatele</translation>
 <translation id="3973371701361892765">Nikdy poličku automaticky neskrývat</translation>
 <translation id="3984028218719007910">Určuje, zda systém <ph name="PRODUCT_OS_NAME" /> po odhlášení zachová místní data účtu. Pokud je tato zásada nastavena na hodnotu True, nebude systém <ph name="PRODUCT_OS_NAME" /> uchovávat žádné účty trvale a všechna data návštěvy uživatele budou po odhlášení smazána. Pokud je tato zásada nastavena na hodnotu False, nebo není nastavena, může zařízení uchovat (šifrovaná) místní uživatelská data.</translation>
+<translation id="398475542699441679">Tato zásada ovládá zapnutí funkce Podpora starších prohlížečů.
+
+      Když je tato zásada ponechána nenastavená nebo je nastavená na hodnotu false, Chrome se zadané adresy URL nebude pokoušet otevírat v alternativním prohlížeči.
+
+      Když je tato zásada nastavená na hodnotu true, Chrome se některé adresy URL bude pokoušet otevřít v alternativním prohlížeči (jako je Internet Explorer). Tato funkce se konfiguruje pomocí zásad ve skupině <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Tato funkce nahrazuje rozšíření <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Konfigurace se z rozšíření přenese do této funkce. Místo rozšíření důrazně doporučujeme používat zásady Chromu. Zajistíte tím lepší kompatibilitu do budoucnosti.</translation>
 <translation id="3997519162482760140">Adresy URL, kterým bude na přihlašovacích stránkách SAML udělen přístup k zařízením pro záznam videa</translation>
 <translation id="4001275826058808087">Administrátoři IT spravující podniková zařízení mohou pomocí tohoto příznaku uživatelům povolit nebo zakázat uplatnění zvláštních nabídek při registraci systému Chrome OS.
 
@@ -1499,6 +1512,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 
           Ukázkové vzory naleznete na stránce https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otevřít seznam adres URL</translation>
+<translation id="4674871290487541952">V kontrolách integrity při aktualizacích a instalacích rozšíření povolit nezabezpečené algoritmy</translation>
 <translation id="4680936297850947973">Podpora této zásady byla od verze M68 ukončena. Použijte namísto ní zásadu DefaultPopupsSetting.
 
       Úplné vysvětlení najdete na stránce https://www.chromestatus.com/features/5675755719622656.
@@ -2519,6 +2533,12 @@ Pokud je tato zásada nastavena na hodnotu true, režim na pozadí je aktivován
 Pokud je tato zásada nastavena na hodnotu false, režim na pozadí je deaktivován a uživatel jej nemůže ovládat v nastaveních prohlížeče.
 
 Pokud je tato zásada ponechána nenastavená, režim na pozadí je ve výchozím nastavení deaktivován, ale uživatel jej může ovládat v nastaveních prohlížeče.</translation>
+<translation id="7123266440503901785">Prohlížeč <ph name="PRODUCT_NAME" /> zajišťuje bezpečnou aktualizaci a instalaci rozšíření. Obsah některých rozšíření hostovaných mimo Internetový obchod Chrome však může být chráněn jen nedostatečně bezpečnými podepisovacími nebo hašovacími algoritmy, jako je například SHA1. Pokud je tato zásada vypnutá, Chrome nové instalace a aktualizace takových rozšíření nebude povolovat (dokud vývojáři do rozšíření neimplementují bezpečnější algoritmy). Pokud je tato zásada zapnutá, instalace a aktualizace takových rozšíření jsou povoleny.
+
+          Pokud tato zásada není nastavená, prohlížeč se chová, jako kdyby byla zapnutá.
+          Od verze <ph name="PRODUCT_NAME" /> 75 se jako výchozí bude používat chování odpovídající vypnuté zásadě.
+
+          Od verze <ph name="PRODUCT_NAME" /> 77 tato zásada bude ignorována a prohlížeč se bude chovat, jako kdyby byla vypnutá.</translation>
 <translation id="7126716959063786004">Umožnit ukončování procesů ve Správci úloh</translation>
 <translation id="7127892035367404455">Vrátit se k cílové verzi</translation>
 <translation id="7128918109610518786">Seznam identifikátorů aplikací, které se v <ph name="PRODUCT_OS_NAME" /> zobrazují jako připnuté na liště spouštěče.
@@ -3215,7 +3235,7 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
       Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeč <ph name="PRODUCT_NAME" /> 604 800 000 milisekund (jeden týden).</translation>
 <translation id="8685024486845674965">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
-<translation id="8703488928438047864">Nahlásit stav desky</translation>
+<translation id="8703488928438047864">Nahlásit stav panelu</translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
 <translation id="8711086062295757690">Určuje klíčové slovo, které v adresním řádku spouští vyhledávání tohoto poskytovatele.
 

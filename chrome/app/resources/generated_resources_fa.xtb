@@ -364,6 +364,7 @@
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
 <translation id="1538729222189715449">‏درحال باز کردن فایل‌های Linux…</translation>
 <translation id="1540605929960647700">فعال کردن حالت نمایشی</translation>
+<translation id="1541396123399225659">افزودن به گروه جدید</translation>
 <translation id="1542514202066550870">‏این برگه محتوای VR را به هدست ارائه می‌دهد.</translation>
 <translation id="1543284117603151572">‏وارد شده از Edge</translation>
 <translation id="1545177026077493356">حالت کیوسک خودکار</translation>
@@ -402,6 +403,7 @@
 <translation id="1593594475886691512">در حال قالب‌بندی...</translation>
 <translation id="159359590073980872">حافظهٔ پنهان تصویر</translation>
 <translation id="1593926297800505364">ذخیره روش پرداخت</translation>
+<translation id="1595492813686795610">‏Linux درحال ارتقا است</translation>
 <translation id="1598233202702788831">سرپرست سیستم شما به‌روزرسانی‌ها را غیرفعال کرده است.</translation>
 <translation id="1600857548979126453">دسترسی به مرحله پایانی اشکال‌زدای صفحه</translation>
 <translation id="1601560923496285236">اعمال</translation>
@@ -513,7 +515,6 @@
 <translation id="175772926354468439">فعال کردن طرح زمینه</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">‏مشاهده در «نت‌بازار Chrome»</translation>
-<translation id="1761588866118490543">مدل صوتی</translation>
 <translation id="176193854664720708">حسگر اثر انگشت روی دکمه روشن/خاموش است. با یکی از انگشت‌هایتان آن را به‌آرامی لمس کنید.</translation>
 <translation id="1763046204212875858">ایجاد میان‌برهای برنامه</translation>
 <translation id="1763108912552529023">به کاوش ادامه دهید</translation>
@@ -935,6 +936,7 @@
 <translation id="2379281330731083556">چاپ با استفاده از گفتگوی سیستم... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">قبل از ارسال سؤال شود (توصیه می‌شود)</translation>
 <translation id="2384436799579181135">خطایی روی داده است. لطفاً چاپگرتان را بررسی و دوباره امتحان کنید.</translation>
+<translation id="2386926718981642523">‏هرزمان می‌گویید «Ok Google»، به «دستیار» دسترسی داشته باشید</translation>
 <translation id="2387458720915042159">نوع اتصال پراکسی</translation>
 <translation id="2391419135980381625">قلم استاندارد</translation>
 <translation id="2391762656119864333">ابطال</translation>
@@ -1040,6 +1042,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> نتوانست به <ph name="NETWORK_ID" /> متصل شود. لطفاً یک شبکه دیگر را انتخاب کرده یا دوباره امتحان کنید.</translation>
 <translation id="2553440850688409052">پنهان کردن این افزایه</translation>
 <translation id="2554553592469060349">فایل انتخابی بیش از حد بزرگ است (حداکثر اندازه: ۳ مگابایت).</translation>
+<translation id="255747371423522804">افزودن به گروه موجود</translation>
 <translation id="2558896001721082624">گزینه‌های دسترس‌پذیری در منوی سیستم همیشه نمایش داده شوند</translation>
 <translation id="2562685439590298522">اسناد</translation>
 <translation id="2562743677925229011">به سیستم <ph name="SHORT_PRODUCT_NAME" /> وارد نشدید</translation>
@@ -1311,6 +1314,7 @@
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="2972642118232180842">فقط محتوای مهم اجرا شود (توصیه می‌شود)</translation>
 <translation id="2973324205039581528">بی‌صدا کردن سایت</translation>
+<translation id="2977480621796371840">برداشتن از گروه</translation>
 <translation id="2979639724566107830">باز کردن در پنجرهٔ جدید</translation>
 <translation id="2981113813906970160">نمایش نشانگر موشواره بزرگ</translation>
 <translation id="2982970937345031">گزارش به‌صورت ناشناس</translation>
@@ -1561,6 +1565,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">جداساز</translation>
 <translation id="3389312115541230716">روی نماد <ph name="SMALL_PRODUCT_LOGO" /> در نوار وظیفه کلیک راست کنید</translation>
+<translation id="3393352139658145068">‏وفتی فردی می‌گوید «Ok Google»، «دستیار» فعال شود. برای صرفه‌جویی در مصرف باتری، «Ok Google» فقط زمانی روشن است که دستگاهتان به برق متصل باشد.</translation>
 <translation id="3396800784455899911">‏با کلیک کردن روی دکمه «پذیرفتن و ادامه»، با پردازش مربوط به این سرویس‌های Google که در بالا توضیح داده شد موافقت می‌کنید.</translation>
 <translation id="3399432415385675819">اعلان‌ها غیرفعال خواهند شد</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />، <ph name="TIME_LEFT" /></translation>
@@ -3163,6 +3168,7 @@
 <translation id="5816434091619127343">تغییرات درخواستی باعث می‌شود چاپگر غیرقابل استفاده شود.</translation>
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
 <translation id="5821565227679781414">ایجاد میان‌بر</translation>
+<translation id="5825412242012995131">روشن (توصیه می‌شود)</translation>
 <translation id="5826507051599432481">‏نام مشترک (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">در حال چاپ...</translation>
@@ -3707,6 +3713,11 @@
 <translation id="6629841649550503054">‏همه در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پشتیبان گرفته شدند</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> خواستار دسترسی دائم به یک گواهی است تا خودش را از طرف شما احراز هویت کند.</translation>
 <translation id="6635956300022133031">انتخاب و سفارشی‌سازی صداهای نوشتار به گفتار</translation>
+<translation id="6637585982786704944">‏برنامه‌ها و وب‌سایت‌هایی که از شما مجوز دارند، می‌توانند به اطلاعات حسابی که برای کارکرد مناسب نیاز دارند دستری پیدا کنند.
+
+    اگر نمی‌خواهید حسابی را اضافه کنید، به‌عنوان مهمان به سیستم وارد شوید یا پنجره ناشناسی را برای مرور وب باز کنید.
+
+    می‌توانید به «تنظیمات -&gt; حساب‌های Google» بروید تا همه حساب‌ها مشاهده و مدیریت کنید.</translation>
 <translation id="6639554308659482635">‏حافظه SQLite</translation>
 <translation id="6641138807883536517">‏گذرواژه به‌صورت تصادفی ایجادشده مدول امن دردسترس نیست. این حالت بعد از Powerwash عادی است.</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
@@ -3908,6 +3919,7 @@
 <translation id="6957231940976260713">نام سرویس</translation>
 <translation id="696203921837389374">فعال کردن همگام‌سازی از طریق داده تلفن همراه</translation>
 <translation id="6964390816189577014">قهرمان</translation>
+<translation id="6964760285928603117">برداشتن از گروه</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6965648386495488594">درگاه</translation>
 <translation id="6965978654500191972">دستگاه</translation>
@@ -4017,6 +4029,7 @@
 <translation id="7109543803214225826">میان‌بر حذف شد</translation>
 <translation id="7113502843173351041">دیدن نشانی ایمیل شما</translation>
 <translation id="7114054701490058191">گذرواژه‌ها مطابقت ندارند</translation>
+<translation id="7114648273807173152">‏برای استفاده از Smart Lock برای ورود به سیستم حساب Google، به «تنظیمات &gt; دستگاه‌های متصل &gt; Smart Lock» بروید.</translation>
 <translation id="7117228822971127758">لطفاً بعداً دوباره امتحان کنید</translation>
 <translation id="7117247127439884114">ورود مجدد به سیستم...</translation>
 <translation id="711840821796638741">نمایش نشانک‌های مدیریت شده</translation>
@@ -4172,6 +4185,7 @@
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
 <translation id="7352651011704765696">مشکلی پیش آمد</translation>
 <translation id="735361434055555355">‏درحال نصب Linux…</translation>
+<translation id="7353887511974462734">افزودن به گروه موجود</translation>
 <translation id="735745346212279324">‏VPN قطع است</translation>
 <translation id="7359359531237882347">در حال کپی کردن <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
 <translation id="7359588939039777303">آگهی‌ها مسدود شدند.</translation>
@@ -4234,7 +4248,6 @@
 <translation id="7456847797759667638">باز کردن مکان...</translation>
 <translation id="7461924472993315131">پین</translation>
 <translation id="7463006580194749499">افزودن شخص</translation>
-<translation id="7464902436585505072">‏مدل صوتی «Ok Google»</translation>
 <translation id="7465778193084373987">‏نشانی وب ابطال گواهی Netscape</translation>
 <translation id="7469894403370665791">اتصال به این شبکه به صورت خودکار</translation>
 <translation id="747114903913869239">خطا: رمزگشایی برنامهٔ افزودنی ممکن نیست</translation>
@@ -4804,6 +4817,7 @@
 <translation id="827097179112817503">نمایش دکمه صفحه اصلی</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{۱ نشانک حذف شد}one{# نشانک حذف شد}other{# نشانک حذف شد}}</translation>
 <translation id="8272443605911821513">با کلیک کردن روی افزونه‌ها در منوی «ابزارهای بیشتر»، برنامه‌های افزودنی خود را مدیریت کنید.</translation>
+<translation id="8272966760965438857">‏مدیریت حساب‌ها Google در یک مکان</translation>
 <translation id="8274332263553132018">ارسال محتوای فایل</translation>
 <translation id="8274924778568117936">تا وقتی به‌روزرسانی به پایان نرسیده است، <ph name="DEVICE_TYPE" /> را خاموش نکنید یا نبندید. بعد از کامل شدن نصب، <ph name="DEVICE_TYPE" /> راه‌اندازی مجدد می‌شود.</translation>
 <translation id="8275038454117074363">وارد کردن</translation>
@@ -5190,6 +5204,7 @@
 <translation id="8883847527783433352">همگام‌سازی با حسابی دیگر</translation>
 <translation id="8885197664446363138">‏Smart Lock در دسترس نیست</translation>
 <translation id="88870264962436283">استفاده از شناسه لمسی در <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">وقتی ارتقا به پایان برسد، برنامه‌تان باز خواهد شد. ارتقا ممکن است چند دقیقه طول بکشد.</translation>
 <translation id="8888432776533519951">رنگ:</translation>
 <translation id="8890516388109605451">منابع</translation>
 <translation id="8892168913673237979">همه چیز آماده است!</translation>

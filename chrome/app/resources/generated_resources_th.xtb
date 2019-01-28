@@ -367,6 +367,7 @@
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="1538729222189715449">กำลังเปิดไฟล์ Linux...</translation>
 <translation id="1540605929960647700">เปิดใช้โหมดสาธิต</translation>
+<translation id="1541396123399225659">เพิ่มในกลุ่มใหม่</translation>
 <translation id="1542514202066550870">แท็บนี้กำลังนำเสนอเนื้อหา VR ไปยังชุดหูฟัง</translation>
 <translation id="1543284117603151572">นำเข้าจาก Edge</translation>
 <translation id="1545177026077493356">โหมดคีออสก์อัตโนมัติ</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">กำลังจัดรูปแบบ...</translation>
 <translation id="159359590073980872">แคชของภาพ</translation>
 <translation id="1593926297800505364">บันทึกวิธีการชำระเงิน</translation>
+<translation id="1595492813686795610">Linux กำลังอัปเกรด</translation>
 <translation id="1598233202702788831">ผู้ดูแลระบบปิดใช้การอัปเดต</translation>
 <translation id="1600857548979126453">เข้าถึงแบ็คเอนด์เครื่องซ่อมแซมหน้าเว็บ</translation>
 <translation id="1601560923496285236">นำไปใช้</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">เปิดใช้งานธีม</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">ดูใน Chrome เว็บสโตร์</translation>
-<translation id="1761588866118490543">รูปแบบเสียง</translation>
 <translation id="176193854664720708">เซ็นเซอร์ลายนิ้วมืออยู่ในปุ่มเปิด/ปิด โปรดแตะเบาๆ ด้วยนิ้วใดก็ได้</translation>
 <translation id="1763046204212875858">สร้างทางลัดไปยังแอปพลิเคชัน</translation>
 <translation id="1763108912552529023">สำรวจต่อไป</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">พิมพ์โดยใช้ช่องโต้ตอบของระบบ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">ถามก่อนที่จะส่ง (แนะนำ)</translation>
 <translation id="2384436799579181135">เกิดข้อผิดพลาด โปรดตรวจสอบเครื่องพิมพ์และลองอีกครั้ง</translation>
+<translation id="2386926718981642523">เข้าถึง Assistant ได้ทุกเมื่อเพียงพูดว่า "Ok Google"</translation>
 <translation id="2387458720915042159">ประเภทการเชื่อมต่อพร็อกซี</translation>
 <translation id="2391419135980381625">แบบอักษรมาตรฐาน</translation>
 <translation id="2391762656119864333">เพิกถอน</translation>
@@ -1043,6 +1045,7 @@
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> ไม่สามารถเชื่อมต่อกับ <ph name="NETWORK_ID" /> โปรดเลือกเครือข่ายอื่นหรือลองอีกครั้ง</translation>
 <translation id="2553440850688409052">ซ่อนปลั๊กอินนี้</translation>
 <translation id="2554553592469060349">ไฟล์ที่เลือกมีขนาดใหญ่เกินไป (ขนาดสูงสุด: 3 MB)</translation>
+<translation id="255747371423522804">เพิ่มในกลุ่มที่มีอยู่</translation>
 <translation id="2558896001721082624">แสดงตัวเลือกการเข้าถึงในเมนูระบบไว้เสมอ</translation>
 <translation id="2562685439590298522">เอกสาร</translation>
 <translation id="2562743677925229011">ไม่ได้ลงชื่อเข้าใช้ <ph name="SHORT_PRODUCT_NAME" /></translation>
@@ -1315,6 +1318,7 @@
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
 <translation id="2972642118232180842">เรียกใช้เฉพาะเนื้อหาที่สำคัญ (แนะนำ)</translation>
 <translation id="2973324205039581528">ปิดเสียงเว็บไซต์</translation>
+<translation id="2977480621796371840">นำออกจากกลุ่ม</translation>
 <translation id="2979639724566107830">เปิดในหน้าต่างใหม่</translation>
 <translation id="2981113813906970160">แสดงเคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="2982970937345031">รายงานแบบไม่ระบุตัวตน</translation>
@@ -1565,6 +1569,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">ตัวแยก</translation>
 <translation id="3389312115541230716">คลิกขวาที่ไอคอน <ph name="SMALL_PRODUCT_LOGO" /> ในแถบงาน</translation>
+<translation id="3393352139658145068">เปิดใช้งาน Assistant เมื่อมีคนพูดว่า “Ok Google” วลี “Ok Google” นี้จะใช้ได้เฉพาะเมื่ออุปกรณ์เชื่อมต่อกับแหล่งจ่ายไฟเพื่อเป็นการประหยัดแบตเตอรี่</translation>
 <translation id="3396800784455899911">การคลิกปุ่ม "ยอมรับและดำเนินการต่อ" แสดงว่าคุณยอมรับการดำเนินการของบริการต่างๆ ของ Google ตามที่ชี้แจ้งไว้ด้านบน</translation>
 <translation id="3399432415385675819">ระบบจะปิดใช้การแจ้งเตือน</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
@@ -3167,6 +3172,7 @@
 <translation id="5816434091619127343">การเปลี่ยนแปลงเครื่องพิมพ์ที่ขอจะทำให้เครื่องพิมพ์ใช้ไม่ได้</translation>
 <translation id="5817918615728894473">จับคู่</translation>
 <translation id="5821565227679781414">สร้างทางลัด</translation>
+<translation id="5825412242012995131">เปิด (แนะนำ)</translation>
 <translation id="5826507051599432481">ชื่อทั่วไป (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">กำลังพิมพ์...</translation>
@@ -3711,6 +3717,11 @@
 <translation id="6629841649550503054">สำรองข้อมูลทั้งหมดไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" />แล้ว!</translation>
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" /> ต้องการสิทธิ์ถาวรในการเข้าถึงใบรับรองเพื่อตรวจสอบสิทธิ์ตัวเองในนามของคุณ</translation>
 <translation id="6635956300022133031">เลือกและปรับแต่งเสียงของการอ่านออกเสียงข้อความ</translation>
+<translation id="6637585982786704944">แอปและเว็บไซต์ที่มีสิทธิ์จะเข้าถึงข้อมูลบัญชีที่จำเป็นได้เพื่อให้ทำงานได้อย่างถูกต้อง
+
+    หากไม่ต้องการเพิ่มบัญชี ให้ลงชื่อเข้าใช้ในฐานะผู้มาเยือนหรือเปิดหน้าต่างที่ไม่ระบุตัวตนเพื่อท่องเว็บ
+
+    คุณไปที่การตั้งค่า -&gt; บัญชี Google เพื่อดูและจัดการบัญชีทั้งหมดได้</translation>
 <translation id="6639554308659482635">หน่วยความจำ SQLite</translation>
 <translation id="6641138807883536517">รหัสผ่านโมดูลที่สร้างแบบสุ่มไม่พร้อมใช้งาน เหตุการณ์นี้เป็นเรื่องปกติหลังจากการ Powerwash</translation>
 <translation id="6643016212128521049">ล้าง</translation>
@@ -3912,6 +3923,7 @@
 <translation id="6957231940976260713">ชื่อบริการ</translation>
 <translation id="696203921837389374">เปิดใช้การซิงค์ผ่านข้อมูลมือถือ</translation>
 <translation id="6964390816189577014">ฮีโร่</translation>
+<translation id="6964760285928603117">นำออกจากกลุ่ม</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6965648386495488594">พอร์ต</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
@@ -4021,6 +4033,7 @@
 <translation id="7109543803214225826">นำทางลัดออกแล้ว</translation>
 <translation id="7113502843173351041">ทราบที่อยู่อีเมลของคุณ</translation>
 <translation id="7114054701490058191">รหัสผ่านไม่ตรงกัน</translation>
+<translation id="7114648273807173152">หากต้องการใช้ Smart Lock ในการลงชื่อเข้าใช้ Google ให้ไปที่การตั้งค่า &gt; อุปกรณ์ที่เชื่อมต่อ &gt; โทรศัพท์ของคุณ &gt; Smart Lock</translation>
 <translation id="7117228822971127758">โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="7117247127439884114">ลงชื่อเข้าใช้อีกครั้ง...</translation>
 <translation id="711840821796638741">แสดงบุ๊กมาร์กที่มีการจัดการ</translation>
@@ -4176,6 +4189,7 @@
 <translation id="7348093485538360975">แป้นพิมพ์บนหน้าจอ</translation>
 <translation id="7352651011704765696">มีข้อผิดพลาดเกิดขึ้น</translation>
 <translation id="735361434055555355">กำลังติดตั้ง Linux...</translation>
+<translation id="7353887511974462734">เพิ่มในกลุ่มที่มีอยู่</translation>
 <translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
 <translation id="7359359531237882347">กำลังคัดลอก <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
 <translation id="7359588939039777303">บล็อกโฆษณา</translation>
@@ -4238,7 +4252,6 @@
 <translation id="7456847797759667638">เปิดตำแหน่ง...</translation>
 <translation id="7461924472993315131">ตรึง</translation>
 <translation id="7463006580194749499">เพิ่มบุคคล</translation>
-<translation id="7464902436585505072">รูปแบบเสียง "Ok Google"</translation>
 <translation id="7465778193084373987">URL การเพิกถอนใบรับรองของ Netscape</translation>
 <translation id="7469894403370665791">เชื่อมต่อกับเครือข่ายนี้อัตโนมัติ</translation>
 <translation id="747114903913869239">ข้อผิดพลาด: ไม่สามารถถอดรหัสส่วนขยาย</translation>
@@ -4808,6 +4821,7 @@
 <translation id="827097179112817503">แสดงปุ่มหน้าแรก</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{ลบบุ๊กมาร์ก 1 รายการแล้ว}other{ลบบุ๊กมาร์ก # รายการแล้ว}}</translation>
 <translation id="8272443605911821513">จัดการส่วนขยายของคุณโดยคลิกที่ "ส่วนขยาย" ในเมนู "เครื่องมือเพิ่มเติม"</translation>
+<translation id="8272966760965438857">จัดการบัญชี Google ในที่เดียว</translation>
 <translation id="8274332263553132018">แคสต์ไฟล์</translation>
 <translation id="8274924778568117936">อย่าปิดเครื่องหรือปิดฝา <ph name="DEVICE_TYPE" /> จนกว่าการอัปเดตจะเสร็จสิ้น <ph name="DEVICE_TYPE" /> จะรีสตาร์ทหลังติดตั้งเสร็จแล้ว</translation>
 <translation id="8275038454117074363">การนำเข้า</translation>
@@ -5194,6 +5208,7 @@
 <translation id="8883847527783433352">ซิงค์กับอีกบัญชีหนึ่ง</translation>
 <translation id="8885197664446363138">Smart Lock ไม่พร้อมใช้งาน</translation>
 <translation id="88870264962436283">ใช้ Touch ID กับ <ph name="APP_NAME" /></translation>
+<translation id="8888253246822647887">แอปจะเปิดเมื่อการอัปเกรดเสร็จสมบูรณ์ ซึ่งอาจใช้เวลาสักครู่</translation>
 <translation id="8888432776533519951">สี:</translation>
 <translation id="8890516388109605451">แหล่งที่มา</translation>
 <translation id="8892168913673237979">เรียบร้อยแล้ว!</translation>

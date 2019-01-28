@@ -367,6 +367,7 @@
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1538729222189715449">正在開啟 Linux 檔案…</translation>
 <translation id="1540605929960647700">啟用示範模式</translation>
+<translation id="1541396123399225659">新增到新群組</translation>
 <translation id="1542514202066550870">這個分頁正在對頭戴式裝置展示 VR 內容。</translation>
 <translation id="1543284117603151572">從 Edge 匯入的書籤</translation>
 <translation id="1545177026077493356">自動 Kiosk 模式</translation>
@@ -405,6 +406,7 @@
 <translation id="1593594475886691512">正在格式化...</translation>
 <translation id="159359590073980872">圖片快取</translation>
 <translation id="1593926297800505364">儲存付款方式</translation>
+<translation id="1595492813686795610">正在升級 Linux</translation>
 <translation id="1598233202702788831">您的管理員停用了更新功能。</translation>
 <translation id="1600857548979126453">存取網頁偵錯工具後端</translation>
 <translation id="1601560923496285236">套用</translation>
@@ -516,7 +518,6 @@
 <translation id="175772926354468439">啟用主題</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">前往 Chrome 線上應用程式商店查看</translation>
-<translation id="1761588866118490543">語音模型</translation>
 <translation id="176193854664720708">指紋感應器位於電源按鈕上，請以任何一隻手指輕觸指紋感應器。</translation>
 <translation id="1763046204212875858">建立應用程式捷徑</translation>
 <translation id="1763108912552529023">繼續探索</translation>
@@ -938,6 +939,7 @@
 <translation id="2379281330731083556">使用系統對話方塊進行列印... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">傳送前詢問我 (建議)</translation>
 <translation id="2384436799579181135">發生錯誤。請檢查你的印表機，然後再試一次。</translation>
+<translation id="2386926718981642523">只要說出「Ok Google」，就能隨時存取 Google 助理</translation>
 <translation id="2387458720915042159">Proxy 連線類型</translation>
 <translation id="2391419135980381625">標準字型</translation>
 <translation id="2391762656119864333">撤銷</translation>
@@ -1042,6 +1044,7 @@
 <translation id="2553340429761841190">「<ph name="PRODUCT_NAME" />」無法連線至<ph name="NETWORK_ID" />，請選取其他網路，或再試一次。</translation>
 <translation id="2553440850688409052">隱藏這個外掛程式</translation>
 <translation id="2554553592469060349">選取的檔案過大 (大小上限：3MB)。</translation>
+<translation id="255747371423522804">新增到現有群組</translation>
 <translation id="2558896001721082624">一律在系統選單中顯示協助工具選項</translation>
 <translation id="2562685439590298522">文件</translation>
 <translation id="2562743677925229011">未登入「<ph name="SHORT_PRODUCT_NAME" />」</translation>
@@ -1314,6 +1317,7 @@
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2972642118232180842">僅執行重要內容 (建議)</translation>
 <translation id="2973324205039581528">關閉網站音訊</translation>
+<translation id="2977480621796371840">從群組中移除</translation>
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="2981113813906970160">顯示大型滑鼠游標</translation>
 <translation id="2982970937345031">以匿名方式傳送意見</translation>
@@ -1564,6 +1568,7 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="3389312115541230716">以滑鼠右鍵按一下工作列中的 <ph name="SMALL_PRODUCT_LOGO" /> 圖示</translation>
+<translation id="3393352139658145068">只要有人說出「Ok Google」即啟動 Google 助理。為了節省電力，系統只有在裝置連接到電源時才會啟動「Ok Google」。</translation>
 <translation id="3396800784455899911">點選 [接受並繼續] 按鈕即表示您同意上述的 Google 服務處理程序。</translation>
 <translation id="3399432415385675819">通知功能會遭到停用</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />，<ph name="TIME_LEFT" /></translation>
@@ -3165,6 +3170,7 @@
 <translation id="5816434091619127343">要求的印表機變更會讓這部印表機無法使用。</translation>
 <translation id="5817918615728894473">配對</translation>
 <translation id="5821565227679781414">建立捷徑</translation>
+<translation id="5825412242012995131">啟用 (建議設定)</translation>
 <translation id="5826507051599432481">一般名稱 (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">列印中...</translation>
@@ -3709,6 +3715,7 @@
 <translation id="6629841649550503054">所有檔案都已備份到 <ph name="BEGIN_LINK" />Google 雲端硬碟<ph name="END_LINK" />！</translation>
 <translation id="6630752851777525409">「<ph name="EXTENSION_NAME" />」要求永久存取可代您驗證其自身的憑證。</translation>
 <translation id="6635956300022133031">選取及自訂文字轉語音的聲音</translation>
+<translation id="6637585982786704944">應用程式和網站如果取得了你的授權，將可存取正常運作所需的帳戶資訊。如果你不想新增帳戶，請以訪客身分登入，或是開啟無痕式視窗瀏覽網路。你可以依序前往 [設定] -&gt; [Google 帳戶]，查看及管理所有帳戶。</translation>
 <translation id="6639554308659482635">SQLite 記憶體使用量</translation>
 <translation id="6641138807883536517">無法使用隨機產生的安全模組密碼。在執行 Powerwash 之後，這是正常情況。</translation>
 <translation id="6643016212128521049">清除</translation>
@@ -3910,6 +3917,7 @@
 <translation id="6957231940976260713">服務名稱</translation>
 <translation id="696203921837389374">啟用透過行動數據進行同步處理的功能</translation>
 <translation id="6964390816189577014">英雄</translation>
+<translation id="6964760285928603117">從群組中移除</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6965648386495488594">通訊埠</translation>
 <translation id="6965978654500191972">裝置</translation>
@@ -4019,6 +4027,7 @@
 <translation id="7109543803214225826">已移除捷徑</translation>
 <translation id="7113502843173351041">存取你的電子郵件地址</translation>
 <translation id="7114054701490058191">密碼不符</translation>
+<translation id="7114648273807173152">如要使用 Smart Lock 登入 Google 帳戶，請依序前往 [設定] &gt; [已連接的裝置] &gt; [你的手機] &gt; [Smart Lock]。</translation>
 <translation id="7117228822971127758">請稍後再試</translation>
 <translation id="7117247127439884114">重新登入...</translation>
 <translation id="711840821796638741">顯示受管理書籤</translation>
@@ -4174,6 +4183,7 @@
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
 <translation id="7352651011704765696">發生錯誤</translation>
 <translation id="735361434055555355">正在安裝 Linux...</translation>
+<translation id="7353887511974462734">新增到現有群組</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7359359531237882347">正在複製 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="7359588939039777303">已封鎖廣告。</translation>
@@ -4236,7 +4246,6 @@
 <translation id="7456847797759667638">開啟位置...</translation>
 <translation id="7461924472993315131">固定</translation>
 <translation id="7463006580194749499">新增使用者</translation>
-<translation id="7464902436585505072">「Ok Google」語音模型</translation>
 <translation id="7465778193084373987">Netscape 憑證撤銷網址</translation>
 <translation id="7469894403370665791">自動連線至這個網路</translation>
 <translation id="747114903913869239">錯誤：無法為擴充功能解碼</translation>
@@ -4804,6 +4813,7 @@
 <translation id="827097179112817503">顯示 [首頁] 按鈕</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{已刪除 1 個書籤}other{已刪除 # 個書籤}}</translation>
 <translation id="8272443605911821513">如要管理擴充功能，只需按一下 [其他工具] 選單裡的 [擴充功能] 即可。</translation>
+<translation id="8272966760965438857">集中管理你的 Google 帳戶</translation>
 <translation id="8274332263553132018">投放檔案</translation>
 <translation id="8274924778568117936">完成更新前，請勿將 <ph name="DEVICE_TYPE" /> 關機。<ph name="DEVICE_TYPE" /> 會在安裝完成後重新啟動。</translation>
 <translation id="8275038454117074363">匯入</translation>
@@ -5190,6 +5200,7 @@
 <translation id="8883847527783433352">同步到其他帳戶</translation>
 <translation id="8885197664446363138">無法使用 Smart Lock</translation>
 <translation id="88870264962436283">在「<ph name="APP_NAME" />」中使用 Touch ID</translation>
+<translation id="8888253246822647887">升級完成後，你的應用程式即會啟動。升級作業可能需要幾分鐘才能完成。</translation>
 <translation id="8888432776533519951">顏色：</translation>
 <translation id="8890516388109605451">來源</translation>
 <translation id="8892168913673237979">設定完成！</translation>

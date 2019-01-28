@@ -804,6 +804,11 @@
           Kung naka-disable ang setting na ito at pini-filter ng firewall ang mga papalabas na UDP na koneksyon, papayagan lang ng makinang ito ang mga koneksyon mula sa mga makina ng kliyente sa loob ng lokal na network.
 
           Kung iniwang hindi nakatakda ang patakarang ito, i-e-enable ang setting.</translation>
+<translation id="2813281962735757923">Kinokontrol ng patakarang ito ang mga panahon kung kailan hindi pinapayagan ang <ph name="PRODUCT_OS_NAME" /> device na awtomatikong tumingin kung may mga update.
+      Kapag itinakda ang patakarang ito sa isang listahang may lamang mga agwat ng panahon:
+      Hindi awtomatikong matitingnan ng mga device kung may mga update sa mga tinukoy na agwat ng panahon. Ang mga device na nangangailangan ng rollback o mas luma sa minimum na bersyon ng <ph name="PRODUCT_OS_NAME" /> ay hindi maaapektuhan ng patakarang ito dahil sa mga potensyal na isyu sa seguridad. Gayundin, hindi iba-block ng patakarang ito ang mga pagtingin ng update na hinihiling ng mga user o administrator.
+      Kapag ang patakarang ito ay na-unset o hindi naglalaman ng mga agwat ng panahon:
+      Walang awtomatikong pagtingin ng update ang iba-block ng patakarang ito, ngunit maaaring i-block ng iba pang patakaran ang mga iyon. Naka-enable lang ang feature na ito sa mga Chrome device na naka-configure bilang mga auto-launch kiosk. Hindi paghihigpitan ng patakarang ito ang iba pang device.</translation>
 <translation id="2823870601012066791">Lokasyon ng registry ng Windows para sa mga <ph name="PRODUCT_OS_NAME" /> client:</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
@@ -1100,6 +1105,7 @@
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="355118380775352753">Mga website na bubuksan sa alternatibong browser</translation>
 <translation id="3577251398714997599">Setting ng mga ad para sa mga site na may mga nakakasagabal na ad</translation>
+<translation id="3591527072193107424">I-enable ang feature na Suporta sa Legacy Browser.</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
 <translation id="3624171042292187668">
       Maaari mong tingnan ang setting ng patakarang IsolateOrigins para masulit ang pag-isolate at limitadong epekto para sa mga user, sa pamamagitan ng paggamit sa IsolateOrigins kasama ng listahan ng mga site na gusto mong i-isolate. Ina-isolate ng setting na SitePerProcess ang lahat ng site.
@@ -1288,6 +1294,13 @@
 <translation id="3965339130942650562">Mag-timeout hanggang maisagawa ang pag-log-out ng idle na user</translation>
 <translation id="3973371701361892765">Huwag kailanman awtomatikong itago ang shelf</translation>
 <translation id="3984028218719007910">Tinutukoy kung pinapanatili ng <ph name="PRODUCT_OS_NAME" /> ang lokal na data ng account pagkatapos ng pag-logout. Kung nakatakda sa true, walang mga umiiral nang account ang pananatilihin ng <ph name="PRODUCT_OS_NAME" /> at idi-discard ang lahat ng data mula sa session ng user pagkatapos ng pag-logout. Kung nakatakda sa false o hindi naka-configure ang patakarang ito, maaaring magpanatili ng (na-encrypt na) lokal na data ng user ang device.</translation>
+<translation id="398475542699441679">Kinokontrol ng patakarang ito kung ie-enable ang Suporta sa Legacy Browser.
+
+      Kung ang patakarang ito ay iiwanang hindi nakatakda, o nakatakda sa false, hindi susubukan ng Chrome na maglunsad ng mga itinalagang URL sa isang alternatibong browser.
+
+      Kapag nakatakda sa true ang patakarang ito, susubukan ng Chrome na maglunsad ng ilang URL sa isang alternatibong browser (gaya ng Internet Explorer). Ang feature na ito ay kino-configure gamit ang mga patakaran sa grupong <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Ang feature na ito ay pamalit sa extension na <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Ipapasa sa feature na ito ang configuration mula sa extension, ngunit lubos na inirerekomendang ang mga patakaran ng Chrome na lang ang gamitin. Tinitiyak nitong magiging mas maayos ang compatibility sa hinaharap.</translation>
 <translation id="3997519162482760140">Mga URL na bibigyan ng access sa mga device na nagka-capture ng video sa mga page ng pag-login ng SAML</translation>
 <translation id="4001275826058808087">Magagamit ng mga IT admin para sa mga enterprise device ang flag na ito upang kontrolin kung papayagan ang mga user na kumuha ng mga alok sa pamamagitan ng Pagpaparehistro ng Chrome OS.
 
@@ -1539,6 +1552,7 @@
 
           Para sa mga halimbawang pattern, tingnan ang https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Magbukas ng listahan ng mga URL</translation>
+<translation id="4674871290487541952">Payagan ang mga hindi secure na algorithm sa mga integrity check sa mga pag-update at pag-install ng extension</translation>
 <translation id="4680936297850947973">Hindi na ginagamit sa M68. Gamitin na lang ang DefaultPopupsSetting.
 
       Para sa kumpletong paliwanag, tingnan ang https://www.chromestatus.com/features/5675755719622656.
@@ -2584,6 +2598,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung nakatakda sa to False ang patakarang ito, idi-disable ang background mode at hindi makokontrol ng user sa mga setting ng browser.
 
       Kung hindi itinakda ang patakarang ito, paunang idi-disable ang background mode at maaaring makontrol ng user sa mga setting ng browser.</translation>
+<translation id="7123266440503901785">Binibigyang-daan ng <ph name="PRODUCT_NAME" /> ang secure na pag-update at pag-install ng mga extension. Gayunpaman, ang content ng ilang extension na naka-host sa labas ng Chrome Web Store ay maaari lang protektahan ng mga hindi secure na signing o hashing algorithm gaya ng SHA1. Kapag naka-disable ang patakarang ito, ang bagong pag-install at mga update sa ganoong mga extension ay hindi papayagan ng Chrome (hanggang sa muling i-bulid ng mga developer ng extension ang extension gamit ang mas mahuhusay na algorithm). Kapag naka-enable ang patakarang ito, papayagan ang pag-install at mga update para sa ganoong mga extension.
+
+          Ito ay babalik sa default na pagkilos na naka-enable kapag hindi nakatakda.
+          Simula sa <ph name="PRODUCT_NAME" /> 75, ito ay babalik sa default na pagkilos na naka-disable kapag hindi nakatakda.
+
+          Simula sa <ph name="PRODUCT_NAME" /> 77, babalewalain ang patakarang ito at ituturing ito bilang naka-disable.</translation>
 <translation id="7126716959063786004">I-enable ang pagtapos ng mga proseso sa Task Manager</translation>
 <translation id="7127892035367404455">Pag-roll back sa target na bersyon</translation>
 <translation id="7128918109610518786">Nililista ang mga tagatukoy ng application na ipinapakita ng <ph name="PRODUCT_OS_NAME" /> bilang mga na-pin na app sa bar ng launcher

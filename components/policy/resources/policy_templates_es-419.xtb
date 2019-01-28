@@ -776,6 +776,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si se inhabilita esta configuración y el firewall filtra las conexiones UDP de salida, esta computadora solo permitirá las conexiones de computadoras cliente que se encuentren en la red local.
 
           Si esta política no se establece, la configuración estará habilitada.</translation>
+<translation id="2813281962735757923">Esta política controla los períodos durante los cuales el dispositivo <ph name="PRODUCT_OS_NAME" /> no puede comprobar automáticamente si hay actualizaciones disponibles.
+      Cuando se configura esta política con una lista no vacía de períodos:
+      Los dispositivos no podrán comprobar automáticamente si hay actualizaciones disponibles durante los períodos especificados. Debido a posibles problemas de seguridad, esta política no afectará a los dispositivos que necesiten una reversión o tengan versiones anteriores a la mínima de <ph name="PRODUCT_OS_NAME" />. Además, esta política no bloqueará comprobaciones de actualizaciones que soliciten los usuarios o administradores.
+      Cuando no se configura esta política o no contiene períodos:
+      Esta política no bloqueará ninguna comprobación de actualizaciones, pero otras políticas sí pueden bloquearlas. Esta función solo está disponible en dispositivos Chrome configurados como kioscos de inicio automático. Esta política no restringirá otros dispositivos.</translation>
 <translation id="2823870601012066791">Ubicación del registro de Windows para los clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
 <translation id="2838830882081735096">No permitir la migración de datos y ARC</translation>
@@ -1066,6 +1071,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="355118380775352753">Sitios web que se abren en un navegador alternativo</translation>
 <translation id="3577251398714997599">Configuración de anuncios para sitios con anuncios intrusivos</translation>
+<translation id="3591527072193107424">Habilitar la función "Compatibilidad con navegadores heredados"</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3624171042292187668">
       Si usas la política IsolateOrigins con una lista de sitios que deseas aislar, puedes aprovechar ambas características, el aislamiento y el impacto limitado de los usuarios. La configuración SitePerProcess aísla todos los sitios.
@@ -1253,6 +1259,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3965339130942650562">Está ejecutado el tiempo de espera para salir del navegador cuando el usuario se encuentre inactivo</translation>
 <translation id="3973371701361892765">Nunca ocultar automáticamente los archivos</translation>
 <translation id="3984028218719007910">Determina si <ph name="PRODUCT_OS_NAME" /> mantiene los datos de cuenta locales tras cerrar la sesión. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> no conservará ninguna cuenta de forma permanente y todos los datos de la sesión del usuario se descartarán al cerrar la sesión. Si esta política no se configura o se establece en "false", el dispositivo puede guardar datos de usuario locales (encriptados).</translation>
+<translation id="398475542699441679">Esta política controla si se habilita la Compatibilidad con navegadores heredados.
+
+      Si no se configura esta política o se configura como falsa, Chrome no intentará iniciar las URL designadas en un navegador alternativo.
+
+      Si se configura como verdadera, Chrome intentará iniciar algunas URL en un navegador alternativo (como Internet Explorer). Esta función está configurada conforme a las políticas del grupo <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />
+
+      y reemplaza la extensión <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Adoptará la configuración de la extensión, pero te recomendamos encarecidamente que en su lugar uses las políticas de Chrome. De esta manera, podremos garantizar una mejor compatibilidad en el futuro.</translation>
 <translation id="3997519162482760140">URL a las que se les concede acceso a los dispositivos de captura de video en las páginas de acceso de SAML</translation>
 <translation id="4001275826058808087">Los administradores TI de dispositivos empresariales pueden usar esta marca para controlar si permiten a los usuarios canjear ofertas a través del registro del Sistema operativo de Chrome.
 
@@ -1494,6 +1507,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Para ver ejemplos de patrones, visita https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Abrir una lista de direcciones URL</translation>
+<translation id="4674871290487541952">Permitir los algoritmos no seguros en las verificaciones de integridad de las instalaciones y actualizaciones de extensiones</translation>
 <translation id="4680936297850947973">Dejó de estar disponible en M68. En su lugar, usa DefaultPopupsSetting.
 
       Para obtener una explicación completa, consulta https://www.chromestatus.com/features/5675755719622656.
@@ -2488,6 +2502,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si esta política se establece en False, se inhabilita el modo en segundo plano, y el usuario no puede controlarlo en la configuración del navegador.
 
       Si esta política no se establece, el modo en segundo plano se inhabilita inicialmente, y el usuario puede controlarlo en la configuración del navegador.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> garantiza que la instalación y actualización de extensiones sean seguras. Sin embargo, es posible que el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo cuente con la protección de algoritmos de autenticación (hash) y acceso no seguros, como SHA1. Si se inhabilita esta política, Chrome no permitirá la instalación ni la actualización de esas extensiones (hasta que los desarrolladores vuelvan a diseñar la extensión con algoritmos más seguros). Si se habilita, Chrome permitirá la instalación y actualización de las extensiones.
+
+          Si no se establece, se considerará habilitada.
+          A partir de <ph name="PRODUCT_NAME" /> 75, la configuración predeterminada se comportará como si estuviera inhabilitada.
+
+          A partir de <ph name="PRODUCT_NAME" /> 77, si ignorará esta política y se tratará como inhabilitada.</translation>
 <translation id="7126716959063786004">Permitir finalizar procesos en el Administrador de tareas</translation>
 <translation id="7127892035367404455">Reversión a la versión objetivo</translation>
 <translation id="7128918109610518786">Muestra la lista de identificadores de las aplicaciones que <ph name="PRODUCT_OS_NAME" /> muestra como aplicaciones fijas en la barra del menú de aplicaciones.

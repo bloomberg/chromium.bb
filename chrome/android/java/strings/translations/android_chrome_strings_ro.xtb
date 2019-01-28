@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1006017844123154345">Deschide online</translation>
+<translation id="1023450834687746199">Ai șters datele aplicației <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Se adaugă <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De la site-uri</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -142,6 +143,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="2017836877785168846">Șterge istoricul și completările automate din bara de adrese.</translation>
 <translation id="2021896219286479412">Comenzi site în ecran complet</translation>
 <translation id="2038563949887743358">Activează opțiunea Versiune site pentru desktop</translation>
+<translation id="204321170514947529">Și <ph name="APP_NAME" /> are date în Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB pentru alte aplicații</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2063713494490388661">Atinge pentru a căuta</translation>
@@ -165,7 +167,6 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="2154484045852737596">Editează cardul</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">Verifică-ți conexiunea la internet</translation>
 <translation id="2197557662829090533">Permite Bunăstării digitale să afișeze paginile pe care le-ai accesat</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicație web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuă ca <ph name="USER_FULL_NAME" /></translation>
@@ -242,6 +243,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="2779651927720337254">nereușită</translation>
 <translation id="2781151931089541271">1 sec. rămasă</translation>
 <translation id="2784212955220061919">În modul Lite, Chrome încarcă mai repede paginile și folosește cu până la 60 de procente mai puține date. Tehnologia Google cloud optimizează paginile pe care le vizitezi.</translation>
+<translation id="2785336755839207516">Ai dezinstalat <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Se afișează parolele salvate și opțiunile pentru parole</translation>
 <translation id="2810645512293415242">Pagină simplificată pentru economie de date și încărcare mai rapidă.</translation>
 <translation id="281504910091592009">Vezi și gestionează parolele salvate în <ph name="BEGIN_LINK" />Contul Google<ph name="END_LINK" /></translation>
@@ -278,11 +280,12 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="305593374596241526">Locația este dezactivată; activeaz-o în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> marcaj}few{<ph name="BOOKMARKS_COUNT_MANY" /> marcaje}other{<ph name="BOOKMARKS_COUNT_MANY" /> de marcaje}}</translation>
 <translation id="307908932405420782">În curând vor apărea mai multe articole. O dimineață plăcută!</translation>
-<translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
+<translation id="3089395242580810162">Deschide într-o filă incognito</translation>
 <translation id="311456632243022227">Linkuri multiple deschise în Chrome</translation>
 <translation id="3115898365077584848">Afișează informațiile</translation>
 <translation id="3123473560110926937">Blocate pe anumite site-uri</translation>
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
+<translation id="3143515551205905069">Anulează sincronizarea</translation>
 <translation id="3148434565183091099">Pentru a accesa marcajele pe toate dispozitivele, conectează-te la Chrome.</translation>
 <translation id="3157842584138209013">Vezi ce volum de date ai economisit folosind butonul Mai multe opțiuni</translation>
 <translation id="3166827708714933426">Comenzi rapide pentru file și ferestre</translation>
@@ -301,6 +304,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="3269093882174072735">Încarcă imaginea</translation>
 <translation id="3269956123044984603">Pentru a accesa filele de pe alte dispozitive, activează opțiunea „Sincronizează automat datele” în setările Android din Contul Google.</translation>
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
+<translation id="3288003805934695103">să reîncarci pagina;</translation>
 <translation id="32895400574683172">Notificările sunt permise</translation>
 <translation id="3295530008794733555">Navighează mai rapid. Folosește mai puține date.</translation>
 <translation id="3295602654194328831">Ascunde informațiile</translation>
@@ -370,6 +374,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descărcări șterse</translation>
 <translation id="3819562311292413223">Descarcă articole pentru tine</translation>
 <translation id="3822502789641063741">Ștergi stocarea site-urilor?</translation>
+<translation id="385051799172605136">Înapoi</translation>
 <translation id="3859306556332390985">Derulează înainte</translation>
 <translation id="3894427358181296146">Adaugă un dosar</translation>
 <translation id="3895926599014793903">Forțează activarea zoomului</translation>
@@ -381,6 +386,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul privat nu ascunde activitate
 <translation id="3950820424414687140">Conectează-te</translation>
 <translation id="395206256282351086">Sugestiile de căutare și de site-uri sunt dezactivate</translation>
 <translation id="3955193568934677022">Permite site-urilor să redea conținutul protejat (recomandat)</translation>
+<translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome va încărca pagina când este gata}few{Chrome va încărca paginile când este gata}other{Chrome va încărca paginile când este gata}}</translation>
 <translation id="3963007978381181125">Criptarea expresiei de acces nu include metodele de plată și adresele din Google Pay. Numai cine are expresia ta de acces poate citi datele tale criptate. Expresia de acces nu este trimisă sau stocată la Google. Dacă îți uiți expresia de acces sau vrei să modifici această setare, va trebui să resetezi sincronizarea. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="3967822245660637423">Descărcare finalizată</translation>
 <translation id="397583555483684758">Sincronizarea nu mai funcționează</translation>
@@ -431,6 +437,7 @@ Pentru a ajusta termenul de căutare, apasă lung pentru a selecta. Pentru a raf
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Se permite</translation>
 <translation id="429312253194641664">Un site redă fișiere media</translation>
+<translation id="4298388696830689168">Site-uri conectate</translation>
 <translation id="4307992518367153382">Elemente de bază</translation>
 <translation id="4314815835985389558">Gestionează sincronizarea</translation>
 <translation id="4351244548802238354">Închide caseta de dialog</translation>
@@ -699,6 +706,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="6232535412751077445">Dacă activezi opțiunea „Nu urmări”, o solicitare va fi inclusă împreună cu traficul de navigare. Efectul variază în funcție de răspunsul site-ului la solicitare și în funcție de modul în care este interpretată solicitarea.
 
 De exemplu, unele site-uri pot răspunde la această solicitare afișând anunțuri care nu se bazează pe alte site-uri accesate de tine. Numeroase site-uri vor culege și vor utiliza în continuare datele de navigare. De exemplu, pentru a îmbunătăți securitatea, pentru a oferi conținut, anunțuri și recomandări și pentru a genera statistici de raportare.</translation>
+<translation id="624789221780392884">Actualizarea este pregătită</translation>
 <translation id="6255999984061454636">Sugestii de conținut</translation>
 <translation id="6277522088822131679">A apărut o problemă la printarea paginii. Încercați din nou.</translation>
 <translation id="6295158916970320988">Toate site-urile</translation>
@@ -734,6 +742,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6475951671322991020">Descarcă videoclipul</translation>
 <translation id="6482749332252372425">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza spațiului de stocare insuficient.</translation>
 <translation id="6496823230996795692">Ca să folosești <ph name="APP_NAME" /> pentru prima dată, conectează-te la internet.</translation>
+<translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="6534565668554028783">Google a răspuns prea târziu</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB descărcați</translation>
@@ -832,7 +841,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
 <translation id="7189598951263744875">Trimite...</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
-<translation id="7221869452894271364">Reîncarcă această pagină</translation>
 <translation id="723171743924126238">Selectează imagini</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selectate</translation>
@@ -919,6 +927,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="784934925303690534">Interval de timp</translation>
 <translation id="7851858861565204677">Alte dispozitive</translation>
 <translation id="7854964836418414587">Închide foaia „Mai multe similare”</translation>
+<translation id="7871791972254842204">Citește și acceptă termenii și condițiile domeniului <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> mai târziu</translation>
 <translation id="7875915731392087153">Creează un e-mail</translation>
 <translation id="7876243839304621966">Elimină tot</translation>
 <translation id="7882131421121961860">Nu s-a găsit niciun istoric</translation>
@@ -969,6 +978,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8200772114523450471">Reia</translation>
 <translation id="8209050860603202033">Deschideți imaginea</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB pentru descărcări</translation>
+<translation id="8232956427053453090">Păstrează datele</translation>
 <translation id="8249310407154411074">Mută la început</translation>
 <translation id="8250920743982581267">Documente</translation>
 <translation id="825412236959742607">Această pagină folosește prea multă memorie, prin urmare Chrome a eliminat o parte din conținut.</translation>
@@ -1022,10 +1032,12 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="860043288473659153">Nume titular de card</translation>
 <translation id="8604763363205185560">Ajută la îmbunătățirea Chrome și a securității acestuia</translation>
 <translation id="8609465669617005112">Mutați mai sus</translation>
+<translation id="8611192991944347781">Gestionează datele</translation>
 <translation id="8616006591992756292">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Deschizi adresa URL sugerată specificată în conținutul descărcat?</translation>
 <translation id="8636825310635137004">Pentru a accesa filele de pe alte dispozitive, activează sincronizarea.</translation>
 <translation id="8641930654639604085">Încearcă să blochezi site-urile destinate adulților</translation>
+<translation id="8655129584991699539">Poți șterge datele în Setările Chrome</translation>
 <translation id="8662811608048051533">Te deconectează de pe majoritatea site-urilor.</translation>
 <translation id="8664979001105139458">Numele fișierului există deja</translation>
 <translation id="8676374126336081632">Șterge textul introdus</translation>
@@ -1033,6 +1045,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="868929229000858085">Caută în agendă</translation>
 <translation id="869891660844655955">Dată de expirare</translation>
 <translation id="8719023831149562936">Fila actuală nu poate fi transmisă</translation>
+<translation id="8723954843026426558">Sunt de acord cu termenii și condițiile, politica de confidențialitate și dreptul de retragere ale <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8728487861892616501">Dacă folosești aplicația, accepți <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome și <ph name="BEGIN_LINK3" />Notificarea privind confidențialitatea pentru Conturile Google gestionate cu Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Terminat</translation>

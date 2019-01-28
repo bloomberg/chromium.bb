@@ -809,6 +809,11 @@
           Om inställningen har inaktiverats och utgående UDP-anslutningar filtreras av brandväggen, tillåter datorn bara anslutningar från klientdatorer inom det lokala nätverket.
 
           Om policyn inte har angetts är inställningen aktiverad.</translation>
+<translation id="2813281962735757923">Den här principen styr under vilka tidsperioder som <ph name="PRODUCT_OS_NAME" />-enheten inte får söka efter uppdateringar automatiskt.
+      Följande gäller om principen är inställd på en lista över tidsintervall som inte är tom:
+      Enheterna tillåts inte att söka efter uppdateringar automatiskt inom de angivna tidsintervallen. Enheter som behöver återställas eller som inte uppfyller de lägsta versionskraven för <ph name="PRODUCT_OS_NAME" /> påverkas inte av principen på grund av möjliga säkerhetsproblem. Principen blockerar inte heller sökningar efter uppdateringar som användaren eller administratören har begärt.
+      Följande gäller om principen inte har angetts eller om tidsintervall saknas:
+      Inga automatiska sökningar efter uppdateringar blockeras av principen, men de kan blockeras av andra principer. Den här funktionen är bara aktiverad på Chrome-enheter som har konfigurerats så att de automatiskt startas för offentlig miljö. Andra enheter begränsas inte av den här principen.</translation>
 <translation id="2823870601012066791">Windows-registerplats för <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
 <translation id="2838830882081735096">Tillåt inte datamigrering och ARC</translation>
@@ -1106,6 +1111,7 @@
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="355118380775352753">Webbplatser som ska öppnas i alternativa webbläsare</translation>
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
+<translation id="3591527072193107424">Aktivera funktionen Stöd för äldre webbläsare.</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3624171042292187668">
       Ta gärna en titt på principen IsolateOrigins också: du kan få det bästa av två världar, isolering och begränsad inverkan på användarna, genom att ange en lista med webbplatser som ska isoleras med IsolateOrigins. Med den här inställningen, SitePerProcess, isoleras alla webbplatser.
@@ -1294,6 +1300,13 @@
 <translation id="3965339130942650562">Tidsgräns för utloggning av inaktiv användare</translation>
 <translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
 <translation id="3984028218719007910">Avgör om <ph name="PRODUCT_OS_NAME" /> ska spara lokala kontodata efter utloggning. Om värdet är sant sparas inga konton permanent av <ph name="PRODUCT_OS_NAME" /> och alla data från användarsessionen kasseras efter utloggning. Om policyn är inställd på falskt eller inte konfigurerad kan lokala användardata sparas (krypterade) i enheten.</translation>
+<translation id="398475542699441679">Principen styr om stödet för äldre webbläsare ska vara aktiverat.
+
+      När principen saknar inställning eller har ställts in på falskt görs inga försök att öppna angivna webbadresser i en annan webbläsare än Chrome.
+
+      När principen är inställd på sant öppnas vissa webbadresser i en annan webbläsare än Chrome (t.ex. Internet Explorer). Funktionen konfigureras med principerna i gruppen <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Funktionen ersätter tillägget <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. Tilläggets inställningar förs över till den här funktionen, men vi rekommenderar starkt att du använder principerna i Chrome i stället. På det sättet förebyggs framtida kompatibilitetsproblem.</translation>
 <translation id="3997519162482760140">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter på inloggningssidor med SAML</translation>
 <translation id="4001275826058808087">IT-administratörer för företagsenheter kan använda den här flaggan för att styra om användarna ska kunna utnyttja erbjudanden via registrering i Chrome OS.
 
@@ -1545,6 +1558,7 @@
 
           Exempel på mönster finns på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
+<translation id="4674871290487541952">Tillåt osäkra algoritmer vid integritetskontrollen när tillägg uppdateras och installeras.</translation>
 <translation id="4680936297850947973">Har fasats ut i M68. Använd DefaultPopupsSetting i stället.
 
       En fullständig förklaring finns på https://www.chromestatus.com/features/5675755719622656.
@@ -2594,6 +2608,12 @@
       Om policyn är inställd på falskt inaktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
 
       Om policyn inte ställs in är bakgrundsläget inaktiverat från början och kan ändras av användaren i webbläsarinställningarna.</translation>
+<translation id="7123266440503901785">Med <ph name="PRODUCT_NAME" /> installeras och uppdateras tillägg på ett säkert sätt. Däremot kanske vissa tillägg utanför Chrome Web Store bara skyddas av osäkra signeringsalgoritmer eller hash-tekniker som SHA1. När den här principen är inaktiverad går det inte att nyinstallera eller uppdatera sådana tillägg i Chrome (förrän utvecklaren har skrivit om tillägget så att säkrare algoritmer används). När principen är aktiverad tillåts installation och uppdateringar av sådana tillägg.
+
+          Om ingen inställning har angetts är principen aktiverad som standard.
+          Från och med <ph name="PRODUCT_NAME" /> 75 kommer principen i stället att vara inaktiverad som standard.
+
+          Från och med <ph name="PRODUCT_NAME" /> 77 kommer principen att ignoreras och ses som inaktiverad.</translation>
 <translation id="7126716959063786004">Gör det möjligt att avsluta processer i Aktivitetshanteraren</translation>
 <translation id="7127892035367404455">Återställ till målversion</translation>
 <translation id="7128918109610518786">Visar en lista med de appidentifierare som ska visas som fasta appar i startfältet i <ph name="PRODUCT_OS_NAME" />.

@@ -805,6 +805,11 @@
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, staat dit apparaat alleen verbindingen toe met clientapparaten binnen het lokale netwerk.
 
           Als dit beleid niet wordt ingesteld, wordt de instelling ingeschakeld.</translation>
+<translation id="2813281962735757923">Met dit beleid wordt bepaald in welke perioden het <ph name="PRODUCT_OS_NAME" />-apparaat geen toestemming heeft om automatisch op updates te controleren.
+      Wanneer dit beleid is ingesteld op een niet-lege lijst met perioden geldt het volgende:
+      Apparaten kunnen tijdens de opgegeven perioden niet automatisch controleren op updates. Apparaten die een rollback vereisen of die een lagere versie dan de minimum <ph name="PRODUCT_OS_NAME" />-versie gebruiken, worden niet beïnvloed door dit beleid vanwege mogelijke beveiligingsproblemen. Bovendien blokkeert dit beleid geen updatecontroles die door gebruikers of beheerders worden aangevraagd.
+      Wanneer dit beleid is uitgeschakeld of geen perioden bevat, geldt het volgende:
+      Er worden geen automatische updatecontroles geblokkeerd door dit beleid, maar deze kunnen wel worden geblokkeerd door andere beleidsregels. Deze functie is alleen ingeschakeld op Chrome-apparaten die zijn geconfigureerd als kiosken die automatisch worden gestart. Andere apparaten worden niet beperkt door dit beleid.</translation>
 <translation id="2823870601012066791">Locatie van Windows-register voor <ph name="PRODUCT_OS_NAME" />-clients:</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
 <translation id="2838830882081735096">Gegevensmigratie en ARC niet toestaan</translation>
@@ -1102,6 +1107,7 @@
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="355118380775352753">Websites die worden geopend in de alternatieve browser</translation>
 <translation id="3577251398714997599">Advertentie-instellingen voor sites met opdringerige advertenties</translation>
+<translation id="3591527072193107424">Schakel de functie 'Ondersteuning voor oudere browsers' in.</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
 <translation id="3624171042292187668">
       De beleidsinstelling IsolateOrigins is misschien handig als je optimaal gebruik wilt maken van beide functies (isolatie en beperkte impact voor gebruikers), door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
@@ -1289,6 +1295,13 @@
 <translation id="3965339130942650562">Time-out tot de inactieve gebruiker is uitgelogd</translation>
 <translation id="3973371701361892765">Archief nooit automatisch verbergen</translation>
 <translation id="3984028218719007910">Bepaalt of <ph name="PRODUCT_OS_NAME" /> na het afmelden lokale accountgegevens bewaart. Als dit is ingesteld op 'true', bewaart <ph name="PRODUCT_OS_NAME" /> geen bestaande accounts en worden alle gegevens over de gebruikerssessie na het afmelden gewist. Als dit beleid is ingesteld op 'false' of niet is geconfigureerd, bewaart het apparaat mogelijk (gecodeerde) lokale gebruikersgegevens.</translation>
+<translation id="398475542699441679">Met dit beleid wordt bepaald of 'Ondersteuning voor oudere browsers' wordt ingeschakeld.
+
+      Wanneer dit beleid niet is ingesteld of is ingesteld op 'false', probeert Chrome geen toegewezen URL's te openen in een andere browser.
+
+      Wanneer dit beleid is ingesteld op 'true', probeert Chrome bepaalde URL's te openen in een andere browser (zoals Internet Explorer). Deze functie is geconfigureerd volgens de beleidsregels in de groep <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
+
+      Deze functie dient als vervanging van de extensie <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. De configuratie van deze de extensie wordt overgezet naar deze functie, maar het wordt sterk geadviseerd om in plaats daarvan het Chrome-beleid te gebruiken. Dit zorgt in de toekomst voor betere compatibiliteit.</translation>
 <translation id="3997519162482760140">URL's die toegang krijgen tot apparaten voor het vastleggen van video op SAML-inlogpagina's</translation>
 <translation id="4001275826058808087">IT-beheerders voor zakelijke apparaten kunnen deze markering gebruiken om te bepalen of gebruikers aanbiedingen kunnen inwisselen via registratie van Chrome OS.
 
@@ -1540,6 +1553,7 @@
 
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Een lijst met URL's openen</translation>
+<translation id="4674871290487541952">Onbeveiligde algoritmen toestaan in integriteitscontroles bij updates en installaties van extensies</translation>
 <translation id="4680936297850947973">Beëindigd in M68. Gebruik in plaats hiervan DefaultPopupsSetting.
 
       Ga naar https://www.chromestatus.com/features/5675755719622656 voor een volledige uitleg.
@@ -2567,6 +2581,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid wordt ingesteld op 'False', wordt de achtergrondmodus uitgeschakeld en kan deze niet door de gebruiker worden beheerd in de browserinstellingen.
 
       Als dit beleid niet wordt ingesteld, wordt de achtergrondmodus aanvankelijk uitgeschakeld en kan deze door de gebruiker worden beheerd in de browserinstellingen.</translation>
+<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> zorgt ervoor dat extensies veilig kunnen worden geüpdatet en geïnstalleerd. De content van sommige extensies die buiten de Chrome Web Store worden gehost, wordt echter mogelijk alleen beschermd door onbeveiligde ondertekening of hashingalgoritmen zoals SHA1. Wanneer dit beleid is uitgeschakeld, wordt het door Chrome niet toegestaan om dergelijke extensies opnieuw te installeren of te updaten (totdat de ontwerpers van die extensie deze opnieuw samenstellen met krachtigere algoritmen). Wanneer dit beleid is ingeschakeld, is het toegestaan om dergelijke extensies te installeren en te updaten.
+
+          Het ingeschakelde gedrag wordt standaard gebruikt wanneer het beleid niet is ingesteld.
+          Vanaf <ph name="PRODUCT_NAME" /> 75 wordt het uitgeschakelde gedrag standaard gebruikt wanneer het beleid niet is ingesteld.
+
+          Vanaf <ph name="PRODUCT_NAME" /> 77 wordt dit beleid genegeerd en behandeld alsof het is uitgeschakeld.</translation>
 <translation id="7126716959063786004">Het beëindigen van processen in Taakbeheer inschakelen</translation>
 <translation id="7127892035367404455">Doelversie herstellen</translation>
 <translation id="7128918109610518786">Hiermee worden de app-ID's vermeld die <ph name="PRODUCT_OS_NAME" /> weergeeft als vastgezette apps in de balk van het opstartprogramma.
