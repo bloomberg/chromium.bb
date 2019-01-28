@@ -959,9 +959,9 @@ TEST_P(DOMWebSocketValidClosingTest, test) {
   EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
-INSTANTIATE_TEST_CASE_P(DOMWebSocketValidClosing,
-                        DOMWebSocketValidClosingTest,
-                        testing::Values(1000, 3000, 3001, 4998, 4999));
+INSTANTIATE_TEST_SUITE_P(DOMWebSocketValidClosing,
+                         DOMWebSocketValidClosingTest,
+                         testing::Values(1000, 3000, 3001, 4998, 4999));
 
 class DOMWebSocketInvalidClosingCodeTest
     : public testing::TestWithParam<unsigned short> {};
@@ -993,7 +993,7 @@ TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
   EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DOMWebSocketInvalidClosingCode,
     DOMWebSocketInvalidClosingCodeTest,
     testing::Values(0, 1, 998, 999, 1001, 2999, 5000, 9999, 65535));
