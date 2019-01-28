@@ -338,19 +338,18 @@ TEST_P(ONCCertificateImporterImplTestWithParam, ReimportCertificate) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ONCCertificateImporterImplTestWithParam,
     ONCCertificateImporterImplTestWithParam,
-    ::testing::Values(
-        CertParam(net::USER_CERT,
-                  "certificate-client.onc",
-                  "certificate-client-update.onc"),
-        CertParam(net::SERVER_CERT,
-                  "certificate-server.onc",
-                  "certificate-server-update.onc"),
-        CertParam(net::CA_CERT,
-                  "certificate-web-authority.onc",
-                  "certificate-web-authority-update.onc")));
+    ::testing::Values(CertParam(net::USER_CERT,
+                                "certificate-client.onc",
+                                "certificate-client-update.onc"),
+                      CertParam(net::SERVER_CERT,
+                                "certificate-server.onc",
+                                "certificate-server-update.onc"),
+                      CertParam(net::CA_CERT,
+                                "certificate-web-authority.onc",
+                                "certificate-web-authority-update.onc")));
 
 }  // namespace onc
 }  // namespace chromeos
