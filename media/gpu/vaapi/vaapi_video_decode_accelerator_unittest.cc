@@ -464,8 +464,8 @@ constexpr TestParams kTestCases[] = {
     {VP9PROFILE_MIN, false /* decode_using_client_picture_buffers */},
     {VP9PROFILE_MIN, true /* decode_using_client_picture_buffers */}};
 
-INSTANTIATE_TEST_CASE_P(/* No prefix. */,
-                        VaapiVideoDecodeAcceleratorTest,
-                        ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(/* No prefix. */,
+                         VaapiVideoDecodeAcceleratorTest,
+                         ValuesIn(kTestCases));
 
 }  // namespace media
