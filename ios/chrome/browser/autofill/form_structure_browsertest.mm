@@ -247,8 +247,8 @@ TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
                        is_expected_to_pass);
 }
 
-INSTANTIATE_TEST_CASE_P(AllForms,
-                        FormStructureBrowserTest,
-                        testing::ValuesIn(GetTestFiles()));
+INSTANTIATE_TEST_SUITE_P(AllForms,
+                         FormStructureBrowserTest,
+                         testing::ValuesIn(GetTestFiles()));
 
 }  // namespace autofill
