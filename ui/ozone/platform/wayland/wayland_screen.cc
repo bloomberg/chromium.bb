@@ -129,9 +129,12 @@ display::Display WaylandScreen::GetDisplayNearestPoint(
 
 display::Display WaylandScreen::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
-  // TODO(msisov): https://crbug.com/890272
-  NOTIMPLEMENTED_LOG_ONCE();
-  return GetPrimaryDisplay();
+  const display::Display* display_matching =
+      display::FindDisplayWithBiggestIntersection(display_list_.displays(),
+                                                  match_rect);
+  if (!display_matching)
+    return display::Display();
+  return *display_matching;
 }
 
 void WaylandScreen::AddObserver(display::DisplayObserver* observer) {
