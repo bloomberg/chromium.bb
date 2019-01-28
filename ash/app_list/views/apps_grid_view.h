@@ -333,7 +333,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // transition target page.
   const gfx::Vector2d CalculateTransitionOffset(int page_of_view) const;
 
-  void CalculateIdealBounds();
+  // Calculates the item views' bounds for folder.
+  void CalculateIdealBoundsForFolder();
   void AnimateToIdealBounds();
 
   // Invoked when the given |view|'s current bounds and target bounds are on
@@ -523,11 +524,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Update number of columns and rows for apps within a folder.
   void UpdateColsAndRowsForFolder();
 
-  // Returns true if apps grid gap is enabled. If it is enabled, the user can
-  // drag an app to the next page without having to fill up the current
-  // page.
-  bool IsAppsGridGapEnabled() const;
-
   // Convert between the model index and the visual index. The model index
   // is the index of the item in AppListModel. The visual index is the Index
   // struct above with page/slot info of where to display the item.
@@ -561,8 +557,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the page is the right target to flip to.
   bool IsValidPageFlipTarget(int page) const;
 
-  // Calculates the item views' bounds when apps grid gap is enabled.
-  void CalculateIdealBoundsWithGridGap();
+  // Calculates the item views' bounds for non-folder.
+  void CalculateIdealBounds();
 
   // Returns model index of the item view of the specified item.
   int GetModelIndexOfItem(const AppListItem* item);
@@ -700,16 +696,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // The compositor frame number when animation starts.
   int pagination_animation_start_frame_number_;
 
-  // view structure used when apps grid gap is enabled.
+  // view structure used only for non-folder.
   PagedViewStructure view_structure_;
 
   // True if an extra page is opened after the user drags an app to the bottom
-  // of last page with intention to put it in a new page. This is only used when
-  // apps grid gap is enabled.
+  // of last page with intention to put it in a new page. This is only used for
+  // non-folder.
   bool extra_page_opened_ = false;
-
-  // True if the apps grid gap feature is enabled.
-  const bool is_apps_grid_gap_feature_enabled_;
 
   // Tile spacing between the tile views.
   int horizontal_tile_padding_ = 0;

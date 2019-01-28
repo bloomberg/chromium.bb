@@ -140,32 +140,10 @@ class TestSuggestedSearchResult : public TestSearchResult {
   DISALLOW_COPY_AND_ASSIGN(TestSuggestedSearchResult);
 };
 
-struct TestParams {
-  bool is_rtl_enabled;
-  bool is_apps_grid_gap_enabled;
-};
-
-const TestParams kAppsGridViewTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */},
-    {true, false},
-};
-
-const TestParams kAppsGridViewDragTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */},
-    {true, false},
-    {false, true},
-    {true, true},
-};
-
-const TestParams kAppsGridGapTestParams[] = {
-    {false /* is_rtl_enabled */, true /* is_apps_grid_gap_enabled */},
-    {true, true},
-};
-
 }  // namespace
 
 class AppsGridViewTest : public views::ViewsTestBase,
-                         public testing::WithParamInterface<TestParams> {
+                         public testing::WithParamInterface<bool> {
  public:
   AppsGridViewTest() = default;
   ~AppsGridViewTest() override = default;
@@ -173,23 +151,11 @@ class AppsGridViewTest : public views::ViewsTestBase,
   // testing::Test overrides:
   void SetUp() override {
     AppListView::SetShortAnimationForTesting(true);
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      is_rtl_ = GetParam().is_rtl_enabled;
+      is_rtl_ = GetParam();
       if (is_rtl_)
         base::i18n::SetICUDefaultLocale("he");
-
-      is_apps_grid_gap_enabled_ = GetParam().is_apps_grid_gap_enabled;
     }
-    if (is_apps_grid_gap_enabled_) {
-      enabled_features.emplace_back(
-          app_list_features::kEnableAppsGridGapFeature);
-    } else {
-      disabled_features.emplace_back(
-          app_list_features::kEnableAppsGridGapFeature);
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     views::ViewsTestBase::SetUp();
     gfx::NativeView parent = GetContext();
     // Ensure that parent is big enough to show the full AppListView.
@@ -318,7 +284,6 @@ class AppsGridViewTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
   bool test_with_fullscreen_ = true;
-  bool is_apps_grid_gap_enabled_ = false;
 
  private:
   // Restores the locale to default when destructor is called.
@@ -327,16 +292,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardController keyboard_controller_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };
-
-// Instantiate the Boolean which is used to toggle RTL in
-// the parameterized tests.
-INSTANTIATE_TEST_CASE_P(,
-                        AppsGridViewTest,
-                        testing::ValuesIn(kAppsGridViewTestParams));
 
 class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
  public:
@@ -714,21 +671,7 @@ TEST_F(AppsGridViewTest, AppIconSelectedWhenMenuIsShown) {
   EXPECT_FALSE(apps_grid_view_->IsSelectedView(app));
 }
 
-// Tests various dragging behaviors.
-class AppsGridViewDragTest : public AppsGridViewTest {
- public:
-  AppsGridViewDragTest() = default;
-  ~AppsGridViewDragTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppsGridViewDragTest);
-};
-
-INSTANTIATE_TEST_CASE_P(,
-                        AppsGridViewDragTest,
-                        testing::ValuesIn(kAppsGridViewDragTestParams));
-
-TEST_P(AppsGridViewDragTest, MouseDragItemIntoFolder) {
+TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
   size_t kTotalItems = 3;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -775,7 +718,7 @@ TEST_P(AppsGridViewDragTest, MouseDragItemIntoFolder) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolder) {
+TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   // Create and add a folder with |kMaxFolderItemsFullscreen - 1| items.
   const size_t kMaxItems =
       AppListConfig::instance().max_folder_items_per_page() *
@@ -822,7 +765,7 @@ TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolder) {
 
 // Check that moving items around doesn't allow a drop to happen into a full
 // folder.
-TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolderWithMovement) {
+TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   // Create and add a folder with |kMaxFolderItemsFullscreen| in it.
   const size_t kMaxItems =
       AppListConfig::instance().max_folder_items_per_page() *
@@ -875,7 +818,7 @@ TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolderWithMovement) {
 }
 
 // Test reordering items via dragging.
-TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
+TEST_P(AppsGridViewTest, MouseDragItemReorder) {
   // The default layout is 5x4, populate 7 apps so that we have second row to
   // test dragging item to second row.
   model_->PopulateApps(7);
@@ -950,7 +893,7 @@ TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
   TestAppListItemViewIndice();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragFolderReorder) {
+TEST_P(AppsGridViewTest, MouseDragFolderReorder) {
   size_t kTotalItems = 2;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   model_->PopulateAppWithId(kTotalItems);
@@ -975,7 +918,7 @@ TEST_P(AppsGridViewDragTest, MouseDragFolderReorder) {
   TestAppListItemViewIndice();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragWithCancelDeleteAddItem) {
+TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   size_t kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -1008,7 +951,7 @@ TEST_P(AppsGridViewDragTest, MouseDragWithCancelDeleteAddItem) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
+TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
   GetPaginationModel()->SetTransitionDurations(10, 10);
 
@@ -1033,15 +976,10 @@ TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
     page_flip_waiter.Wait();
   }
 
-  if (is_apps_grid_gap_enabled_) {
-    // When apps grid gap is enabled, the user can drag an item to an extra page
-    // created at the end.
-    EXPECT_EQ("1,2,3", page_flip_waiter.selected_pages());
-    EXPECT_EQ(3, GetPaginationModel()->selected_page());
-  } else {
-    EXPECT_EQ("1,2", page_flip_waiter.selected_pages());
-    EXPECT_EQ(2, GetPaginationModel()->selected_page());
-  }
+  // When apps grid gap is enabled, the user can drag an item to an extra page
+  // created at the end.
+  EXPECT_EQ("1,2,3", page_flip_waiter.selected_pages());
+  EXPECT_EQ(3, GetPaginationModel()->selected_page());
 
   // Cancel drag and put the dragged view back to its ideal position so that
   // the next drag would pick it up.
@@ -1064,7 +1002,7 @@ TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
   apps_grid_view_->EndDrag(true);
 }
 
-TEST_F(AppsGridViewDragTest, UpdateFolderBackgroundOnCancelDrag) {
+TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
   const int kTotalItems = 4;
   TestAppsGridViewFolderDelegate folder_delegate;
   apps_grid_view_->set_folder_delegate(&folder_delegate);
@@ -1091,8 +1029,6 @@ class AppsGridGapTest : public AppsGridViewTest {
 
   // testing::Test overrides:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableAppsGridGapFeature}, {});
     AppsGridViewTest::SetUp();
     apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
     GetPaginationModel()->SetTransitionDurations(10, 10);
@@ -1146,14 +1082,8 @@ class AppsGridGapTest : public AppsGridViewTest {
   std::unique_ptr<PageFlipWaiter> page_flip_waiter_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsGridGapTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        AppsGridGapTest,
-                        testing::ValuesIn(kAppsGridGapTestParams));
 
 TEST_P(AppsGridGapTest, MoveAnItemToNewEmptyPage) {
   const int kApps = 2;
