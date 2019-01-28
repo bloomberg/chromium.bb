@@ -45,6 +45,7 @@ class PerfettoTracingCoordinator : public Coordinator {
                          const std::string& agent_label,
                          StopAndFlushCallback callback) override;
   void IsTracing(IsTracingCallback callback) override;
+  void RequestBufferUsage(RequestBufferUsageCallback callback) override;
 
  private:
   void BindOnSequence(mojom::CoordinatorRequest request);

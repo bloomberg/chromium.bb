@@ -342,6 +342,13 @@ void JSONTraceExporter::StopAndFlush(OnTraceEventJSONCallback callback) {
   consumer_endpoint_->DisableTracing();
 }
 
+void JSONTraceExporter::GetTraceStats(OnTraceStatsCallback callback) {
+  DCHECK(!stats_callback_ && callback);
+  stats_callback_ = std::move(callback);
+
+  consumer_endpoint_->GetTraceStats();
+}
+
 void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
                                     bool has_more) {
   DCHECK(json_callback_);
@@ -477,9 +484,10 @@ void JSONTraceExporter::OnAttach(bool, const perfetto::TraceConfig&) {
   NOTREACHED();
 }
 
-void JSONTraceExporter::OnTraceStats(bool, const perfetto::TraceStats&) {
-  // We don't currently use GetTraceStats().
-  NOTREACHED();
+void JSONTraceExporter::OnTraceStats(bool success,
+                                     const perfetto::TraceStats& stats) {
+  DCHECK(stats_callback_);
+  std::move(stats_callback_).Run(success, stats);
 }
 
 }  // namespace tracing
