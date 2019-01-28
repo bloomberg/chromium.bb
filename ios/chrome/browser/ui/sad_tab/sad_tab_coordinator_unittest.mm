@@ -55,21 +55,6 @@ TEST_F(SadTabCoordinatorTest, Start) {
   EXPECT_FALSE(view_controller.repeatedFailure);
 }
 
-// Tests |sadTabCoordinatorDidStart:| delegate call.
-TEST_F(SadTabCoordinatorTest, Delegate) {
-  SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
-      initWithBaseViewController:base_view_controller_
-                    browserState:browser_state_.get()];
-
-  id delegate = OCMStrictProtocolMock(@protocol(SadTabCoordinatorDelegate));
-  coordinator.delegate = delegate;
-  OCMExpect([delegate sadTabCoordinatorDidStart:coordinator]);
-
-  [coordinator start];
-
-  EXPECT_OCMOCK_VERIFY(delegate);
-}
-
 // Tests stopping coordinator.
 TEST_F(SadTabCoordinatorTest, Stop) {
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]

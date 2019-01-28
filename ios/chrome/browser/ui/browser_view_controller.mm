@@ -365,7 +365,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      OverscrollActionsControllerDelegate,
                                      PasswordControllerDelegate,
                                      PreloadControllerDelegate,
-                                     SadTabCoordinatorDelegate,
                                      SideSwipeControllerDelegate,
                                      SnapshotGeneratorDelegate,
                                      TabDialogDelegate,
@@ -2182,7 +2181,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         initWithBaseViewController:self.browserContainerViewController
                       browserState:_browserState];
     sadTabCoordinator.dispatcher = self.dispatcher;
-    sadTabCoordinator.delegate = self;
     sadTabCoordinator.overscrollDelegate = self;
     _sadTabCoordinator = sadTabCoordinator;
   } else {
@@ -4649,15 +4647,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (UIView*)parentView {
   return self.contentArea;
-}
-
-#pragma mark - SadTabCoordinatorDelegate
-
-- (void)sadTabCoordinatorDidStart:(SadTabCoordinator*)sadTabCoordinator {
-  UIView* sadTabView = sadTabCoordinator.viewController.view;
-  sadTabView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(
-      [NamedGuide guideWithName:kContentAreaGuide view:self.view], sadTabView);
 }
 
 #pragma mark - UIGestureRecognizerDelegate
