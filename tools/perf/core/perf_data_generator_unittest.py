@@ -72,7 +72,8 @@ class PerfDataGeneratorTest(unittest.TestCase):
     expected_generated_test = {
         'override_compile_targets': ['angle_perftest'],
         'isolate_name': 'angle_perftest',
-        'args': ['--gtest-benchmark-name', 'angle_perftest'],
+        'args': ['--gtest-benchmark-name', 'angle_perftest',
+                 '--non-telemetry=true', '--migrated-test=true'],
         'trigger_script': {
           'args': [
             '--multiple-dimension-script-verbose',
@@ -120,8 +121,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
         'override_compile_targets': ['performance_test_suite'],
         'isolate_name': 'performance_test_suite',
         'args': ['-v', '--browser=android-webview', '--upload-results',
-                 '--webview-embedder-apk=../../out/Release'
-                 '/apks/SystemWebViewShell.apk',
+                 '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk',
                  '--run-ref-build',
                  '--test-shard-map-filename=shard_map.json'],
         'trigger_script': {
