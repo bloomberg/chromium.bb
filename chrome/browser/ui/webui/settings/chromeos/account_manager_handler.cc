@@ -228,8 +228,7 @@ void AccountManagerUIHandler::OnJavascriptDisallowed() {
 // |AccountManager::Observer| overrides. Note: We need to listen on
 // |AccountManager| in addition to |IdentityManager| because there is no
 // guarantee that |AccountManager| (our source of truth) will have a newly added
-// account by the time the underlying |AccountTrackerService| managed by the
-// |IdentityManager| has it.
+// account by the time |IdentityManager| has it.
 void AccountManagerUIHandler::OnTokenUpserted(
     const AccountManager::AccountKey& account_key) {
   RefreshUI();
@@ -249,9 +248,6 @@ void AccountManagerUIHandler::OnAccountRemoved(
 void AccountManagerUIHandler::OnAccountUpdated(const AccountInfo& info) {
   RefreshUI();
 }
-
-void AccountManagerUIHandler::OnAccountRemovedWithInfo(
-    const AccountInfo& account_key) {}
 
 void AccountManagerUIHandler::RefreshUI() {
   FireWebUIListener("accounts-changed");

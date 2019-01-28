@@ -45,7 +45,6 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
 
   // |identity::IdentityManager::Observer| overrides.
   void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountRemovedWithInfo(const AccountInfo& account_key) override;
 
  private:
   // WebUI "getAccounts" message callback.
