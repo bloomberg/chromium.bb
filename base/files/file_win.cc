@@ -68,7 +68,7 @@ int File::Read(int64_t offset, char* data, int size) {
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
 
-  OVERLAPPED overlapped = {0};
+  OVERLAPPED overlapped = {};
   overlapped.Offset = offset_li.LowPart;
   overlapped.OffsetHigh = offset_li.HighPart;
 
@@ -119,7 +119,7 @@ int File::Write(int64_t offset, const char* data, int size) {
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
 
-  OVERLAPPED overlapped = {0};
+  OVERLAPPED overlapped = {};
   overlapped.Offset = offset_li.LowPart;
   overlapped.OffsetHigh = offset_li.HighPart;
 
@@ -229,12 +229,31 @@ bool File::GetInfo(Info* info) {
   return true;
 }
 
-File::Error File::Lock() {
+namespace {
+
+DWORD LockFileFlagsForMode(File::LockMode mode) {
+  DWORD flags = LOCKFILE_FAIL_IMMEDIATELY;
+  switch (mode) {
+    case File::LockMode::kShared:
+      return flags;
+    case File::LockMode::kExclusive:
+      return flags | LOCKFILE_EXCLUSIVE_LOCK;
+  }
+  NOTREACHED();
+}
+
+}  // namespace
+
+File::Error File::Lock(File::LockMode mode) {
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE("Lock");
 
-  BOOL result = LockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
+  OVERLAPPED overlapped = {};
+  BOOL result =
+      LockFileEx(file_.Get(), LockFileFlagsForMode(mode), /*dwReserved=*/0,
+                 /*nNumberOfBytesToLockLow=*/MAXDWORD,
+                 /*nNumberOfBytesToLockHigh=*/MAXDWORD, &overlapped);
   if (!result)
     return GetLastFileError();
   return FILE_OK;
@@ -245,7 +264,11 @@ File::Error File::Unlock() {
 
   SCOPED_FILE_TRACE("Unlock");
 
-  BOOL result = UnlockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
+  OVERLAPPED overlapped = {};
+  BOOL result =
+      UnlockFileEx(file_.Get(), /*dwReserved=*/0,
+                   /*nNumberOfBytesToLockLow=*/MAXDWORD,
+                   /*nNumberOfBytesToLockHigh=*/MAXDWORD, &overlapped);
   if (!result)
     return GetLastFileError();
   return FILE_OK;
