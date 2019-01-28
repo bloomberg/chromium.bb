@@ -19,6 +19,7 @@
 #include "components/viz/service/display/resource_metadata.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -69,6 +70,18 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   using BufferPresentedCallback =
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
   using ContextLostCallback = base::RepeatingCallback<void()>;
+
+  SkiaOutputSurfaceImplOnGpu(
+      gpu::SurfaceHandle surface_handle,
+      scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
+      gpu::MailboxManager* mailbox_manager,
+      scoped_refptr<gpu::SyncPointClientState> sync_point_client_data,
+      std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory,
+      gpu::raster::GrShaderCache* gr_shader_cache,
+      VulkanContextProvider* vulkan_context_provider,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+      const BufferPresentedCallback& buffer_presented_callback,
+      const ContextLostCallback& context_lost_callback);
   SkiaOutputSurfaceImplOnGpu(
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
@@ -77,7 +90,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       const ContextLostCallback& context_lost_callback);
   ~SkiaOutputSurfaceImplOnGpu() override;
 
-  gpu::CommandBufferId command_buffer_id() const { return command_buffer_id_; }
+  gpu::CommandBufferId command_buffer_id() const {
+    return sync_point_client_state_->command_buffer_id();
+  }
   const OutputSurface::Capabilities capabilities() const {
     return capabilities_;
   }
@@ -141,8 +156,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
 
-  void InitializeForGL();
-  void InitializeForVulkan();
+  void InitializeForGL(GpuServiceImpl* gpu_service);
+  void InitializeForVulkan(GpuServiceImpl* gpu_service);
 
   void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
 
@@ -157,9 +172,16 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   GrContext* gr_context() { return context_state_->gr_context(); }
 
-  const gpu::CommandBufferId command_buffer_id_;
-  GpuServiceImpl* const gpu_service_;
+  bool is_using_vulkan() const { return !!vulkan_context_provider_; }
+
   const gpu::SurfaceHandle surface_handle_;
+  scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
+  gpu::MailboxManager* const mailbox_manager_;
+  scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
+  std::unique_ptr<gpu::SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
+  gpu::raster::GrShaderCache* const gr_shader_cache_;
+  VulkanContextProvider* const vulkan_context_provider_;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
@@ -169,16 +191,12 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   std::unique_ptr<ui::PlatformWindowSurface> window_surface_;
 #endif
 
-  scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   gpu::GpuPreferences gpu_preferences_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   sk_sp<SkSurface> sk_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
   OutputSurface::Capabilities capabilities_;
-  std::unique_ptr<gpu::SharedImageRepresentationFactory>
-      shared_image_representation_factory_;
-  scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;

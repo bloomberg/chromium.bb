@@ -4,6 +4,9 @@
 
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/synchronization/waitable_event.h"
@@ -112,7 +115,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
     SkColorType color_type = ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, resource_format_);
     GrBackendFormat backend_format;
-    if (!impl->gpu_service_->is_using_vulkan()) {
+    if (!impl->is_using_vulkan_) {
       // Convert internal format from GLES2 to platform GL.
       const auto* version_info = impl->impl_on_gpu_->gl_version_info();
       unsigned int texture_storage_format =
@@ -273,6 +276,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     bool show_overdraw_feedback)
     : gpu_service_(gpu_service),
+      is_using_vulkan_(gpu_service->is_using_vulkan()),
       surface_handle_(surface_handle),
       synthetic_begin_frame_source_(synthetic_begin_frame_source),
       show_overdraw_feedback_(show_overdraw_feedback),
@@ -287,12 +291,10 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   // scheduled tasks for the impl_on_gpu_ will be executed, before releasing
   // it. The GPU thread is the main thread of the viz process. It outlives the
   // compositor thread. We don't need worry about it for now.
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   auto callback =
       base::BindOnce([](std::unique_ptr<SkiaOutputSurfaceImplOnGpu>) {},
                      std::move(impl_on_gpu_));
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
@@ -306,11 +308,9 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::InitializeOnGpuThread,
                                  base::Unretained(this), &event);
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
   event.Wait();
 }
 
@@ -356,7 +356,6 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
   }
 
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
@@ -364,8 +363,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                  device_scale_factor, std::move(color_space),
                                  has_alpha, use_stencil, characterization,
                                  initialize_waitable_event_.get());
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
@@ -418,6 +416,11 @@ gpu::VulkanSurface* SkiaOutputSurfaceImpl::GetVulkanSurface() {
 
 unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
   return 0;
+}
+
+void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  needs_swap_size_notifications_ = needs_swap_size_notifications;
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
@@ -489,7 +492,6 @@ void SkiaOutputSurfaceImpl::FlushQueuedReleases() {
   if (images_pending_release_.empty())
     return;
 
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
@@ -497,21 +499,18 @@ void SkiaOutputSurfaceImpl::FlushQueuedReleases() {
                      base::Unretained(impl_on_gpu_.get()),
                      std::move(images_pending_release_), sync_fence_release_);
   images_pending_release_.clear();
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!recorder_);
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
                      base::Unretained(impl_on_gpu_.get()), std::move(frame));
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
@@ -559,7 +558,6 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
     overdraw_surface_recorder_.reset();
   }
 
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   base::OnceCallback<void()> callback;
@@ -574,8 +572,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
                        base::Unretained(impl_on_gpu_.get()), std::move(ddl),
                        std::move(overdraw_ddl), sync_fence_release_);
   }
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::move(resource_sync_tokens_)));
+  ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
   current_render_pass_id_ = 0;
   return sync_token;
 }
@@ -597,14 +594,12 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
     std::vector<RenderPassId> ids) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ids.empty());
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource,
                      base::Unretained(impl_on_gpu_.get()), std::move(ids));
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::CopyOutput(
@@ -616,13 +611,12 @@ void SkiaOutputSurfaceImpl::CopyOutput(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!request->has_result_task_runner())
     request->set_result_task_runner(base::ThreadTaskRunnerHandle::Get());
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
                      base::Unretained(impl_on_gpu_.get()), id, copy_rect,
                      color_space, result_rect, std::move(request));
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::AddContextLostObserver(
@@ -674,7 +668,7 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
   constexpr size_t kCacheMaxResourceBytes = 90 * 1024 * 1024;
 
   GrBackendFormat backend_format;
-  if (!gpu_service_->is_using_vulkan()) {
+  if (!is_using_vulkan_) {
     const auto* version_info = impl_on_gpu_->gl_version_info();
     unsigned int texture_storage_format = TextureStorageFormat(format);
     backend_format = GrBackendFormat::MakeGL(
@@ -730,9 +724,12 @@ void SkiaOutputSurfaceImpl::ContextLost() {
     observer.OnContextLost();
 }
 
-void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
-    bool needs_swap_size_notifications) {
-  needs_swap_size_notifications_ = needs_swap_size_notifications;
+void SkiaOutputSurfaceImpl::ScheduleGpuTask(
+    base::OnceClosure callback,
+    std::vector<gpu::SyncToken> sync_tokens) {
+  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(callback), std::move(sync_tokens)));
 }
 
 }  // namespace viz
