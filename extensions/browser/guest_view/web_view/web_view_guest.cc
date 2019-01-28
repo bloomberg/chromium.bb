@@ -429,7 +429,9 @@ void WebViewGuest::ClearCodeCache(base::Time remove_since,
   base::OnceClosure code_cache_removal_done_callback = base::BindOnce(
       &WebViewGuest::ClearDataInternal, weak_ptr_factory_.GetWeakPtr(),
       remove_since, removal_mask, callback);
-  partition->ClearCodeCaches(std::move(code_cache_removal_done_callback));
+  partition->ClearCodeCaches(remove_since, base::Time::Now(),
+                             base::RepeatingCallback<bool(const GURL&)>(),
+                             std::move(code_cache_removal_done_callback));
 }
 
 void WebViewGuest::ClearDataInternal(base::Time remove_since,

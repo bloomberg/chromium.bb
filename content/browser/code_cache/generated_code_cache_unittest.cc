@@ -75,13 +75,6 @@ class GeneratedCodeCacheTest : public testing::Test {
     generated_code_cache_->FetchEntry(url, origin_lock, callback);
   }
 
-  void ClearCache() {
-    generated_code_cache_->ClearCache(base::BindRepeating(
-        &GeneratedCodeCacheTest::ClearCacheComplete, base::Unretained(this)));
-  }
-
-  void ClearCacheComplete(int rv) {}
-
   void FetchEntryCallback(const base::Time& response_time,
                           const std::vector<uint8_t>& data) {
     if (data.size() == 0) {
@@ -303,20 +296,6 @@ TEST_F(GeneratedCodeCacheTest, FetchSucceedsFromDifferentOrigins) {
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data_origin1, received_data_);
-}
-
-TEST_F(GeneratedCodeCacheTest, ClearCache) {
-  GURL url("http://example.com/script.js");
-  GURL origin_lock = GURL("http://example.com");
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  ClearCache();
-  scoped_task_environment_.RunUntilIdle();
-  FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  ASSERT_TRUE(received_null_);
 }
 
 TEST_F(GeneratedCodeCacheTest, FetchSucceedsEmptyOriginLock) {
