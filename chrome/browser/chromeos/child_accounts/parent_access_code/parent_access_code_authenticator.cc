@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_code_generator.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_code_authenticator.h"
 
 #include <vector>
 
@@ -58,19 +58,24 @@ bool ParentAccessCode::operator!=(const ParentAccessCode& rhs) const {
          valid_to_ != rhs.valid_to();
 }
 
-// static
-constexpr base::TimeDelta ParentAccessCodeGenerator::kCodeGranularity;
+std::ostream& operator<<(std::ostream& out, const ParentAccessCode& code) {
+  return out << code.code() << " [" << code.valid_from() << " - "
+             << code.valid_to() << "]";
+}
 
-ParentAccessCodeGenerator::ParentAccessCodeGenerator(
+// static
+constexpr base::TimeDelta ParentAccessCodeAuthenticator::kCodeGranularity;
+
+ParentAccessCodeAuthenticator::ParentAccessCodeAuthenticator(
     const ParentAccessCodeConfig& config)
     : config_(config) {
   bool result = hmac_.Init(config_.shared_secret());
   DCHECK(result);
 }
 
-ParentAccessCodeGenerator::~ParentAccessCodeGenerator() = default;
+ParentAccessCodeAuthenticator::~ParentAccessCodeAuthenticator() = default;
 
-base::Optional<ParentAccessCode> ParentAccessCodeGenerator::Generate(
+base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Generate(
     base::Time timestamp) {
   // We find the beginning of the interval for the given timestamp and adjust by
   // the granularity.
@@ -105,6 +110,32 @@ base::Optional<ParentAccessCode> ParentAccessCodeGenerator::Generate(
       base::Time::FromJavaTime(interval_beginning_timestamp);
   return ParentAccessCode(base::StringPrintf("%06d", result % 1000000),
                           valid_from, valid_from + config_.code_validity());
+}
+
+base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Validate(
+    const std::string& code,
+    base::Time timestamp) {
+  return ValidateInRange(code, timestamp - config_.clock_drift_tolerance(),
+                         timestamp + config_.clock_drift_tolerance());
+}
+
+base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::ValidateInRange(
+    const std::string& code,
+    base::Time valid_from,
+    base::Time valid_to) {
+  DCHECK_GE(valid_to, valid_from);
+  const int64_t start_interval =
+      valid_from.ToJavaTime() / kCodeGranularity.InMilliseconds();
+  const int64_t end_interval =
+      valid_to.ToJavaTime() / kCodeGranularity.InMilliseconds();
+  for (int i = start_interval; i <= end_interval; ++i) {
+    const base::Time generation_timestamp =
+        base::Time::FromJavaTime(i * kCodeGranularity.InMilliseconds());
+    base::Optional<ParentAccessCode> pac = Generate(generation_timestamp);
+    if (pac.has_value() && pac->code() == code)
+      return pac;
+  }
+  return base::nullopt;
 }
 
 }  // namespace chromeos
