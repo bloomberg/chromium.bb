@@ -89,7 +89,7 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   EXPECT_EQ(-1, GetCommittedItemIndexWithUniqueID(manager_.get(), unique_id));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ProgrammaticNavigationManagerUtilTest,
     NavigationManagerUtilTest,
     ::testing::Values(true /* test_legacy_navigation_manager */));

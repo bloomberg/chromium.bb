@@ -489,7 +489,7 @@ TEST_P(HistoryStateOperationsTest, ReplaceStateThenReload) {
   EXPECT_TRUE(completed);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticHistoryStateOperationsTest,
-                        HistoryStateOperationsTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticHistoryStateOperationsTest,
+                         HistoryStateOperationsTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));

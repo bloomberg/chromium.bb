@@ -2589,7 +2589,7 @@ TEST_P(NavigationManagerTest, UpdateCurrentItemForReplaceState) {
             last_committed_item->GetReferrer().url);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,
     ::testing::Values(
