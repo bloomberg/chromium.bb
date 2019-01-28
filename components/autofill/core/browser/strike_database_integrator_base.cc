@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/strike_database_integrator_base.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -81,8 +82,15 @@ void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {
         expired_keys.push_back(entry.first);
     }
   }
-  for (std::string key : expired_keys)
-    strike_database_->RemoveStrikes(1, key);
+  for (std::string key : expired_keys) {
+    int strikes_to_remove = 1;
+    // If the key is already over the limit, remove additional strikes to
+    // emulate setting it back to the limit. These are done together to avoid
+    // multiple calls to the file system ProtoDatabase.
+    strikes_to_remove +=
+        std::max(0, strike_database_->GetStrikes(key) - GetMaxStrikesLimit());
+    strike_database_->RemoveStrikes(strikes_to_remove, key);
+  }
 }
 
 std::string StrikeDatabaseIntegratorBase::GetKey(const std::string id) {
