@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -132,9 +131,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // specified by ResourceFactory::GetType().
   Resource* RequestResource(FetchParameters&,
                             const ResourceFactory&,
-                            ResourceClient*,
-                            const SubstituteData& = SubstituteData(),
-                            unsigned long identifier = 0);
+                            ResourceClient*);
 
   // Returns the task runner used by this fetcher, and loading operations
   // this fetcher initiates. The returned task runner will keep working even
@@ -278,13 +275,11 @@ class PLATFORM_EXPORT ResourceFetcher
   base::Optional<ResourceRequestBlockedReason> PrepareRequest(
       FetchParameters&,
       const ResourceFactory&,
-      const SubstituteData&,
       unsigned long identifier,
       WebScopedVirtualTimePauser& virtual_time_pauser);
 
   Resource* ResourceForStaticData(const FetchParameters&,
-                                  const ResourceFactory&,
-                                  const SubstituteData&);
+                                  const ResourceFactory&);
   Resource* ResourceForBlockedRequest(const FetchParameters&,
                                       const ResourceFactory&,
                                       ResourceRequestBlockedReason,

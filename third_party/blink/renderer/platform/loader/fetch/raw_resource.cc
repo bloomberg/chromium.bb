@@ -71,32 +71,6 @@ RawResource* RawResource::Fetch(FetchParameters& params,
       params, RawResourceFactory(ResourceType::kRaw), client));
 }
 
-RawResource* RawResource::FetchMainResource(
-    FetchParameters& params,
-    ResourceFetcher* fetcher,
-    RawResourceClient* client,
-    const SubstituteData& substitute_data,
-    unsigned long identifier) {
-  DCHECK_NE(params.GetResourceRequest().GetFrameType(),
-            network::mojom::RequestContextFrameType::kNone);
-  DCHECK(params.GetResourceRequest().GetRequestContext() ==
-             mojom::RequestContextType::FORM ||
-         params.GetResourceRequest().GetRequestContext() ==
-             mojom::RequestContextType::FRAME ||
-         params.GetResourceRequest().GetRequestContext() ==
-             mojom::RequestContextType::HYPERLINK ||
-         params.GetResourceRequest().GetRequestContext() ==
-             mojom::RequestContextType::IFRAME ||
-         params.GetResourceRequest().GetRequestContext() ==
-             mojom::RequestContextType::INTERNAL ||
-         params.GetResourceRequest().GetRequestContext() ==
-             mojom::RequestContextType::LOCATION);
-
-  return ToRawResource(fetcher->RequestResource(
-      params, RawResourceFactory(ResourceType::kMainResource), client,
-      substitute_data, identifier));
-}
-
 RawResource* RawResource::FetchMedia(FetchParameters& params,
                                      ResourceFetcher* fetcher,
                                      RawResourceClient* client) {

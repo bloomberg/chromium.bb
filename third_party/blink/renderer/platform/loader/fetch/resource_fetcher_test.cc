@@ -896,20 +896,6 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
       *properties, CreateFetchContext(), CreateTaskRunner()));
 
-  // Main resource case.
-  {
-    ResourceRequest resource_request(url);
-    resource_request.SetRequestContext(mojom::RequestContextType::IFRAME);
-    resource_request.SetFrameType(
-        network::mojom::RequestContextFrameType::kNested);
-    FetchParameters fetch_params(resource_request);
-    RawResource* resource = RawResource::FetchMainResource(
-        fetch_params, fetcher, nullptr, SubstituteData(),
-        CreateUniqueIdentifier());
-    ASSERT_NE(nullptr, resource);
-    EXPECT_FALSE(resource->ErrorOccurred());
-  }
-
   // Subresource case.
   {
     ResourceRequest resource_request(url);

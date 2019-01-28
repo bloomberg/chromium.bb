@@ -38,7 +38,6 @@ class WebDataConsumerHandle;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
-class SubstituteData;
 class SourceKeyedCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
@@ -49,11 +48,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* Fetch(FetchParameters&,
                             ResourceFetcher*,
                             RawResourceClient*);
-  static RawResource* FetchMainResource(FetchParameters&,
-                                        ResourceFetcher*,
-                                        RawResourceClient*,
-                                        const SubstituteData&,
-                                        unsigned long identifier);
   static RawResource* FetchImport(FetchParameters&,
                                   ResourceFetcher*,
                                   RawResourceClient*);

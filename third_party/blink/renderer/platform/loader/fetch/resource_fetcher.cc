@@ -596,15 +596,12 @@ static std::unique_ptr<TracedValue> UrlForTraceEvent(const KURL& url) {
 
 Resource* ResourceFetcher::ResourceForStaticData(
     const FetchParameters& params,
-    const ResourceFactory& factory,
-    const SubstituteData& substitute_data) {
+    const ResourceFactory& factory) {
   const KURL& url = params.GetResourceRequest().Url();
-  DCHECK(url.ProtocolIsData() || substitute_data.IsValid() || archive_);
+  DCHECK(url.ProtocolIsData() || archive_);
 
-  if (!archive_ && !substitute_data.IsValid() &&
-      factory.GetType() == ResourceType::kRaw) {
+  if (!archive_ && factory.GetType() == ResourceType::kRaw)
     return nullptr;
-  }
 
   const String cache_identifier = GetCacheIdentifier();
   // Most off-main-thread resource fetches use Resource::kRaw and don't reach
@@ -622,13 +619,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
 
   ResourceResponse response;
   scoped_refptr<SharedBuffer> data;
-  if (substitute_data.IsValid()) {
-    data = substitute_data.Content();
-    response.SetCurrentRequestUrl(url);
-    response.SetMimeType(substitute_data.MimeType());
-    response.SetExpectedContentLength(data->size());
-    response.SetTextEncodingName(substitute_data.TextEncoding());
-  } else if (url.ProtocolIsData()) {
+  if (url.ProtocolIsData()) {
     data = network_utils::ParseDataURLAndPopulateResponse(url, response);
     if (!data)
       return nullptr;
@@ -659,9 +650,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
   resource->SetCacheIdentifier(cache_identifier);
   resource->Finish(TimeTicks(), task_runner_.get());
 
-  if (!substitute_data.IsValid())
-    AddToMemoryCacheIfNeeded(params, resource);
-
+  AddToMemoryCacheIfNeeded(params, resource);
   return resource;
 }
 
@@ -738,7 +727,6 @@ void ResourceFetcher::RemovePreload(Resource* resource) {
 base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     FetchParameters& params,
     const ResourceFactory& factory,
-    const SubstituteData& substitute_data,
     unsigned long identifier,
     WebScopedVirtualTimePauser& virtual_time_pauser) {
   ResourceRequest& resource_request = params.MutableResourceRequest();
@@ -882,14 +870,10 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   return base::nullopt;
 }
 
-Resource* ResourceFetcher::RequestResource(
-    FetchParameters& params,
-    const ResourceFactory& factory,
-    ResourceClient* client,
-    const SubstituteData& substitute_data,
-    unsigned long identifier) {
-  if (!identifier)
-    identifier = CreateUniqueIdentifier();
+Resource* ResourceFetcher::RequestResource(FetchParameters& params,
+                                           const ResourceFactory& factory,
+                                           ResourceClient* client) {
+  unsigned long identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   network_instrumentation::ScopedResourceLoadTracker
       scoped_resource_load_tracker(identifier, resource_request);
@@ -919,7 +903,7 @@ Resource* ResourceFetcher::RequestResource(
 
   WebScopedVirtualTimePauser pauser;
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
-      PrepareRequest(params, factory, substitute_data, identifier, pauser);
+      PrepareRequest(params, factory, identifier, pauser);
   if (blocked_reason) {
     return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
                                      client);
@@ -937,10 +921,10 @@ Resource* ResourceFetcher::RequestResource(
   RevalidationPolicy policy = kLoad;
 
   bool is_data_url = resource_request.Url().ProtocolIsData();
-  bool is_static_data = is_data_url || substitute_data.IsValid() || archive_;
+  bool is_static_data = is_data_url || archive_;
   bool is_stale_revalidation = params.IsStaleRevalidation();
   if (!is_stale_revalidation && is_static_data) {
-    resource = ResourceForStaticData(params, factory, substitute_data);
+    resource = ResourceForStaticData(params, factory);
     if (resource) {
       policy =
           DetermineRevalidationPolicy(resource_type, params, *resource, true);
@@ -1391,7 +1375,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
     return kReload;
   }
 
-  // If resource was populated from a SubstituteData load or data: url, use it.
+  // If resource was populated from archive or data: url, use it.
   // This doesn't necessarily mean that |resource| was just created by using
   // ResourceForStaticData().
   if (is_static_data)
