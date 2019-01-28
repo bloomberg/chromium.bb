@@ -67,6 +67,9 @@ struct ThemeBackgroundInfo {
   // True if the default theme is selected.
   bool using_default_theme;
 
+  // True if dark mode is enabled.
+  bool using_dark_mode;
+
   // Url of the custom background selected by the user.
   GURL custom_background_url;
 

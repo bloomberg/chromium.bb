@@ -22,6 +22,7 @@
 #include "components/ntp_tiles/section_type.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/native_theme/test_native_theme.h"
 #include "url/gurl.h"
 
 namespace {
@@ -415,4 +416,39 @@ TEST_F(InstantServiceTest, ValidateBackdropUrls) {
   theme_info = instant_service_->GetThemeInfoForTesting();
   EXPECT_EQ(GURL(), theme_info->custom_background_url);
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
+}
+
+class InstantServiceThemeTest : public InstantServiceTest {
+ public:
+  InstantServiceThemeTest() {}
+  ~InstantServiceThemeTest() override {}
+
+  ui::TestNativeTheme* theme() { return &theme_; }
+
+ private:
+  ui::TestNativeTheme theme_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstantServiceThemeTest);
+};
+
+TEST_F(InstantServiceThemeTest, DarkModeHandler) {
+  theme()->SetDarkMode(false);
+  instant_service_->SetDarkModeThemeForTesting(theme());
+  thread_bundle()->RunUntilIdle();
+
+  // Enable dark mode.
+  theme()->SetDarkMode(true);
+  theme()->NotifyObservers();
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_TRUE(theme_info->using_dark_mode);
+
+  // Disable dark mode.
+  theme()->SetDarkMode(false);
+  theme()->NotifyObservers();
+  thread_bundle()->RunUntilIdle();
+
+  theme_info = instant_service_->GetThemeInfoForTesting();
+  EXPECT_FALSE(theme_info->using_dark_mode);
 }

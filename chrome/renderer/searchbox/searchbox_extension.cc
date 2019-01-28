@@ -196,6 +196,8 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
 
   builder.Set("usingDefaultTheme", theme_info.using_default_theme);
 
+  builder.Set("usingDarkMode", theme_info.using_dark_mode);
+
   // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
   // B are between 0 and 255 inclusive, and A is a double between 0 and 1
   // inclusive.

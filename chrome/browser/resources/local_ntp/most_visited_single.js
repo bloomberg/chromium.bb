@@ -343,6 +343,7 @@ var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
   document.body.classList.toggle('using-theme', info.isUsingTheme);
+  document.documentElement.setAttribute('darkmode', info.isDarkMode);
 
   // Reduce font weight on the default(white) background for Mac and CrOS.
   document.body.classList.toggle('mac-chromeos',
@@ -482,6 +483,9 @@ var addTile = function(args) {
     }
 
     data.tid = data.rid;
+    // Use a dark icon if dark mode is enabled. Keep value in sync with
+    // NtpIconSource.
+    data.dark = args.darkMode ? 'dark/' : '';
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -729,7 +733,7 @@ function renderMaterialDesignTile(data) {
     fi.title = '';
     fi.alt = '';
     fi.src = 'chrome-search://ntpicon/size/24@' + window.devicePixelRatio +
-        'x/' + data.url;
+        'x/' + data.dark + data.url;
     loadedCounter += 1;
     fi.addEventListener('load', function(ev) {
       // Store the type for a potential later navigation.

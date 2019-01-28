@@ -61,6 +61,9 @@ constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
 // Delimiter in the url that looks for the size specification.
 const char kSizeParameter[] = "size/";
 
+// Delimiter in the url for dark mode specification.
+const char kDarkModeParameter[] = "dark/";
+
 // Size of the icon background (gray circle), in dp.
 const int kIconSizeDip = 48;
 
@@ -127,6 +130,15 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
     webui::ParseScaleFactor(scale_str, &parsed.device_scale_factor);
 
   parsed_index = slash + 1;
+
+  // Parse the dark mode spec (e.g. "dark"), if available. The value is not
+  // used, but is required to generate a new icon for dark mode.
+  if (HasSubstringAt(path, parsed_index, kDarkModeParameter)) {
+    slash = path.find("/", parsed_index);
+    if (slash == std::string::npos)
+      return parsed;
+    parsed_index = slash + 1;
+  }
 
   parsed.url = GURL(path.substr(parsed_index));
   return parsed;

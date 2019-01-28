@@ -256,6 +256,13 @@ var ntpApiHandle;
 
 
 /**
+ * True if dark mode is enabled.
+ * @type {boolean}
+ */
+let isDarkModeEnabled = false;
+
+
+/**
  * Returns a timeout that can be executed early.
  * @param {!Function} timeout The timeout function.
  * @param {number} delay The timeout delay.
@@ -317,7 +324,7 @@ function getIsThemeDark() {
   // custom background set).
   if (!info || info.usingDefaultTheme && !info.customBackgroundConfigured) {
     // Dark mode is always considered a dark theme.
-    return configData.isDarkModeEnabled;
+    return isDarkModeEnabled;
   }
 
   // Heuristic: light text implies dark theme.
@@ -338,10 +345,15 @@ function renderTheme() {
     return;
   }
 
+  const useDarkMode = !!info.usingDarkMode;
+  if (isDarkModeEnabled != useDarkMode) {
+    document.documentElement.setAttribute('darkmode', useDarkMode);
+    isDarkModeEnabled = useDarkMode;
+  }
+
   var background = [
-    (configData.isDarkModeEnabled ?
-         DARK_MODE_BACKGROUND_COLOR :
-         convertToRGBAColor(info.backgroundColorRgba)),
+    (isDarkModeEnabled ? DARK_MODE_BACKGROUND_COLOR :
+                         convertToRGBAColor(info.backgroundColorRgba)),
     info.imageUrl, info.imageTiling, info.imageHorizontalAlignment,
     info.imageVerticalAlignment
   ].join(' ').trim();
@@ -353,8 +365,8 @@ function renderTheme() {
   }
 
   // Dark mode uses a white Google logo.
-  const useWhiteLogo = info.alternateLogo ||
-      (info.usingDefaultTheme && configData.isDarkModeEnabled);
+  const useWhiteLogo =
+      info.alternateLogo || (info.usingDefaultTheme && isDarkModeEnabled);
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
   const isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
@@ -424,6 +436,7 @@ function sendThemeInfoToMostVisitedIframe() {
   var message = {cmd: 'updateTheme'};
   message.isThemeDark = isThemeDark;
   message.isUsingTheme = !info.usingDefaultTheme;
+  message.isDarkMode = !!info.usingDarkMode;
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
@@ -465,9 +478,18 @@ function renderOneGoogleBarTheme() {
  * @private
  */
 function onThemeChange() {
+  // Save the current dark mode state to check if dark mode has changed.
+  const usingDarkMode = isDarkModeEnabled;
+
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
+
+  // If dark mode has been changed, refresh the MV tiles to render the
+  // appropriate icon.
+  if (usingDarkMode != isDarkModeEnabled) {
+    reloadTiles();
+  }
 }
 
 
@@ -577,7 +599,7 @@ function reloadTiles() {
   let maxNumTiles = configData.isGooglePage ? MAX_NUM_TILES_CUSTOM_LINKS :
                                               MAX_NUM_TILES_MOST_VISITED;
   for (var i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
-    cmds.push({cmd: 'tile', rid: pages[i].rid});
+    cmds.push({cmd: 'tile', rid: pages[i].rid, darkMode: isDarkModeEnabled});
   }
   cmds.push({cmd: 'show'});
 
@@ -1020,9 +1042,6 @@ function init() {
   ntpApiHandle.onthemechange = onThemeChange;
   ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
 
-  if (configData.isDarkModeEnabled) {
-    document.documentElement.setAttribute('darkmode', true);
-  }
   renderTheme();
 
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
