@@ -47,6 +47,8 @@ source_set("wayland") {
     "wayland_watcher.h",
     "wl_compositor.cc",
     "wl_compositor.h",
+    "wl_data_device_manager.cc",
+    "wl_data_device_manager.h",
     "wl_output.cc",
     "wl_output.h",
     "wl_seat.cc",
