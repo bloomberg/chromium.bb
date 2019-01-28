@@ -990,6 +990,7 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
 }
 
 void KeyboardController::ReportLingeringState() {
+  LOG(ERROR) << "KeyboardController lingering in " << StateToStr(state_);
   UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.LingeringIntermediateState",
                             state_, KeyboardControllerState::COUNT);
 }
