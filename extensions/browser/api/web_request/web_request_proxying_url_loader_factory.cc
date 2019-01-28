@@ -132,6 +132,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
+  if (new_url)
+    request_.url = new_url.value();
+
   for (const std::string& header : removed_headers)
     request_.headers.RemoveHeader(header);
   request_.headers.MergeFrom(modified_headers);
