@@ -77,9 +77,24 @@ bool IsWKInternalUrl(const GURL& url) {
 }
 
 bool URLNeedsUserAgentType(const GURL& url) {
-  return !web::GetWebClient()->IsAppSpecificURL(url) &&
-         !(url.SchemeIs(url::kFileScheme) && !IsRestoreSessionUrl(url)) &&
-         !(url.SchemeIs(url::kAboutScheme) && !IsPlaceholderUrl(url));
+  if (web::GetWebClient()->IsAppSpecificURL(url))
+    return false;
+
+  if (url.SchemeIs(url::kAboutScheme) && IsPlaceholderUrl(url)) {
+    return !web::GetWebClient()->IsAppSpecificURL(
+        ExtractUrlFromPlaceholderUrl(url));
+  }
+
+  if (url.SchemeIs(url::kAboutScheme))
+    return false;
+
+  if (url.SchemeIs(url::kFileScheme) && IsRestoreSessionUrl(url))
+    return true;
+
+  if (url.SchemeIs(url::kFileScheme))
+    return false;
+
+  return true;
 }
 
 GURL GetRestoreSessionBaseUrl() {
