@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_P(TryChromeDialogTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Variations,
     TryChromeDialogTest,
     ::testing::Range(
