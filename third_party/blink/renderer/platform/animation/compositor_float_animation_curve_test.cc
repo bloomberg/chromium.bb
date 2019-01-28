@@ -143,7 +143,7 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
           CubicBezierTimingFunction::EaseType::EASE));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->GetValue(time));
+    EXPECT_NEAR(timing_function->GetValue(time), curve->GetValue(time), 1e-7);
   }
 }
 
@@ -178,7 +178,7 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
           CubicBezierTimingFunction::EaseType::EASE_IN));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->GetValue(time));
+    EXPECT_NEAR(timing_function->GetValue(time), curve->GetValue(time), 1e-7);
   }
 }
 
@@ -198,7 +198,7 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
           CubicBezierTimingFunction::EaseType::EASE_OUT));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->GetValue(time));
+    EXPECT_NEAR(timing_function->GetValue(time), curve->GetValue(time), 1e-7);
   }
 }
 
@@ -218,7 +218,7 @@ TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction) {
           CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->GetValue(time));
+    EXPECT_NEAR(timing_function->GetValue(time), curve->GetValue(time), 1e-7);
   }
 }
 
@@ -240,7 +240,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
       cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->GetValue(time));
+    EXPECT_NEAR(timing_function->GetValue(time), curve->GetValue(time), 1e-7);
   }
 }
 
@@ -260,7 +260,7 @@ TEST(WebFloatAnimationCurveTest, DefaultTimingFunction) {
           CubicBezierTimingFunction::EaseType::EASE));
   for (int i = 0; i <= 4; ++i) {
     const double time = i * 0.25;
-    EXPECT_FLOAT_EQ(timing_function->GetValue(time), curve->GetValue(time));
+    EXPECT_NEAR(timing_function->GetValue(time), curve->GetValue(time), 1e-7);
   }
 }
 
