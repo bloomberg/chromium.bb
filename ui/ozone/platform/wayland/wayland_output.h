@@ -35,6 +35,7 @@ class WaylandOutput {
   void TriggerDelegateNotification() const;
 
   uint32_t output_id() const { return output_id_; }
+  bool has_output(wl_output* output) const { return output_.get() == output; }
 
   // Tells if the output has already received physical screen dimensions in the
   // global compositor space.

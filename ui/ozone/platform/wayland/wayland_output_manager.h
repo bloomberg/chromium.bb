@@ -38,6 +38,8 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
   std::unique_ptr<WaylandScreen> CreateWaylandScreen(
       WaylandConnection* connection);
 
+  uint32_t GetIdForOutput(wl_output* output) const;
+
  private:
   void OnWaylandOutputAdded(uint32_t output_id);
   void OnWaylandOutputRemoved(uint32_t output_id);
