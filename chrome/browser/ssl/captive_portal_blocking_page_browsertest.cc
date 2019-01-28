@@ -289,9 +289,9 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CaptivePortalBlockingPageTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         CaptivePortalBlockingPageTest,
+                         ::testing::Values(false, true));
 
 void CaptivePortalBlockingPageTest::TestInterstitial(
     bool is_wifi_connection,

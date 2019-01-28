@@ -1152,10 +1152,10 @@ class SSLUITest : public SSLUITestBase,
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
 
-INSTANTIATE_TEST_CASE_P(, SSLUITest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, SSLUITest, ::testing::Values(false, true));
 
 using SSLUITestCommitted = SSLUITest;
-INSTANTIATE_TEST_CASE_P(, SSLUITestCommitted, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(, SSLUITestCommitted, ::testing::Values(true));
 
 class SSLUITestBlock : public SSLUITest {
  public:
@@ -1168,7 +1168,7 @@ class SSLUITestBlock : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(, SSLUITestBlock, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, SSLUITestBlock, ::testing::Values(false, true));
 
 class SSLUITestIgnoreCertErrors : public SSLUITest {
  public:
@@ -1181,9 +1181,9 @@ class SSLUITestIgnoreCertErrors : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUITestIgnoreCertErrors,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUITestIgnoreCertErrors,
+                         ::testing::Values(false, true));
 
 static std::string MakeCertSPKIFingerprint(net::X509Certificate* cert) {
   net::HashValue hash = GetSPKIHash(cert->cert_buffer());
@@ -1208,9 +1208,9 @@ class SSLUITestIgnoreCertErrorsBySPKIHTTPS : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUITestIgnoreCertErrorsBySPKIHTTPS,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUITestIgnoreCertErrorsBySPKIHTTPS,
+                         ::testing::Values(false, true));
 
 class SSLUITestIgnoreCertErrorsBySPKIWSS : public SSLUITest {
  public:
@@ -1227,9 +1227,9 @@ class SSLUITestIgnoreCertErrorsBySPKIWSS : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUITestIgnoreCertErrorsBySPKIWSS,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUITestIgnoreCertErrorsBySPKIWSS,
+                         ::testing::Values(false, true));
 
 class SSLUITestIgnoreLocalhostCertErrors : public SSLUITest {
  public:
@@ -1242,9 +1242,9 @@ class SSLUITestIgnoreLocalhostCertErrors : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUITestIgnoreLocalhostCertErrors,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUITestIgnoreLocalhostCertErrors,
+                         ::testing::Values(false, true));
 
 class SSLUITestWithExtendedReporting : public SSLUITest {
  public:
@@ -1255,9 +1255,9 @@ class SSLUITestWithExtendedReporting : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUITestWithExtendedReporting,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUITestWithExtendedReporting,
+                         ::testing::Values(false, true));
 
 class SSLUITestHSTS : public SSLUITest {
  public:
@@ -1267,7 +1267,7 @@ class SSLUITestHSTS : public SSLUITest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(, SSLUITestHSTS, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, SSLUITestHSTS, ::testing::Values(false, true));
 
 // Visits a regular page over http.
 IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTP) {
@@ -3428,9 +3428,9 @@ class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
   DISALLOW_COPY_AND_ASSIGN(SSLUITestWaitForDOMNotification);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUITestWaitForDOMNotification,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUITestWaitForDOMNotification,
+                         ::testing::Values(false, true));
 
 // Tests that a mixed resource which includes HTTP in the redirect chain
 // is marked as mixed content, even if the end result is HTTPS.
@@ -4154,7 +4154,7 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, DISABLED_MixedContentSubFrame) {
   content::SetBrowserClientForTesting(old_browser_client);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     SSLUIWorkerFetchTest,
     ::testing::Values(
@@ -4852,9 +4852,9 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
   DISALLOW_COPY_AND_ASSIGN(SSLNetworkTimeBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLNetworkTimeBrowserTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLNetworkTimeBrowserTest,
+                         ::testing::Values(false, true));
 
 // Tests that if an on-demand network time fetch returns that the clock
 // is okay, a normal SSL interstitial is shown.
@@ -5189,9 +5189,9 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CommonNameMismatchBrowserTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         CommonNameMismatchBrowserTest,
+                         ::testing::Values(false, true));
 
 // Visit the URL www.mail.example.com on a server that presents a valid
 // certificate for mail.example.com. Verify that the page navigates to
@@ -6056,7 +6056,7 @@ class SSLUITestNoCert : public SSLUITest,
   void CertificatesRefreshed() override {}
 };
 
-INSTANTIATE_TEST_CASE_P(, SSLUITestNoCert, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, SSLUITestNoCert, ::testing::Values(false, true));
 
 // Checks that a newly-added certificate authority is usable immediately.
 IN_PROC_BROWSER_TEST_P(SSLUITestNoCert, NewCertificateAuthority) {
@@ -6402,9 +6402,9 @@ class SSLUICaptivePortalListResourceBundleTest
   net::EmbeddedTestServer https_server_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUICaptivePortalListResourceBundleTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUICaptivePortalListResourceBundleTest,
+                         ::testing::Values(false, true));
 
 }  // namespace
 
@@ -6719,9 +6719,9 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUIMITMSoftwareTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUIMITMSoftwareTest,
+                         ::testing::Values(false, true));
 
 // The SSLUIMITMSoftwareEnabled and Disabled test classes exist so that the
 // scoped feature list can be instantiated in the set up method of the class
@@ -6747,9 +6747,9 @@ class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
   DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareEnabledTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUIMITMSoftwareEnabledTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUIMITMSoftwareEnabledTest,
+                         ::testing::Values(false, true));
 
 class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
  public:
@@ -6768,9 +6768,9 @@ class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
   DISALLOW_COPY_AND_ASSIGN(SSLUIMITMSoftwareDisabledTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLUIMITMSoftwareDisabledTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLUIMITMSoftwareDisabledTest,
+                         ::testing::Values(false, true));
 
 }  // namespace
 
@@ -7992,9 +7992,9 @@ class RecurrentInterstitialBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        RecurrentInterstitialBrowserTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         RecurrentInterstitialBrowserTest,
+                         ::testing::Values(false, true));
 
 // Tests that a message is added to the interstitial when an error code recurs
 // multiple times.

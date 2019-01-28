@@ -65,9 +65,9 @@ class ConnectionHelpTabHelperTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(ConnectionHelpTabHelperTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ConnectionHelpTabHelperTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         ConnectionHelpTabHelperTest,
+                         ::testing::Values(false, true));
 
 // Tests that the chrome://connection-help redirect is not triggered (and
 // metrics are not logged) for an interstitial on a site that is not the help
