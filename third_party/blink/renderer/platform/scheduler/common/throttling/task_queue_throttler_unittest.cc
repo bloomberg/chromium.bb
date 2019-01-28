@@ -174,9 +174,9 @@ class TaskQueueThrottlerWithAutoAdvancingTimeTest
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottlerWithAutoAdvancingTimeTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        TaskQueueThrottlerWithAutoAdvancingTimeTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         TaskQueueThrottlerWithAutoAdvancingTimeTest,
+                         testing::Bool());
 
 TEST_F(TaskQueueThrottlerTest, ThrottledTasksReportRealTime) {
   EXPECT_EQ(timer_queue_->GetTimeDomain()->Now(),
