@@ -203,12 +203,12 @@ class TaskManagerOOPIFBrowserTest : public TaskManagerBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(TaskManagerOOPIFBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(DefaultIsolation,
-                        TaskManagerOOPIFBrowserTest,
-                        ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SitePerProcess,
-                        TaskManagerOOPIFBrowserTest,
-                        ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(DefaultIsolation,
+                         TaskManagerOOPIFBrowserTest,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SitePerProcess,
+                         TaskManagerOOPIFBrowserTest,
+                         ::testing::Values(true));
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_ShutdownWhileOpen DISABLED_ShutdownWhileOpen
