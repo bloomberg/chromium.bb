@@ -54,10 +54,6 @@ _AUDIO_EXTERNS = (
 _AUTOMATION_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/automation.js'))
 
-# BluetoothPrivate externs file.
-_BLUETOOTH_PRIVATE_EXTERNS = (
-    ChromeRootPath('third_party/closure_compiler/externs/bluetooth_private.js'))
-
 # MetricsPrivate externs file.
 _METRICS_PRIVATE_EXTERNS = (
     ChromeRootPath('third_party/closure_compiler/externs/metrics_private.js'))
@@ -89,7 +85,6 @@ _COMMON_EXTERNS = [
     _ACCESSIBILITY_PRIVATE_EXTERNS,
     _AUDIO_EXTERNS,
     _AUTOMATION_EXTERNS,
-    _BLUETOOTH_PRIVATE_EXTERNS,
     _CHROME_EXTERNS,
     _CHROME_EXTENSIONS_EXTERNS,
     _COMMANDLINE_PRIVATE_EXTERNS,

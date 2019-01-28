@@ -176,12 +176,7 @@ BluetoothBrailleDisplayManager.prototype = {
    */
   finishPairing: function(display, pincode) {
     chrome.bluetoothPrivate.setPairingResponse(
-        {
-          response: chrome.bluetoothPrivate.PairingResponse.CONFIRM,
-          device: display,
-          pincode: pincode
-        },
-        () => {});
+        {response: 'confirm', device: display, pincode: pincode}, () => {});
   },
 
   /**
