@@ -116,7 +116,7 @@ void TtsPlatformImplAndroid::OnStartEvent(JNIEnv* env,
     return;
 
   TtsController::GetInstance()->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0,
-                                           std::string());
+                                           utterance_.size(), std::string());
 }
 
 void TtsPlatformImplAndroid::SendFinalTtsEvent(int utterance_id,
@@ -126,7 +126,7 @@ void TtsPlatformImplAndroid::SendFinalTtsEvent(int utterance_id,
     return;
 
   TtsController::GetInstance()->OnTtsEvent(utterance_id_, event_type,
-                                           char_index, std::string());
+                                           char_index, -1, std::string());
   utterance_id_ = 0;
   utterance_.clear();
 }

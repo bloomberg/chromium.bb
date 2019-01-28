@@ -78,7 +78,7 @@ bool SpeechMonitor::Speak(
     const content::UtteranceContinuousParameters& params) {
   content::TtsController::GetInstance()->OnTtsEvent(
       utterance_id, content::TTS_EVENT_END, static_cast<int>(utterance.size()),
-      std::string());
+      0, std::string());
   return true;
 }
 

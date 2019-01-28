@@ -45,9 +45,13 @@ struct CONTENT_EXPORT UtteranceContinuousParameters {
 class CONTENT_EXPORT UtteranceEventDelegate {
  public:
   virtual ~UtteranceEventDelegate() {}
+  // Called when the engine reaches a TTS event in an utterance. If |char_index|
+  // or |length| are invalid or not applicable for the given |event_type|, they
+  // should be set to -1.
   virtual void OnTtsEvent(TtsUtterance* utterance,
                           TtsEventType event_type,
                           int char_index,
+                          int length,
                           const std::string& error_message) = 0;
 };
 
@@ -62,9 +66,11 @@ class CONTENT_EXPORT TtsUtterance {
 
   // Sends an event to the delegate. If the event type is TTS_EVENT_END
   // or TTS_EVENT_ERROR, deletes the utterance. If |char_index| is -1,
-  // uses the last good value.
+  // uses the last good value. If |length| is -1, that represents an unknown
+  // length, and will simply be passed to the delegate as -1.
   virtual void OnTtsEvent(TtsEventType event_type,
                           int char_index,
+                          int length,
                           const std::string& error_message) = 0;
 
   // Finish an utterance without sending an event to the delegate.

@@ -126,3 +126,14 @@ Navigator.prototype.clipboard;
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap
  */
 Array.prototype.flatMap = function(callback, opt_this) {};
+
+/**
+ * TODO(katie): Remove this once length is added to the Closure
+ * chrome_extensions.js.
+ * An event from the TTS engine to communicate the status of an utterance.
+ * @constructor
+ */
+function TtsEvent() {}
+
+/** @type {number} */
+TtsEvent.prototype.length;

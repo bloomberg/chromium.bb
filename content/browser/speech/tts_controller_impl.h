@@ -47,6 +47,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   void OnTtsEvent(int utterance_id,
                   TtsEventType event_type,
                   int char_index,
+                  int length,
                   const std::string& error_message) override;
   void GetVoices(BrowserContext* browser_context,
                  std::vector<VoiceData>* out_voices) override;

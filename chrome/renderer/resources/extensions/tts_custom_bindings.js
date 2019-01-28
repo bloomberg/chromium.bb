@@ -23,6 +23,7 @@ binding.registerCustomHook(function(api) {
       eventHandler({
                      type: event.type,
                      charIndex: event.charIndex,
+                     length: event.length,
                      errorMessage: event.errorMessage
                    });
       if (event.isFinalEvent) {

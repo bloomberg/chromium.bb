@@ -3458,7 +3458,7 @@ class TtsPlatformMock : public content::TtsPlatform {
     speaking_requested_ = true;
     // Dispatch the end of speaking back to the page.
     content::TtsController::GetInstance()->OnTtsEvent(
-        utterance_id, content::TTS_EVENT_END,
+        utterance_id, content::TTS_EVENT_END, 0,
         static_cast<int>(utterance.size()), std::string());
     return true;
   }

@@ -57,6 +57,7 @@ TtsUtteranceImpl::~TtsUtteranceImpl() {
 
 void TtsUtteranceImpl::OnTtsEvent(TtsEventType event_type,
                                   int char_index,
+                                  int length,
                                   const std::string& error_message) {
   if (char_index >= 0)
     char_index_ = char_index;
@@ -64,7 +65,8 @@ void TtsUtteranceImpl::OnTtsEvent(TtsEventType event_type,
     finished_ = true;
 
   if (event_delegate_)
-    event_delegate_->OnTtsEvent(this, event_type, char_index, error_message);
+    event_delegate_->OnTtsEvent(this, event_type, char_index, length,
+                                error_message);
   if (finished_)
     event_delegate_ = nullptr;
 }
