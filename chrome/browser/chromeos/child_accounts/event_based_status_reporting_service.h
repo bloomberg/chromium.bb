@@ -36,6 +36,22 @@ class EventBasedStatusReportingService
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public PowerManagerClient::Observer {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class StatusReportEvent {
+    kAppInstalled = 0,
+    kAppUpdated = 1,
+    kSessionActive = 2,
+    kSessionLocked = 3,
+    kDeviceOnline = 4,
+    kSuspendDone = 5,
+    kMaxValue = kSuspendDone,
+  };
+
+  // Histogram to log events that triggered status report.
+  static constexpr char kUMAStatusReportEvent[] =
+      "Supervision.StatusReport.Event";
+
   explicit EventBasedStatusReportingService(content::BrowserContext* context);
   ~EventBasedStatusReportingService() override;
 
@@ -56,7 +72,9 @@ class EventBasedStatusReportingService
   void SuspendDone(const base::TimeDelta& duration) override;
 
  private:
-  void RequestStatusReport(const std::string& reason);
+  void RequestStatusReport(StatusReportEvent event);
+
+  void LogStatusReportEventUMA(StatusReportEvent event);
 
   // KeyedService:
   void Shutdown() override;

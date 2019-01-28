@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -117,6 +118,8 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
         ->GetAccountId();
   }
 
+  base::HistogramTester histogram_tester_;
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   ArcAppTest arc_test_;
@@ -137,6 +140,12 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppInstall) {
   app_host()->OnPackageAdded(arc::mojom::ArcPackageInfo::New());
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kAppInstalled, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 1);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppUpdate) {
@@ -147,6 +156,12 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenAppUpdate) {
   app_host()->OnPackageModified(arc::mojom::ArcPackageInfo::New());
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kAppUpdated, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 1);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, DoNotReportWhenUserJustSignIn) {
@@ -157,6 +172,9 @@ TEST_F(EventBasedStatusReportingServiceTest, DoNotReportWhenUserJustSignIn) {
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(
       0, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 0);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsLocked) {
@@ -170,6 +188,12 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsLocked) {
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSessionLocked, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 1);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsActive) {
@@ -186,6 +210,15 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSessionIsActive) {
   session_manager()->SetSessionState(session_manager::SessionState::ACTIVE);
   EXPECT_EQ(
       2, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSessionActive, 1);
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSessionLocked, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 2);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenDeviceGoesOnline) {
@@ -199,6 +232,12 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenDeviceGoesOnline) {
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET);
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kDeviceOnline, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 1);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSuspendIsDone) {
@@ -209,6 +248,12 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportWhenSuspendIsDone) {
   power_manager_client()->SendSuspendDone();
   EXPECT_EQ(
       1, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSuspendDone, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 1);
 }
 
 TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
@@ -240,6 +285,27 @@ TEST_F(EventBasedStatusReportingServiceTest, ReportForMultipleEvents) {
   power_manager_client()->SendSuspendDone();
   EXPECT_EQ(
       6, test_consumer_status_reporting_service()->performed_status_reports());
+
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSessionLocked, 1);
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSessionActive, 1);
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kDeviceOnline, 1);
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kAppInstalled, 1);
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kAppUpdated, 1);
+  histogram_tester_.ExpectBucketCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent,
+      EventBasedStatusReportingService::StatusReportEvent::kSuspendDone, 1);
+  histogram_tester_.ExpectTotalCount(
+      EventBasedStatusReportingService::kUMAStatusReportEvent, 6);
 }
 
 }  // namespace chromeos

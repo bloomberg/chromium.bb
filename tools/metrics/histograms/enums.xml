@@ -50799,6 +50799,16 @@ would be helpful to identify which type is being sent.
   </int>
 </enum>
 
+<enum name="SupervisionStatusReportEvent">
+  <summary>Events that trigger status report for supervised accounts</summary>
+  <int value="0" label="APP_INSTALLED"/>
+  <int value="1" label="APP_UPDATED"/>
+  <int value="2" label="SESSION_ACTIVE"/>
+  <int value="3" label="SESSION_LOCKED"/>
+  <int value="4" label="DEVICE_ONLINE"/>
+  <int value="5" label="SUSPEND_DONE"/>
+</enum>
+
 <enum name="SurveyDownloadResponseCodes">
   <int value="-1" label="Response code missing"/>
   <int value="0" label="Survey downloaded"/>
