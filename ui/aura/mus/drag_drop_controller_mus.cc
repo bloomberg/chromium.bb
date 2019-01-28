@@ -141,10 +141,10 @@ int DragDropControllerMus::StartDragAndDrop(
   DCHECK(!current_drag_state_);
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  WindowMus* root_window_mus = WindowMus::Get(root_window);
+  WindowMus* source_window_mus = WindowMus::Get(source_window);
   const uint32_t change_id =
-      drag_drop_controller_host_->CreateChangeIdForDrag(root_window_mus);
-  CurrentDragState current_drag_state = {root_window_mus->server_id(),
+      drag_drop_controller_host_->CreateChangeIdForDrag(source_window_mus);
+  CurrentDragState current_drag_state = {source_window_mus->server_id(),
                                          change_id, ws::mojom::kDropEffectNone,
                                          data, run_loop.QuitClosure()};
 
@@ -166,7 +166,7 @@ int DragDropControllerMus::StartDragAndDrop(
     observer.OnDragStarted();
 
   window_tree_->PerformDragDrop(
-      change_id, root_window_mus->server_id(), screen_location,
+      change_id, source_window_mus->server_id(), screen_location,
       mojo::MapToFlatMap(drag_data), data.provider().GetDragImage(),
       data.provider().GetDragImageOffset(), drag_operations, mojo_source);
 
