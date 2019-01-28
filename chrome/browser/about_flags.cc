@@ -1774,6 +1774,13 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          spellcheck::switches::kEnableSpellingFeedbackFieldTrial)},
 #endif  // ENABLE_SPELLCHECK
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+    {"enable-webgl2-compute-context",
+     flag_descriptions::kWebGL2ComputeContextName,
+     flag_descriptions::kWebGL2ComputeContextDescription,
+     kOsWin | kOsLinux | kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableWebGL2ComputeContext)},
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
     {"enable-webgl-draft-extensions",
      flag_descriptions::kWebglDraftExtensionsName,
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,

@@ -30743,6 +30743,7 @@ from previous Chrome versions.
   <int value="-1655535052" label="enable-pointer-events"/>
   <int value="-1654344175" label="disable-extension-info-dialog"/>
   <int value="-1653838003" label="PauseBackgroundTabs:enabled"/>
+  <int value="-1650769314" label="enable-webgl2-compute-context"/>
   <int value="-1649778035" label="disable-clear-browsing-data-counters"/>
   <int value="-1648216169" label="NewOmniboxAnswerTypes:disabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>

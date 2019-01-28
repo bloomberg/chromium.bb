@@ -2102,6 +2102,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-webgl2-compute-context",
+    "owners": [ "webgl-team@google.com" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-webgl-draft-extensions",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
