@@ -27,8 +27,7 @@ class CheckedThreadLocalOwnedPointer {
   CheckedThreadLocalOwnedPointer() = default;
 
   ~CheckedThreadLocalOwnedPointer() {
-    if (Get())
-      Set(nullptr);
+    Set(nullptr);
 
     DCHECK_EQ(num_assigned_threads_.load(std::memory_order_relaxed), 0)
         << "Memory leak: Must join all threads or release all associated "
