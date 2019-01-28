@@ -38,13 +38,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
     <script src='../js/webxr-polyfill.js'></script>
 
-    <!--This script patches up around implementation differences in past browser versions
-        so that the samples can always be written against the most recent spec changes.
-        It won't be necessary after the API has been officially shipped for a bit.-->
-    <script src='../js/webxr-version-shim.js'></script>
-
-    <script src='../js/third-party/dat.gui.min.js'></script>
-    <script src='../js/cottontail/build/cottontail.js'></script>
+    <script src='../js/third-party/dat.gui/dat.gui.min.js'></script>
 
     <script src='../js/webxr-button.js'></script>
   </head>
@@ -59,17 +53,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         </p>
       </details>
     </header>
-    <script>
-      (function () {
-      'use strict';
+    <script type="module">
+      import {Scene} from '../js/cottontail/src/scenes/scene.js';
+      import {Renderer, createWebGLContext} from '../js/cottontail/src/core/renderer.js';
+      import {Gltf2Node} from '../js/cottontail/src/nodes/gltf2.js';
+      import {QueryArgs} from '../js/cottontail/src/util/query-args.js';
+      import {FallbackHelper} from '../js/cottontail/src/util/fallback-helper.js';
+      import {CubeSeaNode} from '../js/cottontail/src/nodes/cube-sea.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
         var polyfill = new WebXRPolyfill();
       }
-      // Apply the version shim after the polyfill is instantiated, to ensure
-      // that the polyfill also gets patched if necessary.
-      var versionShim = new WebXRVersionShim();
 
       // Helper methods for saving dat.gui-edited parameters in the URL hash.
       // Only non-default values are saved.
@@ -165,9 +160,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Viewport scale
         viewportScale: getFloatParam('viewportScale', 1),
 
-        // Prevents the app from clearing the background, which is useful for
-        // AR testing.
-        noClear: getBoolParam('noClear', false),
+        // Immersive AR mode
+        arMode: getBoolParam('arMode', false),
+
+        // Use an inline canvas for "magic window" mode?
+        magicWindow: getBoolParam('magicWindow', true),
+
+        // Use a mirror canvas during immersive mode?
+        mirrorCanvas: getBoolParam('mirrorCanvas', true),
 
         // Don't produce frames at all. Simulates a broken app.
         noFrames: getBoolParam('noFrames', false),
@@ -211,8 +211,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           getParamSaver('viewportScale'));
       folderRender.add(appSettings, 'antialias').onFinishChange(
           getParamSaver('antialias'));
-      folderRender.add(appSettings, 'noClear').onFinishChange(
-          getParamSaver('noClear'));
+      folderRender.add(appSettings, 'arMode').onFinishChange(
+          getParamSaver('arMode', () => { window.location.reload(false); }));
+      folderRender.add(appSettings, 'magicWindow').onFinishChange(
+          getParamSaver('magicWindow', () => { window.location.reload(false); }));
+      folderRender.add(appSettings, 'mirrorCanvas').onFinishChange(
+          getParamSaver('mirrorCanvas'));
       folderRender.open();
 
       var folderTest = gui.addFolder('Regression testing');
@@ -244,8 +248,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // XR globals.
       let xrButton = null;
-      let xrImmersiveFrameOfRef = null;
-      let xrNonImmersiveFrameOfRef = null;
+      let xrImmersiveRefSpace = null;
+      let xrNonImmersiveRefSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -254,29 +258,34 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       scene.addNode(cubeSea);
 
       function initXR() {
-        xrButton = new XRDeviceButton({
+        let buttonOptions = {
           onRequestSession: onRequestSession,
           onEndSession: onEndSession
-        });
+        };
+        if (appSettings.arMode) {
+          buttonOptions.textEnterXRTitle = "START AR";
+          buttonOptions.textXRNotFoundTitle = "AR NOT FOUND";
+          buttonOptions.textExitXRTitle = "EXIT  AR";
+        }
+        xrButton = new XRDeviceButton(buttonOptions);
         document.querySelector('header').appendChild(xrButton.domElement);
 
+        let xrMode = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
         if (navigator.xr) {
-          navigator.xr.requestDevice().then((device) => {
-            device.supportsSession({immersive: true}).then(() => {
-              xrButton.setDevice(device);
-            });
+          navigator.xr.supportsSessionMode(xrMode).then(() => {
+            xrButton.enabled = true;
+          });
 
+          // Set up "magic window" mode.
+          if (appSettings.magicWindow) {
             let outputCanvas = document.createElement('canvas');
             let ctx = outputCanvas.getContext('xrpresent');
-
-            device.requestSession({outputContext: ctx})
+            navigator.xr.requestSession({outputContext: ctx})
                 .then((session) => {
                   document.body.appendChild(outputCanvas);
                   onSessionStarted(session);
                 });
-          }).catch(() => {
-            initFallback();
-          });
+          }
         } else {
           initFallback();
         }
@@ -288,12 +297,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let fallbackHelper = new FallbackHelper(scene, gl);
       }
 
-      function initGL(compatibleDevice) {
+      function initGL() {
         if (gl)
           return;
 
         gl = createWebGLContext({
-          compatibleXRDevice: compatibleDevice
+          xrCompatible: true
         });
 
         // Set up a non-black clear color so that we can see if something renders wrong.
@@ -301,17 +310,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'https://immersive-web.github.io/webxr-samples/media/gltf/controller/controller.gltf'}));
       }
 
-      function onRequestSession(device) {
-        // Set up a mirror canvas
-        let mirrorCanvas = document.createElement('canvas');
-        let ctx = mirrorCanvas.getContext('xrpresent');
-        mirrorCanvas.setAttribute('id', 'mirror-canvas');
-        document.body.appendChild(mirrorCanvas);
-
-        device.requestSession({ immersive: true, outputContext: ctx }).then((session) => {
+      function onRequestSession() {
+        let xrOptions = { mode: appSettings.arMode ? 'immersive-ar' : 'immersive-vr' };
+        if (appSettings.mirrorCanvas) {
+          let mirrorCanvas = document.createElement('canvas');
+          xrOptions.outputContext = mirrorCanvas.getContext('xrpresent');
+          mirrorCanvas.setAttribute('id', 'mirror-canvas');
+          document.body.appendChild(mirrorCanvas);
+        }
+        navigator.xr.requestSession(xrOptions).then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -320,17 +330,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionStarted(session) {
         session.addEventListener('end', onSessionEnded);
 
-        initGL(session.device);
+        initGL();
 
         session.baseLayer = new XRWebGLLayer(session, gl, {
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
 
-        session.requestFrameOfReference('eye-level').then((frameOfRef) => {
-          if (session.immersive) {
-            xrImmersiveFrameOfRef = frameOfRef;
+        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+          if (session.mode.startsWith('immersive')) {
+            xrImmersiveRefSpace = refSpace;
           } else {
-            xrNonImmersiveFrameOfRef = frameOfRef;
+            xrNonImmersiveRefSpace = refSpace;
           }
           session.requestAnimationFrame(onXRFrame);
         });
@@ -341,10 +351,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionEnded(event) {
-        if (event.session.immersive) {
+        if (event.session.mode.startsWith('immersive') && appSettings.mirrorCanvas) {
           document.body.removeChild(document.querySelector('#mirror-canvas'));
-          xrButton.setSession(null);
         }
+        xrButton.setSession(null);
       }
 
       let frameNum = 0;
@@ -352,10 +362,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onXRFrame(t, frame) {
         let session = frame.session;
-        let frameOfRef = session.immersive ?
-                         xrImmersiveFrameOfRef :
-                         xrNonImmersiveFrameOfRef;
-        let pose = frame.getDevicePose(frameOfRef);
+        let refSpace = session.mode.startsWith('immersive') ?
+                         xrImmersiveRefSpace :
+                         xrNonImmersiveRefSpace;
+        let pose = frame.getViewerPose(refSpace);
 
         frameNum++;
 
@@ -388,9 +398,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           return;
         }
 
-        scene.clear = !appSettings.noClear;
+        scene.clear = !appSettings.arMode;
 
-        scene.updateInputSources(frame, frameOfRef);
+        scene.updateInputSources(frame, refSpace);
 
         scene.drawXRFrame(frame, pose);
 
@@ -399,7 +409,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Start the XR application.
       initXR();
-      })();
     </script>
   </body>
 </html>

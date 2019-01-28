@@ -37,13 +37,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         but is linked by these samples for wider compatibility.-->
     <script src='js/webxr-polyfill.js'></script>
 
-    <!--This script patches up around implementation differences in past browser versions
-        so that the samples can always be written against the most recent spec changes.
-        It won't be necessary after the API has been officially shipped for a bit.-->
-    <script src='js/webxr-version-shim.js'></script>
-
-    <script src='js/cottontail/build/cottontail.js'></script>
-
     <script src='js/webxr-button.js'></script>
   </head>
   <body>
@@ -69,17 +62,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <main style='text-align: center;'>
       <p>Click 'Enter XR' to see content</p> 
     </main>
-    <script>
-      (function () {
-      'use strict';
+    <script type="module">
+      import {Scene} from './js/cottontail/src/scenes/scene.js';
+      import {Renderer, createWebGLContext} from './js/cottontail/src/core/renderer.js';
+      import {Gltf2Node} from './js/cottontail/src/nodes/gltf2.js';
+      import {QueryArgs} from './js/cottontail/src/util/query-args.js';
+      import {FallbackHelper} from './js/cottontail/src/util/fallback-helper.js';
+      import {CubeSeaNode} from './js/cottontail/src/nodes/cube-sea.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
         var polyfill = new WebXRPolyfill();
       }
-      // Apply the version shim after the polyfill is instantiated, to ensure
-      // that the polyfill also gets patched if necessary.
-      var versionShim = new WebXRVersionShim();
 
       let scaleSelect = document.getElementById('framebufferScaleSelect');
       let scaleLabel = document.getElementById('framebufferScaleLabel');
@@ -101,7 +95,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // XR globals.
       let xrButton = null;
-      let xrFrameOfRef = null;
+      let xrRefSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -117,22 +111,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.requestDevice().then((device) => {
-            device.supportsSession({immersive: true}).then(() => {
-              xrButton.setDevice(device);
-            });
+          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
+            xrButton.enabled = true;
           });
         }
       }
 
-      function onRequestSession(device) {
+      function onRequestSession() {
         // Set up a mirror canvas
         let mirrorCanvas = document.createElement('canvas');
         let ctx = mirrorCanvas.getContext('xrpresent');
         mirrorCanvas.setAttribute('id', 'mirror-canvas');
         document.body.appendChild(mirrorCanvas);
 
-        device.requestSession({ immersive: true, outputContext: ctx  }).then(onSessionStarted);
+        navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: ctx  }).then(onSessionStarted);
       }
 
       function onSessionStarted(session) {
@@ -142,7 +134,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         if (!gl) {
           gl = createWebGLContext({
-            compatibleXRDevice: session.device
+            xrCompatible: true
           });
 
           // Set up a non-black clear color so that we can see if something renders wrong.
@@ -165,8 +157,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           framebufferScaleFactor: scale
         });
 
-        session.requestFrameOfReference('eye-level').then((frameOfRef) => {
-          xrFrameOfRef = frameOfRef;
+        session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
+          xrRefSpace = refSpace;
 
           session.requestAnimationFrame(onXRFrame);
         });
@@ -185,13 +177,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onXRFrame(t, frame) {
         let session = frame.session;
-        let pose = frame.getDevicePose(xrFrameOfRef);
+        let pose = frame.getViewerPose(xrRefSpace);
 
         scene.startFrame();
 
         session.requestAnimationFrame(onXRFrame);
 
-        scene.updateInputSources(frame, xrFrameOfRef);
+        scene.updateInputSources(frame, xrRefSpace);
 
         scene.drawXRFrame(frame, pose);
 
@@ -200,7 +192,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Start the XR application.
       initXR();
-      })();
     </script>
   </body>
 </html>

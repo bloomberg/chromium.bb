@@ -38,13 +38,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!--script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script-->
     <script src='js/webxr-polyfill.js'></script>
 
-    <!--This script patches up around implementation differences in past browser versions
-        so that the samples can always be written against the most recent spec changes.
-        It won't be necessary after the API has been officially shipped for a bit.-->
-    <script src='js/webxr-version-shim.js'></script>
-
-    <script src='js/cottontail/build/cottontail.js'></script>
-
     <script src='js/webxr-button.js'></script>
   </head>
   <body>
@@ -59,22 +52,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         </p>
       </details>
     </header>
-    <script>
-      (function () {
-      'use strict';
+    <script type="module">
+      import {Scene} from './js/cottontail/src/scenes/scene.js';
+      import {Renderer, createWebGLContext} from './js/cottontail/src/core/renderer.js';
+      import {Gltf2Node} from './js/cottontail/src/nodes/gltf2.js';
+      import {QueryArgs} from './js/cottontail/src/util/query-args.js';
+      import {FallbackHelper} from './js/cottontail/src/util/fallback-helper.js';
+      import {SkyboxNode} from './js/cottontail/src/nodes/skybox.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
         var polyfill = new WebXRPolyfill();
       }
-      // Apply the version shim after the polyfill is instantiated, to ensure
-      // that the polyfill also gets patched if necessary.
-      var versionShim = new WebXRVersionShim();
 
       // XR globals.
       let xrButton = null;
-      let xrImmersiveFrameOfRef = null;
-      let xrNonImmersiveFrameOfRef = null;
+      let xrImmersiveRefSpace = null;
+      let xrNonImmersiveRefSpace = null;
 
       // WebGL scene globals.
       let gl = null;
@@ -92,25 +86,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         document.querySelector('header').appendChild(xrButton.domElement);
 
         if (navigator.xr) {
-          navigator.xr.requestDevice().then((device) => {
-            device.supportsSession({immersive: true}).then(() => {
-              xrButton.setDevice(device);
-            });
-
-            // Note: If you don't want dragging on the canvas to do things like
-            // scroll or pull-to-refresh, you'll want to set touch-action: none;
-            // on the canvas' CSS style, which this page does in common.css
-            let outputCanvas = document.createElement('canvas');
-            let ctx = outputCanvas.getContext('xrpresent');
-
-            device.requestSession({ outputContext: ctx })
-                .then((session) => {
-                  document.body.appendChild(outputCanvas);
-                  onSessionStarted(session);
-                });
-          }).catch(() => {
-            initFallback();
+          navigator.xr.supportsSessionMode('immersive-vr').then(() => {
+            xrButton.enabled = true;
           });
+
+          // Note: If you don't want dragging on the canvas to do things like
+          // scroll or pull-to-refresh, you'll want to set touch-action: none;
+          // on the canvas' CSS style, which this page does in common.css
+          let outputCanvas = document.createElement('canvas');
+          let ctx = outputCanvas.getContext('xrpresent');
+
+          navigator.xr.requestSession({ outputContext: ctx })
+              .then((session) => {
+                document.body.appendChild(outputCanvas);
+                onSessionStarted(session);
+              });
         } else {
           initFallback();
         }
@@ -123,12 +113,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         fallbackHelper.emulateStage = true;
       }
 
-      function initGL(compatibleDevice) {
+      function initGL() {
         if (gl)
           return;
 
         gl = createWebGLContext({
-          compatibleXRDevice: compatibleDevice
+          xrCompatible: true
         });
 
         renderer = new Renderer(gl);
@@ -139,14 +129,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller.gltf'}));
       }
 
-      function onRequestSession(device) {
+      function onRequestSession() {
         // Set up a mirror canvas
         let mirrorCanvas = document.createElement('canvas');
         let ctx = mirrorCanvas.getContext('xrpresent');
         mirrorCanvas.setAttribute('id', 'mirror-canvas');
         document.body.appendChild(mirrorCanvas);
 
-        device.requestSession({ immersive: true, outputContext: ctx }).then((session) => {
+        navigator.xr.requestSession({ mode: 'immersive-vr', outputContext: ctx }).then((session) => {
           xrButton.setSession(session);
           onSessionStarted(session);
         });
@@ -155,15 +145,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       function onSessionStarted(session) {
         session.addEventListener('end', onSessionEnded);
 
-        initGL(session.device);
+        initGL();
 
         session.baseLayer = new XRWebGLLayer(session, gl);
 
-        session.requestFrameOfReference('stage').then((frameOfRef) => {
-          if (session.immersive) {
-            xrImmersiveFrameOfRef = frameOfRef;
+        session.requestReferenceSpace({ type: 'stationary', subtype: 'floor-level' }).then((refSpace) => {
+          if (session.mode.startsWith('immersive')) {
+            xrImmersiveRefSpace = refSpace;
           } else {
-            xrNonImmersiveFrameOfRef = frameOfRef;
+            xrNonImmersiveRefSpace = refSpace;
           }
 
           session.requestAnimationFrame(onXRFrame);
@@ -175,17 +165,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionEnded(event) {
-        if (event.session.immersive) {
+        if (event.session.mode.startsWith('immersive')) {
           document.body.removeChild(document.querySelector('#mirror-canvas'));
           xrButton.setSession(null);
         }
       }
 
-      function updateInputSources(session, frame, frameOfRef) {
+      function updateInputSources(session, frame, refSpace) {
         let inputSources = session.getInputSources();
 
         for (let inputSource of inputSources) {
-          let inputPose = frame.getInputPose(inputSource, frameOfRef);
+          let inputPose = frame.getInputPose(inputSource, refSpace);
 
           // We may not get a pose back in cases where the input source has lost
           // tracking or does not know where it is relative to the given frame
@@ -234,16 +224,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onXRFrame(t, frame) {
         let session = frame.session;
-        let frameOfRef = session.immersive ?
-                         xrImmersiveFrameOfRef :
-                         xrNonImmersiveFrameOfRef;
-        let pose = frame.getDevicePose(frameOfRef);
+        let refSpace = session.mode.startsWith('immersive') ?
+                         xrImmersiveRefSpace :
+                         xrNonImmersiveRefSpace;
+        let pose = frame.getViewerPose(refSpace);
 
         scene.startFrame();
 
         session.requestAnimationFrame(onXRFrame);
 
-        updateInputSources(session, frame, frameOfRef);
+        updateInputSources(session, frame, refSpace);
 
         scene.drawXRFrame(frame, pose);
 
@@ -252,7 +242,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // Start the XR application.
       initXR();
-      })();
     </script>
   </body>
 </html>
