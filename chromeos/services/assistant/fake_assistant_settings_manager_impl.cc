@@ -36,11 +36,6 @@ void FakeAssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
   std::move(callback).Run();
 }
 
-void FakeAssistantSettingsManagerImpl::RemoveSpeakerIdEnrollmentData(
-    RemoveSpeakerIdEnrollmentDataCallback callback) {
-  std::move(callback).Run();
-}
-
 void FakeAssistantSettingsManagerImpl::BindRequest(
     mojom::AssistantSettingsManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));

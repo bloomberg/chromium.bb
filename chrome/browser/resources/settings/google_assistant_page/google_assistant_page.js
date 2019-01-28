@@ -113,11 +113,6 @@ Polymer({
   },
 
   /** @private */
-  onDeleteVoiceModelTapped_: function() {
-    this.browserProxy_.deleteAssistantVoiceModel();
-  },
-
-  /** @private */
   onDspHotwordStateChange_: function() {
     switch (Number(this.$$('#dspHotwordState').value)) {
       case DspHotwordState.DEFAULT_ON:

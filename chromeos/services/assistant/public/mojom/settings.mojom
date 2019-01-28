@@ -41,7 +41,4 @@ interface AssistantSettingsManager {
 
   // Stops speaker id enrollment.
   StopSpeakerIdEnrollment() => ();
-
-  // Delete speaker id model.
-  RemoveSpeakerIdEnrollmentData() => ();
 };

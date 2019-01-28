@@ -41,10 +41,6 @@ void GoogleAssistantHandler::RegisterMessages() {
       "retrainAssistantVoiceModel",
       base::BindRepeating(&GoogleAssistantHandler::HandleRetrainVoiceModel,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "deleteAssistantVoiceModel",
-      base::BindRepeating(&GoogleAssistantHandler::HandleDeleteVoiceModel,
-                          base::Unretained(this)));
 }
 
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
@@ -67,17 +63,6 @@ void GoogleAssistantHandler::HandleRetrainVoiceModel(
       ash::mojom::FlowType::SPEAKER_ID_ENROLLMENT, base::DoNothing());
 }
 
-void GoogleAssistantHandler::HandleDeleteVoiceModel(
-    const base::ListValue* args) {
-  CHECK_EQ(0U, args->GetSize());
-  if (!settings_manager_.is_bound())
-    BindAssistantSettingsManager();
-
-  settings_manager_->RemoveSpeakerIdEnrollmentData(
-      base::BindOnce(&GoogleAssistantHandler::DeleteVoiceModelCallback,
-                     weak_factory_.GetWeakPtr()));
-}
-
 void GoogleAssistantHandler::BindAssistantSettingsManager() {
   DCHECK(!settings_manager_.is_bound());
 
@@ -85,13 +70,6 @@ void GoogleAssistantHandler::BindAssistantSettingsManager() {
   service_manager::Connector* connector =
       content::BrowserContext::GetConnectorFor(profile_);
   connector->BindInterface(assistant::mojom::kServiceName, &settings_manager_);
-}
-
-void GoogleAssistantHandler::DeleteVoiceModelCallback() {
-  // Disable hotword if voice model is deleted.
-  PrefService* prefs = profile_->GetPrefs();
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
-  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordAlwaysOn, false);
 }
 
 }  // namespace settings
