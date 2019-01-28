@@ -393,7 +393,22 @@ void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
 }
 
 void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  PrimaryKeyToFormMap key_to_form_map;
+  if (!password_store_sync_->ReadAllLogins(&key_to_form_map)) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load entries from the password store."});
+    return;
+  }
+
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  for (const auto& pair : key_to_form_map) {
+    autofill::PasswordForm form = *pair.second;
+    form.password_value = base::UTF8ToUTF16("hidden");
+    batch->Put(base::NumberToString(pair.first), CreateEntityData(form));
+  }
+  std::move(callback).Run(std::move(batch));
 }
 
 std::string PasswordSyncBridge::GetClientTag(
