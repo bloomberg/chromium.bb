@@ -893,7 +893,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Note: |navigation_id| is used in test overrides, but is unused otherwise.
   virtual void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,
-      int64_t navigation_id,
+      NavigationRequest* navigation_request,
       const network::ResourceResponseHead& head,
       const content::CommonNavigationParams& common_params,
       const content::CommitNavigationParams& commit_params,
@@ -905,19 +905,31 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-      const base::UnguessableToken& devtools_navigation_token,
-      mojom::FrameNavigationControl::CommitNavigationCallback callback);
+      const base::UnguessableToken& devtools_navigation_token);
   virtual void SendCommitFailedNavigation(
       mojom::NavigationClient* navigation_client,
-      int64_t navigation_id,
+      NavigationRequest* navigation_request,
       const content::CommonNavigationParams& common_params,
       const content::CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
-      mojom::FrameNavigationControl::CommitFailedNavigationCallback callback);
+          subresource_loader_factories);
+
+  // The Build*Callback functions below are responsible for building the
+  // callbacks for possible Interface/Commit type combinations.
+  // Protected because they need to be called from test overrides.
+  mojom::FrameNavigationControl::CommitNavigationCallback
+  BuildCommitNavigationCallback(NavigationRequest* navigation_request);
+  mojom::FrameNavigationControl::CommitFailedNavigationCallback
+  BuildCommitFailedNavigationCallback(NavigationRequest* navigation_request);
+  mojom::NavigationClient::CommitNavigationCallback
+  BuildNavigationClientCommitNavigationCallback(
+      NavigationRequest* navigation_request);
+  mojom::NavigationClient::CommitFailedNavigationCallback
+  BuildNavigationClientCommitFailedNavigationCallback(
+      NavigationRequest* navigation_request);
 
  private:
   friend class RenderFrameHostFeaturePolicyTest;

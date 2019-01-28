@@ -205,7 +205,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
  protected:
   void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,
-      int64_t navigation_id,
+      NavigationRequest* navigation_request,
       const network::ResourceResponseHead& head,
       const content::CommonNavigationParams& common_params,
       const content::CommitNavigationParams& commit_params,
@@ -217,21 +217,17 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-      const base::UnguessableToken& devtools_navigation_token,
-      mojom::FrameNavigationControl::CommitNavigationCallback callback)
-      override;
+      const base::UnguessableToken& devtools_navigation_token) override;
   void SendCommitFailedNavigation(
       mojom::NavigationClient* navigation_client,
-      int64_t navigation_id,
+      NavigationRequest* navigation_request,
       const content::CommonNavigationParams& common_params,
       const content::CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
       const base::Optional<std::string>& error_page_content,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
-      mojom::FrameNavigationControl::CommitFailedNavigationCallback callback)
-      override;
+          subresource_loader_factories) override;
 
  private:
   void SendNavigateWithParameters(int nav_entry_id,

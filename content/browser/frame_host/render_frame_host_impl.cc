@@ -4818,27 +4818,16 @@ void RenderFrameHostImpl::CommitNavigation(
                          std::move(factory_bundle_for_prefetch)));
     }
 
-    int64_t navigation_id =
-        navigation_request
-            ? navigation_request->navigation_handle()->GetNavigationId()
-            : 0;
-
     mojom::NavigationClient* navigation_client = nullptr;
     if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
       navigation_client = navigation_request->GetCommitNavigationClient();
 
     SendCommitNavigation(
-        navigation_client, navigation_id, head, common_params, commit_params,
-        std::move(url_loader_client_endpoints),
+        navigation_client, navigation_request, head, common_params,
+        commit_params, std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
-        std::move(prefetch_loader_factory), devtools_navigation_token,
-        navigation_request
-            ? base::BindOnce(
-                  &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-                  base::Unretained(this), navigation_id)
-            : content::mojom::FrameNavigationControl::
-                  CommitNavigationCallback());
+        std::move(prefetch_loader_factory), devtools_navigation_token);
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
     // it until its request endpoint is sent. Now that the request endpoint was
@@ -4899,21 +4888,14 @@ void RenderFrameHostImpl::FailedNavigation(
             bypass_redirect_checks);
   }
 
-  int64_t navigation_id =
-      navigation_request
-          ? navigation_request->navigation_handle()->GetNavigationId()
-          : 0;
-
   mojom::NavigationClient* navigation_client = nullptr;
   if (IsPerNavigationMojoInterfaceEnabled() && navigation_request)
     navigation_client = navigation_request->GetCommitNavigationClient();
 
   SendCommitFailedNavigation(
-      navigation_client, navigation_id, common_params, commit_params,
+      navigation_client, navigation_request, common_params, commit_params,
       has_stale_copy_in_cache, error_code, error_page_content,
-      std::move(subresource_loader_factories),
-      base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-                     base::Unretained(this), navigation_id));
+      std::move(subresource_loader_factories));
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
@@ -6384,7 +6366,7 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
 
 void RenderFrameHostImpl::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     const network::ResourceResponseHead& head,
     const content::CommonNavigationParams& common_params,
     const content::CommitNavigationParams& commit_params,
@@ -6395,8 +6377,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-    const base::UnguessableToken& devtools_navigation_token,
-    mojom::FrameNavigationControl::CommitNavigationCallback callback) {
+    const base::UnguessableToken& devtools_navigation_token) {
   if (navigation_client) {
     navigation_client->CommitNavigation(
         head, common_params, commit_params,
@@ -6404,7 +6385,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(prefetch_loader_factory), devtools_navigation_token,
-        std::move(callback));
+        BuildNavigationClientCommitNavigationCallback(navigation_request));
   } else {
     GetNavigationControl()->CommitNavigation(
         head, common_params, commit_params,
@@ -6412,32 +6393,74 @@ void RenderFrameHostImpl::SendCommitNavigation(
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(prefetch_loader_factory), devtools_navigation_token,
-        std::move(callback));
+        BuildCommitNavigationCallback(navigation_request));
   }
 }
 
 void RenderFrameHostImpl::SendCommitFailedNavigation(
     mojom::NavigationClient* navigation_client,
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     const content::CommonNavigationParams& common_params,
     const content::CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories,
-    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback) {
+        subresource_loader_factories) {
   if (navigation_client) {
     navigation_client->CommitFailedNavigation(
         common_params, commit_params, has_stale_copy_in_cache, error_code,
         error_page_content, std::move(subresource_loader_factories),
-        std::move(callback));
+        BuildNavigationClientCommitFailedNavigationCallback(
+            navigation_request));
   } else {
     GetNavigationControl()->CommitFailedNavigation(
         common_params, commit_params, has_stale_copy_in_cache, error_code,
         error_page_content, std::move(subresource_loader_factories),
-        std::move(callback));
+        BuildCommitFailedNavigationCallback(navigation_request));
   }
+}
+
+mojom::FrameNavigationControl::CommitNavigationCallback
+RenderFrameHostImpl::BuildCommitNavigationCallback(
+    NavigationRequest* navigation_request) {
+  if (!navigation_request)
+    return content::mojom::FrameNavigationControl::CommitNavigationCallback();
+
+  return base::BindOnce(
+      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+      base::Unretained(this),
+      navigation_request->navigation_handle()->GetNavigationId());
+}
+
+mojom::FrameNavigationControl::CommitFailedNavigationCallback
+RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
+    NavigationRequest* navigation_request) {
+  DCHECK(navigation_request);
+  return base::BindOnce(
+      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+      base::Unretained(this),
+      navigation_request->navigation_handle()->GetNavigationId());
+}
+
+mojom::NavigationClient::CommitNavigationCallback
+RenderFrameHostImpl::BuildNavigationClientCommitNavigationCallback(
+    NavigationRequest* navigation_request) {
+  DCHECK(navigation_request);
+  return base::BindOnce(
+      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+      base::Unretained(this),
+      navigation_request->navigation_handle()->GetNavigationId());
+}
+
+mojom::NavigationClient::CommitFailedNavigationCallback
+RenderFrameHostImpl::BuildNavigationClientCommitFailedNavigationCallback(
+    NavigationRequest* navigation_request) {
+  DCHECK(navigation_request);
+  return base::BindOnce(
+      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+      base::Unretained(this),
+      navigation_request->navigation_handle()->GetNavigationId());
 }
 
 }  // namespace content
