@@ -32,7 +32,6 @@ namespace content {
 namespace {
 
 const char kTestOrigin[] = "https://example.com/";
-const char kTestScriptUrl[] = "https://example.com/sw.js";
 
 void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                               base::Closure quit_closure,
@@ -68,8 +67,8 @@ void DidUnregisterServiceWorker(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
-GURL GetScopeForId(int64_t id) {
-  return GURL(kTestOrigin + base::IntToString(id));
+GURL GetScopeForId(const std::string& origin, int64_t id) {
+  return GURL(origin + base::IntToString(id));
 }
 
 }  // namespace
@@ -98,13 +97,18 @@ void BackgroundFetchTestBase::TearDown() {
 }
 
 int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
-  GURL script_url(kTestScriptUrl);
+  return RegisterServiceWorkerForOrigin(origin_);
+}
+
+int64_t BackgroundFetchTestBase::RegisterServiceWorkerForOrigin(
+    const url::Origin& origin) {
+  GURL script_url(origin.GetURL().spec() + "sw.js");
   int64_t service_worker_registration_id =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
 
   {
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = GetScopeForId(next_pattern_id_++);
+    options.scope = GetScopeForId(origin.GetURL().spec(), next_pattern_id_++);
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
         script_url, options,
@@ -126,7 +130,7 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
   {
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->storage()->FindRegistrationForId(
-        service_worker_registration_id, origin_.GetURL(),
+        service_worker_registration_id, origin.GetURL(),
         base::BindOnce(&DidFindServiceWorkerRegistration,
                        &service_worker_registration, run_loop.QuitClosure()));
 
@@ -151,7 +155,7 @@ void BackgroundFetchTestBase::UnregisterServiceWorker(
     int64_t service_worker_registration_id) {
   base::RunLoop run_loop;
   embedded_worker_test_helper_.context()->UnregisterServiceWorker(
-      GetScopeForId(service_worker_registration_id),
+      GetScopeForId(kTestOrigin, service_worker_registration_id),
       base::BindOnce(&DidUnregisterServiceWorker, run_loop.QuitClosure()));
   run_loop.Run();
 }

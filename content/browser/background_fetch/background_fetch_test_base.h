@@ -45,6 +45,9 @@ class BackgroundFetchTestBase : public ::testing::Test {
   // ServiceWorkerRegistration will be kept alive for the test's lifetime.
   int64_t RegisterServiceWorker();
 
+  // `RegisterServiceWorker` but for the provided |origin|.
+  int64_t RegisterServiceWorkerForOrigin(const url::Origin& origin);
+
   // Unregisters the test Service Worker and verifies that the unregistration
   // succeeded.
   void UnregisterServiceWorker(int64_t service_worker_registration_id);
