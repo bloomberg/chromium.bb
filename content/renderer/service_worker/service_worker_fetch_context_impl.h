@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
 #include "content/public/common/renderer_preference_watcher.mojom.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
@@ -29,7 +29,7 @@ class ServiceWorkerFetchContextImpl final
   // worker when InstalledScriptsManager doesn't have the requested script. It
   // is a ServiceWorkerScriptLoaderFactory, which loads and installs the script.
   ServiceWorkerFetchContextImpl(
-      const mojom::RendererPreferences& renderer_preferences,
+      const blink::mojom::RendererPreferences& renderer_preferences,
       const GURL& worker_script_url,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
@@ -61,9 +61,9 @@ class ServiceWorkerFetchContextImpl final
   ~ServiceWorkerFetchContextImpl() override;
 
   // Implements mojom::RendererPreferenceWatcher.
-  void NotifyUpdate(mojom::RendererPreferencesPtr new_prefs) override;
+  void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
-  mojom::RendererPreferences renderer_preferences_;
+  blink::mojom::RendererPreferences renderer_preferences_;
   const GURL worker_script_url_;
   // Consumed on the worker thread to create |web_url_loader_factory_|.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;

@@ -278,7 +278,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
         std::make_unique<ServiceWorkerContextClient>(
             1 /* embedded_worker_id */, 1 /* service_worker_version_id */,
             kScope, kScript, false /* is_script_streaming */,
-            mojom::RendererPreferences::New(),
+            blink::mojom::RendererPreferences::New(),
             std::move(service_worker_request), std::move(controller_request),
             embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
             nullptr /* embedded_worker_client */,

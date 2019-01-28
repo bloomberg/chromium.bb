@@ -5,13 +5,13 @@
 #include "content/public/common/renderer_preferences_util.h"
 
 #include "base/no_destructor.h"
-#include "content/public/common/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/gfx/font_render_params.h"
 
 namespace content {
 
 void UpdateFontRendererPreferencesFromSystemSettings(
-    content::mojom::RendererPreferences* prefs) {
+    blink::mojom::RendererPreferences* prefs) {
   static const base::NoDestructor<gfx::FontRenderParams> params(
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr));
   prefs->should_antialias_text = params->antialiasing;

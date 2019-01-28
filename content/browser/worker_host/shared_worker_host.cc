@@ -194,7 +194,7 @@ void SharedWorkerHost::Start(
   devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(
       this, &pause_on_start, &devtools_worker_token);
 
-  auto renderer_preferences = mojom::RendererPreferences::New();
+  auto renderer_preferences = blink::mojom::RendererPreferences::New();
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       RenderProcessHost::FromID(process_id_)->GetBrowserContext(),
       renderer_preferences.get());

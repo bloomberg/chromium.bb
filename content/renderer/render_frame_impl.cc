@@ -2898,8 +2898,8 @@ const WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
   return render_view_->GetWebkitPreferences();
 }
 
-const mojom::RendererPreferences& RenderFrameImpl::GetRendererPreferences()
-    const {
+const blink::mojom::RendererPreferences&
+RenderFrameImpl::GetRendererPreferences() const {
   return render_view_->renderer_preferences();
 }
 

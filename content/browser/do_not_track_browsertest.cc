@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -15,6 +14,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/system/sys_info.h"
@@ -28,7 +28,7 @@ class MockContentBrowserClient final : public ContentBrowserClient {
  public:
   void UpdateRendererPreferencesForWorker(
       BrowserContext*,
-      mojom::RendererPreferences* prefs) override {
+      blink::mojom::RendererPreferences* prefs) override {
     if (do_not_track_enabled_) {
       prefs->enable_do_not_track = true;
       prefs->enable_referrers = true;
@@ -68,7 +68,7 @@ class DoNotTrackTest : public ContentBrowserTest {
     if (!original_client_)
       return false;
     client_.EnableDoNotTrack();
-    mojom::RendererPreferences* prefs =
+    blink::mojom::RendererPreferences* prefs =
         shell()->web_contents()->GetMutableRendererPrefs();
     EXPECT_FALSE(prefs->enable_do_not_track);
     prefs->enable_do_not_track = true;

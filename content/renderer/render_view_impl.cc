@@ -1906,7 +1906,7 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 }
 
 void RenderViewImpl::OnSetRendererPrefs(
-    const mojom::RendererPreferences& renderer_prefs) {
+    const blink::mojom::RendererPreferences& renderer_prefs) {
   std::string old_accept_languages = renderer_preferences_.accept_languages;
 
   renderer_preferences_ = renderer_prefs;
@@ -1922,7 +1922,7 @@ void RenderViewImpl::OnSetRendererPrefs(
       renderer_prefs.caret_blink_interval.has_value()
           ? renderer_prefs.caret_blink_interval.value()
           : base::TimeDelta::FromMilliseconds(
-                content::mojom::kDefaultCaretBlinkIntervalInMilliseconds));
+                blink::mojom::kDefaultCaretBlinkIntervalInMilliseconds));
 
 #if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {

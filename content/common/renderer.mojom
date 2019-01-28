@@ -7,17 +7,17 @@ module content.mojom;
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/native_types.mojom";
 import "content/common/service_worker/embedded_worker.mojom";
-import "content/public/common/renderer_preferences.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
 import "services/service_manager/public/mojom/service.mojom";
+import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 struct CreateViewParams {
   // Renderer-wide preferences.
-  RendererPreferences renderer_preferences;
+  blink.mojom.RendererPreferences renderer_preferences;
 
   // Preferences for this view.
   WebPreferences web_preferences;

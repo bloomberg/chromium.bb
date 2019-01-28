@@ -20,7 +20,7 @@
 namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
-    const mojom::RendererPreferences& renderer_preferences,
+    const blink::mojom::RendererPreferences& renderer_preferences,
     const GURL& worker_script_url,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
@@ -139,7 +139,7 @@ ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
 }
 
 void ServiceWorkerFetchContextImpl::NotifyUpdate(
-    mojom::RendererPreferencesPtr new_prefs) {
+    blink::mojom::RendererPreferencesPtr new_prefs) {
   DCHECK(accept_languages_watcher_);
   if (renderer_preferences_.accept_languages != new_prefs->accept_languages)
     accept_languages_watcher_->NotifyUpdate();
