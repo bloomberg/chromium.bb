@@ -67,7 +67,7 @@ void MockSharedWorker::BindDevToolsAgent(
 }
 
 MockSharedWorkerFactory::MockSharedWorkerFactory(
-    mojom::SharedWorkerFactoryRequest request)
+    blink::mojom::SharedWorkerFactoryRequest request)
     : binding_(this, std::move(request)) {}
 
 MockSharedWorkerFactory::~MockSharedWorkerFactory() = default;

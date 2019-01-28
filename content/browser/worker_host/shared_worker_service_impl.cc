@@ -299,7 +299,7 @@ void SharedWorkerServiceImpl::StartWorker(
 
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
-  mojom::SharedWorkerFactoryPtr factory;
+  blink::mojom::SharedWorkerFactoryPtr factory;
   BindInterface(process_host, &factory);
 
   host->Start(std::move(factory), std::move(service_worker_provider_info),

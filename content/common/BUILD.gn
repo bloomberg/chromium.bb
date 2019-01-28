@@ -503,7 +503,6 @@ mojom("mojo_bindings") {
     "renderer.mojom",
     "renderer_host.mojom",
     "service_worker/embedded_worker.mojom",
-    "shared_worker/shared_worker_factory.mojom",
     "widget.mojom",
   ]
 
