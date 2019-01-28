@@ -168,6 +168,6 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   run_loop.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(, BarcodeDetectionImplMacTest, ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(, BarcodeDetectionImplMacTest, ValuesIn(kTestParams));
 
 }  // shape_detection namespace
