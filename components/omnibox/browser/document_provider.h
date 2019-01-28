@@ -119,6 +119,18 @@ class DocumentProvider : public AutocompleteProvider {
       const std::string& modified_timestamp_string,
       base::Time now);
 
+  // Returns a set of classifications that highlight all the occurrences of
+  // |input_text| at word breaks in |text|. E.g., given |input_text|
+  // "rain if you dare" and |text| "how to tell if your kitten is a rainbow",
+  // will return the classifications:
+  //             __ ___              ____
+  // how to tell if your kitten is a rainbow
+  // ^           ^ ^^   ^            ^  ^
+  // NONE        M |M   |            |  NONE
+  //               NONE NONE         MATCH
+  static ACMatchClassifications Classify(const base::string16& input_text,
+                                         const base::string16& text);
+
   // Whether a field trial has triggered for this query and this session,
   // respectively. Works similarly to BaseSearchProvider, though this class does
   // not inherit from it.
@@ -134,6 +146,10 @@ class DocumentProvider : public AutocompleteProvider {
 
   // Listener to notify when results are available.
   AutocompleteProviderListener* listener_;
+
+  // Saved when starting a new autocomplete request so that it can be retrieved
+  // when responses return asynchronously.
+  AutocompleteInput input_;
 
   // Loader used to retrieve results.
   std::unique_ptr<network::SimpleURLLoader> loader_;
