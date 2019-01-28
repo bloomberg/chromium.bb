@@ -336,10 +336,7 @@ bool OverviewController::ToggleOverview(
       for (aura::Window* window : windows) {
         if (wm::GetWindowState(window)->IsMinimized())
           continue;
-
-        ScopedAnimationDisabler disable(window);
-        window->Hide();
-        wm::GetWindowState(window)->Minimize();
+        wm::HideAndMinimizeWithoutAnimation(window);
       }
     }
 

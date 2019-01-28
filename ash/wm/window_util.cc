@@ -10,13 +10,13 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_positioning_utils.h"
-#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/ws/window_service_owner.h"
@@ -30,6 +30,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -38,6 +39,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -308,6 +310,23 @@ void RemoveTransientDescendants(std::vector<aura::Window*>* out_window_list) {
       ++it;
     }
   }
+}
+
+void HideAndMinimizeWithoutAnimation(aura::Window* window) {
+  // Disable the animations using |disable|. However, doing so will skip
+  // detaching and recreating layers that animating does which has memory
+  // implications, so use recreate layers to get the same effect. See
+  // crbug.com/924802.
+  ScopedAnimationDisabler disable(window);
+  window->Hide();
+  wm::GetWindowState(window)->Minimize();
+  std::unique_ptr<ui::LayerTreeOwner> owner = ::wm::RecreateLayers(window);
+}
+
+void HideWithoutAnimation(aura::Window* window) {
+  ScopedAnimationDisabler disable(window);
+  window->Hide();
+  std::unique_ptr<ui::LayerTreeOwner> owner = ::wm::RecreateLayers(window);
 }
 
 }  // namespace wm
