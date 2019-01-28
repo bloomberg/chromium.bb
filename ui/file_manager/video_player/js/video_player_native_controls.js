@@ -39,17 +39,123 @@ NativeControlsVideoPlayer.prototype.prepare = function(videos) {
 
   this.videoElement_.addEventListener('pause', this.onPause_.bind(this));
 
+  this.preparePlayList_();
+  this.addKeyControls_();
+};
+
+/**
+ * 10 seconds should be skipped when J/L key is pressed.
+ */
+NativeControlsVideoPlayer.PROGRESS_MAX_SECONDS_TO_SKIP = 10;
+
+/**
+ * 20% of duration should be skipped when the video is too short to skip 10
+ * seconds.
+ */
+NativeControlsVideoPlayer.PROGRESS_MAX_RATIO_TO_SKIP = 0.2;
+
+/**
+ * Attach arrow box for previous/next track to document and set
+ * 'multiple' attribute if user opens more than 1 videos.
+ */
+NativeControlsVideoPlayer.prototype.preparePlayList_ = function() {
   let videoPlayerElement = getRequiredElement('video-player');
-  if (videos.length > 1) {
+  if (this.videos_.length > 1) {
     videoPlayerElement.setAttribute('multiple', true);
   } else {
     videoPlayerElement.removeAttribute('multiple');
   }
 
   let arrowRight = queryRequiredElement('.arrow-box .arrow.right');
-  arrowRight.addEventListener('click', this.advance_.wrap(this, 1));
+  arrowRight.addEventListener(
+      'click', this.advance_.wrap(this, true /* next track */));
   let arrowLeft = queryRequiredElement('.arrow-box .arrow.left');
-  arrowLeft.addEventListener('click', this.advance_.wrap(this, 0));
+  arrowLeft.addEventListener(
+      'click', this.advance_.wrap(this, false /* previous track */));
+};
+
+/**
+ * Add keyboard controls to document.
+ */
+NativeControlsVideoPlayer.prototype.addKeyControls_ = function() {
+  document.addEventListener('keydown', function(e) {
+    switch (util.getKeyModifiers(e) + e.key) {
+      // Handle debug shortcut keys.
+      case 'Ctrl-Shift-I':  // Ctrl+Shift+I
+        chrome.fileManagerPrivate.openInspector('normal');
+        break;
+      case 'Ctrl-Shift-J':  // Ctrl+Shift+J
+        chrome.fileManagerPrivate.openInspector('console');
+        break;
+      case 'Ctrl-Shift-C':  // Ctrl+Shift+C
+        chrome.fileManagerPrivate.openInspector('element');
+        break;
+      case 'Ctrl-Shift-B':  // Ctrl+Shift+B
+        chrome.fileManagerPrivate.openInspector('background');
+        break;
+
+      case 'k':
+      case 'MediaPlayPause':
+        this.togglePlayState_();
+        break;
+      case 'Escape':
+        util.toggleFullScreen(
+            chrome.app.window.current(),
+            false);  // Leave the full screen mode.
+        break;
+      case 'MediaTrackNext':
+        this.advance_(true /* next track */);
+        break;
+      case 'MediaTrackPrevious':
+        this.advance_(false /* previous track */);
+        break;
+      case 'l':
+        this.skip_(true /* forward */);
+        break;
+      case 'j':
+        this.skip_(false /* backward */);
+        break;
+      case 'BrowserBack':
+        chrome.app.window.current().close();
+        break;
+      case 'MediaStop':
+        // TODO: Define "Stop" behavior.
+        break;
+    }
+  }.wrap(this));
+};
+
+/**
+ * Skips forward/backward.
+ * @param {boolean} forward Whether to skip forward or backward.
+ * @private
+ */
+NativeControlsVideoPlayer.prototype.skip_ = function(forward) {
+  let secondsToSkip = Math.min(
+      NativeControlsVideoPlayer.PROGRESS_MAX_SECONDS_TO_SKIP,
+      this.videoElement_.duration *
+          NativeControlsVideoPlayer.PROGRESS_MAX_RATIO_TO_SKIP);
+
+  if (!forward) {
+    secondsToSkip *= -1;
+  }
+
+  this.videoElement_.currentTime = Math.max(
+      Math.min(
+          this.videoElement_.currentTime + secondsToSkip,
+          this.videoElement_.duration),
+      0);
+};
+
+/**
+ * Toggle play/pause.
+ */
+NativeControlsVideoPlayer.prototype.togglePlayState_ = function() {
+  if (this.videoElement_.paused) {
+    this.videoElement_.play();
+  } else {
+    this.videoElement_.pause();
+  }
 };
 
 /**
@@ -106,6 +212,7 @@ NativeControlsVideoPlayer.prototype.onFirstVideoReady_ = function() {
       Math.max(0, Math.round(oldTop - (newHeight - oldHeight) / 2));
   appWindow.show();
 
+  this.videoElement_.focus();
   this.videoElement_.play();
 };
 
