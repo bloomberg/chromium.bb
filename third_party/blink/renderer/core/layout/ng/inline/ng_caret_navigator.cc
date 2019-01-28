@@ -33,26 +33,11 @@ bool NGCaretNavigator::IsBidiEnabled() const {
   return GetData().IsBidiEnabled();
 }
 
-const NGInlineItem& NGCaretNavigator::GetItem(unsigned index) const {
-  const auto& items = GetData().items;
-  const NGInlineItem* item =
-      std::lower_bound(items.begin(), items.end(), index,
-                       [](const NGInlineItem& item, unsigned index) {
-                         if (item.StartOffset() > index)
-                           return false;
-                         return item.EndOffset() <= index;
-                       });
-  DCHECK_NE(item, items.end());
-  DCHECK_LE(item->StartOffset(), index);
-  DCHECK_LT(index, item->EndOffset());
-  return *item;
-}
-
 UBiDiLevel NGCaretNavigator::BidiLevelAt(unsigned index) const {
   DCHECK_LT(index, GetText().length());
   if (!IsBidiEnabled())
     return 0;
-  return GetItem(index).BidiLevel();
+  return GetData().FindItemForTextOffset(index).BidiLevel();
 }
 
 TextDirection NGCaretNavigator::TextDirectionAt(unsigned index) const {
