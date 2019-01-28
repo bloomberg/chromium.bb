@@ -50,8 +50,10 @@ public class ContactsDialogHost implements ContactsPickerListener {
         }
 
         if (mWindowAndroid.hasPermission(Manifest.permission.READ_CONTACTS)) {
-            UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple,
-                    includeNames, includeEmails, includeTel);
+            if (!UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple,
+                        includeNames, includeEmails, includeTel)) {
+                nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
+            }
             return;
         }
 
@@ -65,8 +67,10 @@ public class ContactsDialogHost implements ContactsPickerListener {
                     if (permissions.length == 1 && grantResults.length == 1
                             && TextUtils.equals(permissions[0], Manifest.permission.READ_CONTACTS)
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this,
-                                multiple, includeNames, includeEmails, includeTel);
+                        if (!UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this,
+                                    multiple, includeNames, includeEmails, includeTel)) {
+                            nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
+                        }
                     } else {
                         nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
                     }

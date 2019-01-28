@@ -226,27 +226,25 @@ public class ProcessInitializationHandler {
             });
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_CONTACTS_PICKER)) {
-            UiUtils.setContactsPickerDelegate(new UiUtils.ContactsPickerDelegate() {
-                private ContactsPickerDialog mDialog;
+        UiUtils.setContactsPickerDelegate(new UiUtils.ContactsPickerDelegate() {
+            private ContactsPickerDialog mDialog;
 
-                @Override
-                public void showContactsPicker(Context context, ContactsPickerListener listener,
-                        boolean allowMultiple, boolean includeNames, boolean includeEmails,
-                        boolean includeTel) {
-                    mDialog = new ContactsPickerDialog(context, listener, allowMultiple,
-                            includeNames, includeEmails, includeTel);
-                    mDialog.getWindow().getAttributes().windowAnimations =
-                            R.style.PickerDialogAnimation;
-                    mDialog.show();
-                }
+            @Override
+            public void showContactsPicker(Context context, ContactsPickerListener listener,
+                    boolean allowMultiple, boolean includeNames, boolean includeEmails,
+                    boolean includeTel) {
+                mDialog = new ContactsPickerDialog(
+                        context, listener, allowMultiple, includeNames, includeEmails, includeTel);
+                mDialog.getWindow().getAttributes().windowAnimations =
+                        R.style.PickerDialogAnimation;
+                mDialog.show();
+            }
 
-                @Override
-                public void onContactsPickerDismissed() {
-                    mDialog = null;
-                }
-            });
-        }
+            @Override
+            public void onContactsPickerDismissed() {
+                mDialog = null;
+            }
+        });
 
         SearchWidgetProvider.initialize();
     }
