@@ -2336,12 +2336,12 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
             input_handler_->HandleInputEvent(gesture_scroll_end_));
 }
 
-INSTANTIATE_TEST_CASE_P(AnimateInput,
-                        InputHandlerProxyTest,
-                        testing::ValuesIn(test_types));
+INSTANTIATE_TEST_SUITE_P(AnimateInput,
+                         InputHandlerProxyTest,
+                         testing::ValuesIn(test_types));
 
-INSTANTIATE_TEST_CASE_P(AnimateInput,
-                        InputHandlerProxyMainThreadScrollingReasonTest,
-                        testing::ValuesIn(test_types));
+INSTANTIATE_TEST_SUITE_P(AnimateInput,
+                         InputHandlerProxyMainThreadScrollingReasonTest,
+                         testing::ValuesIn(test_types));
 }  // namespace test
 }  // namespace ui
