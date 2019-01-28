@@ -296,7 +296,7 @@ TEST_P(ResourceRequestAllowedNotifierTest, NoRequestNoNotifyEula) {
   EXPECT_FALSE(was_notified());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ResourceRequestAllowedNotifierTest,
     testing::Values(ConnectionTrackerResponseMode::kSynchronous,
