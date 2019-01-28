@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -45,12 +46,14 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
@@ -582,6 +585,14 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   content::InterstitialPageDelegate::TypeID GetInterstitialType(
       WebContents* contents) const;
 
+  bool IsShowingInterstitial(WebContents* contents);
+
+  // Without committed interstitials, this waits for an interstitial to attach
+  // to the current WebContents. With committed interstitials, it instead
+  // asserts an interstitial is showing and waits for the render frame to be
+  // ready.
+  void WaitForInterstitial(content::WebContents* contents);
+
   // Returns the CaptivePortalTabReloader::State of |web_contents|.
   CaptivePortalTabReloader::State GetStateOfTabReloader(
       WebContents* web_contents) const;
@@ -1051,11 +1062,40 @@ bool CaptivePortalBrowserTest::CheckPending(Browser* browser) {
 
 content::InterstitialPageDelegate::TypeID
 CaptivePortalBrowserTest::GetInterstitialType(WebContents* contents) const {
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            contents);
+    if (!helper)
+      return nullptr;
+    security_interstitials::SecurityInterstitialPage* blocking_page =
+        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+    if (!blocking_page)
+      return nullptr;
+    return blocking_page->GetTypeForTesting();
+  }
   if (!contents->ShowingInterstitialPage())
     return nullptr;
   return contents->GetInterstitialPage()
       ->GetDelegateForTesting()
       ->GetTypeForTesting();
+}
+
+bool CaptivePortalBrowserTest::IsShowingInterstitial(WebContents* contents) {
+  return GetInterstitialType(contents) != nullptr;
+}
+
+void CaptivePortalBrowserTest::WaitForInterstitial(
+    content::WebContents* contents) {
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+    ASSERT_TRUE(IsShowingInterstitial(contents));
+    ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+  } else {
+    content::WaitForInterstitialAttach(contents);
+    ASSERT_TRUE(IsShowingInterstitial(contents));
+    ASSERT_TRUE(WaitForRenderFrameReady(
+        contents->GetInterstitialPage()->GetMainFrame()));
+  }
 }
 
 CaptivePortalTabReloader::State CaptivePortalBrowserTest::GetStateOfTabReloader(
@@ -1826,8 +1866,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   tab_strip_model->ActivateTabAt(cert_error_tab_index, false);
   // Wait for the interstitial to load all the JavaScript code. Otherwise,
   // trying to click on a button will fail.
-  content::RenderFrameHost* rfh =
-      broken_tab_contents->GetInterstitialPage()->GetMainFrame();
+  content::RenderFrameHost* rfh;
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
+    rfh = broken_tab_contents->GetMainFrame();
+  else
+    rfh = broken_tab_contents->GetInterstitialPage()->GetMainFrame();
   EXPECT_TRUE(WaitForRenderFrameReady(rfh));
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
@@ -1854,7 +1897,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   LoginCertError(browser());
 
   // Once logged in, broken tab should reload and display the SSL interstitial.
-  WaitForInterstitialAttach(broken_tab_contents);
+  WaitForInterstitial(broken_tab_contents);
   tab_strip_model->ActivateTabAt(cert_error_tab_index, false);
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
@@ -1911,7 +1954,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Make sure that the |ssl_error_handler| is deleted if page load is stopped.
   EXPECT_TRUE(nullptr == SSLErrorHandler::FromWebContents(broken_tab_contents));
 
-  EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(0, portal_observer1.num_results_received());
   EXPECT_EQ(0, NumLoadingTabs());
@@ -1928,7 +1971,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   captive_portal_service->DetectCaptivePortal();
   portal_observer2.WaitForResults(1);
 
-  EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(1, portal_observer2.num_results_received());
   EXPECT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
@@ -1966,7 +2009,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Make sure that the |ssl_error_handler| is deleted.
   EXPECT_TRUE(nullptr == SSLErrorHandler::FromWebContents(broken_tab_contents));
 
-  EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(0, portal_observer.num_results_received());
   EXPECT_EQ(0, NumLoadingTabs());
@@ -1983,7 +2026,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   captive_portal_service->DetectCaptivePortal();
   portal_observer2.WaitForResults(1);
 
-  EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(1, portal_observer2.num_results_received());
   EXPECT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
@@ -2026,7 +2069,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Make sure that the |ssl_error_handler| is deleted.
   EXPECT_TRUE(nullptr == SSLErrorHandler::FromWebContents(broken_tab_contents));
 
-  EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(0, portal_observer.num_results_received());
   EXPECT_EQ(0, NumLoadingTabs());
@@ -2043,7 +2086,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   captive_portal_service->DetectCaptivePortal();
   portal_observer2.WaitForResults(1);
 
-  EXPECT_FALSE(broken_tab_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(1, portal_observer2.num_results_received());
   EXPECT_EQ(captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL,
@@ -2088,12 +2131,10 @@ IN_PROC_BROWSER_TEST_F(
                                             ui::PAGE_TRANSITION_TYPED, false));
   test_navigation_observer.WaitForNavigations(1);
   // Should end up with an SSL interstitial.
-  WaitForInterstitialAttach(broken_tab_contents);
-  ASSERT_TRUE(broken_tab_contents->ShowingInterstitialPage());
+  WaitForInterstitial(broken_tab_contents);
+  ASSERT_TRUE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
-            broken_tab_contents->GetInterstitialPage()
-                ->GetDelegateForTesting()
-                ->GetTypeForTesting());
+            GetInterstitialType(broken_tab_contents));
   EXPECT_FALSE(broken_tab_contents->IsLoading());
   EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_EQ(captive_portal::RESULT_INTERNET_CONNECTED,
@@ -2138,12 +2179,10 @@ IN_PROC_BROWSER_TEST_F(
   // 2- For completing the load of the login tab.
   test_navigation_observer.WaitForNavigations(2);
   // Should end up with a captive portal interstitial and a new login tab.
-  WaitForInterstitialAttach(broken_tab_contents);
-  ASSERT_TRUE(broken_tab_contents->ShowingInterstitialPage());
+  WaitForInterstitial(broken_tab_contents);
+  ASSERT_TRUE(IsShowingInterstitial(broken_tab_contents));
   EXPECT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
-            broken_tab_contents->GetInterstitialPage()
-                ->GetDelegateForTesting()
-                ->GetTypeForTesting());
+            GetInterstitialType(broken_tab_contents));
   ASSERT_EQ(initial_tab_count + 1, tab_strip_model->count());
   EXPECT_EQ(initial_tab_count, tab_strip_model->active_index());
   EXPECT_FALSE(broken_tab_contents->IsLoading());
@@ -2646,12 +2685,20 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   info.unverified_cert = info.cert;
   FailJobsWithCertError(1, info);
   navigation_observer.WaitForNavigations(1);
-
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
-            GetStateOfTabReloaderAt(browser(), broken_tab_index));
-
-  WaitForInterstitialAttach(broken_tab_contents);
-  portal_observer.WaitForResults(1);
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+    // With committed interstitials, the SSL interstitial navigation will result
+    // in the captive portal check firing (and returning no captive portal), so
+    // the state will get reset to none.
+    EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+              GetStateOfTabReloaderAt(browser(), broken_tab_index));
+    WaitForInterstitial(broken_tab_contents);
+    portal_observer.WaitForResults(2);
+  } else {
+    EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
+              GetStateOfTabReloaderAt(browser(), broken_tab_index));
+    WaitForInterstitial(broken_tab_contents);
+    portal_observer.WaitForResults(1);
+  }
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));

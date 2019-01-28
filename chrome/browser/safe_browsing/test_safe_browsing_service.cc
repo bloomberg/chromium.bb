@@ -33,6 +33,15 @@ void TestSafeBrowsingService::UseV4LocalDatabaseManager() {
   use_v4_local_db_manager_ = true;
 }
 
+std::unique_ptr<SafeBrowsingService::StateSubscription>
+TestSafeBrowsingService::RegisterStateCallback(
+    const base::Callback<void(void)>& callback) {
+  // This override is required since TestSafeBrowsingService can be destroyed
+  // before CertificateReportingService, which causes a crash due to the
+  // leftover callback at destruction time.
+  return nullptr;
+}
+
 std::string TestSafeBrowsingService::serilized_download_report() {
   return serialized_download_report_;
 }

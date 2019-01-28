@@ -192,7 +192,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Adds a listener for when SafeBrowsing preferences might have changed.
   // To get the current state, the callback should call enabled_by_prefs().
   // Should only be called on the UI thread.
-  std::unique_ptr<StateSubscription> RegisterStateCallback(
+  virtual std::unique_ptr<StateSubscription> RegisterStateCallback(
       const base::Callback<void(void)>& callback);
 
   // Sends serialized download report to backend.
