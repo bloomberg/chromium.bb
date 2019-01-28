@@ -27,6 +27,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kOffMainThreadDedicatedWorkerScriptFetch;
 BLINK_COMMON_EXPORT extern const base::Feature kOnionSoupDOMStorage;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;

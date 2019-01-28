@@ -5,9 +5,11 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 
 #include <memory>
+#include "base/feature_list.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -214,7 +216,8 @@ void DedicatedWorker::Start() {
 
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
     scope->EnsureFetcher();
-  if (RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled() ||
+  if (base::FeatureList::IsEnabled(
+          features::kOffMainThreadDedicatedWorkerScriptFetch) ||
       options_->type() == "module") {
     // Specify empty source code here because scripts will be fetched on the
     // worker thread.
