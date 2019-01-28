@@ -38,8 +38,6 @@
 #endif
 #if defined(_WIN32)
 #include <sys/locking.h>
-#else
-#include <uuid/uuid.h>
 #endif
 
 #ifndef O_BINARY
