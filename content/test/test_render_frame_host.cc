@@ -510,7 +510,7 @@ void TestRenderFrameHost::SendFramePolicy(
 
 void TestRenderFrameHost::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     const network::ResourceResponseHead& head,
     const content::CommonNavigationParams& common_params,
     const content::CommitNavigationParams& commit_params,
@@ -521,30 +521,40 @@ void TestRenderFrameHost::SendCommitNavigation(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-    const base::UnguessableToken& devtools_navigation_token,
-    mojom::FrameNavigationControl::CommitNavigationCallback callback) {
-  if (navigation_client)
-    navigation_client_commit_callback_[navigation_id] = std::move(callback);
-  else
-    commit_callback_[navigation_id] = std::move(callback);
+    const base::UnguessableToken& devtools_navigation_token) {
+  if (!navigation_request)
+    return;
+  int64_t navigation_id =
+      navigation_request->navigation_handle()->GetNavigationId();
+  if (navigation_client) {
+    navigation_client_commit_callback_[navigation_id] =
+        BuildNavigationClientCommitNavigationCallback(navigation_request);
+  } else {
+    commit_callback_[navigation_id] =
+        BuildCommitNavigationCallback(navigation_request);
+  }
 }
 
 void TestRenderFrameHost::SendCommitFailedNavigation(
     mojom::NavigationClient* navigation_client,
-    int64_t navigation_id,
+    NavigationRequest* navigation_request,
     const content::CommonNavigationParams& common_params,
     const content::CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories,
-    mojom::FrameNavigationControl::CommitFailedNavigationCallback callback) {
+        subresource_loader_factories) {
+  if (!navigation_request)
+    return;
+  int64_t navigation_id =
+      navigation_request->navigation_handle()->GetNavigationId();
   if (navigation_client) {
     navigation_client_commit_failed_callback_[navigation_id] =
-        std::move(callback);
+        BuildNavigationClientCommitFailedNavigationCallback(navigation_request);
   } else {
-    commit_failed_callback_[navigation_id] = std::move(callback);
+    commit_failed_callback_[navigation_id] =
+        BuildCommitFailedNavigationCallback(navigation_request);
   }
 }
 
