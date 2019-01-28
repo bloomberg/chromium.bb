@@ -57,12 +57,12 @@ TimingFunction::Type CubicBezierTimingFunction::GetType() const {
   return Type::CUBIC_BEZIER;
 }
 
-double CubicBezierTimingFunction::GetValue(double x) const {
-  return bezier_.Solve(x);
+float CubicBezierTimingFunction::GetValue(double x) const {
+  return static_cast<float>(bezier_.Solve(x));
 }
 
-double CubicBezierTimingFunction::Velocity(double x) const {
-  return bezier_.Slope(x);
+float CubicBezierTimingFunction::Velocity(double x) const {
+  return static_cast<float>(bezier_.Slope(x));
 }
 
 std::unique_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
@@ -84,16 +84,16 @@ TimingFunction::Type StepsTimingFunction::GetType() const {
   return Type::STEPS;
 }
 
-double StepsTimingFunction::GetValue(double t) const {
-  return GetPreciseValue(t);
+float StepsTimingFunction::GetValue(double t) const {
+  return static_cast<float>(GetPreciseValue(t));
 }
 
 std::unique_ptr<TimingFunction> StepsTimingFunction::Clone() const {
   return base::WrapUnique(new StepsTimingFunction(*this));
 }
 
-double StepsTimingFunction::Velocity(double x) const {
-  return 0;
+float StepsTimingFunction::Velocity(double x) const {
+  return 0.0f;
 }
 
 double StepsTimingFunction::GetPreciseValue(double t) const {
@@ -132,16 +132,16 @@ TimingFunction::Type FramesTimingFunction::GetType() const {
   return Type::FRAMES;
 }
 
-double FramesTimingFunction::GetValue(double t) const {
-  return GetPreciseValue(t);
+float FramesTimingFunction::GetValue(double t) const {
+  return static_cast<float>(GetPreciseValue(t));
 }
 
 std::unique_ptr<TimingFunction> FramesTimingFunction::Clone() const {
   return base::WrapUnique(new FramesTimingFunction(*this));
 }
 
-double FramesTimingFunction::Velocity(double x) const {
-  return 0;
+float FramesTimingFunction::Velocity(double x) const {
+  return 0.0f;
 }
 
 double FramesTimingFunction::GetPreciseValue(double t) const {
