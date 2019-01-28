@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/core/workers/experimental/task_worklet_global_scope.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
-#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ void TaskWorkletGlobalScope::Trace(blink::Visitor* visitor) {
 }
 
 void TaskWorkletGlobalScope::registerTask(const String& name,
-                                          const ScriptValue& constructor_value,
+                                          V8NoArgumentConstructor* constructor,
                                           ExceptionState& exception_state) {
   DCHECK(IsContextThread());
   if (task_definitions_.Contains(name)) {
@@ -66,34 +66,28 @@ void TaskWorkletGlobalScope::registerTask(const String& name,
     return;
   }
 
-  v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
-  v8::Local<v8::Context> context = ScriptController()->GetContext();
+  CallbackMethodRetriever retriever(constructor);
 
-  DCHECK(constructor_value.V8Value()->IsFunction());
-  v8::Local<v8::Function> constructor =
-      v8::Local<v8::Function>::Cast(constructor_value.V8Value());
-
-  v8::Local<v8::Object> prototype;
-  if (!V8ObjectParser::ParsePrototype(context, constructor, &prototype,
-                                      &exception_state))
+  retriever.GetPrototypeObject(exception_state);
+  if (exception_state.HadException())
     return;
 
-  v8::Local<v8::Function> process;
-  if (!V8ObjectParser::ParseFunction(context, prototype, "process", &process,
-                                     &exception_state))
+  v8::Local<v8::Function> process =
+      retriever.GetMethodOrThrow("process", exception_state);
+  if (exception_state.HadException())
     return;
 
-  v8::Local<v8::Value> instance;
-  bool did_construct =
-      V8ScriptRunner::CallAsConstructor(isolate, constructor, this)
-          .ToLocal(&instance);
-  if (!did_construct) {
-    exception_state.ThrowTypeError("Failed to construct TaskProcessor");
-    return;
+  ScriptValue instance;
+  {
+    v8::TryCatch try_catch(constructor->GetIsolate());
+    if (!constructor->Construct().To(&instance)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return;
+    }
   }
 
-  TaskDefinition* definition =
-      MakeGarbageCollected<TaskDefinition>(isolate, instance, process);
+  TaskDefinition* definition = MakeGarbageCollected<TaskDefinition>(
+      constructor->GetIsolate(), instance.V8Value(), process);
   task_definitions_.Set(name, definition);
 }
 

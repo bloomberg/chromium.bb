@@ -164,6 +164,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_mojo_watch_callback.h",
   "$bindings_core_v8_output_dir/v8_mutation_callback.cc",
   "$bindings_core_v8_output_dir/v8_mutation_callback.h",
+  "$bindings_core_v8_output_dir/v8_no_argument_constructor.cc",
+  "$bindings_core_v8_output_dir/v8_no_argument_constructor.h",
   "$bindings_core_v8_output_dir/v8_performance_observer_callback.cc",
   "$bindings_core_v8_output_dir/v8_performance_observer_callback.h",
   "$bindings_core_v8_output_dir/v8_reporting_observer_callback.cc",
