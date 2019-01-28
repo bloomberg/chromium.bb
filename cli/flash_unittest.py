@@ -21,6 +21,9 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
 
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
+
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
@@ -56,11 +59,11 @@ class RemoteDeviceUpdaterTest(cros_test_lib.MockTempDirTestCase):
     self.updater_mock = self.StartPatcher(RemoteDeviceUpdaterMock())
     self.PatchObject(dev_server_wrapper, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
-    self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
                      return_value=('taco-paladin/R36/chromiumos_test_image.bin',
                                    'remote/taco-paladin/R36/test'))
-    self.PatchObject(dev_server_wrapper, 'GetUpdatePayloads')
+    self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
+    self.PatchObject(paygen_stateful_payload_lib, 'GenerateStatefulPayload')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
     self.PatchObject(remote_access, 'ChromiumOSDevice')
 
@@ -135,7 +138,6 @@ class USBImagerTest(cros_test_lib.MockTempDirTestCase):
     self.imager_mock = self.StartPatcher(self.usb_mock)
     self.PatchObject(dev_server_wrapper, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
-    self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
                      return_value=('taco-paladin/R36/chromiumos_test_image.bin',
                                    'remote/taco-paladin/R36/test'))

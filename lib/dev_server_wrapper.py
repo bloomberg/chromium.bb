@@ -11,7 +11,6 @@ from __future__ import print_function
 import multiprocessing
 import os
 import socket
-import shutil
 import sys
 import tempfile
 import httplib
@@ -204,115 +203,6 @@ def TranslatedPathToLocalPath(translated_path, static_dir):
     return real_path
   else:
     return path_util.FromChrootPath(real_path)
-
-
-def GetUpdatePayloadsFromLocalPath(path, payload_dir,
-                                   src_image_to_delta=None,
-                                   static_dir=DEFAULT_STATIC_DIR):
-  """Generates update payloads from a local image path.
-
-  This function wraps around ConvertLocalPathToXbuddy and GetUpdatePayloads,
-  managing the creation and destruction of the necessary temporary directories
-  required by this process.
-
-  Args:
-    path: Path to an image.
-    payload_dir: The directory to store the payloads. On failure, the devserver
-                 log will be copied to |payload_dir|.
-    src_image_to_delta: Image used as the base to generate the delta payloads.
-    static_dir: Devserver static dir to use.
-  """
-
-  with cros_build_lib.ContextManagerStack() as stack:
-    image_tempdir = stack.Add(
-        osutils.TempDir,
-        base_dir=path_util.FromChrootPath('/tmp'),
-        prefix='dev_server_wrapper_local_image', sudo_rm=True)
-    static_tempdir = stack.Add(osutils.TempDir,
-                               base_dir=static_dir,
-                               prefix='local_image', sudo_rm=True)
-    xbuddy_path = ConvertLocalPathToXbuddyPath(path, image_tempdir,
-                                               static_tempdir, static_dir)
-    GetUpdatePayloads(xbuddy_path, payload_dir,
-                      src_image_to_delta=src_image_to_delta,
-                      static_dir=static_dir)
-
-
-def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
-                                 static_dir=DEFAULT_STATIC_DIR):
-  """Converts |path| to an xbuddy path.
-
-  This function copies the image into a temprary directory in chroot
-  and creates a symlink in static_dir for devserver/xbuddy to
-  access.
-
-  Note that the temporary directories need to be cleaned up by the caller
-  once they are no longer needed.
-
-  Args:
-    path: Path to an image.
-    image_tempdir: osutils.TempDir instance to copy the image into. The
-                   directory must be located within the chroot.
-    static_tempdir: osutils.TempDir instance to be symlinked to by the static
-                    directory.
-    static_dir: Static directory to create the symlink in.
-
-  Returns:
-    The xbuddy path for |path|
-  """
-  tempdir_path = image_tempdir.tempdir
-  logging.info('Copying image to temporary directory %s', tempdir_path)
-  # Devserver only knows the image names listed in IMAGE_TYPE_TO_NAME.
-  # Rename the image to chromiumos_test_image.bin when copying.
-  TEMP_IMAGE_TYPE = 'test'
-  shutil.copy(path,
-              os.path.join(tempdir_path,
-                           constants.IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
-  chroot_path = path_util.ToChrootPath(tempdir_path)
-  # Create and link static_dir/local_imagexxxx/link to the image
-  # folder, so that xbuddy/devserver can understand the path.
-  relative_dir = os.path.join(os.path.basename(static_tempdir.tempdir), 'link')
-  symlink_path = os.path.join(static_dir, relative_dir)
-  logging.info('Creating a symlink %s -> %s', symlink_path, chroot_path)
-  os.symlink(chroot_path, symlink_path)
-  return os.path.join(relative_dir, TEMP_IMAGE_TYPE)
-
-
-def GetUpdatePayloads(path, payload_dir, board=None,
-                      src_image_to_delta=None, timeout=60 * 15,
-                      static_dir=DEFAULT_STATIC_DIR):
-  """Launch devserver to get the update payloads.
-
-  Args:
-    path: The xbuddy path.
-    payload_dir: The directory to store the payloads. On failure, the devserver
-                 log will be copied to |payload_dir|.
-    board: The default board to use when |path| is None.
-    src_image_to_delta: Image used as the base to generate the delta payloads.
-    timeout: Timeout for launching devserver (seconds).
-    static_dir: Devserver static dir to use.
-  """
-  ds = DevServerWrapper(static_dir=static_dir, src_image=src_image_to_delta,
-                        board=board)
-  req = GenerateXbuddyRequest(path, 'update')
-  logging.info('Starting local devserver to generate/serve payloads...')
-  try:
-    ds.Start()
-    url = ds.OpenURL(ds.GetURL(sub_dir=req), timeout=timeout)
-    ds.DownloadFile(os.path.join(url, ROOTFS_FILENAME), payload_dir)
-    ds.DownloadFile(os.path.join(url, STATEFUL_FILENAME), payload_dir)
-  except DevServerException:
-    logging.warning(ds.TailLog() or 'No devserver log is available.')
-    raise
-  else:
-    logging.debug(ds.TailLog() or 'No devserver log is available.')
-  finally:
-    ds.Stop()
-    if os.path.exists(ds.log_file):
-      shutil.copyfile(ds.log_file,
-                      os.path.join(payload_dir, 'local_devserver.log'))
-    else:
-      logging.warning('Could not find %s', ds.log_file)
 
 
 def GenerateUpdateId(target, src, key, for_vm):
