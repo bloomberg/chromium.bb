@@ -6954,15 +6954,17 @@ static void setup_buffer_ref_mvs_inter(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const struct scale_factors *const sf =
+      get_ref_scale_factors_const(cm, ref_frame);
+  const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref_frame);
+  assert(yv12 != NULL);
 
   if (scaled_ref_frame) {
+    // Setup pred block based on scaled reference, because av1_mv_pred() doesn't
+    // support scaling.
     av1_setup_pred_block(xd, yv12_mb[ref_frame], scaled_ref_frame, mi_row,
                          mi_col, NULL, NULL, num_planes);
   } else {
-    const struct scale_factors *const sf =
-        get_ref_scale_factors_const(cm, ref_frame);
-    const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref_frame);
-    assert(yv12 != NULL);
     av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, mi_row, mi_col, sf, sf,
                          num_planes);
   }
@@ -6973,10 +6975,18 @@ static void setup_buffer_ref_mvs_inter(
                    mi_col, mbmi_ext->mode_context);
 
   // Further refinement that is encode side only to test the top few candidates
-  // in full and choose the best as the centre point for subsequent searches.
+  // in full and choose the best as the center point for subsequent searches.
   // The current implementation doesn't support scaling.
   av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12_mb[ref_frame][0].stride,
               ref_frame, block_size);
+
+  // Go back to unscaled reference.
+  if (scaled_ref_frame) {
+    // We had temporarily setup pred block based on scaled reference above. Go
+    // back to unscaled reference now, for subsequent use.
+    av1_setup_pred_block(xd, yv12_mb[ref_frame], yv12, mi_row, mi_col, sf, sf,
+                         num_planes);
+  }
 }
 
 static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
