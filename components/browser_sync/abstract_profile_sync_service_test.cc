@@ -41,7 +41,6 @@ class SyncEngineForProfileSyncTest : public SyncEngineImpl {
  public:
   SyncEngineForProfileSyncTest(
       const base::FilePath& temp_dir,
-      syncer::SyncClient* sync_client,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
       base::OnceClosure callback);
@@ -62,13 +61,11 @@ class SyncEngineForProfileSyncTest : public SyncEngineImpl {
 
 SyncEngineForProfileSyncTest::SyncEngineForProfileSyncTest(
     const base::FilePath& temp_dir,
-    syncer::SyncClient* sync_client,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     base::OnceClosure callback)
     : SyncEngineImpl(
           "dummy_debug_name",
-          sync_client,
           invalidator,
           sync_prefs,
           temp_dir.Append(base::FilePath(FILE_PATH_LITERAL("test")))),
@@ -142,7 +139,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
   auto engine = std::make_unique<SyncEngineForProfileSyncTest>(
-      temp_dir_.GetPath(), sync_service_->GetSyncClientForTest(),
+      temp_dir_.GetPath(),
       profile_sync_service_bundle_.fake_invalidation_service(),
       sync_service_->sync_prefs()->AsWeakPtr(),
       std::move(initialization_success_callback));

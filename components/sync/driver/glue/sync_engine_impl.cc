@@ -20,7 +20,6 @@
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/engine_components_factory.h"
@@ -33,22 +32,13 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/syncable/base_transaction.h"
 
-// Helper macros to log with the syncer thread name; useful when there
-// are multiple syncers involved.
-
-#define SLOG(severity) LOG(severity) << name_ << ": "
-
-#define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
-
 namespace syncer {
 
 SyncEngineImpl::SyncEngineImpl(const std::string& name,
-                               SyncClient* sync_client,
                                invalidation::InvalidationService* invalidator,
                                const base::WeakPtr<SyncPrefs>& sync_prefs,
                                const base::FilePath& sync_data_folder)
-    : sync_client_(sync_client),
-      name_(name),
+    : name_(name),
       sync_prefs_(sync_prefs),
       invalidator_(invalidator),
       weak_ptr_factory_(this) {
@@ -101,7 +91,7 @@ void SyncEngineImpl::StartConfiguration() {
 }
 
 void SyncEngineImpl::StartSyncingWithServer() {
-  SDVLOG(1) << "SyncEngineImpl::StartSyncingWithServer called.";
+  DVLOG(1) << name_ << ": SyncEngineImpl::StartSyncingWithServer called.";
   base::Time last_poll_time = sync_prefs_->GetLastPollTime();
   // If there's no known last poll time (e.g. on initial start-up), we treat
   // this as if a poll just happened.
@@ -496,7 +486,3 @@ void SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop(
 }
 
 }  // namespace syncer
-
-#undef SDVLOG
-
-#undef SLOG
