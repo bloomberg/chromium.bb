@@ -469,6 +469,24 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
   // Ask GL to wait on any Vk sync_fd before writing.
   gpu::InsertEglFenceAndWait(std::move(pending_draw_->sync_fd));
 
+  // Calculate color space.
+  skcms_TransferFunction transfer_fn{
+      params->transfer_function_g, params->transfer_function_a,
+      params->transfer_function_b, params->transfer_function_c,
+      params->transfer_function_d, params->transfer_function_e,
+      params->transfer_function_f};
+  skcms_Matrix3x3 to_xyz;
+  static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
+                "Color space matrix sizes do not match");
+  memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
+         sizeof(to_xyz.vals));
+  sk_sp<SkColorSpace> color_space = SkColorSpace::MakeRGB(transfer_fn, to_xyz);
+  if (!color_space) {
+    // If we weren't passed a valid colorspace, default to sRGB.
+    LOG(ERROR) << "Received invalid colorspace.";
+    color_space = SkColorSpace::MakeSRGB();
+  }
+
   // Bind buffer and render with GL.
   base::ScopedFD gl_done_fd;
   {
@@ -487,6 +505,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
     hr_params.width = params->width;
     hr_params.height = params->height;
     hr_params.is_layer = params->is_layer;
+    hr_params.color_space = gfx::ColorSpace(*color_space);
 
     static_assert(base::size(decltype(params->transform){}) ==
                       base::size(hr_params.transform),
@@ -500,19 +519,8 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
 
   // Create a GrVkSecondaryCBDrawContext to render our AHB w/ Vulkan.
   // TODO(ericrk): Handle non-RGBA.
-  skcms_TransferFunction transfer_fn{
-      params->transfer_function_g, params->transfer_function_a,
-      params->transfer_function_b, params->transfer_function_c,
-      params->transfer_function_d, params->transfer_function_e,
-      params->transfer_function_f};
-  skcms_Matrix3x3 to_xyz;
-  static_assert(sizeof(to_xyz.vals) == sizeof(params->color_space_toXYZD50),
-                "Color space matrix sizes do not match");
-  memcpy(&to_xyz.vals[0][0], &params->color_space_toXYZD50[0],
-         sizeof(to_xyz.vals));
-  sk_sp<SkColorSpace> color_space = SkColorSpace::MakeRGB(transfer_fn, to_xyz);
-  // TODO(ericrk): Use colorspace.
-  SkImageInfo info = SkImageInfo::MakeN32Premul(params->width, params->height);
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(params->width, params->height, color_space);
   VkRect2D draw_bounds;
   GrVkDrawableInfo drawable_info{
       .fSecondaryCommandBuffer = params->secondary_command_buffer,
@@ -576,7 +584,7 @@ void AwDrawFnImpl::DrawVk(AwDrawFn_DrawVkParams* params) {
                                    pending_draw_->image_info);
   pending_draw_->ahb_skimage = SkImage::MakeFromTexture(
       vk_state_->gr_context(), backend_texture, kBottomLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType, kPremul_SkAlphaType, nullptr);
+      kRGBA_8888_SkColorType, kPremul_SkAlphaType, color_space);
   if (!pending_draw_->ahb_skimage) {
     LOG(ERROR) << "Could not create SkImage from VkImage.";
     return;
