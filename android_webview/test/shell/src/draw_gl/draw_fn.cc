@@ -154,6 +154,24 @@ Java_org_chromium_android_1webview_shell_DrawFn_nativeDrawGL(JNIEnv*,
   params.transform[13] = -scroll_y;
   params.transform[14] = 0.0;
   params.transform[15] = 1.0;
+
+  // Hard coded value for sRGB.
+  params.transfer_function_g = 2.4f;
+  params.transfer_function_a = 0.947867f;
+  params.transfer_function_b = 0.0521327f;
+  params.transfer_function_c = 0.0773994f;
+  params.transfer_function_d = 0.0404499f;
+  params.transfer_function_e = 0.f;
+  params.transfer_function_f = 0.f;
+  params.color_space_toXYZD50[0] = 0.436028f;
+  params.color_space_toXYZD50[1] = 0.385101f;
+  params.color_space_toXYZD50[2] = 0.143091f;
+  params.color_space_toXYZD50[3] = 0.222479f;
+  params.color_space_toXYZD50[4] = 0.716897f;
+  params.color_space_toXYZD50[5] = 0.0606241f;
+  params.color_space_toXYZD50[6] = 0.0139264f;
+  params.color_space_toXYZD50[7] = 0.0970921f;
+  params.color_space_toXYZD50[8] = 0.714191;
   data.functor_callbacks->draw_gl(functor, data.data, &params);
 }
 

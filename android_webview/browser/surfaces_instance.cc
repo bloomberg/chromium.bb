@@ -81,12 +81,6 @@ SurfacesInstance::SurfacesInstance()
       std::move(output_surface_holder), std::move(scheduler),
       nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager());
-  // TODO(ccameron): WebViews that are embedded in WCG windows will want to
-  // specify gfx::ColorSpace::CreateExtendedSRGB(). This situation is not yet
-  // detected.
-  // https://crbug.com/735658
-  gfx::ColorSpace display_color_space = gfx::ColorSpace::CreateSRGB();
-  display_->SetColorSpace(display_color_space, display_color_space);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                 frame_sink_id_);
 
@@ -121,8 +115,13 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                                    const gfx::Transform& transform,
                                    const gfx::Size& frame_size,
                                    const viz::SurfaceId& child_id,
-                                   float device_scale_factor) {
+                                   float device_scale_factor,
+                                   const gfx::ColorSpace& color_space) {
   DCHECK(base::ContainsValue(child_ids_, child_id));
+
+  gfx::ColorSpace display_color_space =
+      color_space.IsValid() ? color_space : gfx::ColorSpace::CreateSRGB();
+  display_->SetColorSpace(display_color_space, display_color_space);
 
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.

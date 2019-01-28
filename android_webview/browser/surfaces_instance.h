@@ -15,6 +15,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "ui/gfx/color_space.h"
 
 namespace gfx {
 class Rect;
@@ -48,7 +49,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
                    const gfx::Transform& transform,
                    const gfx::Size& frame_size,
                    const viz::SurfaceId& child_id,
-                   float device_scale_factor);
+                   float device_scale_factor,
+                   const gfx::ColorSpace& color_space);
 
   void AddChildId(const viz::SurfaceId& child_id);
   void RemoveChildId(const viz::SurfaceId& child_id);
