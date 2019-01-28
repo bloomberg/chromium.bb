@@ -1161,19 +1161,19 @@ AXObject* AXObjectCacheImpl::ValidationMessageObjectIfInvalid() {
       bool was_validation_message_already_created = validation_message_axid_;
       if (was_validation_message_already_created ||
           form_control->IsValidationMessageVisible()) {
-        AXObject* focused_object = this->FocusedObject();
-        DCHECK(focused_object);
-
-        // Return as long as the focused form control isn't overriding with a
-        // different message via aria-errormessage.
-        bool override_native_validation_message =
-            focused_object->GetAOMPropertyOrARIAAttribute(
-                AOMRelationProperty::kErrorMessage);
-        if (!override_native_validation_message) {
-          AXObject* message = GetOrCreateValidationMessageObject();
-          if (message && !was_validation_message_already_created)
-            ChildrenChanged(document_);
-          return message;
+        AXObject* focused_object = FocusedObject();
+        if (focused_object) {
+          // Return as long as the focused form control isn't overriding with a
+          // different message via aria-errormessage.
+          bool override_native_validation_message =
+              focused_object->GetAOMPropertyOrARIAAttribute(
+                  AOMRelationProperty::kErrorMessage);
+          if (!override_native_validation_message) {
+            AXObject* message = GetOrCreateValidationMessageObject();
+            if (message && !was_validation_message_already_created)
+              ChildrenChanged(document_);
+            return message;
+          }
         }
       }
     }
