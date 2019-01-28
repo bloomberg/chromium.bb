@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/supports_user_data.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -65,19 +65,22 @@ TabModelListUserData* TabModelListUserData::GetForBrowserState(
   return tab_model_list_user_data;
 }
 
-base::LazyInstance<base::ObserverList<TabModelListObserver>::Unchecked>::Leaky
-    g_observer_list;
+base::ObserverList<TabModelListObserver>::Unchecked& GetObserverList() {
+  static base::NoDestructor<base::ObserverList<TabModelListObserver>::Unchecked>
+      observer_list;
+  return *observer_list;
+}
 
 }  // namespace
 
 // static
 void TabModelList::AddObserver(TabModelListObserver* observer) {
-  g_observer_list.Get().AddObserver(observer);
+  GetObserverList().AddObserver(observer);
 }
 
 // static
 void TabModelList::RemoveObserver(TabModelListObserver* observer) {
-  g_observer_list.Get().RemoveObserver(observer);
+  GetObserverList().RemoveObserver(observer);
 }
 
 // static
@@ -90,7 +93,7 @@ void TabModelList::RegisterTabModelWithChromeBrowserState(
   DCHECK(![tab_models containsObject:tab_model]);
   [tab_models addObject:tab_model];
 
-  for (auto& observer : g_observer_list.Get())
+  for (auto& observer : GetObserverList())
     observer.TabModelRegisteredWithBrowserState(tab_model, browser_state);
 }
 
@@ -104,7 +107,7 @@ void TabModelList::UnregisterTabModelFromChromeBrowserState(
   DCHECK([tab_models containsObject:tab_model]);
   [tab_models removeObject:tab_model];
 
-  for (auto& observer : g_observer_list.Get())
+  for (auto& observer : GetObserverList())
     observer.TabModelUnregisteredFromBrowserState(tab_model, browser_state);
 }
 
