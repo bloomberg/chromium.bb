@@ -111,8 +111,8 @@ IN_PROC_BROWSER_TEST_P(ProfileErrorBrowserTest, MAYBE_CorruptedProfile) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ProfileErrorBrowserTestInstance,
-                        ProfileErrorBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(ProfileErrorBrowserTestInstance,
+                         ProfileErrorBrowserTest,
+                         testing::Bool());
 
 }  // namespace
