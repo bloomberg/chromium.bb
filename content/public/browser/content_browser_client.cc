@@ -870,7 +870,7 @@ bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
 
 void ContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
     BrowserContext* browser_context,
-    mojom::RendererPreferenceWatcherPtr watcher) {
+    blink::mojom::RendererPreferenceWatcherPtr watcher) {
   // |browser_context| may be null (e.g. during shutdown of a service worker).
 }
 

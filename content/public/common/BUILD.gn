@@ -350,7 +350,6 @@ mojom("interfaces") {
     "fullscreen_video_element.mojom",
     "load_timing_info.mojom",
     "push_messaging_status.mojom",
-    "renderer_preference_watcher.mojom",
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
@@ -368,7 +367,6 @@ mojom("interfaces") {
     "//services/network/public/mojom",
     "//services/network/public/mojom:websocket_mojom",
     "//third_party/blink/public:mojo_bindings",
-    "//third_party/blink/public/mojom:mojom_platform",
     "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
@@ -381,9 +379,6 @@ mojom("interfaces") {
     ]
     public_deps += [ "//ui/gfx/geometry/mojo" ]
   }
-
-  overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
-  component_deps = [ "//third_party/blink/public/common" ]
 
   component_output_prefix = "content_public_common_mojo_bindings"
   export_class_attribute = "CONTENT_EXPORT"

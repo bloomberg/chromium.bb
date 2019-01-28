@@ -527,7 +527,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                             content::ResourceContext* context) override;
   void RegisterRendererPreferenceWatcherForWorkers(
       content::BrowserContext* browser_context,
-      content::mojom::RendererPreferenceWatcherPtr watcher) override;
+      blink::mojom::RendererPreferenceWatcherPtr watcher) override;
   base::Optional<std::string> GetOriginPolicyErrorPage(
       content::OriginPolicyErrorReason error_reason,
       const url::Origin& origin,

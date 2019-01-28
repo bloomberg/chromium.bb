@@ -26,13 +26,13 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
@@ -200,8 +200,8 @@ void SharedWorkerHost::Start(
       renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
-  mojom::RendererPreferenceWatcherPtr watcher_ptr;
-  mojom::RendererPreferenceWatcherRequest preference_watcher_request =
+  blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
+  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request =
       mojo::MakeRequest(&watcher_ptr);
   GetContentClient()->browser()->RegisterRendererPreferenceWatcherForWorkers(
       RenderProcessHost::FromID(process_id_)->GetBrowserContext(),

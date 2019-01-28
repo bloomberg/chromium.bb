@@ -34,13 +34,13 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
+#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "url/gurl.h"
 
@@ -291,7 +291,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
       process_manager->browser_context(), params->renderer_preferences.get());
 
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
-  mojom::RendererPreferenceWatcherPtr watcher_ptr;
+  blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
   params->preference_watcher_request = mojo::MakeRequest(&watcher_ptr);
   GetContentClient()->browser()->RegisterRendererPreferenceWatcherForWorkers(
       process_manager->browser_context(), std::move(watcher_ptr));
