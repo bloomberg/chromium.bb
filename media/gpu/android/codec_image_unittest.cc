@@ -121,7 +121,7 @@ TEST_F(CodecImageTest, ImageStartsUnrendered) {
 
 TEST_F(CodecImageTest, CopyTexImageIsInvalidForOverlayImages) {
   auto i = NewImage(kOverlay);
-  ASSERT_FALSE(i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES));
+  ASSERT_NE(gl::GLImage::COPY, i->ShouldBindOrCopy());
 }
 
 TEST_F(CodecImageTest, ScheduleOverlayPlaneIsInvalidForTextureOwnerImages) {

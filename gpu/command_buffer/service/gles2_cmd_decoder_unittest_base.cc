@@ -1407,6 +1407,7 @@ void GLES2DecoderTestBase::DoBindTexImage2DCHROMIUM(GLenum target,
   cmds::BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
   bind_tex_image_2d_cmd.Init(target, image_id);
   EXPECT_CALL(*gl_, GetError())
+      .Times(AtMost(2))
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();

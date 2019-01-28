@@ -27,6 +27,7 @@ class GL_EXPORT GLImageDXGI : public GLImage {
   static GLImageDXGI* FromGLImage(GLImage* image);
 
   // GLImage implementation.
+  BindOrCopy ShouldBindOrCopy() override;
   bool BindTexImage(unsigned target) override;
   bool CopyTexImage(unsigned target) override;
   bool CopyTexSubImage(unsigned target,

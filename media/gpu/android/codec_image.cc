@@ -61,18 +61,24 @@ unsigned CodecImage::GetInternalFormat() {
   return GL_RGBA;
 }
 
-bool CodecImage::BindTexImage(unsigned target) {
+CodecImage::BindOrCopy CodecImage::ShouldBindOrCopy() {
   // If we're using an overlay, then pretend it's bound.  That way, we'll get
-  // calls to ScheduleOverlayPlane.  Otherwise, fail so that we will be asked
-  // to CopyTexImage.  Note that we could just CopyTexImage here.
-  return !texture_owner_;
+  // calls to ScheduleOverlayPlane.  Otherwise, CopyTexImage needs to be called.
+  return !texture_owner_ ? BIND : COPY;
+}
+
+bool CodecImage::BindTexImage(unsigned target) {
+  DCHECK_EQ(BIND, ShouldBindOrCopy());
+  return true;
 }
 
 void CodecImage::ReleaseTexImage(unsigned target) {}
 
 bool CodecImage::CopyTexImage(unsigned target) {
   TRACE_EVENT0("media", "CodecImage::CopyTexImage");
-  if (!texture_owner_ || target != GL_TEXTURE_EXTERNAL_OES)
+  DCHECK_EQ(COPY, ShouldBindOrCopy());
+
+  if (target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
   GLint bound_service_id = 0;

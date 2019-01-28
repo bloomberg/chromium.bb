@@ -36,7 +36,12 @@ unsigned AVDACodecImage::GetInternalFormat() {
   return GL_RGBA;
 }
 
+AVDACodecImage::BindOrCopy AVDACodecImage::ShouldBindOrCopy() {
+  return COPY;
+}
+
 bool AVDACodecImage::BindTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 

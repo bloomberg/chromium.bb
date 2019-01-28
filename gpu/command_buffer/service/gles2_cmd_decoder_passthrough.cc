@@ -1686,7 +1686,9 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
     return;
 
   // TODO: internalformat?
-  if (!image->BindTexImage(target))
+  if (image->ShouldBindOrCopy() == gl::GLImage::BIND)
+    image->BindTexImage(target);
+  else
     image->CopyTexImage(target);
 
   // If copy / bind fail, then we could keep the bind state the same.
@@ -2437,14 +2439,13 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
     return error::kNoError;
   }
 
-  if (internalformat) {
-    if (!image->BindTexImageWithInternalformat(target, internalformat)) {
-      image->CopyTexImage(target);
-    }
+  if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
+    if (internalformat)
+      image->BindTexImageWithInternalformat(target, internalformat);
+    else
+      image->BindTexImage(target);
   } else {
-    if (!image->BindTexImage(target)) {
-      image->CopyTexImage(target);
-    }
+    image->CopyTexImage(target);
   }
 
   // Target is already validated

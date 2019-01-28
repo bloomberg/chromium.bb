@@ -10340,7 +10340,9 @@ bool GLES2DecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
       if (texture_unit)
         api()->glActiveTextureFn(texture_unit);
       api()->glBindTextureFn(textarget, texture->service_id());
-      if (image->BindTexImage(textarget)) {
+      if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
+        bool rv = image->BindTexImage(textarget);
+        DCHECK(rv) << "BindTexImage() failed";
         image_state = Texture::BOUND;
       } else {
         DoCopyTexImage(texture, textarget, image);
@@ -17443,8 +17445,10 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (image && internal_format == source_internal_format && dest_level == 0 &&
       !unpack_flip_y && !unpack_premultiply_alpha_change) {
     api()->glBindTextureFn(dest_binding_target, dest_texture->service_id());
-    if (image->CopyTexImage(dest_target))
+    if (image->ShouldBindOrCopy() == gl::GLImage::COPY &&
+        image->CopyTexImage(dest_target)) {
       return;
+    }
   }
 
   DoBindOrCopyTexImageIfNeeded(source_texture, source_target, 0);
@@ -18334,7 +18338,7 @@ void GLES2DecoderImpl::BindTexImage2DCHROMIUMImpl(const char* function_name,
 
   Texture::ImageState image_state = Texture::UNBOUND;
 
-  {
+  if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
     ScopedGLErrorSuppressor suppressor(
         "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM", error_state_.get());
 
