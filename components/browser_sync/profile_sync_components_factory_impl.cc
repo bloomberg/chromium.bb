@@ -442,8 +442,8 @@ ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_data_folder) {
-  return std::make_unique<syncer::SyncEngineImpl>(
-      name, sync_client_, invalidator, sync_prefs, sync_data_folder);
+  return std::make_unique<syncer::SyncEngineImpl>(name, invalidator, sync_prefs,
+                                                  sync_data_folder);
 }
 
 syncer::SyncApiComponentFactory::SyncComponents

@@ -33,7 +33,6 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/device_info/device_info.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
@@ -64,6 +63,15 @@ namespace {
 
 static const base::FilePath::CharType kTestSyncDir[] =
     FILE_PATH_LITERAL("sync-test");
+
+scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(ModelSafeGroup group) {
+  switch (group) {
+    case GROUP_PASSIVE:
+      return new PassiveModelWorker();
+    default:
+      return nullptr;
+  }
+}
 
 class TestSyncEngineHost : public SyncEngineHostStub {
  public:
@@ -137,19 +145,6 @@ class FakeSyncManagerFactory : public SyncManagerFactory {
   FakeSyncManager** fake_manager_;
 };
 
-class BackendSyncClient : public FakeSyncClient {
- public:
-  scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
-      ModelSafeGroup group) override {
-    switch (group) {
-      case GROUP_PASSIVE:
-        return new PassiveModelWorker();
-      default:
-        return nullptr;
-    }
-  }
-};
-
 class NullEncryptionObserver : public SyncEncryptionHandler::Observer {
  public:
   void OnPassphraseRequired(
@@ -211,8 +206,7 @@ class SyncEngineImplTest : public testing::Test {
             UpdateRegisteredInvalidationIds(testing::_, testing::_))
         .WillByDefault(testing::Return(true));
     backend_ = std::make_unique<SyncEngineImpl>(
-        "dummyDebugName", &sync_client_, &invalidator_,
-        sync_prefs_->AsWeakPtr(),
+        "dummyDebugName", &invalidator_, sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
     credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
@@ -259,8 +253,7 @@ class SyncEngineImplTest : public testing::Test {
     params.sync_task_runner = sync_thread_.task_runner();
     params.host = &host_;
     params.registrar = std::make_unique<SyncBackendRegistrar>(
-        std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
-                                  base::Unretained(&sync_client_)));
+        std::string(), base::Bind(&CreateModelWorkerForGroup));
     params.encryption_observer_proxies.push_back(
         std::make_unique<NullEncryptionObserver>());
     params.http_factory_getter = std::move(http_post_provider_factory_getter);
@@ -336,7 +329,6 @@ class SyncEngineImplTest : public testing::Test {
   base::Thread sync_thread_;
   TestSyncEngineHost host_;
   SyncCredentials credentials_;
-  BackendSyncClient sync_client_;
   TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
   std::unique_ptr<SyncEngineImpl> backend_;

@@ -40,7 +40,6 @@ namespace syncer {
 class ChangeProcessor;
 class SyncBackendHostCore;
 class SyncBackendRegistrar;
-class SyncClient;
 class SyncPrefs;
 
 // The only real implementation of the SyncEngine. See that interface's
@@ -50,7 +49,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   using Status = SyncStatus;
 
   SyncEngineImpl(const std::string& name,
-                 SyncClient* sync_client,
                  invalidation::InvalidationService* invalidator,
                  const base::WeakPtr<SyncPrefs>& sync_prefs,
                  const base::FilePath& sync_data_folder);
@@ -195,8 +193,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
       const base::Closure& frontend_callback);
 
   void OnCookieJarChangedDoneOnFrontendLoop(const base::Closure& callback);
-
-  SyncClient* const sync_client_;
 
   // The task runner where all the sync engine operations happen.
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
