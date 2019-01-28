@@ -24,13 +24,13 @@ class CertIssuerSourceStaticTestDelegate {
   CertIssuerSourceStatic source_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(CertIssuerSourceStaticTest,
-                              CertIssuerSourceSyncTest,
-                              CertIssuerSourceStaticTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(CertIssuerSourceStaticTest,
+                               CertIssuerSourceSyncTest,
+                               CertIssuerSourceStaticTestDelegate);
 
-INSTANTIATE_TYPED_TEST_CASE_P(CertIssuerSourceStaticNormalizationTest,
-                              CertIssuerSourceSyncNormalizationTest,
-                              CertIssuerSourceStaticTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(CertIssuerSourceStaticNormalizationTest,
+                               CertIssuerSourceSyncNormalizationTest,
+                               CertIssuerSourceStaticTestDelegate);
 
 }  // namespace
 

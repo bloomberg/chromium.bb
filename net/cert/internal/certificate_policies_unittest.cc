@@ -34,9 +34,9 @@ class ParseCertificatePoliciesExtensionTest
 
 // Run the tests with all possible values for
 // |fail_parsing_unknown_qualifier_oids|.
-INSTANTIATE_TEST_CASE_P(,
-                        ParseCertificatePoliciesExtensionTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         ParseCertificatePoliciesExtensionTest,
+                         testing::Bool());
 
 TEST_P(ParseCertificatePoliciesExtensionTest, InvalidEmpty) {
   std::string der;

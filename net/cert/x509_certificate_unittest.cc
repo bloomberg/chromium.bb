@@ -1130,8 +1130,9 @@ TEST_P(X509CertificateParseTest, CanParseFormat) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(, X509CertificateParseTest,
-                        testing::ValuesIn(kFormatTestData));
+INSTANTIATE_TEST_SUITE_P(,
+                         X509CertificateParseTest,
+                         testing::ValuesIn(kFormatTestData));
 
 struct CertificateNameVerifyTestData {
   // true iff we expect hostname to match an entry in cert_names.
@@ -1328,8 +1329,9 @@ TEST_P(X509CertificateNameVerifyTest, VerifyHostname) {
                                             ip_addressses));
 }
 
-INSTANTIATE_TEST_CASE_P(, X509CertificateNameVerifyTest,
-                        testing::ValuesIn(kNameVerifyTestData));
+INSTANTIATE_TEST_SUITE_P(,
+                         X509CertificateNameVerifyTest,
+                         testing::ValuesIn(kNameVerifyTestData));
 
 const struct PublicKeyInfoTestData {
   const char* cert_file;
@@ -1367,7 +1369,8 @@ TEST_P(X509CertificatePublicKeyInfoTest, GetPublicKeyInfo) {
   EXPECT_EQ(data.expected_type, actual_type);
 }
 
-INSTANTIATE_TEST_CASE_P(, X509CertificatePublicKeyInfoTest,
-                        testing::ValuesIn(kPublicKeyInfoTestData));
+INSTANTIATE_TEST_SUITE_P(,
+                         X509CertificatePublicKeyInfoTest,
+                         testing::ValuesIn(kPublicKeyInfoTestData));
 
 }  // namespace net

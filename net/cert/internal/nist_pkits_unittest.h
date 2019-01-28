@@ -79,8 +79,8 @@ struct PkitsTestInfo {
 
 // Parameterized test class for PKITS tests.
 // The instantiating code should define a PkitsTestDelegate with an appropriate
-// static RunTest method, and then INSTANTIATE_TYPED_TEST_CASE_P for each
-// testcase (each TYPED_TEST_CASE_P in pkits_testcases-inl.h).
+// static RunTest method, and then INSTANTIATE_TYPED_TEST_SUITE_P for each
+// testcase (each TYPED_TEST_SUITE_P in pkits_testcases-inl.h).
 template <typename PkitsTestDelegate>
 class PkitsTest : public ::testing::Test {
  public:

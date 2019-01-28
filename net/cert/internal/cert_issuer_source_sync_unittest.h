@@ -124,7 +124,7 @@ class CertIssuerSourceSyncTest : public ::testing::Test {
   scoped_refptr<ParsedCertificate> e2_;
 };
 
-TYPED_TEST_CASE_P(CertIssuerSourceSyncTest);
+TYPED_TEST_SUITE_P(CertIssuerSourceSyncTest);
 
 TYPED_TEST_P(CertIssuerSourceSyncTest, NoMatch) {
   this->AddCert(this->root_);
@@ -166,17 +166,17 @@ TYPED_TEST_P(CertIssuerSourceSyncTest, IsNotAsync) {
 
 // These are all the tests that should have the same result with or without
 // normalization.
-REGISTER_TYPED_TEST_CASE_P(CertIssuerSourceSyncTest,
-                           NoMatch,
-                           OneMatch,
-                           MultipleMatches,
-                           SelfIssued,
-                           IsNotAsync);
+REGISTER_TYPED_TEST_SUITE_P(CertIssuerSourceSyncTest,
+                            NoMatch,
+                            OneMatch,
+                            MultipleMatches,
+                            SelfIssued,
+                            IsNotAsync);
 
 template <typename TestDelegate>
 class CertIssuerSourceSyncNormalizationTest
     : public CertIssuerSourceSyncTest<TestDelegate> {};
-TYPED_TEST_CASE_P(CertIssuerSourceSyncNormalizationTest);
+TYPED_TEST_SUITE_P(CertIssuerSourceSyncNormalizationTest);
 
 TYPED_TEST_P(CertIssuerSourceSyncNormalizationTest,
              MultipleMatchesAfterNormalization) {
@@ -187,13 +187,13 @@ TYPED_TEST_P(CertIssuerSourceSyncNormalizationTest,
 }
 
 // These tests require (utf8) normalization.
-REGISTER_TYPED_TEST_CASE_P(CertIssuerSourceSyncNormalizationTest,
-                           MultipleMatchesAfterNormalization);
+REGISTER_TYPED_TEST_SUITE_P(CertIssuerSourceSyncNormalizationTest,
+                            MultipleMatchesAfterNormalization);
 
 template <typename TestDelegate>
 class CertIssuerSourceSyncNotNormalizedTest
     : public CertIssuerSourceSyncTest<TestDelegate> {};
-TYPED_TEST_CASE_P(CertIssuerSourceSyncNotNormalizedTest);
+TYPED_TEST_SUITE_P(CertIssuerSourceSyncNotNormalizedTest);
 
 TYPED_TEST_P(CertIssuerSourceSyncNotNormalizedTest,
              OneMatchWithoutNormalization) {
@@ -206,8 +206,8 @@ TYPED_TEST_P(CertIssuerSourceSyncNotNormalizedTest,
 }
 
 // These tests are for implementations which do not do utf8 normalization.
-REGISTER_TYPED_TEST_CASE_P(CertIssuerSourceSyncNotNormalizedTest,
-                           OneMatchWithoutNormalization);
+REGISTER_TYPED_TEST_SUITE_P(CertIssuerSourceSyncNotNormalizedTest,
+                            OneMatchWithoutNormalization);
 
 }  // namespace net
 

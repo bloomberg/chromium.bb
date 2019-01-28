@@ -773,10 +773,10 @@ class CertVerifyProcInternalTest
   scoped_refptr<CertVerifyProc> verify_proc_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CertVerifyProcInternalTest,
-                        testing::ValuesIn(kAllCertVerifiers),
-                        VerifyProcTypeToName);
+INSTANTIATE_TEST_SUITE_P(,
+                         CertVerifyProcInternalTest,
+                         testing::ValuesIn(kAllCertVerifiers),
+                         VerifyProcTypeToName);
 
 // Tests that a certificate is recognized as EV, when the valid EV policy OID
 // for the trust anchor is the second candidate EV oid in the target
@@ -2707,10 +2707,10 @@ class CertVerifyProcInternalWithNetFetchingTest
       request_handlers_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CertVerifyProcInternalWithNetFetchingTest,
-                        testing::ValuesIn(kAllCertVerifiers),
-                        VerifyProcTypeToName);
+INSTANTIATE_TEST_SUITE_P(,
+                         CertVerifyProcInternalWithNetFetchingTest,
+                         testing::ValuesIn(kAllCertVerifiers),
+                         VerifyProcTypeToName);
 
 // Tries verifying a certificate chain that is missing an intermediate. The
 // intermediate is available via AIA, however the server responds with a 404.
@@ -3234,9 +3234,9 @@ const WeakDigestTestData kVerifyRootCATestData[] = {
     {"weak_digest_md2_root.pem", "weak_digest_sha1_intermediate.pem",
      "weak_digest_sha1_ee.pem", EXPECT_SHA1 | EXPECT_SHA1_LEAF},
 };
-INSTANTIATE_TEST_CASE_P(VerifyRoot,
-                        CertVerifyProcWeakDigestTest,
-                        testing::ValuesIn(kVerifyRootCATestData));
+INSTANTIATE_TEST_SUITE_P(VerifyRoot,
+                         CertVerifyProcWeakDigestTest,
+                         testing::ValuesIn(kVerifyRootCATestData));
 
 // The signature algorithm of intermediates should be properly detected.
 const WeakDigestTestData kVerifyIntermediateCATestData[] = {
@@ -3248,9 +3248,9 @@ const WeakDigestTestData kVerifyIntermediateCATestData[] = {
      "weak_digest_sha1_ee.pem", EXPECT_MD2 | EXPECT_SHA1 | EXPECT_SHA1_LEAF},
 };
 
-INSTANTIATE_TEST_CASE_P(VerifyIntermediate,
-                        CertVerifyProcWeakDigestTest,
-                        testing::ValuesIn(kVerifyIntermediateCATestData));
+INSTANTIATE_TEST_SUITE_P(VerifyIntermediate,
+                         CertVerifyProcWeakDigestTest,
+                         testing::ValuesIn(kVerifyIntermediateCATestData));
 
 // The signature algorithm of end-entity should be properly detected.
 const WeakDigestTestData kVerifyEndEntityTestData[] = {
@@ -3262,9 +3262,9 @@ const WeakDigestTestData kVerifyEndEntityTestData[] = {
      "weak_digest_md2_ee.pem", EXPECT_MD2 | EXPECT_SHA1},
 };
 
-INSTANTIATE_TEST_CASE_P(VerifyEndEntity,
-                        CertVerifyProcWeakDigestTest,
-                        testing::ValuesIn(kVerifyEndEntityTestData));
+INSTANTIATE_TEST_SUITE_P(VerifyEndEntity,
+                         CertVerifyProcWeakDigestTest,
+                         testing::ValuesIn(kVerifyEndEntityTestData));
 
 // Incomplete chains do not report the status of the intermediate.
 // Note: really each of these tests should also expect the digest algorithm of
@@ -3280,7 +3280,7 @@ const WeakDigestTestData kVerifyIncompleteIntermediateTestData[] = {
      /*EXPECT_MD2 |*/ EXPECT_SHA1 | EXPECT_SHA1_LEAF},
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MAYBE_VerifyIncompleteIntermediate,
     CertVerifyProcWeakDigestTest,
     testing::ValuesIn(kVerifyIncompleteIntermediateTestData));
@@ -3299,9 +3299,9 @@ const WeakDigestTestData kVerifyIncompleteEETestData[] = {
      /*EXPECT_SHA1 |*/ EXPECT_MD2},
 };
 
-INSTANTIATE_TEST_CASE_P(VerifyIncompleteEndEntity,
-                        CertVerifyProcWeakDigestTest,
-                        testing::ValuesIn(kVerifyIncompleteEETestData));
+INSTANTIATE_TEST_SUITE_P(VerifyIncompleteEndEntity,
+                         CertVerifyProcWeakDigestTest,
+                         testing::ValuesIn(kVerifyIncompleteEETestData));
 
 // Differing algorithms between the intermediate and the EE should still be
 // reported.
@@ -3314,9 +3314,9 @@ const WeakDigestTestData kVerifyMixedTestData[] = {
      "weak_digest_md2_ee.pem", EXPECT_MD2 | EXPECT_MD4},
 };
 
-INSTANTIATE_TEST_CASE_P(VerifyMixed,
-                        CertVerifyProcWeakDigestTest,
-                        testing::ValuesIn(kVerifyMixedTestData));
+INSTANTIATE_TEST_SUITE_P(VerifyMixed,
+                         CertVerifyProcWeakDigestTest,
+                         testing::ValuesIn(kVerifyMixedTestData));
 
 // The EE is a trusted certificate. Even though it uses weak hashes, these
 // should not be reported.
@@ -3327,9 +3327,9 @@ const WeakDigestTestData kVerifyTrustedEETestData[] = {
     {NULL, NULL, "weak_digest_sha1_ee.pem", 0},
 };
 
-INSTANTIATE_TEST_CASE_P(VerifyTrustedEE,
-                        CertVerifyProcWeakDigestTest,
-                        testing::ValuesIn(kVerifyTrustedEETestData));
+INSTANTIATE_TEST_SUITE_P(VerifyTrustedEE,
+                         CertVerifyProcWeakDigestTest,
+                         testing::ValuesIn(kVerifyTrustedEETestData));
 
 // Test fixture for verifying certificate names.
 class CertVerifyProcNameTest : public ::testing::Test {
