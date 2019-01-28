@@ -5,6 +5,7 @@
 package org.chromium.base.task;
 
 import android.os.Binder;
+import android.os.Process;
 import android.support.annotation.IntDef;
 import android.support.annotation.MainThread;
 import android.support.annotation.WorkerThread;
@@ -33,14 +34,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AsyncTask<Result> {
     private static final String TAG = "AsyncTask";
 
-    private static TaskTraits sLowPriorityTraits =
-            new TaskTraits().setTaskPriority(TaskPriority.LOWEST).setMayBlock(true);
     /**
      * An {@link Executor} that can be used to execute tasks in parallel.
-     * We use the lowest task priority, and mayBlock = true since any user of this could block.
      */
-    public static final Executor THREAD_POOL_EXECUTOR =
-            (Runnable r) -> PostTask.postTask(sLowPriorityTraits, r);
+    public static final Executor THREAD_POOL_EXECUTOR = new ChromeThreadPoolExecutor();
 
     /**
      * An {@link Executor} that executes tasks one at a time in serial
@@ -103,6 +100,7 @@ public abstract class AsyncTask<Result> {
                 mTaskInvoked.set(true);
                 Result result = null;
                 try {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     result = doInBackground();
                     Binder.flushPendingCommands();
                 } catch (Throwable tr) {
@@ -352,20 +350,6 @@ public abstract class AsyncTask<Result> {
     public final AsyncTask<Result> executeOnTaskRunner(TaskRunner taskRunner) {
         executionPreamble();
         taskRunner.postTask(mFuture);
-        return this;
-    }
-
-    /**
-     * Executes an AsyncTask with the given task traits. Provides no guarantees about sequencing or
-     * which thread it runs on.
-     *
-     * @param taskTraits traits which describe this AsyncTask.
-     * @return This instance of AsyncTask.
-     */
-    @MainThread
-    public final AsyncTask<Result> executeWithTaskTraits(TaskTraits taskTraits) {
-        executionPreamble();
-        PostTask.postTask(taskTraits, mFuture);
         return this;
     }
 
