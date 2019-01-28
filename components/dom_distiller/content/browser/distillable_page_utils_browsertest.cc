@@ -45,10 +45,8 @@ class DomDistillerDistillablePageUtilsTest : public content::ContentBrowserTest,
     base::RunLoop url_loaded_runner;
     main_frame_loaded_callback_ = url_loaded_runner.QuitClosure();
     current_web_contents->GetController().LoadURL(
-        embedded_test_server()->GetURL(url),
-        content::Referrer(),
-        ui::PAGE_TRANSITION_TYPED,
-        std::string());
+        embedded_test_server()->GetURL(url), content::Referrer(),
+        ui::PAGE_TRANSITION_TYPED, std::string());
     url_loaded_runner.Run();
     main_frame_loaded_callback_ = base::Closure();
     Observe(nullptr);
@@ -96,9 +94,7 @@ class ResultHolder {
     callback_.Run();
   }
 
-  bool GetResult() {
-    return result_;
-  }
+  bool GetResult() { return result_; }
 
   base::Callback<void(bool)> GetCallback() {
     return base::Bind(&ResultHolder::OnResult, base::Unretained(this));

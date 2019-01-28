@@ -39,8 +39,7 @@ void RunIsolatedJavaScript(
   // Make sure world ID was set.
   DCHECK(distiller_javascript_world_id != invalid_world_id);
   render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-      base::UTF8ToUTF16(buffer), callback,
-      distiller_javascript_world_id);
+      base::UTF8ToUTF16(buffer), callback, distiller_javascript_world_id);
 }
 
 void RunIsolatedJavaScript(content::RenderFrameHost* render_frame_host,
