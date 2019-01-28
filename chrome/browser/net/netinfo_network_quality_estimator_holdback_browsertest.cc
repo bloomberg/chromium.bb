@@ -243,6 +243,6 @@ IN_PROC_BROWSER_TEST_P(NetInfoNetworkQualityEstimatorHoldbackBrowserTest,
 
 // The network quality estimator web holdback is enabled only if the first
 // param is true.
-INSTANTIATE_TEST_CASE_P(,
-                        NetInfoNetworkQualityEstimatorHoldbackBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         NetInfoNetworkQualityEstimatorHoldbackBrowserTest,
+                         testing::Bool());

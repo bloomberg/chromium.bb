@@ -268,6 +268,6 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerStubResolverBrowsertest,
   RunStubResolverConfigTests(GetParam());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SystemNetworkContextManagerStubResolverBrowsertest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SystemNetworkContextManagerStubResolverBrowsertest,
+                         ::testing::Values(false, true));
