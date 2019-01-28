@@ -763,9 +763,9 @@ TEST_P(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   EXPECT_FALSE(IsLameDuckTimerRunning());
 }
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerActivationTestWithDevTools,
-                        ServiceWorkerActivationTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerActivationTestWithDevTools,
+                         ServiceWorkerActivationTest,
+                         testing::Bool());
 
 // Sets up a registration with a ServiceWorkerRegistrationObjectHost to hold it.
 class ServiceWorkerRegistrationObjectHostTest
