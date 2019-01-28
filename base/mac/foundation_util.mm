@@ -448,6 +448,25 @@ FilePath NSStringToFilePath(NSString* str) {
   return FilePath([str fileSystemRepresentation]);
 }
 
+base::ScopedCFTypeRef<CFURLRef> FilePathToCFURL(const FilePath& path) {
+  DCHECK(!path.empty());
+
+  // The function's docs promise that it does not require an NSAutoreleasePool.
+  // A straightforward way to accomplish this is to use *Create* functions,
+  // combined with base::ScopedCFTypeRef.
+  const std::string& path_string = path.value();
+  base::ScopedCFTypeRef<CFStringRef> path_cfstring(CFStringCreateWithBytes(
+      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(path_string.data()),
+      path_string.length(), kCFStringEncodingUTF8,
+      /*isExternalRepresentation=*/FALSE));
+  if (!path_cfstring)
+    return base::ScopedCFTypeRef<CFURLRef>();
+
+  return base::ScopedCFTypeRef<CFURLRef>(CFURLCreateWithFileSystemPath(
+      kCFAllocatorDefault, path_cfstring, kCFURLPOSIXPathStyle,
+      /*isDirectory=*/FALSE));
+}
+
 bool CFRangeToNSRange(CFRange range, NSRange* range_out) {
   if (base::IsValueInRangeForNumericType<decltype(range_out->location)>(
           range.location) &&

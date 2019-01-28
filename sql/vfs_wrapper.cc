@@ -9,17 +9,14 @@
 #include <vector>
 
 #include "base/debug/leak_annotations.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
-
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #endif
 
 namespace sql {
@@ -164,18 +161,6 @@ int Unfetch(sqlite3_file *sqlite_file, sqlite3_int64 off, void *p) {
   return wrapped_file->pMethods->xUnfetch(wrapped_file, off, p);
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-// Helper to convert a POSIX path into a CoreFoundation path.
-base::ScopedCFTypeRef<CFURLRef> CFURLRefForPath(const char* path){
-  base::ScopedCFTypeRef<CFStringRef> urlString(
-      CFStringCreateWithFileSystemRepresentation(kCFAllocatorDefault, path));
-  base::ScopedCFTypeRef<CFURLRef> url(
-      CFURLCreateWithFileSystemPath(kCFAllocatorDefault, urlString,
-                                    kCFURLPOSIXPathStyle, FALSE));
-  return url;
-}
-#endif
-
 int Open(sqlite3_vfs* vfs, const char* file_name, sqlite3_file* wrapper_file,
          int desired_flags, int* used_flags) {
   sqlite3_vfs* wrapped_vfs = GetWrappedVfs(vfs);
@@ -204,14 +189,14 @@ int Open(sqlite3_vfs* vfs, const char* file_name, sqlite3_file* wrapper_file,
       SQLITE_OPEN_SUBJOURNAL | SQLITE_OPEN_MASTER_JOURNAL;
   if (file_name && (desired_flags & kJournalFlags)) {
     // https://www.sqlite.org/c3ref/vfs.html indicates that the journal path
-    // will have a "-suffix".
-    size_t dash_index = base::StringPiece(file_name).rfind('-');
+    // will have a suffix separated by "-" from the main database file name.
+    base::StringPiece file_name_string_piece(file_name);
+    size_t dash_index = file_name_string_piece.rfind('-');
     if (dash_index != base::StringPiece::npos) {
-      std::string db_name(file_name, dash_index);
-      base::ScopedCFTypeRef<CFURLRef> db_url(CFURLRefForPath(db_name.c_str()));
-      if (CSBackupIsItemExcluded(db_url, nullptr)) {
-        base::ScopedCFTypeRef<CFURLRef> journal_url(CFURLRefForPath(file_name));
-        CSBackupSetItemExcluded(journal_url, TRUE, FALSE);
+      base::StringPiece db_name(file_name, dash_index);
+      if (base::mac::GetFileBackupExclusion(base::FilePath(db_name))) {
+        base::mac::SetFileBackupExclusion(
+            base::FilePath(file_name_string_piece));
       }
     }
   }

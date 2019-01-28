@@ -95,8 +95,7 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
   }
 }
 
-// http://crbug.com/425745
-TEST_F(MacUtilTest, DISABLED_TestExcludeFileFromBackups) {
+TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
   // The file must already exist in order to set its exclusion property.
   ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -105,16 +104,17 @@ TEST_F(MacUtilTest, DISABLED_TestExcludeFileFromBackups) {
   // Dump something real into the file.
   ASSERT_EQ(static_cast<int>(base::size(dummy_data)),
             WriteFile(dummy_file_path, dummy_data, base::size(dummy_data)));
-  NSString* fileURLString = base::mac::FilePathToNSString(dummy_file_path);
-  NSURL* fileURL = [NSURL URLWithString:fileURLString];
   // Initial state should be non-excluded.
-  EXPECT_FALSE(CSBackupIsItemExcluded(base::mac::NSToCFCast(fileURL), NULL));
+  EXPECT_FALSE(GetFileBackupExclusion(dummy_file_path));
   // Exclude the file.
-  EXPECT_TRUE(SetFileBackupExclusion(dummy_file_path));
-  // SetFileBackupExclusion never excludes by path.
+  ASSERT_TRUE(SetFileBackupExclusion(dummy_file_path));
+  EXPECT_TRUE(GetFileBackupExclusion(dummy_file_path));
+
+  // Ensure that SetFileBackupExclusion never excludes by path.
+  base::ScopedCFTypeRef<CFURLRef> file_url =
+      base::mac::FilePathToCFURL(dummy_file_path);
   Boolean excluded_by_path = FALSE;
-  Boolean excluded =
-      CSBackupIsItemExcluded(base::mac::NSToCFCast(fileURL), &excluded_by_path);
+  Boolean excluded = CSBackupIsItemExcluded(file_url, &excluded_by_path);
   EXPECT_TRUE(excluded);
   EXPECT_FALSE(excluded_by_path);
 }

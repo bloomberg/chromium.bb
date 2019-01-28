@@ -316,6 +316,11 @@ TEST(FoundationUtilTest, NSStringToFilePath) {
   EXPECT_EQ(FilePath("/a/b"), NSStringToFilePath(@"/a/b"));
 }
 
+TEST(FoundationUtilTest, FilePathToCFURL) {
+  EXPECT_NSEQ([NSURL fileURLWithPath:@"/a/b"],
+              base::mac::CFToNSCast(FilePathToCFURL(FilePath("/a/b"))));
+}
+
 TEST(FoundationUtilTest, CFRangeToNSRange) {
   NSRange range_out;
   EXPECT_TRUE(CFRangeToNSRange(CFRangeMake(10, 5), &range_out));
