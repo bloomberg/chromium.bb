@@ -155,7 +155,7 @@ class QuicPacketGeneratorTest : public QuicTest {
                    &delegate_,
                    &producer_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)),
-        ack_frame_(InitAckFrame(QuicPacketNumber(1))) {
+        ack_frame_(InitAckFrame(1)) {
     EXPECT_CALL(delegate_, GetPacketBuffer()).WillRepeatedly(Return(nullptr));
     creator_->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,

@@ -73,7 +73,7 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
     }
 
     P2PQuicPacketTransport::QuicPacket packet;
-    packet.packet_number = connection_->packet_generator().packet_number();
+    packet.packet_number = connection_->packet_generator().packet_number().ToUint64();
     packet.buffer = buffer;
     packet.buf_len = buf_len;
     int bytes_written = packet_transport_->WritePacket(packet);

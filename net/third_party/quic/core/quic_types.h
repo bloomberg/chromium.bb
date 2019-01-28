@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "net/third_party/quic/core/quic_connection_id.h"
+#include "net/third_party/quic/core/quic_packet_number.h"
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
@@ -27,7 +28,6 @@ typedef uint32_t QuicStreamId;
 
 typedef uint64_t QuicByteCount;
 typedef uint64_t QuicPacketCount;
-typedef uint64_t QuicPacketNumber;
 typedef uint64_t QuicPublicResetNonceProof;
 typedef uint64_t QuicStreamOffset;
 typedef std::array<char, 32> DiversificationNonce;

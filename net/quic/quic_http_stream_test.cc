@@ -368,7 +368,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> InnerConstructDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -380,7 +380,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset offset,
@@ -392,7 +392,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
 
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructClientMultipleDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset offset,
@@ -402,7 +402,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset offset,
@@ -413,7 +413,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> InnerConstructRequestHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -426,7 +426,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> InnerConstructRequestHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -444,7 +444,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
 
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructRequestHeadersAndDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -462,7 +462,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestAndRstPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -482,7 +482,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       RequestPriority request_priority,
       size_t* spdy_headers_frame_length) {
@@ -492,7 +492,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> InnerConstructResponseHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool fin,
       size_t* spdy_headers_frame_length) {
@@ -503,7 +503,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructResponseHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       size_t* spdy_headers_frame_length) {
     return InnerConstructResponseHeadersPacket(packet_number, stream_id_, fin,
@@ -511,7 +511,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructResponseHeadersPacketWithOffset(quic::QuicPacketNumber packet_number,
+  ConstructResponseHeadersPacketWithOffset(uint64_t packet_number,
                                            bool fin,
                                            size_t* spdy_headers_frame_length,
                                            quic::QuicStreamOffset* offset) {
@@ -521,7 +521,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructResponseTrailersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       spdy::SpdyHeaderBlock trailers,
       size_t* spdy_headers_frame_length,
@@ -532,21 +532,19 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamPacket(
-      quic::QuicPacketNumber packet_number) {
+      uint64_t packet_number) {
     return client_maker_.MakeRstPacket(packet_number, true, stream_id_,
                                        quic::QUIC_RST_ACKNOWLEDGEMENT);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientRstStreamCancelledPacket(
-      quic::QuicPacketNumber packet_number) {
+  ConstructClientRstStreamCancelledPacket(uint64_t packet_number) {
     return client_maker_.MakeRstPacket(packet_number, !kIncludeVersion,
                                        stream_id_, quic::QUIC_STREAM_CANCELLED);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientRstStreamVaryMismatchPacket(
-      quic::QuicPacketNumber packet_number) {
+  ConstructClientRstStreamVaryMismatchPacket(uint64_t packet_number) {
     return client_maker_.MakeRstPacket(packet_number, !kIncludeVersion,
                                        promise_id_,
                                        quic::QUIC_PROMISE_VARY_MISMATCH);
@@ -554,7 +552,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
 
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -572,10 +570,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, stream_id_,
         quic::QUIC_STREAM_CANCELLED, largest_received, smallest_received,
@@ -583,7 +581,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamErrorPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool include_version) {
     return client_maker_.MakeRstPacket(packet_number, include_version,
                                        stream_id_,
@@ -591,32 +589,32 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstStreamPacket(
-      quic::QuicPacketNumber packet_number) {
+      uint64_t packet_number) {
     return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 2);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return server_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientPriorityPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       quic::QuicStreamId id,
       quic::QuicStreamId parent_stream_id,
@@ -2306,7 +2304,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(&header_stream_offset));
 
-  quic::QuicPacketNumber client_packet_number = 2;
+  uint64_t client_packet_number = 2;
   if (client_headers_include_h2_stream_dependency_ &&
       version_ >= quic::QUIC_VERSION_43) {
     AddWrite(ConstructClientPriorityPacket(

@@ -313,38 +313,38 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientConnectionClosePacket(quic::QuicPacketNumber num) {
+  ConstructClientConnectionClosePacket(uint64_t num) {
     return client_maker_.MakeConnectionClosePacket(
         num, false, quic::QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!");
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructServerConnectionClosePacket(quic::QuicPacketNumber num) {
+  ConstructServerConnectionClosePacket(uint64_t num) {
     return server_maker_.MakeConnectionClosePacket(
         num, false, quic::QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!");
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerGoAwayPacket(
-      quic::QuicPacketNumber num,
+      uint64_t num,
       quic::QuicErrorCode error_code,
       std::string reason_phrase) {
     return server_maker_.MakeGoAwayPacket(num, error_code, reason_phrase);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked, true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       quic::QuicTime::Delta ack_delay_time) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked, true,
@@ -352,19 +352,19 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndRstPacket(
-      quic::QuicPacketNumber num,
+      uint64_t num,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         num, false, stream_id, error_code, largest_received, smallest_received,
         least_unacked, true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientRstPacket(
-      quic::QuicPacketNumber num,
+      uint64_t num,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code,
       size_t bytes_written) {
@@ -373,22 +373,21 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientAckAndConnectionClosePacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+  ConstructClientAckAndConnectionClosePacket(uint64_t packet_number,
+                                             uint64_t largest_received,
+                                             uint64_t smallest_received,
+                                             uint64_t least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked, true);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientAckAndConnectionClosePacket(
-      quic::QuicPacketNumber num,
+      uint64_t num,
       quic::QuicTime::Delta delta_time_largest_observed,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details) {
     return client_maker_.MakeAckAndConnectionClosePacket(
@@ -397,7 +396,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerRstPacket(
-      quic::QuicPacketNumber num,
+      uint64_t num,
       bool include_version,
       quic::QuicStreamId stream_id,
       quic::QuicRstStreamErrorCode error_code) {
@@ -406,22 +405,22 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamOffset* offset) {
     return client_maker_.MakeInitialSettingsPacket(packet_number, offset);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return server_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked, false);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientPriorityPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       quic::QuicStreamId id,
       quic::QuicStreamId parent_stream_id,
@@ -434,11 +433,11 @@ class QuicNetworkTransactionTest
 
   std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientAckAndPriorityFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       const std::vector<QuicTestPacketMaker::Http2StreamDependency>&
           priority_frames,
       quic::QuicStreamOffset* offset) {
@@ -477,7 +476,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -488,7 +487,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -500,7 +499,7 @@ class QuicNetworkTransactionTest
 
   std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientMultipleDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -512,12 +511,12 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool include_version,
       quic::QuicStreamId stream_id,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       bool fin,
       quic::QuicStreamOffset offset,
       quic::QuicStringPiece data) {
@@ -528,12 +527,12 @@ class QuicNetworkTransactionTest
 
   std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientAckAndMultipleDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool include_version,
       quic::QuicStreamId stream_id,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       bool fin,
       quic::QuicStreamOffset offset,
       const std::vector<std::string> data_writes) {
@@ -543,7 +542,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientForceHolDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -554,7 +553,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       bool fin,
@@ -565,7 +564,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       bool fin,
@@ -577,7 +576,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       bool fin,
@@ -590,7 +589,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       bool fin,
@@ -607,7 +606,7 @@ class QuicNetworkTransactionTest
 
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructClientRequestHeadersAndDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -626,7 +625,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientMultipleDataFramesPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientMultipleDataFramesPacket(uint64_t packet_number,
                                           quic::QuicStreamId stream_id,
                                           bool should_include_version,
                                           bool fin,
@@ -637,7 +636,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerPushPromisePacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       quic::QuicStreamId promised_stream_id,
       bool should_include_version,
@@ -650,7 +649,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructServerResponseHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructServerResponseHeadersPacket(uint64_t packet_number,
                                        quic::QuicStreamId stream_id,
                                        bool should_include_version,
                                        bool fin,
@@ -661,7 +660,7 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructServerResponseHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructServerResponseHeadersPacket(uint64_t packet_number,
                                        quic::QuicStreamId stream_id,
                                        bool should_include_version,
                                        bool fin,
@@ -1244,7 +1243,7 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
   spdy::SpdySerializedFrame spdy_frame =
       response_framer.SerializeFrame(headers_frame);
 
-  quic::QuicPacketNumber packet_number = 1;
+  uint64_t packet_number = 1;
   size_t chunk_size = 1200;
   for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
     size_t len = std::min(chunk_size, spdy_frame.size() - offset);
@@ -1303,7 +1302,7 @@ TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
   spdy::SpdySerializedFrame spdy_frame =
       response_framer.SerializeFrame(headers_frame);
 
-  quic::QuicPacketNumber packet_number = 1;
+  uint64_t packet_number = 1;
   size_t chunk_size = 1200;
   for (size_t offset = 0; offset < spdy_frame.size(); offset += chunk_size) {
     size_t len = std::min(chunk_size, spdy_frame.size() - offset);
@@ -6379,7 +6378,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
-  quic::QuicPacketNumber client_packet_number = 1;
+  uint64_t client_packet_number = 1;
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++,
                                                   &header_stream_offset));
@@ -6470,7 +6469,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
-  quic::QuicPacketNumber client_packet_number = 1;
+  uint64_t client_packet_number = 1;
   // Initial SETTINGS frame.
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++,
@@ -6725,7 +6724,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
-  quic::QuicPacketNumber client_packet_number = 1;
+  uint64_t client_packet_number = 1;
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++,
                                                   &header_stream_offset));
@@ -6983,7 +6982,7 @@ class QuicNetworkTransactionWithDestinationTest
         expiration, supported_versions_);
   }
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       quic::QuicStreamOffset* offset,
@@ -6993,7 +6992,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       quic::QuicStreamId parent_stream_id,
@@ -7009,7 +7008,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientRequestHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,
                                       bool should_include_version,
                                       QuicTestPacketMaker* maker) {
@@ -7018,7 +7017,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructServerResponseHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructServerResponseHeadersPacket(uint64_t packet_number,
                                        quic::QuicStreamId stream_id,
                                        quic::QuicStreamOffset* offset,
                                        QuicTestPacketMaker* maker) {
@@ -7028,7 +7027,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructServerResponseHeadersPacket(quic::QuicPacketNumber packet_number,
+  ConstructServerResponseHeadersPacket(uint64_t packet_number,
                                        quic::QuicStreamId stream_id,
                                        QuicTestPacketMaker* maker) {
     return ConstructServerResponseHeadersPacket(packet_number, stream_id,
@@ -7036,7 +7035,7 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructServerDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       QuicTestPacketMaker* maker) {
     quic::QuicString header = "";
@@ -7051,17 +7050,17 @@ class QuicNetworkTransactionWithDestinationTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       QuicTestPacketMaker* maker) {
     return maker->MakeAckPacket(packet_number, largest_received,
                                 smallest_received, least_unacked, true);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamOffset* offset,
       QuicTestPacketMaker* maker) {
     return maker->MakeInitialSettingsPacket(packet_number, offset);
@@ -7406,7 +7405,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
-  quic::QuicPacketNumber client_packet_number = 1;
+  uint64_t client_packet_number = 1;
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number++,
                                                   &header_stream_offset));

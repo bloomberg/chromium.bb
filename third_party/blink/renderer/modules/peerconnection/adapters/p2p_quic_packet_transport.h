@@ -41,7 +41,7 @@ class P2PQuicPacketTransport {
     // set. Packet numbers are used to provide metadata to the implementation of
     // the P2PQuicPacketTransport, but this number is not used by the QUIC
     // library itself.
-    quic::QuicPacketNumber packet_number;
+    uint64_t packet_number;
     const char* buffer;
     size_t buf_len;
   };

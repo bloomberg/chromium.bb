@@ -87,8 +87,6 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       random_(random),
       mode_(STARTUP),
       round_trip_count_(0),
-      last_sent_packet_(0),
-      current_round_trip_end_(0),
       max_bandwidth_(kBandwidthWindowSize, QuicBandwidth::Zero(), 0),
       max_ack_height_(kBandwidthWindowSize, 0, 0),
       aggregation_epoch_start_time_(QuicTime::Zero()),
@@ -122,7 +120,6 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       has_non_app_limited_sample_(false),
       flexible_app_limited_(false),
       recovery_state_(NOT_IN_RECOVERY),
-      end_recovery_at_(0),
       recovery_window_(max_congestion_window_),
       is_app_limited_recovery_(false),
       slower_startup_(false),
@@ -460,7 +457,8 @@ void BbrSender::DiscardLostPackets(const LostPacketVector& lost_packets) {
 }
 
 bool BbrSender::UpdateRoundTripCounter(QuicPacketNumber last_acked_packet) {
-  if (last_acked_packet > current_round_trip_end_) {
+  if (!current_round_trip_end_.IsInitialized() ||
+      last_acked_packet > current_round_trip_end_) {
     round_trip_count_++;
     current_round_trip_end_ = last_sent_packet_;
     return true;
@@ -748,7 +746,7 @@ void BbrSender::CalculatePacingRate() {
     return;
   }
   // Slow the pacing rate in STARTUP once loss has ever been detected.
-  const bool has_ever_detected_loss = end_recovery_at_ > 0;
+  const bool has_ever_detected_loss = end_recovery_at_.IsInitialized();
   if (slower_startup_ && has_ever_detected_loss &&
       has_non_app_limited_sample_) {
     pacing_rate_ = kStartupAfterLossGain * BandwidthEstimate();
