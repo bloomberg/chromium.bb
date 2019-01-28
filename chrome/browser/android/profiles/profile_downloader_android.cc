@@ -15,10 +15,10 @@
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "jni/ProfileDownloader_jni.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -76,7 +76,6 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
 
   void OnProfileDownloadSuccess(
       ProfileDownloader* downloader) override {
-
     base::string16 full_name = downloader->GetProfileFullName();
     base::string16 given_name = downloader->GetProfileGivenName();
     SkBitmap bitmap = downloader->GetProfilePicture();
@@ -189,21 +188,19 @@ void JNI_ProfileDownloader_StartFetchingAccountInfoFor(
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   const std::string email =
       base::android::ConvertJavaStringToUTF8(env, jemail);
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile);
 
-  AccountInfo account_info =
-      account_tracker_service->FindAccountInfoByEmail(email);
+  auto maybe_account_info =
+      IdentityManagerFactory::GetForProfile(profile)
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(email);
 
-  if (account_info.account_id.empty()) {
-      LOG(ERROR) << "Attempted to get AccountInfo for account not in the "
-          << "AccountTrackerService";
-      return;
+  if (!maybe_account_info.has_value()) {
+    LOG(ERROR) << "Attempted to get AccountInfo for account not in the "
+               << "IdentityManager";
+    return;
   }
 
-  AccountInfoRetriever* retriever = new AccountInfoRetriever(
-      profile,
-      account_tracker_service->FindAccountInfoByEmail(email).account_id, email,
-      image_side_pixels, is_pre_signin);
+  AccountInfoRetriever* retriever =
+      new AccountInfoRetriever(profile, maybe_account_info.value().account_id,
+                               email, image_side_pixels, is_pre_signin);
   retriever->Start();
 }
