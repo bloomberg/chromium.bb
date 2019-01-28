@@ -292,6 +292,6 @@ TEST_P(EDIDParserTest, ParseEdids) {
             GetParam().product_id_string);
 }
 
-INSTANTIATE_TEST_CASE_P(, EDIDParserTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(, EDIDParserTest, ValuesIn(kTestCases));
 
 }  // namespace display
