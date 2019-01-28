@@ -175,7 +175,7 @@ bool g_run_at_fps = false;
 
 bool g_needs_encode_latency = false;
 
-bool g_verify_output = true;
+bool g_verify_all_output = false;
 
 bool g_fake_encoder = false;
 
@@ -498,14 +498,14 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
       const base::FilePath& frame_stats_path,
       bool run_at_fps,
       bool needs_encode_latency,
-      bool verify_output)
+      bool verify_all_output)
       : rendering_thread_("GLRenderingVEAClientThread"),
         test_stream_data_(std::move(data)),
         log_path_(log_path),
         frame_stats_path_(frame_stats_path),
         run_at_fps_(run_at_fps),
         needs_encode_latency_(needs_encode_latency),
-        verify_output_(verify_output) {}
+        verify_all_output_(verify_all_output) {}
 
   virtual void SetUp() {
     if (!log_path_.empty()) {
@@ -575,8 +575,8 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   bool needs_encode_latency() const { return needs_encode_latency_; }
 
   // Verify the encoder output of all testcases. This is set by the command line
-  // switch "--verify_output".
-  bool verify_output() const { return verify_output_; }
+  // switch "--verify_all_output".
+  bool verify_all_output() const { return verify_all_output_; }
 
   const base::FilePath& frame_stats_path() const { return frame_stats_path_; }
 
@@ -590,7 +590,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   std::unique_ptr<base::File> log_file_;
   bool run_at_fps_;
   bool needs_encode_latency_;
-  bool verify_output_;
+  bool verify_all_output_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
@@ -893,7 +893,7 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   gfx::Size natural_size(visible_size.size());
-  // The default output format of ffmpeg video decoder is I420.
+  // The default output format of ffmpeg video decoder is YV12.
   VideoDecoderConfig config;
   if (IsVP8(profile_))
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, pixel_format_,
@@ -1187,14 +1187,10 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
   // SSIM/PSNR metrics for thresholds instead of abs(difference) / size which
   // correspond less to perceptive distortion.
   if (verify_quality_) {
-    // TODO(crbug.com/923762): Support DMABUF and non-I420 format.
-    ASSERT_TRUE(original_frame->IsMappable());
-    ASSERT_TRUE(output_frame->IsMappable());
-    ASSERT_EQ(output_frame->format(), original_frame->format());
-
-    const size_t num_planes = VideoFrame::NumPlanes(original_frame->format());
+    int planes[] = {VideoFrame::kYPlane, VideoFrame::kUPlane,
+                    VideoFrame::kVPlane};
     double difference = 0;
-    for (size_t plane = 0; plane < num_planes; ++plane) {
+    for (int plane : planes) {
       uint8_t* original_plane = original_frame->data(plane);
       uint8_t* output_plane = output_frame->data(plane);
 
@@ -1214,7 +1210,7 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
 
     // Divide the difference by the size of frame.
     difference /= VideoFrame::AllocationSize(pixel_format_, visible_size);
-    EXPECT_LE(difference, kDecodeSimilarityThreshold)
+    EXPECT_TRUE(difference <= kDecodeSimilarityThreshold)
         << "difference = " << difference << "  > decode similarity threshold";
   }
 }
@@ -2412,11 +2408,10 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   const bool test_perf = std::get<4>(GetParam());
   const bool mid_stream_bitrate_switch = std::get<5>(GetParam());
   const bool mid_stream_framerate_switch = std::get<6>(GetParam());
-  // TODO(crbug.com/923762): Support DMABUF and non-I420 format.
   const bool verify_output =
-      std::get<7>(GetParam()) && g_env->verify_output() && !g_native_input &&
-      g_env->test_streams_[0]->pixel_format == PIXEL_FORMAT_I420;
+      std::get<7>(GetParam()) || g_env->verify_all_output();
   const bool verify_output_timestamp = std::get<8>(GetParam());
+
   std::vector<
       std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
       notes;
@@ -2525,11 +2520,13 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
 }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// TODO(kcwu): add back test of verify_output=true after
+// https://crbug.com/694131 fixed.
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, true, 0, false, false, false, false, true, false)));
+        std::make_tuple(1, true, 0, false, false, false, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     EncoderPerf,
@@ -2546,20 +2543,20 @@ INSTANTIATE_TEST_CASE_P(ForceKeyframes,
                                                           false,
                                                           false,
                                                           false,
-                                                          true,
+                                                          false,
                                                           false)));
 
 INSTANTIATE_TEST_CASE_P(
     ForceBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, true, false, false, false, true, false)));
+        std::make_tuple(1, false, 0, true, false, false, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     MidStreamParamSwitchBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, true, false, true, false, true, false)));
+        std::make_tuple(1, false, 0, true, false, true, false, false, false)));
 
 // TODO(kcwu): add back bitrate test after https://crbug.com/693336 fixed.
 INSTANTIATE_TEST_CASE_P(
@@ -2572,14 +2569,14 @@ INSTANTIATE_TEST_CASE_P(
     MultipleEncoders,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(3, false, 0, false, false, false, false, true, false),
-        std::make_tuple(3, false, 0, true, false, true, false, true, false)));
+        std::make_tuple(3, false, 0, false, false, false, false, false, false),
+        std::make_tuple(3, false, 0, true, false, true, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     VerifyTimestamp,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, false, false, false, false, true, true)));
+        std::make_tuple(1, false, 0, false, false, false, false, false, true)));
 
 INSTANTIATE_TEST_CASE_P(NoInputTest,
                         VideoEncodeAcceleratorSimpleTest,
@@ -2659,7 +2656,8 @@ class VEATestSuite : public base::TestSuite {
                 new media::VideoEncodeAcceleratorTestEnvironment(
                     std::move(media::g_test_stream_data), media::g_log_path,
                     media::g_frame_stats_path, media::g_run_at_fps,
-                    media::g_needs_encode_latency, media::g_verify_output)));
+                    media::g_needs_encode_latency,
+                    media::g_verify_all_output)));
 
 #if BUILDFLAG(USE_VAAPI)
     media::VaapiWrapper::PreSandboxInitialization();
@@ -2724,10 +2722,8 @@ int main(int argc, char** argv) {
       media::g_run_at_fps = true;
       continue;
     }
-    if (it->first == "verify_output") {
-      std::string input(it->second.begin(), it->second.end());
-      if (input == "false")
-        media::g_verify_output = false;
+    if (it->first == "verify_all_output") {
+      media::g_verify_all_output = true;
       continue;
     }
 
