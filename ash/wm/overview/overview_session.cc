@@ -646,6 +646,16 @@ aura::Window* OverviewSession::GetOverviewFocusWindow() {
   return nullptr;
 }
 
+void OverviewSession::SuspendReposition() {
+  for (auto& grid : grid_list_)
+    grid->set_suspend_reposition(true);
+}
+
+void OverviewSession::ResumeReposition() {
+  for (auto& grid : grid_list_)
+    grid->set_suspend_reposition(false);
+}
+
 void OverviewSession::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();

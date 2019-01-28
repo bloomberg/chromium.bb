@@ -27,6 +27,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -292,6 +293,12 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(
 
   old_layer_tree_owner_ = CopyLayerTree(std::move(result));
   AddLayerAtTopOfWindowLayers(root_window_, old_layer_tree_owner_->root());
+
+  // TODO(oshima): We need a better way to control animation and other
+  // activities during system wide animation.
+  animation_scale_mode_ =
+      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+          ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   SetRotation(rotation_request->display_id, rotation_request->old_rotation,
               rotation_request->new_rotation, rotation_request->source);
 
@@ -304,6 +311,7 @@ void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedBeforeRotation(
 void ScreenRotationAnimator::OnScreenRotationContainerLayerCopiedAfterRotation(
     std::unique_ptr<ScreenRotationRequest> rotation_request,
     std::unique_ptr<viz::CopyOutputResult> result) {
+  animation_scale_mode_.reset();
   if (IgnoreCopyResult(rotation_request->id, rotation_request_id_))
     return;
   // In the following cases, abort animation:
