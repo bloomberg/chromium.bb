@@ -60,8 +60,9 @@ public class WebappDisplayModeTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
+    //@SmallTest
+    //@Feature({"Webapps"})
+    @DisabledTest(message = "crbug.com/793133")
     public void testMinimalUi() throws Exception {
         WebappActivity activity = startActivity(WebDisplayMode.MINIMAL_UI);
 
