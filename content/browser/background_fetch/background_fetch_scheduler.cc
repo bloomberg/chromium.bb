@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
@@ -14,10 +15,27 @@
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/common/content_features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
 namespace content {
+
+namespace {
+
+// The maximum number of active registrations that can be processed
+// concurrently. The active registrations are from distinct origins.
+constexpr char kMaxActiveRegistrations[] = "max_active_registrations";
+constexpr int kMaxActiveRegistrationsDefaultValue = 2;
+
+// The maximum number of downloads the Download Service can process at the same
+// time.
+// TODO(crbug.com/919864): Figure out how to keep this in sync with the
+// Download Service value.
+constexpr char kMaxRunningDownloads[] = "max_running_downloads";
+constexpr int kMaxRunningDownloadsDefaultValue = 2;
+
+}  // namespace
 
 using blink::mojom::BackgroundFetchError;
 using blink::mojom::BackgroundFetchFailureReason;
@@ -36,27 +54,65 @@ BackgroundFetchScheduler::BackgroundFetchScheduler(
   delegate_proxy_->SetClickEventDispatcher(
       base::BindRepeating(&BackgroundFetchScheduler::DispatchClickEvent,
                           weak_ptr_factory_.GetWeakPtr()));
+
+  max_active_registrations_ = base::GetFieldTrialParamByFeatureAsInt(
+      features::kBackgroundFetch, kMaxActiveRegistrations,
+      kMaxActiveRegistrationsDefaultValue);
+  max_running_downloads_ = base::GetFieldTrialParamByFeatureAsInt(
+      features::kBackgroundFetch, kMaxRunningDownloads,
+      kMaxRunningDownloadsDefaultValue);
 }
 
 BackgroundFetchScheduler::~BackgroundFetchScheduler() = default;
 
-void BackgroundFetchScheduler::ScheduleDownload() {
-  DCHECK(!active_controller_);
+bool BackgroundFetchScheduler::ScheduleDownload() {
+  DCHECK_LT(num_running_downloads_, max_running_downloads_);
 
-  if (controller_ids_.empty())
-    return;
+  // 1. Try to activate a registration from a different origin.
+  if (num_active_registrations_ < max_active_registrations_ &&
+      !controller_ids_.empty()) {
+    // Try to find a pending registration with a different origin.
+    for (const auto& controller_id : controller_ids_) {
+      // Make sure the origin is not already active.
+      bool is_new_origin = true;
+      for (auto* controller : active_controllers_) {
+        if (controller->registration_id().origin().IsSameOriginWith(
+                controller_id.origin())) {
+          is_new_origin = false;
+          break;
+        }
+      }
 
-  DCHECK(!job_controllers_.empty());
+      if (is_new_origin) {
+        // Start new registration, and move to the front of the queue.
+        auto* controller = job_controllers_[controller_id.unique_id()].get();
+        active_controllers_.push_front(controller);
+        ++num_active_registrations_;
+        base::Erase(controller_ids_, controller_id);
+        break;
+      }
+    }
+  }
 
-  std::string controller_id = controller_ids_.front();
-  controller_ids_.pop_front();
-  active_controller_ = job_controllers_[controller_id].get();
-  DCHECK(active_controller_);
+  // 2. Try to start a request within the LRU registration.
+  for (auto it = active_controllers_.begin(); it != active_controllers_.end();
+       ++it) {
+    auto* controller = *it;
+    if (!controller->HasMoreRequests())
+      continue;
 
-  data_manager_->PopNextRequest(
-      active_controller_->registration_id(),
-      base::BindOnce(&BackgroundFetchJobController::DidPopNextRequest,
-                     active_controller_->GetWeakPtr()));
+    // Activate a request within |controller| and move it to the end of the
+    // queue.
+    ++num_running_downloads_;
+    controller->PopNextRequest(
+        base::BindOnce(&BackgroundFetchScheduler::DidCompleteRequest,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    active_controllers_.erase(it);
+    active_controllers_.push_back(controller);
+    return true;
+  }
+  return false;
 }
 
 void BackgroundFetchScheduler::Abort(
@@ -66,7 +122,7 @@ void BackgroundFetchScheduler::Abort(
   DCHECK_EQ(failure_reason,
             BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER);
 
-  base::Erase(controller_ids_, registration_id.unique_id());
+  base::Erase(controller_ids_, registration_id);
 
   auto it = job_controllers_.find(registration_id.unique_id());
   if (it == job_controllers_.end()) {
@@ -77,15 +133,27 @@ void BackgroundFetchScheduler::Abort(
   it->second->Abort(failure_reason, std::move(callback));
 }
 
+void BackgroundFetchScheduler::DidCompleteRequest(
+    const BackgroundFetchRegistrationId& registration_id,
+    scoped_refptr<BackgroundFetchRequestInfo> request_info) {
+  auto* controller = GetActiveController(registration_id);
+  if (controller)
+    controller->MarkRequestAsComplete(std::move(request_info));
+
+  --num_running_downloads_;
+  if (num_running_downloads_ < max_running_downloads_)
+    ScheduleDownload();
+}
+
 void BackgroundFetchScheduler::FinishJob(
     const BackgroundFetchRegistrationId& registration_id,
     BackgroundFetchFailureReason failure_reason,
     base::OnceCallback<void(BackgroundFetchError)> callback) {
-  bool job_started = false;
-  if (active_controller_ &&
-      active_controller_->registration_id() == registration_id) {
-    active_controller_ = nullptr;
-    job_started = true;
+  auto* active_controller = GetActiveController(registration_id);
+  if (active_controller) {
+    base::EraseIf(active_controllers_, [&registration_id](auto* controller) {
+      return controller->registration_id() == registration_id;
+    });
   }
 
   data_manager_->MarkRegistrationForDeletion(
@@ -94,17 +162,23 @@ void BackgroundFetchScheduler::FinishJob(
           BackgroundFetchFailureReason::NONE,
       base::BindOnce(&BackgroundFetchScheduler::DidMarkForDeletion,
                      weak_ptr_factory_.GetWeakPtr(), registration_id,
-                     job_started, std::move(callback)));
+                     /* job_started= */ active_controller != nullptr,
+                     std::move(callback)));
 
   auto it = job_controllers_.find(registration_id.unique_id());
   if (it != job_controllers_.end()) {
     completed_fetches_[it->first] = {registration_id,
                                      it->second->NewRegistration()};
+
+    // Reset scheduler params.
+    num_running_downloads_ -= it->second->pending_downloads();
+    --num_active_registrations_;
+
     // Destroying the controller will stop all in progress tasks.
     job_controllers_.erase(it);
   }
 
-  if (!active_controller_)
+  if (num_running_downloads_ < max_running_downloads_)
     ScheduleDownload();
 }
 
@@ -175,11 +249,12 @@ void BackgroundFetchScheduler::CleanupRegistration(
 void BackgroundFetchScheduler::DispatchClickEvent(
     const std::string& unique_id) {
   // Case 1: The active fetch received a click event.
-  if (active_controller_ &&
-      active_controller_->registration_id().unique_id() == unique_id) {
+  auto* active_controller = GetActiveController(unique_id);
+
+  if (active_controller) {
     event_dispatcher_.DispatchBackgroundFetchClickEvent(
-        active_controller_->registration_id(),
-        active_controller_->NewRegistration(), base::DoNothing());
+        active_controller->registration_id(),
+        active_controller->NewRegistration(), base::DoNothing());
     return;
   }
 
@@ -240,9 +315,13 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
 
   DCHECK_EQ(job_controllers_.count(registration_id.unique_id()), 0u);
   job_controllers_[registration_id.unique_id()] = std::move(controller);
-  controller_ids_.push_back(registration_id.unique_id());
-  if (!active_controller_)
-    ScheduleDownload();
+  controller_ids_.push_back(registration_id);
+
+  // Schedule as much as possible.
+  while (num_running_downloads_ < max_running_downloads_) {
+    if (!ScheduleDownload())
+      return;
+  }
 }
 
 void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
@@ -261,29 +340,28 @@ void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
       num_completed_requests, num_requests, active_fetch_requests,
       /* start_paused= */ false);
 
-  // The current assumption is that there can be only one active job with one
-  // active fetch.
-  DCHECK(!active_controller_);
-  active_controller_ = controller.get();
+  auto* controller_ptr = controller.get();
+  active_controllers_.push_back(controller_ptr);
   job_controllers_[registration_id.unique_id()] = std::move(controller);
 
-  DCHECK_LE(active_fetch_requests.size(), 1u);
+  ++num_active_registrations_;
+  num_running_downloads_ += active_fetch_requests.size();
 
   if (active_fetch_requests.empty()) {
     DCHECK_LT(num_completed_requests, num_requests);
     // Start processing the next request.
-    data_manager_->PopNextRequest(
-        active_controller_->registration_id(),
-        base::BindOnce(&BackgroundFetchJobController::DidPopNextRequest,
-                       active_controller_->GetWeakPtr()));
+    ++num_running_downloads_;
+    controller_ptr->PopNextRequest(
+        base::BindOnce(&BackgroundFetchScheduler::DidCompleteRequest,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
   for (auto& request_info : active_fetch_requests) {
-    active_controller_->StartRequest(
+    controller_ptr->StartRequest(
         std::move(request_info),
-        base::BindOnce(&BackgroundFetchJobController::MarkRequestAsComplete,
-                       active_controller_->GetWeakPtr()));
+        base::BindOnce(&BackgroundFetchScheduler::DidCompleteRequest,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -314,7 +392,7 @@ void BackgroundFetchScheduler::AbortFetches(
 
   for (auto* controller : to_abort) {
     // Erase it from |controller_ids_| first to avoid rescheduling.
-    base::Erase(controller_ids_, controller->registration_id().unique_id());
+    base::Erase(controller_ids_, controller->registration_id());
     controller->Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
                       base::DoNothing());
   }
@@ -323,18 +401,16 @@ void BackgroundFetchScheduler::AbortFetches(
 void BackgroundFetchScheduler::OnRegistrationQueried(
     blink::mojom::BackgroundFetchRegistration* registration) {
   DCHECK(registration);
-  if (!active_controller_)
+
+  auto* controller = GetActiveController(registration->unique_id);
+  if (!controller)
     return;
 
   // The data manager only has the number of bytes from completed downloads, so
   // augment this with the number of downloaded/uploaded bytes from in-progress
   // jobs.
-  if (active_controller_->registration_id().unique_id() ==
-      registration->unique_id) {
-    registration->downloaded +=
-        active_controller_->GetInProgressDownloadedBytes();
-    registration->uploaded += active_controller_->GetInProgressUploadedBytes();
-  }
+  registration->downloaded += controller->GetInProgressDownloadedBytes();
+  registration->uploaded += controller->GetInProgressUploadedBytes();
 }
 
 void BackgroundFetchScheduler::OnServiceWorkerDatabaseCorrupted(
@@ -351,6 +427,26 @@ void BackgroundFetchScheduler::OnRegistrationDeleted(int64_t registration_id,
 void BackgroundFetchScheduler::OnStorageWiped() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   AbortFetches(blink::mojom::kInvalidServiceWorkerRegistrationId);
+}
+
+BackgroundFetchJobController* BackgroundFetchScheduler::GetActiveController(
+    const BackgroundFetchRegistrationId& registration_id) {
+  for (auto* controller : active_controllers_) {
+    if (controller->registration_id() == registration_id)
+      return controller;
+  }
+  return nullptr;
+}
+
+BackgroundFetchJobController* BackgroundFetchScheduler::GetActiveController(
+    const std::string& unique_id) {
+  // |unique_id| is used for all BackgroundFetchRegistrationId comparisons, so
+  // this creates a |unique_id| wrapper with default values for other
+  // parameters.
+  BackgroundFetchRegistrationId registration_id(
+      /* service_worker_registration_id= */ 0, /* origin= */ url::Origin(),
+      /* developer_id= */ "", unique_id);
+  return GetActiveController(registration_id);
 }
 
 }  // namespace content

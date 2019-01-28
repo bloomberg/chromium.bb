@@ -49,7 +49,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
   using ProgressCallback = base::RepeatingCallback<void(
       const blink::mojom::BackgroundFetchRegistration&)>;
   using RequestFinishedCallback =
-      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
+      base::OnceCallback<void(const BackgroundFetchRegistrationId&,
+                              scoped_refptr<BackgroundFetchRequestInfo>)>;
 
   BackgroundFetchJobController(
       BackgroundFetchDataManager* data_manager,
@@ -87,10 +88,6 @@ class CONTENT_EXPORT BackgroundFetchJobController
     return registration_id_;
   }
 
-  base::WeakPtr<BackgroundFetchJobController> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   // BackgroundFetchDelegateProxy::Controller implementation:
   void DidStartRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
@@ -111,22 +108,30 @@ class CONTENT_EXPORT BackgroundFetchJobController
   void Abort(blink::mojom::BackgroundFetchFailureReason failure_reason,
              ErrorCallback callback);
 
-  // Request processing callbacks.
-  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
-                    RequestFinishedCallback request_finished_callback);
+  // Request processing.
+  void PopNextRequest(RequestFinishedCallback request_finished_callback);
   void DidPopNextRequest(
+      RequestFinishedCallback request_finished_callback,
       blink::mojom::BackgroundFetchError error,
       scoped_refptr<BackgroundFetchRequestInfo> request_info);
-  void MarkRequestAsComplete(
-      scoped_refptr<BackgroundFetchRequestInfo> request_info);
+  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
+                    RequestFinishedCallback request_finished_callback);
+  void MarkRequestAsComplete(scoped_refptr<BackgroundFetchRequestInfo> request);
+
+  // Whether there are more requests to process as part of this job.
+  bool HasMoreRequests();
+
+  int pending_downloads() const { return pending_downloads_; }
 
  private:
   // Called after the request is completely processed, and the next one can be
   // started.
   void DidMarkRequestAsComplete(blink::mojom::BackgroundFetchError error);
 
-  // Whether there are more requests to process as part of this job.
-  bool HasMoreRequests();
+  // Notifies the scheduler that the download is complete, and hands the result
+  // over.
+  void NotifyDownloadComplete(
+      scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // Called when the job completes or has been aborted. |callback| will run
   // with the result of marking the registration for deletion.
@@ -158,8 +163,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
   uint64_t active_request_downloaded_bytes_ = 0u;
   uint64_t active_request_uploaded_bytes_ = 0u;
 
-  // Finished callback to invoke when the active request has finished.
-  RequestFinishedCallback active_request_finished_callback_;
+  // Finished callback to invoke when the active request has finished mapped by
+  // its download GUID.
+  std::map<std::string, RequestFinishedCallback>
+      active_request_finished_callbacks_;
 
   // Cache of downloaded byte count stored by the DataManager, to enable
   // delivering progress events without having to read from the database.
@@ -179,6 +186,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Number of the requests that have been completed so far.
   int completed_downloads_ = 0;
+
+  // The number of requests that are currently being processed.
+  int pending_downloads_ = 0;
 
   // The reason background fetch was aborted.
   blink::mojom::BackgroundFetchFailureReason failure_reason_ =
