@@ -1492,6 +1492,12 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/617318
         # Currently goma can not handle case sensitiveness for windows well.
         cflags += [ "-Wno-nonportable-include-path" ]
+
+        if (target_cpu == "arm64") {
+          # Work around problem with SwiftShader for Windows ARM64
+          # TODO(Tom.Tan@microsoft.com): https://crbug.com/925595
+          cflags += [ "-Wno-defaulted-function-deleted" ]
+        }
       }
 
       if (current_toolchain == host_toolchain || !use_xcode_clang) {
