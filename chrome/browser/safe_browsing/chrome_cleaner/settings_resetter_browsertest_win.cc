@@ -203,12 +203,13 @@ IN_PROC_BROWSER_TEST_P(ChromeCleanerResetTaggedProfilesTest, Run) {
   EXPECT_EQ(!reset_expected, ProfileIsTagged(profile3));
 }
 
-INSTANTIATE_TEST_CASE_P(Default,
-                        ChromeCleanerResetTaggedProfilesTest,
-                        testing::Values(CleanupCompletionState::kNotAvailable,
-                                        CleanupCompletionState::kNotCompleted,
-                                        CleanupCompletionState::kCompleted,
-                                        CleanupCompletionState::kInvalidValue));
+INSTANTIATE_TEST_SUITE_P(
+    Default,
+    ChromeCleanerResetTaggedProfilesTest,
+    testing::Values(CleanupCompletionState::kNotAvailable,
+                    CleanupCompletionState::kNotCompleted,
+                    CleanupCompletionState::kCompleted,
+                    CleanupCompletionState::kInvalidValue));
 
 }  // namespace
 }  // namespace safe_browsing

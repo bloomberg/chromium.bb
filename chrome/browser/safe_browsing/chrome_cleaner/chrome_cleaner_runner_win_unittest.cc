@@ -226,7 +226,7 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
             command_line_.HasSwitch(chrome_cleaner::kQuarantineSwitch));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeCleanerRunnerSimpleTest,
     Combine(Values(ChromeCleanerRunner::ChromeMetricsStatus::kEnabled,
@@ -454,7 +454,7 @@ TEST_P(ChromeCleanerRunnerTest, WithMockCleanerProcess) {
       cleaner_process_options_.ExpectedExitCode(prompt_acceptance_to_send_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NoUwsFound,
     ChromeCleanerRunnerTest,
     Combine(
@@ -475,7 +475,7 @@ INSTANTIATE_TEST_CASE_P(
         Values(PromptAcceptance::DENIED)),
     chrome_cleaner::GetParamNameForTest());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UwsFound,
     ChromeCleanerRunnerTest,
     Combine(

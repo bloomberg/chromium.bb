@@ -211,9 +211,9 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
-INSTANTIATE_TEST_CASE_P(Default,
-                        ChromeCleanerRebootFlowTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Default,
+                         ChromeCleanerRebootFlowTest,
+                         ::testing::Bool());
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 class ChromeCleanerRebootDialogResponseTest : public InProcessBrowserTest {
