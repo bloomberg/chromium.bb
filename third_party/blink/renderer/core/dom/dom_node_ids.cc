@@ -12,12 +12,15 @@ DEFINE_WEAK_IDENTIFIER_MAP(Node, DOMNodeId);
 
 // static
 DOMNodeId DOMNodeIds::IdForNode(Node* node) {
-  return WeakIdentifierMap<Node, DOMNodeId>::Identifier(node);
+  return node ? WeakIdentifierMap<Node, DOMNodeId>::Identifier(node)
+              : kInvalidDOMNodeId;
 }
 
 // static
 Node* DOMNodeIds::NodeForId(DOMNodeId id) {
-  return WeakIdentifierMap<Node, DOMNodeId>::Lookup(id);
+  return id == kInvalidDOMNodeId
+             ? nullptr
+             : WeakIdentifierMap<Node, DOMNodeId>::Lookup(id);
 }
 
 }  // namespace blink

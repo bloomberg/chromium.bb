@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -3962,8 +3963,10 @@ void HTMLMediaElement::SetCcLayer(cc::Layer* cc_layer) {
   if (cc_layer_)
     GraphicsLayer::UnregisterContentsLayer(cc_layer_);
   cc_layer_ = cc_layer;
-  if (cc_layer_)
+  if (cc_layer_) {
     GraphicsLayer::RegisterContentsLayer(cc_layer_);
+    cc_layer_->set_owner_node_id(DOMNodeIds::IdForNode(this));
+  }
 }
 
 void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {

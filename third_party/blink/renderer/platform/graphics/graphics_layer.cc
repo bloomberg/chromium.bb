@@ -914,6 +914,7 @@ void GraphicsLayer::SetContentsToImage(
             .TakePaintImage();
     if (!image_layer_) {
       image_layer_ = cc::PictureImageLayer::Create();
+      image_layer_->set_owner_node_id(CcLayer()->owner_node_id());
       RegisterContentsLayer(image_layer_.get());
     }
     image_layer_->SetImage(std::move(paint_image), matrix,

@@ -691,7 +691,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   LayoutRect vertical_scrollbar_visual_rect_;
   LayoutRect scroll_corner_and_resizer_visual_rect_;
 
-  class ScrollingBackgroundDisplayItemClient : public DisplayItemClient {
+  class ScrollingBackgroundDisplayItemClient final : public DisplayItemClient {
     DISALLOW_NEW();
 
    public:
@@ -699,13 +699,14 @@ class CORE_EXPORT PaintLayerScrollableArea final
         const PaintLayerScrollableArea& scrollable_area)
         : scrollable_area_(&scrollable_area) {}
 
-    LayoutRect VisualRect() const override;
-    String DebugName() const override;
-    bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
-
     void Trace(Visitor* visitor) { visitor->Trace(scrollable_area_); }
 
    private:
+    LayoutRect VisualRect() const final;
+    String DebugName() const final;
+    DOMNodeId OwnerNodeId() const final;
+    bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
+
     Member<const PaintLayerScrollableArea> scrollable_area_;
   };
 

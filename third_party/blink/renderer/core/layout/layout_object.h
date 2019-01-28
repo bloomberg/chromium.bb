@@ -266,6 +266,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
         .SetPartialInvalidationVisualRect(LayoutRect());
   }
 
+  DOMNodeId OwnerNodeId() const final;
+
  public:
   LayoutRect PartialInvalidationVisualRect() const final {
     return FirstFragment().PartialInvalidationVisualRect();

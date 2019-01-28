@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
-#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -115,9 +114,6 @@ void FramePainter::PaintContents(GraphicsContext& context,
     GetMemoryCache()->UpdateFramePaintTimestamp();
     in_paint_contents_ = false;
   }
-
-  probe::didPaint(layout_view->GetFrame(), nullptr, context,
-                  LayoutRect(cull_rect.Rect()));
 }
 
 const LocalFrameView& FramePainter::GetFrameView() {

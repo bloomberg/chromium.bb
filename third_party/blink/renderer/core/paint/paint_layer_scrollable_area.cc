@@ -2880,6 +2880,13 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::DebugName()
          scrollable_area_->GetLayoutBox()->DebugName();
 }
 
+DOMNodeId
+PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::OwnerNodeId()
+    const {
+  return static_cast<const DisplayItemClient*>(scrollable_area_->GetLayoutBox())
+      ->OwnerNodeId();
+}
+
 bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
     PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   return scrollable_area_->GetLayoutBox()

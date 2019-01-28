@@ -85,7 +85,8 @@ interface CoreProbes {
   void didFireWebGLWarning(Element*);
   void didFireWebGLErrorOrWarning(Element*, const String& message);
   void didResizeMainFrame(LocalFrame*);
-  void didPaint(LocalFrame*, const cc::Layer*, GraphicsContext&, const LayoutRect&);
+  /* This is for pre-BlinkGenPropertyTrees. TODO(wangxianzhu): Remove this function for BlinkGenPropertyTrees. */
+  void didPaint(LocalFrame*, const cc::Layer*, const LayoutRect&);
   void applyAcceptLanguageOverride(ExecutionContext*, String* acceptLanguage);
   void applyUserAgentOverride(CoreProbeSink*, String* userAgent);
   void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
@@ -130,7 +131,10 @@ interface CoreProbes {
   void didReceiveWebSocketMessageError(ExecutionContext*, unsigned long identifier, const String& errorMessage);
   void networkStateChanged([Keep] LocalFrame*, bool online);
   void updateApplicationCacheStatus([Keep] LocalFrame*);
+  /* This is for pre-BlinkGenPropertyTrees. TODO(wangxianzhu): Remove this function for BlinkGenPropertyTrees. */
   void layerTreeDidChange(LocalFrame*);
+  /* For BlinkGenPropertyTrees/CompositeAfterPaint. */
+  void layerTreePainted(LocalFrame*);
   void pseudoElementCreated([Keep] PseudoElement*);
   void pseudoElementDestroyed([Keep] PseudoElement*);
   void didCreateAnimation(Document*, unsigned);
