@@ -142,6 +142,31 @@ drm_public int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 	return r;
 }
 
+drm_public int amdgpu_cs_ctx_override_priority(amdgpu_device_handle dev,
+                                               amdgpu_context_handle context,
+                                               int master_fd,
+                                               unsigned priority)
+{
+	int r;
+
+	if (!dev || !context || master_fd < 0)
+		return -EINVAL;
+
+	union drm_amdgpu_sched args;
+	memset(&args, 0, sizeof(args));
+
+	args.in.op = AMDGPU_SCHED_OP_CONTEXT_PRIORITY_OVERRIDE;
+	args.in.fd = dev->fd;
+	args.in.priority = priority;
+	args.in.ctx_id = context->id;
+
+	r = drmCommandWrite(master_fd, DRM_AMDGPU_SCHED, &args, sizeof(args));
+	if (r)
+		return r;
+
+	return 0;
+}
+
 drm_public int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
 					   uint32_t *state, uint32_t *hangs)
 {

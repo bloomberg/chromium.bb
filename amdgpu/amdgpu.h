@@ -912,6 +912,21 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 int amdgpu_cs_ctx_free(amdgpu_context_handle context);
 
 /**
+ * Override the submission priority for the given context using a master fd.
+ *
+ * \param   dev        - \c [in] device handle
+ * \param   context    - \c [in] context handle for context id
+ * \param   master_fd  - \c [in] The master fd to authorize the override.
+ * \param   priority   - \c [in] The priority to assign to the context.
+ *
+ * \return 0 on success or a a negative Posix error code on failure.
+ */
+int amdgpu_cs_ctx_override_priority(amdgpu_device_handle dev,
+                                    amdgpu_context_handle context,
+                                    int master_fd,
+                                    unsigned priority);
+
+/**
  * Query reset state for the specific GPU Context
  *
  * \param   context - \c [in]  GPU Context handle

@@ -38,6 +38,7 @@ amdgpu_cs_create_syncobj2
 amdgpu_cs_ctx_create
 amdgpu_cs_ctx_create2
 amdgpu_cs_ctx_free
+amdgpu_cs_ctx_override_priority
 amdgpu_cs_destroy_semaphore
 amdgpu_cs_destroy_syncobj
 amdgpu_cs_export_syncobj
