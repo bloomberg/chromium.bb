@@ -187,7 +187,7 @@ TEST_P(HttpFsTest, FTruncate) {
 }
 
 // Instantiate the above tests for all caching types.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Default,
     HttpFsTest,
     ::testing::Values((uint32_t)kStringMapParamCacheNone,
@@ -255,10 +255,10 @@ TEST_P(HttpFsLargeFileTest, GetStat) {
 // Instantiate the large file tests, only when cache content is off.
 // TODO(binji): make cache content smarter, so it doesn't try to cache enormous
 // files. See http://crbug.com/369279.
-INSTANTIATE_TEST_CASE_P(Default,
-                        HttpFsLargeFileTest,
-                        ::testing::Values((uint32_t)kStringMapParamCacheNone,
-                                          (uint32_t)kStringMapParamCacheStat));
+INSTANTIATE_TEST_SUITE_P(Default,
+                         HttpFsLargeFileTest,
+                         ::testing::Values((uint32_t)kStringMapParamCacheNone,
+                                           (uint32_t)kStringMapParamCacheStat));
 
 TEST(HttpFsDirTest, Root) {
   StringMap_t args;
