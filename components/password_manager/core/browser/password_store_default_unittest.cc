@@ -158,9 +158,9 @@ base::FilePath PasswordStoreDefaultTestDelegate::test_login_db_file_path()
 
 }  // anonymous namespace
 
-INSTANTIATE_TYPED_TEST_CASE_P(Default,
-                              PasswordStoreOriginTest,
-                              PasswordStoreDefaultTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(Default,
+                               PasswordStoreOriginTest,
+                               PasswordStoreDefaultTestDelegate);
 
 TEST(PasswordStoreDefaultTest, NonASCIIData) {
   PasswordStoreDefaultTestDelegate delegate;
