@@ -43,12 +43,13 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private static AutofillAssistantUiController createAndStartUi(
             WebContents webContents, long nativeUiController) {
         return new AutofillAssistantUiController(
-                ChromeActivity.fromWebContents(webContents), nativeUiController);
+                ChromeActivity.fromWebContents(webContents), webContents, nativeUiController);
     }
 
-    private AutofillAssistantUiController(ChromeActivity activity, long nativeUiController) {
+    private AutofillAssistantUiController(
+            ChromeActivity activity, WebContents webContents, long nativeUiController) {
         mNativeUiController = nativeUiController;
-        mCoordinator = new AssistantCoordinator(activity, this);
+        mCoordinator = new AssistantCoordinator(activity, webContents, this);
 
         initForCustomTab(activity);
     }

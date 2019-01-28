@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * The main coordinator for the Autofill Assistant, responsible for instantiating all other
@@ -56,7 +57,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
 
     private boolean mIsShuttingDownGracefully;
 
-    AssistantCoordinator(ChromeActivity activity, Delegate delegate) {
+    AssistantCoordinator(ChromeActivity activity, WebContents webContents, Delegate delegate) {
         mActivity = activity;
         mDelegate = delegate;
         mModel = new AssistantModel();
@@ -69,7 +70,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
 
         // Instantiate child components.
         mBottomBarCoordinator =
-                new AssistantBottomBarCoordinator(mActivity, mAssistantView, mModel);
+                new AssistantBottomBarCoordinator(activity, webContents, mAssistantView, mModel);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
         mOverlayCoordinator = new AssistantOverlayCoordinator(activity, mAssistantView, this);
 

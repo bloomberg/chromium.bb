@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarousel
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar. This coordinator allows to enable
@@ -50,8 +51,8 @@ class AssistantBottomBarCoordinator {
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mCarouselCoordinator;
 
-    AssistantBottomBarCoordinator(
-            ChromeActivity activity, View assistantView, AssistantModel model) {
+    AssistantBottomBarCoordinator(ChromeActivity activity, WebContents webContents,
+            View assistantView, AssistantModel model) {
         mBottomBarView = assistantView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.autofill_assistant_bottombar);
         mSwipeIndicatorView = mBottomBarView.findViewById(
@@ -73,7 +74,7 @@ class AssistantBottomBarCoordinator {
         mHeaderCoordinator =
                 new AssistantHeaderCoordinator(activity, mBottomBarView, model.getHeaderModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
-        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(activity);
+        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(activity, webContents);
         mCarouselCoordinator = new AssistantCarouselCoordinator(activity, model.getCarouselModel());
 
         // Add child views to bottom bar.

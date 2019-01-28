@@ -28,8 +28,9 @@ public class AssistantPaymentRequestCoordinator {
 
     private Promise<SelectedPaymentInformation> mCurrentPromise;
 
-    public AssistantPaymentRequestCoordinator(ChromeActivity activity) {
-        mWebContents = activity.getCurrentWebContents();
+    public AssistantPaymentRequestCoordinator(ChromeActivity activity, WebContents webContents) {
+        mWebContents = webContents;
+        assert webContents != null;
 
         // TODO(crbug.com/806868): Remove this.
         mView = new LinearLayout(activity);
