@@ -27,7 +27,9 @@
 
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -68,7 +70,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -355,7 +356,8 @@ void WorkerGlobalScope::ImportClassicScript(
     const KURL& script_url,
     FetchClientSettingsObjectSnapshot* outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadDedicatedWorkerScriptFetch));
   DCHECK(!IsContextPaused());
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
@@ -387,7 +389,8 @@ void WorkerGlobalScope::ImportClassicScript(
 void WorkerGlobalScope::DidReceiveResponseForClassicScript(
     WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
-  DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadDedicatedWorkerScriptFetch));
   probe::didReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
@@ -396,7 +399,8 @@ void WorkerGlobalScope::DidImportClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
-  DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOffMainThreadDedicatedWorkerScriptFetch));
 
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {

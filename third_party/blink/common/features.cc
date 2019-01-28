@@ -69,6 +69,12 @@ const base::Feature kMojoBlobURLs{"MojoBlobURLs",
 const base::Feature kNavigationPredictor{"NavigationPredictor",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable off-the-main-thread dedicated worker script fetch.
+// (https://crbug.com/835717)
+const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
+    "OffMainThreadDedicatedWorkerScriptFetch",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

@@ -5,8 +5,9 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 
 #include <memory>
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -61,7 +62,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     case mojom::ScriptType::kClassic:
       if (this->off_main_thread_fetch_option ==
           OffMainThreadWorkerScriptFetchOption::kEnabled) {
-        DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
+        DCHECK(base::FeatureList::IsEnabled(
+            features::kOffMainThreadDedicatedWorkerScriptFetch));
       }
       break;
     case mojom::ScriptType::kModule:

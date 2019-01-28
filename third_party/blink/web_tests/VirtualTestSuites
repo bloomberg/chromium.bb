@@ -667,22 +667,22 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/workers",
-    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "fast/workers",
-    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
     "base": "http/tests/workers",
-    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",
