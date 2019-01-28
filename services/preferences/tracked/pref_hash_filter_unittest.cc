@@ -1364,7 +1364,7 @@ TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
                 ValueState::UNCHANGED));
 }
 
-INSTANTIATE_TEST_CASE_P(PrefHashFilterTestInstance,
-                        PrefHashFilterTest,
-                        testing::Values(EnforcementLevel::NO_ENFORCEMENT,
-                                        EnforcementLevel::ENFORCE_ON_LOAD));
+INSTANTIATE_TEST_SUITE_P(PrefHashFilterTestInstance,
+                         PrefHashFilterTest,
+                         testing::Values(EnforcementLevel::NO_ENFORCEMENT,
+                                         EnforcementLevel::ENFORCE_ON_LOAD));
