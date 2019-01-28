@@ -61,18 +61,35 @@ base::Optional<CryptAuthKey> CryptAuthKey::FromDictionary(
     return base::nullopt;
 
   if (IsSymmetricKeyType(type)) {
-    const std::string* symmetric_key = dict.FindStringKey(kSymmetricKeyDictKey);
-    if (!symmetric_key || symmetric_key->empty())
+    const std::string* encoded_symmetric_key =
+        dict.FindStringKey(kSymmetricKeyDictKey);
+    if (!encoded_symmetric_key || encoded_symmetric_key->empty())
       return base::nullopt;
-    return CryptAuthKey(*symmetric_key, status, type, *handle);
+
+    std::string decoded_symmetric_key;
+    if (!base::Base64Decode(*encoded_symmetric_key, &decoded_symmetric_key))
+      return base::nullopt;
+
+    return CryptAuthKey(decoded_symmetric_key, status, type, *handle);
   }
 
   DCHECK(IsAsymmetricKeyType(type));
-  const std::string* public_key = dict.FindStringKey(kPublicKeyDictKey);
-  const std::string* private_key = dict.FindStringKey(kPrivateKeyDictKey);
-  if (!public_key || public_key->empty() || !private_key)
+  const std::string* encoded_public_key = dict.FindStringKey(kPublicKeyDictKey);
+  const std::string* encoded_private_key =
+      dict.FindStringKey(kPrivateKeyDictKey);
+  if (!encoded_public_key || encoded_public_key->empty() ||
+      !encoded_private_key) {
     return base::nullopt;
-  return CryptAuthKey(*public_key, *private_key, status, type, *handle);
+  }
+
+  std::string decoded_public_key, decoded_private_key;
+  if (!base::Base64Decode(*encoded_public_key, &decoded_public_key) ||
+      !base::Base64Decode(*encoded_private_key, &decoded_private_key)) {
+    return base::nullopt;
+  }
+
+  return CryptAuthKey(decoded_public_key, decoded_private_key, status, type,
+                      *handle);
 }
 
 CryptAuthKey::CryptAuthKey(const std::string& symmetric_key,
@@ -117,22 +134,34 @@ bool CryptAuthKey::IsAsymmetricKey() const {
 
 base::Value CryptAuthKey::AsSymmetricKeyDictionary() const {
   DCHECK(IsSymmetricKey());
+
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey(kHandleDictKey, base::Value(handle_));
   dict.SetKey(kStatusDictKey, base::Value(status_));
   dict.SetKey(kTypeDictKey, base::Value(type_));
-  dict.SetKey(kSymmetricKeyDictKey, base::Value(symmetric_key_));
+
+  std::string encoded_symmetric_key;
+  base::Base64Encode(symmetric_key_, &encoded_symmetric_key);
+  dict.SetKey(kSymmetricKeyDictKey, base::Value(encoded_symmetric_key));
+
   return dict;
 }
 
 base::Value CryptAuthKey::AsAsymmetricKeyDictionary() const {
   DCHECK(IsAsymmetricKey());
+
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey(kHandleDictKey, base::Value(handle_));
   dict.SetKey(kStatusDictKey, base::Value(status_));
   dict.SetKey(kTypeDictKey, base::Value(type_));
-  dict.SetKey(kPublicKeyDictKey, base::Value(public_key_));
-  dict.SetKey(kPrivateKeyDictKey, base::Value(private_key_));
+
+  std::string encoded_public_key;
+  base::Base64Encode(public_key_, &encoded_public_key);
+  dict.SetKey(kPublicKeyDictKey, base::Value(encoded_public_key));
+  std::string encoded_private_key;
+  base::Base64Encode(private_key_, &encoded_private_key);
+  dict.SetKey(kPrivateKeyDictKey, base::Value(encoded_private_key));
+
   return dict;
 }
 
