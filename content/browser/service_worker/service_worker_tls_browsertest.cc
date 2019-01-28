@@ -137,10 +137,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTlsTest, ClientAuthFetchSubResource) {
   EXPECT_EQ(1, select_certificate_count());
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ServiceWorkerTlsTest,
-                        ::testing::Values(ServicifiedFeatures::kNone,
-                                          ServicifiedFeatures::kServiceWorker,
-                                          ServicifiedFeatures::kNetwork));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ServiceWorkerTlsTest,
+                         ::testing::Values(ServicifiedFeatures::kNone,
+                                           ServicifiedFeatures::kServiceWorker,
+                                           ServicifiedFeatures::kNetwork));
 
 }  // namespace content

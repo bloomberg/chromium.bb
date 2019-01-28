@@ -990,8 +990,8 @@ TEST_P(ServiceWorkerContextRecoveryTest, DeleteAndStartOver) {
   EXPECT_EQ(registration_id, notifications_[4].registration_id);
 }
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerContextRecoveryTest,
-                        ServiceWorkerContextRecoveryTest,
-                        testing::Bool() /* is_storage_on_disk */);
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerContextRecoveryTest,
+                         ServiceWorkerContextRecoveryTest,
+                         testing::Bool() /* is_storage_on_disk */);
 
 }  // namespace content

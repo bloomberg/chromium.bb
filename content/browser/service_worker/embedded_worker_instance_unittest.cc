@@ -980,8 +980,8 @@ TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
   worker->Stop();
 }
 
-INSTANTIATE_TEST_CASE_P(IsServiceWorkerServicificationEnabled,
-                        EmbeddedWorkerInstanceTest,
-                        ::testing::Bool(););
+INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
+                         EmbeddedWorkerInstanceTest,
+                         ::testing::Bool(););
 
 }  // namespace content

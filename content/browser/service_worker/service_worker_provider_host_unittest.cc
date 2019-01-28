@@ -1101,8 +1101,8 @@ TEST_P(ServiceWorkerProviderHostTest, HintToUpdateServiceWorkerMultiple) {
   ExpectUpdateIsScheduled(version3.get());
 }
 
-INSTANTIATE_TEST_CASE_P(IsServiceWorkerServicificationEnabled,
-                        ServiceWorkerProviderHostTest,
-                        ::testing::Bool(););
+INSTANTIATE_TEST_SUITE_P(IsServiceWorkerServicificationEnabled,
+                         ServiceWorkerProviderHostTest,
+                         ::testing::Bool(););
 
 }  // namespace content

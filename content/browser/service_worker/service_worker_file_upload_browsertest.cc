@@ -319,9 +319,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest,
   RunNetworkFallbackTest(TargetOrigin::kCrossOrigin);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ServiceWorkerFileUploadTest,
-                        ::testing::Values(ServicifiedFeatures::kNone,
-                                          ServicifiedFeatures::kServiceWorker));
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    ServiceWorkerFileUploadTest,
+    ::testing::Values(ServicifiedFeatures::kNone,
+                      ServicifiedFeatures::kServiceWorker));
 
 }  // namespace content

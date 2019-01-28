@@ -414,8 +414,8 @@ TEST_P(ServiceWorkerDataPipeReaderTestP, AsyncAbort) {
             mock_url_request_job()->results()[0]);
 }
 
-INSTANTIATE_TEST_CASE_P(ServiceWorkerDataPipeReaderTest,
-                        ServiceWorkerDataPipeReaderTestP,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerDataPipeReaderTest,
+                         ServiceWorkerDataPipeReaderTestP,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace content
