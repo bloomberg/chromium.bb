@@ -245,7 +245,7 @@ source_set("content_packaged_services_manifest") {
   ]
 
   if (is_linux) {
-    deps += [ "//components/services/font:manifest" ]
+    deps += [ "//components/services/font/public/cpp:manifest" ]
   }
 
   if (is_chromeos) {

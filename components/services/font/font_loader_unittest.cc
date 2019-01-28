@@ -7,12 +7,13 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/services/font/font_service_unittests_catalog_source.h"
 #include "components/services/font/public/cpp/font_loader.h"
+#include "components/services/font/public/cpp/manifest.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,12 +57,19 @@ std::string GetPostscriptNameFromFile(base::File& font_file) {
 }
 #endif
 
+const char kTestServiceName[] = "font_service_unittests";
+
 class FontLoaderTest : public testing::Test {
  public:
   FontLoaderTest()
-      : test_service_manager_(test::CreateTestCatalog()),
-        test_service_(test_service_manager_.RegisterTestInstance(
-            "font_service_unittests")),
+      : test_service_manager_(
+            {GetManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(mojom::kServiceName, "font_service")
+                 .Build()}),
+        test_service_(
+            test_service_manager_.RegisterTestInstance(kTestServiceName)),
         font_loader_(test_service_.connector()) {}
   ~FontLoaderTest() override = default;
 
