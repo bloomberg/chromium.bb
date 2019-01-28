@@ -549,7 +549,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     // Remove content area so it doesn't receive any pan events.
     [[swipeDelegate_ sideSwipeContentView] removeFromSuperview];
-    [swipeDelegate_ didRemoveSideSwipeContentView];
   }
 
   [tabSideSwipeView_ handleHorizontalPan:gesture];

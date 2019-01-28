@@ -4685,22 +4685,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
   [self.sideSwipeController setInSwipe:NO];
-
-  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
-    web::WebState* webState = self.currentWebState;
-    if (webState && webState->IsVisible()) {
-      // Side swipe did not change the tab represented by |webState|.
-      SadTabTabHelper* sadTabHelper = SadTabTabHelper::FromWebState(webState);
-      if (sadTabHelper && sadTabHelper->is_showing_sad_tab()) {
-        SadTabCoordinator* sadTabCoordinator =
-            base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator);
-        [sadTabCoordinator start];
-      }
-    } else {
-      // Side swipe did change the tab and |webState| represents previous tab
-      // which is not visible anymore.
-    }
-  }
 }
 
 - (UIView*)sideSwipeContentView {
@@ -4768,14 +4752,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (UIView*)topToolbarView {
   return self.primaryToolbarCoordinator.viewController.view;
-}
-
-- (void)didRemoveSideSwipeContentView {
-  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
-    SadTabCoordinator* sadTabCoordinator =
-        base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator);
-    [sadTabCoordinator stop];
-  }
 }
 
 #pragma mark - PreloadControllerDelegate methods
