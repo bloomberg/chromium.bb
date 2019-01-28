@@ -541,7 +541,6 @@ ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
       check_type_(check_type),
       selector_(selector),
       callback_(std::move(callback)),
-      element_found_(false),
       weak_ptr_factory_(this) {}
 
 ScriptExecutor::WaitWithInterrupts::~WaitWithInterrupts() = default;
@@ -653,7 +652,7 @@ void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
     RunCallback(false, &result);
     return;
   }
-  RestorePreInterruptUiState();
+  RestoreStatusMessage();
 
   // Restart. We use the original wait time since the interruption could have
   // triggered any kind of actions, including actions that wait on the user. We
@@ -681,7 +680,7 @@ void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {
   saved_pre_interrupt_state_ = true;
 }
 
-void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptUiState() {
+void ScriptExecutor::WaitWithInterrupts::RestoreStatusMessage() {
   if (!saved_pre_interrupt_state_)
     return;
 

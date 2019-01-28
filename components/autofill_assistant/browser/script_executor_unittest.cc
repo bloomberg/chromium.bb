@@ -894,5 +894,54 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.name);
 }
 
+TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
+  ActionsResponseProto interruptible;
+  interruptible.add_actions()->mutable_tell()->set_message(
+      "pre-interrupt status");
+  auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
+  wait_action->add_selectors("element");
+  wait_action->set_allow_interrupt(true);
+  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
+
+  RegisterInterrupt("interrupt", "interrupt_trigger");
+  ActionsResponseProto interrupt_actions;
+  interrupt_actions.add_actions()->mutable_tell()->set_message(
+      "interrupt status");
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+
+  status_message_ = "pre-run status";
+  executor_->Run(executor_callback_.Get());
+  EXPECT_EQ("pre-interrupt status", status_message_);
+}
+
+TEST_F(ScriptExecutorTest, KeepStatusMessageWhenNotInterrupted) {
+  ActionsResponseProto interruptible;
+  interruptible.add_actions()->mutable_tell()->set_message(
+      "pre-interrupt status");
+  auto* wait_action = interruptible.add_actions()->mutable_wait_for_dom();
+  wait_action->add_selectors("element");
+  wait_action->set_allow_interrupt(true);
+  EXPECT_CALL(mock_service_, OnGetActions(kScriptPath, _, _, _, _, _))
+      .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
+
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
+      .WillRepeatedly(RunOnceCallback<3>(true, ""));
+
+  EXPECT_CALL(executor_callback_,
+              Run(Field(&ScriptExecutor::Result::success, true)));
+
+  status_message_ = "pre-run status";
+  executor_->Run(executor_callback_.Get());
+  EXPECT_EQ("pre-interrupt status", status_message_);
+}
+
 }  // namespace
 }  // namespace autofill_assistant
