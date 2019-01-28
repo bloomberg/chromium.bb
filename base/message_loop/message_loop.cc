@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/debug/task_annotator.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_impl.h"
@@ -37,6 +36,10 @@
 #endif
 
 namespace base {
+namespace features {
+const Feature kMessageLoopUsesSequenceManager{"MessageLoopUsesSequenceManager",
+                                              FEATURE_ENABLED_BY_DEFAULT};
+}  // namespace features
 
 namespace {
 
@@ -184,15 +187,13 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
   return WrapUnique(new MessageLoop(type, std::move(pump_factory)));
 }
 
-const Feature kMessageLoopUsesSequenceManager{"MessageLoopUsesSequenceManager",
-                                              FEATURE_ENABLED_BY_DEFAULT};
-
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
-    : MessageLoop(type,
-                  std::move(pump_factory),
-                  FeatureList::IsEnabled(kMessageLoopUsesSequenceManager)
-                      ? BackendType::SEQUENCE_MANAGER
-                      : BackendType::MESSAGE_LOOP_IMPL) {}
+    : MessageLoop(
+          type,
+          std::move(pump_factory),
+          FeatureList::IsEnabled(features::kMessageLoopUsesSequenceManager)
+              ? BackendType::SEQUENCE_MANAGER
+              : BackendType::MESSAGE_LOOP_IMPL) {}
 
 MessageLoop::MessageLoop(Type type,
                          MessagePumpFactoryCallback pump_factory,
