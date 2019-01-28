@@ -3145,17 +3145,17 @@ TEST_P(WindowEventDispatcherTest, TouchEventWithScaledWindow) {
   root_window()->RemovePreTargetHandler(&root_recorder);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowEventDispatcherTest,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowEventDispatcherTest,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowEventDispatcherTestWithMessageLoop,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowEventDispatcherTestWithMessageLoop,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowEventDispatcherTestInHighDPI,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowEventDispatcherTestInHighDPI,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
 using WindowEventDispatcherMusTest = test::AuraTestBaseMus;
 

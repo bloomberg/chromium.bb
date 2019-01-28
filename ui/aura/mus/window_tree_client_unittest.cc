@@ -284,9 +284,9 @@ TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowTreeClientTestSurfaceSync,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowTreeClientTestSurfaceSync,
+                         ::testing::Bool());
 
 // Verifies that windows with an embedding create a ClientSurfaceEmbedder.
 TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderCreated) {
