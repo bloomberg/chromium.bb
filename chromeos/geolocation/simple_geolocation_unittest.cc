@@ -448,9 +448,9 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
 }
 
 // This test verifies that WiFi data is sent only if sending was requested.
-INSTANTIATE_TEST_CASE_P(EnableDisableSendingWifiData,
-                        SimpleGeolocationWirelessTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(EnableDisableSendingWifiData,
+                         SimpleGeolocationWirelessTest,
+                         testing::Bool());
 
 TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
   NetworkHandler::Initialize();
