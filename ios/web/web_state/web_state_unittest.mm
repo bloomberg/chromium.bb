@@ -625,7 +625,7 @@ TEST_P(WebStateTest, DisableAndReenableWebUsage) {
                                                  kTestSessionStoragePageText));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ProgrammaticWebStateTest,
     WebStateTest,
     ::testing::Values(

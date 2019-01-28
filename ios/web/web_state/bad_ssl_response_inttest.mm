@@ -85,7 +85,7 @@ TEST_P(BadSslResponseTest, RejectLoad) {
   EXPECT_EQ(url.host(), ssl_info.cert->subject().GetDisplayName());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ProgrammaticBadSslResponseTest,
     BadSslResponseTest,
     ::testing::Values(
