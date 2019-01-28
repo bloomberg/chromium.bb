@@ -448,7 +448,7 @@ void XSSAuditor::Init(Document* document,
     xss_protection_ = xss_protection_header;
     if (xss_protection_ == kReflectedXSSInvalid ||
         xss_protection_ == kReflectedXSSUnset) {
-      xss_protection_ = kBlockReflectedXSS;
+      xss_protection_ = kFilterReflectedXSS;
     }
 
     if (auditor_delegate)
