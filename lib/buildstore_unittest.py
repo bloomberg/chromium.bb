@@ -233,13 +233,17 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     """Tests the redirect for UpdateMetadata function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',
                             return_value=True)
-    bs = BuildStore()
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=False)
     bs.cidb_conn = mock.MagicMock()
     fake_metadata = {}
     self.PatchObject(bs.cidb_conn, 'UpdateMetadata')
     bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
     bs.cidb_conn.UpdateMetadata.assert_called_once_with(
         constants.MOCK_BUILD_ID, fake_metadata)
+    bs = BuildStore(_write_to_cidb=False, _write_to_bb=True)
+    self.PatchObject(buildbucket_v2, 'UpdateBuildMetadata')
+    bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)
+    buildbucket_v2.UpdateBuildMetadata.assert_called_once_with(fake_metadata)
     init.return_value = False
     with self.assertRaises(buildstore.BuildStoreException):
       bs.UpdateMetadata(constants.MOCK_BUILD_ID, fake_metadata)

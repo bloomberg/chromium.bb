@@ -284,8 +284,12 @@ class BuildStore(object):
     """
     if not self.InitializeClients():
       raise BuildStoreException('BuildStore clients could not be initialized.')
+    update_status = 0
     if self._write_to_cidb:
-      return self.cidb_conn.UpdateMetadata(build_id, metadata)
+      update_status = self.cidb_conn.UpdateMetadata(build_id, metadata)
+    if self._write_to_bb:
+      buildbucket_v2.UpdateBuildMetadata(metadata)
+    return update_status
 
   def ExtendDeadline(self, build_id, timeout):
     """Extend the deadline for the given metadata row in the database.

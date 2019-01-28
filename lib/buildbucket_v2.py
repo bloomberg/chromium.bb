@@ -40,17 +40,67 @@ def UpdateSelfBuildPropertiesNonBlocking(key, value):
   """
   logging.PrintKitchenSetBuildProperty(key, value)
 
-def UpdateSelfCommonBuildProperties(critical=None):
+def UpdateSelfCommonBuildProperties(
+    critical=None, chrome_version=None, milestone_version=None,
+    platform_version=None, full_version=None, toolchain_url=None,
+    build_type=None, unibuild=None, suite_scheduling=None):
   """Update build.output.properties for the current build.
 
-  This will be a generic function for all properties to be stored in
-  Buildbucket.
+  Sends the property values to buildbucket via
+  UpdateSelfBuildPropertiesNonBlocking.
 
   Args:
-    critical: (Optional) If provided, the |important| flag for this build.
+    critical: (Optional) |important| flag of the build.
+    chrome_version: (Optional) version of chrome of the build. Eg "74.0.3687.0".
+    milestone_version: (Optional) milestone version of  of the build. Eg "74".
+    platform_version: (Optional) platform version of the build. Eg "11671.0.0".
+    full_version: (Optional) full version of the build.
+        Eg "R74-11671.0.0-b3416654".
+    toolchain_url: (Optional) toolchain_url of the build.
+    build_type: (Optional) One of ('paladin', 'full', 'canary', 'pre_cq',...).
+    unibuild: (Optional) Boolean indicating whether build is unibuild.
+    suite_scheduling: (Optional)
   """
   if critical is not None:
     UpdateSelfBuildPropertiesNonBlocking('critical', critical)
+  if chrome_version is not None:
+    UpdateSelfBuildPropertiesNonBlocking('chrome_version', chrome_version)
+  if milestone_version is not None:
+    UpdateSelfBuildPropertiesNonBlocking('milestone_version', milestone_version)
+  if platform_version is not None:
+    UpdateSelfBuildPropertiesNonBlocking('platform_version', platform_version)
+  if full_version is not None:
+    UpdateSelfBuildPropertiesNonBlocking('full_version', full_version)
+  if toolchain_url is not None:
+    UpdateSelfBuildPropertiesNonBlocking('toolchain_url', toolchain_url)
+  if build_type is not None:
+    UpdateSelfBuildPropertiesNonBlocking('build_type', build_type)
+  if unibuild is not None:
+    UpdateSelfBuildPropertiesNonBlocking('unibuild', unibuild)
+  if suite_scheduling is not None:
+    UpdateSelfBuildPropertiesNonBlocking('suite_scheduling', suite_scheduling)
+
+def UpdateBuildMetadata(metadata):
+  """Update build.output.properties from a CBuildbotMetadata instance.
+
+  The function further uses UpdateSelfCommonBuildProperties and has hence
+  no guarantee of timely updation.
+
+  Args:
+    metadata: CBuildbot Metadata instance to update with.
+  """
+  d = metadata.GetDict()
+  versions = d.get('version') or {}
+  UpdateSelfCommonBuildProperties(
+      chrome_version=versions.get('chrome'),
+      milestone_version=versions.get('milestone'),
+      platform_version=versions.get('platform'),
+      full_version=versions.get('full'),
+      toolchain_url=d.get('toolchain-url'),
+      build_type=d.get('build_type'),
+      critical=d.get('important'),
+      unibuild=d.get('unibuild', False),
+      suite_scheduling=d.get('suite_scheduling', False))
 
 class BuildbucketV2(object):
   """Connection to Buildbucket V2 database."""
