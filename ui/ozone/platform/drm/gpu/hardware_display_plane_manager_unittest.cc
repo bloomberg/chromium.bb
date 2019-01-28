@@ -780,18 +780,18 @@ TEST_P(HardwareDisplayPlaneManagerTest,
       crtc_properties_, plane_properties_, property_names_, use_atomic_));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HardwareDisplayPlaneManagerTest,
-                        testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HardwareDisplayPlaneManagerTest,
+                         testing::Values(false, true));
 
 // TODO(dnicoara): Migrate as many tests as possible to the general list above.
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HardwareDisplayPlaneManagerLegacyTest,
-                        testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HardwareDisplayPlaneManagerLegacyTest,
+                         testing::Values(false));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HardwareDisplayPlaneManagerAtomicTest,
-                        testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HardwareDisplayPlaneManagerAtomicTest,
+                         testing::Values(true));
 
 class FakeFenceFD {
  public:
