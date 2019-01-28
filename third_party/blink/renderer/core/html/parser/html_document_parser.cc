@@ -333,7 +333,13 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
         &chunk->tokens.at(chunk->pending_csp_meta_token_index);
   }
 
-  if (pending_csp_meta_token_ || !GetDocument()->documentElement()) {
+  bool appcache_initialized = GetDocument()->documentElement();
+  if (!appcache_initialized) {
+    appcache_queueing_start_time_ = CurrentTimeTicks();
+  }
+  // Delay sending some requests if meta tag based CSP is present or
+  // if AppCache was not yet initialized.
+  if (pending_csp_meta_token_ || !appcache_initialized) {
     PreloadRequestStream link_rel_preloads;
     for (auto& request : chunk->preloads) {
       // Link rel preloads don't need to wait for AppCache but they
@@ -1214,6 +1220,14 @@ void HTMLDocumentParser::SetDecoder(
 
 void HTMLDocumentParser::DocumentElementAvailable() {
   TRACE_EVENT0("blink,loader", "HTMLDocumentParser::documentElementAvailable");
+  TimeDelta delta;
+  if (!appcache_queueing_start_time_.is_null()) {
+    delta = CurrentTimeTicks() - appcache_queueing_start_time_;
+  }
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime", delta,
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(1000), 50);
   DCHECK(GetDocument()->documentElement());
   FetchQueuedPreloads();
 }
