@@ -121,6 +121,8 @@ class ChannelWin : public Channel,
     for (size_t i = 0; i < num_handles; i++) {
       HANDLE handle_value =
           base::win::Uint32ToHandle(extra_header_handles[i].handle);
+      if (PlatformHandleInTransit::IsPseudoHandle(handle_value))
+        return false;
       if (remote_process().is_valid()) {
         // If we know the remote process's handle, we assume it doesn't know
         // ours; that means any handle values still belong to that process, and
