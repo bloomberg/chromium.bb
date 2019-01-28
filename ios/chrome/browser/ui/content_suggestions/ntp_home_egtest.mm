@@ -200,9 +200,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that the collections shortcut are displayed and working.
 - (void)testCollectionShortcuts {
-  // TODO(crbug.com/925657): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Failing randomly on the bots.");
-
   // Check the Bookmarks.
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -677,9 +674,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)testFavicons {
-  // TODO(crbug.com/925657): re-enable when fixed.
-  EARL_GREY_TEST_DISABLED(@"Failing randomly on the bots.");
-
   for (NSInteger index = 0; index < 8; index++) {
     [[EarlGrey
         selectElementWithMatcher:
