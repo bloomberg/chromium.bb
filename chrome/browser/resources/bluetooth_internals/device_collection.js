@@ -24,22 +24,21 @@ cr.define('device_collection', function() {
   /**
    * Collection of devices. Extends ArrayDataModel which provides a set of
    * functions and events that notifies observers when the collection changes.
-   * @constructor
-   * @param {!Array<!bluetooth.mojom.DeviceInfo>} array The starting
-   *     collection of devices.
-   * @extends {cr.ui.ArrayDataModel}
    */
-  var DeviceCollection = function(array) {
-    cr.ui.ArrayDataModel.call(this, array);
-  };
-  DeviceCollection.prototype = {
-    __proto__: cr.ui.ArrayDataModel.prototype,
+  class DeviceCollection extends cr.ui.ArrayDataModel {
+    /**
+     * @param {!Array<!bluetooth.mojom.DeviceInfo>} array The starting
+     *     collection of devices.
+     */
+    constructor(array) {
+      super(array);
+    }
 
     /**
      * Finds the Device in the collection with the matching address.
      * @param {string} address
      */
-    getByAddress: function(address) {
+    getByAddress(address) {
       for (var i = 0; i < this.length; i++) {
         var device = this.item(i);
         if (address == device.address) {
@@ -47,13 +46,13 @@ cr.define('device_collection', function() {
         }
       }
       return null;
-    },
+    }
 
     /**
      * Adds or updates a Device with new DeviceInfo.
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
-    addOrUpdate: function(deviceInfo) {
+    addOrUpdate(deviceInfo) {
       deviceInfo.removed = false;
       var oldDeviceInfo = this.getByAddress(deviceInfo.address);
 
@@ -72,30 +71,30 @@ cr.define('device_collection', function() {
         deviceInfo.connectionStatus = ConnectionStatus.DISCONNECTED;
         this.push(deviceInfo);
       }
-    },
+    }
 
     /**
      * Marks the Device as removed.
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
-    remove: function(deviceInfo) {
+    remove(deviceInfo) {
       var device = this.getByAddress(deviceInfo.address);
       assert(device, 'Device does not exist.');
       device.removed = true;
       this.updateIndex(this.indexOf(device));
-    },
+    }
 
     /**
      * Updates the device connection status.
      * @param {string} address The address of the device.
      * @param {number} status The new connection status.
      */
-    updateConnectionStatus: function(address, status) {
+    updateConnectionStatus(address, status) {
       var device = assert(this.getByAddress(address), 'Device does not exist');
       device.connectionStatus = status;
       this.updateIndex(this.indexOf(device));
-    },
-  };
+    }
+  }
 
   return {
     ConnectionStatus: ConnectionStatus,

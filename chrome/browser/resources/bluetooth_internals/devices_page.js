@@ -8,8 +8,6 @@
  */
 
 cr.define('devices_page', function() {
-  /** @const */ var Page = cr.ui.pageManager.Page;
-
   /**
    * Enum of scan status for the devices page.
    * @enum {number}
@@ -24,41 +22,37 @@ cr.define('devices_page', function() {
 
   /**
    * Page that contains a header and a DevicesView.
-   * @constructor
-   * @extends {cr.ui.pageManager.Page}
    */
-  function DevicesPage() {
-    Page.call(this, 'devices', 'Devices', 'devices');
+  class DevicesPage extends cr.ui.pageManager.Page {
+    constructor() {
+      super('devices', 'Devices', 'devices');
 
-    this.deviceTable = new device_table.DeviceTable();
-    this.pageDiv.appendChild(this.deviceTable);
-    this.scanBtn_ = this.pageDiv.querySelector('#scan-btn');
-    this.scanBtn_.addEventListener('click', function(event) {
-      this.pageDiv.dispatchEvent(new CustomEvent('scanpressed'));
-    }.bind(this));
-  }
-
-  DevicesPage.prototype = {
-    __proto__: Page.prototype,
+      this.deviceTable = new device_table.DeviceTable();
+      this.pageDiv.appendChild(this.deviceTable);
+      this.scanBtn_ = this.pageDiv.querySelector('#scan-btn');
+      this.scanBtn_.addEventListener('click', event => {
+        this.pageDiv.dispatchEvent(new CustomEvent('scanpressed'));
+      });
+    }
 
     /**
      * Sets the device collection for the page's device table.
      * @param {!device_collection.DeviceCollection} devices
      */
-    setDevices: function(devices) {
+    setDevices(devices) {
       this.deviceTable.setDevices(devices);
-    },
+    }
 
     /**
      * Updates the inspect status of the given |deviceInfo| in the device table.
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      * @param {boolean} isInspecting
      */
-    setInspecting: function(deviceInfo, isInspecting) {
+    setInspecting(deviceInfo, isInspecting) {
       this.deviceTable.setInspecting(deviceInfo, isInspecting);
-    },
+    }
 
-    setScanStatus: function(status) {
+    setScanStatus(status) {
       switch (status) {
         case ScanStatus.OFF:
           this.scanBtn_.disabled = false;
@@ -78,7 +72,7 @@ cr.define('devices_page', function() {
           break;
       }
     }
-  };
+  }
 
   return {
     DevicesPage: DevicesPage,
