@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DOUBLY_LINKED_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DOUBLY_LINKED_LIST_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -99,10 +98,6 @@ class DoublyLinkedList {
     explicit operator bool() const { return is_new_entry; }
   };
 
-  // This function should return -1 if the first argument is strictly
-  // less than the second, 0 if they are equal or 1 otherwise.
-  using CompareFunc = base::RepeatingCallback<int(T*, T*)>;
-
   // The following two functions can be used to implement a sorted
   // version of the doubly linked list. It's guaranteed that the list
   // will be sorted by only using Insert(). However the caller is the
@@ -110,8 +105,14 @@ class DoublyLinkedList {
   // InsertAfter() is used. The main use case of the latter is to
   // cheaply insert several consecutive items without having to
   // traverse the whole list.
+  //
+  // CompareFunc should return -1 if the first argument is strictly
+  // less than the second, 0 if they are equal or 1 otherwise.
+  template <typename CompareFunc>
   AddResult Insert(std::unique_ptr<T>, const CompareFunc&);
   AddResult InsertAfter(std::unique_ptr<T> node, T* insertion_point);
+
+  template <typename CompareFunc>
   AddResult Insert(T*, const CompareFunc&);
   AddResult InsertAfter(T* node, T* insertion_point);
 
@@ -225,6 +226,7 @@ inline T* DoublyLinkedList<T, PointerType>::RemoveHead() {
 }
 
 template <typename T, typename PointerType>
+template <typename CompareFunc>
 inline typename DoublyLinkedList<T, PointerType>::AddResult
 DoublyLinkedList<T, PointerType>::Insert(std::unique_ptr<T> node,
                                          const CompareFunc& compare_func) {
@@ -236,15 +238,16 @@ DoublyLinkedList<T, PointerType>::Insert(std::unique_ptr<T> node,
 }
 
 template <typename T, typename PointerType>
+template <typename CompareFunc>
 inline typename DoublyLinkedList<T, PointerType>::AddResult
 DoublyLinkedList<T, PointerType>::Insert(T* node,
                                          const CompareFunc& compare_func) {
   DCHECK(node);
   T* iter = head_;
-  while (iter && compare_func.Run(iter, node) < 0)
+  while (iter && compare_func(iter, node) < 0)
     iter = iter->Next();
 
-  if (iter && !compare_func.Run(iter, node))
+  if (iter && !compare_func(iter, node))
     return {iter, false};
 
   return InsertAfter(node, iter ? iter->Prev() : tail_);
