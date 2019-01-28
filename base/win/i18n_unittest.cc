@@ -17,21 +17,25 @@ namespace i18n {
 
 // Tests that at least one user preferred UI language can be obtained.
 TEST(I18NTest, GetUserPreferredUILanguageList) {
-  std::vector<base::string16> languages;
+  std::vector<std::wstring> languages;
   EXPECT_TRUE(GetUserPreferredUILanguageList(&languages));
-  EXPECT_FALSE(languages.empty());
-  for (const auto& language : languages) {
-    EXPECT_FALSE(language.empty());
+  EXPECT_NE(static_cast<std::vector<std::wstring>::size_type>(0),
+            languages.size());
+  for (std::vector<std::wstring>::const_iterator scan = languages.begin(),
+          end = languages.end(); scan != end; ++scan) {
+    EXPECT_FALSE((*scan).empty());
   }
 }
 
 // Tests that at least one thread preferred UI language can be obtained.
 TEST(I18NTest, GetThreadPreferredUILanguageList) {
-  std::vector<base::string16> languages;
+  std::vector<std::wstring> languages;
   EXPECT_TRUE(GetThreadPreferredUILanguageList(&languages));
-  EXPECT_FALSE(languages.empty());
-  for (const auto& language : languages) {
-    EXPECT_FALSE(language.empty());
+  EXPECT_NE(static_cast<std::vector<std::wstring>::size_type>(0),
+            languages.size());
+  for (std::vector<std::wstring>::const_iterator scan = languages.begin(),
+          end = languages.end(); scan != end; ++scan) {
+    EXPECT_FALSE((*scan).empty());
   }
 }
 
