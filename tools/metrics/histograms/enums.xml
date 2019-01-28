@@ -51145,6 +51145,12 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Disabled"/>
 </enum>
 
+<enum name="SyncGetUpdatesToken">
+  <int value="0" label="New token"/>
+  <int value="1" label="Same token"/>
+  <int value="2" label="Different token"/>
+</enum>
+
 <enum name="SyncGlobalIdConflict">
   <int value="0" label="Conflict"/>
   <int value="1" label="No conflict, new global id"/>
