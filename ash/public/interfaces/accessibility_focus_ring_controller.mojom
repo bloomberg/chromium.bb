@@ -38,4 +38,10 @@ interface AccessibilityFocusRingController {
   // Hides highlight on screen.
   // TODO(katie): Add |caller_id| to highlights as well.
   HideHighlights();
+
+  // Enables double focus rings and sets the second color for the given caller.
+  EnableDoubleFocusRing(uint32 skcolor, string caller_id);
+
+  // Disables double focus rings for the given caller.
+  DisableDoubleFocusRing(string caller_id);
 };

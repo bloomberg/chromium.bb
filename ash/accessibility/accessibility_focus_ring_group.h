@@ -31,6 +31,10 @@ class ASH_EXPORT AccessibilityFocusRingGroup {
   void SetColor(SkColor color, AccessibilityLayerDelegate* delegate);
   void ResetColor(AccessibilityLayerDelegate* delegate);
 
+  void EnableDoubleFocusRing(SkColor secondary_color,
+                             AccessibilityLayerDelegate* delegate);
+  void DisableDoubleFocusRing(AccessibilityLayerDelegate* delegate);
+
   void UpdateFocusRingsFromFocusRects(AccessibilityLayerDelegate* delegate);
   bool CanAnimate() const;
   void AnimateFocusRings(base::TimeTicks timestamp);
@@ -77,6 +81,7 @@ class ASH_EXPORT AccessibilityFocusRingGroup {
 
   std::vector<gfx::Rect> focus_rects_;
   base::Optional<SkColor> focus_ring_color_;
+  base::Optional<SkColor> focus_ring_secondary_color_;
   std::vector<AccessibilityFocusRing> previous_focus_rings_;
   std::vector<std::unique_ptr<AccessibilityFocusRingLayer>> focus_layers_;
   std::vector<AccessibilityFocusRing> focus_rings_;
