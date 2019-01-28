@@ -99,6 +99,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         return gfx::kGoogleRed300;
       case NativeTheme::kColorId_ThrobberSpinningColor:
         return gfx::kGoogleBlue300;
+      case NativeTheme::kColorId_DefaultIconColor:
+        return gfx::kGoogleGrey500;
       default:
         break;
     }
@@ -318,6 +320,9 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleYellow700;
     case NativeTheme::kColorId_AlertSeverityHigh:
       return gfx::kGoogleRed600;
+
+    case NativeTheme::kColorId_DefaultIconColor:
+      return gfx::kGoogleGrey700;
 
     case NativeTheme::kColorId_NumColors:
       break;
