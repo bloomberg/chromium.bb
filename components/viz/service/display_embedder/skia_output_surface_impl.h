@@ -117,9 +117,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
   void ContextLost();
+  void ScheduleGpuTask(base::OnceClosure callback,
+                       std::vector<gpu::SyncToken> sync_tokens);
 
   uint64_t sync_fence_release_ = 0;
   GpuServiceImpl* const gpu_service_;
+  const bool is_using_vulkan_;
   const gpu::SurfaceHandle surface_handle_;
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   OutputSurfaceClient* client_ = nullptr;
