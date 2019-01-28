@@ -1714,6 +1714,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           : IDS_SETTINGS_SYNC_WILL_START},
     {"syncSettingsSavedToast", IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL},
     {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
+    {"syncSetupCancelDialogTitle", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
+    {"syncSetupCancelDialogBody", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY},
 #endif  // defined(OS_CHROMEOS)
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {"peopleSignIn", IDS_PROFILES_DICE_SIGNIN_BUTTON},

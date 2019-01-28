@@ -536,13 +536,43 @@ cr.define('settings_people_page_sync_page', function() {
         const cancelButton =
             syncPage.$$('settings-sync-account-control')
                 .shadowRoot.querySelector('#setup-buttons .secondary-button');
-
         assertTrue(!!cancelButton);
-        cancelButton.click();
 
-        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-            .then(abort => {
-              assertTrue(abort);
+        // Clicking the setup cancel button opens the 'Cancel sync?' dialog.
+        cancelButton.click();
+        Polymer.dom.flush();
+
+        assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+        assertTrue(!!syncPage.$$('#setupCancelDialog'));
+        assertTrue(syncPage.$$('#setupCancelDialog').open);
+
+        // Clicking the cancel button on the 'Cancel sync?' dialog closes the
+        // dialog and removes it from the DOM.
+        syncPage.$$('#setupCancelDialog')
+            .querySelector('.cancel-button')
+            .click();
+        return test_util
+            .eventToPromise('close', syncPage.$$('#setupCancelDialog'))
+            .then(() => {
+              Polymer.dom.flush();
+              assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+              assertFalse(!!syncPage.$$('#setupCancelDialog'));
+
+              // Clicking the setup cancel button shows the 'Cancel sync?'
+              // dialog again.
+              cancelButton.click();
+              Polymer.dom.flush();
+              assertTrue(syncPage.$$('#setupCancelDialog').open);
+
+              // Clicking the confirm button on the dialog aborts sync.
+              syncPage.$$('#setupCancelDialog')
+                  .querySelector('.action-button')
+                  .click();
+
+              return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
+                  .then(abort => {
+                    assertTrue(abort);
+                  });
             });
       });
 
@@ -573,9 +603,26 @@ cr.define('settings_people_page_sync_page', function() {
 
       test('SyncSetupLeavePage UnifiedConsentEnabled', function() {
         syncPage.unifiedConsentEnabled = true;
+        syncPage.syncStatus = {
+          signinAllowed: true,
+          syncSystemEnabled: true,
+          setupInProgress: true,
+          signedIn: true
+        };
         Polymer.dom.flush();
 
+        // Navigating away while setup is in progress opens the 'Cancel sync?'
+        // dialog.
         settings.navigateTo(settings.routes.BASIC);
+        Polymer.dom.flush();
+
+        assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+        assertTrue(syncPage.$$('#setupCancelDialog').open);
+
+        // Clicking the confirm button on the dialog aborts sync.
+        syncPage.$$('#setupCancelDialog')
+            .querySelector('.action-button')
+            .click();
 
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {
