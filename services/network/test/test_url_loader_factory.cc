@@ -10,6 +10,7 @@
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 
 namespace network {
@@ -26,9 +27,14 @@ TestURLLoaderFactory::Response::Response() = default;
 TestURLLoaderFactory::Response::~Response() = default;
 TestURLLoaderFactory::Response::Response(const Response&) = default;
 
-TestURLLoaderFactory::TestURLLoaderFactory() {}
+TestURLLoaderFactory::TestURLLoaderFactory()
+    : weak_wrapper_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              this)) {}
 
-TestURLLoaderFactory::~TestURLLoaderFactory() {}
+TestURLLoaderFactory::~TestURLLoaderFactory() {
+  weak_wrapper_->Detach();
+}
 
 void TestURLLoaderFactory::AddResponse(const GURL& url,
                                        const ResourceResponseHead& head,
@@ -126,6 +132,11 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
 
 void TestURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
   bindings_.AddBinding(this, std::move(request));
+}
+
+scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+TestURLLoaderFactory::GetSafeWeakWrapper() {
+  return weak_wrapper_;
 }
 
 bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
