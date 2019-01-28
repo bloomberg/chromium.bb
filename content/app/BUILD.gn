@@ -23,7 +23,6 @@ template("implement_content_app") {
   content_app_deps = [
     "//base",
     "//base:i18n",
-    "//components/tracing:startup_tracing",
     "//content:export",
     "//content:sandbox_helper_win",
     "//content/public/common:common_sources",
@@ -32,6 +31,7 @@ template("implement_content_app") {
     "//services/service_manager/embedder",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
+    "//services/tracing/public/cpp",
     "//mojo/core/embedder",
     "//ppapi/buildflags",
     "//ui/base",

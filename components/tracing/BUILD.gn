@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
 import("//build/config/compiler/compiler.gni")
+import("//testing/test.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -50,8 +50,6 @@ component("tracing") {
 
 component("startup_tracing") {
   sources = [
-    "common/trace_startup.cc",
-    "common/trace_startup.h",
     "common/trace_startup_config.cc",
     "common/trace_startup_config.h",
     "common/trace_to_console.cc",

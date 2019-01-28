@@ -36,6 +36,8 @@ if (!is_nacl && !is_ios) {
       "perfetto/traced_value_proto_writer.h",
       "trace_event_agent.cc",
       "trace_event_agent.h",
+      "trace_startup.cc",
+      "trace_startup.h",
       "traced_process_impl.cc",
       "traced_process_impl.h",
       "tracing_features.cc",
@@ -49,6 +51,7 @@ if (!is_nacl && !is_ios) {
 
     public_deps = [
       "//base",
+      "//components/tracing:startup_tracing",
       "//mojo/public/cpp/bindings",
       "//services/tracing/public/mojom",
       "//third_party/perfetto:libperfetto",

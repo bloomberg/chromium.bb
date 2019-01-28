@@ -1635,7 +1635,7 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
+          "--enable-perfetto",
           "--gtest_filter=TracingControllerTest.*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -4064,7 +4064,7 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
+          "--enable-perfetto",
           "--gtest_filter=TracingControllerTest.*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
@@ -5584,7 +5584,7 @@
       },
       {
         "args": [
-          "--enable-features=TracingPerfettoBackend",
+          "--enable-perfetto",
           "--gtest_filter=TracingControllerTest.*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"

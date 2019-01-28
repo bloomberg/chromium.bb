@@ -13,6 +13,7 @@
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
 
 namespace tracing {
@@ -103,6 +104,13 @@ void ProducerClient::CreateMojoMessagepipes(
                      base::Unretained(this), origin_task_runner,
                      std::move(callback), mojo::MakeRequest(&producer_client),
                      std::move(producer_client)));
+}
+
+void ProducerClient::BindStartupTraceWriterRegistry(
+    std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
+    perfetto::BufferID target_buffer) {
+  shared_memory_arbiter_->BindStartupTraceWriterRegistry(std::move(registry),
+                                                         target_buffer);
 }
 
 // The Mojo binding should run on the same sequence as the one we get
@@ -312,7 +320,6 @@ void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
 
 std::unique_ptr<perfetto::TraceWriter> ProducerClient::CreateTraceWriter(
     perfetto::BufferID target_buffer) {
-  DCHECK(shared_memory_arbiter_);
   return shared_memory_arbiter_->CreateTraceWriter(target_buffer);
 }
 

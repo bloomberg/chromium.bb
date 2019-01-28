@@ -15,6 +15,8 @@
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 
 namespace perfetto {
+class StartupTraceWriter;
+class StartupTraceWriterRegistry;
 class TraceWriter;
 }
 
@@ -66,6 +68,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // Flushes and deletes the TraceWriter for the current thread, if any.
   static void FlushCurrentThread();
 
+  // Installs TraceLog overrides for tracing during Chrome startup. Trace data
+  // is locally buffered until connection to the perfetto service is
+  // established. Expects a later call to StartTracing() to bind to the perfetto
+  // service. Should only be called once.
+  void SetupStartupTracing();
+
   // The ProducerClient is responsible for calling StopTracing
   // which will clear the stored pointer to it, before it
   // gets destroyed. ProducerClient::CreateTraceWriter can be
@@ -83,6 +91,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   TraceEventDataSource();
   ~TraceEventDataSource() override;
 
+  void RegisterWithTraceLog();
+  void UnregisterFromTraceLog();
+
   ThreadLocalEventSink* CreateThreadLocalEventSink(bool thread_will_flush);
 
   // Callback from TraceLog, can be called from any thread.
@@ -93,10 +104,20 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
                                const base::TimeTicks& now,
                                const base::ThreadTicks& thread_now);
 
-  base::Lock lock_;
+  // Deletes TraceWriter safely on behalf of a ThreadLocalEventSink.
+  void ReturnTraceWriter(
+      std::unique_ptr<perfetto::StartupTraceWriter> trace_writer);
+
+  base::OnceClosure stop_complete_callback_;
+
+  base::Lock lock_;  // Protects subsequent members.
   uint32_t target_buffer_ = 0;
   ProducerClient* producer_client_ = nullptr;
-  base::OnceClosure stop_complete_callback_;
+  // We own the registry during startup, but transfer its ownership to the
+  // ProducerClient once the perfetto service is available. Only set if
+  // SetupStartupTracing() is called.
+  std::unique_ptr<perfetto::StartupTraceWriterRegistry>
+      startup_writer_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);
 };

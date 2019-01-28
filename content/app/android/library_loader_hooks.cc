@@ -7,8 +7,8 @@
 #include "base/android/reached_code_profiler.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/common/trace_startup.h"
 #include "content/common/content_constants_internal.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 
 namespace content {
 

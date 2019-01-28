@@ -20,6 +20,8 @@
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
+#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
@@ -125,8 +127,9 @@ void TraceEventMetadataSource::Flush(
 
 class TraceEventDataSource::ThreadLocalEventSink {
  public:
-  ThreadLocalEventSink(std::unique_ptr<perfetto::TraceWriter> trace_writer,
-                       bool thread_will_flush)
+  ThreadLocalEventSink(
+      std::unique_ptr<perfetto::StartupTraceWriter> trace_writer,
+      bool thread_will_flush)
       : trace_writer_(std::move(trace_writer)),
         thread_will_flush_(thread_will_flush) {
 #if DCHECK_IS_ON()
@@ -141,13 +144,8 @@ class TraceEventDataSource::ThreadLocalEventSink {
     event_bundle_ = ChromeEventBundleHandle();
     trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
 
-    // Delete the TraceWriter on the sequence that Perfetto runs on, needed
-    // as the ThreadLocalEventSink gets deleted on thread
-    // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
-    // (which can happen as the TraceWriter destructor might make a Mojo call
-    // and trigger it).
-    ProducerClient::GetTaskRunner()->DeleteSoon(FROM_HERE,
-                                                std::move(trace_writer_));
+    TraceEventDataSource::GetInstance()->ReturnTraceWriter(
+        std::move(trace_writer_));
   }
 
   void EnsureValidHandles() {
@@ -236,6 +234,21 @@ class TraceEventDataSource::ThreadLocalEventSink {
     const size_t kMaxSize = base::trace_event::TraceArguments::kMaxSize;
     uint32_t arg_name_indices[kMaxSize] = {0};
 
+    // By default, we bundle multiple events into a single TracePacket, e.g. to
+    // avoid repeating strings by interning them into a string table. However,
+    // we shouldn't bundle events in two situations:
+    // 1) If the thread we're executing on is unable to flush events on demand
+    //    (threads without a MessageLoop), the service will only be able to
+    //    recover completed TracePackets. For these threads, bundling events
+    //    would increase the number of events that are lost at the end of
+    //    tracing.
+    // 2) During startup tracing, the StartupTraceWriter buffers TracePackets in
+    //    a temporary local buffer until it is bound to the SMB when it becomes
+    //    available. While a TracePacket is written to this temporary buffer,
+    //    the writer cannot be bound to the SMB. Bundling events would increase
+    //    the time during which binding the writer is blocked.
+    bool bundle_events = thread_will_flush_ && trace_writer_->was_bound();
+
     // Populate any new string table parts first; has to be done before
     // the add_trace_events() call (as the string table is part of the outer
     // proto message).
@@ -243,7 +256,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // necessarily valid after the TRACE_EVENT* call, and so we need to store
     // the string every time.
     bool string_table_enabled =
-        !(trace_event->flags() & TRACE_EVENT_FLAG_COPY) && thread_will_flush_;
+        !(trace_event->flags() & TRACE_EVENT_FLAG_COPY) && bundle_events;
     if (string_table_enabled) {
       name_index = GetStringTableIndexForString(trace_event->name());
       category_name_index =
@@ -372,12 +385,10 @@ class TraceEventDataSource::ThreadLocalEventSink {
       new_trace_event->set_bind_id(trace_event->bind_id());
     }
 
-    // If we know that the current thread will never send a Flush message
-    // (meaning it's a thread without a messageloop that TraceLog knows about),
-    // we need to finalize the packet right away so Perfetto can recover it.
-    // We also enforce an upper bound on how many submessages we'll add
-    // for a given TracePacket so they won't grow infinitely.
-    if (!thread_will_flush_ ||
+    // See comment for |bundle_events| above. We also enforce an upper bound on
+    // how many submessages we'll add for a given TracePacket so they won't grow
+    // infinitely.
+    if (!bundle_events ||
         current_eventcount_for_message_++ > kMaxEventsPerMessage) {
       event_bundle_ = ChromeEventBundleHandle();
       trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
@@ -421,7 +432,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
   }
 
  private:
-  std::unique_ptr<perfetto::TraceWriter> trace_writer_;
+  std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
   const bool thread_will_flush_;
   ChromeEventBundleHandle event_bundle_;
   perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
@@ -456,28 +467,53 @@ TraceEventDataSource* TraceEventDataSource::GetInstance() {
 }
 
 TraceEventDataSource::TraceEventDataSource()
-    : DataSourceBase(mojom::kTraceEventDataSourceName) {
-}
+    : DataSourceBase(mojom::kTraceEventDataSourceName) {}
 
 TraceEventDataSource::~TraceEventDataSource() = default;
+
+void TraceEventDataSource::RegisterWithTraceLog() {
+  RegisterTracedValueProtoWriter(true);
+  TraceLog::GetInstance()->SetAddTraceEventOverrides(
+      &TraceEventDataSource::OnAddTraceEvent,
+      &TraceEventDataSource::FlushCurrentThread,
+      &TraceEventDataSource::OnUpdateDuration);
+}
+
+void TraceEventDataSource::UnregisterFromTraceLog() {
+  RegisterTracedValueProtoWriter(false);
+  TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
+}
+
+void TraceEventDataSource::SetupStartupTracing() {
+  {
+    base::AutoLock lock(lock_);
+    DCHECK(!startup_writer_registry_ && !producer_client_);
+    startup_writer_registry_ =
+        std::make_unique<perfetto::StartupTraceWriterRegistry>();
+  }
+  RegisterWithTraceLog();
+}
 
 void TraceEventDataSource::StartTracing(
     ProducerClient* producer_client,
     const mojom::DataSourceConfig& data_source_config) {
+  std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
   {
     base::AutoLock lock(lock_);
 
     DCHECK(!producer_client_);
     producer_client_ = producer_client;
     target_buffer_ = data_source_config.target_buffer;
+    // Reduce lock contention by binding the registry without holding the lock.
+    unbound_writer_registry = std::move(startup_writer_registry_);
   }
 
-  RegisterTracedValueProtoWriter(true);
-
-  TraceLog::GetInstance()->SetAddTraceEventOverrides(
-      &TraceEventDataSource::OnAddTraceEvent,
-      &TraceEventDataSource::FlushCurrentThread,
-      &TraceEventDataSource::OnUpdateDuration);
+  if (unbound_writer_registry) {
+    producer_client->BindStartupTraceWriterRegistry(
+        std::move(unbound_writer_registry), data_source_config.target_buffer);
+  } else {
+    RegisterWithTraceLog();
+  }
 
   TraceLog::GetInstance()->SetEnabled(
       TraceConfig(data_source_config.trace_config), TraceLog::RECORDING_MODE);
@@ -494,9 +530,7 @@ void TraceEventDataSource::StopTracing(
           return;
         }
 
-        RegisterTracedValueProtoWriter(false);
-        TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr,
-                                                           nullptr);
+        data_source->UnregisterFromTraceLog();
 
         if (data_source->stop_complete_callback_) {
           std::move(data_source->stop_complete_callback_).Run();
@@ -555,10 +589,18 @@ void TraceEventDataSource::Flush(
 TraceEventDataSource::ThreadLocalEventSink*
 TraceEventDataSource::CreateThreadLocalEventSink(bool thread_will_flush) {
   base::AutoLock lock(lock_);
-
-  if (producer_client_) {
+  // |startup_writer_registry_| only exists during startup tracing before we
+  // connect to the service. |producer_client_| is reset when tracing is
+  // stopped.
+  if (startup_writer_registry_) {
     return new ThreadLocalEventSink(
-        producer_client_->CreateTraceWriter(target_buffer_), thread_will_flush);
+        startup_writer_registry_->CreateUnboundTraceWriter(),
+        thread_will_flush);
+  } else if (producer_client_) {
+    return new ThreadLocalEventSink(
+        std::make_unique<perfetto::StartupTraceWriter>(
+            producer_client_->CreateTraceWriter(target_buffer_)),
+        thread_will_flush);
   } else {
     return nullptr;
   }
@@ -606,6 +648,25 @@ void TraceEventDataSource::FlushCurrentThread() {
     // uncompleted _COMPLETE events on the stack.
     delete thread_local_event_sink;
     ThreadLocalEventSinkSlot()->Set(nullptr);
+  }
+}
+
+void TraceEventDataSource::ReturnTraceWriter(
+    std::unique_ptr<perfetto::StartupTraceWriter> trace_writer) {
+  base::AutoLock lock(lock_);
+  if (startup_writer_registry_) {
+    // If the writer is still unbound, the registry will keep it alive until it
+    // was bound and its buffered data was copied. This ensures that we don't
+    // lose data from threads that are shut down during startup.
+    startup_writer_registry_->ReturnUnboundTraceWriter(std::move(trace_writer));
+  } else {
+    // Delete the TraceWriter on the sequence that Perfetto runs on, needed
+    // as the ThreadLocalEventSink gets deleted on thread
+    // shutdown and we can't safely call TaskRunnerHandle::Get() at that point
+    // (which can happen as the TraceWriter destructor might make a Mojo call
+    // and trigger it).
+    ProducerClient::GetTaskRunner()->DeleteSoon(FROM_HERE,
+                                                std::move(trace_writer));
   }
 }
 

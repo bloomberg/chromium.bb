@@ -10,7 +10,6 @@
 #include "base/test/scoped_command_line.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/tracing/common/trace_startup.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
