@@ -142,8 +142,9 @@ class FindRequestManagerTest : public ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(FindRequestManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
-    FindRequestManagerTests, FindRequestManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(FindRequestManagerTests,
+                         FindRequestManagerTest,
+                         testing::Bool());
 
 // TODO(crbug.com/615291): These tests frequently fail on Android.
 #if defined(OS_ANDROID)
