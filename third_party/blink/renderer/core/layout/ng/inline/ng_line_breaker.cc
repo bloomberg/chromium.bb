@@ -263,7 +263,7 @@ void NGLineBreaker::BreakLine() {
     // Check overflow even if |item_index_| is at the end of the block, because
     // the last item of the block may have caused overflow. In that case,
     // |HandleOverflow| will rewind |item_index_|.
-    if (state_ == LineBreakState::kContinue && auto_wrap_ &&
+    if (state_ == LineBreakState::kContinue &&
         position_ > AvailableWidthToFit()) {
       HandleOverflow();
     }
@@ -386,7 +386,8 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     // false for between spaces. But we still need to handle them as trailing
     // spaces.
     const String& text = Text();
-    if (offset_ < text.length() && IsBreakableSpace(text[offset_]))
+    if (auto_wrap_ && offset_ < text.length() &&
+        IsBreakableSpace(text[offset_]))
       return HandleTrailingSpaces(item, shape_result);
   }
 
