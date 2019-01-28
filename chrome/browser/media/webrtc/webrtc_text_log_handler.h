@@ -144,6 +144,12 @@ class WebRtcTextLogHandler
 
   void LogToCircularBuffer(const std::string& message);
 
+  void GetNetworkInterfaceListOnUIThread(const GenericDoneCallback& callback);
+
+  void OnGetNetworkInterfaceList(
+      const GenericDoneCallback& callback,
+      const base::Optional<net::NetworkInterfaceList>& networks);
+
   void LogInitialInfoOnIOThread(const GenericDoneCallback& callback,
                                 const net::NetworkInterfaceList& network_list);
 
