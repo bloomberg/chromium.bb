@@ -37,6 +37,7 @@ class TtsHandler : public SettingsPageUIHandler,
   void OnTtsEvent(content::TtsUtterance* utterance,
                   content::TtsEventType event_type,
                   int char_index,
+                  int length,
                   const std::string& error_message) override;
 
  private:

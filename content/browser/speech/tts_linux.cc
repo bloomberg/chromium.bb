@@ -279,25 +279,29 @@ void TtsPlatformImplLinux::OnSpeechEvent(SPDNotificationType type) {
   TtsController* controller = TtsController::GetInstance();
   switch (type) {
     case SPD_EVENT_BEGIN:
-      controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, std::string());
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0,
+                             utterance_.size(), std::string());
       break;
     case SPD_EVENT_RESUME:
-      controller->OnTtsEvent(utterance_id_, TTS_EVENT_RESUME, 0, std::string());
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_RESUME, 0, -1,
+                             std::string());
       break;
     case SPD_EVENT_END:
-      controller->OnTtsEvent(utterance_id_, TTS_EVENT_END, utterance_.size(),
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_END, utterance_.size(), 0,
                              std::string());
       break;
     case SPD_EVENT_PAUSE:
       controller->OnTtsEvent(utterance_id_, TTS_EVENT_PAUSE, utterance_.size(),
-                             std::string());
+                             -1, std::string());
       break;
     case SPD_EVENT_CANCEL:
-      controller->OnTtsEvent(utterance_id_, TTS_EVENT_CANCELLED, 0,
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_CANCELLED, 0, -1,
                              std::string());
       break;
     case SPD_EVENT_INDEX_MARK:
-      controller->OnTtsEvent(utterance_id_, TTS_EVENT_MARKER, 0, std::string());
+      // TODO: Can we get length from linux?
+      controller->OnTtsEvent(utterance_id_, TTS_EVENT_MARKER, 0, -1,
+                             std::string());
       break;
   }
 }

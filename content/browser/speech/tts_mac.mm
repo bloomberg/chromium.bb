@@ -163,7 +163,7 @@ bool TtsPlatformImplMac::Speak(
   bool success = [speech_synthesizer_ startSpeakingRetainedUtterance];
   if (success) {
     content::TtsController* controller = content::TtsController::GetInstance();
-    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_START, 0, "");
+    controller->OnTtsEvent(utterance_id_, content::TTS_EVENT_START, 0, -1, "");
   }
   return success;
 }
@@ -182,7 +182,7 @@ void TtsPlatformImplMac::Pause() {
     [speech_synthesizer_ pauseSpeakingAtBoundary:NSSpeechImmediateBoundary];
     paused_ = true;
     content::TtsController::GetInstance()->OnTtsEvent(
-        utterance_id_, content::TTS_EVENT_PAUSE, last_char_index_, "");
+        utterance_id_, content::TTS_EVENT_PAUSE, last_char_index_, -1, "");
   }
 }
 
@@ -191,7 +191,7 @@ void TtsPlatformImplMac::Resume() {
     [speech_synthesizer_ continueSpeaking];
     paused_ = false;
     content::TtsController::GetInstance()->OnTtsEvent(
-        utterance_id_, content::TTS_EVENT_RESUME, last_char_index_, "");
+        utterance_id_, content::TTS_EVENT_RESUME, last_char_index_, -1, "");
   }
 }
 
@@ -265,8 +265,9 @@ void TtsPlatformImplMac::OnSpeechEvent(NSSpeechSynthesizer* sender,
   if (event_type == content::TTS_EVENT_END)
     char_index = utterance_.size();
 
-  content::TtsController::GetInstance()->OnTtsEvent(utterance_id_, event_type,
-                                                    char_index, error_message);
+  // TODO: Use mac's word length here.
+  content::TtsController::GetInstance()->OnTtsEvent(
+      utterance_id_, event_type, char_index, -1, error_message);
   last_char_index_ = char_index;
 }
 

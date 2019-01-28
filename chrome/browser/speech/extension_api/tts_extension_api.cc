@@ -95,6 +95,7 @@ class TtsExtensionEventHandler : public content::UtteranceEventDelegate {
   void OnTtsEvent(content::TtsUtterance* utterance,
                   content::TtsEventType event_type,
                   int char_index,
+                  int length,
                   const std::string& error_message) override;
 
  private:
@@ -111,6 +112,7 @@ TtsExtensionEventHandler::TtsExtensionEventHandler(
 void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
                                           content::TtsEventType event_type,
                                           int char_index,
+                                          int length,
                                           const std::string& error_message) {
   if (utterance->GetSrcId() < 0) {
     if (utterance->IsFinished())
@@ -131,6 +133,8 @@ void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue());
   if (char_index >= 0)
     details->SetInteger(constants::kCharIndexKey, char_index);
+  if (length >= 0)
+    details->SetInteger(constants::kLengthKey, length);
   details->SetString(constants::kEventTypeKey, event_type_string);
   if (event_type == content::TTS_EVENT_ERROR) {
     details->SetString(constants::kErrorMessageKey, error_message);

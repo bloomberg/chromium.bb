@@ -24,6 +24,7 @@ class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance {
   // TtsUtterance overrides.
   void OnTtsEvent(TtsEventType event_type,
                   int char_index,
+                  int length,
                   const std::string& error_message) override;
 
   void Finish() override;

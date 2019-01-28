@@ -156,7 +156,7 @@ void TtsPlatformImplWin::Pause() {
     speech_synthesizer_->Pause();
     paused_ = true;
     TtsController::GetInstance()->OnTtsEvent(utterance_id_, TTS_EVENT_PAUSE,
-                                             char_position_, "");
+                                             char_position_, -1, "");
   }
 }
 
@@ -165,7 +165,7 @@ void TtsPlatformImplWin::Resume() {
     speech_synthesizer_->Resume();
     paused_ = false;
     TtsController::GetInstance()->OnTtsEvent(utterance_id_, TTS_EVENT_RESUME,
-                                             char_position_, "");
+                                             char_position_, -1, "");
   }
 }
 
@@ -239,27 +239,28 @@ void TtsPlatformImplWin::OnSpeechEvent() {
 
     switch (event.eEventId) {
       case SPEI_START_INPUT_STREAM:
-        controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0,
+        controller->OnTtsEvent(utterance_id_, TTS_EVENT_START, 0, -1,
                                std::string());
         break;
       case SPEI_END_INPUT_STREAM:
         char_position_ = utterance_.size();
-        controller->OnTtsEvent(utterance_id_, TTS_EVENT_END, char_position_,
+        controller->OnTtsEvent(utterance_id_, TTS_EVENT_END, char_position_, 0,
                                std::string());
         break;
       case SPEI_TTS_BOOKMARK:
         controller->OnTtsEvent(utterance_id_, TTS_EVENT_MARKER, char_position_,
-                               std::string());
+                               -1, std::string());
         break;
       case SPEI_WORD_BOUNDARY:
         char_position_ = static_cast<ULONG>(event.lParam) - prefix_len_;
+        // TODO: Get length of win word from win specific tts things.
         controller->OnTtsEvent(utterance_id_, TTS_EVENT_WORD, char_position_,
-                               std::string());
+                               -1, std::string());
         break;
       case SPEI_SENTENCE_BOUNDARY:
         char_position_ = static_cast<ULONG>(event.lParam) - prefix_len_;
         controller->OnTtsEvent(utterance_id_, TTS_EVENT_SENTENCE,
-                               char_position_, std::string());
+                               char_position_, -1, std::string());
         break;
       default:
         break;

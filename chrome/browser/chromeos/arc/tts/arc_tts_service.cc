@@ -87,7 +87,7 @@ void ArcTtsService::OnTtsEvent(uint32_t id,
       chrome_event_type = content::TTS_EVENT_ERROR;
       break;
   }
-  tts_controller_->OnTtsEvent(id, chrome_event_type, char_index, error_msg);
+  tts_controller_->OnTtsEvent(id, chrome_event_type, char_index, -1, error_msg);
 }
 
 }  // namespace arc

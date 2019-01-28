@@ -111,6 +111,7 @@ void TtsHandler::OnVoicesChanged() {
 void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
                             content::TtsEventType event_type,
                             int char_index,
+                            int length,
                             const std::string& error_message) {
   if (event_type == content::TTS_EVENT_END ||
       event_type == content::TTS_EVENT_INTERRUPTED ||
