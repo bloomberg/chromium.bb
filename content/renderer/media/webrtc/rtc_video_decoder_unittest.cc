@@ -483,9 +483,9 @@ TEST_P(RTCVideoDecoderTest, Reinitialize) {
             rtc_decoder_->Decode(input_image, false, nullptr, 0));
 }
 
-INSTANTIATE_TEST_CASE_P(CodecProfiles,
-                        RTCVideoDecoderTest,
-                        Values(webrtc::kVideoCodecVP8,
-                               webrtc::kVideoCodecH264));
+INSTANTIATE_TEST_SUITE_P(CodecProfiles,
+                         RTCVideoDecoderTest,
+                         Values(webrtc::kVideoCodecVP8,
+                                webrtc::kVideoCodecH264));
 
 }  // content
