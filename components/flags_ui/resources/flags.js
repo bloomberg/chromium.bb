@@ -44,9 +44,10 @@ function renderTemplate(experimentalFeaturesData) {
     };
   }
 
-  elements = document.getElementsByClassName('experiment-restart-button');
-  for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = restartBrowser;
+  var element = $('experiment-restart-button');
+  assert(element || cr.isIOS);
+  if (element) {
+    element.onclick = restartBrowser;
   }
 
   // Tab panel selection.
