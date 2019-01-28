@@ -156,31 +156,28 @@ static int ComparePositions(size_t first, size_t second) {
 DoublyLinkedList<ListGrid::GridCell>::AddResult ListGrid::GridTrack::Insert(
     GridCell* cell) {
   cell->SetTraversalMode(direction_);
-  auto compare_cells =
-      [](GridTrackSizingDirection direction, ListGrid::GridCell* first,
-         ListGrid::GridCell* second) {
+
+  return cells_.Insert(
+      cell, [this](ListGrid::GridCell* first, ListGrid::GridCell* second) {
         // This is ugly but we need to do this in order the
         // DoublyLinkedList::Insert() algorithm to work at that code
         // only uses next_ and prev_.
-        first->SetTraversalMode(direction);
-        second->SetTraversalMode(direction);
-        auto ortho_direction = OrthogonalDirection(direction);
+        first->SetTraversalMode(direction_);
+        second->SetTraversalMode(direction_);
+        auto ortho_direction = OrthogonalDirection(direction_);
         return ComparePositions(first->Index(ortho_direction),
                                 second->Index(ortho_direction));
-      };
-
-  return cells_.Insert(cell, WTF::BindRepeating(compare_cells, direction_));
+      });
 }
 
 DoublyLinkedList<ListGrid::GridCell>::AddResult ListGrid::GridTrack::Insert(
     LayoutBox& item,
     const GridSpan& span) {
-  auto compare_cells = [](GridTrackSizingDirection direction,
-                          ListGrid::GridCell* first,
-                          ListGrid::GridCell* second) {
-    first->SetTraversalMode(direction);
-    second->SetTraversalMode(direction);
-    auto ortho_direction = OrthogonalDirection(direction);
+  auto compare_cells = [this](ListGrid::GridCell* first,
+                              ListGrid::GridCell* second) {
+    first->SetTraversalMode(direction_);
+    second->SetTraversalMode(direction_);
+    auto ortho_direction = OrthogonalDirection(direction_);
     return ComparePositions(first->Index(ortho_direction),
                             second->Index(ortho_direction));
   };
@@ -188,9 +185,8 @@ DoublyLinkedList<ListGrid::GridCell>::AddResult ListGrid::GridTrack::Insert(
   size_t col_index = direction_ == kForColumns ? Index() : span.StartLine();
   size_t row_index = direction_ == kForColumns ? span.StartLine() : Index();
 
-  auto result =
-      cells_.Insert(base::WrapUnique(new GridCell(row_index, col_index)),
-                    WTF::BindRepeating(compare_cells, direction_));
+  auto result = cells_.Insert(
+      base::WrapUnique(new GridCell(row_index, col_index)), compare_cells);
   auto* cell = result.node;
   for (auto index : span) {
     cell->AppendItem(item);
@@ -274,9 +270,8 @@ ListGrid::GridTrack* ListGrid::InsertTracks(
   size_t start_line = span.StartLine();
   size_t end_line = span.EndLine();
 
-  DoublyLinkedList<ListGrid::GridTrack>::AddResult result =
-      tracks.Insert(base::WrapUnique(new GridTrack(start_line, direction)),
-                    WTF::BindRepeating(compare_tracks));
+  DoublyLinkedList<ListGrid::GridTrack>::AddResult result = tracks.Insert(
+      base::WrapUnique(new GridTrack(start_line, direction)), compare_tracks);
   auto* track = result.node;
   DCHECK(track);
 
