@@ -15,6 +15,7 @@
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 
 namespace autofill_assistant {
@@ -38,7 +39,7 @@ class UiControllerAndroid : public UiController {
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
-  void Shutdown() override;
+  void Shutdown(Metrics::DropOutReason reason) override;
   void Close() override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void ClearChips() override;

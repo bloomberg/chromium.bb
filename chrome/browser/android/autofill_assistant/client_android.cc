@@ -86,6 +86,12 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
       weak_ptr_factory_(this) {}
 
 ClientAndroid::~ClientAndroid() {
+  if (controller_ != nullptr) {
+    // In the case of an unexpected closing of the activity or tab, controller_
+    // will not yet have been cleaned up (since that happens when a web
+    // contents object gets destroyed).
+    Metrics::RecordDropOut(Metrics::CONTENT_DESTROYED);
+  }
   Java_AutofillAssistantClient_clearNativePtr(AttachCurrentThread(),
                                               java_object_);
 }

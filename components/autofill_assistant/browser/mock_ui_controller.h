@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,7 +24,7 @@ class MockUiController : public UiController {
 
   MOCK_METHOD1(OnStatusMessageChanged, void(const std::string& message));
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
-  MOCK_METHOD0(Shutdown, void());
+  MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(SetChips, void(std::unique_ptr<std::vector<Chip>> chips));
   MOCK_METHOD0(ClearChips, void());
@@ -41,6 +42,7 @@ class MockUiController : public UiController {
                void(bool enabled, const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(Terminate, bool());
   MOCK_METHOD0(ExpandBottomSheet, void());
+  MOCK_CONST_METHOD0(GetDropOutReason, Metrics::DropOutReason());
 };
 
 }  // namespace autofill_assistant

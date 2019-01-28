@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -65,7 +66,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
                 if (!isAttached) {
                     activityTab.removeObserver(this);
-                    mCoordinator.shutdownImmediately();
+                    mCoordinator.shutdownImmediately(DropOutReason.TAB_DETACHED);
                 }
             }
         });
@@ -78,7 +79,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                 // Shutdown the Autofill Assistant if the user switches to another tab.
                 if (!activityTab.equals(tab)) {
                     currentTabModel.removeObserver(this);
-                    mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ true);
+                    mCoordinator.gracefulShutdown(
+                            /* showGiveUpMessage= */ true, DropOutReason.TAB_CHANGED);
                 }
             }
         });
@@ -149,13 +151,13 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onShutdown() {
-        mCoordinator.shutdownImmediately();
+    private void onShutdown(@DropOutReason int reason) {
+        mCoordinator.shutdownImmediately(reason);
     }
 
     @CalledByNative
-    private void onShutdownGracefully() {
-        mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ false);
+    private void onShutdownGracefully(@DropOutReason int reason) {
+        mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ false, reason);
     }
 
     @CalledByNative
@@ -193,7 +195,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
     private void onRequestPaymentInformationFailed(Exception unusedException) {
         mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(true);
-        mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ true);
+        mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ true, DropOutReason.PR_FAILED);
     }
 
     @CalledByNative
@@ -212,8 +214,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void dismissAndShowSnackbar(String message) {
-        mCoordinator.dismissAndShowSnackbar(message);
+    private void dismissAndShowSnackbar(String message, @DropOutReason int reason) {
+        mCoordinator.dismissAndShowSnackbar(message, reason);
     }
 
     // Native methods.

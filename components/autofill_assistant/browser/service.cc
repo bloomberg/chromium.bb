@@ -229,6 +229,8 @@ void Service::OnURLLoaderComplete(Loader* loader,
                << loader_instance->loader->NetError()
                << " response_code=" << response_code << " message="
                << (response_body == nullptr ? "" : *response_body);
+    // TODO(crbug.com/806868): Pass an enum to be able to distinguish errors
+    // downstream. Also introduce a metric for this.
     std::move(loader_instance->callback).Run(false, response_body_str);
     return;
   }

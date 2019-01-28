@@ -11,6 +11,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
+import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -56,6 +57,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
     private final AssistantOverlayCoordinator mOverlayCoordinator;
 
     private boolean mIsShuttingDownGracefully;
+    private boolean mIsDropOutRecorded;
 
     AssistantCoordinator(ChromeActivity activity, WebContents webContents, Delegate delegate) {
         mActivity = activity;
@@ -80,7 +82,11 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
     /**
      * Shut down the Autofill Assistant immediately, without showing a message.
      */
-    public void shutdownImmediately() {
+    public void shutdownImmediately(@DropOutReason int reason) {
+        if (!mIsDropOutRecorded) {
+            AutofillAssistantMetrics.recordDropOut(reason);
+            mIsDropOutRecorded = true;
+        }
         detachAssistantView();
         mOverlayCoordinator.destroy();
         mDelegate.stop();
@@ -92,7 +98,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
      * the status message with a generic error message iff {@code showGiveUpMessage} is true.
      */
     // TODO(crbug.com/806868): Move this method to native.
-    public void gracefulShutdown(boolean showGiveUpMessage) {
+    public void gracefulShutdown(boolean showGiveUpMessage, @DropOutReason int reason) {
         mIsShuttingDownGracefully = true;
 
         // Make sure bottom bar is expanded.
@@ -108,14 +114,15 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
             mModel.getHeaderModel().set(AssistantHeaderModel.STATUS_MESSAGE,
                     mActivity.getString(R.string.autofill_assistant_give_up));
         }
-        ThreadUtils.postOnUiThreadDelayed(this::shutdownImmediately, GRACEFUL_SHUTDOWN_DELAY_MS);
+        ThreadUtils.postOnUiThreadDelayed(
+                () -> shutdownImmediately(reason), GRACEFUL_SHUTDOWN_DELAY_MS);
     }
 
     /**
      * Shut down the Autofill Assistant and close the current Chrome tab.
      */
     public void close() {
-        shutdownImmediately();
+        shutdownImmediately(DropOutReason.CUSTOM_TAB_CLOSED);
         mActivity.finish();
     }
 
@@ -134,7 +141,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
                 .then(accepted -> {
                     if (!accepted) {
-                        shutdownImmediately();
+                        shutdownImmediately(DropOutReason.DECLINED);
                         return;
                     }
 
@@ -175,9 +182,9 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
      * Dismiss the assistant view and show a cancellable snackbar alerting the user that the
      * Autofill assistant is shutting down.
      */
-    public void dismissAndShowSnackbar(String message) {
+    public void dismissAndShowSnackbar(String message, @DropOutReason int reason) {
         if (mIsShuttingDownGracefully) {
-            shutdownImmediately();
+            shutdownImmediately(reason);
             return;
         }
 
@@ -194,7 +201,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
 
                                     @Override
                                     public void onDismissNoAction(Object actionData) {
-                                        shutdownImmediately();
+                                        shutdownImmediately(reason);
                                     }
                                 },
                                 Snackbar.TYPE_ACTION, Snackbar.UMA_AUTOFILL_ASSISTANT_STOP_UNDO)
@@ -204,8 +211,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mActivity.getSnackbarManager().showSnackbar(snackBar);
     }
 
-    private void dismissAndShowSnackbar(int message) {
-        dismissAndShowSnackbar(mActivity.getString(message));
+    private void dismissAndShowSnackbar(int message, @DropOutReason int reason) {
+        dismissAndShowSnackbar(mActivity.getString(message), reason);
     }
 
     /**
@@ -221,7 +228,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
 
     @Override
     public void onUnexpectedTaps() {
-        dismissAndShowSnackbar(R.string.autofill_assistant_maybe_give_up);
+        dismissAndShowSnackbar(
+                R.string.autofill_assistant_maybe_give_up, DropOutReason.OVERLAY_STOP);
     }
 
     @Override

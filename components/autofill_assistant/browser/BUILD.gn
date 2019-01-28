@@ -22,6 +22,7 @@ proto_java_library("proto_java") {
 java_cpp_enum("autofill_assistant_enums_java") {
   sources = [
     "chip.h",
+    "metrics.h",
   ]
 }
 
@@ -80,6 +81,8 @@ jumbo_static_library("browser") {
     "details.h",
     "element_area.cc",
     "element_area.h",
+    "metrics.cc",
+    "metrics.h",
     "payment_information.h",
     "protocol_utils.cc",
     "protocol_utils.h",

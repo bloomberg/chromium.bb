@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/state.h"
 
 namespace autofill_assistant {
@@ -37,6 +38,9 @@ class UiDelegate {
 
   // Returns the current contextual information. May be null if empty.
   virtual const Details* GetDetails() const = 0;
+
+  // Returns the drop out reason for the last state transition to STOPPED.
+  virtual Metrics::DropOutReason GetDropOutReason() const = 0;
 
  protected:
   UiDelegate() = default;

@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/payment_information.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/state.h"
@@ -34,7 +35,7 @@ class UiController {
   // Shuts down Autofill Assistant: hide the UI and frees any associated state.
   //
   // Warning: this indirectly deletes the caller.
-  virtual void Shutdown() = 0;
+  virtual void Shutdown(Metrics::DropOutReason reason) = 0;
 
   // Shuts down Autofill Assistant and closes Chrome.
   virtual void Close() = 0;

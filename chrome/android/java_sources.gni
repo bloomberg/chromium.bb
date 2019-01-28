@@ -142,6 +142,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantOverlayCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantFacade.java",
+  "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantMetrics.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantPreferencesUtil.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/FeedbackContext.java",

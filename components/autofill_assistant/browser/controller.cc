@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/strings/grit/components_strings.h"
@@ -206,6 +207,7 @@ void Controller::OnPeriodicScriptCheck() {
     should_fail_after_checking_scripts_ = false;
     SetStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+    stop_reason_ = Metrics::AUTOSTART_TIMEOUT;
     EnterState(AutofillAssistantState::STOPPED);
     return;
   }
@@ -266,6 +268,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     LOG(ERROR) << "Failed to execute script " << script_path;
     SetStatusMessage(
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
+    stop_reason_ = Metrics::SCRIPT_FAILED;
     EnterState(AutofillAssistantState::STOPPED);
     return;
   }
@@ -280,15 +283,21 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
+      GetUiController()->Shutdown(Metrics::SCRIPT_SHUTDOWN);
+      return;
     case ScriptExecutor::TERMINATE:
       // TODO(crbug.com/806868): Distinguish shutdown from terminate: Users
       // should be allowed to undo shutdown, but not terminate.
-
-      GetUiController()->Shutdown();  // indirectly deletes this
+      //
+      // This is coming from a client Stop() to clean up and we already counted
+      // it as a stop event. The code here is only executed if no script was
+      // running, so there may be some double counting.
+      GetUiController()->Shutdown(Metrics::SAFETY_NET_TERMINATE);
       return;
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
       GetWebController()->ClearCookie();
+      stop_reason_ = Metrics::SCRIPT_SHUTDOWN;
       EnterState(AutofillAssistantState::STOPPED);
       return;
 
@@ -312,8 +321,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
-void Controller::GiveUp() {
+void Controller::GiveUp(Metrics::DropOutReason reason) {
   SetStatusMessage(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
+  stop_reason_ = reason;
   EnterState(AutofillAssistantState::STOPPED);
 }
 
@@ -461,13 +471,17 @@ std::string Controller::GetDebugContext() {
   return output_js;
 }
 
+Metrics::DropOutReason Controller::GetDropOutReason() const {
+  return stop_reason_;
+}
+
 void Controller::OnNoRunnableScriptsAnymore() {
   if (script_tracker()->running())
     return;
 
   // We're navigated to a page that has no scripts or the scripts have reached a
   // state from which they cannot recover through a DOM change.
-  GiveUp();
+  GiveUp(Metrics::NO_SCRIPTS);
   return;
 }
 
@@ -530,7 +544,7 @@ void Controller::OnRunnableScriptsChanged(
 }
 
 void Controller::DidAttachInterstitialPage() {
-  GetUiController()->Shutdown();
+  GetUiController()->Shutdown(Metrics::INTERSTITIAL_PAGE);
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -569,7 +583,7 @@ void Controller::DidStartNavigation(
     // The action can define a touchable element area that prevents navigation.
     if (!script_tracker_ || !script_tracker()->running() ||
         touchable_element_area()->HasElements()) {
-      GiveUp();
+      GiveUp(Metrics::NAVIGATION);
     }
   }
 }
@@ -579,7 +593,7 @@ void Controller::DocumentAvailableInMainFrame() {
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {
-  GetUiController()->Shutdown();
+  GetUiController()->Shutdown(Metrics::RENDER_PROCESS_GONE);
 }
 
 void Controller::LoadProgressChanged(content::WebContents* source,
