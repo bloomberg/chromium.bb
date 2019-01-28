@@ -47,7 +47,6 @@ class LoginHandlerViews : public LoginHandler {
 
     dialog_ = new Dialog(this, GetWebContentsForLogin(), authority, explanation,
                          login_model_data);
-    NotifyAuthNeeded();
   }
 
   void CloseDialog() override {

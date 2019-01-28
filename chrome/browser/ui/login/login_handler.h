@@ -68,31 +68,11 @@ class LoginHandler : public content::LoginDelegate,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       LoginAuthRequiredCallback auth_required_callback);
 
-  void SetInterstitialDelegate(
-      const base::WeakPtr<LoginInterstitialDelegate> delegate) {
-    interstitial_delegate_ = delegate;
-  }
-
   // LoginDelegate implementation:
   void OnRequestCancelled() override;
 
-  // Use this to build a view with password manager support. |password_manager|
-  // must not be null.
-  void BuildViewWithPasswordManager(
-      const base::string16& authority,
-      const base::string16& explanation,
-      password_manager::PasswordManager* password_manager,
-      const autofill::PasswordForm& observed_form);
-
-  // Use this to build a view without password manager support.
-  void BuildViewWithoutPasswordManager(const base::string16& authority,
-                                       const base::string16& explanation);
-
   // Returns the WebContents that needs authentication.
   content::WebContents* GetWebContentsForLogin() const;
-
-  // Returns the PasswordManager for the web contents that needs login.
-  password_manager::PasswordManager* GetPasswordManagerForLogin();
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
@@ -113,9 +93,6 @@ class LoginHandler : public content::LoginDelegate,
   // Who/where/what asked for the authentication.
   const net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
 
-  // Returns whether authentication had been handled (SetAuth or CancelAuth).
-  bool WasAuthHandled() const;
-
  protected:
   ~LoginHandler() override;
 
@@ -125,9 +102,6 @@ class LoginHandler : public content::LoginDelegate,
   virtual void BuildViewImpl(const base::string16& authority,
                              const base::string16& explanation,
                              LoginModelData* login_model_data) = 0;
-
-  // Notify observers that authentication is needed.
-  void NotifyAuthNeeded();
 
   // Performs necessary cleanup before deletion.
   void ReleaseSoon();
@@ -152,12 +126,21 @@ class LoginHandler : public content::LoginDelegate,
   // Stops observing notifications from other LoginHandlers.
   void RemoveObservers();
 
+  // Notify observers that authentication is needed.
+  void NotifyAuthNeeded();
+
   // Notify observers that authentication is supplied.
   void NotifyAuthSupplied(const base::string16& username,
                           const base::string16& password);
 
   // Notify observers that authentication is cancelled.
   void NotifyAuthCancelled(bool cancel_navigation);
+
+  // Returns the PasswordManager for the web contents that needs login.
+  password_manager::PasswordManager* GetPasswordManagerForLogin();
+
+  // Returns whether authentication had been handled (SetAuth or CancelAuth).
+  bool WasAuthHandled() const;
 
   // Marks authentication as handled and returns the previous handled
   // state.
@@ -200,9 +183,6 @@ class LoginHandler : public content::LoginDelegate,
                                base::string16* authority,
                                base::string16* explanation);
 
-  void ShowLoginPrompt(const GURL& request_url,
-                       net::AuthChallengeInfo* auth_info);
-
   // This callback is run on the UI thread and creates a constrained window with
   // a LoginView to prompt the user. If the prompt is triggered because of a
   // cross origin navigation in the main frame, a blank interstitial is first
@@ -228,6 +208,21 @@ class LoginHandler : public content::LoginDelegate,
       bool is_main_frame,
       const base::Optional<net::AuthCredentials>& credentials,
       bool should_cancel);
+
+  void ShowLoginPrompt(const GURL& request_url,
+                       net::AuthChallengeInfo* auth_info);
+
+  // Use this to build a view with password manager support. |password_manager|
+  // must not be null.
+  void BuildViewWithPasswordManager(
+      const base::string16& authority,
+      const base::string16& explanation,
+      password_manager::PasswordManager* password_manager,
+      const autofill::PasswordForm& observed_form);
+
+  // Use this to build a view without password manager support.
+  void BuildViewWithoutPasswordManager(const base::string16& authority,
+                                       const base::string16& explanation);
 
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
