@@ -1579,3 +1579,5 @@ crbug.com/914981 [ Mac ] virtual/mouseevent_fractional/fast/events/no-fake-mouse
 crbug.com/914981 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] virtual/video-surface-layer/media/controls/overflow-menu-pointer-selection.html [ Slow ]
 crbug.com/914981 [ Mac ] fast/events/no-fake-mousemove.html [ Slow ]
+
+crbug.com/925600 external/wpt/webrtc-quic/RTCQuicStream.https.html [ Slow ]
