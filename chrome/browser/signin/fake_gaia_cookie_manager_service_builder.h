@@ -18,6 +18,10 @@ namespace network {
 class TestURLLoaderFactory;
 }
 
+// Helper functions to be used with KeyedService::SetTestingFactory().
+std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
+    content::BrowserContext* context);
+
 // Builds a FakeGaiaCookieManagerService which uses the provided
 // |test_url_loader_factory| for cookie-related requests.
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithURLLoader(

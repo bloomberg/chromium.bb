@@ -12,6 +12,14 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "services/network/test/test_url_loader_factory.h"
 
+std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return std::make_unique<FakeGaiaCookieManagerService>(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      ChromeSigninClientFactory::GetForProfile(profile));
+}
+
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithURLLoader(
     network::TestURLLoaderFactory* test_url_loader_factory,
     content::BrowserContext* context) {
