@@ -13,12 +13,15 @@ namespace {
 
 const char kFakeHandle[] = "fake-handle";
 const char kFakeSymmetricKey[] = "fake-symmetric-key";
-const char kFakePublicKey[] = "fake-public-key";
-const char kFakePrivateKey[] = "fake-private-key";
+const char kFakeSymmetricKeyBase64[] = "ZmFrZS1zeW1tZXRyaWMta2V5";
 const char kFakeSymmetricKeySha256HashBase64[] =
     "+lh4oqYTenQmzyIY8XJreGDJ95A4Sk41c15BQPKOmCY=";
+const char kFakePublicKey[] = "fake-public-key";
+const char kFakePublicKeyBase64[] = "ZmFrZS1wdWJsaWMta2V5";
 const char kFakePublicKeySha256HashBase64[] =
     "vj5oRVhZmlDrE4G4RKNV37Etgr/XuNOwEFAzb888/KM=";
+const char kFakePrivateKey[] = "fake-private-key";
+const char kFakePrivateKeyBase64[] = "ZmFrZS1wcml2YXRlLWtleQ==";
 
 }  // namespace
 
@@ -65,7 +68,7 @@ TEST(CryptAuthKeyTest, SymmetricKeyAsDictionary) {
   dict.SetKey("handle", base::Value(kFakeHandle));
   dict.SetKey("status", base::Value(CryptAuthKey::Status::kActive));
   dict.SetKey("type", base::Value(cryptauthv2::KeyType::RAW256));
-  dict.SetKey("symmetric_key", base::Value(kFakeSymmetricKey));
+  dict.SetKey("symmetric_key", base::Value(kFakeSymmetricKeyBase64));
 
   EXPECT_EQ(symmetric_key.AsSymmetricKeyDictionary(), dict);
 }
@@ -79,8 +82,8 @@ TEST(CryptAuthKeyTest, AsymmetricKeyAsDictionary) {
   dict.SetKey("handle", base::Value(kFakeHandle));
   dict.SetKey("status", base::Value(CryptAuthKey::Status::kActive));
   dict.SetKey("type", base::Value(cryptauthv2::KeyType::P256));
-  dict.SetKey("public_key", base::Value(kFakePublicKey));
-  dict.SetKey("private_key", base::Value(kFakePrivateKey));
+  dict.SetKey("public_key", base::Value(kFakePublicKeyBase64));
+  dict.SetKey("private_key", base::Value(kFakePrivateKeyBase64));
 
   EXPECT_EQ(asymmetric_key.AsAsymmetricKeyDictionary(), dict);
 }
@@ -90,7 +93,7 @@ TEST(CryptAuthKeyTest, SymmetricKeyFromDictionary) {
   dict.SetKey("handle", base::Value(kFakeHandle));
   dict.SetKey("status", base::Value(CryptAuthKey::Status::kActive));
   dict.SetKey("type", base::Value(cryptauthv2::KeyType::RAW256));
-  dict.SetKey("symmetric_key", base::Value(kFakeSymmetricKey));
+  dict.SetKey("symmetric_key", base::Value(kFakeSymmetricKeyBase64));
 
   base::Optional<CryptAuthKey> key = CryptAuthKey::FromDictionary(dict);
   ASSERT_TRUE(key);
@@ -103,8 +106,8 @@ TEST(CryptAuthKeyTest, AsymmetricKeyFromDictionary) {
   dict.SetKey("handle", base::Value(kFakeHandle));
   dict.SetKey("status", base::Value(CryptAuthKey::Status::kActive));
   dict.SetKey("type", base::Value(cryptauthv2::KeyType::P256));
-  dict.SetKey("public_key", base::Value(kFakePublicKey));
-  dict.SetKey("private_key", base::Value(kFakePrivateKey));
+  dict.SetKey("public_key", base::Value(kFakePublicKeyBase64));
+  dict.SetKey("private_key", base::Value(kFakePrivateKeyBase64));
 
   base::Optional<CryptAuthKey> key = CryptAuthKey::FromDictionary(dict);
   ASSERT_TRUE(key);
