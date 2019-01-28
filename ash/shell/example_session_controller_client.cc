@@ -54,5 +54,10 @@ void ExampleSessionControllerClient::UnlockScreen() {
   Shell::Get()->UpdateShelfVisibility();
 }
 
+void ExampleSessionControllerClient::RequestSignOut() {
+  DCHECK(quit_closure_);
+  std::move(quit_closure_).Run();
+}
+
 }  // namespace shell
 }  // namespace ash

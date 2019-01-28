@@ -12,7 +12,10 @@
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/mus_property_mirror_ash.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/shell/content/embedded_browser.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/shell_views_delegate.h"
@@ -24,6 +27,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -31,6 +35,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/exo/file_helper.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/common/content_switches.h"
@@ -41,13 +47,17 @@
 #include "net/base/net_module.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
 #include "ui/views/examples/examples_window_with_content.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace ash {
@@ -62,6 +72,10 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {}
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
+
+  // WindowTreeClient needs to do some shutdown while the IO thread is alive.
+  if (mus_client_)
+    mus_client_->window_tree_client()->OnEarlyShutdown();
 }
 
 void ShellBrowserMainParts::ToolkitInitialized() {
@@ -89,6 +103,22 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   service_manager::Connector* const connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
 
+  if (features::IsUsingWindowService()) {
+    connector->WarmService(
+        service_manager::ServiceFilter::ByName(ws::mojom::kServiceName));
+
+    views::MusClient::InitParams params;
+    params.connector = connector;
+    params.io_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::IO});
+    params.create_wm_state = false;
+    params.running_in_ws_process = features::IsSingleProcessMash();
+    mus_client_ = std::make_unique<views::MusClient>(params);
+    ash::RegisterWindowProperties(mus_client_->property_converter());
+    mus_client_->SetMusPropertyMirror(
+        std::make_unique<ash::MusPropertyMirrorAsh>());
+  }
+
   ui::MaterialDesignController::Initialize();
   ash::ShellInitParams init_params;
   init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
@@ -109,9 +139,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   window_watcher_ = std::make_unique<WindowWatcher>();
 
   ash::shell::InitWindowTypeLauncher(
-      base::Bind(&views::examples::ShowExamplesWindowWithContent,
-                 base::Passed(base::OnceClosure()),
-                 base::Unretained(browser_context_.get()), nullptr));
+      base::BindRepeating(&views::examples::ShowExamplesWindowWithContent,
+                          base::Passed(base::OnceClosure()),
+                          base::Unretained(browser_context_.get()), nullptr),
+      base::BindRepeating(&EmbeddedBrowser::Create,
+                          base::Unretained(browser_context_.get()),
+                          GURL("https://www.google.com")));
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
@@ -148,7 +181,10 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  example_session_controller_client_->set_quit_closure(
+      run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
   return true;
 }
 

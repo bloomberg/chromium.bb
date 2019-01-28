@@ -1512,6 +1512,8 @@ static_library("ash_shell_lib_with_content") {
     "shell/content/client/shell_content_browser_client.h",
     "shell/content/client/shell_main_delegate.cc",
     "shell/content/client/shell_main_delegate.h",
+    "shell/content/embedded_browser.cc",
+    "shell/content/embedded_browser.h",
   ]
 
   deps = [
@@ -1547,6 +1549,7 @@ static_library("ash_shell_lib_with_content") {
     "//services/ws/ime/test_ime_driver:lib",
     "//services/ws/ime/test_ime_driver:manifest",
     "//services/ws/ime/test_ime_driver/public/mojom",
+    "//services/ws/remote_view_host",
     "//skia",
     "//ui/aura",
     "//ui/base",
@@ -1557,6 +1560,7 @@ static_library("ash_shell_lib_with_content") {
     "//ui/message_center",
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_with_content_lib",
+    "//ui/views/mus/remote_view:remote_view_provider",
     "//ui/wm",
   ]
 }

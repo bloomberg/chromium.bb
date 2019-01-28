@@ -20,6 +20,7 @@ class NetLog;
 }
 
 namespace views {
+class MusClient;
 class ViewsDelegate;
 }
 
@@ -58,6 +59,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<ExampleSessionControllerClient>
       example_session_controller_client_;
+  std::unique_ptr<views::MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };
