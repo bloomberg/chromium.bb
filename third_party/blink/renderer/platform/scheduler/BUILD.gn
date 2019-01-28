@@ -24,7 +24,6 @@ blink_platform_sources("scheduler") {
     "common/pollable_thread_safe_flag.cc",
     "common/pollable_thread_safe_flag.h",
     "common/post_cancellable_task.cc",
-    "common/post_cross_thread_task.cc",
     "common/process_state.cc",
     "common/process_state.h",
     "common/scheduler_helper.cc",
