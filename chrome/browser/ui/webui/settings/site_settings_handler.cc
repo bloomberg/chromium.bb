@@ -315,14 +315,6 @@ void SiteSettingsHandler::RegisterMessages() {
       "clearUsage", base::BindRepeating(&SiteSettingsHandler::HandleClearUsage,
                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "fetchUsbDevices",
-      base::BindRepeating(&SiteSettingsHandler::HandleFetchUsbDevices,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "removeUsbDevice",
-      base::BindRepeating(&SiteSettingsHandler::HandleRemoveUsbDevice,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "setDefaultValueForContentType",
       base::BindRepeating(
           &SiteSettingsHandler::HandleSetDefaultValueForContentType,
@@ -601,49 +593,6 @@ void SiteSettingsHandler::HandleClearUsage(
       return;
     }
   }
-}
-
-void SiteSettingsHandler::HandleFetchUsbDevices(const base::ListValue* args) {
-  AllowJavascript();
-
-  CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-
-  base::ListValue exceptions;
-  const std::string group_name = site_settings::ContentSettingsTypeToGroupName(
-      CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
-  const site_settings::ChooserTypeNameEntry* chooser_type =
-      site_settings::ChooserTypeFromGroupName(group_name);
-  // TODO(finnur): Figure out whether incognito permissions are also needed.
-  site_settings::GetChooserExceptionsFromProfile(
-      profile_, false, *chooser_type, &exceptions);
-  ResolveJavascriptCallback(*callback_id, exceptions);
-}
-
-void SiteSettingsHandler::HandleRemoveUsbDevice(const base::ListValue* args) {
-  CHECK_EQ(3U, args->GetSize());
-
-  std::string origin_string;
-  CHECK(args->GetString(0, &origin_string));
-  GURL requesting_origin(origin_string);
-  CHECK(requesting_origin.is_valid());
-
-  std::string embedding_origin_string;
-  CHECK(args->GetString(1, &embedding_origin_string));
-  GURL embedding_origin(embedding_origin_string);
-  CHECK(embedding_origin.is_valid());
-
-  const base::DictionaryValue* object = nullptr;
-  CHECK(args->GetDictionary(2, &object));
-
-  const std::string group_name = site_settings::ContentSettingsTypeToGroupName(
-      CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
-  const site_settings::ChooserTypeNameEntry* chooser_type =
-      site_settings::ChooserTypeFromGroupName(group_name);
-  ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
-  chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
-                                          *object);
 }
 
 void SiteSettingsHandler::HandleSetDefaultValueForContentType(

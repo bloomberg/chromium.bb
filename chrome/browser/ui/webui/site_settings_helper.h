@@ -159,16 +159,6 @@ struct ContentSettingsTypeNameEntry {
 
 const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name);
 
-// Fills in |exceptions| with Values for the given |chooser_type| from map.
-void GetChooserExceptionsFromProfile(Profile* profile,
-                                     bool incognito,
-                                     const ChooserTypeNameEntry& chooser_type,
-                                     base::ListValue* exceptions);
-
-// TODO(https://crbug.com/854329): Once the Site Settings WebUI is capable of
-// displaying the new chooser exception object format, replace the existing
-// chooser exception methods with these methods.
-
 // Creates a chooser exception object for the object with |display_name|. The
 // object contains the following properties
 // * displayName: string,

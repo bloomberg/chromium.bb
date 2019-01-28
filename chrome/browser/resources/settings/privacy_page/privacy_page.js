@@ -177,6 +177,7 @@ Polymer({
   /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
+    this.ChooserType = settings.ChooserType;
 
     this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
 
