@@ -189,6 +189,18 @@ bool HTMLPlugInElement::RequestObjectInternal(
   ObjectContentType object_type = GetObjectContentType();
   if (object_type == ObjectContentType::kFrame ||
       object_type == ObjectContentType::kImage || handled_externally_) {
+    if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
+      // During lazy reattaching, the plugin element loses EmbeddedContentView.
+      // Since the ContentFrame() is not torn down the options here are to
+      // either re-create a new RemoteFrameView or reuse the old one. The former
+      // approach requires CommitNavigation for OOPF to be sent back here in
+      // the parent process. It is easier to just reuse the current FrameView
+      // instead until plugin element issue are properly resolved (for context
+      // see https://crbug.com/781880).
+      DCHECK(!OwnedEmbeddedContentView());
+      SetEmbeddedContentView(ContentFrame()->View());
+      DCHECK(OwnedEmbeddedContentView());
+    }
     // If the plugin element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
     // new frame and set it as the LayoutEmbeddedContent's EmbeddedContentView,
