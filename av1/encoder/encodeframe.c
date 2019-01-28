@@ -5963,97 +5963,53 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
   return 1;
 }
 
-// Enforce the number of references for each arbitrary frame limited to
-// (INTER_REFS_PER_FRAME - 1)
+static int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
+  const unsigned int max_allowed_refs_for_given_speed =
+      (cpi->sf.selective_ref_frame >= 3) ? INTER_REFS_PER_FRAME - 1
+                                         : INTER_REFS_PER_FRAME;
+  return AOMMIN(max_allowed_refs_for_given_speed,
+                cpi->oxcf.max_reference_frames);
+}
+
+// Enforce the number of references for each arbitrary frame based on user
+// options and speed.
 static void enforce_max_ref_frames(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
   MV_REFERENCE_FRAME ref_frame;
   int total_valid_refs = 0;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])
+    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
       total_valid_refs++;
+    }
   }
 
-  // NOTE(zoeliu): When all the possible reference frames are availble, we
-  // reduce the number of reference frames by 1, following the rules of:
-  // (1) Retain GOLDEN_FARME/ALTEF_FRAME;
-  // (2) Check the earliest 2 remaining reference frames, and remove the one
-  //     with the lower quality factor, otherwise if both have been coded at
-  //     the same quality level, remove the earliest reference frame.
+  const int max_allowed_refs = get_max_allowed_ref_frames(cpi);
 
-  if (total_valid_refs == INTER_REFS_PER_FRAME) {
-    unsigned int min_ref_order_hint = UINT_MAX;
-    unsigned int second_min_ref_order_hint = UINT_MAX;
-    MV_REFERENCE_FRAME earliest_ref_frames[2] = { LAST3_FRAME, LAST2_FRAME };
-    const RefCntBuffer *earliest_bufs[2] = { NULL };
+  // When more than 'max_allowed_refs' are available, we reduce the number of
+  // reference frames one at a time based on this order.
+  const MV_REFERENCE_FRAME disable_order[] = {
+    LAST3_FRAME,
+    LAST2_FRAME,
+    ALTREF2_FRAME,
+    GOLDEN_FRAME,
+  };
 
-    // Locate the earliest two reference frames except GOLDEN/ALTREF.
-    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-      // Retain GOLDEN/ALTERF
-      if (ref_frame == GOLDEN_FRAME || ref_frame == ALTREF_FRAME) continue;
+  for (int i = 0; i < 4 && total_valid_refs > max_allowed_refs; ++i) {
+    const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];
 
-      const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
-      if (buf != NULL) {
-        const unsigned int ref_order_hint = buf->order_hint;
-
-        if (min_ref_order_hint == UINT_MAX) {
-          min_ref_order_hint = ref_order_hint;
-          earliest_ref_frames[0] = ref_frame;
-          earliest_bufs[0] = buf;
-        } else {
-          if (get_relative_dist(&cm->seq_params.order_hint_info, ref_order_hint,
-                                min_ref_order_hint) < 0) {
-            second_min_ref_order_hint = min_ref_order_hint;
-            earliest_ref_frames[1] = earliest_ref_frames[0];
-            earliest_bufs[1] = earliest_bufs[0];
-
-            min_ref_order_hint = ref_order_hint;
-            earliest_ref_frames[0] = ref_frame;
-            earliest_bufs[0] = buf;
-          } else if (second_min_ref_order_hint == UINT_MAX ||
-                     get_relative_dist(&cm->seq_params.order_hint_info,
-                                       ref_order_hint,
-                                       second_min_ref_order_hint) < 0) {
-            second_min_ref_order_hint = ref_order_hint;
-            earliest_ref_frames[1] = ref_frame;
-            earliest_bufs[1] = buf;
-          }
-        }
-      }
+    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame_to_disable])) {
+      continue;
     }
-    // Check the coding quality factors of the two earliest reference frames.
-    RATE_FACTOR_LEVEL ref_rf_level[2];
-    double ref_rf_deltas[2];
-    for (int i = 0; i < 2; ++i) {
-      ref_rf_level[i] = earliest_bufs[i]->frame_rf_level;
-      ref_rf_deltas[i] = rate_factor_deltas[ref_rf_level[i]];
-    }
-    (void)ref_rf_level;
-    (void)ref_rf_deltas;
-
-#define USE_RF_LEVEL_TO_ENFORCE 1
-#if USE_RF_LEVEL_TO_ENFORCE
-    // If both earliest two reference frames are coded using the same rate-
-    // factor, disable the earliest reference frame; Otherwise disable the
-    // reference frame that uses a lower rate-factor delta.
-    const MV_REFERENCE_FRAME ref_frame_to_disable =
-        (ref_rf_deltas[0] <= ref_rf_deltas[1]) ? earliest_ref_frames[0]
-                                               : earliest_ref_frames[1];
-#else
-    // Always disable the earliest reference frame
-    const MV_REFERENCE_FRAME ref_frame_to_disable = earliest_ref_frames[0];
-#endif  // USE_RF_LEVEL_TO_ENFORCE
-#undef USE_RF_LEVEL_TO_ENFORCE
 
     switch (ref_frame_to_disable) {
-      case LAST_FRAME: cpi->ref_frame_flags &= ~AOM_LAST_FLAG; break;
-      case LAST2_FRAME: cpi->ref_frame_flags &= ~AOM_LAST2_FLAG; break;
       case LAST3_FRAME: cpi->ref_frame_flags &= ~AOM_LAST3_FLAG; break;
-      case BWDREF_FRAME: cpi->ref_frame_flags &= ~AOM_BWD_FLAG; break;
+      case LAST2_FRAME: cpi->ref_frame_flags &= ~AOM_LAST2_FLAG; break;
       case ALTREF2_FRAME: cpi->ref_frame_flags &= ~AOM_ALT2_FLAG; break;
-      default: break;
+      case GOLDEN_FRAME: cpi->ref_frame_flags &= ~AOM_GOLD_FLAG; break;
+      default: assert(0);
     }
+    --total_valid_refs;
   }
+  assert(total_valid_refs <= max_allowed_refs);
 }
 
 static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
@@ -6532,9 +6488,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 
   av1_setup_frame_buf_refs(cm);
-  if (cpi->sf.selective_ref_frame >= 3 && cpi->oxcf.max_reference_frames == 7) {
-    enforce_max_ref_frames(cpi);
-  }
+  enforce_max_ref_frames(cpi);
   av1_setup_frame_sign_bias(cm);
 
 #if CONFIG_MISMATCH_DEBUG

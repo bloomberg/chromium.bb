@@ -724,10 +724,6 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_dist_wtd_comp =
       extra_cfg->enable_dist_wtd_comp & extra_cfg->enable_order_hint;
   oxcf->max_reference_frames = extra_cfg->max_reference_frames;
-  if (oxcf->max_reference_frames > 3 && oxcf->max_reference_frames < 7) {
-    // TODO(urvang): Enable all possible values, after they work properly.
-    oxcf->max_reference_frames = 3;
-  }
   oxcf->enable_masked_comp = extra_cfg->enable_masked_comp;
   oxcf->enable_diff_wtd_comp =
       extra_cfg->enable_masked_comp & extra_cfg->enable_diff_wtd_comp;
