@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/child_accounts/event_based_status_reporting_service.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,6 +13,33 @@
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
+
+namespace {
+
+const std::string StatusReportEventToString(
+    EventBasedStatusReportingService::StatusReportEvent event) {
+  switch (event) {
+    case EventBasedStatusReportingService::StatusReportEvent::kAppInstalled:
+      return "Request status report due to an app install.";
+    case EventBasedStatusReportingService::StatusReportEvent::kAppUpdated:
+      return "Request status report due to an app update.";
+    case EventBasedStatusReportingService::StatusReportEvent::kSessionActive:
+      return "Request status report due to a unlock screen.";
+    case EventBasedStatusReportingService::StatusReportEvent::kSessionLocked:
+      return "Request status report due to a lock screen.";
+    case EventBasedStatusReportingService::StatusReportEvent::kDeviceOnline:
+      return "Request status report due to device going online.";
+    case EventBasedStatusReportingService::StatusReportEvent::kSuspendDone:
+      return "Request status report after a suspend has been completed.";
+    default:
+      NOTREACHED();
+  }
+}
+
+}  // namespace
+
+// static
+constexpr char EventBasedStatusReportingService::kUMAStatusReportEvent[];
 
 EventBasedStatusReportingService::EventBasedStatusReportingService(
     content::BrowserContext* context)
@@ -29,12 +57,12 @@ EventBasedStatusReportingService::~EventBasedStatusReportingService() = default;
 
 void EventBasedStatusReportingService::OnPackageInstalled(
     const arc::mojom::ArcPackageInfo& package_info) {
-  RequestStatusReport("Request status report due to an app install.");
+  RequestStatusReport(StatusReportEvent::kAppInstalled);
 }
 
 void EventBasedStatusReportingService::OnPackageModified(
     const arc::mojom::ArcPackageInfo& package_info) {
-  RequestStatusReport("Request status report due to an app update.");
+  RequestStatusReport(StatusReportEvent::kAppUpdated);
 }
 
 void EventBasedStatusReportingService::OnSessionStateChanged() {
@@ -51,29 +79,34 @@ void EventBasedStatusReportingService::OnSessionStateChanged() {
   }
 
   if (session_state == session_manager::SessionState::ACTIVE) {
-    RequestStatusReport("Request status report due to a unlock screen.");
+    RequestStatusReport(StatusReportEvent::kSessionActive);
   } else if (session_state == session_manager::SessionState::LOCKED) {
-    RequestStatusReport("Request status report due to a lock screen.");
+    RequestStatusReport(StatusReportEvent::kSessionLocked);
   }
 }
 
 void EventBasedStatusReportingService::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE)
-    RequestStatusReport("Request status report due to device going online.");
+    RequestStatusReport(StatusReportEvent::kDeviceOnline);
 }
 
 void EventBasedStatusReportingService::SuspendDone(
     const base::TimeDelta& duration) {
-  RequestStatusReport(
-      "Request status report after a suspend has been completed.");
+  RequestStatusReport(StatusReportEvent::kSuspendDone);
 }
 
 void EventBasedStatusReportingService::RequestStatusReport(
-    const std::string& reason) {
-  VLOG(1) << reason;
+    StatusReportEvent event) {
+  VLOG(1) << StatusReportEventToString(event);
   ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
       ->RequestImmediateStatusReport();
+  LogStatusReportEventUMA(event);
+}
+
+void EventBasedStatusReportingService::LogStatusReportEventUMA(
+    StatusReportEvent event) {
+  UMA_HISTOGRAM_ENUMERATION(kUMAStatusReportEvent, event);
 }
 
 void EventBasedStatusReportingService::Shutdown() {
