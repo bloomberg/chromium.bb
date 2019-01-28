@@ -2522,104 +2522,104 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // TODO(kcwu): add back test of verify_output=true after
 // https://crbug.com/694131 fixed.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, true, 0, false, false, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     EncoderPerf,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, false, true, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(ForceKeyframes,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(std::make_tuple(1,
-                                                          false,
-                                                          10,
-                                                          false,
-                                                          false,
-                                                          false,
-                                                          false,
-                                                          false,
-                                                          false)));
+INSTANTIATE_TEST_SUITE_P(ForceKeyframes,
+                         VideoEncodeAcceleratorTest,
+                         ::testing::Values(std::make_tuple(1,
+                                                           false,
+                                                           10,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ForceBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, true, false, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MidStreamParamSwitchBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, true, false, true, false, false, false)));
 
 // TODO(kcwu): add back bitrate test after https://crbug.com/693336 fixed.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DISABLED_MidStreamParamSwitchFPS,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, true, false, false, true, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MultipleEncoders,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(3, false, 0, false, false, false, false, false, false),
         std::make_tuple(3, false, 0, true, false, true, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VerifyTimestamp,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, false, false, false, false, false, true)));
 
-INSTANTIATE_TEST_CASE_P(NoInputTest,
-                        VideoEncodeAcceleratorSimpleTest,
-                        ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(NoInputTest,
+                         VideoEncodeAcceleratorSimpleTest,
+                         ::testing::Values(0));
 
-INSTANTIATE_TEST_CASE_P(CacheLineUnalignedInputTest,
-                        VideoEncodeAcceleratorSimpleTest,
-                        ::testing::Values(1));
+INSTANTIATE_TEST_SUITE_P(CacheLineUnalignedInputTest,
+                         VideoEncodeAcceleratorSimpleTest,
+                         ::testing::Values(1));
 
 #elif defined(OS_MACOSX) || defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, true, 0, false, false, false, false, false, false),
         std::make_tuple(1, true, 0, false, false, false, false, true, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     EncoderPerf,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, false, true, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(MultipleEncoders,
-                        VideoEncodeAcceleratorTest,
-                        ::testing::Values(std::make_tuple(3,
-                                                          false,
-                                                          0,
-                                                          false,
-                                                          false,
-                                                          false,
-                                                          false,
-                                                          false,
-                                                          false)));
+INSTANTIATE_TEST_SUITE_P(MultipleEncoders,
+                         VideoEncodeAcceleratorTest,
+                         ::testing::Values(std::make_tuple(3,
+                                                           false,
+                                                           0,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false,
+                                                           false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     VerifyTimestamp,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, false, false, false, false, false, true)));
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ForceBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(

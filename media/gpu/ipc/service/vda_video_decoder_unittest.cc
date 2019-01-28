@@ -475,8 +475,8 @@ TEST_P(VdaVideoDecoderTest, Flush) {
   NotifyFlushDone();
 }
 
-INSTANTIATE_TEST_CASE_P(VdaVideoDecoder,
-                        VdaVideoDecoderTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(VdaVideoDecoder,
+                         VdaVideoDecoderTest,
+                         ::testing::Values(false, true));
 
 }  // namespace media

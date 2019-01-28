@@ -1431,25 +1431,26 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
 };
 
 // Test that replay after EOS works fine.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ReplayAfterEOS,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
         std::make_tuple(1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
 
 // Test that Reset() before the first Decode() works fine.
-INSTANTIATE_TEST_CASE_P(ResetBeforeDecode,
-                        VideoDecodeAcceleratorParamTest,
-                        ::testing::Values(std::make_tuple(1,
-                                                          1,
-                                                          1,
-                                                          START_OF_STREAM_RESET,
-                                                          CS_RESET,
-                                                          false,
-                                                          false)));
+INSTANTIATE_TEST_SUITE_P(
+    ResetBeforeDecode,
+    VideoDecodeAcceleratorParamTest,
+    ::testing::Values(std::make_tuple(1,
+                                      1,
+                                      1,
+                                      START_OF_STREAM_RESET,
+                                      CS_RESET,
+                                      false,
+                                      false)));
 
 // Test Reset() immediately after Decode() containing config info.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ResetAfterFirstConfigInfo,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(std::make_tuple(1,
@@ -1461,7 +1462,7 @@ INSTANTIATE_TEST_CASE_P(
                                       false)));
 
 // Test Reset() immediately after Flush() and before NotifyFlushDone().
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ResetBeforeNotifyFlushDone,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(std::make_tuple(1,
@@ -1474,13 +1475,13 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MidStreamReset,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
         std::make_tuple(1, 1, 1, MID_STREAM_RESET, CS_RESET, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SlowRendering,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
@@ -1488,7 +1489,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TearDownTiming,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
@@ -1544,7 +1545,7 @@ INSTANTIATE_TEST_CASE_P(
                         false)));
 
 // Test that decoding various variation works with multiple in-flight decodes.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodeVariations,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
@@ -1561,7 +1562,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // Find out how many concurrent decoders can go before we exhaust system
 // resources.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ResourceExhaustion,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(std::make_tuple(kMinSupportedNumConcurrentDecoders,
@@ -1580,8 +1581,8 @@ INSTANTIATE_TEST_CASE_P(
                                       false)));
 
 // Allow MAYBE macro substitution.
-#define WRAPPED_INSTANTIATE_TEST_CASE_P(a, b, c) \
-  INSTANTIATE_TEST_CASE_P(a, b, c)
+#define WRAPPED_INSTANTIATE_TEST_SUITE_P(a, b, c) \
+  INSTANTIATE_TEST_SUITE_P(a, b, c)
 
 #if defined(OS_WIN)
 // There are no reference images for windows.
@@ -1590,7 +1591,7 @@ INSTANTIATE_TEST_CASE_P(
 #define MAYBE_Thumbnail Thumbnail
 #endif
 // Thumbnailing test
-WRAPPED_INSTANTIATE_TEST_CASE_P(
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MAYBE_Thumbnail,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
