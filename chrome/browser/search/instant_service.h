@@ -108,6 +108,10 @@ class InstantService : public KeyedService,
   // necessary. Investigate more and remove this from here.
   void UpdateThemeInfo();
 
+  // Invoked when a background pref update is received via sync, triggering
+  // an update of theme info.
+  void UpdateBackgroundFromSync();
+
   // Invoked by the InstantController to update most visited items details for
   // NTP.
   void UpdateMostVisitedItemsInfo();
@@ -175,7 +179,6 @@ class InstantService : public KeyedService,
   void ApplyOrResetCustomBackgroundThemeInfo();
 
   void ApplyCustomBackgroundThemeInfo();
-  void ApplyCustomBackgroundThemeInfoFromLocalFile(bool file_exists);
 
   void ResetCustomBackgroundThemeInfo();
 

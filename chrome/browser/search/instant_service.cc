@@ -93,17 +93,6 @@ void CopyFileToProfilePath(const base::FilePath& from_path,
                      chrome::kChromeSearchLocalNtpBackgroundFilename));
 }
 
-// In some cases (Sync, upgrading versions) its necessary to check if the file
-// actually exists and is in the correct location.
-bool CheckLocalBackgroundImageExists(const base::FilePath& profile_path) {
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath profile_image =
-      profile_path.AppendASCII(chrome::kChromeSearchLocalNtpBackgroundFilename);
-
-  return base::PathExists(profile_image);
-}
-
 void DoDeleteThumbnailDataIfExists(
     const base::FilePath& database_dir,
     base::Optional<base::OnceCallback<void(bool)>> callback) {
@@ -114,12 +103,6 @@ void DoDeleteThumbnailDataIfExists(
   }
   if (callback.has_value())
     std::move(*callback).Run(result);
-}
-
-bool IsLocalFileUrl(GURL url) {
-  return base::StartsWith(url.spec(),
-                          chrome::kChromeSearchLocalNtpBackgroundUrl,
-                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -238,7 +221,7 @@ InstantService::InstantService(Profile* profile)
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kNtpCustomBackgroundDict,
-      base::BindRepeating(&InstantService::UpdateThemeInfo,
+      base::BindRepeating(&InstantService::UpdateBackgroundFromSync,
                           base::Unretained(this)));
 }
 
@@ -348,6 +331,12 @@ void InstantService::UpdateThemeInfo() {
   NotifyAboutThemeInfo();
 }
 
+void InstantService::UpdateBackgroundFromSync() {
+  // Any incoming change to synced background data should clear the local image.
+  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
+  UpdateThemeInfo();
+}
+
 void InstantService::UpdateMostVisitedItemsInfo() {
   NotifyAboutMostVisitedItems();
 }
@@ -375,6 +364,10 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
       background_service_ &&
       background_service_->IsValidBackdropUrl(background_url);
 
+  bool need_forced_refresh =
+      pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice) &&
+      pref_service_->FindPreference(prefs::kNtpCustomBackgroundDict)
+          ->IsDefaultValue();
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
   RemoveLocalBackgroundImageCopy();
 
@@ -384,20 +377,19 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
     pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
   } else {
     pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
+
+    // If this device was using a local image and did not have a non-local
+    // background saved, UpdateBackgroundFromSync will not fire. Therefore, we
+    // need to force a refresh here.
+    if (need_forced_refresh) {
+      UpdateThemeInfo();
+    }
   }
 }
 
 void InstantService::SetBackgroundToLocalResource() {
-  // Add a timestamp to the url to prevent the browser from using a cached
-  // version when "Upload an image" is used multiple times.
-  std::string time_string = std::to_string(base::Time::Now().ToTimeT());
-  std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
-  GURL timestamped_url(local_string + "?ts=" + time_string);
-
-  base::DictionaryValue background_info = GetBackgroundInfoAsDict(
-      timestamped_url, std::string(), std::string(), GURL());
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, true);
-  pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
+  UpdateThemeInfo();
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
@@ -615,6 +607,16 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
     return;
   }
 
+  if (pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice)) {
+    // Add a timestamp to the url to prevent the browser from using a cached
+    // version when "Upload an image" is used multiple times.
+    std::string time_string = std::to_string(base::Time::Now().ToTimeT());
+    std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
+    GURL timestamped_url(local_string + "?ts=" + time_string);
+    theme_info_->custom_background_url = timestamped_url;
+    return;
+  }
+
   // Attempt to get custom background URL from preferences.
   GURL custom_background_url;
   if (!IsCustomBackgroundPrefValid(custom_background_url)) {
@@ -622,34 +624,7 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
     return;
   }
 
-  // If the url points to a local image check that it actually exists, if not
-  // fall back to the default background.
-  const PrefService::Preference* background_local_to_device_pref =
-      pref_service_->FindPreference(prefs::kNtpCustomBackgroundLocalToDevice);
-  if (IsLocalFileUrl(custom_background_url) &&
-      background_local_to_device_pref->IsDefaultValue()) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::BindOnce(&CheckLocalBackgroundImageExists, profile_->GetPath()),
-        base::BindOnce(
-            &InstantService::ApplyCustomBackgroundThemeInfoFromLocalFile,
-            weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
   ApplyCustomBackgroundThemeInfo();
-}
-
-void InstantService::ApplyCustomBackgroundThemeInfoFromLocalFile(
-    bool file_exists) {
-  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice,
-                            file_exists);
-
-  ApplyCustomBackgroundThemeInfo();
-
-  // This method executes as a result of PostTask... so the call to
-  // NotifyAboutThemeInfo from UpdateThemeInfo is lost, explicitly send it
-  // here instead.
-  NotifyAboutThemeInfo();
 }
 
 void InstantService::ApplyCustomBackgroundThemeInfo() {
@@ -657,14 +632,6 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
       pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
   GURL custom_background_url(
       background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
-
-  // If a background was set using a local image on a different device fallback
-  // to the default background.
-  if (IsLocalFileUrl(custom_background_url) &&
-      !pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice)) {
-    FallbackToDefaultThemeInfo();
-    return;
-  }
 
   // Set custom background information in theme info (attributions are
   // optional).
@@ -715,14 +682,12 @@ void InstantService::FallbackToDefaultThemeInfo() {
 }
 
 bool InstantService::IsCustomBackgroundSet() {
+  if (pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice))
+    return true;
+
   GURL custom_background_url;
   if (!IsCustomBackgroundPrefValid(custom_background_url))
     return false;
-
-  if (IsLocalFileUrl(custom_background_url) &&
-      !pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice)) {
-    return false;
-  }
 
   return true;
 }
