@@ -158,7 +158,6 @@ DocumentLoader::DocumentLoader(
   origin_policy_ = params_->origin_policy;
   requestor_origin_ = params_->requestor_origin;
   unreachable_url_ = params_->unreachable_url;
-  cache_mode_ = params_->cache_mode;
   previews_state_ = params_->previews_state;
 
   if (params_->data.IsNull() && url_.IsAboutSrcdocURL()) {
@@ -288,10 +287,6 @@ const KURL& DocumentLoader::Url() const {
 
 const AtomicString& DocumentLoader::HttpMethod() const {
   return http_method_;
-}
-
-mojom::FetchCacheMode DocumentLoader::CacheMode() const {
-  return cache_mode_;
 }
 
 const Referrer& DocumentLoader::GetReferrer() const {

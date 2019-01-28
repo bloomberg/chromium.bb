@@ -62,7 +62,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   WebString OriginalReferrer() const override;
   WebURL GetUrl() const override;
   WebString HttpMethod() const override;
-  mojom::FetchCacheMode GetCacheMode() const override;
   WebString Referrer() const override;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const override;
   const WebURLResponse& GetResponse() const override;

@@ -129,7 +129,6 @@ class CORE_EXPORT DocumentLoader
   const KURL& Url() const;
   const KURL& UrlForHistory() const;
   const AtomicString& HttpMethod() const;
-  mojom::FetchCacheMode CacheMode() const;
   const Referrer& GetReferrer() const;
   const KURL& UnreachableURL() const;
   EncodedFormData* HttpBody() const;
@@ -360,7 +359,6 @@ class CORE_EXPORT DocumentLoader
   WebURLRequest::PreviewsState previews_state_;
   String origin_policy_;
   scoped_refptr<const SecurityOrigin> requestor_origin_;
-  mojom::FetchCacheMode cache_mode_;
   KURL unreachable_url_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
 

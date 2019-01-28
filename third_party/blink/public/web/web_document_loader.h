@@ -79,9 +79,6 @@ class BLINK_EXPORT WebDocumentLoader {
   // Returns the http method of the request corresponding to this load.
   virtual WebString HttpMethod() const = 0;
 
-  // Returns the cache mode of the request corresponding to this load.
-  virtual mojom::FetchCacheMode GetCacheMode() const = 0;
-
   // Returns the http referrer of the request corresponding to this load.
   virtual WebString Referrer() const = 0;
 

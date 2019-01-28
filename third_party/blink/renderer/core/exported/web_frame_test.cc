@@ -7385,10 +7385,30 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   EXPECT_EQ(1, web_frame_client.BeginNavigationCallCount());
 }
 
+class TestBeginNavigationCacheModeClient
+    : public frame_test_helpers::TestWebFrameClient {
+ public:
+  TestBeginNavigationCacheModeClient()
+      : cache_mode_(mojom::FetchCacheMode::kDefault) {}
+  ~TestBeginNavigationCacheModeClient() override = default;
+
+  mojom::FetchCacheMode GetCacheMode() const { return cache_mode_; }
+
+  void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override {
+    cache_mode_ = info->url_request.GetCacheMode();
+    TestWebFrameClient::BeginNavigation(std::move(info));
+  }
+
+ private:
+  mojom::FetchCacheMode cache_mode_;
+};
+
 TEST_F(WebFrameTest, BackToReload) {
   RegisterMockedHttpURLLoad("fragment_middle_click.html");
+  TestBeginNavigationCacheModeClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "fragment_middle_click.html");
+  web_view_helper.InitializeAndLoad(base_url_ + "fragment_middle_click.html",
+                                    &client);
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   const FrameLoader& main_frame_loader =
       web_view_helper.LocalMainFrame()->GetFrame()->Loader();
@@ -7407,14 +7427,14 @@ TEST_F(WebFrameTest, BackToReload) {
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
 
   frame_test_helpers::ReloadFrame(frame);
-  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            frame->GetDocumentLoader()->GetCacheMode());
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache, client.GetCacheMode());
 }
 
 TEST_F(WebFrameTest, ReloadPost) {
   RegisterMockedHttpURLLoad("reload_post.html");
+  TestBeginNavigationCacheModeClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "reload_post.html");
+  web_view_helper.InitializeAndLoad(base_url_ + "reload_post.html", &client);
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
 
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -7427,8 +7447,7 @@ TEST_F(WebFrameTest, ReloadPost) {
             frame->GetDocumentLoader()->HttpMethod());
 
   frame_test_helpers::ReloadFrame(frame);
-  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            frame->GetDocumentLoader()->GetCacheMode());
+  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache, client.GetCacheMode());
   EXPECT_EQ(kWebNavigationTypeFormResubmitted,
             frame->GetDocumentLoader()->GetNavigationType());
 }
@@ -8773,12 +8792,12 @@ TEST_F(WebFrameTest, ReloadBypassingCache) {
   // Check that a reload bypassing cache on a frame will result in the cache
   // policy of the request being set to ReloadBypassingCache.
   RegisterMockedHttpURLLoad("foo.html");
+  TestBeginNavigationCacheModeClient client;
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "foo.html");
+  web_view_helper.InitializeAndLoad(base_url_ + "foo.html", &client);
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   frame_test_helpers::ReloadFrameBypassingCache(frame);
-  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
-            frame->GetDocumentLoader()->GetCacheMode());
+  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache, client.GetCacheMode());
 }
 
 static void NodeImageTestValidation(const IntSize& reference_bitmap_size,
