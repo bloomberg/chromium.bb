@@ -42,7 +42,7 @@ struct NotificationDatabaseData;
 class ServiceWorkerContextWrapper;
 
 // Implementation of the Web Notification storage context. The public methods
-// defined in this interface must only be called on the IO thread unless
+// defined in this interface must only be called on the UI thread unless
 // otherwise specified.
 class CONTENT_EXPORT PlatformNotificationContextImpl
     : public PlatformNotificationContext,
@@ -51,7 +51,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Constructs a new platform notification context. If |path| is non-empty, the
   // database will be initialized in the "Platform Notifications" subdirectory
   // of |path|. Otherwise, the database will be initialized in memory. The
-  // constructor must only be called on the IO thread.
+  // constructor must only be called on the UI thread.
   PlatformNotificationContextImpl(
       const base::FilePath& path,
       BrowserContext* browser_context,
@@ -106,13 +106,9 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   ~PlatformNotificationContextImpl() override;
 
-  void DidGetNotificationsOnUI(
+  void DidGetNotifications(
       std::unique_ptr<std::set<std::string>> displayed_notifications,
       bool supports_synchronization);
-  void InitializeOnIO(
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization);
-  void ShutdownOnIO();
 
   // Initializes the database if neccesary. Must be called on the IO thread.
   // |success_closure| will be invoked on a the |task_runner_| thread when
@@ -137,16 +133,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   // Updates the database (and the result callback) based on
   // |displayed_notifications| if |supports_synchronization|.
-  void SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnUI(
-      const GURL& origin,
-      int64_t service_worker_registration_id,
-      const ReadAllResultCallback& callback,
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization);
-
-  // Updates the database (and the result callback) based on
-  // |displayed_notifications| if |supports_synchronization|.
-  void SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnIO(
+  void SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
       const ReadAllResultCallback& callback,

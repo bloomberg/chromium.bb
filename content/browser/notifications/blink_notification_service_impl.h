@@ -28,7 +28,7 @@ class PlatformNotificationContextImpl;
 // Implementation of the NotificationService used for Web Notifications. Is
 // responsible for displaying, updating and reading of both non-persistent
 // and persistent notifications. Primarily lives on the UI thread, but jumps to
-// the IO thread when needing to interact with the PlatformNotificationContext.
+// the IO thread when needing to interact with the ServiceWorkerContextWrapper.
 class CONTENT_EXPORT BlinkNotificationServiceImpl
     : public blink::mojom::NotificationService {
  public:
@@ -72,14 +72,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   bool ValidateNotificationResources(
       const blink::NotificationResources& notification_resources);
 
-  void DisplayPersistentNotificationOnIOThread(
-      int64_t service_worker_registration_id,
-      int64_t persistent_notification_id,
-      const blink::PlatformNotificationData& platform_notification_data,
-      const blink::NotificationResources& notification_resources,
-      DisplayPersistentNotificationCallback callback);
-
-  void DisplayPersistentNotificationWithIdOnIOThread(
+  void DisplayPersistentNotificationWithId(
       int64_t service_worker_registration_id,
       const blink::PlatformNotificationData& platform_notification_data,
       const blink::NotificationResources& notification_resources,
@@ -95,7 +88,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
-  void DidGetNotificationsOnIOThread(
+  void DidGetNotifications(
       const std::string& filter_tag,
       GetNotificationsCallback callback,
       bool success,
