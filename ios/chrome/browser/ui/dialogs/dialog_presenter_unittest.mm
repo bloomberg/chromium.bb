@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -136,6 +137,23 @@ TEST_F(DialogPresenterTest, IFrameTest) {
   expected_title = l10n_util::GetNSString(
       IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
   EXPECT_NSEQ(expected_title, different_origin_title);
+}
+
+// Tests that JavaScript dialogs have correct title when they are presented from
+// about:blank page.
+TEST_F(DialogPresenterTest, AboutBlankTest) {
+  DialogPresenterTestWebState web_state;
+  web_state.SetCurrentURL(GURL(url::kAboutBlankURL));
+  [presenter() runJavaScriptAlertPanelWithMessage:@""
+                                       requestURL:GURL(url::kAboutBlankURL)
+                                         webState:&web_state
+                                completionHandler:nil];
+
+  NSString* expected_title = l10n_util::GetNSStringF(
+      IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::UTF8ToUTF16(url::kAboutBlankURL));
+  NSString* actual_title =
+      [presenter() presentedDialogCoordinator].alertController.title;
+  EXPECT_NSEQ(expected_title, actual_title);
 }
 
 // Tests that multiple JavaScript dialogs are queued

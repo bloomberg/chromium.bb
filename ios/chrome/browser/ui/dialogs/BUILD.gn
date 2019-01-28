@@ -110,6 +110,7 @@ source_set("eg_tests") {
     "//base",
     "//base/test:test_support",
     "//components/strings",
+    "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/test/app:test_support",
