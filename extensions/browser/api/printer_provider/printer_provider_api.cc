@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -19,11 +20,13 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api.h"
 #include "extensions/browser/api/printer_provider_internal/printer_provider_internal_api_observer.h"
-#include "extensions/browser/api/usb/usb_guid_map.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -655,7 +658,10 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
   int request_id =
       pending_usb_printer_info_requests_[extension_id].Add(std::move(callback));
   api::usb::Device api_device;
-  UsbGuidMap::Get(browser_context_)->GetApiDevice(device, &api_device);
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+  UsbDeviceManager::Get(browser_context_)
+      ->GetApiDevice(*device_info, &api_device);
 
   std::unique_ptr<base::ListValue> internal_args(new base::ListValue());
   // Request id is not part of the public API and it will be massaged out in

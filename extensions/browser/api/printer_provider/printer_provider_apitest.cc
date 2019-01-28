@@ -20,7 +20,7 @@
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
-#include "extensions/browser/api/usb/usb_guid_map.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
@@ -768,15 +768,15 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetUsbPrinterInfo) {
                                    "OK", &extension_id);
   ASSERT_FALSE(extension_id.empty());
 
-  UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
+  UsbDeviceManager* device_manager = UsbDeviceManager::Get(browser_context());
   std::unique_ptr<base::Value> expected_printer_info(
       DictionaryBuilder()
           .Set("description", "This printer is a USB device.")
           .Set("extensionId", extension_id)
           .Set("extensionName", "Test USB printer provider")
-          .Set("id",
-               base::StringPrintf("%s:usbDevice-%u", extension_id.c_str(),
-                                  guid_map->GetIdFromGuid(device->guid())))
+          .Set("id", base::StringPrintf(
+                         "%s:usbDevice-%u", extension_id.c_str(),
+                         device_manager->GetIdFromGuid(device->guid())))
           .Set("name", "Test Printer")
           .Build());
   base::RunLoop run_loop;
