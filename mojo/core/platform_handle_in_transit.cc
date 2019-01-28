@@ -129,6 +129,21 @@ bool PlatformHandleInTransit::TransferToProcess(
 
 #if defined(OS_WIN)
 // static
+bool PlatformHandleInTransit::IsPseudoHandle(HANDLE handle) {
+  // Note that there appears to be no official documentation covering the
+  // existence of specific pseudo handle values. In practice it's clear that
+  // e.g. -1 is the current process, -2 is the current thread, etc. The largest
+  // negative value known to be an issue with DuplicateHandle in the fuzzer is
+  // -12.
+  //
+  // Note that there is virtually no risk of a real handle value falling within
+  // this range and being misclassified as a pseudo handle.
+  constexpr int kMinimumKnownPseudoHandleValue = -12;
+  const auto value = static_cast<int32_t>(reinterpret_cast<uintptr_t>(handle));
+  return value < 0 && value >= kMinimumKnownPseudoHandleValue;
+}
+
+// static
 PlatformHandle PlatformHandleInTransit::TakeIncomingRemoteHandle(
     HANDLE handle,
     base::ProcessHandle owning_process) {

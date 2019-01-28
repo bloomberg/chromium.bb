@@ -279,6 +279,8 @@ Channel::MessagePtr Channel::Message::Deserialize(
   std::vector<PlatformHandleInTransit> handles(num_handles);
   for (size_t i = 0; i < num_handles; i++) {
     HANDLE handle = base::win::Uint32ToHandle(message->handles_[i].handle);
+    if (PlatformHandleInTransit::IsPseudoHandle(handle))
+      return nullptr;
     if (from_process == base::kNullProcessHandle) {
       handles[i] = PlatformHandleInTransit(
           PlatformHandle(base::win::ScopedHandle(handle)));
