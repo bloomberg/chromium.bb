@@ -2967,24 +2967,24 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(TabDragging,
-                        DetachToBrowserTabDragControllerTest,
-                        ::testing::Values("mouse", "touch"));
-INSTANTIATE_TEST_CASE_P(TabDragging,
-                        DetachToBrowserInSeparateDisplayTabDragControllerTest,
-                        ::testing::Values("mouse"));
-INSTANTIATE_TEST_CASE_P(TabDragging,
-                        DifferentDeviceScaleFactorDisplayTabDragControllerTest,
-                        ::testing::Values("mouse"));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(TabDragging,
+                         DetachToBrowserTabDragControllerTest,
+                         ::testing::Values("mouse", "touch"));
+INSTANTIATE_TEST_SUITE_P(TabDragging,
+                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
+                         ::testing::Values("mouse"));
+INSTANTIATE_TEST_SUITE_P(TabDragging,
+                         DifferentDeviceScaleFactorDisplayTabDragControllerTest,
+                         ::testing::Values("mouse"));
+INSTANTIATE_TEST_SUITE_P(
     TabDragging,
     DetachToBrowserInSeparateDisplayAndCancelTabDragControllerTest,
     ::testing::Values("mouse"));
-INSTANTIATE_TEST_CASE_P(TabDragging,
-                        DetachToBrowserTabDragControllerTestTouch,
-                        ::testing::Values("touch"));
+INSTANTIATE_TEST_SUITE_P(TabDragging,
+                         DetachToBrowserTabDragControllerTestTouch,
+                         ::testing::Values("touch"));
 #else
-INSTANTIATE_TEST_CASE_P(TabDragging,
-                        DetachToBrowserTabDragControllerTest,
-                        ::testing::Values("mouse"));
+INSTANTIATE_TEST_SUITE_P(TabDragging,
+                         DetachToBrowserTabDragControllerTest,
+                         ::testing::Values("mouse"));
 #endif
