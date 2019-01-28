@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerPolicyTest, CheckComponent) {
 
 // Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
 // are allowed).
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PolicyControl,
     ReporterRunnerPolicyTest,
     ::testing::Values(ReporterRunnerPolicyTestParams(false, false),
@@ -925,7 +925,7 @@ struct ReporterRunTestParamsToString {
 
 // Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
 // are allowed) without an enterprise policy set.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UserInitiatedRunsEnabled,
     ReporterRunnerTest,
     ::testing::Combine(
@@ -941,7 +941,7 @@ INSTANTIATE_TEST_CASE_P(
 // Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
 // are allowed) with enterprise policies forcing reporting to be either enabled
 // or disabled.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UserInitiatedRunsEnabledWithPolicy,
     ReporterRunnerTest,
     ::testing::Combine(

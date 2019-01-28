@@ -214,10 +214,10 @@ TEST_P(ChromeCleanerControllerSimpleTest, FlagsPassedToCleanerProcess) {
   controller->RemoveObserver(&mock_observer_);
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ChromeCleanerControllerSimpleTest,
-                        Values(MetricsStatus::kDisabled,
-                               MetricsStatus::kEnabled));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ChromeCleanerControllerSimpleTest,
+                         Values(MetricsStatus::kDisabled,
+                                MetricsStatus::kEnabled));
 
 enum class CleanerProcessStatus {
   kFetchFailure,
@@ -659,7 +659,7 @@ constexpr CrashPoint kCrashPointsAfterStartup[] = {
     CrashPoint::kAfterResponseReceived};
 
 // Tests where the process gets past the startup phase and finds UwS to clean.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CleanerFindsUwS,
     ChromeCleanerControllerTest,
     Combine(Values(CleanerProcessStatus::kFetchSuccessValidProcess),
@@ -684,7 +684,7 @@ INSTANTIATE_TEST_CASE_P(
 // clean. Since we don't progress to any stage where the parameters after
 // UwsFoundStatus are used, their values would not change the test behaviour,
 // so we can save time by only testing one arbitrary value for each.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CleanerFindsNothing,
     ChromeCleanerControllerTest,
     Combine(Values(CleanerProcessStatus::kFetchSuccessValidProcess),
@@ -699,7 +699,7 @@ INSTANTIATE_TEST_CASE_P(
 // Tests where the process fails before starting a scan. This never gets far
 // enough to collect results, so we can save time by not repeating the tests
 // for every possible combination of results parameters.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CleanerFailsToStart,
     ChromeCleanerControllerTest,
     Combine(Values(CleanerProcessStatus::kFetchFailure,
@@ -834,15 +834,16 @@ TEST_P(ChromeCleanerControllerReporterInteractionTest,
       SwReporterInvocationResult::kCleanupToBeOffered);
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ChromeCleanerControllerReporterInteractionTest,
-                        Values(ChromeCleanerController::State::kIdle,
-                               ChromeCleanerController::State::kReporterRunning,
-                               ChromeCleanerController::State::kScanning,
-                               ChromeCleanerController::State::kInfected,
-                               ChromeCleanerController::State::kCleaning,
-                               ChromeCleanerController::State::kRebootRequired),
-                        chrome_cleaner::GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ChromeCleanerControllerReporterInteractionTest,
+    Values(ChromeCleanerController::State::kIdle,
+           ChromeCleanerController::State::kReporterRunning,
+           ChromeCleanerController::State::kScanning,
+           ChromeCleanerController::State::kInfected,
+           ChromeCleanerController::State::kCleaning,
+           ChromeCleanerController::State::kRebootRequired),
+    chrome_cleaner::GetParamNameForTest());
 
 }  // namespace
 }  // namespace safe_browsing
