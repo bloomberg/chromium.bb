@@ -46,7 +46,7 @@ class CORE_EXPORT DisplayLockContext final
     kDoNotYield,
     kStrictYieldBetweenLifecyclePhases,
     kYieldBetweenLifecyclePhases,
-    kDefault = kStrictYieldBetweenLifecyclePhases
+    kDefault = kYieldBetweenLifecyclePhases
   };
 
   // See GetScopedPendingFrameRect() for description.
@@ -95,7 +95,6 @@ class CORE_EXPORT DisplayLockContext final
   ScriptPromise acquire(ScriptState*, DisplayLockOptions*);
   ScriptPromise update(ScriptState*);
   ScriptPromise commit(ScriptState*);
-  ScriptPromise updateAndCommit(ScriptState*);
 
   // Lifecycle observation / state functions.
   bool ShouldStyle() const;
