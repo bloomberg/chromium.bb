@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 
-INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(File, MediaTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(Http, MediaTest, ::testing::Values(true));
 
 }  // namespace content
