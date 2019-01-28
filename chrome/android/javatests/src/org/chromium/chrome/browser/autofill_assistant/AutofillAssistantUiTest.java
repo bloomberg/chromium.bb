@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -137,7 +138,9 @@ public class AutofillAssistantUiTest {
 
         // Show overlay.
         ThreadUtils.runOnUiThreadBlocking(
-                () -> assistantCoordinator.getOverlayCoordinator().showFullOverlay());
+                ()
+                        -> assistantCoordinator.getOverlayCoordinator().setState(
+                                AssistantOverlayState.full()));
         View overlay = bottomSheet.findViewById(R.id.touch_event_filter);
         Assert.assertTrue(overlay.isShown());
 

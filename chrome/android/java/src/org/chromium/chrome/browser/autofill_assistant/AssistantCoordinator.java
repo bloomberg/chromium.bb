@@ -12,6 +12,9 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
+import org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterView;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -105,7 +108,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mBottomBarCoordinator.expand();
 
         // Hide everything except header.
-        mOverlayCoordinator.hide();
+        mOverlayCoordinator.setState(AssistantOverlayState.hidden());
         mModel.getDetailsModel().clearDetails();
         mBottomBarCoordinator.getPaymentRequestCoordinator().setVisible(false);
         mModel.getCarouselModel().clearChips();
@@ -136,7 +139,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
-        mOverlayCoordinator.showFullOverlay();
+        mOverlayCoordinator.setState(AssistantOverlayState.full());
 
         AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
                 .then(accepted -> {
@@ -150,7 +153,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
                     mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, true);
 
                     // Hide overlay.
-                    mOverlayCoordinator.hide();
+                    mOverlayCoordinator.setState(AssistantOverlayState.hidden());
 
                     onAccept.run();
                 });
