@@ -216,9 +216,9 @@ FIFOSmokeTestParam smoke_test_params[] = {
     // Test case 7 (Longer test duration): 256 Pull, 128 Push. 2.5 seconds.
     {48000, 2, 8192, 2500, 256, 0, 128, 1}};
 
-INSTANTIATE_TEST_CASE_P(PushPullFIFOSmokeTest,
-                        PushPullFIFOSmokeTest,
-                        testing::ValuesIn(smoke_test_params));
+INSTANTIATE_TEST_SUITE_P(PushPullFIFOSmokeTest,
+                         PushPullFIFOSmokeTest,
+                         testing::ValuesIn(smoke_test_params));
 
 }  // namespace
 
