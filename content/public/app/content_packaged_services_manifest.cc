@@ -24,7 +24,7 @@
 #include "services/viz/manifest.h"
 
 #if defined(OS_LINUX)
-#include "components/services/font/manifest.h"
+#include "components/services/font/public/cpp/manifest.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)
