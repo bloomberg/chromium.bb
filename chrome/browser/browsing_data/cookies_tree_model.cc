@@ -211,20 +211,18 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitDatabase(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitLocalStorage(
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-    local_storage_info) {
+    const content::StorageUsageInfo* usage_info) {
   Init(TYPE_LOCAL_STORAGE);
-  this->local_storage_info = local_storage_info;
-  origin = url::Origin::Create(local_storage_info->origin_url);
+  this->usage_info = usage_info;
+  origin = usage_info->origin;
   return *this;
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSessionStorage(
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-    session_storage_info) {
+    const content::StorageUsageInfo* usage_info) {
   Init(TYPE_SESSION_STORAGE);
-  this->session_storage_info = session_storage_info;
-  origin = url::Origin::Create(session_storage_info->origin_url);
+  this->usage_info = usage_info;
+  origin = usage_info->origin;
   return *this;
 }
 
@@ -448,13 +446,12 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
 
 class CookieTreeLocalStorageNode : public CookieTreeNode {
  public:
-  // |local_storage_info| should remain valid at least as long as the
+  // |usage_info| should remain valid at least as long as the
   // CookieTreeLocalStorageNode is valid.
   explicit CookieTreeLocalStorageNode(
-      std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
-          local_storage_info)
+      std::list<content::StorageUsageInfo>::iterator local_storage_info)
       : CookieTreeNode(
-            base::UTF8ToUTF16(local_storage_info->origin_url.spec())),
+            base::UTF8ToUTF16(local_storage_info->origin.Serialize())),
         local_storage_info_(local_storage_info) {}
 
   ~CookieTreeLocalStorageNode() override {}
@@ -465,7 +462,7 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
 
     if (container) {
       container->local_storage_helper_->DeleteOrigin(
-          local_storage_info_->origin_url, base::DoNothing());
+          local_storage_info_->origin, base::DoNothing());
       container->local_storage_info_list_.erase(local_storage_info_);
     }
   }
@@ -473,13 +470,14 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
     return DetailedInfo().InitLocalStorage(&*local_storage_info_);
   }
 
-  int64_t InclusiveSize() const override { return local_storage_info_->size; }
+  int64_t InclusiveSize() const override {
+    return local_storage_info_->total_size_bytes;
+  }
 
  private:
   // |local_storage_info_| is expected to remain valid as long as the
   // CookieTreeLocalStorageNode is valid.
-  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
-      local_storage_info_;
+  std::list<content::StorageUsageInfo>::iterator local_storage_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeLocalStorageNode);
 };
@@ -492,10 +490,9 @@ class CookieTreeSessionStorageNode : public CookieTreeNode {
   // |session_storage_info| should remain valid at least as long as the
   // CookieTreeSessionStorageNode is valid.
   explicit CookieTreeSessionStorageNode(
-      std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
-          session_storage_info)
+      std::list<content::StorageUsageInfo>::iterator session_storage_info)
       : CookieTreeNode(
-            base::UTF8ToUTF16(session_storage_info->origin_url.spec())),
+            base::UTF8ToUTF16(session_storage_info->origin.Serialize())),
         session_storage_info_(session_storage_info) {}
 
   ~CookieTreeSessionStorageNode() override {}
@@ -519,8 +516,7 @@ class CookieTreeSessionStorageNode : public CookieTreeNode {
  private:
   // |session_storage_info_| is expected to remain valid as long as the
   // CookieTreeSessionStorageNode is valid.
-  std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
-      session_storage_info_;
+  std::list<content::StorageUsageInfo>::iterator session_storage_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieTreeSessionStorageNode);
 };
@@ -1668,7 +1664,7 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
   for (auto local_storage_info = container->local_storage_info_list_.begin();
        local_storage_info != container->local_storage_info_list_.end();
        ++local_storage_info) {
-    const GURL& origin(local_storage_info->origin_url);
+    const GURL& origin(local_storage_info->origin.GetURL());
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
                                .find(filter) != std::string::npos)) {
@@ -1695,7 +1691,7 @@ void CookiesTreeModel::PopulateSessionStorageInfoWithFilter(
            container->session_storage_info_list_.begin();
        session_storage_info != container->session_storage_info_list_.end();
        ++session_storage_info) {
-    const GURL& origin = session_storage_info->origin_url;
+    const GURL& origin = session_storage_info->origin.GetURL();
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
                                .find(filter) != base::string16::npos)) {

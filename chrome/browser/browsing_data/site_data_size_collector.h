@@ -22,8 +22,7 @@ namespace {
 
 typedef std::list<net::CanonicalCookie> CookieList;
 typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
-typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
-    LocalStorageInfoList;
+typedef std::list<content::StorageUsageInfo> LocalStorageInfoList;
 typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;

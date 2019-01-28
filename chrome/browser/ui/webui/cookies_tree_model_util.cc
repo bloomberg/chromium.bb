@@ -143,11 +143,12 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE: {
       dict->SetString(kKeyType, "local_storage");
 
-      const BrowsingDataLocalStorageHelper::LocalStorageInfo&
-         local_storage_info = *node.GetDetailedInfo().local_storage_info;
+      const content::StorageUsageInfo& local_storage_info =
+          *node.GetDetailedInfo().usage_info;
 
-      dict->SetString(kKeyOrigin, local_storage_info.origin_url.spec());
-      dict->SetString(kKeySize, ui::FormatBytes(local_storage_info.size));
+      dict->SetString(kKeyOrigin, local_storage_info.origin.Serialize());
+      dict->SetString(kKeySize,
+                      ui::FormatBytes(local_storage_info.total_size_bytes));
       dict->SetString(kKeyModified, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               local_storage_info.last_modified)));

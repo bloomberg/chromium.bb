@@ -162,7 +162,7 @@ void SiteDataSizeCollector::OnLocalStorageModelInfoLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
   for (const auto& local_storage_info : local_storage_info_list)
-    total_size += local_storage_info.size;
+    total_size += local_storage_info.total_size_bytes;
   OnStorageSizeFetched(total_size);
 }
 

@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -27,20 +28,8 @@ class Profile;
 class BrowsingDataLocalStorageHelper
     : public base::RefCounted<BrowsingDataLocalStorageHelper> {
  public:
-  // Contains detailed information about local storage.
-  struct LocalStorageInfo {
-    LocalStorageInfo(const GURL& origin_url,
-                     int64_t size,
-                     base::Time last_modified);
-    ~LocalStorageInfo();
-
-    GURL origin_url;
-    int64_t size;
-    base::Time last_modified;
-  };
-
   using FetchCallback =
-      base::OnceCallback<void(const std::list<LocalStorageInfo>&)>;
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
   explicit BrowsingDataLocalStorageHelper(Profile* profile);
 
@@ -48,10 +37,11 @@ class BrowsingDataLocalStorageHelper
   // callback. This must be called only in the UI thread.
   virtual void StartFetching(FetchCallback callback);
 
-  // Deletes the local storage for the |origin_url|. |callback| is called when
+  // Deletes the local storage for the |origin|. |callback| is called when
   // the deletion is sent to the database and |StartFetching()| doesn't return
   // entries for |origin_url| anymore.
-  virtual void DeleteOrigin(const GURL& origin_url, base::OnceClosure callback);
+  virtual void DeleteOrigin(const url::Origin& origin,
+                            base::OnceClosure callback);
 
  protected:
   friend class base::RefCounted<BrowsingDataLocalStorageHelper>;
@@ -89,7 +79,7 @@ class CannedBrowsingDataLocalStorageHelper
 
   // BrowsingDataLocalStorageHelper implementation.
   void StartFetching(FetchCallback callback) override;
-  void DeleteOrigin(const GURL& origin_url,
+  void DeleteOrigin(const url::Origin& origin,
                     base::OnceClosure callback) override;
 
  private:
