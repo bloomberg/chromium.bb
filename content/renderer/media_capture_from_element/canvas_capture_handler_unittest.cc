@@ -234,7 +234,7 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   EXPECT_FALSE(canvas_capture_handler_->NeedsNewFrame());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     CanvasCaptureHandlerTest,
     ::testing::Combine(::testing::Bool(),
