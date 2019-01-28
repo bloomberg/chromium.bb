@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionTest, SetAndUnsetPolicy) {
       << "Initial primary display scale after policy was set and unset";
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PolicyDeviceDisplayResolution,
     DeviceDisplayResolutionTest,
     testing::Values(PolicyValue{1920, 1080, 200, false, 200},
@@ -460,11 +460,11 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, Reboot) {
       << "Initial primary display scale after reboot";
 }
 
-INSTANTIATE_TEST_CASE_P(PolicyDeviceDisplayResolution,
-                        DisplayResolutionBootTest,
-                        testing::Values(PolicyValue{1920, 1080, 200, false,
-                                                    200},
-                                        PolicyValue{800, 600, 50, false, 50}));
+INSTANTIATE_TEST_SUITE_P(PolicyDeviceDisplayResolution,
+                         DisplayResolutionBootTest,
+                         testing::Values(PolicyValue{1920, 1080, 200, false,
+                                                     200},
+                                         PolicyValue{800, 600, 50, false, 50}));
 
 class DeviceDisplayResolutionRecommendedTest
     : public DeviceDisplayResolutionTestBase {
@@ -568,7 +568,7 @@ IN_PROC_BROWSER_TEST_P(DeviceDisplayResolutionRecommendedTest,
       << "Internal display scale after user operation";
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PolicyDeviceDisplayResolution,
     DeviceDisplayResolutionRecommendedTest,
     testing::Values(PolicyValue{1920, 1080, 200, false, 200},

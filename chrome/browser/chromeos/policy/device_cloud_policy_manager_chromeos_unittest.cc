@@ -849,11 +849,11 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest,
   ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED);
 }
 
-INSTANTIATE_TEST_CASE_P(Cert,
-                        DeviceCloudPolicyManagerChromeOSEnrollmentTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(Cert,
+                         DeviceCloudPolicyManagerChromeOSEnrollmentTest,
+                         ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Cert,
     DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest,
     ::testing::Values(false, true));

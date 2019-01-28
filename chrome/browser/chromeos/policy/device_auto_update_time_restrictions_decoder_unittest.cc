@@ -58,17 +58,18 @@ TEST_P(WeeklyTimeDictionaryDecoderTest, WeeklyTimeFromDict) {
       result.value().milliseconds());
 }
 
-INSTANTIATE_TEST_CASE_P(ZeroHours,
-                        WeeklyTimeDictionaryDecoderTest,
-                        testing::Values(std::make_tuple("Monday", 1, 0, 20)));
+INSTANTIATE_TEST_SUITE_P(ZeroHours,
+                         WeeklyTimeDictionaryDecoderTest,
+                         testing::Values(std::make_tuple("Monday", 1, 0, 20)));
 
-INSTANTIATE_TEST_CASE_P(ZeroMins,
-                        WeeklyTimeDictionaryDecoderTest,
-                        testing::Values(std::make_tuple("Sunday", 7, 10, 0)));
+INSTANTIATE_TEST_SUITE_P(ZeroMins,
+                         WeeklyTimeDictionaryDecoderTest,
+                         testing::Values(std::make_tuple("Sunday", 7, 10, 0)));
 
-INSTANTIATE_TEST_CASE_P(RandomCase,
-                        WeeklyTimeDictionaryDecoderTest,
-                        testing::Values(std::make_tuple("Thursday", 4, 3, 10)));
+INSTANTIATE_TEST_SUITE_P(
+    RandomCase,
+    WeeklyTimeDictionaryDecoderTest,
+    testing::Values(std::make_tuple("Thursday", 4, 3, 10)));
 
 using TestIntervalTuple = tuple<string /* start day_of_week string */,
                                 int /* start day_of_week_int */,
@@ -133,18 +134,18 @@ TEST_P(WeeklyTimeIntervalListDecoderTest, WeeklyTimeIntervalsFromListValue) {
   EXPECT_TRUE(equal_vectors);
 }
 
-INSTANTIATE_TEST_CASE_P(EmptyList,
-                        WeeklyTimeIntervalListDecoderTest,
-                        testing::Values(vector<TestIntervalTuple>()));
+INSTANTIATE_TEST_SUITE_P(EmptyList,
+                         WeeklyTimeIntervalListDecoderTest,
+                         testing::Values(vector<TestIntervalTuple>()));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OneInterval,
     WeeklyTimeIntervalListDecoderTest,
     testing::Values(vector<TestIntervalTuple>{
         std::make_tuple("Monday", 1, 10, 20, "Tuesday", 2, 20, 100),
     }));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MultipleIntervals,
     WeeklyTimeIntervalListDecoderTest,
     testing::Values(vector<TestIntervalTuple>{

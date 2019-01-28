@@ -245,12 +245,12 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest,
       << ", and policy was removed.";
 }
 
-INSTANTIATE_TEST_CASE_P(PolicyDisplayRotationDefault,
-                        DisplayRotationDefaultTest,
-                        testing::Values(display::Display::ROTATE_0,
-                                        display::Display::ROTATE_90,
-                                        display::Display::ROTATE_180,
-                                        display::Display::ROTATE_270));
+INSTANTIATE_TEST_SUITE_P(PolicyDisplayRotationDefault,
+                         DisplayRotationDefaultTest,
+                         testing::Values(display::Display::ROTATE_0,
+                                         display::Display::ROTATE_90,
+                                         display::Display::ROTATE_180,
+                                         display::Display::ROTATE_270));
 
 // This class tests that the policy is reapplied after a reboot. To persist from
 // PRE_Reboot to Reboot, the policy is inserted into a FakeSessionManagerClient.
@@ -328,11 +328,11 @@ IN_PROC_BROWSER_TEST_P(DisplayRotationBootTest, Reboot) {
   EXPECT_EQ(policy_rotation, GetRotationOfFirstDisplay());
 }
 
-INSTANTIATE_TEST_CASE_P(PolicyDisplayRotationDefault,
-                        DisplayRotationBootTest,
-                        testing::Values(display::Display::ROTATE_0,
-                                        display::Display::ROTATE_90,
-                                        display::Display::ROTATE_180,
-                                        display::Display::ROTATE_270));
+INSTANTIATE_TEST_SUITE_P(PolicyDisplayRotationDefault,
+                         DisplayRotationBootTest,
+                         testing::Values(display::Display::ROTATE_0,
+                                         display::Display::ROTATE_90,
+                                         display::Display::ROTATE_180,
+                                         display::Display::ROTATE_270));
 
 }  // namespace policy
