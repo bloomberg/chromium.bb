@@ -1634,13 +1634,6 @@ class CONTENT_EXPORT RenderFrameImpl
   int num_burst_download_requests_ = 0;
   base::TimeTicks burst_download_start_time_;
 
-  // Set to true while we are committing a navigation and
-  // main request is being issued (the one which already got
-  // a response).
-  // TODO(dgozman): should be temporary until we stop using
-  // WebURLRequest for this.
-  bool committing_main_request_ = false;
-
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
   base::CancelableOnceCallback<void()> sync_navigation_callback_;

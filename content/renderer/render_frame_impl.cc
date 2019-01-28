@@ -3273,7 +3273,6 @@ void RenderFrameImpl::CommitNavigation(
     return;
   }
 
-  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
   // Check if the navigation being committed originated as a client redirect.
   bool is_client_redirect =
       !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
@@ -3318,18 +3317,10 @@ void RenderFrameImpl::CommitNavigation(
         !frame_->Parent(), navigation_params.get());
   }
 
-  // Note: we cannot use base::AutoReset here, since |this| can be deleted
-  // in the next call and auto reset will introduce use-after-free bug.
-  committing_main_request_ = true;
   frame_->CommitNavigation(std::move(navigation_params),
                            std::move(document_state));
-  // The commit can result in this frame being removed. Use a
-  // WeakPtr as an easy way to detect whether this has occured. If so, this
-  // method should return immediately and not touch any part of the object,
-  // otherwise it will result in a use-after-free bug.
-  if (!weak_this)
-    return;
-  committing_main_request_ = false;
+  // The commit can result in this frame being removed. Do not use
+  // |this| without checking a WeakPtr.
 }
 
 void RenderFrameImpl::CommitFailedNavigation(
@@ -4855,14 +4846,6 @@ void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  if (committing_main_request_ &&
-      request.GetFrameType() !=
-          network::mojom::RequestContextFrameType::kNone) {
-    // We should not process this request, as it was already processed
-    // as part of BeginNavigation.
-    return;
-  }
-
   if (render_view_->renderer_preferences_.enable_do_not_track)
     request.SetHTTPHeaderField(blink::WebString::FromUTF8(kDoNotTrackHeader),
                                "1");
