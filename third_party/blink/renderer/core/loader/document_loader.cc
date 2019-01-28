@@ -1469,7 +1469,7 @@ void DocumentLoader::InstallNewDocument(
   // components migration from the old web APIs.
   // After completion of the migration, we should remove this.
   // See crbug.com/911943 for detail.
-  if (url.Protocol() == "chrome-devtools" || url.Protocol() == "chrome") {
+  if (url.Protocol() == "chrome") {
     OriginTrialContext::FromOrCreate(document)->AddFeature("WebComponentsV0");
     // CrElementsProfileAvatarSelectorFocusTest, or some Web UI tests need this
     // RuntimeEnabledFeatures on in addition to the above OriginTrialContext
