@@ -135,5 +135,7 @@ size_t AllocatorState::AddrToSlot(uintptr_t addr) const {
   return slot;
 }
 
+AllocatorState::SlotMetadata::SlotMetadata() {}
+
 }  // namespace internal
 }  // namespace gwp_asan
