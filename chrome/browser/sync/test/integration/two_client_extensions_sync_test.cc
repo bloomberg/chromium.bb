@@ -221,8 +221,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientExtensionsSyncTest,
 // TODO(akalin): Add tests exercising:
 //   - Offline installation/uninstallation behavior
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientExtensionsSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientExtensionsSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

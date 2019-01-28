@@ -584,8 +584,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientBookmarksSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientBookmarksSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

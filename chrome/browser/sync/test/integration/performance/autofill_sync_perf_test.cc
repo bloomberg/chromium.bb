@@ -172,9 +172,9 @@ IN_PROC_BROWSER_TEST_P(AutofillProfileSyncPerfTest, P0) {
 
 // Only parametrize the test above that tests autofill_profile, the test below
 // addresses autocomplete and thus does not need parametrizing.
-INSTANTIATE_TEST_CASE_P(USS,
-                        AutofillProfileSyncPerfTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         AutofillProfileSyncPerfTest,
+                         ::testing::Values(false, true));
 
 class AutocompleteSyncPerfTest : public SyncTest {
  public:

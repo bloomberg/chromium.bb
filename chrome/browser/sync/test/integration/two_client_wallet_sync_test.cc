@@ -681,10 +681,10 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   EXPECT_EQ(1U, cards_metadata_1.size());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientWalletSyncTest,
-                        ::testing::Values(std::make_pair(false, false),
-                                          std::make_pair(true, false),
-                                          std::make_pair(true, true)));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientWalletSyncTest,
+                         ::testing::Values(std::make_pair(false, false),
+                                           std::make_pair(true, false),
+                                           std::make_pair(true, true)));
 
 }  // namespace

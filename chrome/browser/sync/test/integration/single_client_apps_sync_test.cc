@@ -105,8 +105,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientAppsSyncTest, InstallSomeApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientAppsSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientAppsSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

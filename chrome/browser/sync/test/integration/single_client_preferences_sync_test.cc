@@ -166,8 +166,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
                    /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientPreferencesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientPreferencesSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

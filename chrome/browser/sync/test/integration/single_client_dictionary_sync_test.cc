@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientDictionarySyncTest, Sanity) {
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientDictionarySyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientDictionarySyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

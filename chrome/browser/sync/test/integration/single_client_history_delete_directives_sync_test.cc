@@ -173,8 +173,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientHistoryDeleteDirectivesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientHistoryDeleteDirectivesSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

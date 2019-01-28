@@ -592,8 +592,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
 
 // Only parametrize the tests above that test autofill_profile, the tests below
 // address autocomplete and thus do not need parametrizing.
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientAutofillProfileSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientAutofillProfileSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace
