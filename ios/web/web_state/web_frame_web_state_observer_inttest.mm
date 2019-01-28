@@ -153,9 +153,9 @@ TEST_P(WebFrameWebStateObserverInttest, TwoWebFrameHTTPS) {
   web_state()->RemoveObserver(&observer);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticWebFrameWebStateObserverInttest,
-                        WebFrameWebStateObserverInttest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticWebFrameWebStateObserverInttest,
+                         WebFrameWebStateObserverInttest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web

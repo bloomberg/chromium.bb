@@ -104,8 +104,8 @@ class API_AVAILABLE(ios(11.0)) WKHTTPSystemCookieStoreTestDelegate {
 };
 
 API_AVAILABLE(ios(11.0))
-INSTANTIATE_TYPED_TEST_CASE_P(WKHTTPSystemCookieStore,
-                              SystemCookieStoreTest,
-                              WKHTTPSystemCookieStoreTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(WKHTTPSystemCookieStore,
+                               SystemCookieStoreTest,
+                               WKHTTPSystemCookieStoreTestDelegate);
 
 }  // namespace net

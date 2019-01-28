@@ -257,8 +257,8 @@ TEST_P(ErrorPageTest, FormSubmissionError) {
       web_state(), "domain: NSURLErrorDomain code: -1005 post: 1 otr: 0"));
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticErrorPageTest,
-                        ErrorPageTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticErrorPageTest,
+                         ErrorPageTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 }  // namespace web

@@ -2451,7 +2451,7 @@ TEST_P(WebStateObserverTest, PdfFileUrlNavigation) {
   ASSERT_TRUE(LoadWithParams(params));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ProgrammaticWebStateObserverTest,
     WebStateObserverTest,
     ::testing::Values(

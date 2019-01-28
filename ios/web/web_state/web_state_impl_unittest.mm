@@ -1041,9 +1041,9 @@ TEST_P(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
   EXPECT_FALSE(observer.did_change_visible_security_state_info());
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticWebStateImplTest,
-                        WebStateImplTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticWebStateImplTest,
+                         WebStateImplTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web

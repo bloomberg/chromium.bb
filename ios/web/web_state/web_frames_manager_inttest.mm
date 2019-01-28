@@ -227,9 +227,9 @@ TEST_P(WebFramesManagerTest, SingleWebFrameSamePageNavigationBackForward) {
   EXPECT_EQ(main_web_frame, frames_manager->GetMainWebFrame());
 };
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticWebFramesManagerTest,
-                        WebFramesManagerTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticWebFramesManagerTest,
+                         WebFramesManagerTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web
