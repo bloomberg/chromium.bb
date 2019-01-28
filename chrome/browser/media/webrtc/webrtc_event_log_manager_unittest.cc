@@ -3366,9 +3366,9 @@ TEST_F(WebRtcEventLogManagerTest,
   EXPECT_EQ(written_web_app_id, expected_web_app_id);
 }
 
-INSTANTIATE_TEST_CASE_P(UploadCompleteResult,
-                        WebRtcEventLogManagerTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(UploadCompleteResult,
+                         WebRtcEventLogManagerTest,
+                         ::testing::Bool());
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextRemovesPendingFilesInRange) {
@@ -3708,9 +3708,9 @@ TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
   EXPECT_EQ(OnWebRtcEventLogWrite(key, "log"), std::make_pair(false, false));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+                         ::testing::Bool());
 
 // This test is redundant; it is provided for completeness; see following tests.
 TEST_F(WebRtcEventLogManagerTestPolicy, StartsEnabledAllowsRemoteLogging) {
@@ -4199,7 +4199,7 @@ TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
   WaitForPendingTasks(&run_loop);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UploadSupportingConnectionTypes,
     WebRtcEventLogManagerTestForNetworkConnectivity,
     ::testing::Combine(
