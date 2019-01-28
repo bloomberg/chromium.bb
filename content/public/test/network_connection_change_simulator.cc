@@ -18,6 +18,15 @@
 
 namespace content {
 
+// SetConnectionType will block until the network connection changes, and
+// unblocking it involves posting a task (see
+// NetworkConnectionTracker::OnNetworkChanged). If SetConnectionType is ever
+// called downstream of a task run within another RunLoop::Run call, this
+// class's RunLoop::Run will deadlock because the task needed to unblock it
+// won't be run. To stop this, this class uses RunLoops that allow nested tasks.
+constexpr base::RunLoop::Type kRunLoopType =
+    base::RunLoop::Type::kNestableTasksAllowed;
+
 NetworkConnectionChangeSimulator::NetworkConnectionChangeSimulator() = default;
 NetworkConnectionChangeSimulator::~NetworkConnectionChangeSimulator() = default;
 
@@ -27,7 +36,7 @@ void NetworkConnectionChangeSimulator::SetConnectionType(
       content::GetNetworkConnectionTracker();
   network::mojom::ConnectionType connection_type =
       network::mojom::ConnectionType::CONNECTION_UNKNOWN;
-  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_ = std::make_unique<base::RunLoop>(kRunLoopType);
   network_connection_tracker->AddNetworkConnectionObserver(this);
   SimulateNetworkChange(type);
   // Make sure the underlying network connection type becomes |type|.
@@ -56,7 +65,7 @@ void NetworkConnectionChangeSimulator::SimulateNetworkChange(
     network::mojom::NetworkServiceTestPtr network_service_test;
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
         mojom::kNetworkServiceName, &network_service_test);
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(kRunLoopType);
     network_service_test->SimulateNetworkChange(type, run_loop.QuitClosure());
     run_loop.Run();
     return;
