@@ -89,6 +89,7 @@ class UiControllerAndroid : public UiController {
   AssistantCarouselDelegate carousel_delegate_;
 
   base::android::ScopedJavaLocalRef<jobject> GetModel();
+  base::android::ScopedJavaLocalRef<jobject> GetOverlayModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetCarouselModel();

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.graphics.RectF;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -12,7 +11,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
-import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -21,9 +19,6 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -129,26 +124,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     @CalledByNative
     private void onAllowShowingSoftKeyboard(boolean allowed) {
         mCoordinator.getKeyboardCoordinator().allowShowingSoftKeyboard(allowed);
-    }
-
-    @CalledByNative
-    private void onHideOverlay() {
-        mCoordinator.getOverlayCoordinator().setState(AssistantOverlayState.hidden());
-    }
-
-    @CalledByNative
-    private void onShowOverlay() {
-        mCoordinator.getOverlayCoordinator().setState(AssistantOverlayState.full());
-    }
-
-    @CalledByNative
-    private void updateTouchableArea(boolean enabled, float[] coords) {
-        List<RectF> boxes = new ArrayList<>();
-        for (int i = 0; i < coords.length; i += 4) {
-            boxes.add(new RectF(/* left= */ coords[i], /* top= */ coords[i + 1],
-                    /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
-        }
-        mCoordinator.getOverlayCoordinator().setState(AssistantOverlayState.partial(boxes));
     }
 
     @CalledByNative

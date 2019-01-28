@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.overlay.TouchEventFilterView;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -77,7 +78,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mBottomBarCoordinator =
                 new AssistantBottomBarCoordinator(activity, webContents, mAssistantView, mModel);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity);
-        mOverlayCoordinator = new AssistantOverlayCoordinator(activity, mAssistantView, this);
+        mOverlayCoordinator = new AssistantOverlayCoordinator(
+                activity, mAssistantView, mModel.getOverlayModel(), this);
 
         showAssistantView();
     }
@@ -108,7 +110,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mBottomBarCoordinator.expand();
 
         // Hide everything except header.
-        mOverlayCoordinator.setState(AssistantOverlayState.hidden());
+        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.hidden());
         mModel.getDetailsModel().clearDetails();
         mBottomBarCoordinator.getPaymentRequestCoordinator().setVisible(false);
         mModel.getCarouselModel().clearChips();
@@ -139,7 +141,7 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
         mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
-        mOverlayCoordinator.setState(AssistantOverlayState.full());
+        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.full());
 
         AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
                 .then(accepted -> {
@@ -153,7 +155,8 @@ class AssistantCoordinator implements TouchEventFilterView.Delegate {
                     mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, true);
 
                     // Hide overlay.
-                    mOverlayCoordinator.setState(AssistantOverlayState.hidden());
+                    mModel.getOverlayModel().set(
+                            AssistantOverlayModel.STATE, AssistantOverlayState.hidden());
 
                     onAccept.run();
                 });

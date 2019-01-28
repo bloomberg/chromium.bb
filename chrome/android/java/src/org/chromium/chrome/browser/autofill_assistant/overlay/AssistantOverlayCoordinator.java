@@ -18,8 +18,8 @@ public class AssistantOverlayCoordinator {
     private final TouchEventFilterView mTouchEventFilter;
     private final Delegate mTouchEventFilterDelegate;
 
-    public AssistantOverlayCoordinator(
-            ChromeActivity activity, View assistantView, Delegate touchEventFilterDelegate) {
+    public AssistantOverlayCoordinator(ChromeActivity activity, View assistantView,
+            AssistantOverlayModel model, Delegate touchEventFilterDelegate) {
         mActivity = activity;
         mTouchEventFilter = assistantView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.touch_event_filter);
@@ -27,6 +27,14 @@ public class AssistantOverlayCoordinator {
 
         mTouchEventFilter.init(mTouchEventFilterDelegate, mActivity.getFullscreenManager(),
                 mActivity.getActivityTab().getWebContents(), mActivity.getCompositorViewHolder());
+
+        // Listen for changes in the state.
+        model.addObserver((source, propertyKey) -> {
+            if (AssistantOverlayModel.STATE == propertyKey) {
+                AssistantOverlayState newState = model.get(AssistantOverlayModel.STATE);
+                setState(newState != null ? newState : AssistantOverlayState.hidden());
+            }
+        });
     }
 
     /**
@@ -44,7 +52,7 @@ public class AssistantOverlayCoordinator {
     /**
      * Set the overlay state.
      */
-    public void setState(AssistantOverlayState state) {
+    private void setState(AssistantOverlayState state) {
         if (state.isFull() && !mActivity.isViewObscuringAllTabs()) {
             mActivity.addViewObscuringAllTabs(mTouchEventFilter);
         }

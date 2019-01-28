@@ -4793,6 +4793,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
+      "../android/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
       "../android/java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",
       "../android/java/src/org/chromium/chrome/browser/banners/AppBannerUiDelegateAndroid.java",
       "../android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkBridge.java",
