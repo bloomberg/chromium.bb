@@ -98,12 +98,33 @@ display::Display WaylandScreen::GetPrimaryDisplay() const {
 
 display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {
-  // TODO(msisov): implement wl_surface_listener::enter and
-  // wl_surface_listener::leave for a wl_surface to know what surface the window
-  // is located on.
-  //
-  // https://crbug.com/890271
-  NOTIMPLEMENTED_LOG_ONCE();
+  auto* wayland_window = connection_->GetWindow(widget);
+  DCHECK(wayland_window);
+
+  const std::set<uint32_t> entered_outputs_ids =
+      wayland_window->GetEnteredOutputsIds();
+  // Although spec says a surface receives enter/leave surface events on
+  // create/move/resize actions, this might be called right after a window is
+  // created, but it has not been configured by a Wayland compositor and it has
+  // not received enter surface events yet. Another case is when a user switches
+  // between displays in a single output mode - Wayland may not send enter
+  // events immediately, which can result in empty container of entered ids
+  // (check comments in WaylandWindow::RemoveEnteredOutputId). In this case,
+  // it's also safe to return the primary display.
+  if (entered_outputs_ids.empty())
+    return GetPrimaryDisplay();
+
+  DCHECK(!display_list_.displays().empty());
+
+  // A widget can be located on two or more displays. It would be better if the
+  // most in pixels occupied display was returned, but it's impossible to do in
+  // Wayland. Thus, return the one, which was the very first used.
+  for (const auto& display : display_list_.displays()) {
+    if (display.id() == *entered_outputs_ids.begin())
+      return display;
+  }
+
+  NOTREACHED();
   return GetPrimaryDisplay();
 }
 

@@ -16,6 +16,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v5.h"
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v6.h"
@@ -119,6 +120,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
     return false;
   }
   wl_surface_set_user_data(surface_.get(), this);
+  AddSurfaceListener();
 
   ui::PlatformWindowType ui_window_type = properties.type;
   switch (ui_window_type) {
@@ -151,6 +153,10 @@ gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
   if (!surface_)
     return gfx::kNullAcceleratedWidget;
   return surface_.id();
+}
+
+std::set<uint32_t> WaylandWindow::GetEnteredOutputsIds() const {
+  return entered_outputs_ids_;
 }
 
 void WaylandWindow::CreateXdgPopup() {
@@ -641,6 +647,58 @@ WaylandWindow* WaylandWindow::GetParentWindow(
 
 WmMoveResizeHandler* WaylandWindow::AsWmMoveResizeHandler() {
   return static_cast<WmMoveResizeHandler*>(this);
+}
+
+void WaylandWindow::AddSurfaceListener() {
+  static struct wl_surface_listener surface_listener = {
+      &WaylandWindow::Enter,
+      &WaylandWindow::Leave,
+  };
+  wl_surface_add_listener(surface_.get(), &surface_listener, this);
+}
+
+void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
+  const uint32_t entered_output_id =
+      connection_->wayland_output_manager()->GetIdForOutput(output);
+  DCHECK_NE(entered_output_id, 0u);
+  auto entered_output_id_it = entered_outputs_ids_.insert(entered_output_id);
+  DCHECK(entered_output_id_it.second);
+}
+
+void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
+  const uint32_t left_output_id =
+      connection_->wayland_output_manager()->GetIdForOutput(output);
+  auto entered_output_id_it = entered_outputs_ids_.find(left_output_id);
+  // Workaround: when a user switches physical output between two displays,
+  // a window does not necessarily receive enter events immediately or until
+  // a user resizes/moves the window. It means that switching output between
+  // displays in a single output mode results in leave events, but the surface
+  // might not have received enter event before. Thus, remove the id of left
+  // output only if it was stored before.
+  if (entered_output_id_it != entered_outputs_ids_.end())
+    entered_outputs_ids_.erase(entered_output_id_it);
+}
+
+// static
+void WaylandWindow::Enter(void* data,
+                          struct wl_surface* wl_surface,
+                          struct wl_output* output) {
+  auto* window = static_cast<WaylandWindow*>(data);
+  if (window) {
+    DCHECK(window->surface_.get() == wl_surface);
+    window->AddEnteredOutputId(output);
+  }
+}
+
+// static
+void WaylandWindow::Leave(void* data,
+                          struct wl_surface* wl_surface,
+                          struct wl_output* output) {
+  auto* window = static_cast<WaylandWindow*>(data);
+  if (window) {
+    DCHECK(window->surface_.get() == wl_surface);
+    window->RemoveEnteredOutputId(output);
+  }
 }
 
 }  // namespace ui

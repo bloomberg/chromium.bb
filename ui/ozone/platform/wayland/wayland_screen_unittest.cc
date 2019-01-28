@@ -103,6 +103,13 @@ class WaylandScreenTest : public WaylandTest {
     wl_output_send_done(output_resource);
   }
 
+  void ValidateTheDisplayForWidget(gfx::AcceleratedWidget widget,
+                                   int64_t expected_display_id) {
+    display::Display display_for_widget =
+        platform_screen_->GetDisplayForAcceleratedWidget(widget);
+    EXPECT_EQ(display_for_widget.id(), expected_display_id);
+  }
+
   wl::MockOutput* output_ = nullptr;
   WaylandOutputManager* output_manager_ = nullptr;
 
@@ -349,6 +356,72 @@ TEST_P(WaylandScreenTest, GetDisplayMatching) {
       platform_screen_->GetDisplayMatching(gfx::Rect(1023, 695, 10, 10)).id());
 
   platform_screen_->RemoveObserver(&observer);
+}
+
+TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
+  TestDisplayObserver observer;
+  platform_screen_->AddObserver(&observer);
+
+  const display::Display primary_display =
+      platform_screen_->GetPrimaryDisplay();
+
+  // Create an additional display.
+  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
+
+  Sync();
+
+  // Place it on the right side of the primary
+  // display.
+  const gfx::Rect output2_rect =
+      gfx::Rect(primary_display.bounds().width(), 0, 1024, 768);
+  UpdateOutputGeometry(output2->resource(), output2_rect);
+
+  Sync();
+
+  const display::Display secondary_display = observer.GetDisplay();
+  EXPECT_EQ(secondary_display.bounds(), output2_rect);
+
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  // There must be a primary display used if the window has not received an
+  // enter event yet.
+  ValidateTheDisplayForWidget(widget, primary_display.id());
+
+  // Now, send enter event for the surface, which was created before.
+  wl::MockSurface* surface = server_.GetObject<wl::MockSurface>(widget);
+  ASSERT_TRUE(surface);
+  wl_surface_send_enter(surface->resource(), output_->resource());
+
+  Sync();
+
+  // The id of the entered display must correspond to the primary output.
+  ValidateTheDisplayForWidget(widget, primary_display.id());
+
+  Sync();
+
+  // Enter the second output now.
+  wl_surface_send_enter(surface->resource(), output2->resource());
+
+  Sync();
+
+  // The id of the entered display must still correspond to the primary output.
+  ValidateTheDisplayForWidget(widget, primary_display.id());
+
+  // Leave the first output.
+  wl_surface_send_leave(surface->resource(), output_->resource());
+
+  Sync();
+
+  // The id of the entered display must correspond to the second output.
+  ValidateTheDisplayForWidget(widget, secondary_display.id());
+
+  // Leaving the same output twice (check comment in
+  // WaylandWindow::RemoveEnteredOutputId), must be ok and nothing must change.
+  wl_surface_send_leave(surface->resource(), output_->resource());
+
+  Sync();
+
+  // The id of the entered display must correspond to the second output.
+  ValidateTheDisplayForWidget(widget, secondary_display.id());
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

@@ -78,6 +78,15 @@ std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen(
   return wayland_screen;
 }
 
+uint32_t WaylandOutputManager::GetIdForOutput(wl_output* output) const {
+  auto output_it = std::find_if(
+      output_list_.begin(), output_list_.end(),
+      [output](const auto& item) { return item->has_output(output); });
+  // This is unlikely to happen, but better to be explicit here.
+  DCHECK(output_it != output_list_.end());
+  return output_it->get()->output_id();
+}
+
 void WaylandOutputManager::OnWaylandOutputAdded(uint32_t output_id) {
   if (wayland_screen_)
     wayland_screen_->OnOutputAdded(output_id);
