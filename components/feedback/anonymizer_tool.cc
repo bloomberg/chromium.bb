@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -59,13 +59,46 @@ constexpr const char* kCustomPatternsWithContext[] = {
     "(?i-s)(serial\\s*(?:number)?\\s*[:=]\\s*)([0-9a-zA-Z\\-\"]+)()",
 };
 
-// Returns the number of leading bytes that may be kept unsanitized.
-std::string MaybeScrubIPv4Address(const std::string& addr) {
+bool MaybeUnmapAddress(net::IPAddress* addr) {
+  if (!addr->IsIPv4MappedIPv6())
+    return false;
+
+  *addr = net::ConvertIPv4MappedIPv6ToIPv4(*addr);
+  return true;
+}
+
+bool MaybeUntranslateAddress(net::IPAddress* addr) {
+  if (!addr->IsIPv6())
+    return false;
+
+  static const net::IPAddress kTranslated6To4(0, 0x64, 0xff, 0x9b, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0);
+  if (!IPAddressMatchesPrefix(*addr, kTranslated6To4, 96))
+    return false;
+
+  const auto bytes = addr->bytes();
+  *addr = net::IPAddress(bytes[12], bytes[13], bytes[14], bytes[15]);
+  return true;
+}
+
+// If |addr| points to a valid IPv6 address, this function truncates it at /32.
+bool MaybeTruncateIPv6(net::IPAddress* addr) {
+  if (!addr->IsIPv6())
+    return false;
+
+  const auto bytes = addr->bytes();
+  *addr = net::IPAddress(bytes[0], bytes[1], bytes[2], bytes[3], 0, 0, 0, 0, 0,
+                         0, 0, 0, 0, 0, 0, 0);
+  return true;
+}
+
+// Returns an appropriately scrubbed version of |addr| if applicable.
+std::string MaybeScrubIPAddress(const std::string& addr) {
   struct {
     net::IPAddress ip_addr;
     int prefix_length;
     bool scrub;
-  } static const kWhitelistedIPv4Ranges[] = {
+  } static const kWhitelistedIPRanges[] = {
       // Private.
       {net::IPAddress(10, 0, 0, 0), 8, true},
       {net::IPAddress(172, 16, 0, 0), 12, true},
@@ -84,20 +117,57 @@ std::string MaybeScrubIPv4Address(const std::string& addr) {
       {net::IPAddress(224, 0, 0, 0), 4, true},
       // Link local.
       {net::IPAddress(169, 254, 0, 0), 16, true},
+      {net::IPAddress(0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 10,
+       true},
       // Broadcast.
       {net::IPAddress(255, 255, 255, 255), 32, false},
+      // IPv6 loopback, unspecified and non-address strings.
+      {net::IPAddress::IPv6AllZeros(), 112, false},
+      // IPv6 multicast all nodes and routers.
+      {net::IPAddress(0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+       128, false},
+      {net::IPAddress(0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2),
+       128, false},
+      {net::IPAddress(0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1),
+       128, false},
+      {net::IPAddress(0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2),
+       128, false},
+      // IPv6 other multicast (link and interface local).
+      {net::IPAddress(0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 16,
+       true},
+      {net::IPAddress(0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 16,
+       true},
+
   };
   net::IPAddress input_addr;
-  if (input_addr.AssignFromIPLiteral(addr) && input_addr.IsIPv4()) {
-    for (const auto& range : kWhitelistedIPv4Ranges) {
+  if (input_addr.AssignFromIPLiteral(addr) && input_addr.IsValid()) {
+    bool mapped = MaybeUnmapAddress(&input_addr);
+    bool translated = !mapped ? MaybeUntranslateAddress(&input_addr) : false;
+    for (const auto& range : kWhitelistedIPRanges) {
       if (IPAddressMatchesPrefix(input_addr, range.ip_addr,
                                  range.prefix_length)) {
-        return range.scrub ? base::StringPrintf(
-                                 "%s/%d", range.ip_addr.ToString().c_str(),
-                                 range.prefix_length)
-                           : addr;
+        std::string prefix;
+        std::string out_addr = addr;
+        if (mapped) {
+          prefix = "M ";
+          out_addr = input_addr.ToString();
+        } else if (translated) {
+          prefix = "T ";
+          out_addr = input_addr.ToString();
+        }
+        if (range.scrub) {
+          out_addr = base::StringPrintf(
+              "%s/%d", range.ip_addr.ToString().c_str(), range.prefix_length);
+        }
+        return base::StrCat({prefix, out_addr});
       }
     }
+    // |addr| may have been over-aggressively matched as an IPv6 address when
+    // it's really just an arbitrary part of a sentence. If the string is the
+    // same as the coarsely truncated address then keep it because even if
+    // it happens to be a real address, there is no loss of anonymity.
+    if (MaybeTruncateIPv6(&input_addr) && input_addr.ToString() == addr)
+      return addr;
   }
   return "";
 }
@@ -421,7 +491,7 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
     std::string matched_id_as_string = matched_id.as_string();
     std::string replacement_id = (*identifier_space)[matched_id_as_string];
     if (replacement_id.empty()) {
-      replacement_id = MaybeScrubIPv4Address(matched_id_as_string);
+      replacement_id = MaybeScrubIPAddress(matched_id_as_string);
       if (replacement_id != matched_id_as_string) {
         // The weird Uint64toString trick is because Windows does not like
         // to deal with %zu and a size_t in printf, nor does it support %llu.
