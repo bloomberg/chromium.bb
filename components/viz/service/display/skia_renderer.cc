@@ -467,7 +467,7 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
     case DrawMode::DDL: {
       non_root_surface_ = nullptr;
       current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
-          render_pass_id, backing.size, backing.format, backing.mipmap,
+          render_pass_id, backing.size, backing.format, backing.generate_mipmap,
           backing.color_space.ToSkColorSpace());
       break;
     }
@@ -1013,8 +1013,8 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
     switch (draw_mode_) {
       case DrawMode::DDL: {
         content_image = skia_output_surface_->MakePromiseSkImageFromRenderPass(
-            quad->render_pass_id, backing.size, backing.format, backing.mipmap,
-            backing.color_space.ToSkColorSpace());
+            quad->render_pass_id, backing.size, backing.format,
+            backing.generate_mipmap, backing.color_space.ToSkColorSpace());
         break;
       }
       case DrawMode::GL:  // Fallthrough
@@ -1032,6 +1032,11 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
       }
     }
 
+    // Currently the only trigger for generate_mipmap for render pass is
+    // trilinear filtering. It only affects GPU backed implementations and thus
+    // requires medium filter quality level.
+    if (backing.generate_mipmap)
+      paint->setFilterQuality(kMedium_SkFilterQuality);
     DrawRenderPassQuadInternal(quad, content_image, paint);
   }
 }
@@ -1290,8 +1295,8 @@ void SkiaRenderer::FinishDrawingQuadList() {
 }
 
 void SkiaRenderer::GenerateMipmap() {
-  // TODO(reveman): Generates mipmaps for current canvas. (crbug.com/763664)
-  NOTIMPLEMENTED();
+  // This is a no-op since setting FilterQuality to high during drawing of
+  // RenderPassDrawQuad is what actually generates generate_mipmap.
 }
 
 bool SkiaRenderer::ShouldApplyBackgroundFilters(
@@ -1337,7 +1342,8 @@ void SkiaRenderer::UpdateRenderPassTextures(
     const RenderPassBacking& backing = pair.second;
     bool size_appropriate = backing.size.width() >= requirements.size.width() &&
                             backing.size.height() >= requirements.size.height();
-    bool mipmap_appropriate = !requirements.mipmap || backing.mipmap;
+    bool mipmap_appropriate =
+        !requirements.generate_mipmap || backing.generate_mipmap;
     if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
   }
@@ -1381,7 +1387,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     case DrawMode::SKPRECORD: {
       render_pass_backings_.emplace(
           render_pass_id,
-          RenderPassBacking(requirements.size, requirements.mipmap,
+          RenderPassBacking(requirements.size, requirements.generate_mipmap,
                             current_frame()->current_render_pass->color_space));
       return;
     }
@@ -1389,7 +1395,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   render_pass_backings_.emplace(
       render_pass_id,
       RenderPassBacking(gr_context, caps, requirements.size,
-                        requirements.mipmap,
+                        requirements.generate_mipmap,
                         current_frame()->current_render_pass->color_space));
 }
 
@@ -1397,9 +1403,9 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
     GrContext* gr_context,
     const gpu::Capabilities& caps,
     const gfx::Size& size,
-    bool mipmap,
+    bool generate_mipmap,
     const gfx::ColorSpace& color_space)
-    : size(size), mipmap(mipmap), color_space(color_space) {
+    : size(size), generate_mipmap(generate_mipmap), color_space(color_space) {
   if (color_space.IsHDR()) {
     // If a platform does not support half-float renderbuffers then it should
     // not should request HDR rendering.
@@ -1426,14 +1432,14 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
                         kPremul_SkAlphaType, color_space.ToSkColorSpace());
   render_pass_surface = SkSurface::MakeRenderTarget(
       gr_context, SkBudgeted::kNo, image_info, msaa_sample_count,
-      kTopLeft_GrSurfaceOrigin, &surface_props, mipmap);
+      kTopLeft_GrSurfaceOrigin, &surface_props, generate_mipmap);
 }
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
     const gfx::Size& size,
-    bool mipmap,
+    bool generate_mipmap,
     const gfx::ColorSpace& color_space)
-    : size(size), mipmap(mipmap), color_space(color_space) {
+    : size(size), generate_mipmap(generate_mipmap), color_space(color_space) {
   recorder = std::make_unique<SkPictureRecorder>();
 }
 
@@ -1442,7 +1448,7 @@ SkiaRenderer::RenderPassBacking::~RenderPassBacking() {}
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
     SkiaRenderer::RenderPassBacking&& other)
     : size(other.size),
-      mipmap(other.mipmap),
+      generate_mipmap(other.generate_mipmap),
       color_space(other.color_space),
       format(other.format) {
   render_pass_surface = other.render_pass_surface;
@@ -1453,7 +1459,7 @@ SkiaRenderer::RenderPassBacking::RenderPassBacking(
 SkiaRenderer::RenderPassBacking& SkiaRenderer::RenderPassBacking::operator=(
     SkiaRenderer::RenderPassBacking&& other) {
   size = other.size;
-  mipmap = other.mipmap;
+  generate_mipmap = other.generate_mipmap;
   color_space = other.color_space;
   format = other.format;
   render_pass_surface = other.render_pass_surface;

@@ -133,7 +133,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;
     gfx::Size size;
-    bool mipmap;
+    bool generate_mipmap;
     gfx::ColorSpace color_space;
     ResourceFormat format;
 
@@ -144,10 +144,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     RenderPassBacking(GrContext* gr_context,
                       const gpu::Capabilities& caps,
                       const gfx::Size& size,
-                      bool mipmap,
+                      bool generate_mipmap,
                       const gfx::ColorSpace& color_space);
     RenderPassBacking(const gfx::Size& size,
-                      bool mipmap,
+                      bool generate_mipmap,
                       const gfx::ColorSpace& color_space);
     ~RenderPassBacking();
     RenderPassBacking(RenderPassBacking&&);

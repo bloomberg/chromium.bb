@@ -871,6 +871,14 @@ using NonSkiaRendererTypes =
                      cc::SoftwareRendererWithExpandedViewport>;
 TYPED_TEST_CASE(NonSkiaRendererPixelTest, NonSkiaRendererTypes);
 
+// Test GLRenderer as well as SkiaRenderer.
+template <typename RendererType>
+class GLCapableRendererPixelTest : public cc::RendererPixelTest<RendererType> {
+};
+
+using GLCapableRendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
+TYPED_TEST_CASE(GLCapableRendererPixelTest, GLCapableRendererTypes);
+
 template <typename RendererType>
 class FuzzyForSoftwareOnlyPixelComparator : public cc::PixelComparator {
  public:
@@ -3057,7 +3065,7 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
 }
 
 // Trilinear filtering is only supported in the gl renderer.
-TEST_F(GLRendererPixelTest, TrilinearFiltering) {
+TYPED_TEST(GLCapableRendererPixelTest, TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
