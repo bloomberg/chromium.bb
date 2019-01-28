@@ -83,15 +83,24 @@ void OomInterventionTabHelper::OnHighMemoryUsage() {
       config->is_purge_v8_memory_enabled()) {
     NearOomReductionInfoBar::Show(web_contents(), this);
     intervention_state_ = InterventionState::UI_SHOWN;
-    if (!last_navigation_timestamp_.is_null()) {
-      base::TimeDelta time_since_last_navigation =
-          base::TimeTicks::Now() - last_navigation_timestamp_;
-      UMA_HISTOGRAM_COUNTS_1M(
-          "Memory.Experimental.OomIntervention."
-          "RendererTimeSinceLastNavigationAtIntervention",
-          time_since_last_navigation.InSeconds());
-    }
   }
+  if (!last_navigation_timestamp_.is_null()) {
+    base::TimeDelta time_since_last_navigation =
+        base::TimeTicks::Now() - last_navigation_timestamp_;
+    UMA_HISTOGRAM_COUNTS_1M(
+        "Memory.Experimental.OomIntervention."
+        "RendererTimeSinceLastNavigationAtDetection",
+        time_since_last_navigation.InSeconds());
+  }
+
+  DCHECK(!start_monitor_timestamp_.is_null());
+  base::TimeDelta time_since_start_monitor =
+      base::TimeTicks::Now() - start_monitor_timestamp_;
+  UMA_HISTOGRAM_COUNTS_1M(
+      "Memory.Experimental.OomIntervention."
+      "RendererTimeSinceStartMonitoringAtDetection",
+      time_since_start_monitor.InSeconds());
+
   near_oom_detected_time_ = base::TimeTicks::Now();
   renderer_detection_timer_.AbandonAndStop();
 }
@@ -309,6 +318,8 @@ void OomInterventionTabHelper::StartDetectionInRenderer() {
       return;
     }
   }
+
+  start_monitor_timestamp_ = base::TimeTicks::Now();
 
   content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
   DCHECK(main_frame);
