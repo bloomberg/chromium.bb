@@ -12,6 +12,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_locale.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -49,6 +50,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/common/unicode/locid.h"
 
 namespace arc {
 namespace util {
@@ -532,12 +534,16 @@ TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_Locale) {
   profile()->GetTestingPrefService()->SetString(
       language::prefs::kApplicationLocale, "he");
+  UErrorCode error_code = U_ZERO_ERROR;
+  const icu::Locale& old_locale = icu::Locale::getDefault();
+  icu::Locale::setDefault(icu::Locale("he"), error_code);
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
 
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE,
             IsAssistantAllowedForProfile(profile()));
+  icu::Locale::setDefault(old_locale, error_code);
 }
 
 TEST_F(ChromeArcUtilTest, IsAssistantAllowedForProfile_DemoMode) {

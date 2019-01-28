@@ -610,10 +610,13 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   const PrefService* prefs = profile->GetPrefs();
   std::string pref_locale =
       prefs->GetString(language::prefs::kApplicationLocale);
-
+  // Also accept runtime locale which maybe an approximation of user's pref
+  // locale.
+  const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
   if (!pref_locale.empty()) {
     base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
-    bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale);
+    bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale) &&
+                      !base::ContainsValue(kAllowedLocales, kRuntimeLocale);
 
     if (disallowed)
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
