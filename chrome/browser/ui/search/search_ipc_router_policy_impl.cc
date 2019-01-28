@@ -108,12 +108,16 @@ bool SearchIPCRouterPolicyImpl::
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::ShouldProcessBlacklistSearchSuggestion() {
+bool SearchIPCRouterPolicyImpl::ShouldProcessBlocklistSearchSuggestion() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
 bool SearchIPCRouterPolicyImpl::
-    ShouldProcessBlacklistSearchSuggestionWithHash() {
+    ShouldProcessBlocklistSearchSuggestionWithHash() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessSearchSuggestionSelected() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 

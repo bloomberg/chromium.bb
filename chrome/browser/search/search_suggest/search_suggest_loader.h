@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SEARCH_SEARCH_SUGGEST_SEARCH_SUGGEST_LOADER_H_
 #define CHROME_BROWSER_SEARCH_SEARCH_SUGGEST_SEARCH_SUGGEST_LOADER_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "base/optional.h"
 
@@ -41,8 +43,8 @@ class SearchSuggestLoader {
 
   // Initiates a load from the network. On completion (successful or not), the
   // callback will be called with the result, which will be nullopt on failure.
-  // |blacklist| will be appended to the request as the url param 'vtgb'.
-  virtual void Load(const std::string& blacklist,
+  // |blocklist| will be appended to the request as the url param 'vtgb'.
+  virtual void Load(const std::string& blocklist,
                     SearchSuggestionsCallback callback) = 0;
 
   // Retrieves the URL from which SearchSuggestData will be loaded.

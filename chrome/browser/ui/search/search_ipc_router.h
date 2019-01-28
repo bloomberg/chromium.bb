@@ -119,16 +119,20 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // NTP background image.
     virtual void OnSelectLocalBackgroundImage() = 0;
 
-    // Called when a search suggestion is blacklisted on the local NTP.
-    virtual void OnBlacklistSearchSuggestion(int task_version,
+    // Called when a search suggestion is blocklisted on the local NTP.
+    virtual void OnBlocklistSearchSuggestion(int task_version,
                                              long task_id) = 0;
 
-    // Called when a search suggestion is blacklisted on the local NTP and a
+    // Called when a search suggestion is blocklisted on the local NTP and a
     // hash is provided.
-    virtual void OnBlacklistSearchSuggestionWithHash(
-        int task_version,
-        long task_id,
-        const std::vector<uint8_t>& hash) = 0;
+    virtual void OnBlocklistSearchSuggestionWithHash(int task_version,
+                                                     long task_id,
+                                                     const uint8_t hash[4]) = 0;
+
+    // Called when a search suggestion is selected on the local NTP.
+    virtual void OnSearchSuggestionSelected(int task_version,
+                                            long task_id,
+                                            const uint8_t hash[4]) = 0;
 
     // Called when a user selected to completely opt out of NTP search
     // suggestions.
@@ -165,8 +169,9 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessSetCustomBackgroundURL() = 0;
     virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
-    virtual bool ShouldProcessBlacklistSearchSuggestion() = 0;
-    virtual bool ShouldProcessBlacklistSearchSuggestionWithHash() = 0;
+    virtual bool ShouldProcessBlocklistSearchSuggestion() = 0;
+    virtual bool ShouldProcessBlocklistSearchSuggestionWithHash() = 0;
+    virtual bool ShouldProcessSearchSuggestionSelected() = 0;
     virtual bool ShouldProcessOptOutOfSearchSuggestions() = 0;
   };
 
@@ -256,12 +261,15 @@ class SearchIPCRouter : public content::WebContentsObserver,
       const std::string& attribution_line_2,
       const GURL& action_url) override;
   void SelectLocalBackgroundImage() override;
-  void BlacklistSearchSuggestion(int32_t task_version,
+  void BlocklistSearchSuggestion(int32_t task_version,
                                  int64_t task_id) override;
-  void BlacklistSearchSuggestionWithHash(
+  void BlocklistSearchSuggestionWithHash(
       int32_t task_version,
       int64_t task_id,
       const std::vector<uint8_t>& hash) override;
+  void SearchSuggestionSelected(int32_t task_version,
+                                int64_t task_id,
+                                const std::vector<uint8_t>& hash) override;
   void OptOutOfSearchSuggestions() override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {

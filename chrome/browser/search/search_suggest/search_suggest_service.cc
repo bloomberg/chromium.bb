@@ -8,12 +8,30 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
+
+constexpr char kSuggestionHashRegex[] = "[a-z0-9]{1,4}";
+
+std::string* ValidateHash(const uint8_t hash[4]) {
+  const std::string hash_string = reinterpret_cast<const char*>(hash);
+
+  std::string* trimmed_string = new std::string("");
+  // The uint8_t array received via IPC ends in an EOT byte (\4), remove it.
+  base::TrimString(hash_string, "\4", trimmed_string);
+
+  if (!re2::RE2::FullMatch(*trimmed_string, kSuggestionHashRegex))
+    return nullptr;
+  return trimmed_string;
+}
 
 const char kFirstShownTimeMs[] = "first_shown_time_ms";
 const char kImpressionCapExpireTimeMs[] = "impression_cap_expire_time_ms";
@@ -72,7 +90,7 @@ class SearchSuggestService::SigninObserver
 };
 
 SearchSuggestService::SearchSuggestService(
-    PrefService* pref_service,
+    Profile* profile,
     identity::IdentityManager* identity_manager,
     std::unique_ptr<SearchSuggestLoader> loader)
     : loader_(std::move(loader)),
@@ -80,7 +98,7 @@ SearchSuggestService::SearchSuggestService(
           identity_manager,
           base::BindRepeating(&SearchSuggestService::SigninStatusChanged,
                               base::Unretained(this)))),
-      pref_service_(pref_service) {}
+      profile_(profile) {}
 
 SearchSuggestService::~SearchSuggestService() = default;
 
@@ -94,10 +112,17 @@ void SearchSuggestService::Shutdown() {
 }
 
 void SearchSuggestService::Refresh() {
+  const std::string blocklist = GetBlocklistAsString();
+  MaybeLoadWithBlocklist(blocklist);
+}
+
+void SearchSuggestService::MaybeLoadWithBlocklist(
+    const std::string& blocklist) {
   if (!signin_observer_->SignedIn()) {
     SearchSuggestDataLoaded(SearchSuggestLoader::Status::SIGNED_OUT,
                             base::nullopt);
-  } else if (pref_service_->GetBoolean(prefs::kNtpSearchSuggestionsOptOut)) {
+  } else if (profile_->GetPrefs()->GetBoolean(
+                 prefs::kNtpSearchSuggestionsOptOut)) {
     SearchSuggestDataLoaded(SearchSuggestLoader::Status::OPTED_OUT,
                             base::nullopt);
   } else if (RequestsFrozen()) {
@@ -107,8 +132,7 @@ void SearchSuggestService::Refresh() {
     SearchSuggestDataLoaded(SearchSuggestLoader::Status::IMPRESSION_CAP,
                             base::nullopt);
   } else {
-    const std::string blacklist = GetBlacklistAsString();
-    loader_->Load(blacklist,
+    loader_->Load(blocklist,
                   base::BindOnce(&SearchSuggestService::SearchSuggestDataLoaded,
                                  base::Unretained(this)));
   }
@@ -139,7 +163,7 @@ void SearchSuggestService::SearchSuggestDataLoaded(
     search_suggest_data_ = data;
     search_suggest_status_ = status;
 
-    DictionaryPrefUpdate update(pref_service_,
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpSearchSuggestionsImpressions);
 
     if (data.has_value()) {
@@ -164,8 +188,8 @@ void SearchSuggestService::NotifyObservers() {
 }
 
 bool SearchSuggestService::ImpressionCapReached() {
-  const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(prefs::kNtpSearchSuggestionsImpressions);
+  const base::DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
+      prefs::kNtpSearchSuggestionsImpressions);
 
   int first_shown_time_ms = 0;
   int impression_cap_expire_time_ms = 0;
@@ -182,7 +206,7 @@ bool SearchSuggestService::ImpressionCapReached() {
           .InMilliseconds();
   if (time_delta > impression_cap_expire_time_ms) {
     impression_count = 0;
-    DictionaryPrefUpdate update(pref_service_,
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpSearchSuggestionsImpressions);
     update.Get()->SetInteger(kImpressionsCount, impression_count);
   }
@@ -191,8 +215,8 @@ bool SearchSuggestService::ImpressionCapReached() {
 }
 
 bool SearchSuggestService::RequestsFrozen() {
-  const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(prefs::kNtpSearchSuggestionsImpressions);
+  const base::DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
+      prefs::kNtpSearchSuggestionsImpressions);
 
   bool is_request_frozen = false;
   int request_freeze_time_ms = 0;
@@ -209,7 +233,7 @@ bool SearchSuggestService::RequestsFrozen() {
     if (time_delta < request_freeze_time_ms) {
       return true;
     } else {
-      DictionaryPrefUpdate update(pref_service_,
+      DictionaryPrefUpdate update(profile_->GetPrefs(),
                                   prefs::kNtpSearchSuggestionsImpressions);
       update.Get()->SetBoolean(kIsRequestFrozen, false);
     }
@@ -218,46 +242,79 @@ bool SearchSuggestService::RequestsFrozen() {
   return false;
 }
 
-void SearchSuggestService::BlacklistSearchSuggestion(int task_version,
+void SearchSuggestService::BlocklistSearchSuggestion(int task_version,
                                                      long task_id) {
+  if (!search::DefaultSearchProviderIsGoogle(profile_))
+    return;
+
   std::string task_version_id =
       std::to_string(task_version) + "_" + std::to_string(task_id);
-  DictionaryPrefUpdate update(pref_service_,
-                              prefs::kNtpSearchSuggestionsBlacklist);
-  base::DictionaryValue* blacklist = update.Get();
-  blacklist->SetKey(task_version_id, base::ListValue());
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kNtpSearchSuggestionsBlocklist);
+  base::DictionaryValue* blocklist = update.Get();
+  blocklist->SetKey(task_version_id, base::ListValue());
 
   search_suggest_data_ = base::nullopt;
   Refresh();
 }
 
-void SearchSuggestService::BlacklistSearchSuggestionWithHash(
+void SearchSuggestService::BlocklistSearchSuggestionWithHash(
     int task_version,
     long task_id,
-    const std::vector<uint8_t>& hash) {
+    const uint8_t hash[4]) {
+  if (!search::DefaultSearchProviderIsGoogle(profile_))
+    return;
+
+  std::string* hash_string = ValidateHash(hash);
+
+  if (!hash_string)
+    return;
+
   std::string task_version_id =
       std::to_string(task_version) + "_" + std::to_string(task_id);
-  std::string hash_string;
-  hash_string.assign(hash.begin(), hash.end());
-  DictionaryPrefUpdate update(pref_service_,
-                              prefs::kNtpSearchSuggestionsBlacklist);
-  base::DictionaryValue* blacklist = update.Get();
-  base::Value* value = blacklist->FindKey(task_version_id);
+
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kNtpSearchSuggestionsBlocklist);
+  base::DictionaryValue* blocklist = update.Get();
+  base::Value* value = blocklist->FindKey(task_version_id);
   if (!value)
-    value = blacklist->SetKey(task_version_id, base::ListValue());
-  value->GetList().emplace_back(base::Value(hash_string));
+    value = blocklist->SetKey(task_version_id, base::ListValue());
+  value->GetList().emplace_back(base::Value(*hash_string));
 
   search_suggest_data_ = base::nullopt;
   Refresh();
 }
 
-std::string SearchSuggestService::GetBlacklistAsString() {
-  const base::DictionaryValue* blacklist =
-      pref_service_->GetDictionary(prefs::kNtpSearchSuggestionsBlacklist);
+void SearchSuggestService::SearchSuggestionSelected(int task_version,
+                                                    long task_id,
+                                                    const uint8_t hash[4]) {
+  if (!search::DefaultSearchProviderIsGoogle(profile_))
+    return;
 
-  std::string blacklist_as_string;
-  for (const auto& dict : blacklist->DictItems()) {
-    blacklist_as_string += dict.first;
+  std::string* hash_string = ValidateHash(hash);
+
+  if (!hash_string)
+    return;
+
+  std::string blocklist_item = std::to_string(task_version) + "_" +
+                               std::to_string(task_id) + ":" + *hash_string;
+
+  std::string blocklist = GetBlocklistAsString();
+  if (!blocklist.empty())
+    blocklist += ";";
+  blocklist += blocklist_item;
+
+  search_suggest_data_ = base::nullopt;
+  MaybeLoadWithBlocklist(blocklist);
+}
+
+std::string SearchSuggestService::GetBlocklistAsString() {
+  const base::DictionaryValue* blocklist = profile_->GetPrefs()->GetDictionary(
+      prefs::kNtpSearchSuggestionsBlocklist);
+
+  std::string blocklist_as_string;
+  for (const auto& dict : blocklist->DictItems()) {
+    blocklist_as_string += dict.first;
 
     if (!dict.second.GetList().empty()) {
       std::string list = ":";
@@ -268,22 +325,22 @@ std::string SearchSuggestService::GetBlacklistAsString() {
 
       // Remove trailing comma.
       list.pop_back();
-      blacklist_as_string += list;
+      blocklist_as_string += list;
     }
 
-    blacklist_as_string += ";";
+    blocklist_as_string += ";";
   }
 
   // Remove trailing semi-colon.
-  if (!blacklist_as_string.empty())
-    blacklist_as_string.pop_back();
-  return blacklist_as_string;
+  if (!blocklist_as_string.empty())
+    blocklist_as_string.pop_back();
+  return blocklist_as_string;
 }
 
 void SearchSuggestService::SuggestionsDisplayed() {
   search_suggest_data_ = base::nullopt;
 
-  DictionaryPrefUpdate update(pref_service_,
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kNtpSearchSuggestionsImpressions);
   base::DictionaryValue* dict = update.Get();
 
@@ -298,14 +355,17 @@ void SearchSuggestService::SuggestionsDisplayed() {
 }
 
 void SearchSuggestService::OptOutOfSearchSuggestions() {
-  pref_service_->SetBoolean(prefs::kNtpSearchSuggestionsOptOut, true);
+  if (!search::DefaultSearchProviderIsGoogle(profile_))
+    return;
+
+  profile_->GetPrefs()->SetBoolean(prefs::kNtpSearchSuggestionsOptOut, true);
 
   search_suggest_data_ = base::nullopt;
 }
 
 // static
 void SearchSuggestService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kNtpSearchSuggestionsBlacklist);
+  registry->RegisterDictionaryPref(prefs::kNtpSearchSuggestionsBlocklist);
   registry->RegisterDictionaryPref(prefs::kNtpSearchSuggestionsImpressions,
                                    ImpressionDictDefaults());
   registry->RegisterBooleanPref(prefs::kNtpSearchSuggestionsOptOut, false);

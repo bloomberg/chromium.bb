@@ -358,22 +358,39 @@ void SearchIPCRouter::SelectLocalBackgroundImage() {
   delegate_->OnSelectLocalBackgroundImage();
 }
 
-void SearchIPCRouter::BlacklistSearchSuggestion(int32_t task_version,
+void SearchIPCRouter::BlocklistSearchSuggestion(int32_t task_version,
                                                 int64_t task_id) {
-  if (!policy_->ShouldProcessBlacklistSearchSuggestion())
+  if (!policy_->ShouldProcessBlocklistSearchSuggestion())
     return;
 
-  delegate_->OnBlacklistSearchSuggestion(task_version, task_id);
+  delegate_->OnBlocklistSearchSuggestion(task_version, task_id);
 }
 
-void SearchIPCRouter::BlacklistSearchSuggestionWithHash(
+void SearchIPCRouter::BlocklistSearchSuggestionWithHash(
     int32_t task_version,
     int64_t task_id,
     const std::vector<uint8_t>& hash) {
-  if (!policy_->ShouldProcessBlacklistSearchSuggestionWithHash())
+  if (!policy_->ShouldProcessBlocklistSearchSuggestionWithHash())
     return;
 
-  delegate_->OnBlacklistSearchSuggestionWithHash(task_version, task_id, hash);
+  if (hash.size() > 4) {
+    return;
+  }
+  delegate_->OnBlocklistSearchSuggestionWithHash(task_version, task_id,
+                                                 hash.data());
+}
+
+void SearchIPCRouter::SearchSuggestionSelected(
+    int32_t task_version,
+    int64_t task_id,
+    const std::vector<uint8_t>& hash) {
+  if (!policy_->ShouldProcessSearchSuggestionSelected())
+    return;
+
+  if (hash.size() > 4) {
+    return;
+  }
+  delegate_->OnSearchSuggestionSelected(task_version, task_id, hash.data());
 }
 
 void SearchIPCRouter::OptOutOfSearchSuggestions() {

@@ -9,10 +9,15 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/search_test_utils.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -21,7 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Eq;
 using testing::InSequence;
 using testing::StrictMock;
 
@@ -47,35 +51,63 @@ class FakeSearchSuggestLoader : public SearchSuggestLoader {
   std::vector<SearchSuggestionsCallback> callbacks_;
 };
 
-class SearchSuggestServiceTest : public testing::Test {
+class SearchSuggestServiceTest : public BrowserWithTestWindowTest {
  public:
-  SearchSuggestServiceTest()
-      : identity_env_(&test_url_loader_factory_, &pref_service_) {
-    SearchSuggestService::RegisterProfilePrefs(pref_service_.registry());
+  SearchSuggestServiceTest() {}
+  ~SearchSuggestServiceTest() override {}
 
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(),
+        base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
+    template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
+
+    identity_env_ = std::make_unique<identity::IdentityTestEnvironment>(
+        &test_url_loader_factory_);
     auto loader = std::make_unique<FakeSearchSuggestLoader>();
     loader_ = loader.get();
     service_ = std::make_unique<SearchSuggestService>(
-        &pref_service_, identity_env_.identity_manager(), std::move(loader));
+        profile(), identity_env_->identity_manager(), std::move(loader));
 
-    identity_env_.MakePrimaryAccountAvailable("example@gmail.com");
-    identity_env_.SetAutomaticIssueOfAccessTokens(true);
+    identity_env_->MakePrimaryAccountAvailable("example@gmail.com");
+    identity_env_->SetAutomaticIssueOfAccessTokens(true);
+  }
+
+  void TearDown() override { BrowserWithTestWindowTest::TearDown(); }
+
+  TestingProfile* CreateProfile() override {
+    TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
+    return profile;
   }
 
   FakeSearchSuggestLoader* loader() { return loader_; }
   SearchSuggestService* service() { return service_.get(); }
   sync_preferences::TestingPrefServiceSyncable* pref_service() {
-    return &pref_service_;
+    return profile()->GetTestingPrefService();
   }
 
   void SignIn() {
     AccountInfo account_info =
-        identity_env_.MakeAccountAvailable("test@email.com");
-    identity_env_.SetCookieAccounts({{account_info.email, account_info.gaia}});
+        identity_env_->MakeAccountAvailable("test@email.com");
+    identity_env_->SetCookieAccounts({{account_info.email, account_info.gaia}});
   }
 
-  void SignOut() {
-    identity_env_.SetCookieAccounts({});
+  void SignOut() { identity_env_->SetCookieAccounts({}); }
+
+  void SetUserSelectedDefaultSearchProvider(const std::string& base_url) {
+    TemplateURLData data;
+    data.SetShortName(base::UTF8ToUTF16(base_url));
+    data.SetKeyword(base::UTF8ToUTF16(base_url));
+    data.SetURL(base_url + "url?bar={searchTerms}");
+    data.new_tab_url = base_url + "newtab";
+    data.alternate_urls.push_back(base_url + "alt#quux={searchTerms}");
+
+    TemplateURL* template_url =
+        template_url_service_->Add(std::make_unique<TemplateURL>(data));
+    template_url_service_->SetUserSelectedDefaultSearchProvider(template_url);
   }
 
   // Returns a default data object for testing, initializes the impression
@@ -99,11 +131,9 @@ class SearchSuggestServiceTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
-
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  TemplateURLService* template_url_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_env_;
+  std::unique_ptr<identity::IdentityTestEnvironment> identity_env_;
 
   // Owned by the service.
   FakeSearchSuggestLoader* loader_;
@@ -112,158 +142,241 @@ class SearchSuggestServiceTest : public testing::Test {
 };
 
 TEST_F(SearchSuggestServiceTest, NoRefreshOnSignedOutRequest) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
 
   // Request a refresh. That should do nothing as no user is signed-in.
   service()->Refresh();
-  EXPECT_THAT(loader()->GetCallbackCount(), Eq(0u));
-  EXPECT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  EXPECT_EQ(0u, loader()->GetCallbackCount());
+  EXPECT_EQ(base::nullopt, service()->search_suggest_data());
 }
 
 TEST_F(SearchSuggestServiceTest, RefreshesOnSignedInRequest) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
   SignIn();
 
   // Request a refresh. That should arrive at the loader.
   service()->Refresh();
-  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+  EXPECT_EQ(1u, loader()->GetCallbackCount());
 
   // Fulfill it.
   SearchSuggestData data = TestSearchSuggestData();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
-  EXPECT_THAT(service()->search_suggest_data(), Eq(data));
+  EXPECT_EQ(data, service()->search_suggest_data());
 
   // Request another refresh.
   service()->Refresh();
-  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+  EXPECT_EQ(1u, loader()->GetCallbackCount());
 
   // For now, the old data should still be there.
-  EXPECT_THAT(service()->search_suggest_data(), Eq(data));
+  EXPECT_EQ(data, service()->search_suggest_data());
 
   // Fulfill the second request.
   SearchSuggestData other_data = TestSearchSuggestData();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, other_data);
-  EXPECT_THAT(service()->search_suggest_data(), Eq(other_data));
+  EXPECT_EQ(other_data, service()->search_suggest_data());
 }
 
 TEST_F(SearchSuggestServiceTest, KeepsCacheOnTransientError) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
   SignIn();
 
   // Load some data.
   service()->Refresh();
   SearchSuggestData data = TestSearchSuggestData();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
-  ASSERT_THAT(service()->search_suggest_data(), Eq(data));
+  ASSERT_EQ(data, service()->search_suggest_data());
 
   // Request a refresh and respond with a transient error.
   service()->Refresh();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::TRANSIENT_ERROR,
                                   base::nullopt);
   // Cached data should still be there.
-  EXPECT_THAT(service()->search_suggest_data(), Eq(data));
+  EXPECT_EQ(data, service()->search_suggest_data());
 }
 
 TEST_F(SearchSuggestServiceTest, ClearsCacheOnFatalError) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
   SignIn();
 
   // Load some data.
   service()->Refresh();
   SearchSuggestData data = TestSearchSuggestData();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
-  ASSERT_THAT(service()->search_suggest_data(), Eq(data));
+  ASSERT_EQ(data, service()->search_suggest_data());
 
   // Request a refresh and respond with a fatal error.
   service()->Refresh();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::FATAL_ERROR,
                                   base::nullopt);
   // Cached data should be gone now.
-  EXPECT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  EXPECT_EQ(base::nullopt, service()->search_suggest_data());
 }
 
 TEST_F(SearchSuggestServiceTest, ResetsOnSignOut) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
   SignIn();
 
   // Load some data.
   service()->Refresh();
   SearchSuggestData data = TestSearchSuggestData();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
-  ASSERT_THAT(service()->search_suggest_data(), Eq(data));
+  ASSERT_EQ(data, service()->search_suggest_data());
 
   // Sign out. This should clear the cached data and notify the observer.
   SignOut();
-  EXPECT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  EXPECT_EQ(base::nullopt, service()->search_suggest_data());
 }
 
-TEST_F(SearchSuggestServiceTest, BlacklistSuggestionUpdatesBlacklistString) {
-  ASSERT_THAT(service()->GetBlacklistAsString(), Eq(std::string()));
+TEST_F(SearchSuggestServiceTest, BlocklistSuggestionUpdatesBlocklistString) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
 
-  std::vector<uint8_t> hash1 = {'a', 'b', 'c', 'd'};
-  std::vector<uint8_t> hash2 = {'e', 'f', 'g', 'h'};
-  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash1);
-  service()->BlacklistSearchSuggestion(2, 5678);
-  service()->BlacklistSearchSuggestionWithHash(1, 1234, hash2);
-  service()->BlacklistSearchSuggestionWithHash(2, 1234, hash1);
-  service()->BlacklistSearchSuggestion(4, 1234);
-  service()->BlacklistSearchSuggestionWithHash(2, 1234, hash2);
-  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash2);
+  uint8_t hash1[5] = {'a', 'b', 'c', 'd', '\0'};
+  uint8_t hash2[5] = {'e', 'f', 'g', 'h', '\0'};
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash1);
+  service()->BlocklistSearchSuggestion(2, 5678);
+  service()->BlocklistSearchSuggestionWithHash(1, 1234, hash2);
+  service()->BlocklistSearchSuggestionWithHash(2, 1234, hash1);
+  service()->BlocklistSearchSuggestion(4, 1234);
+  service()->BlocklistSearchSuggestionWithHash(2, 1234, hash2);
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash2);
 
   std::string expected =
       "0_1234:abcd,efgh;1_1234:efgh;2_1234:abcd,efgh;2_5678;4_1234";
 
-  ASSERT_THAT(service()->GetBlacklistAsString(), Eq(expected));
+  ASSERT_EQ(expected, service()->GetBlocklistAsString());
+}
+
+TEST_F(SearchSuggestServiceTest, BlocklistUnchangedOnInvalidHash) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
+
+  uint8_t hash1[5] = {'a', 'b', '?', 'd', '\0'};
+  uint8_t hash2[5] = {'a', '_', 'b', 'm', '\0'};
+  uint8_t hash3[5] = {'A', 'B', 'C', 'D', '\0'};
+  uint8_t hash4[6] = {'a', 'b', 'c', 'd', 'e', '\0'};
+  std::string expected = std::string();
+
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash1);
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash2);
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash3);
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash4);
+  ASSERT_EQ(expected, service()->GetBlocklistAsString());
+}
+
+TEST_F(SearchSuggestServiceTest, ShortHashUpdatesBlackist) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
+
+  uint8_t hash1[4] = {'a', 'b', 'c', '\0'};
+  uint8_t hash2[5] = {'d', 'e', '\0', 'f', '\0'};
+  std::string expected = "0_1234:abc;1_5678:de";
+
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash1);
+  service()->BlocklistSearchSuggestionWithHash(1, 5678, hash2);
+  ASSERT_EQ(expected, service()->GetBlocklistAsString());
 }
 
 TEST_F(SearchSuggestServiceTest,
-       BlacklistSuggestionOverridesBlackistSuggestionWithHash) {
-  ASSERT_THAT(service()->GetBlacklistAsString(), Eq(std::string()));
+       BlocklistSuggestionOverridesBlackistSuggestionWithHash) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
 
-  std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
-  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash);
-  ASSERT_THAT(service()->GetBlacklistAsString(), Eq("0_1234:abcd"));
+  uint8_t hash[5] = {'a', 'b', 'c', 'd', '\0'};
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash);
+  ASSERT_EQ("0_1234:abcd", service()->GetBlocklistAsString());
 
-  service()->BlacklistSearchSuggestion(0, 1234);
-  ASSERT_THAT(service()->GetBlacklistAsString(), Eq("0_1234"));
+  service()->BlocklistSearchSuggestion(0, 1234);
+  ASSERT_EQ("0_1234", service()->GetBlocklistAsString());
 }
 
-TEST_F(SearchSuggestServiceTest, BlacklistClearsCachedDataAndIssuesRequest) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+TEST_F(SearchSuggestServiceTest, BlocklistClearsCachedDataAndIssuesRequest) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
   SignIn();
 
   // Request a refresh. That should arrive at the loader.
   service()->Refresh();
-  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+  EXPECT_EQ(1u, loader()->GetCallbackCount());
 
   // Fulfill it.
   SearchSuggestData data = TestSearchSuggestData();
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
-  EXPECT_THAT(service()->search_suggest_data(), Eq(data));
+  EXPECT_EQ(data, service()->search_suggest_data());
 
-  // Blacklist something.
-  std::vector<uint8_t> hash = {'a', 'b', 'c', 'd'};
-  service()->BlacklistSearchSuggestionWithHash(0, 1234, hash);
-  ASSERT_THAT(service()->GetBlacklistAsString(), Eq("0_1234:abcd"));
-  EXPECT_THAT(loader()->GetCallbackCount(), Eq(1u));
+  // Select a suggestion to blocklist.
+  uint8_t hash[5] = {'a', 'b', 'c', 'd', '\0'};
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash);
+  ASSERT_EQ("0_1234:abcd", service()->GetBlocklistAsString());
+  EXPECT_EQ(1u, loader()->GetCallbackCount());
 
   // Fulfill the second request.
   SearchSuggestData other_data;
   other_data.suggestions_html = "<div>Different!</div>";
   loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, other_data);
-  EXPECT_THAT(service()->search_suggest_data(), Eq(other_data));
+  EXPECT_EQ(other_data, service()->search_suggest_data());
+}
+
+TEST_F(SearchSuggestServiceTest,
+       SuggestionSelectedClearsCachedDataAndIssuesRequest) {
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
+  SignIn();
+
+  // Request a refresh. That should arrive at the loader.
+  service()->Refresh();
+  EXPECT_EQ(1u, loader()->GetCallbackCount());
+
+  // Fulfill it.
+  SearchSuggestData data = TestSearchSuggestData();
+  loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, data);
+  EXPECT_EQ(data, service()->search_suggest_data());
+
+  // Select a suggestion to blocklist.
+  uint8_t hash[5] = {'a', 'b', 'c', 'd', '\0'};
+  service()->SearchSuggestionSelected(0, 1234, hash);
+
+  // The local blocklist should not be updated.
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
+  EXPECT_EQ(1u, loader()->GetCallbackCount());
+
+  // Fulfill the second request.
+  SearchSuggestData other_data;
+  other_data.suggestions_html = "<div>Different!</div>";
+  loader()->RespondToAllCallbacks(SearchSuggestLoader::Status::OK, other_data);
+  EXPECT_EQ(other_data, service()->search_suggest_data());
 }
 
 TEST_F(SearchSuggestServiceTest, OptOutPreventsRequests) {
-  ASSERT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  ASSERT_EQ(base::nullopt, service()->search_suggest_data());
   SignIn();
 
   service()->OptOutOfSearchSuggestions();
 
   // Request a refresh. That should do nothing as the user opted-out.
   service()->Refresh();
-  EXPECT_THAT(loader()->GetCallbackCount(), Eq(0u));
-  EXPECT_THAT(service()->search_suggest_data(), Eq(base::nullopt));
+  EXPECT_EQ(0u, loader()->GetCallbackCount());
+  EXPECT_EQ(base::nullopt, service()->search_suggest_data());
+}
+
+TEST_F(SearchSuggestServiceTest, SuggestionAPIsDoNothingWithNonGoogleDSP) {
+  SetUserSelectedDefaultSearchProvider("https://search.com/");
+  ASSERT_EQ(std::string(), service()->GetBlocklistAsString());
+
+  uint8_t hash[5] = {'a', 'b', 'c', 'd', '\0'};
+  service()->BlocklistSearchSuggestionWithHash(0, 1234, hash);
+  EXPECT_EQ(std::string(), service()->GetBlocklistAsString());
+
+  service()->BlocklistSearchSuggestion(1, 2345);
+  EXPECT_EQ(std::string(), service()->GetBlocklistAsString());
+
+  service()->OptOutOfSearchSuggestions();
+  EXPECT_FALSE(profile()->GetTestingPrefService()->GetBoolean(
+      prefs::kNtpSearchSuggestionsOptOut));
+
+  service()->SearchSuggestionSelected(0, 1234, hash);
+  EXPECT_EQ(0u, loader()->GetCallbackCount());
 }
 
 TEST_F(SearchSuggestServiceTest, UpdateImpressionCapParameters) {

@@ -35,7 +35,7 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
       const std::string& application_locale);
   ~SearchSuggestLoaderImpl() override;
 
-  void Load(const std::string& blacklist,
+  void Load(const std::string& blocklist,
             SearchSuggestionsCallback callback) override;
 
   GURL GetLoadURLForTesting() const override;
@@ -43,7 +43,7 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
  private:
   class AuthenticatedURLLoader;
 
-  GURL GetApiUrl(const std::string& blacklist) const;
+  GURL GetApiUrl(const std::string& blocklist) const;
 
   void LoadDone(const network::SimpleURLLoader* simple_loader,
                 std::unique_ptr<std::string> response_body);
