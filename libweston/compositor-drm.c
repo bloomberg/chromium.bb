@@ -4555,7 +4555,7 @@ drm_virtual_plane_create(struct drm_backend *b, struct drm_output *output)
 	plane->state_cur->complete = true;
 	plane->formats[0].format = output->gbm_format;
 	plane->count_formats = 1;
-	if (output->gbm_bo_flags & GBM_BO_USE_LINEAR) {
+	if ((output->gbm_bo_flags & GBM_BO_USE_LINEAR) && b->fb_modifiers) {
 		uint64_t *modifiers = zalloc(sizeof *modifiers);
 		if (modifiers) {
 			*modifiers = DRM_FORMAT_MOD_LINEAR;
