@@ -163,17 +163,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether the docked magnifier flag is enabled.
-     * @private {boolean}
-     */
-    dockedMagnifierFeatureEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('dockedMagnifierFeatureEnabled');
-      },
-    },
-
     /** @private */
     isGuest_: {
       type: Boolean,

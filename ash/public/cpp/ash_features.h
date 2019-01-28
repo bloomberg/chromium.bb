@@ -72,8 +72,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUseBluetoothSystemInAsh;
 // Enables the Supervised User Deprecation notices.
 ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 
-ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
-
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
@@ -81,8 +79,6 @@ ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsLockScreenInlineReplyEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenHideSensitiveNotificationsSupported();
-
-ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationExpansionAnimationEnabled();
 

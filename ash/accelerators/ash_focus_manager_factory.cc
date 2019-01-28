@@ -9,7 +9,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/focus/focus_manager.h"
@@ -60,8 +59,7 @@ void PostTargetAcceleratorHandler::OnDidChangeFocus(views::View* focused_before,
 
   gfx::Point point_of_interest = bounds_in_screen.CenterPoint();
   const ui::InputMethod* input_method = focused_now->GetInputMethod();
-  const bool docked_magnifier_enabled =
-      features::IsDockedMagnifierEnabled() && docked_magnifier->GetEnabled();
+  const bool docked_magnifier_enabled = docked_magnifier->GetEnabled();
   if (input_method && input_method->GetTextInputClient() &&
       input_method->GetTextInputClient()->GetTextInputType() !=
           ui::TEXT_INPUT_TYPE_NONE) {

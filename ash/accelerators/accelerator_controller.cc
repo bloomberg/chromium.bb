@@ -803,10 +803,6 @@ void HandleToggleDictation() {
       mojom::DictationToggleSource::kKeyboard);
 }
 
-bool CanHandleToggleDockedMagnifier() {
-  return features::IsDockedMagnifierEnabled();
-}
-
 bool CanHandleToggleOverview() {
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   // Do not toggle overview if there is a window being dragged.
@@ -851,7 +847,6 @@ void SetDockedMagnifierEnabled(bool enabled) {
 }
 
 void HandleToggleDockedMagnifier() {
-  DCHECK(features::IsDockedMagnifierEnabled());
   base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
 
   DockedMagnifierController* docked_magnifier_controller =
@@ -990,8 +985,7 @@ void HandleVolumeUp(mojom::VolumeController* volume_controller,
 
 bool CanHandleActiveMagnifierZoom() {
   return Shell::Get()->magnification_controller()->IsEnabled() ||
-         (features::IsDockedMagnifierEnabled() &&
-          Shell::Get()->docked_magnifier_controller()->GetEnabled());
+         Shell::Get()->docked_magnifier_controller()->GetEnabled();
 }
 
 // Change the scale of the active magnifier.
@@ -1001,8 +995,7 @@ void HandleActiveMagnifierZoom(int delta_index) {
     return;
   }
 
-  if (features::IsDockedMagnifierEnabled() &&
-      Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
+  if (Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
     Shell::Get()->docked_magnifier_controller()->StepToNextScaleValue(
         delta_index);
   }
@@ -1322,7 +1315,7 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_DICTATION:
       return CanHandleToggleDictation();
     case TOGGLE_DOCKED_MAGNIFIER:
-      return CanHandleToggleDockedMagnifier();
+      return true;
     case TOGGLE_FULLSCREEN_MAGNIFIER:
       return true;
     case TOGGLE_MESSAGE_CENTER_BUBBLE:

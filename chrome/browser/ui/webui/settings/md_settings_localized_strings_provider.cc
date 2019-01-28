@@ -54,7 +54,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/system/sys_info.h"
@@ -340,9 +339,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilitySwitchAccess));
-
-  html_source->AddBoolean("dockedMagnifierFeatureEnabled",
-                          ash::features::IsDockedMagnifierEnabled());
 #endif
 }
 
@@ -835,9 +831,6 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
-
-  html_source->AddBoolean("nightLightFeatureEnabled",
-                          ash::features::IsNightLightEnabled());
 
   static constexpr LocalizedString kStorageStrings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},

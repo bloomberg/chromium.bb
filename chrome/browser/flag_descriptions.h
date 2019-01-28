@@ -370,9 +370,6 @@ extern const char kDesktopPWAsStayInWindowDescription[];
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];
 
-extern const char kEnableDockedMagnifierName[];
-extern const char kEnableDockedMagnifierDescription[];
-
 extern const char kEnforceTLS13DowngradeName[];
 extern const char kEnforceTLS13DowngradeDescription[];
 
@@ -444,9 +441,6 @@ extern const char kEnableNetworkServiceDescription[];
 
 extern const char kEnableNetworkServiceInProcessName[];
 extern const char kEnableNetworkServiceInProcessDescription[];
-
-extern const char kEnableNightLightName[];
-extern const char kEnableNightLightDescription[];
 
 extern const char kEnableNotificationScrollBarName[];
 extern const char kEnableNotificationScrollBarDescription[];

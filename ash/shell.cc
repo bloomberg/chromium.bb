@@ -492,12 +492,10 @@ bool Shell::ShouldSaveDisplaySettings() {
 }
 
 DockedMagnifierController* Shell::docked_magnifier_controller() {
-  DCHECK(features::IsDockedMagnifierEnabled());
   return docked_magnifier_controller_.get();
 }
 
 NightLightController* Shell::night_light_controller() {
-  DCHECK(features::IsNightLightEnabled());
   return night_light_controller_.get();
 }
 
@@ -1062,8 +1060,7 @@ void Shell::Init(
 
   // Night Light depends on the display manager, the display color manager, and
   // aura::Env, so initialize it after all have been initialized.
-  if (features::IsNightLightEnabled())
-    night_light_controller_ = std::make_unique<NightLightController>();
+  night_light_controller_ = std::make_unique<NightLightController>();
 
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal
@@ -1189,10 +1186,7 @@ void Shell::Init(
 
   high_contrast_controller_.reset(new HighContrastController);
 
-  if (features::IsDockedMagnifierEnabled()) {
-    docked_magnifier_controller_ =
-        std::make_unique<DockedMagnifierController>();
-  }
+  docked_magnifier_controller_ = std::make_unique<DockedMagnifierController>();
 
   video_detector_ = std::make_unique<VideoDetector>();
 

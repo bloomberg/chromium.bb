@@ -316,11 +316,9 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindDisplayOutputProtectionRequestOnMainThread),
       main_thread_task_runner);
-  if (features::IsDockedMagnifierEnabled()) {
-    registry->AddInterface(
-        base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
-        main_thread_task_runner);
-  }
+  registry->AddInterface(
+      base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),
+      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindEventRewriterControllerRequestOnMainThread),
       main_thread_task_runner);
@@ -348,11 +346,9 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindNewWindowControllerRequestOnMainThread),
       main_thread_task_runner);
-  if (features::IsNightLightEnabled()) {
     registry->AddInterface(
         base::BindRepeating(&BindNightLightControllerRequestOnMainThread),
         main_thread_task_runner);
-  }
   registry->AddInterface(
       base::BindRepeating(&BindNoteTakingControllerRequestOnMainThread),
       main_thread_task_runner);

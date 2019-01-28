@@ -159,16 +159,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ash-enable-docked-magnifier",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "ash-enable-night-light",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ash-enable-notification-expansion-animation",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

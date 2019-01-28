@@ -17,7 +17,6 @@
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
@@ -42,7 +41,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -1455,14 +1453,6 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
   MagnifiersAcceleratorsTester() = default;
   ~MagnifiersAcceleratorsTester() override = default;
 
-  // AcceleratorControllerTest:
-  void SetUp() override {
-    // Explicitly enable the Docked Magnifier feature for the tests.
-    scoped_feature_list_.InitAndEnableFeature(features::kDockedMagnifier);
-
-    AcceleratorControllerTest::SetUp();
-  }
-
   DockedMagnifierController* docked_magnifier_controller() const {
     return Shell::Get()->docked_magnifier_controller();
   }
@@ -1472,8 +1462,6 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(MagnifiersAcceleratorsTester);
 };
 

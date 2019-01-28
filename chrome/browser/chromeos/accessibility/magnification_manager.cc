@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
@@ -66,7 +65,7 @@ void MagnificationManager::SetMagnifierEnabled(bool enabled) {
 }
 
 bool MagnificationManager::IsDockedMagnifierEnabled() const {
-  return ash::features::IsDockedMagnifierEnabled() && profile_ &&
+  return profile_ &&
          profile_->GetPrefs()->GetBoolean(ash::prefs::kDockedMagnifierEnabled);
 }
 
@@ -112,12 +111,9 @@ MagnificationManager::MagnificationManager() {
                  content::NotificationService::AllSources());
 
   // Connect to ash's DockedMagnifierController interface.
-  if (ash::features::IsDockedMagnifierEnabled()) {
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName,
-                        &docked_magnifier_controller_);
-  }
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &docked_magnifier_controller_);
 }
 
 MagnificationManager::~MagnificationManager() {
