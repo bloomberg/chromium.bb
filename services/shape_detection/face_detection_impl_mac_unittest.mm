@@ -177,6 +177,6 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
   run_loop.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(, FaceDetectionImplMacTest, ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(, FaceDetectionImplMacTest, ValuesIn(kTestParams));
 
 }  // shape_detection namespace
