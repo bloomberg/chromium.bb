@@ -9,8 +9,8 @@
 #include "base/containers/circular_deque.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
-#include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/input_alert_coordinator.h"
@@ -376,19 +376,14 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
 + (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL
                                          mainFrameURL:
                                              (const GURL&)mainFrameURL {
-  NSString* localizedTitle = nil;
-  NSString* hostname = base::SysUTF8ToNSString(pageURL.host());
-
   bool sameOriginAsMainFrame = pageURL.GetOrigin() == mainFrameURL.GetOrigin();
-
   if (!sameOriginAsMainFrame) {
-    localizedTitle = l10n_util::GetNSString(
+    return l10n_util::GetNSString(
         IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
-  } else {
-    localizedTitle = l10n_util::GetNSStringF(
-        IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
   }
-  return localizedTitle;
+  base::string16 title = url_formatter::FormatUrlForSecurityDisplay(
+      pageURL, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  return l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE, title);
 }
 
 #pragma mark - Private methods.
