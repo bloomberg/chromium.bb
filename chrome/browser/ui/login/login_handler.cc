@@ -139,36 +139,9 @@ void LoginHandler::OnRequestCancelled() {
   DoCancelAuth(true);
 }
 
-void LoginHandler::BuildViewWithPasswordManager(
-    const base::string16& authority,
-    const base::string16& explanation,
-    password_manager::PasswordManager* password_manager,
-    const autofill::PasswordForm& observed_form) {
-  password_form_ = observed_form;
-  LoginHandler::LoginModelData model_data(password_manager, observed_form);
-  has_shown_login_handler_ = true;
-  BuildViewImpl(authority, explanation, &model_data);
-}
-
-void LoginHandler::BuildViewWithoutPasswordManager(
-    const base::string16& authority,
-    const base::string16& explanation) {
-  has_shown_login_handler_ = true;
-  BuildViewImpl(authority, explanation, nullptr);
-}
-
 WebContents* LoginHandler::GetWebContentsForLogin() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return web_contents_getter_.Run();
-}
-
-password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
-  WebContents* contents = GetWebContentsForLogin();
-  if (!contents)
-    return nullptr;
-  password_manager::PasswordManagerClient* client =
-      ChromePasswordManagerClient::FromWebContents(contents);
-  return client ? client->GetPasswordManager() : nullptr;
 }
 
 void LoginHandler::SetAuth(const base::string16& username,
@@ -274,34 +247,7 @@ void LoginHandler::Observe(int type,
   }
 }
 
-// Returns whether authentication had been handled (SetAuth or CancelAuth).
-bool LoginHandler::WasAuthHandled() const {
-  base::AutoLock lock(handled_auth_lock_);
-  bool was_handled = handled_auth_;
-  return was_handled;
-}
-
 LoginHandler::~LoginHandler() = default;
-
-void LoginHandler::NotifyAuthNeeded() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (WasAuthHandled())
-    return;
-
-  content::NotificationService* service =
-      content::NotificationService::current();
-  NavigationController* controller = NULL;
-
-  WebContents* requesting_contents = GetWebContentsForLogin();
-  if (requesting_contents)
-    controller = &requesting_contents->GetController();
-
-  LoginNotificationDetails details(this);
-
-  service->Notify(chrome::NOTIFICATION_AUTH_NEEDED,
-                  content::Source<NavigationController>(controller),
-                  content::Details<LoginNotificationDetails>(&details));
-}
 
 void LoginHandler::ReleaseSoon() {
   CHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -354,6 +300,26 @@ void LoginHandler::RemoveObservers() {
   registrar_.reset();
 }
 
+void LoginHandler::NotifyAuthNeeded() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (WasAuthHandled())
+    return;
+
+  content::NotificationService* service =
+      content::NotificationService::current();
+  NavigationController* controller = NULL;
+
+  WebContents* requesting_contents = GetWebContentsForLogin();
+  if (requesting_contents)
+    controller = &requesting_contents->GetController();
+
+  LoginNotificationDetails details(this);
+
+  service->Notify(chrome::NOTIFICATION_AUTH_NEEDED,
+                  content::Source<NavigationController>(controller),
+                  content::Details<LoginNotificationDetails>(&details));
+}
+
 void LoginHandler::NotifyAuthSupplied(const base::string16& username,
                                       const base::string16& password) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -398,6 +364,22 @@ void LoginHandler::NotifyAuthCancelled(bool dismiss_navigation) {
   if (!has_shown_login_handler_) {
     ReleaseSoon();
   }
+}
+
+password_manager::PasswordManager* LoginHandler::GetPasswordManagerForLogin() {
+  WebContents* contents = GetWebContentsForLogin();
+  if (!contents)
+    return nullptr;
+  password_manager::PasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(contents);
+  return client ? client->GetPasswordManager() : nullptr;
+}
+
+// Returns whether authentication had been handled (SetAuth or CancelAuth).
+bool LoginHandler::WasAuthHandled() const {
+  base::AutoLock lock(handled_auth_lock_);
+  bool was_handled = handled_auth_;
+  return was_handled;
 }
 
 // Marks authentication as handled and returns the previous handled state.
@@ -531,60 +513,6 @@ void LoginHandler::GetDialogStrings(const GURL& request_url,
   }
 }
 
-void LoginHandler::ShowLoginPrompt(const GURL& request_url,
-                                   net::AuthChallengeInfo* auth_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* parent_contents = GetWebContentsForLogin();
-  if (!parent_contents) {
-    CancelAuth();
-    return;
-  }
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(parent_contents);
-  if (prerender_contents) {
-    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
-    CancelAuth();
-    return;
-  }
-
-  base::string16 authority;
-  base::string16 explanation;
-  GetDialogStrings(request_url, *auth_info, &authority, &explanation);
-
-  password_manager::PasswordManager* password_manager =
-      GetPasswordManagerForLogin();
-
-  if (!password_manager) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    // A WebContents in a <webview> (a GuestView type) does not have a password
-    // manager, but still needs to be able to show login prompts.
-    const auto* guest =
-        guest_view::GuestViewBase::FromWebContents(parent_contents);
-    if (guest &&
-        extensions::GetViewType(guest->owner_web_contents()) !=
-            extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      BuildViewWithoutPasswordManager(authority, explanation);
-      return;
-    }
-#endif
-    CancelAuth();
-    return;
-  }
-
-  if (password_manager &&
-      password_manager->client()->GetLogManager()->IsLoggingActive()) {
-    password_manager::BrowserSavePasswordProgressLogger logger(
-        password_manager->client()->GetLogManager());
-    logger.LogMessage(
-        autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
-  }
-
-  PasswordForm observed_form(
-      MakeInputForPasswordManager(request_url, *auth_info));
-  BuildViewWithPasswordManager(authority, explanation, password_manager,
-                               observed_form);
-}
-
 void LoginHandler::LoginDialogCallback(
     const GURL& request_url,
     const content::GlobalRequestID& request_id,
@@ -692,11 +620,11 @@ void LoginHandler::MaybeSetUpLoginPrompt(
                        base::RetainedRef(auth_info));
     // The interstitial delegate is owned by the interstitial that it creates.
     // This cancels any existing interstitial.
-    SetInterstitialDelegate(
+    interstitial_delegate_ =
         (new LoginInterstitialDelegate(
              parent_contents, auth_info->is_proxy ? GURL() : request_url,
              std::move(callback)))
-            ->GetWeakPtr());
+            ->GetWeakPtr();
 
   } else {
     if (is_request_for_main_frame) {
@@ -708,6 +636,79 @@ void LoginHandler::MaybeSetUpLoginPrompt(
     }
     ShowLoginPrompt(request_url, auth_info);
   }
+}
+
+void LoginHandler::ShowLoginPrompt(const GURL& request_url,
+                                   net::AuthChallengeInfo* auth_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* parent_contents = GetWebContentsForLogin();
+  if (!parent_contents) {
+    CancelAuth();
+    return;
+  }
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(parent_contents);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
+    CancelAuth();
+    return;
+  }
+
+  base::string16 authority;
+  base::string16 explanation;
+  GetDialogStrings(request_url, *auth_info, &authority, &explanation);
+
+  password_manager::PasswordManager* password_manager =
+      GetPasswordManagerForLogin();
+
+  if (!password_manager) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // A WebContents in a <webview> (a GuestView type) does not have a password
+    // manager, but still needs to be able to show login prompts.
+    const auto* guest =
+        guest_view::GuestViewBase::FromWebContents(parent_contents);
+    if (guest && extensions::GetViewType(guest->owner_web_contents()) !=
+                     extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      BuildViewWithoutPasswordManager(authority, explanation);
+      return;
+    }
+#endif
+    CancelAuth();
+    return;
+  }
+
+  if (password_manager &&
+      password_manager->client()->GetLogManager()->IsLoggingActive()) {
+    password_manager::BrowserSavePasswordProgressLogger logger(
+        password_manager->client()->GetLogManager());
+    logger.LogMessage(
+        autofill::SavePasswordProgressLogger::STRING_SHOW_LOGIN_PROMPT_METHOD);
+  }
+
+  PasswordForm observed_form(
+      MakeInputForPasswordManager(request_url, *auth_info));
+  BuildViewWithPasswordManager(authority, explanation, password_manager,
+                               observed_form);
+}
+
+void LoginHandler::BuildViewWithPasswordManager(
+    const base::string16& authority,
+    const base::string16& explanation,
+    password_manager::PasswordManager* password_manager,
+    const autofill::PasswordForm& observed_form) {
+  password_form_ = observed_form;
+  LoginHandler::LoginModelData model_data(password_manager, observed_form);
+  has_shown_login_handler_ = true;
+  BuildViewImpl(authority, explanation, &model_data);
+  NotifyAuthNeeded();
+}
+
+void LoginHandler::BuildViewWithoutPasswordManager(
+    const base::string16& authority,
+    const base::string16& explanation) {
+  has_shown_login_handler_ = true;
+  BuildViewImpl(authority, explanation, nullptr);
+  NotifyAuthNeeded();
 }
 
 // ----------------------------------------------------------------------------

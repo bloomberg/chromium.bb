@@ -59,8 +59,6 @@ class LoginHandlerAndroid : public LoginHandler {
       chrome_http_auth_handler_->SetObserver(this);
       chrome_http_auth_handler_->ShowDialog(
           view_helper->GetViewAndroid()->GetWindowAndroid()->GetJavaObject());
-
-      NotifyAuthNeeded();
     } else {
       CancelAuth();
       LOG(WARNING) << "HTTP Authentication failed because TabAndroid is "
