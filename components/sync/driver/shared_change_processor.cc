@@ -153,7 +153,7 @@ base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
   generic_change_processor_ = processor_factory
                                   ->CreateGenericChangeProcessor(
                                       type_, user_share, error_handler_->Copy(),
-                                      local_service, merge_result, sync_client)
+                                      local_service, merge_result)
                                   .release();
   return local_service;
 }

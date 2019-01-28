@@ -21,12 +21,10 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     UserShare* user_share,
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const base::WeakPtr<SyncableService>& local_service,
-    const base::WeakPtr<SyncMergeResult>& merge_result,
-    SyncClient* sync_client) {
+    const base::WeakPtr<SyncMergeResult>& merge_result) {
   DCHECK(user_share);
   return std::make_unique<GenericChangeProcessor>(
-      type, std::move(error_handler), local_service, merge_result, user_share,
-      sync_client);
+      type, std::move(error_handler), local_service, merge_result, user_share);
 }
 
 }  // namespace syncer

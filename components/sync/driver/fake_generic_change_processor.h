@@ -20,7 +20,7 @@ namespace syncer {
 // A fake GenericChangeProcessor that can return arbitrary values.
 class FakeGenericChangeProcessor : public GenericChangeProcessor {
  public:
-  FakeGenericChangeProcessor(ModelType type, SyncClient* sync_client);
+  explicit FakeGenericChangeProcessor(ModelType type);
   ~FakeGenericChangeProcessor() override;
 
   // Setters for GenericChangeProcessor implementation results.
@@ -52,8 +52,7 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
       UserShare* user_share,
       std::unique_ptr<DataTypeErrorHandler> error_handler,
       const base::WeakPtr<SyncableService>& local_service,
-      const base::WeakPtr<SyncMergeResult>& merge_result,
-      SyncClient* sync_client) override;
+      const base::WeakPtr<SyncMergeResult>& merge_result) override;
 
  private:
   std::unique_ptr<FakeGenericChangeProcessor> processor_;

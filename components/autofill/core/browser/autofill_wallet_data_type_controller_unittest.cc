@@ -121,7 +121,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
     autofill_wallet_dtc_->SetGenericChangeProcessorFactoryForTest(
         std::make_unique<syncer::FakeGenericChangeProcessorFactory>(
             std::make_unique<syncer::FakeGenericChangeProcessor>(
-                syncer::AUTOFILL_WALLET_DATA, this)));
+                syncer::AUTOFILL_WALLET_DATA)));
   }
 
   void Start() {
