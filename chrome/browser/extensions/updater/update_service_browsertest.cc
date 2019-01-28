@@ -57,7 +57,7 @@ class UpdateServiceTest : public ExtensionUpdateClientBaseTest,
 
 // This test is parameterized for using JSON or XML serialization. |true| means
 // JSON serialization is used.
-INSTANTIATE_TEST_CASE_P(Parameterized, UpdateServiceTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Parameterized, UpdateServiceTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(UpdateServiceTest, NoUpdate) {
   // Verify that UpdateService runs correctly when there's no update.
@@ -648,9 +648,9 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest,
 
 // This test is parameterized for using JSON or XML serialization. |true| means
 // JSON serialization is used.
-INSTANTIATE_TEST_CASE_P(Parameterized,
-                        PolicyUpdateServiceTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Parameterized,
+                         PolicyUpdateServiceTest,
+                         testing::Bool());
 
 // Tests that if CheckForExternalUpdates() fails, then we retry reinstalling
 // corrupted policy extensions. For example: if network is unavailable,
