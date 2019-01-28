@@ -227,10 +227,17 @@ void DynamicModuleResolver::ResolveDynamically(
   // options are a new script fetch options whose items all have the same
   // values, except for the integrity metadata, which is instead the empty
   // string.</spec>
+  // TODO(domfarolino): It has not yet been decided how a script's "importance"
+  // should affect its dynamic imports. There is discussion at
+  // https://github.com/whatwg/html/issues/3670, but for now there is no effect,
+  // and dynamic imports get kImportanceAuto. If this changes,
+  // ReferrerScriptInfo will need a mojom::FetchImportanceMode member, that must
+  // be properly set.
   ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
                              String(), referrer_info.ParserState(),
                              referrer_info.CredentialsMode(),
-                             referrer_info.GetReferrerPolicy());
+                             referrer_info.GetReferrerPolicy(),
+                             mojom::FetchImportanceMode::kImportanceAuto);
 
   // <spec step="2.4">Fetch a module script graph given url, referencing
   // script's settings object, "script", and options. Wait until the algorithm
