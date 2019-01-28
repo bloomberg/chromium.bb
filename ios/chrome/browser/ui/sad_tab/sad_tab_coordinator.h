@@ -11,19 +11,11 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol OverscrollActionsControllerDelegate;
-@class SadTabCoordinator;
-
-@protocol SadTabCoordinatorDelegate
-// Called from -[SadTabCoordinator start].
-- (void)sadTabCoordinatorDidStart:(SadTabCoordinator*)sadTabCoordinator;
-@end
 
 // Coordinator that displays a SadTab view.
 @interface SadTabCoordinator : ChromeCoordinator<SadTabTabHelperDelegate>
 
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
-
-@property(nonatomic, weak) id<SadTabCoordinatorDelegate> delegate;
 
 // Required to support Overscroll Actions UI, which is displayed when Sad Tab is
 // pulled down.
