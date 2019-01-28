@@ -328,8 +328,8 @@ const BlockingLoginTestParam kBlockinLoginTestCases[] = {
 
 // TODO(poromov): Disabled because it has become flaky due to incorrect mock
 // network requests - re-enable this when https://crbug.com/580537 is fixed.
-INSTANTIATE_TEST_CASE_P(DISABLED_BlockingLoginTestInstance,
-                        BlockingLoginTest,
-                        testing::ValuesIn(kBlockinLoginTestCases));
+INSTANTIATE_TEST_SUITE_P(DISABLED_BlockingLoginTestInstance,
+                         BlockingLoginTest,
+                         testing::ValuesIn(kBlockinLoginTestCases));
 
 }  // namespace chromeos

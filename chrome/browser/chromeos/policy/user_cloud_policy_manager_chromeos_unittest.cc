@@ -446,7 +446,7 @@ class UserCloudPolicyManagerChromeOSTest
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
 // once it is enabled by default.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     UserCloudPolicyManagerChromeOSTest,
     testing::Values(std::vector<base::Feature>(),
@@ -1027,7 +1027,7 @@ class UserCloudPolicyManagerChromeOSChildTest
 
 // TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
 // once it is enabled by default.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     UserCloudPolicyManagerChromeOSChildTest,
     testing::Values(std::vector<base::Feature>{

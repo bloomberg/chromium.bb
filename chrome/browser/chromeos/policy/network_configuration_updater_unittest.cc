@@ -825,9 +825,9 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
             certificate_importer_->GetAndResetImportCount());
 }
 
-INSTANTIATE_TEST_CASE_P(NetworkConfigurationUpdaterTestWithParamInstance,
-                        NetworkConfigurationUpdaterTestWithParam,
-                        testing::Values(key::kDeviceOpenNetworkConfiguration,
-                                        key::kOpenNetworkConfiguration));
+INSTANTIATE_TEST_SUITE_P(NetworkConfigurationUpdaterTestWithParamInstance,
+                         NetworkConfigurationUpdaterTestWithParam,
+                         testing::Values(key::kDeviceOpenNetworkConfiguration,
+                                         key::kOpenNetworkConfiguration));
 
 }  // namespace policy

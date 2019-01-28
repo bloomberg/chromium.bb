@@ -2801,7 +2801,8 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   WaitForSessionStart();
 }
 
-INSTANTIATE_TEST_CASE_P(TermsOfServiceDownloadTestInstance,
-                        TermsOfServiceDownloadTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(TermsOfServiceDownloadTestInstance,
+                         TermsOfServiceDownloadTest,
+                         testing::Bool());
 
 }  // namespace policy

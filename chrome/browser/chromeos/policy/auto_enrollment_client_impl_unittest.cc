@@ -815,10 +815,10 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkFailureThenRequireUpdatedModulus) {
   Mock::VerifyAndClearExpectations(service_.get());
 }
 
-INSTANTIATE_TEST_CASE_P(FRE,
-                        AutoEnrollmentClientImplTest,
-                        testing::Values(AutoEnrollmentProtocol::kFRE));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(FRE,
+                         AutoEnrollmentClientImplTest,
+                         testing::Values(AutoEnrollmentProtocol::kFRE));
+INSTANTIATE_TEST_SUITE_P(
     InitialEnrollment,
     AutoEnrollmentClientImplTest,
     testing::Values(AutoEnrollmentProtocol::kInitialEnrollment));

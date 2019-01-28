@@ -304,13 +304,13 @@ IN_PROC_BROWSER_TEST_P(SigninProfileAppsPolicyPerChannelTest,
                    ->GetInstalledExtension(kTrivialExtensionId));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SigninProfileAppsPolicyPerChannelTest,
-                        testing::Values(version_info::Channel::UNKNOWN,
-                                        version_info::Channel::CANARY,
-                                        version_info::Channel::DEV,
-                                        version_info::Channel::BETA,
-                                        version_info::Channel::STABLE));
+INSTANTIATE_TEST_SUITE_P(,
+                         SigninProfileAppsPolicyPerChannelTest,
+                         testing::Values(version_info::Channel::UNKNOWN,
+                                         version_info::Channel::CANARY,
+                                         version_info::Channel::DEV,
+                                         version_info::Channel::BETA,
+                                         version_info::Channel::STABLE));
 
 namespace {
 

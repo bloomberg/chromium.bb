@@ -184,7 +184,7 @@ TEST_P(DeviceCloudPolicyInitializerTest,
   EXPECT_EQ(GetParam().auth_mechanism_after_oobe, config.auth_mechanism);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ZeroTouchFlag,
     DeviceCloudPolicyInitializerTest,
     ::testing::Values(
