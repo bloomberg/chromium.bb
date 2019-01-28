@@ -15,7 +15,6 @@
 namespace syncer {
 
 class GenericChangeProcessor;
-class SyncClient;
 class SyncMergeResult;
 class SyncableService;
 struct UserShare;
@@ -36,8 +35,7 @@ class GenericChangeProcessorFactory {
       UserShare* user_share,
       std::unique_ptr<DataTypeErrorHandler> error_handler,
       const base::WeakPtr<SyncableService>& local_service,
-      const base::WeakPtr<SyncMergeResult>& merge_result,
-      SyncClient* sync_client);
+      const base::WeakPtr<SyncMergeResult>& merge_result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessorFactory);
