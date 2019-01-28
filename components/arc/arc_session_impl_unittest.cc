@@ -632,9 +632,9 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
                                                     .packages_cache_mode());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ArcSessionImplPackagesCacheModeTest,
-                        ::testing::ValuesIn(kPackagesCacheModeStates));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcSessionImplPackagesCacheModeTest,
+                         ::testing::ValuesIn(kPackagesCacheModeStates));
 
 TEST_F(ArcSessionImplTest, DemoSession) {
   auto arc_session = CreateArcSession();
