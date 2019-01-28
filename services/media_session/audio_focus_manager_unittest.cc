@@ -249,7 +249,7 @@ class AudioFocusManagerTest
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     AudioFocusManagerTest,
     testing::Values(mojom::EnforcementMode::kDefault,
