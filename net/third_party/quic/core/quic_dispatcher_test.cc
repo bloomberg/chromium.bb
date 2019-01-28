@@ -676,7 +676,7 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
   SetQuicRestartFlag(quic_enable_accept_random_ipn, true);
   ProcessPacket(client_address, connection_id, true, SerializeCHLO(),
                 PACKET_8BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER,
-                kMaxRandomInitialPacketNumber +
+                MaxRandomInitialPacketNumber().ToUint64() +
                     QuicDispatcher::kMaxReasonableInitialPacketNumber + 1);
 }
 
@@ -1956,7 +1956,7 @@ TEST_P(BufferedPacketStoreTest, BufferNonChloPacketsUptoLimitWithChloBuffered) {
 
   // Process another |kDefaultMaxUndecryptablePackets| + 1 data packets. The
   // last one should be dropped.
-  for (QuicPacketNumber packet_number = 2;
+  for (uint64_t packet_number = 2;
        packet_number <= kDefaultMaxUndecryptablePackets + 2; ++packet_number) {
     ProcessPacket(client_addr_, last_connection_id, true, "data packet");
   }

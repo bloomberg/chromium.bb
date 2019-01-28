@@ -245,15 +245,12 @@ QuicConnection::QuicConnection(
       peer_address_(initial_peer_address),
       direct_peer_address_(initial_peer_address),
       active_effective_peer_migration_type_(NO_CHANGE),
-      highest_packet_sent_before_effective_peer_migration_(0),
       last_packet_decrypted_(false),
       last_size_(0),
       current_packet_data_(nullptr),
       last_decrypted_packet_level_(ENCRYPTION_NONE),
       should_last_packet_instigate_acks_(false),
       was_last_packet_missing_(false),
-      largest_seen_packet_with_ack_(0),
-      largest_seen_packet_with_stop_waiting_(0),
       max_undecryptable_packets_(0),
       max_tracked_packets_(kMaxTrackedPackets),
       pending_version_negotiation_packet_(false),
@@ -784,7 +781,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
       // Packets should have the version flag till version negotiation is
       // done.
       QuicString error_details =
-          QuicStrCat(ENDPOINT, "Packet ", header.packet_number,
+          QuicStrCat(ENDPOINT, "Packet ", header.packet_number.ToUint64(),
                      " without version flag before version negotiated.");
       QUIC_DLOG(WARNING) << error_details;
       CloseConnection(QUIC_INVALID_VERSION, error_details,
@@ -842,7 +839,8 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   current_effective_peer_migration_type_ = NO_CHANGE;
 
   if (perspective_ == Perspective::IS_CLIENT) {
-    if (header.packet_number > received_packet_manager_.GetLargestObserved()) {
+    if (!received_packet_manager_.GetLargestObserved().IsInitialized() ||
+        header.packet_number > received_packet_manager_.GetLargestObserved()) {
       // Update peer_address_ and effective_peer_address_ immediately for
       // client connections.
       direct_peer_address_ = last_packet_source_address_;
@@ -946,22 +944,25 @@ bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
   QUIC_DVLOG(1) << ENDPOINT
                 << "OnAckFrameStart, largest_acked: " << largest_acked;
 
-  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+  if (largest_seen_packet_with_ack_.IsInitialized() &&
+      last_header_.packet_number <= largest_seen_packet_with_ack_) {
     QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
     return true;
   }
 
-  if (largest_acked > sent_packet_manager_.GetLargestSentPacket()) {
+  if (!sent_packet_manager_.GetLargestSentPacket().IsInitialized() ||
+      largest_acked > sent_packet_manager_.GetLargestSentPacket()) {
     QUIC_DLOG(WARNING) << ENDPOINT
                        << "Peer's observed unsent packet:" << largest_acked
                        << " vs " << sent_packet_manager_.GetLargestSentPacket();
-    // We got an error for data we have not sent.
+    // We got an ack for data we have not sent.
     CloseConnection(QUIC_INVALID_ACK_DATA, "Largest observed too high.",
                     ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
 
-  if (largest_acked > sent_packet_manager_.GetLargestObserved()) {
+  if (!sent_packet_manager_.GetLargestObserved().IsInitialized() ||
+      largest_acked > sent_packet_manager_.GetLargestObserved()) {
     visitor_->OnForwardProgressConfirmed();
   } else if (largest_acked < sent_packet_manager_.GetLargestObserved()) {
     QUIC_LOG(INFO) << ENDPOINT << "Peer's largest_observed packet decreased:"
@@ -986,7 +987,8 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start, QuicPacketNumber end) {
   DCHECK(connected_);
   QUIC_DVLOG(1) << ENDPOINT << "OnAckRange: [" << start << ", " << end << ")";
 
-  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+  if (largest_seen_packet_with_ack_.IsInitialized() &&
+      last_header_.packet_number <= largest_seen_packet_with_ack_) {
     QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
     return true;
   }
@@ -1001,7 +1003,8 @@ bool QuicConnection::OnAckTimestamp(QuicPacketNumber packet_number,
   QUIC_DVLOG(1) << ENDPOINT << "OnAckTimestamp: [" << packet_number << ", "
                 << timestamp.ToDebuggingValue() << ")";
 
-  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+  if (largest_seen_packet_with_ack_.IsInitialized() &&
+      last_header_.packet_number <= largest_seen_packet_with_ack_) {
     QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
     return true;
   }
@@ -1014,7 +1017,8 @@ bool QuicConnection::OnAckFrameEnd(QuicPacketNumber start) {
   DCHECK(connected_);
   QUIC_DVLOG(1) << ENDPOINT << "OnAckFrameEnd, start: " << start;
 
-  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
+  if (largest_seen_packet_with_ack_.IsInitialized() &&
+      last_header_.packet_number <= largest_seen_packet_with_ack_) {
     QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
     return true;
   }
@@ -1053,7 +1057,8 @@ bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
   if (no_stop_waiting_frames_) {
     return true;
   }
-  if (last_header_.packet_number <= largest_seen_packet_with_stop_waiting_) {
+  if (largest_seen_packet_with_stop_waiting_.IsInitialized() &&
+      last_header_.packet_number <= largest_seen_packet_with_stop_waiting_) {
     QUIC_DLOG(INFO) << ENDPOINT
                     << "Received an old stop waiting frame: ignoring";
     return true;
@@ -1131,8 +1136,10 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
 
 const char* QuicConnection::ValidateStopWaitingFrame(
     const QuicStopWaitingFrame& stop_waiting) {
-  if (stop_waiting.least_unacked <
-      received_packet_manager_.peer_least_packet_awaiting_ack()) {
+  if (received_packet_manager_.peer_least_packet_awaiting_ack()
+          .IsInitialized() &&
+      stop_waiting.least_unacked <
+          received_packet_manager_.peer_least_packet_awaiting_ack()) {
     QUIC_DLOG(ERROR)
         << ENDPOINT
         << "Peer's sent low least_unacked: " << stop_waiting.least_unacked
@@ -1441,8 +1448,10 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
   if (was_missing) {
     // Only ack immediately if an ACK frame was sent with a larger
     // largest acked than the newly received packet number.
-    if (last_header_.packet_number <
-        sent_packet_manager_.unacked_packets().largest_sent_largest_acked()) {
+    const QuicPacketNumber largest_sent_largest_acked =
+        sent_packet_manager_.unacked_packets().largest_sent_largest_acked();
+    if (largest_sent_largest_acked.IsInitialized() &&
+        last_header_.packet_number < largest_sent_largest_acked) {
       ack_queued_ = true;
     }
   }
@@ -1450,7 +1459,10 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
   if (should_last_packet_instigate_acks_ && !ack_queued_) {
     ++num_retransmittable_packets_received_since_last_ack_sent_;
     if (ack_mode_ != TCP_ACKING &&
-        last_header_.packet_number > min_received_before_ack_decimation_) {
+        // TODO(fayang): Fix this as this check assumes the first received
+        // packet is 1.
+        last_header_.packet_number >
+            QuicPacketNumber(min_received_before_ack_decimation_)) {
       // Ack up to 10 packets at once unless ack decimation is unlimited.
       if (!unlimited_ack_decimation_ &&
           num_retransmittable_packets_received_since_last_ack_sent_ >=
@@ -1530,8 +1542,9 @@ void QuicConnection::ClearLastFrames() {
 void QuicConnection::CloseIfTooManyOutstandingSentPackets() {
   // This occurs if we don't discard old packets we've seen fast enough. It's
   // possible largest observed is less than leaset unacked.
-  if (sent_packet_manager_.GetLargestObserved() >
-      sent_packet_manager_.GetLeastUnacked() + max_tracked_packets_) {
+  if (sent_packet_manager_.GetLargestObserved().IsInitialized() &&
+      sent_packet_manager_.GetLargestObserved() >
+          sent_packet_manager_.GetLeastUnacked() + max_tracked_packets_) {
     CloseConnection(
         QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
         QuicStrCat("More than ", max_tracked_packets_, " outstanding."),
@@ -1790,8 +1803,10 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
       << ", highest_packet_sent_before_effective_peer_migration_ = "
       << highest_packet_sent_before_effective_peer_migration_;
   if (active_effective_peer_migration_type_ != NO_CHANGE &&
-      sent_packet_manager_.GetLargestObserved() >
-          highest_packet_sent_before_effective_peer_migration_) {
+      sent_packet_manager_.GetLargestObserved().IsInitialized() &&
+      (!highest_packet_sent_before_effective_peer_migration_.IsInitialized() ||
+       sent_packet_manager_.GetLargestObserved() >
+           highest_packet_sent_before_effective_peer_migration_)) {
     if (perspective_ == Perspective::IS_SERVER) {
       OnEffectivePeerMigrationValidated();
     }
@@ -1886,7 +1901,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     QUIC_RESTART_FLAG_COUNT_N(quic_enable_accept_random_ipn, 2, 2);
     // Configured to accept any packet number in range 1...0x7fffffff
     // as initial packet number.
-    if (last_header_.packet_number != kInvalidPacketNumber) {
+    if (last_header_.packet_number.IsInitialized()) {
       // The last packet's number is not 0. Ensure that this packet
       // is reasonably close to where it should be.
       if (!Near(header.packet_number, last_header_.packet_number)) {
@@ -1899,10 +1914,9 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
       }
     } else {
       // The "last packet's number" is 0, meaning that this packet is the first
-      // one received. Ensure it is in range 1..kMaxRandomInitialPacketNumber,
+      // one received. Ensure it is in range 1..MaxRandomInitialPacketNumber(),
       // inclusive.
-      if ((header.packet_number == kInvalidPacketNumber) ||
-          (header.packet_number > kMaxRandomInitialPacketNumber)) {
+      if ((header.packet_number > MaxRandomInitialPacketNumber())) {
         // packet number is bad.
         QUIC_DLOG(INFO) << ENDPOINT << "Initial packet " << header.packet_number
                         << " out of bounds.  Discarding";
@@ -1916,21 +1930,29 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     // Count those that would have been accepted if FLAGS..random_ipn
     // were true -- to detect/diagnose potential issues prior to
     // enabling the flag.
-    if ((header.packet_number > 1) &&
-        (header.packet_number <= kMaxRandomInitialPacketNumber)) {
+    if ((header.packet_number > QuicPacketNumber(1)) &&
+        (header.packet_number <= MaxRandomInitialPacketNumber())) {
       QUIC_CODE_COUNT_N(had_possibly_random_ipn, 2, 2);
     }
-
-    if (!Near(header.packet_number, last_header_.packet_number)) {
+    bool out_of_bound =
+        last_header_.packet_number.IsInitialized()
+            ? !Near(header.packet_number, last_header_.packet_number)
+            // TODO(fayang): Fix this as this check assume the first received
+            // packet is 1.
+            : header.packet_number > QuicPacketNumber(kMaxPacketGap);
+    if (out_of_bound) {
       QUIC_DLOG(INFO) << ENDPOINT << "Packet " << header.packet_number
                       << " out of bounds.  Discarding";
       QuicStringPiece packet_data = GetCurrentPacket();
       const size_t kMaxPacketLengthInErrorDetails = 64;
       CloseConnection(
           QUIC_INVALID_PACKET_HEADER,
-          QuicStrCat("Packet number out of bounds. last_pkn=",
-                     last_header_.packet_number,
-                     ", current_pkn=", header.packet_number,
+          QuicStrCat("Packet number out of bounds. ",
+                     last_header_.packet_number.IsInitialized()
+                         ? QuicStrCat("last_pkn=",
+                                      last_header_.packet_number.ToUint64())
+                         : "first received packet",
+                     ", current_pkn=", header.packet_number.ToUint64(),
                      ", current_pkt_len=", packet_data.length(),
                      ", current_hdr=",
                      QuicTextUtils::HexEncode(
@@ -2132,7 +2154,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     ++stats_.packets_discarded;
     return true;
   }
-  if (packet->packet_number < sent_packet_manager_.GetLargestSentPacket()) {
+  if (sent_packet_manager_.GetLargestSentPacket().IsInitialized() &&
+      packet->packet_number < sent_packet_manager_.GetLargestSentPacket()) {
     QUIC_BUG << "Attempt to write packet:" << packet->packet_number
              << " after:" << sent_packet_manager_.GetLargestSentPacket();
     QUIC_CLIENT_HISTOGRAM_COUNTS("QuicSession.NumQueuedPacketsAtOutOfOrder",
@@ -2420,7 +2443,7 @@ void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
 
   if (transport_version() != QUIC_VERSION_35) {
     if (serialized_packet->retransmittable_frames.empty() &&
-        serialized_packet->original_packet_number == kInvalidPacketNumber) {
+        !serialized_packet->original_packet_number.IsInitialized()) {
       // Increment consecutive_num_packets_with_no_retransmittable_frames_ if
       // this packet is a new transmission with no retransmittable frames.
       ++consecutive_num_packets_with_no_retransmittable_frames_;
@@ -3237,7 +3260,7 @@ void QuicConnection::OnEffectivePeerMigrationValidated() {
     QUIC_BUG << "No migration underway.";
     return;
   }
-  highest_packet_sent_before_effective_peer_migration_ = 0;
+  highest_packet_sent_before_effective_peer_migration_.Clear();
   active_effective_peer_migration_type_ = NO_CHANGE;
 }
 
@@ -3391,8 +3414,9 @@ void QuicConnection::UpdatePacketContent(PacketContent type) {
   }
 
   current_packet_content_ = NOT_PADDED_PING;
-  if (last_header_.packet_number ==
-      received_packet_manager_.GetLargestObserved()) {
+  if (received_packet_manager_.GetLargestObserved().IsInitialized() &&
+      last_header_.packet_number ==
+          received_packet_manager_.GetLargestObserved()) {
     direct_peer_address_ = last_packet_source_address_;
     if (current_effective_peer_migration_type_ != NO_CHANGE) {
       // Start effective peer migration immediately when the current packet is

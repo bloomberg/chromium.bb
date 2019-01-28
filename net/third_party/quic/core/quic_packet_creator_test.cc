@@ -227,9 +227,10 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
       int num_padding_bytes,
       EncryptionLevel encryption_level,
       QuicPacketNumberLength packet_number_length) {
-    return QuicPendingRetransmission(
-        1u, NOT_RETRANSMISSION, retransmittable_frames, has_crypto_handshake,
-        num_padding_bytes, encryption_level, packet_number_length);
+    return QuicPendingRetransmission(QuicPacketNumber(1u), NOT_RETRANSMISSION,
+                                     retransmittable_frames,
+                                     has_crypto_handshake, num_padding_bytes,
+                                     encryption_level, packet_number_length);
   }
 
   bool IsDefaultTestConfiguration() {
@@ -268,8 +269,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
     EncryptionLevel level = static_cast<EncryptionLevel>(i);
     creator_.set_encryption_level(level);
-    frames_.push_back(
-        QuicFrame(new QuicAckFrame(InitAckFrame(QuicPacketNumber(1)))));
+    frames_.push_back(QuicFrame(new QuicAckFrame(InitAckFrame(1))));
     frames_.push_back(QuicFrame(QuicStreamFrame(
         QuicUtils::GetCryptoStreamId(client_framer_.transport_version()), false,
         0u, QuicStringPiece())));
@@ -513,8 +513,8 @@ TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   frames.push_back(QuicFrame(&frame));
   SerializedPacket serialized = SerializeAllFrames(frames);
   EXPECT_EQ(ENCRYPTION_NONE, serialized.encryption_level);
-  ASSERT_EQ(1u, serialized.packet_number);
-  ASSERT_EQ(1u, creator_.packet_number());
+  ASSERT_EQ(QuicPacketNumber(1u), serialized.packet_number);
+  ASSERT_EQ(QuicPacketNumber(1u), creator_.packet_number());
 
   InSequence s;
   EXPECT_CALL(framer_visitor_, OnPacket());
@@ -1016,28 +1016,33 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   }
 
   QuicPacketCreatorPeer::SetPacketNumber(&creator_, 64);
-  creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(2),
+                                    10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 
   QuicPacketCreatorPeer::SetPacketNumber(&creator_, 64 * 256);
-  creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(2),
+                                    10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 
   QuicPacketCreatorPeer::SetPacketNumber(&creator_, 64 * 256 * 256);
-  creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(2),
+                                    10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 
   QuicPacketCreatorPeer::SetPacketNumber(&creator_,
                                          UINT64_C(64) * 256 * 256 * 256 * 256);
-  creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(2),
+                                    10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
+  QuicPacketCreatorPeer::SetPacketNumber(&creator_, 1);
   if (GetParam().version.transport_version > QUIC_VERSION_43 &&
       GetParam().version.transport_version != QUIC_VERSION_99) {
     EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
@@ -1048,21 +1053,24 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
   }
 
-  creator_.UpdatePacketNumberLength(1, 10000 / kDefaultMaxPacketSize);
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(1),
+                                    10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 
-  creator_.UpdatePacketNumberLength(1, 10000 * 256 / kDefaultMaxPacketSize);
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(1),
+                                    10000 * 256 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 
-  creator_.UpdatePacketNumberLength(1,
+  creator_.UpdatePacketNumberLength(QuicPacketNumber(1),
                                     10000 * 256 * 256 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_4BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 
   creator_.UpdatePacketNumberLength(
-      1, UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
+      QuicPacketNumber(1),
+      UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 }
@@ -1181,7 +1189,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   ASSERT_EQ(1u, retransmittable.size());
   EXPECT_EQ(STREAM_FRAME, retransmittable[0].type);
   EXPECT_TRUE(serialized_packet_.has_ack);
-  EXPECT_EQ(10u, serialized_packet_.largest_acked);
+  EXPECT_EQ(QuicPacketNumber(10u), serialized_packet_.largest_acked);
   DeleteSerializedPacket();
 
   EXPECT_FALSE(creator_.HasPendingFrames());
@@ -1466,7 +1474,9 @@ TEST_P(QuicPacketCreatorTest, FlushWithExternalBuffer) {
 // failure. While this test is not applicable to versions other than version 99,
 // it should still work. Hence, it is not made version-specific.
 TEST_P(QuicPacketCreatorTest, IetfAckGapErrorRegression) {
-  QuicAckFrame ack_frame = InitAckFrame({{60, 61}, {125, 126}});
+  QuicAckFrame ack_frame =
+      InitAckFrame({{QuicPacketNumber(60), QuicPacketNumber(61)},
+                    {QuicPacketNumber(125), QuicPacketNumber(126)}});
   frames_.push_back(QuicFrame(&ack_frame));
   SerializeAllFrames(frames_);
 }

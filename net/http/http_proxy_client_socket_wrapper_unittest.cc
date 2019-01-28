@@ -161,13 +161,13 @@ class HttpProxyClientSocketWrapperTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructSettingsPacket(
-      quic::QuicPacketNumber packet_number) {
+      uint64_t packet_number) {
     return client_maker_.MakeInitialSettingsPacket(packet_number,
                                                    &header_stream_offset_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructConnectRequestPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       RequestPriority priority) {
     spdy::SpdyHeaderBlock block;
     PopulateConnectRequestIR(&block);
@@ -178,7 +178,7 @@ class HttpProxyClientSocketWrapperTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerConnectReplyPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin) {
     spdy::SpdyHeaderBlock block;
     block[":status"] = "200";
@@ -189,11 +189,11 @@ class HttpProxyClientSocketWrapperTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndRstPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicRstStreamErrorCode error_code,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
         largest_received, smallest_received, least_unacked, kSendFeedback);

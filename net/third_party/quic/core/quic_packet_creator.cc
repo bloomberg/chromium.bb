@@ -52,7 +52,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
       packet_size_(0),
       connection_id_(connection_id),
-      packet_(kInvalidPacketNumber,
+      packet_(QuicPacketNumber(),
               PACKET_1BYTE_PACKET_NUMBER,
               nullptr,
               0,
@@ -132,7 +132,7 @@ void QuicPacketCreator::UpdatePacketNumberLength(
       packet_.packet_number + 1 - least_packet_awaited_by_peer;
   const uint64_t delta = std::max(current_delta, max_packets_in_flight);
   packet_.packet_number_length = QuicFramer::GetMinPacketNumberLength(
-      framer_->transport_version(), delta * 4);
+      framer_->transport_version(), QuicPacketNumber(delta * 4));
 }
 
 bool QuicPacketCreator::ConsumeData(QuicStreamId id,
@@ -342,14 +342,14 @@ void QuicPacketCreator::ClearPacket() {
   packet_.has_stop_waiting = false;
   packet_.has_crypto_handshake = NOT_HANDSHAKE;
   packet_.num_padding_bytes = 0;
-  packet_.original_packet_number = kInvalidPacketNumber;
+  packet_.original_packet_number.Clear();
   if (!can_set_transmission_type_ || ShouldSetTransmissionTypeForNextFrame()) {
     packet_.transmission_type = NOT_RETRANSMISSION;
   }
   packet_.encrypted_buffer = nullptr;
   packet_.encrypted_length = 0;
   DCHECK(packet_.retransmittable_frames.empty());
-  packet_.largest_acked = kInvalidPacketNumber;
+  packet_.largest_acked.Clear();
   needs_full_padding_ = false;
 }
 
@@ -663,7 +663,7 @@ QuicPacketCreator::SerializePathResponseConnectivityProbingPacket(
 
 // TODO(b/74062209): Make this a public method of framer?
 SerializedPacket QuicPacketCreator::NoPacket() {
-  return SerializedPacket(kInvalidPacketNumber, PACKET_1BYTE_PACKET_NUMBER,
+  return SerializedPacket(QuicPacketNumber(), PACKET_1BYTE_PACKET_NUMBER,
                           nullptr, 0, false, false);
 }
 
@@ -707,8 +707,8 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   } else {
     header->nonce = nullptr;
   }
-  if (packet_.packet_number == kInvalidPacketNumber) {
-    packet_.packet_number = kFirstSendingPacketNumber;
+  if (!packet_.packet_number.IsInitialized()) {
+    packet_.packet_number = FirstSendingPacketNumber();
   } else {
     ++packet_.packet_number;
   }

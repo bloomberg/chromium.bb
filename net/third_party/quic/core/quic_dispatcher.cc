@@ -513,27 +513,29 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
   }
 
   // initial packet number of 0 is always invalid.
-  if (header.packet_number == kInvalidPacketNumber) {
+  if (!header.packet_number.IsInitialized()) {
     return kFateTimeWait;
   }
   if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
     QUIC_RESTART_FLAG_COUNT_N(quic_enable_accept_random_ipn, 1, 2);
     // Accepting Initial Packet Numbers in 1...((2^31)-1) range... check
     // maximum accordingly.
-    if (header.packet_number > kMaxRandomInitialPacketNumber) {
+    if (header.packet_number > MaxRandomInitialPacketNumber()) {
       return kFateTimeWait;
     }
   } else {
     // Count those that would have been accepted if FLAGS..random_ipn
     // were true -- to detect/diagnose potential issues prior to
     // enabling the flag.
-    if ((header.packet_number > kMaxReasonableInitialPacketNumber) &&
-        (header.packet_number <= kMaxRandomInitialPacketNumber)) {
+    if ((header.packet_number >
+         QuicPacketNumber(kMaxReasonableInitialPacketNumber)) &&
+        (header.packet_number <= MaxRandomInitialPacketNumber())) {
       QUIC_CODE_COUNT_N(had_possibly_random_ipn, 1, 2);
     }
     // Check that the sequence number is within the range that the client is
     // expected to send before receiving a response from the server.
-    if (header.packet_number > kMaxReasonableInitialPacketNumber) {
+    if (header.packet_number >
+        QuicPacketNumber(kMaxReasonableInitialPacketNumber)) {
       return kFateTimeWait;
     }
   }

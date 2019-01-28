@@ -34,7 +34,7 @@ class MockDecrypter : public quic::QuicDecrypter {
   bool SetDiversificationNonce(
       const quic::DiversificationNonce& nonce) override;
   bool DecryptPacket(quic::QuicTransportVersion version,
-                     quic::QuicPacketNumber packet_number,
+                     uint64_t packet_number,
                      quic::QuicStringPiece associated_data,
                      quic::QuicStringPiece ciphertext,
                      char* output,

@@ -12,20 +12,29 @@
 namespace quic {
 
 namespace {
+
 const QuicPacketCount kMaxPrintRange = 128;
+
+uint64_t PacketNumberIntervalLength(
+    const QuicInterval<QuicPacketNumber>& interval) {
+  if (interval.Empty()) {
+    return 0u;
+  }
+  return interval.max() - interval.min();
+}
 }  // namespace
 
 bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
                       QuicPacketNumber packet_number,
                       QuicPacketNumber peer_least_packet_awaiting_ack) {
-  DCHECK_NE(kInvalidPacketNumber, packet_number);
-  return packet_number >= peer_least_packet_awaiting_ack &&
+  DCHECK(packet_number.IsInitialized());
+  return (!peer_least_packet_awaiting_ack.IsInitialized() ||
+          packet_number >= peer_least_packet_awaiting_ack) &&
          !ack_frame.packets.Contains(packet_number);
 }
 
 QuicAckFrame::QuicAckFrame()
-    : largest_acked(kInvalidPacketNumber),
-      ack_delay_time(QuicTime::Delta::Infinite()),
+    : ack_delay_time(QuicTime::Delta::Infinite()),
       ecn_counters_populated(false),
       ect_0_count(0),
       ect_1_count(0),
@@ -57,7 +66,7 @@ std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
 }
 
 void QuicAckFrame::Clear() {
-  largest_acked = kInvalidPacketNumber;
+  largest_acked.Clear();
   ack_delay_time = QuicTime::Delta::Infinite();
   received_packet_times.clear();
   packets.Clear();
@@ -74,7 +83,7 @@ PacketNumberQueue& PacketNumberQueue::operator=(PacketNumberQueue&& other) =
     default;
 
 void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
-  if (packet_number == kInvalidPacketNumber) {
+  if (!packet_number.IsInitialized()) {
     return;
   }
   // Check if the deque is empty
@@ -152,8 +161,7 @@ void PacketNumberQueue::Add(QuicPacketNumber packet_number) {
 
 void PacketNumberQueue::AddRange(QuicPacketNumber lower,
                                  QuicPacketNumber higher) {
-  if (lower == kInvalidPacketNumber || higher == kInvalidPacketNumber ||
-      lower >= higher) {
+  if (!lower.IsInitialized() || !higher.IsInitialized() || lower >= higher) {
     return;
   }
   if (packet_number_deque_.empty()) {
@@ -192,7 +200,7 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
 }
 
 bool PacketNumberQueue::RemoveUpTo(QuicPacketNumber higher) {
-  if (higher == kInvalidPacketNumber || Empty()) {
+  if (!higher.IsInitialized() || Empty()) {
     return false;
   }
   const QuicPacketNumber old_min = Min();
@@ -226,7 +234,7 @@ void PacketNumberQueue::Clear() {
 }
 
 bool PacketNumberQueue::Contains(QuicPacketNumber packet_number) const {
-  if (packet_number == kInvalidPacketNumber || packet_number_deque_.empty()) {
+  if (!packet_number.IsInitialized() || packet_number_deque_.empty()) {
     return false;
   }
   if (packet_number_deque_.front().min() > packet_number ||
@@ -258,7 +266,7 @@ QuicPacketNumber PacketNumberQueue::Max() const {
 QuicPacketCount PacketNumberQueue::NumPacketsSlow() const {
   QuicPacketCount n_packets = 0;
   for (QuicInterval<QuicPacketNumber> interval : packet_number_deque_) {
-    n_packets += interval.Length();
+    n_packets += PacketNumberIntervalLength(interval);
   }
   return n_packets;
 }
@@ -285,7 +293,7 @@ PacketNumberQueue::const_reverse_iterator PacketNumberQueue::rend() const {
 
 QuicPacketCount PacketNumberQueue::LastIntervalLength() const {
   DCHECK(!Empty());
-  return packet_number_deque_.back().Length();
+  return PacketNumberIntervalLength(packet_number_deque_.back());
 }
 
 // Largest min...max range for packet numbers where we print the numbers

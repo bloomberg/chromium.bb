@@ -225,7 +225,7 @@ class FakePacketTransport : public P2PQuicPacketTransport,
   // responsibility of the test to disconnect this delegate
   // (set_delegate(nullptr);) before it is destructed.
   FakePacketTransport* peer_packet_transport_ = nullptr;
-  quic::QuicPacketNumber last_packet_num_;
+  uint64_t last_packet_num_;
   quic::MockClock* clock_;
 };
 

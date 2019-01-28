@@ -421,13 +421,13 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
-  ConstructClientConnectionClosePacket(quic::QuicPacketNumber num) {
+  ConstructClientConnectionClosePacket(uint64_t num) {
     return client_maker_.MakeConnectionClosePacket(
         num, false, quic::QUIC_CRYPTO_VERSION_NOT_SUPPORTED, "Time to panic!");
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientRstPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicRstStreamErrorCode error_code) {
     quic::QuicStreamId stream_id =
         GetNthClientInitiatedBidirectionalStreamId(0);
@@ -453,7 +453,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructGetRequestPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin) {
@@ -468,7 +468,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructGetRequestPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       quic::QuicStreamId parent_stream_id,
       bool should_include_version,
@@ -485,7 +485,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructGetRequestPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
@@ -496,7 +496,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructOkResponsePacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin) {
@@ -512,7 +512,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamOffset* offset) {
     return client_maker_.MakeInitialSettingsPacket(packet_number, offset);
   }
@@ -7837,7 +7837,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
   QuicStreamFactoryPeer::SetYieldAfterPackets(factory_.get(), 0);
 
   MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ConstructClientConnectionClosePacket(0));
+  socket_data.AddRead(SYNCHRONOUS, ConstructClientConnectionClosePacket(1));
   socket_data.AddRead(ASYNC, OK);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
@@ -7886,7 +7886,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
       factory_.get(), quic::QuicTime::Delta::FromMilliseconds(-1));
 
   MockQuicData socket_data;
-  socket_data.AddRead(SYNCHRONOUS, ConstructClientConnectionClosePacket(0));
+  socket_data.AddRead(SYNCHRONOUS, ConstructClientConnectionClosePacket(1));
   socket_data.AddRead(ASYNC, OK);
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 

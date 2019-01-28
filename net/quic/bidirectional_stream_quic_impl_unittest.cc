@@ -548,7 +548,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset offset,
@@ -562,7 +562,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset offset,
@@ -574,7 +574,7 @@ class BidirectionalStreamQuicImplTest
   // Construct a data packet with multiple data frames
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructClientMultipleDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
       bool fin,
       quic::QuicStreamOffset offset,
@@ -589,7 +589,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       RequestPriority request_priority,
       size_t* spdy_headers_frame_length) {
@@ -599,7 +599,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestHeadersPacketInner(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool fin,
       RequestPriority request_priority,
@@ -611,7 +611,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRequestHeadersPacketInner(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool fin,
       RequestPriority request_priority,
@@ -632,7 +632,7 @@ class BidirectionalStreamQuicImplTest
 
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructRequestHeadersAndMultipleDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       RequestPriority request_priority,
       quic::QuicStreamOffset* header_stream_offset,
@@ -651,7 +651,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructResponseHeadersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       spdy::SpdyHeaderBlock response_headers,
       size_t* spdy_headers_frame_length,
@@ -662,7 +662,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructResponseHeadersPacketInner(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool fin,
       spdy::SpdyHeaderBlock response_headers,
@@ -674,7 +674,7 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructResponseTrailersPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool fin,
       spdy::SpdyHeaderBlock trailers,
       size_t* spdy_headers_frame_length,
@@ -685,25 +685,25 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientRstStreamPacket(
-      quic::QuicPacketNumber packet_number) {
+      uint64_t packet_number) {
     return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion, 0,
                                              &client_maker_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerRstStreamPacket(
-      quic::QuicPacketNumber packet_number) {
+      uint64_t packet_number) {
     return ConstructRstStreamCancelledPacket(packet_number, !kIncludeVersion, 0,
                                              &server_maker_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientEarlyRstStreamPacket(
-      quic::QuicPacketNumber packet_number) {
+      uint64_t packet_number) {
     return ConstructRstStreamCancelledPacket(packet_number, kIncludeVersion, 0,
                                              &client_maker_);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructRstStreamCancelledPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool include_version,
       size_t bytes_written,
       QuicTestPacketMaker* maker) {
@@ -716,10 +716,10 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
-  ConstructClientAckAndRstStreamPacket(quic::QuicPacketNumber packet_number,
-                                       quic::QuicPacketNumber largest_received,
-                                       quic::QuicPacketNumber smallest_received,
-                                       quic::QuicPacketNumber least_unacked) {
+  ConstructClientAckAndRstStreamPacket(uint64_t packet_number,
+                                       uint64_t largest_received,
+                                       uint64_t smallest_received,
+                                       uint64_t least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, stream_id_,
         quic::QUIC_STREAM_CANCELLED, largest_received, smallest_received,
@@ -727,11 +727,11 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndDataPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       bool fin,
       quic::QuicStreamOffset offset,
       quic::QuicStringPiece data,
@@ -747,11 +747,11 @@ class BidirectionalStreamQuicImplTest
 
   std::unique_ptr<quic::QuicReceivedPacket>
   ConstructAckAndMultipleDataFramesPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       bool should_include_version,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked,
       bool fin,
       quic::QuicStreamOffset offset,
       const std::vector<std::string> data_writes) {
@@ -765,27 +765,27 @@ class BidirectionalStreamQuicImplTest
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
-      quic::QuicPacketNumber packet_number,
-      quic::QuicPacketNumber largest_received,
-      quic::QuicPacketNumber smallest_received,
-      quic::QuicPacketNumber least_unacked) {
+      uint64_t packet_number,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      uint64_t least_unacked) {
     return server_maker_.MakeAckPacket(packet_number, largest_received,
                                        smallest_received, least_unacked,
                                        !kIncludeCongestionFeedback);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket(
-      quic::QuicPacketNumber packet_number,
+      uint64_t packet_number,
       quic::QuicStreamOffset* offset) {
     return client_maker_.MakeInitialSettingsPacket(packet_number, offset);
   }

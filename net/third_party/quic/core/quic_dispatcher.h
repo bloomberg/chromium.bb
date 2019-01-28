@@ -110,7 +110,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // send a handshake and then up to 50 or so data packets, and then it may
   // resend the handshake packet up to 10 times.  (Retransmitted packets are
   // sent with unique packet numbers.)
-  static const QuicPacketNumber kMaxReasonableInitialPacketNumber = 100;
+  static const uint64_t kMaxReasonableInitialPacketNumber = 100;
   static_assert(kMaxReasonableInitialPacketNumber >=
                     kInitialCongestionWindow + 10,
                 "kMaxReasonableInitialPacketNumber is unreasonably small "

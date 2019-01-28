@@ -51,10 +51,11 @@ QuicConnectionId FramerTestConnectionIdPlusOne() {
   return TestConnectionId(UINT64_C(0xFEDCBA9876543211));
 }
 
-const QuicPacketNumber kPacketNumber = UINT64_C(0x12345678);
-const QuicPacketNumber kSmallLargestObserved = UINT16_C(0x1234);
-const QuicPacketNumber kSmallMissingPacket = UINT16_C(0x1233);
-const QuicPacketNumber kLeastUnacked = UINT64_C(0x012345670);
+const QuicPacketNumber kPacketNumber = QuicPacketNumber(UINT64_C(0x12345678));
+const QuicPacketNumber kSmallLargestObserved =
+    QuicPacketNumber(UINT16_C(0x1234));
+const QuicPacketNumber kSmallMissingPacket = QuicPacketNumber(UINT16_C(0x1233));
+const QuicPacketNumber kLeastUnacked = QuicPacketNumber(UINT64_C(0x012345670));
 const QuicStreamId kStreamId = UINT64_C(0x01020304);
 // Note that the high 4 bits of the stream offset must be less than 0x40
 // in order to ensure that the value can be encoded using VarInt62 encoding.
@@ -65,7 +66,7 @@ const QuicPublicResetNonceProof kNonceProof = UINT64_C(0xABCDEF0123456789);
 // This is the largest packet number that can be represented in IETF QUIC
 // varint62 format.
 const QuicPacketNumber kLargestIetfLargestObserved =
-    UINT64_C(0x3fffffffffffffff);
+    QuicPacketNumber(UINT64_C(0x3fffffffffffffff));
 // Encodings for the two bits in a VarInt62 that
 // describe the length of the VarInt61. For binary packet
 // formats in this file, the convention is to code the
@@ -90,7 +91,7 @@ class TestEncrypter : public QuicEncrypter {
                      size_t* output_length,
                      size_t max_output_length) override {
     version_ = version;
-    packet_number_ = packet_number;
+    packet_number_ = QuicPacketNumber(packet_number);
     associated_data_ = QuicString(associated_data);
     plaintext_ = QuicString(plaintext);
     memcpy(output, plaintext.data(), plaintext.length());
@@ -136,7 +137,7 @@ class TestDecrypter : public QuicDecrypter {
                      size_t* output_length,
                      size_t max_output_length) override {
     version_ = version;
-    packet_number_ = packet_number;
+    packet_number_ = QuicPacketNumber(packet_number);
     associated_data_ = QuicString(associated_data);
     ciphertext_ = QuicString(ciphertext);
     memcpy(output, ciphertext.data(), ciphertext.length());
@@ -631,12 +632,17 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochStart) {
   // A few quick manual sanity checks.
-  CheckCalculatePacketNumber(UINT64_C(1), UINT64_C(0));
-  CheckCalculatePacketNumber(kEpoch + 1, kMask);
-  CheckCalculatePacketNumber(kEpoch, kMask);
+  CheckCalculatePacketNumber(UINT64_C(1), QuicPacketNumber());
+  CheckCalculatePacketNumber(kEpoch + 1, QuicPacketNumber(kMask));
+  CheckCalculatePacketNumber(kEpoch, QuicPacketNumber(kMask));
+  for (uint64_t j = 0; j < 10; j++) {
+    CheckCalculatePacketNumber(j, QuicPacketNumber());
+    CheckCalculatePacketNumber(kEpoch - 1 - j, QuicPacketNumber());
+  }
 
   // Cases where the last number was close to the start of the range.
-  for (QuicPacketNumber last = 0; last < 10; last++) {
+  for (QuicPacketNumber last = QuicPacketNumber(1); last < QuicPacketNumber(10);
+       last++) {
     // Small numbers should not wrap (even if they're out of order).
     for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(j, last);
@@ -652,7 +658,7 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochStart) {
 TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearEpochEnd) {
   // Cases where the last number was close to the end of the range
   for (uint64_t i = 0; i < 10; i++) {
-    QuicPacketNumber last = kEpoch - i;
+    QuicPacketNumber last = QuicPacketNumber(kEpoch - i);
 
     // Small numbers should wrap.
     for (uint64_t j = 0; j < 10; j++) {
@@ -673,7 +679,7 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearPrevEpoch) {
   const uint64_t cur_epoch = 2 * kEpoch;
   // Cases where the last number was close to the start of the range
   for (uint64_t i = 0; i < 10; i++) {
-    QuicPacketNumber last = cur_epoch + i;
+    QuicPacketNumber last = QuicPacketNumber(cur_epoch + i);
     // Small number should not wrap (even if they're out of order).
     for (uint64_t j = 0; j < 10; j++) {
       CheckCalculatePacketNumber(cur_epoch + j, last);
@@ -692,7 +698,7 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearNextEpoch) {
   const uint64_t next_epoch = 3 * kEpoch;
   // Cases where the last number was close to the end of the range
   for (uint64_t i = 0; i < 10; i++) {
-    QuicPacketNumber last = next_epoch - 1 - i;
+    QuicPacketNumber last = QuicPacketNumber(next_epoch - 1 - i);
 
     // Small numbers should wrap.
     for (uint64_t j = 0; j < 10; j++) {
@@ -715,7 +721,7 @@ TEST_P(QuicFramerTest, CalculatePacketNumberFromWireNearNextMax) {
   for (uint64_t i = 0; i < 10; i++) {
     // Subtract 1, because the expected next packet number is 1 more than the
     // last packet number.
-    QuicPacketNumber last = max_number - i - 1;
+    QuicPacketNumber last = QuicPacketNumber(max_number - i - 1);
 
     // Small numbers should not wrap, because they have nowhere to go.
     for (uint64_t j = 0; j < 10; j++) {
@@ -2639,7 +2645,7 @@ TEST_P(QuicFramerTest, RejectPublicHeader) {
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(0u, visitor_.header_->packet_number);
+  EXPECT_FALSE(visitor_.header_->packet_number.IsInitialized());
 }
 
 TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
@@ -3175,7 +3181,8 @@ TEST_P(QuicFramerTest, AckBlockAcksEverything) {
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
   EXPECT_EQ(1u, frame.packets.NumIntervals());
   EXPECT_EQ(kLargestIetfLargestObserved, LargestAcked(frame));
-  EXPECT_EQ(kLargestIetfLargestObserved, frame.packets.NumPacketsSlow());
+  EXPECT_EQ(kLargestIetfLargestObserved.ToUint64(),
+            frame.packets.NumPacketsSlow());
 }
 
 // This test looks for a malformed ack where
@@ -6244,9 +6251,9 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
 
   // Use kSmallLargestObserved to make this test finished in a short time.
   QuicAckFrame ack_frame =
-      InitAckFrame({{1, 5},
-                    {10, 500},
-                    {900, kSmallMissingPacket},
+      InitAckFrame({{QuicPacketNumber(1), QuicPacketNumber(5)},
+                    {QuicPacketNumber(10), QuicPacketNumber(500)},
+                    {QuicPacketNumber(900), kSmallMissingPacket},
                     {kSmallMissingPacket + 1, kSmallLargestObserved + 1}});
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
 
@@ -6437,9 +6444,9 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   // 300 ack blocks.
   for (size_t i = 2; i < 2 * 300; i += 2) {
-    ack_frame.packets.Add(i);
+    ack_frame.packets.Add(QuicPacketNumber(i));
   }
-  ack_frame.packets.AddRange(600, kSmallLargestObserved + 1);
+  ack_frame.packets.AddRange(QuicPacketNumber(600), kSmallLargestObserved + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -9110,10 +9117,10 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(600u, LargestAcked(processed_ack_frame));
+  EXPECT_EQ(QuicPacketNumber(600u), LargestAcked(processed_ack_frame));
   ASSERT_EQ(256u, processed_ack_frame.packets.NumPacketsSlow());
-  EXPECT_EQ(90u, processed_ack_frame.packets.Min());
-  EXPECT_EQ(600u, processed_ack_frame.packets.Max());
+  EXPECT_EQ(QuicPacketNumber(90u), processed_ack_frame.packets.Min());
+  EXPECT_EQ(QuicPacketNumber(600u), processed_ack_frame.packets.Max());
 }
 
 TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
@@ -9150,10 +9157,10 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(600u, LargestAcked(processed_ack_frame));
+  EXPECT_EQ(QuicPacketNumber(600u), LargestAcked(processed_ack_frame));
   ASSERT_EQ(240u, processed_ack_frame.packets.NumPacketsSlow());
-  EXPECT_EQ(122u, processed_ack_frame.packets.Min());
-  EXPECT_EQ(600u, processed_ack_frame.packets.Max());
+  EXPECT_EQ(QuicPacketNumber(122u), processed_ack_frame.packets.Min());
+  EXPECT_EQ(QuicPacketNumber(600u), processed_ack_frame.packets.Max());
 }
 
 TEST_P(QuicFramerTest, CleanTruncation) {

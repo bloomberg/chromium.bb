@@ -196,6 +196,7 @@ QuicAckFrame InitAckFrame(const std::vector<QuicAckBlock>& ack_blocks);
 // Testing convenience method to construct a QuicAckFrame with 1 ack block which
 // covers packet number range [1, |largest_acked| + 1).
 // Equivalent to InitAckFrame({{1, largest_acked + 1}})
+QuicAckFrame InitAckFrame(uint64_t largest_acked);
 QuicAckFrame InitAckFrame(QuicPacketNumber largest_acked);
 
 // Testing convenience method to construct a QuicAckFrame with |num_ack_blocks|

@@ -58,7 +58,7 @@ std::unique_ptr<base::Value> NetLogQuicPacketSentCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("transmission_type", transmission_type);
   dict->SetKey("packet_number",
-               NetLogNumberValue(serialized_packet.packet_number));
+               NetLogNumberValue(serialized_packet.packet_number.ToUint64()));
   dict->SetInteger("size", serialized_packet.encrypted_length);
   dict->SetKey("sent_time_us", NetLogNumberValue(sent_time.ToDebuggingValue()));
   return std::move(dict);
@@ -69,8 +69,10 @@ std::unique_ptr<base::Value> NetLogQuicPacketRetransmittedCallback(
     quic::QuicPacketNumber new_packet_number,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetKey("old_packet_number", NetLogNumberValue(old_packet_number));
-  dict->SetKey("new_packet_number", NetLogNumberValue(new_packet_number));
+  dict->SetKey("old_packet_number",
+               NetLogNumberValue(old_packet_number.ToUint64()));
+  dict->SetKey("new_packet_number",
+               NetLogNumberValue(new_packet_number.ToUint64()));
   return std::move(dict);
 }
 
@@ -81,7 +83,7 @@ std::unique_ptr<base::Value> NetLogQuicPacketLostCallback(
     NetLogCaptureMode /*capture_mode*/) {
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetInteger("transmission_type", transmission_type);
-  dict->SetKey("packet_number", NetLogNumberValue(packet_number));
+  dict->SetKey("packet_number", NetLogNumberValue(packet_number.ToUint64()));
   dict->SetKey("detection_time_us",
                NetLogNumberValue(detection_time.ToDebuggingValue()));
   return dict;
@@ -91,7 +93,7 @@ std::unique_ptr<base::Value> NetLogQuicDuplicatePacketCallback(
     quic::QuicPacketNumber packet_number,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetKey("packet_number", NetLogNumberValue(packet_number));
+  dict->SetKey("packet_number", NetLogNumberValue(packet_number.ToUint64()));
   return std::move(dict);
 }
 
@@ -103,7 +105,8 @@ std::unique_ptr<base::Value> NetLogQuicPacketHeaderCallback(
                   header->destination_connection_id.ToString());
   dict->SetInteger("reset_flag", header->reset_flag);
   dict->SetInteger("version_flag", header->version_flag);
-  dict->SetKey("packet_number", NetLogNumberValue(header->packet_number));
+  dict->SetKey("packet_number",
+               NetLogNumberValue(header->packet_number.ToUint64()));
   return std::move(dict);
 }
 
@@ -122,7 +125,8 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
     const quic::QuicAckFrame* frame,
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetKey("largest_observed", NetLogNumberValue(frame->largest_acked));
+  dict->SetKey("largest_observed",
+               NetLogNumberValue(frame->largest_acked.ToUint64()));
   dict->SetKey("delta_time_largest_observed_us",
                NetLogNumberValue(frame->ack_delay_time.ToMicroseconds()));
 
@@ -133,7 +137,7 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
     for (quic::QuicPacketNumber packet = frame->packets.Min();
          packet < frame->largest_acked; ++packet) {
       if (!frame->packets.Contains(packet)) {
-        missing->GetList().push_back(NetLogNumberValue(packet));
+        missing->GetList().push_back(NetLogNumberValue(packet.ToUint64()));
       }
     }
   }
@@ -143,7 +147,7 @@ std::unique_ptr<base::Value> NetLogQuicAckFrameCallback(
   const quic::PacketTimeVector& received_times = frame->received_packet_times;
   for (auto it = received_times.begin(); it != received_times.end(); ++it) {
     auto info = std::make_unique<base::DictionaryValue>();
-    info->SetKey("packet_number", NetLogNumberValue(it->first));
+    info->SetKey("packet_number", NetLogNumberValue(it->first.ToUint64()));
     info->SetKey("received", NetLogNumberValue(it->second.ToDebuggingValue()));
     received->Append(std::move(info));
   }
@@ -202,7 +206,8 @@ std::unique_ptr<base::Value> NetLogQuicStopWaitingFrameCallback(
     NetLogCaptureMode /* capture_mode */) {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto sent_info = std::make_unique<base::DictionaryValue>();
-  sent_info->SetKey("least_unacked", NetLogNumberValue(frame->least_unacked));
+  sent_info->SetKey("least_unacked",
+                    NetLogNumberValue(frame->least_unacked.ToUint64()));
   dict->Set("sent_info", std::move(sent_info));
   return std::move(dict);
 }
@@ -295,11 +300,9 @@ QuicConnectionLogger::QuicConnectionLogger(
     const NetLogWithSource& net_log)
     : net_log_(net_log),
       session_(session),
-      last_received_packet_number_(0),
       last_received_packet_size_(0),
       no_packet_received_after_ping_(false),
       previous_received_packet_size_(0),
-      largest_received_packet_number_(0),
       num_out_of_order_received_packets_(0),
       num_out_of_order_large_received_packets_(0),
       num_packets_received_(0),
@@ -508,7 +511,7 @@ void QuicConnectionLogger::OnPacketSent(
     quic::QuicTime sent_time) {
   if (!net_log_is_capturing_)
     return;
-  if (original_packet_number == 0) {
+  if (!original_packet_number.IsInitialized()) {
     net_log_.AddEvent(
         NetLogEventType::QUIC_SESSION_PACKET_SENT,
         base::Bind(&NetLogQuicPacketSentCallback, serialized_packet,
@@ -596,9 +599,14 @@ void QuicConnectionLogger::OnProtocolVersionMismatch(
 void QuicConnectionLogger::OnPacketHeader(
     const quic::QuicPacketHeader& header) {
   ++num_packets_received_;
-  if (largest_received_packet_number_ < header.packet_number) {
-    quic::QuicPacketNumber delta =
-        header.packet_number - largest_received_packet_number_;
+  if (!largest_received_packet_number_.IsInitialized() ||
+      largest_received_packet_number_ < header.packet_number) {
+    // TODO(fayang): Fix this as this check assume the first received packet
+    // is 1.
+    uint64_t delta = header.packet_number.ToUint64();
+    if (largest_received_packet_number_.IsInitialized()) {
+      delta = header.packet_number - largest_received_packet_number_;
+    }
     if (delta > 1) {
       // There is a gap between the largest packet previously received and
       // the current packet.  This indicates either loss, or out-of-order
@@ -609,10 +617,13 @@ void QuicConnectionLogger::OnPacketHeader(
     }
     largest_received_packet_number_ = header.packet_number;
   }
-  if (header.packet_number < received_packets_.size()) {
-    received_packets_[static_cast<size_t>(header.packet_number)] = true;
+  // TODO(fayang): Fix this as this check assume the first received packet is 1.
+  if (header.packet_number < quic::QuicPacketNumber(received_packets_.size())) {
+    received_packets_[static_cast<size_t>(header.packet_number.ToUint64())] =
+        true;
   }
-  if (header.packet_number < last_received_packet_number_) {
+  if (last_received_packet_number_.IsInitialized() &&
+      header.packet_number < last_received_packet_number_) {
     ++num_out_of_order_received_packets_;
     if (previous_received_packet_size_ < last_received_packet_size_)
       ++num_out_of_order_large_received_packets_;
@@ -621,10 +632,18 @@ void QuicConnectionLogger::OnPacketHeader(
         static_cast<base::HistogramBase::Sample>(last_received_packet_number_ -
                                                  header.packet_number));
   } else if (no_packet_received_after_ping_) {
-    UMA_HISTOGRAM_COUNTS_1M(
-        "Net.QuicSession.PacketGapReceivedNearPing",
-        static_cast<base::HistogramBase::Sample>(header.packet_number -
-                                                 last_received_packet_number_));
+    if (!last_received_packet_number_.IsInitialized()) {
+      // TODO(fayang): Fix this as this check assume the first received packet
+      // is 1.
+      UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PacketGapReceivedNearPing",
+                              static_cast<base::HistogramBase::Sample>(
+                                  header.packet_number.ToUint64()));
+    } else {
+      UMA_HISTOGRAM_COUNTS_1M(
+          "Net.QuicSession.PacketGapReceivedNearPing",
+          static_cast<base::HistogramBase::Sample>(
+              header.packet_number - last_received_packet_number_));
+    }
     no_packet_received_after_ping_ = false;
   }
   last_received_packet_number_ = header.packet_number;
@@ -642,9 +661,12 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
 
 void QuicConnectionLogger::OnAckFrame(const quic::QuicAckFrame& frame) {
   const size_t kApproximateLargestSoloAckBytes = 100;
-  if (last_received_packet_number_ < received_acks_.size() &&
+  // TODO(fayang): Fix this as this check assume the first received packet is 1.
+  if (last_received_packet_number_ <
+          quic::QuicPacketNumber(received_acks_.size()) &&
       last_received_packet_size_ < kApproximateLargestSoloAckBytes) {
-    received_acks_[static_cast<size_t>(last_received_packet_number_)] = true;
+    received_acks_[static_cast<size_t>(
+        last_received_packet_number_.ToUint64())] = true;
   }
 
   if (!net_log_is_capturing_)
@@ -823,10 +845,14 @@ base::HistogramBase* QuicConnectionLogger::Get6PacketHistogram(
 }
 
 float QuicConnectionLogger::ReceivedPacketLossRate() const {
-  if (largest_received_packet_number_ <= num_packets_received_)
+  // TODO(fayang): Fix this as this check assume the first received packet is 1.
+  if (!largest_received_packet_number_.IsInitialized() ||
+      largest_received_packet_number_ <=
+          quic::QuicPacketNumber(num_packets_received_))
     return 0.0f;
-  float num_received = largest_received_packet_number_ - num_packets_received_;
-  return num_received / largest_received_packet_number_;
+  float num_received =
+      largest_received_packet_number_.ToUint64() - num_packets_received_;
+  return num_received / largest_received_packet_number_.ToUint64();
 }
 
 void QuicConnectionLogger::OnRttChanged(quic::QuicTime::Delta rtt) const {
@@ -849,7 +875,9 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   // histogram.  (e.g., if we only got 5 packets, but lost 1, we'd otherwise
   // record a 20% loss in this histogram!). We may still get some strange data
   // (1 loss in 22 is still high :-/).
-  if (largest_received_packet_number_ <= 21)
+  // TODO(fayang): Fix this as this check assume the first received packet is 1.
+  if (!largest_received_packet_number_.IsInitialized() ||
+      largest_received_packet_number_ <= quic::QuicPacketNumber(21))
     return;
 
   string prefix("Net.QuicSession.PacketLossRate_");
