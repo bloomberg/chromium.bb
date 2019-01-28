@@ -104,8 +104,13 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   DCHECK_EQ(addr, slots_[slot].alloc_ptr);
   // Check for double free.
-  if (slots_[slot].dealloc.trace_collected) {
+  if (slots_[slot].deallocation_occurred.exchange(true)) {
     state_.double_free_address = addr;
+    // TODO(https://crbug.com/925447): The other thread may not be done writing
+    // a stack trace so we could spin here until it's read; however, it's also
+    // possible we are racing an allocation in the middle of
+    // RecordAllocationInSlot. For now it's possible a racy double free could
+    // lead to a bad stack trace, but no internal allocator corruption.
     __builtin_trap();
   }
 
@@ -171,6 +176,7 @@ void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
   slots_[slot].dealloc.tid = base::kInvalidThreadId;
   slots_[slot].dealloc.trace_len = 0;
   slots_[slot].dealloc.trace_collected = false;
+  slots_[slot].deallocation_occurred = false;
 }
 
 void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {

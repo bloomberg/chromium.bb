@@ -25,6 +25,8 @@
 #ifndef COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 #define COMPONENTS_GWP_ASAN_COMMON_ALLOCATOR_STATE_H_
 
+#include <atomic>
+
 #include "base/threading/platform_thread.h"
 
 namespace gwp_asan {
@@ -55,6 +57,8 @@ class AllocatorState {
 
   // Structure for storing data about a slot.
   struct SlotMetadata {
+    SlotMetadata();
+
     // Information saved for allocations and deallocations.
     struct AllocationInfo {
       // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
@@ -72,6 +76,9 @@ class AllocatorState {
     size_t alloc_size = 0;
     // The allocation address.
     uintptr_t alloc_ptr = 0;
+    // Used to synchronize whether a deallocation has occurred (e.g. whether a
+    // double free has occurred) between threads.
+    std::atomic<bool> deallocation_occurred{false};
 
     AllocationInfo alloc;
     AllocationInfo dealloc;
