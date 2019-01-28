@@ -565,10 +565,10 @@ TEST_P(ManagePasswordsBubbleModelManageLinkTest, OnManageClicked) {
       password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
 }
 
-INSTANTIATE_TEST_CASE_P(Default,
-                        ManagePasswordsBubbleModelManageLinkTest,
-                        ::testing::Values(TestSyncService::SyncedTypes::ALL,
-                                          TestSyncService::SyncedTypes::NONE));
+INSTANTIATE_TEST_SUITE_P(Default,
+                         ManagePasswordsBubbleModelManageLinkTest,
+                         ::testing::Values(TestSyncService::SyncedTypes::ALL,
+                                           TestSyncService::SyncedTypes::NONE));
 
 // Verify that URL keyed metrics are properly recorded.
 TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
