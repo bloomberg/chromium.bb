@@ -76,15 +76,5 @@ TEST_F(LocalDeviceInfoProviderImplTest, GetSigninScopedDeviceId) {
             provider_->GetLocalDeviceInfo()->signin_scoped_device_id());
 }
 
-TEST_F(LocalDeviceInfoProviderImplTest, GetLocalSyncCacheGUID) {
-  EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
-
-  InitializeProvider();
-  EXPECT_EQ(std::string(kLocalDeviceGuid), provider_->GetLocalSyncCacheGUID());
-
-  provider_->Clear();
-  EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
-}
-
 }  // namespace
 }  // namespace syncer

@@ -100,16 +100,20 @@ std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
   syncer::DeviceInfoSyncService* service =
       DeviceInfoSyncServiceFactory::GetForProfile(profile);
   if (!service) {
-    return std::unique_ptr<DeviceInfo>();
+    return nullptr;
   }
 
-  const LocalDeviceInfoProvider* local_device =
+  const LocalDeviceInfoProvider* local_device_info_provider =
       service->GetLocalDeviceInfoProvider();
-  DCHECK(local_device);
-  std::string guid = local_device->GetLocalSyncCacheGUID();
-  std::unique_ptr<DeviceInfo> device =
-      GetDeviceInfoForClientId(guid, extension_id, profile);
-  return device;
+  DCHECK(local_device_info_provider);
+  const DeviceInfo* local_device =
+      local_device_info_provider->GetLocalDeviceInfo();
+  if (!local_device)
+    return nullptr;
+
+  // TODO(karandeepb): Can't we just return a copy of |local_device|, without
+  // having to look it up by GUID?
+  return GetDeviceInfoForClientId(local_device->guid(), extension_id, profile);
 }
 
 ExtensionFunction::ResponseAction SignedInDevicesGetFunction::Run() {

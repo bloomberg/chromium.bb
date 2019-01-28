@@ -37,10 +37,6 @@ std::string LocalDeviceInfoProviderMock::GetSyncUserAgent() const {
   return "useragent";
 }
 
-std::string LocalDeviceInfoProviderMock::GetLocalSyncCacheGUID() const {
-  return local_device_info_ ? local_device_info_->guid() : "";
-}
-
 void LocalDeviceInfoProviderMock::Initialize(const std::string& cache_guid,
                                              const std::string& session_name) {
   local_device_info_ = std::make_unique<DeviceInfo>(
