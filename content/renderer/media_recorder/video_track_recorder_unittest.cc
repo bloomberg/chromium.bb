@@ -369,10 +369,10 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoTrackRecorderTest,
-                        ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
-                                           ValuesIn(kTrackRecorderTestSize),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoTrackRecorderTest,
+                         ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
+                                            ValuesIn(kTrackRecorderTestSize),
+                                            ::testing::Bool()));
 
 }  // namespace content

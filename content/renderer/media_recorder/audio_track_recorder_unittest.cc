@@ -361,5 +361,5 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_CASE_P(, AudioTrackRecorderTest, ValuesIn(kATRTestParams));
+INSTANTIATE_TEST_SUITE_P(, AudioTrackRecorderTest, ValuesIn(kATRTestParams));
 }  // namespace content

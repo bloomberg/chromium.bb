@@ -320,9 +320,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   media_recorder_handler_.reset();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MediaRecorderHandlerTest,
-                        ValuesIn(kMediaRecorderTestParams));
+INSTANTIATE_TEST_SUITE_P(,
+                         MediaRecorderHandlerTest,
+                         ValuesIn(kMediaRecorderTestParams));
 
 // Sends 2 frames and expect them as WebM (or MKV) contained encoded audio data
 // in writeData().
