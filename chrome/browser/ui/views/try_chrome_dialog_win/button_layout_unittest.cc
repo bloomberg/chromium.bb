@@ -179,7 +179,7 @@ TEST_P(ButtonLayoutTest, Layout) {
 }
 
 // Test all combinations of one or two buttons at many sizes.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ButtonLayoutTest,
     ::testing::Combine(::testing::Values(ButtonLayoutTest::kNarrowButtonMin,
