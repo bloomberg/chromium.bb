@@ -270,9 +270,9 @@ TEST_P(InputControllerTest, TestOnmutedCallbackInitiallyMuted) {
 }
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
-INSTANTIATE_TEST_CASE_P(, InputControllerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, InputControllerTest, ::testing::Bool());
 #else
-INSTANTIATE_TEST_CASE_P(, InputControllerTest, testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(, InputControllerTest, testing::Values(false));
 #endif
 
 }  // namespace audio

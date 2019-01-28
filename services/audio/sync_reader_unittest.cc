@@ -112,8 +112,8 @@ TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   reader.Read(output_bus.get());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SyncReaderBitstreamTest,
-                        ::testing::ValuesIn(overflow_test_case_values));
+INSTANTIATE_TEST_SUITE_P(,
+                         SyncReaderBitstreamTest,
+                         ::testing::ValuesIn(overflow_test_case_values));
 
 }  // namespace audio

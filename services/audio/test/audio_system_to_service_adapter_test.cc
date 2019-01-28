@@ -518,7 +518,7 @@ namespace media {
 using AudioSystemToServiceAdapterTestVariations =
     testing::Types<audio::AudioSystemToServiceAdapterTestBase>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(AudioSystemToServiceAdapter,
-                              AudioSystemTestTemplate,
-                              AudioSystemToServiceAdapterTestVariations);
+INSTANTIATE_TYPED_TEST_SUITE_P(AudioSystemToServiceAdapter,
+                               AudioSystemTestTemplate,
+                               AudioSystemToServiceAdapterTestVariations);
 }  // namespace media
