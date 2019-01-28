@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -212,19 +213,19 @@ void PlatformNotificationServiceImpl::ClosePersistentNotification(
 
 void PlatformNotificationServiceImpl::GetDisplayedNotifications(
     BrowserContext* browser_context,
-    const DisplayedNotificationsCallback& callback) {
+    DisplayedNotificationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   // Tests will not have a message center.
   if (!profile || profile->AsTestingProfile()) {
-    auto displayed_notifications = std::make_unique<std::set<std::string>>();
-    callback.Run(std::move(displayed_notifications),
-                 false /* supports_synchronization */);
+    std::set<std::string> displayed_notifications;
+    std::move(callback).Run(std::move(displayed_notifications),
+                            false /* supports_synchronization */);
     return;
   }
   NotificationDisplayServiceFactory::GetForProfile(profile)->GetDisplayed(
-      callback);
+      std::move(callback));
 }
 
 int64_t PlatformNotificationServiceImpl::ReadNextPersistentNotificationId(

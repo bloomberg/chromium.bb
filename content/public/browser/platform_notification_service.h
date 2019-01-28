@@ -36,8 +36,8 @@ class CONTENT_EXPORT PlatformNotificationService {
   virtual ~PlatformNotificationService() {}
 
   using DisplayedNotificationsCallback =
-      base::Callback<void(std::unique_ptr<std::set<std::string>>,
-                          bool /* supports synchronization */)>;
+      base::OnceCallback<void(std::set<std::string>,
+                              bool /* supports synchronization */)>;
 
   // Displays the notification described in |notification_data| to the user.
   // This method must be called on the UI thread.
@@ -73,7 +73,7 @@ class CONTENT_EXPORT PlatformNotificationService {
   // posts |callback| with the result.
   virtual void GetDisplayedNotifications(
       BrowserContext* browser_context,
-      const DisplayedNotificationsCallback& callback) = 0;
+      DisplayedNotificationsCallback callback) = 0;
 
   // Reads the value of the next persistent notification ID from the profile and
   // increments the value, as it is called once per notification write.

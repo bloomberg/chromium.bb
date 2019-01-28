@@ -42,29 +42,26 @@ struct NotificationDatabaseData;
 class ServiceWorkerContextWrapper;
 
 // Implementation of the Web Notification storage context. The public methods
-// defined in this interface must only be called on the UI thread unless
-// otherwise specified.
+// defined in this interface must only be called on the UI thread.
 class CONTENT_EXPORT PlatformNotificationContextImpl
     : public PlatformNotificationContext,
       public ServiceWorkerContextCoreObserver {
  public:
   // Constructs a new platform notification context. If |path| is non-empty, the
   // database will be initialized in the "Platform Notifications" subdirectory
-  // of |path|. Otherwise, the database will be initialized in memory. The
-  // constructor must only be called on the UI thread.
+  // of |path|. Otherwise, the database will be initialized in memory.
   PlatformNotificationContextImpl(
       const base::FilePath& path,
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
 
-  // To be called on the UI thread to initialize the instance.
+  // To be called to initialize the instance.
   void Initialize();
 
-  // To be called on the UI thread when the context is being shut down.
+  // To be called when the context is being shut down.
   void Shutdown();
 
-  // Creates a BlinkNotificationServiceImpl that is owned by this context. Must
-  // be called on the UI thread.
+  // Creates a BlinkNotificationServiceImpl that is owned by this context.
   void CreateService(const url::Origin& origin,
                      blink::mojom::NotificationServiceRequest request);
 
@@ -82,19 +79,19 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const std::string& notification_id,
       const GURL& origin,
       Interaction interaction,
-      const ReadResultCallback& callback) override;
+      ReadResultCallback callback) override;
   void WriteNotificationData(int64_t persistent_notification_id,
                              int64_t service_worker_registration_id,
                              const GURL& origin,
                              const NotificationDatabaseData& database_data,
-                             const WriteResultCallback& callback) override;
+                             WriteResultCallback callback) override;
   void DeleteNotificationData(const std::string& notification_id,
                               const GURL& origin,
-                              const DeleteResultCallback& callback) override;
+                              DeleteResultCallback callback) override;
   void ReadAllNotificationDataForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const ReadAllResultCallback& callback) override;
+      ReadAllResultCallback callback) override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
@@ -106,71 +103,77 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   ~PlatformNotificationContextImpl() override;
 
-  void DidGetNotifications(
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization);
+  void DidGetNotifications(std::set<std::string> displayed_notifications,
+                           bool supports_synchronization);
 
-  // Initializes the database if neccesary. Must be called on the IO thread.
-  // |success_closure| will be invoked on a the |task_runner_| thread when
-  // everything is available, or |failure_closure_| will be invoked on the
-  // IO thread when initialization fails.
-  void LazyInitialize(const base::Closure& success_closure,
-                      const base::Closure& failure_closure);
+  using InitializeResultCallback = base::OnceCallback<void(bool)>;
 
-  // Opens the database. Must be called on the |task_runner_| thread. When the
-  // database has been opened, |success_closure| will be invoked on the task
-  // thread, otherwise |failure_closure_| will be invoked on the IO thread.
-  void OpenDatabase(const base::Closure& success_closure,
-                    const base::Closure& failure_closure);
+  // Initializes the database if necessary. |callback| will be invoked on the
+  // |task_runner_| thread. If everything is available, |callback| will be
+  // called with true, otherwise it will be called with false.
+  void LazyInitialize(InitializeResultCallback callback);
+
+  // Opens the database. Must be called on the |task_runner_| thread. |callback|
+  // will be invoked on the |task_runner_| thread. When the database has been
+  // successfully opened, |callback| will be called with true, otherwise it will
+  // be called with false.
+  void OpenDatabase(InitializeResultCallback callback);
 
   // Actually reads the notification data from the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
-  // IO thread when the operation has completed.
+  // UI thread when the operation has completed.
   void DoReadNotificationData(const std::string& notification_id,
                               const GURL& origin,
                               Interaction interaction,
-                              const ReadResultCallback& callback);
+                              ReadResultCallback callback,
+                              bool initialized);
 
   // Updates the database (and the result callback) based on
   // |displayed_notifications| if |supports_synchronization|.
   void SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const ReadAllResultCallback& callback,
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      ReadAllResultCallback callback,
+      std::set<std::string> displayed_notifications,
       bool supports_synchronization);
 
   // Actually reads all notification data from the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
-  // IO thread when the operation has completed.
+  // UI thread when the operation has completed.
   void DoReadAllNotificationDataForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const ReadAllResultCallback& callback,
-      std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool supports_synchronization);
+      ReadAllResultCallback callback,
+      std::set<std::string> displayed_notifications,
+      bool supports_synchronization,
+      bool initialized);
 
   // Actually writes the notification database to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
-  // IO thread when the operation has completed.
+  // UI thread when the operation has completed.
   void DoWriteNotificationData(int64_t persistent_notification_id,
                                int64_t service_worker_registration_id,
                                const GURL& origin,
                                const NotificationDatabaseData& database_data,
-                               const WriteResultCallback& callback);
+                               WriteResultCallback callback,
+                               bool initialized);
 
   // Actually deletes the notification information from the database. Must only
   // be called on the |task_runner_| thread. |callback| will be invoked on the
-  // IO thread when the operation has completed.
+  // UI thread when the operation has completed.
   void DoDeleteNotificationData(const std::string& notification_id,
                                 const GURL& origin,
-                                const DeleteResultCallback& callback);
+                                DeleteResultCallback callback,
+                                bool initialized);
+
+  void OnStorageWipedInitialized(bool initialized);
 
   // Deletes all notifications associated with |service_worker_registration_id|
   // belonging to |origin|. Must be called on the |task_runner_| thread.
   void DoDeleteNotificationsForServiceWorkerRegistration(
       const GURL& origin,
-      int64_t service_worker_registration_id);
+      int64_t service_worker_registration_id,
+      bool initialized);
 
   // Destroys the database regardless of its initialization status. This method
   // must only be called on the |task_runner_| thread. Returns if the directory

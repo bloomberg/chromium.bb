@@ -4,6 +4,9 @@
 
 #include "content/test/mock_platform_notification_service.h"
 
+#include <set>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
@@ -83,18 +86,18 @@ void MockPlatformNotificationService::ClosePersistentNotification(
 
 void MockPlatformNotificationService::GetDisplayedNotifications(
     BrowserContext* browser_context,
-    const DisplayedNotificationsCallback& callback) {
+    DisplayedNotificationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto displayed_notifications = std::make_unique<std::set<std::string>>();
+  std::set<std::string> displayed_notifications;
 
   for (const auto& kv : persistent_notifications_)
-    displayed_notifications->insert(kv.first);
+    displayed_notifications.insert(kv.first);
   for (const auto& notification_id : non_persistent_notifications_)
-    displayed_notifications->insert(notification_id);
+    displayed_notifications.insert(notification_id);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(callback, std::move(displayed_notifications),
+      base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      true /* supports_synchronization */));
 }
 

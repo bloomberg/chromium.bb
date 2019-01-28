@@ -25,18 +25,18 @@ class PlatformNotificationContext
                                         BrowserThread::DeleteOnUIThread> {
  public:
   using ReadResultCallback =
-      base::Callback<void(bool /* success */,
-                          const NotificationDatabaseData&)>;
+      base::OnceCallback<void(bool /* success */,
+                              const NotificationDatabaseData&)>;
 
   using ReadAllResultCallback =
-      base::Callback<void(bool /* success */,
-                          const std::vector<NotificationDatabaseData>&)>;
+      base::OnceCallback<void(bool /* success */,
+                              const std::vector<NotificationDatabaseData>&)>;
 
   using WriteResultCallback =
-      base::Callback<void(bool /* success */,
-                          const std::string& /* notification_id */)>;
+      base::OnceCallback<void(bool /* success */,
+                              const std::string& /* notification_id */)>;
 
-  using DeleteResultCallback = base::Callback<void(bool /* success */)>;
+  using DeleteResultCallback = base::OnceCallback<void(bool /* success */)>;
 
   // Reasons for updating a notification, triggering a read.
   enum class Interaction {
@@ -62,7 +62,7 @@ class PlatformNotificationContext
       const std::string& notification_id,
       const GURL& origin,
       Interaction interaction,
-      const ReadResultCallback& callback) = 0;
+      ReadResultCallback callback) = 0;
 
   // Reads all data associated with |service_worker_registration_id| belonging
   // to |origin| from the database. |callback| will be invoked with the success
@@ -70,7 +70,7 @@ class PlatformNotificationContext
   virtual void ReadAllNotificationDataForServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      const ReadAllResultCallback& callback) = 0;
+      ReadAllResultCallback callback) = 0;
 
   // Writes the data associated with a notification to a database. When this
   // action completed, |callback| will be invoked with the success status and
@@ -81,14 +81,14 @@ class PlatformNotificationContext
       int64_t service_worker_registration_id,
       const GURL& origin,
       const NotificationDatabaseData& database_data,
-      const WriteResultCallback& callback) = 0;
+      WriteResultCallback callback) = 0;
 
   // Deletes all data associated with |notification_id| belonging to |origin|
   // from the database. |callback| will be invoked with the success status
   // when the operation has completed.
   virtual void DeleteNotificationData(const std::string& notification_id,
                                       const GURL& origin,
-                                      const DeleteResultCallback& callback) = 0;
+                                      DeleteResultCallback callback) = 0;
 
  protected:
   friend class base::DeleteHelper<PlatformNotificationContext>;

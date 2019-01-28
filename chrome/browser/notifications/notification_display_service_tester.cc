@@ -43,7 +43,7 @@ class MockNotificationPlatformBridge : public NotificationPlatformBridge {
   void Close(Profile* profile, const std::string& notification_id) override {}
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override {
-    auto displayed_notifications = std::make_unique<std::set<std::string>>();
+    std::set<std::string> displayed_notifications;
     std::move(callback).Run(std::move(displayed_notifications),
                             false /* supports_synchronization */);
   }

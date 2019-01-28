@@ -66,7 +66,8 @@ void NotificationPlatformBridgeChromeOs::GetDisplayed(
   // Right now, this is only used to get web notifications that were created by
   // and have outlived a previous browser process. Ash itself doesn't outlive
   // the browser process, so there's no need to implement.
-  std::move(callback).Run(std::make_unique<std::set<std::string>>(), false);
+  std::set<std::string> displayed_notifications;
+  std::move(callback).Run(std::move(displayed_notifications), false);
 }
 
 void NotificationPlatformBridgeChromeOs::SetReadyCallback(

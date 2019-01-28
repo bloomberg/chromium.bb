@@ -262,7 +262,8 @@ void NotificationDisplayServiceImpl::GetDisplayed(
     DisplayedNotificationsCallback callback) {
   if (!bridge_initialized_) {
     actions_.push(base::BindOnce(&NotificationDisplayServiceImpl::GetDisplayed,
-                                 weak_factory_.GetWeakPtr(), callback));
+                                 weak_factory_.GetWeakPtr(),
+                                 std::move(callback)));
     return;
   }
 

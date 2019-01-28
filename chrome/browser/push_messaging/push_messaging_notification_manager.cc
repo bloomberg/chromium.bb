@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <bitset>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -103,12 +104,12 @@ PushMessagingNotificationManager::~PushMessagingNotificationManager() {}
 void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const base::Closure& message_handled_closure) {
+    base::OnceClosure message_handled_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
   if (ShouldSkipUserVisibleOnlyRequirements(origin)) {
-    message_handled_closure.Run();
+    std::move(message_handled_closure).Run();
     return;
   }
 #endif
@@ -119,16 +120,16 @@ void PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements(
 
   notification_context->ReadAllNotificationDataForServiceWorkerRegistration(
       origin, service_worker_registration_id,
-      base::BindRepeating(
+      base::BindOnce(
           &PushMessagingNotificationManager::DidGetNotificationsFromDatabase,
           weak_factory_.GetWeakPtr(), origin, service_worker_registration_id,
-          message_handled_closure));
+          std::move(message_handled_closure)));
 }
 
 void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const base::Closure& message_handled_closure,
+    base::OnceClosure message_handled_closure,
     bool success,
     const std::vector<NotificationDatabaseData>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -180,7 +181,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         base::BindOnce(&PushMessagingNotificationManager::ProcessSilentPush,
                        weak_factory_.GetWeakPtr(), origin,
                        service_worker_registration_id,
-                       message_handled_closure));
+                       std::move(message_handled_closure)));
     return;
   }
 
@@ -195,7 +196,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         content::mojom::PushUserVisibleStatus::NOT_REQUIRED_BUT_SHOWN);
   }
 
-  message_handled_closure.Run();
+  std::move(message_handled_closure).Run();
 }
 
 bool PushMessagingNotificationManager::IsTabVisible(
@@ -234,7 +235,7 @@ bool PushMessagingNotificationManager::IsTabVisible(
 void PushMessagingNotificationManager::ProcessSilentPush(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const base::Closure& message_handled_closure,
+    base::OnceClosure message_handled_closure,
     bool silent_push_allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -242,7 +243,7 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   if (silent_push_allowed) {
     RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus::
                                 REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
-    message_handled_closure.Run();
+    std::move(message_handled_closure).Run();
     return;
   }
 
@@ -266,22 +267,22 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   notification_context->WriteNotificationData(
       next_persistent_notification_id, service_worker_registration_id, origin,
       database_data,
-      base::BindRepeating(
+      base::BindOnce(
           &PushMessagingNotificationManager::DidWriteNotificationData,
           weak_factory_.GetWeakPtr(), origin, database_data.notification_data,
-          message_handled_closure));
+          std::move(message_handled_closure)));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
     const GURL& origin,
     const blink::PlatformNotificationData& notification_data,
-    const base::Closure& message_handled_closure,
+    base::OnceClosure message_handled_closure,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success) {
     DLOG(ERROR) << "Writing forced notification to database should not fail";
-    message_handled_closure.Run();
+    std::move(message_handled_closure).Run();
     return;
   }
 
@@ -293,7 +294,7 @@ void PushMessagingNotificationManager::DidWriteNotificationData(
       profile_, notification_id, GURL() /* service_worker_scope */, origin,
       notification_data, blink::NotificationResources());
 
-  message_handled_closure.Run();
+  std::move(message_handled_closure).Run();
 }
 
 #if defined(OS_CHROMEOS)

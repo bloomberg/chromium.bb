@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/number_formatting.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -553,9 +554,11 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
                      incognito:(BOOL)incognito
             notificationCenter:(NSUserNotificationCenter*)notificationCenter
                       callback:(GetDisplayedNotificationsCallback)callback {
+  // Create a copyable version of the OnceCallback because ObjectiveC blocks
+  // copy all referenced variables via copy constructor.
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   auto reply = ^(NSArray* alerts) {
-    std::unique_ptr<std::set<std::string>> displayedNotifications =
-        std::make_unique<std::set<std::string>>();
+    std::set<std::string> displayedNotifications;
 
     for (NSUserNotification* toast in
          [notificationCenter deliveredNotifications]) {
@@ -566,18 +569,18 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
           boolValue];
       if ([toastProfileId isEqualToString:profileId] &&
           incognito == incognitoNotification) {
-        displayedNotifications->insert(base::SysNSStringToUTF8([toast.userInfo
+        displayedNotifications.insert(base::SysNSStringToUTF8([toast.userInfo
             objectForKey:notification_constants::kNotificationId]));
       }
     }
 
     for (NSString* alert in alerts)
-      displayedNotifications->insert(base::SysNSStringToUTF8(alert));
+      displayedNotifications.insert(base::SysNSStringToUTF8(alert));
 
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(callback, base::Passed(&displayedNotifications),
-                   true /* supports_synchronization */));
+        base::BindOnce(copyable_callback, std::move(displayedNotifications),
+                       true /* supports_synchronization */));
   };
 
   [[self serviceProxy] getDisplayedAlertsForProfileId:profileId
