@@ -1538,47 +1538,47 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
 // Run with both native and JS-based bindings. This ensures that both stable
 // (JS) and experimental (native) phases work correctly with worker scripts
 // while we launch native bindings to stable.
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
-                        ServiceWorkerTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
-                        ServiceWorkerTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerBackgroundSyncTestWithNativeBindings,
-                        ServiceWorkerBackgroundSyncTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerBackgroundSyncTestWithJSBindings,
-                        ServiceWorkerBackgroundSyncTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerPushMessagingTestWithNativeBindings,
-                        ServiceWorkerPushMessagingTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerPushMessagingTestWithJSBindings,
-                        ServiceWorkerPushMessagingTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerLazyBackgroundTestWithNativeBindings,
-                        ServiceWorkerLazyBackgroundTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerLazyBackgroundTestWithJSBindings,
-                        ServiceWorkerLazyBackgroundTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
-                        ServiceWorkerBasedBackgroundTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
-                        ServiceWorkerBasedBackgroundTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
-                        ServiceWorkerOnStartupEventTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
-                        ServiceWorkerOnStartupEventTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
-                        ServiceWorkerRegistrationAtStartupTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
-                        ServiceWorkerRegistrationAtStartupTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithNativeBindings,
+                         ServiceWorkerTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithJSBindings,
+                         ServiceWorkerTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerBackgroundSyncTestWithNativeBindings,
+                         ServiceWorkerBackgroundSyncTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerBackgroundSyncTestWithJSBindings,
+                         ServiceWorkerBackgroundSyncTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerPushMessagingTestWithNativeBindings,
+                         ServiceWorkerPushMessagingTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerPushMessagingTestWithJSBindings,
+                         ServiceWorkerPushMessagingTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerLazyBackgroundTestWithNativeBindings,
+                         ServiceWorkerLazyBackgroundTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerLazyBackgroundTestWithJSBindings,
+                         ServiceWorkerLazyBackgroundTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithNativeBindings,
+                         ServiceWorkerBasedBackgroundTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithJSBindings,
+                         ServiceWorkerBasedBackgroundTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithNativeBindings,
+                         ServiceWorkerOnStartupEventTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithJSBindings,
+                         ServiceWorkerOnStartupEventTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithNativeBindings,
+                         ServiceWorkerRegistrationAtStartupTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerTestWithJSBindings,
+                         ServiceWorkerRegistrationAtStartupTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace extensions

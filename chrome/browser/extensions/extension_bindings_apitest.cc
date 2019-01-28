@@ -640,19 +640,19 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
 // Run core bindings API tests with both native and JS-based bindings. This
 // ensures we have some minimum level of coverage while in the experimental
 // phase, when native bindings may be enabled on trunk but not at 100% stable.
-INSTANTIATE_TEST_CASE_P(Native,
-                        ExtensionBindingsApiTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(JavaScript,
-                        ExtensionBindingsApiTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(Native,
+                         ExtensionBindingsApiTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(JavaScript,
+                         ExtensionBindingsApiTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
-INSTANTIATE_TEST_CASE_P(Native,
-                        FramesExtensionBindingsApiTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(JavaScript,
-                        FramesExtensionBindingsApiTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(Native,
+                         FramesExtensionBindingsApiTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(JavaScript,
+                         FramesExtensionBindingsApiTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace
 }  // namespace extensions

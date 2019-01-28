@@ -197,6 +197,7 @@ IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DOMSubtreeModified3) {
   ASSERT_TRUE(RunSubtest("domsubtreemodified3")) << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(ExecuteScriptApiTest,
-                        DestructiveScriptTest,
-                        ::testing::Range(0, kDestructiveScriptTestBucketCount));
+INSTANTIATE_TEST_SUITE_P(ExecuteScriptApiTest,
+                         DestructiveScriptTest,
+                         ::testing::Range(0,
+                                          kDestructiveScriptTestBucketCount));

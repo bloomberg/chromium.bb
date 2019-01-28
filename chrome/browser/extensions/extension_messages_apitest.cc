@@ -1188,12 +1188,12 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTestNoChannelID,
   EXPECT_EQ(0u, tls_channel_id_from_send_message.size());
 }
 
-INSTANTIATE_TEST_CASE_P(NativeBindingsNoChannelID,
-                        ExternallyConnectableMessagingTestNoChannelID,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(JavaScriptBindingsNoChannelID,
-                        ExternallyConnectableMessagingTestNoChannelID,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(NativeBindingsNoChannelID,
+                         ExternallyConnectableMessagingTestNoChannelID,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(JavaScriptBindingsNoChannelID,
+                         ExternallyConnectableMessagingTestNoChannelID,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 // Tests a web connectable extension that receives TLS channel id, but
 // immediately closes its background page upon receipt of a message.
@@ -1317,12 +1317,12 @@ IN_PROC_BROWSER_TEST_P(ExternallyConnectableMessagingTest,
 
 #endif  // !defined(OS_WIN) - http://crbug.com/350517.
 
-INSTANTIATE_TEST_CASE_P(NativeBindings,
-                        ExternallyConnectableMessagingTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(JavaScriptBindings,
-                        ExternallyConnectableMessagingTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(NativeBindings,
+                         ExternallyConnectableMessagingTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(JavaScriptBindings,
+                         ExternallyConnectableMessagingTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 // Tests that messages sent in the unload handler of a window arrive.
 IN_PROC_BROWSER_TEST_P(MessagingApiTest, MessagingOnUnload) {
@@ -1366,12 +1366,12 @@ IN_PROC_BROWSER_TEST_P(MessagingApiTest, LargeMessages) {
   ASSERT_TRUE(RunExtensionTest("messaging/large_messages"));
 }
 
-INSTANTIATE_TEST_CASE_P(NativeBindings,
-                        MessagingApiTest,
-                        ::testing::Values(NATIVE_BINDINGS));
-INSTANTIATE_TEST_CASE_P(JavaScriptBindings,
-                        MessagingApiTest,
-                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(NativeBindings,
+                         MessagingApiTest,
+                         ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_SUITE_P(JavaScriptBindings,
+                         MessagingApiTest,
+                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace
 
