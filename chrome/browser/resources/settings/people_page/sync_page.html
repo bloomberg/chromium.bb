@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
@@ -334,6 +335,24 @@
     </template>
 
 <if expr="not chromeos">
+    <template is="dom-if" if="[[showSetupCancelDialog_]]" restamp>
+      <cr-dialog id="setupCancelDialog" on-close="onSetupCancelDialogClose_"
+          ignore-popstate>
+        <div slot="title">$i18n{syncSetupCancelDialogTitle}</div>
+        <div slot="body">$i18n{syncSetupCancelDialogBody}</div>
+        <div slot="button-container">
+          <paper-button class="cancel-button"
+              on-click="onSetupCancelDialogBack_">
+            $i18n{back}
+          </paper-button>
+          <paper-button class="action-button"
+              on-click="onSetupCancelDialogConfirm_">
+            $i18n{cancelSync}
+          </paper-button>
+        </div>
+      </cr-dialog>
+    </template>
+
     <template is="dom-if" if="[[!unifiedConsentEnabled]]">
       <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
         <div>$i18n{syncWillStart}</div>

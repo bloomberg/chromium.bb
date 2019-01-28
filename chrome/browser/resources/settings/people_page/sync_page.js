@@ -141,6 +141,12 @@ Polymer({
       type: Boolean,
       observer: 'initializeDidAbort_',
     },
+
+    /** @private */
+    showSetupCancelDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -171,6 +177,12 @@ Polymer({
    * @private {boolean}
    */
   didAbort_: false,
+
+  /**
+   * Whether the user clicked the confirm button on the "Cancel sync?" dialog.
+   * @private {boolean}
+   */
+  setupCancelDialogConfirmed_: false,
 
   /** @override */
   created: function() {
@@ -229,12 +241,42 @@ Polymer({
     return this.syncStatus != undefined && !!this.syncStatus.managed;
   },
 
+  /** @private */
+  onSetupCancelDialogBack_: function() {
+    this.$$('#setupCancelDialog').cancel();
+  },
+
+  /** @private */
+  onSetupCancelDialogConfirm_: function() {
+    this.setupCancelDialogConfirmed_ = true;
+    this.$$('#setupCancelDialog').close();
+    settings.navigateTo(settings.routes.BASIC);
+  },
+
+  /** @private */
+  onSetupCancelDialogClose_: function() {
+    this.showSetupCancelDialog_ = false;
+  },
+
   /** @protected */
   currentRouteChanged: function() {
     if (settings.getCurrentRoute() == settings.routes.SYNC) {
       this.onNavigateToPage_();
     } else if (!settings.routes.SYNC.contains(settings.getCurrentRoute())) {
-      this.onNavigateAwayFromPage_();
+      // When the user wants to cancel the sync setup, but hasn't confirmed
+      // the cancel dialog, navigate back and show the dialog.
+      if (this.unifiedConsentEnabled && this.syncStatus &&
+          !!this.syncStatus.setupInProgress && this.didAbort_ &&
+          !this.setupCancelDialogConfirmed_) {
+        settings.navigateTo(settings.routes.SYNC);
+        this.showSetupCancelDialog_ = true;
+        // Flush to make sure that the setup cancel dialog is attached.
+        Polymer.dom.flush();
+        this.$$('#setupCancelDialog').showModal();
+      } else {
+        this.setupCancelDialogConfirmed_ = false;
+        this.onNavigateAwayFromPage_();
+      }
     }
   },
 
@@ -540,7 +582,10 @@ Polymer({
         !this.unifiedConsentEnabled;
   },
 
-  /** @private */
+  /**
+   * Used when unified consent is disabled.
+   * @private
+   */
   onSyncSetupCancel_: function() {
     this.didAbort_ = true;
     settings.navigateTo(settings.routes.BASIC);
