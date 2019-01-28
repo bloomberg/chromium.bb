@@ -93,6 +93,13 @@ class URLRequestContextFactory {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors);
 
+  // Helper function for configuring the settings of URLRequestContext
+  void ConfigureURLRequestContext(
+      net::URLRequestContext* context,
+      const std::unique_ptr<net::URLRequestJobFactory>& job_factory,
+      const std::unique_ptr<net::CookieStore>& cookie_store,
+      const std::unique_ptr<CastNetworkDelegate>& network_delegate);
+
   scoped_refptr<net::URLRequestContextGetter> system_getter_;
   scoped_refptr<net::URLRequestContextGetter> media_getter_;
   scoped_refptr<net::URLRequestContextGetter> main_getter_;
