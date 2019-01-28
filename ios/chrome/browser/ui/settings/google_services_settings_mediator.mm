@@ -227,7 +227,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.accountItem.image =
       [self.resizedAvatarCache resizedAvatarForIdentity:identity];
   self.accountItem.text = identity.userFullName;
-  self.accountItem.detailText = identity.userEmail;
+  if (self.syncSetupService->HasFinishedInitialSetup()) {
+    self.accountItem.detailText = identity.userEmail;
+  } else {
+    self.accountItem.detailText = GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
+  }
 }
 
 #pragma mark - Loads sync section
@@ -609,6 +613,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)onSyncStateChanged {
   [self updateSyncSection:YES];
+  if (self.accountItem) {
+    [self configureIdentityAccountItem];
+    [self.consumer reloadItem:self.accountItem];
+  }
 }
 #pragma mark - IdentityManagerObserverBridgeDelegate
 
