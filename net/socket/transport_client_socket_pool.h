@@ -17,6 +17,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 
@@ -34,7 +35,9 @@ class SOCKSSocketParams;
 class TransportSecurityState;
 class TransportSocketParams;
 
-class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
+class NET_EXPORT_PRIVATE TransportClientSocketPool
+    : public ClientSocketPool,
+      public SSLConfigService::Observer {
  public:
   // Callback to create a ConnectJob using the provided arguments. The lower
   // level parameters used to construct the ConnectJob (like hostname, type of
@@ -88,6 +91,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
       const std::string& ssl_session_cache_shard,
+      SSLConfigService* ssl_config_service,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log);
@@ -183,8 +187,12 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
     DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);
   };
 
+  // SSLConfigService::Observer methods.
+  void OnSSLConfigChanged() override;
+
   PoolBase base_;
   ClientSocketFactory* const client_socket_factory_;
+  SSLConfigService* const ssl_config_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };

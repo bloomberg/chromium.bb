@@ -27,6 +27,8 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_client_socket_pool_test_util.h"
 #include "net/socket/transport_connect_job.h"
+#include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
@@ -77,6 +79,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   TransportClientSocketPoolTest()
       : connect_backup_jobs_enabled_(
             ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true)),
+        ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()),
         params_(TransportClientSocketPool::SocketParams::
                     CreateFromTransportSocketParams(
                         base::MakeRefCounted<TransportSocketParams>(
@@ -95,6 +98,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
               nullptr /* cert_transparency_verifier */,
               nullptr /* ct_policy_enforcer */,
               std::string() /* ssl_session_cache_shard */,
+              ssl_config_service_.get(),
               nullptr /* socket_performance_watcher_factory */,
               nullptr /* network_quality_estimator */,
               nullptr /* net_log */) {}
@@ -135,6 +139,7 @@ class TransportClientSocketPoolTest : public TestWithScopedTaskEnvironment {
 
   bool connect_backup_jobs_enabled_;
   TestNetLog net_log_;
+  std::unique_ptr<SSLConfigService> ssl_config_service_;
   scoped_refptr<TransportClientSocketPool::SocketParams> params_;
   std::unique_ptr<MockHostResolver> host_resolver_;
   MockTransportClientSocketFactory client_socket_factory_;
@@ -410,6 +415,7 @@ TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsNotReprioritized) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* net_log */);
 
@@ -853,7 +859,7 @@ TEST_F(TransportClientSocketPoolTest, IdleSocketLoadTiming) {
   TestLoadTimingInfoConnectedReused(handle);
 }
 
-TEST_F(TransportClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
+TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnIPAddressChange) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int rv = handle.Init("a", params_, LOW, SocketTag(),
@@ -877,6 +883,35 @@ TEST_F(TransportClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
 
   // After an IP address change, we should have 0 idle sockets.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  base::RunLoop().RunUntilIdle();  // Notification happens async.
+
+  EXPECT_EQ(0, pool_.IdleSocketCount());
+}
+
+TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnSSLConfigChange) {
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  int rv = handle.Init("a", params_, LOW, SocketTag(),
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       callback.callback(), &pool_, NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
+
+  handle.Reset();
+
+  // Need to run all pending to release the socket back to the pool.
+  base::RunLoop().RunUntilIdle();
+
+  // Now we should have 1 idle socket.
+  EXPECT_EQ(1, pool_.IdleSocketCount());
+
+  // After an SSL configuration change, we should have 0 idle sockets.
+  ssl_config_service_->NotifySSLConfigChange();
   base::RunLoop().RunUntilIdle();  // Notification happens async.
 
   EXPECT_EQ(0, pool_.IdleSocketCount());
@@ -1093,6 +1128,7 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
         nullptr /* cert_transparency_verifier */,
         nullptr /* ct_policy_enforcer */,
         std::string() /* ssl_session_cache_shard */,
+        nullptr /* ssl_config_service */,
         nullptr /* socket_performance_watcher_factory */,
         nullptr /* network_quality_estimator */, nullptr /* netlog */);
 
@@ -1137,6 +1173,7 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   ClientSocketHandle handle;
@@ -1261,6 +1298,7 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
       nullptr /* cert_transparency_verifier */,
       nullptr /* ct_policy_enforcer */,
       std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
 

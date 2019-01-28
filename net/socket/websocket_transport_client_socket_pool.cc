@@ -37,6 +37,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     CTVerifier* cert_transparency_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     const std::string& ssl_session_cache_shard,
+    SSLConfigService* ssl_config_service,
     NetworkQualityEstimator* network_quality_estimator,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     NetLog* net_log)
@@ -51,6 +52,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
           cert_transparency_verifier,
           ct_policy_enforcer,
           ssl_session_cache_shard,
+          ssl_config_service,
           nullptr /* socket_performance_watcher_factory */,
           network_quality_estimator,
           net_log),
