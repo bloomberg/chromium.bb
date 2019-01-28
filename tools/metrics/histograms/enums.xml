@@ -21422,6 +21422,7 @@ Called by update_net_error_codes.py.-->
   <int value="2767"
       label="V8RTCQuicStream_WaitForWriteBufferedAmountBelow_Method"/>
   <int value="2768" label="V8RTCQuicStream_WaitForReadable_Method"/>
+  <int value="2769" label="HTMLTemplateElement"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

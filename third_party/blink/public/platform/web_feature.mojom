@@ -2201,6 +2201,7 @@ enum WebFeature {
   kV8RTCQuicStream_Reset_Method = 2766,
   kV8RTCQuicStream_WaitForWriteBufferedAmountBelow_Method = 2767,
   kV8RTCQuicStream_WaitForReadable_Method = 2768,
+  kHTMLTemplateElement = 2769,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
