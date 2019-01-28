@@ -114,9 +114,9 @@ class URLLoaderClientImplTest : public ::testing::TestWithParam<bool>,
   network::mojom::URLLoaderClientPtr url_loader_client_;
 };
 
-INSTANTIATE_TEST_CASE_P(URLLoaderClientImplTestP,
-                        URLLoaderClientImplTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLLoaderClientImplTestP,
+                         URLLoaderClientImplTest,
+                         ::testing::Bool());
 
 TEST_P(URLLoaderClientImplTest, OnReceiveResponse) {
   network::ResourceResponseHead response_head;
