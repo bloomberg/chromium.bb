@@ -330,9 +330,9 @@ TEST_P(WindowTargeterTest, TargeterChecksOwningEventTarget) {
   EXPECT_EQ(root_window(), targeter->FindTargetForEvent(root_target, &mouse2));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowTargeterTest,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowTargeterTest,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
 using WindowTargeterMus = aura::test::AuraMusClientTestBase;
 

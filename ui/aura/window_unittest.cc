@@ -3316,13 +3316,13 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_NE(local_surface_id5, local_surface_id6);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowTest,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowTest,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowObserverTest,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowObserverTest,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
 }  // namespace
 }  // namespace test
