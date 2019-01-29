@@ -520,10 +520,6 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
-  std::unique_ptr<content::SerialChooser> RunSerialChooser(
-      content::RenderFrameHost* frame,
-      std::vector<blink::mojom::SerialPortFilterPtr> filters,
-      content::SerialChooser::Callback callback) override;
   void PassiveInsecureContentFound(const GURL& resource_url) override;
   bool ShouldAllowRunningInsecureContent(content::WebContents* web_contents,
                                          bool allowed_per_prefs,

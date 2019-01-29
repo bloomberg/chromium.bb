@@ -690,6 +690,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     content::HostZoomMap* zoom_map =
         content::HostZoomMap::GetDefaultForBrowserContext(profile_);
     zoom_map->ClearZoomLevels(delete_begin_, delete_end_);
+
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, delete_begin_, delete_end_,
+        HostContentSettingsMap::PatternSourcePredicate());
 #else
     // Reset the Default Search Engine permissions to their default.
     SearchPermissionsService* search_permissions_service =

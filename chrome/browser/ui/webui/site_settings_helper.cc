@@ -104,6 +104,9 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
     {CONTENT_SETTINGS_TYPE_BACKGROUND_FETCH, nullptr},
     {CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY, nullptr},
+    // TODO(crbug.com/908836): Add UI for setting this permission.
+    {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, nullptr},
+    {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

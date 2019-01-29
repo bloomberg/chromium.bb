@@ -10,29 +10,12 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/serial/serial_chooser_context.h"
+#include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-blink::mojom::SerialPortInfoPtr ToBlinkType(
-    const device::mojom::SerialPortInfo& port) {
-  auto info = blink::mojom::SerialPortInfo::New();
-  info->token = port.token;
-  info->has_vendor_id = port.has_vendor_id;
-  if (port.has_vendor_id)
-    info->vendor_id = port.vendor_id;
-  info->has_product_id = port.has_product_id;
-  if (port.has_product_id)
-    info->product_id = port.product_id;
-  return info;
-}
-
-}  // namespace
 
 SerialChooserController::SerialChooserController(
     content::RenderFrameHost* render_frame_host,
@@ -43,15 +26,18 @@ SerialChooserController::SerialChooserController(
                         IDS_SERIAL_PORT_CHOOSER_PROMPT_EXTENSION_NAME),
       filters_(std::move(filters)),
       callback_(std::move(callback)) {
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&port_manager_));
-  port_manager_.set_connection_error_handler(base::BindOnce(
-      &SerialChooserController::OnGetDevices, base::Unretained(this),
-      std::vector<device::mojom::SerialPortInfoPtr>()));
-  port_manager_->GetDevices(base::BindOnce(
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  requesting_origin_ = render_frame_host->GetLastCommittedOrigin();
+  embedding_origin_ = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  chooser_context_ =
+      SerialChooserContextFactory::GetForProfile(profile)->AsWeakPtr();
+  DCHECK(chooser_context_);
+
+  chooser_context_->GetPortManager()->GetDevices(base::BindOnce(
       &SerialChooserController::OnGetDevices, base::Unretained(this)));
 }
 
@@ -92,7 +78,13 @@ base::string16 SerialChooserController::GetOption(size_t index) const {
 }
 
 bool SerialChooserController::IsPaired(size_t index) const {
-  return false;
+  DCHECK_LE(index, ports_.size());
+
+  if (!chooser_context_)
+    return false;
+
+  return chooser_context_->HasPortPermission(requesting_origin_,
+                                             embedding_origin_, *ports_[index]);
 }
 
 void SerialChooserController::Select(const std::vector<size_t>& indices) {
@@ -100,8 +92,14 @@ void SerialChooserController::Select(const std::vector<size_t>& indices) {
   size_t index = indices[0];
   DCHECK_LT(index, ports_.size());
 
-  const device::mojom::SerialPortInfo& port = *ports_[index];
-  std::move(callback_).Run(ToBlinkType(port));
+  if (!chooser_context_) {
+    std::move(callback_).Run(nullptr);
+    return;
+  }
+
+  chooser_context_->GrantPortPermission(requesting_origin_, embedding_origin_,
+                                        *ports_[index]);
+  std::move(callback_).Run(std::move(ports_[index]));
 }
 
 void SerialChooserController::Cancel() {}

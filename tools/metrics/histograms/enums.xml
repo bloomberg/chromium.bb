@@ -8260,6 +8260,8 @@ Called by update_net_error_codes.py.-->
   <int value="44" label="USB guard"/>
   <int value="45" label="Background fetch"/>
   <int value="46" label="Intent picker display"/>
+  <int value="47" label="Serial guard"/>
+  <int value="48" label="Serial permission data"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">

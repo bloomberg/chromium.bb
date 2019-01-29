@@ -135,8 +135,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "chrome/browser/ui/serial/serial_chooser.h"
-#include "chrome/browser/ui/serial/serial_chooser_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/sync/browser_synced_window_delegate.h"
@@ -1186,19 +1184,6 @@ std::unique_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
   bluetooth_chooser_desktop->set_bubble(std::move(bubble_reference));
 
   return std::move(bluetooth_chooser_desktop);
-}
-
-std::unique_ptr<content::SerialChooser> Browser::RunSerialChooser(
-    content::RenderFrameHost* frame,
-    std::vector<blink::mojom::SerialPortFilterPtr> filters,
-    content::SerialChooser::Callback callback) {
-  auto chooser_controller = std::make_unique<SerialChooserController>(
-      frame, std::move(filters), std::move(callback));
-  auto chooser_bubble_delegate = std::make_unique<ChooserBubbleDelegate>(
-      frame, std::move(chooser_controller));
-  BubbleReference bubble_reference =
-      GetBubbleManager()->ShowBubble(std::move(chooser_bubble_delegate));
-  return std::make_unique<SerialChooser>(std::move(bubble_reference));
 }
 
 void Browser::PassiveInsecureContentFound(const GURL& resource_url) {

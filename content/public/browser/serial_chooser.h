@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/serial/serial.mojom.h"
+#include "services/device/public/mojom/serial.mojom.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ class CONTENT_EXPORT SerialChooser {
  public:
   // Callback type used to report the user action. Passed |nullptr| if no port
   // was selected.
-  using Callback = base::OnceCallback<void(blink::mojom::SerialPortInfoPtr)>;
+  using Callback = base::OnceCallback<void(device::mojom::SerialPortInfoPtr)>;
 
   SerialChooser();
   virtual ~SerialChooser();

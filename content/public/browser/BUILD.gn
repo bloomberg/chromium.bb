@@ -263,6 +263,7 @@ jumbo_source_set("browser_sources") {
     "security_style_explanations.h",
     "serial_chooser.cc",
     "serial_chooser.h",
+    "serial_delegate.h",
     "service_worker_context.h",
     "service_worker_context_observer.h",
     "session_storage_namespace.h",

@@ -116,6 +116,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/serial/chrome_serial_delegate.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
@@ -4921,6 +4922,14 @@ void ChromeContentBrowserClient::CreateWebUsbService(
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreateWebUsbService(render_frame_host, std::move(request));
 }
+
+#if !defined(OS_ANDROID)
+content::SerialDelegate* ChromeContentBrowserClient::GetSerialDelegate() {
+  if (!serial_delegate_)
+    serial_delegate_ = std::make_unique<ChromeSerialDelegate>();
+  return serial_delegate_.get();
+}
+#endif
 
 std::unique_ptr<content::AuthenticatorRequestClientDelegate>
 ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
