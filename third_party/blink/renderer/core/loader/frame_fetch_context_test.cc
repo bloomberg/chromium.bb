@@ -1101,7 +1101,6 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
 
   GetFetchContext()->AddAdditionalRequestHeaders(request);
 
-  EXPECT_EQ(origin, request.HttpHeaderField(http_names::kOrigin));
   EXPECT_EQ(String(origin + "/"),
             request.HttpHeaderField(http_names::kReferer));
   EXPECT_EQ(String(), request.HttpHeaderField("Save-Data"));

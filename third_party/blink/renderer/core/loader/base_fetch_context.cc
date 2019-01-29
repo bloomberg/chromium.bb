@@ -113,15 +113,12 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     // and store it elsewhere. See https://crbug.com/850813.
     request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         referrer_policy_to_use, request.Url(), referrer_to_use));
-    request.SetHTTPOriginIfNeeded(
-        fetch_client_settings_object.GetSecurityOrigin());
   } else {
     CHECK_EQ(
         SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
                                          request.Url(), request.HttpReferrer())
             .referrer,
         request.HttpReferrer());
-    request.SetHTTPOriginToMatchReferrerIfNeeded();
   }
 
   auto address_space = GetAddressSpace();

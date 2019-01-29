@@ -884,15 +884,22 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
         properties_->GetFetchClientSettingsObject().GetSecurityOrigin());
   }
 
+  const ResourceType resource_type = factory.GetType();
+
+  if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
+      resource_request.RequestorOrigin()) {
+    resource_request.SetHTTPOriginIfNeeded(
+        resource_request.RequestorOrigin().get());
+  }
+
   WebScopedVirtualTimePauser pauser;
+
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, identifier, pauser);
   if (blocked_reason) {
     return ResourceForBlockedRequest(params, factory, blocked_reason.value(),
                                      client);
   }
-
-  ResourceType resource_type = factory.GetType();
 
   if (!params.IsSpeculativePreload()) {
     // Only log if it's not for speculative preload.
