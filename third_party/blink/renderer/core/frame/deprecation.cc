@@ -56,6 +56,8 @@ enum Milestone {
   kM71,
   kM72,
   kM73,
+  kM74,
+  kM75,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -94,6 +96,10 @@ const char* MilestoneString(Milestone milestone) {
       return "M72, around January 2019";
     case kM73:
       return "M73, around March 2019";
+    case kM74:
+      return "M74, around April 2019";
+    case kM75:
+      return "M75, around June 2019";
   }
 
   NOTREACHED();
@@ -137,6 +143,10 @@ double MilestoneDate(Milestone milestone) {
       return 1548734400000;  // January 29, 2019.
     case kM73:
       return 1552363200000;  // March 12, 2019.
+    case kM74:
+      return 1555992000000;  // April 23, 2019.
+    case kM75:
+      return 1559620800000;  // June 4, 2019.
   }
 
   NOTREACHED();
@@ -564,6 +574,25 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "how to prepare for the switch, see "
                   "https://webrtc.org/web-apis/chrome/unified-plan/.",
                   MilestoneString(kM72))};
+
+    case WebFeature::kNoSysexWebMIDIWithoutPermission:
+      return {"NoSysexWebMIDIWithoutPermission", kM75,
+              String::Format(
+                  "Web MIDI will ask a permission to use even if the sysex is "
+                  "not specified in the MIDIOptions since %s. See "
+                  "https://www.chromestatus.com/feature/5138066234671104 for "
+                  "more details.",
+                  MilestoneString(kM75))};
+
+    case WebFeature::kNoSysexWebMIDIOnInsecureOrigin:
+      return {"NoSysexWebMIDIOnInsecureOrigin", kM75,
+              String::Format(
+                  "Web MIDI will be deprecated on insecure origins since %s. "
+                  "You should consider switching your application to a secure "
+                  "origin, such as HTTPS. See "
+                  "https://www.chromestatus.com/feature/5138066234671104 for "
+                  "more details.",
+                  MilestoneString(kM75))};
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
