@@ -532,8 +532,9 @@ NGPaintFragment* NGPaintFragment::GetForInlineContainer(
 
 NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
     const LayoutObject* layout_object) {
-  DCHECK(layout_object && layout_object->IsInline() &&
-         !layout_object->IsFloatingOrOutOfFlowPositioned());
+  DCHECK(layout_object);
+  DCHECK(layout_object->IsInline());
+  DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
 
   if (layout_object->IsInLayoutNGInlineFormattingContext())
     return FragmentRange(layout_object->FirstInlineFragment());
