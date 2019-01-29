@@ -558,6 +558,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"settings-refresh", flag_descriptions::kSettingsRefreshName,
      flag_descriptions::kSettingsRefreshDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSettingsRefresh)},
+    {"browser-container-keeps-content-view",
+     flag_descriptions::kBrowserContainerKeepsContentViewName,
+     flag_descriptions::kBrowserContainerKeepsContentViewDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerKeepsContentView)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -77,7 +77,8 @@ TEST_F(BrowserContainerViewControllerTest, ReplacingContentView) {
 }
 
 // Tests that BrowserContainerViewController contentViews and
-// contentViewControllers are always added at index zero.
+// contentViewControllers are always added at index zero, with the
+// contentViewControllers above the contentView.
 TEST_F(BrowserContainerViewControllerTest, ContentViewIndex) {
   view_controller_.contentView = content_view_;
   ASSERT_EQ(view_controller_.view, content_view_.superview);
@@ -93,19 +94,19 @@ TEST_F(BrowserContainerViewControllerTest, ContentViewIndex) {
   view_controller_.contentViewController = content_view_controller2;
   EXPECT_EQ([view_controller_.view.subviews
                 indexOfObject:content_view_controller2.view],
-            static_cast<NSUInteger>(0));
+            static_cast<NSUInteger>(1));
 }
 
 // Tests adding a new content view controller when
 // BrowserContainerViewController already has a content view or a content view
-// controller
+// controller.
 TEST_F(BrowserContainerViewControllerTest, ReplacingContentViewController) {
   view_controller_.contentView = content_view_;
   ASSERT_EQ(view_controller_.view, content_view_.superview);
 
   UIViewController* content_view_controller2 = [[UIViewController alloc] init];
   view_controller_.contentViewController = content_view_controller2;
-  EXPECT_FALSE([content_view_ superview]);
+  EXPECT_TRUE([content_view_ superview]);
   EXPECT_EQ(view_controller_.view, content_view_controller2.view.superview);
 
   UIView* content_view2 = [[UIView alloc] init];

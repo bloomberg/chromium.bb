@@ -53,22 +53,30 @@
   if (_contentViewController == contentViewController)
     return;
 
-  [self removeOldContent];
+  [self removeOldContentViewController];
   _contentViewController = contentViewController;
 
   if (contentViewController) {
     [contentViewController willMoveToParentViewController:self];
     [self addChildViewController:contentViewController];
     [self.view insertSubview:contentViewController.view atIndex:0];
+    if (_contentView) {
+      [self.view insertSubview:contentViewController.view
+                  aboveSubview:self.contentView];
+    } else {
+      [self.view insertSubview:contentViewController.view atIndex:0];
+    }
     [contentViewController didMoveToParentViewController:self];
   }
 }
 
 - (void)setContentView:(UIView*)contentView {
+  [self removeOldContentViewController];
+
   if (_contentView == contentView)
     return;
 
-  [self removeOldContent];
+  [self removeOldContentView];
   _contentView = contentView;
 
   if (contentView)
@@ -77,15 +85,18 @@
 
 #pragma mark - Private
 
-// Unloads and nils any any previous content views if they exist.
-- (void)removeOldContent {
+// Unloads and nils any any previous content viewControllers if they exist.
+- (void)removeOldContentViewController {
   if (_contentViewController) {
     [_contentViewController willMoveToParentViewController:nil];
     [_contentViewController.view removeFromSuperview];
     [_contentViewController removeFromParentViewController];
     _contentViewController = nil;
   }
+}
 
+// Unloads and nils any any previous content views if they exist.
+- (void)removeOldContentView {
   if (_contentView) {
     DCHECK(![_contentView superview] || [_contentView superview] == self.view);
     [_contentView removeFromSuperview];
