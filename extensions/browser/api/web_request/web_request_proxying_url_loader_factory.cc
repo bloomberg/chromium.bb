@@ -289,6 +289,18 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     HandleBeforeRequestRedirect() {
+  // The extension requested a redirect. Close the connection with the current
+  // URLLoader and inform the URLLoaderClient the WebRequest API generated a
+  // redirect. To load |redirect_url_|, a new URLLoader will be recreated
+  // after receiving FollowRedirect().
+
+  // Forgetting to close the connection with the current URLLoader caused
+  // bugs. The latter doesn't know anything about the redirect. Continuing
+  // the load with it gives unexpected results. See
+  // https://crbug.com/882661#c72.
+  proxied_client_binding_.Close();
+  target_loader_.reset();
+
   constexpr int kInternalRedirectStatusCode = 307;
 
   net::RedirectInfo redirect_info;
@@ -550,7 +562,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     redirect_info.new_method = request_.method;
     redirect_info.new_url = new_url;
     redirect_info.new_site_for_cookies = new_url;
+
+    // These will get re-bound if a new request is initiated by
+    // |FollowRedirect()|.
+    proxied_client_binding_.Close();
+    target_loader_.reset();
     on_receive_response_received_ = false;
+
     ContinueToBeforeRedirect(redirect_info, net::OK);
     return;
   }
@@ -575,10 +593,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   info_->AddResponseInfoFromResourceResponse(current_response_);
 
-  // These will get re-bound if a new request is initiated by
-  // |FollowRedirect()|.
-  proxied_client_binding_.Close();
-  target_loader_.reset();
+  if (proxied_client_binding_.is_bound())
+    proxied_client_binding_.ResumeIncomingMethodCallProcessing();
 
   ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRedirect(
       factory_->browser_context_, factory_->info_map_, &info_.value(),
