@@ -21468,6 +21468,7 @@ Called by update_net_error_codes.py.-->
   <int value="2769" label="HTMLTemplateElement"/>
   <int value="2770" label="NoSysexWebMIDIWithoutPermission"/>
   <int value="2771" label="NoSysexWebMIDIOnInsecureOrigin"/>
+  <int value="2772" label="ApplicationCacheInstalledButNoManifest"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
