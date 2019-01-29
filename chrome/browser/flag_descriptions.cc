@@ -2776,6 +2776,10 @@ const char kAccountConsistencyDescription[] =
 const char kAccountConsistencyChoiceMirror[] = "Mirror";
 const char kAccountConsistencyChoiceDice[] = "Dice";
 
+const char kAppManagementName[] = "Enable App Management page";
+const char kAppManagementDescription[] =
+    "Shows the new app management page at chrome://apps.";
+
 const char kAutofillDropdownLayoutName[] =
     "Autofill Dropdown Layout Experiment";
 const char kAutofillDropdownLayoutDescription[] =
@@ -3024,6 +3028,11 @@ const char kAcceleratedMjpegDecodeDescription[] =
 const char kAllowTouchpadThreeFingerClickName[] = "Touchpad three-finger-click";
 const char kAllowTouchpadThreeFingerClickDescription[] =
     "Enables touchpad three-finger-click as middle button.";
+
+const char kAppServiceAshName[] = "App Service Ash";
+const char kAppServiceAshDescription[] =
+    "Use the App Service to provide data to the Ash UI, such as the shelf and "
+    "app list.";
 
 const char kArcAvailableForChildName[] = "Allow ARC for child accounts";
 const char kArcAvailableForChildDescription[] =

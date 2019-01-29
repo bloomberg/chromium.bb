@@ -117,6 +117,16 @@
     "expiry_milestone": 76
   },
   {
+    "name": "app-management",
+    "owners": [ "//chrome/browser/resources/app_management/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "app-service-ash",
+    "owners": [ "//chrome/services/app_service/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "arc-available-for-child",
     "owners": [ "//chrome/browser/chromeos/arc/enterprise/OWNERS" ],
     "expiry_milestone": 76

@@ -1648,6 +1648,9 @@ extern const char kAccountConsistencyDescription[];
 extern const char kAccountConsistencyChoiceMirror[];
 extern const char kAccountConsistencyChoiceDice[];
 
+extern const char kAppManagementName[];
+extern const char kAppManagementDescription[];
+
 extern const char kAutofillDropdownLayoutName[];
 extern const char kAutofillDropdownLayoutDescription[];
 
@@ -1804,6 +1807,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 
 extern const char kAllowTouchpadThreeFingerClickName[];
 extern const char kAllowTouchpadThreeFingerClickDescription[];
+
+extern const char kAppServiceAshName[];
+extern const char kAppServiceAshDescription[];
 
 extern const char kArcAvailableForChildName[];
 extern const char kArcAvailableForChildDescription[];

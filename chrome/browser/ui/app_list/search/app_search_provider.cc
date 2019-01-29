@@ -620,7 +620,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       refresh_apps_factory_(this),
       update_results_factory_(this) {
   bool app_service_enabled =
-      base::FeatureList::IsEnabled(features::kAppService);
+      base::FeatureList::IsEnabled(features::kAppServiceAsh);
   if (app_service_enabled) {
     data_sources_.emplace_back(
         std::make_unique<AppServiceDataSource>(profile, this));
