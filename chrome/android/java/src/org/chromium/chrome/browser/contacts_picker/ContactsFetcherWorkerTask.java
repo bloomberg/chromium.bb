@@ -43,6 +43,9 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
     // The callback to use to communicate the results.
     private ContactsRetrievedCallback mCallback;
 
+    // Whether names were requested by the website.
+    private final boolean mIncludeNames;
+
     // Whether to include emails in the data fetched.
     private final boolean mIncludeEmails;
 
@@ -51,12 +54,18 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
 
     /**
      * A ContactsFetcherWorkerTask constructor.
+     * @param contentResolver The ContentResolver to use to fetch the contacts data.
      * @param callback The callback to use to communicate back the results.
+     * @param includeNames Whether names were requested by the website.
+     * @param includeEmails Whether to include emails in the data fetched.
+     * @param includeTel Whether to include telephones in the data fetched.
      */
     public ContactsFetcherWorkerTask(ContentResolver contentResolver,
-            ContactsRetrievedCallback callback, boolean includeEmails, boolean includeTel) {
+            ContactsRetrievedCallback callback, boolean includeNames, boolean includeEmails,
+            boolean includeTel) {
         mContentResolver = contentResolver;
         mCallback = callback;
+        mIncludeNames = includeNames;
         mIncludeEmails = includeEmails;
         mIncludeTel = includeTel;
     }
@@ -147,7 +156,7 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
                     cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
             List<String> email = mIncludeEmails ? emailMap.get(id) : null;
             List<String> tel = mIncludeTel ? phoneMap.get(id) : null;
-            if (email != null || tel != null)
+            if (mIncludeNames || email != null || tel != null)
                 contacts.add(new ContactDetails(id, name, email, tel));
         } while (cursor.moveToNext());
 
