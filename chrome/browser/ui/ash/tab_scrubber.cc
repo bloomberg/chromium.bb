@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
@@ -153,7 +152,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   if (highlighted_tab_ != -1) {
     gfx::Point hover_point(swipe_x_, swipe_y_);
     views::View::ConvertPointToTarget(tab_strip_, new_tab, &hover_point);
-    new_tab->hover_controller()->SetLocation(hover_point);
+    new_tab->tab_style()->SetHoverLocation(hover_point);
   }
 }
 
@@ -240,7 +239,7 @@ void TabScrubber::FinishScrub(bool activate) {
     TabStrip* tab_strip = browser_view->tabstrip();
     if (activate && highlighted_tab_ != -1) {
       Tab* tab = tab_strip->tab_at(highlighted_tab_);
-      tab->hover_controller()->HideImmediately();
+      tab->tab_style()->HideHover(GlowHoverController::HideStyle::kImmediate);
       int distance = std::abs(highlighted_tab_ -
                               browser_->tab_strip_model()->active_index());
       UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.ScrubDistance", distance, 1, 20, 21);
@@ -318,12 +317,13 @@ void TabScrubber::UpdateHighlightedTab(Tab* new_tab, int new_index) {
 
   if (highlighted_tab_ != -1) {
     Tab* tab = tab_strip_->tab_at(highlighted_tab_);
-    tab->hover_controller()->HideImmediately();
+    tab->tab_style()->HideHover(GlowHoverController::HideStyle::kImmediate);
   }
 
   if (new_index != browser_->tab_strip_model()->active_index()) {
     highlighted_tab_ = new_index;
-    new_tab->hover_controller()->Show(GlowHoverController::PRONOUNCED);
+    new_tab->tab_style()->ShowHover(
+        GlowHoverController::ShowStyle::kPronounced);
   } else {
     highlighted_tab_ = -1;
   }

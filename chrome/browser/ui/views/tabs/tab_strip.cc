@@ -1366,9 +1366,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // this code defers drawing such tabs until later.
   const auto paint_or_add_to_tabs = [&paint_info,
                                      &selected_and_hovered_tabs](Tab* tab) {
-    if (tab->IsSelected() ||
-        (tab->mouse_hovered() ||
-         (tab->hover_controller() && tab->hover_controller()->ShouldDraw()))) {
+    if (tab->tab_style()->GetZValue() > 0.0) {
       selected_and_hovered_tabs.push_back(tab);
     } else {
       tab->Paint(paint_info);
@@ -1417,39 +1415,10 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     }
   }
 
-  // This will sort the inactive tabs so that they paint in the following order:
-  //
-  // o Unselected and hover-animating tabs in ascending animation value order.
-  // o The single unselected mouse hovered tab, if present.
-  // o Selected tabs in trailing-to-leading order.
-  // o Selected and hover animating tabs in ascending animation value order.
-  // o The single selected and mouse_hovered tab, if present.
-  //
-  // This is accomplished by adding a "weight" to the current hover animation
-  // value which represents the above groupings.
-  //
-  // 0.0 == sort_value         Unselected/non hover animating (already painted).
-  // 0.0 <  sort_value <= 1.0  Unselected/hover animating.
-  // 2.0 <= sort_value <= 3.0  Unselected/mouse hovered tab.
-  // 4.0 == sort_value         Selected/non hover animating.
-  // 4.0 <  sort_value <= 5.0  Selected/hover animating.
-  // 6.0 <= sort_value <= 7.0  Selected/mouse hovered tab.
-  //
-  auto tab_sort_value = [](Tab* tab) {
-    float sort_value = tab->hover_controller()
-                           ? tab->hover_controller()->GetAnimationValue()
-                           : 0;
-    if (tab->IsSelected())
-      sort_value += 4.f;
-    if (tab->mouse_hovered())
-      sort_value += 2.f;
-    return sort_value;
-  };
-
   std::stable_sort(selected_and_hovered_tabs.begin(),
-                   selected_and_hovered_tabs.end(),
-                   [&tab_sort_value](Tab* tab1, Tab* tab2) {
-                     return tab_sort_value(tab1) < tab_sort_value(tab2);
+                   selected_and_hovered_tabs.end(), [](Tab* tab1, Tab* tab2) {
+                     return tab1->tab_style()->GetZValue() <
+                            tab2->tab_style()->GetZValue();
                    });
   for (Tab* tab : selected_and_hovered_tabs)
     tab->Paint(paint_info);

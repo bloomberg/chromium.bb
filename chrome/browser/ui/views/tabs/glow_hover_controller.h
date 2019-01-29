@@ -27,7 +27,12 @@ class View;
 // invokes SchedulePaint() back on the View as necessary.
 class GlowHoverController : public gfx::AnimationDelegate {
  public:
-  enum Style { SUBTLE, PRONOUNCED };
+  enum class ShowStyle { kSubtle, kPronounced };
+
+  enum class HideStyle {
+    kGradual,    // The hover should fade out.
+    kImmediate,  // The hover should cut off, with no fade out.
+  };
 
   explicit GlowHoverController(views::View* view);
   ~GlowHoverController() override;
@@ -45,13 +50,10 @@ class GlowHoverController : public gfx::AnimationDelegate {
   const gfx::Point& location() const { return location_; }
 
   // Initiates showing the hover.
-  void Show(Style style);
+  void Show(ShowStyle style);
 
   // Hides the hover.
-  void Hide();
-
-  // Hides the hover immediately.
-  void HideImmediately();
+  void Hide(HideStyle);
 
   // Returns the value of the animation.
   double GetAnimationValue() const;
