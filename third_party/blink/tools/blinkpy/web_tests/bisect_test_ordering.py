@@ -145,9 +145,9 @@ class Bisector(object):
 
     def test_fails(self, tests):
         extra_args = ['--debug'] if self.is_debug else []
-        path_to_run_webkit_tests = self.path_finder.path_from_tools_scripts('run_web_tests.py')
+        path_to_run_web_tests = self.path_finder.path_from_tools_scripts('run_web_tests.py')
         output = self.executive.popen(
-            [path_to_run_webkit_tests, '--jobs', '1', '--order', 'none', '--no-retry',
+            [path_to_run_web_tests, '--jobs', '1', '--order', 'none', '--no-retry',
              '--no-show-results', '--verbose'] + extra_args + tests, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         failure_string = self.expected_failure + ' failed'
         if failure_string in output.stderr.read():
