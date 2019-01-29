@@ -6,7 +6,7 @@ stages:
 before_script:
   - dnf -y upgrade --disablerepo=rawhide-modular --nogpgcheck fedora-repos fedora-repos-rawhide
   - dnf -y upgrade --disablerepo=rawhide-modular
-  - dnf -y install --disablerepo=rawhide-modular --allowerasing --skip-broken @buildsys-build autoconf automake libtool gettext gettext-devel gperf expat-devel freetype-devel libuuid-devel json-c-devel git docbook-utils docbook-utils-pdf bubblewrap
+  - dnf -y install --disablerepo=rawhide-modular --allowerasing --skip-broken @buildsys-build autoconf automake libtool gettext gettext-devel gperf expat-devel freetype-devel json-c-devel git docbook-utils docbook-utils-pdf bubblewrap
   - dnf -y install --disablerepo=rawhide-modular --allowerasing --skip-broken mingw64-gettext mingw64-freetype mingw64-expat wine
 
 shared-build:
