@@ -290,10 +290,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // The primary icon object.
   SkBitmap primary_icon_;
 
-  // The referrer string (if any) specified in the app URL. Used only for native
-  // app banners.
-  std::string referrer_;
-
   // The current banner pipeline state for this page load.
   State state_;
 
@@ -317,8 +313,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // opportunity to cancel.
   virtual void OnBannerPromptReply(
       blink::mojom::AppBannerControllerPtr controller,
-      blink::mojom::AppBannerPromptReply reply,
-      const std::string& referrer);
+      blink::mojom::AppBannerPromptReply reply);
 
   // Does the non-platform specific parts of showing the app banner.
   void ShowBanner();

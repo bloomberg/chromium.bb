@@ -42,8 +42,7 @@ void AppBannerService::DisplayAppBanner() { /* do nothing */
 
 void AppBannerService::OnBannerPromptReply(
     base::OnceCallback<void(bool)> callback,
-    blink::mojom::AppBannerPromptReply reply,
-    const std::string& referrer) {
+    blink::mojom::AppBannerPromptReply reply) {
   std::move(callback).Run(reply == blink::mojom::AppBannerPromptReply::CANCEL);
 }
 
