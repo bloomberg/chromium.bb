@@ -4,6 +4,10 @@
 Polymer({
   is: 'app-management-permission-item',
 
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /**
      * The name of the permission, to be displayed to the user.
@@ -21,14 +25,14 @@ Polymer({
     /**
      * @type {App}
      */
-    app: Object,
+    app_: Object,
 
     /**
      * @private {PermissionValueType}
      */
     permissionValueType_: {
       type: Number,
-      computed: 'getPermissionValueType_(app)',
+      computed: 'getPermissionValueType_(app_)',
     },
 
     /**
@@ -38,11 +42,16 @@ Polymer({
      */
     permissionValue_: {
       type: Number,
-      computed: 'getPermissionValue_(app, permissionType)',
+      computed: 'getPermissionValue_(app_, permissionType)',
     },
 
     /** @type {string} */
     icon: String,
+  },
+
+  attached: function() {
+    this.watch('app_', state => app_management.util.getSelectedApp(state));
+    this.updateFromStore();
   },
 
   /**
@@ -112,7 +121,7 @@ Polymer({
     }
 
     app_management.BrowserProxy.getInstance().handler.setPermission(
-        this.app.id, newPermission);
+        this.app_.id, newPermission);
   },
 
   /**

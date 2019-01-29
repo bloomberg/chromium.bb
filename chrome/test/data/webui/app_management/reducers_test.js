@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 suite('app state', function() {
   let apps;
-  let action;
   let state;
 
   function createApp(id, config) {
@@ -27,8 +28,7 @@ suite('app state', function() {
 
   test('updates when an app is added', function() {
     const newApp = createApp('3', {type: 1, title: 'a'});
-
-    action = app_management.actions.addApp(newApp);
+    const action = app_management.actions.addApp(newApp);
     apps = app_management.AppState.updateApps(apps, action);
 
     // Check that apps contains a key for each app id.
@@ -45,7 +45,7 @@ suite('app state', function() {
 
   test('updates when an app is changed', function() {
     const changedApp = createApp('2', {type: 1, title: 'a'});
-    action = app_management.actions.changeApp(changedApp);
+    const action = app_management.actions.changeApp(changedApp);
     apps = app_management.AppState.updateApps(apps, action);
 
     // Check that app has changed.
@@ -58,7 +58,7 @@ suite('app state', function() {
   });
 
   test('updates when an app is removed', function() {
-    action = app_management.actions.removeApp('1');
+    const action = app_management.actions.removeApp('1');
     apps = app_management.AppState.updateApps(apps, action);
 
     // Check that app is removed.
@@ -74,7 +74,7 @@ suite('app state', function() {
         state.currentPage.selectedAppId = '1';
         state.currentPage.pageType = PageType.DETAIL;
 
-        action = app_management.actions.removeApp('1');
+        let action = app_management.actions.removeApp('1');
         state = app_management.reduceAction(state, action);
 
         assertEquals(null, state.currentPage.selectedAppId);
@@ -97,7 +97,7 @@ suite('app state', function() {
     state.currentPage.selectedAppId = '1';
     state.currentPage.pageType = PageType.DETAIL;
 
-    action = app_management.actions.changePage(PageType.MAIN);
+    let action = app_management.actions.changePage(PageType.MAIN);
     state = app_management.reduceAction(state, action);
 
     assertEquals(null, state.currentPage.selectedAppId);
@@ -113,7 +113,7 @@ suite('app state', function() {
 
   test('state updates when changing to app detail page', function() {
     // State updates when a valid app detail page is selected.
-    action = app_management.actions.changePage(PageType.DETAIL, '2');
+    let action = app_management.actions.changePage(PageType.DETAIL, '2');
     state = app_management.reduceAction(state, action);
 
     assertEquals('2', state.currentPage.selectedAppId);
@@ -131,7 +131,7 @@ suite('app state', function() {
   });
 
   test('state updates when changing to notifications page', function() {
-    action = app_management.actions.changePage(PageType.NOTIFICATIONS);
+    const action = app_management.actions.changePage(PageType.NOTIFICATIONS);
     state = app_management.reduceAction(state, action);
 
     assertEquals(PageType.NOTIFICATIONS, state.currentPage.pageType);

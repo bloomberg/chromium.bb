@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
 suite('<app-management-app>', function() {
   test('loads', async function() {
     // Check that the browser responds to the getApps() message.

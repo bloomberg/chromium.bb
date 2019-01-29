@@ -18,6 +18,8 @@ cr.define('app_management', function() {
    * @return {AppMap}
    */
   AppState.addApp = function(apps, action) {
+    assert(!apps[action.app.id]);
+
     const newAppEntry = {};
     newAppEntry[action.app.id] = action.app;
     return Object.assign({}, apps, newAppEntry);

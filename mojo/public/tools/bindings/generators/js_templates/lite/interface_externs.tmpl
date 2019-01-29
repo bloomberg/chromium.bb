@@ -54,6 +54,11 @@ goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
    * @return {!{{module.namespace}}.{{interface.name}}Request}
    */
   createRequest() {}
+
+  /**
+   * @return {Promise}
+   */
+  flushForTesting() {}
 };
 
 {{module.namespace}}.{{interface.name}} = class {

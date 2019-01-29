@@ -9,15 +9,15 @@ cr.define('app_management', function() {
   class FakePageHandler {
     /**
      * @param {number} permissionId
-     * @param {Object=} config
+     * @param {Object=} optConfig
      * @return {!Permission}
      */
-    static createPermission(permissionId, config) {
+    static createPermission(permissionId, optConfig) {
       const permission = app_management.util.createPermission(
           permissionId, PermissionValueType.kTriState, TriState.kBlock);
 
-      if (config) {
-        Object.assign(permission, config);
+      if (optConfig) {
+        Object.assign(permission, optConfig);
       }
 
       return permission;
@@ -25,10 +25,10 @@ cr.define('app_management', function() {
 
     /**
      * @param {string} id
-     * @param {Object=} config
+     * @param {Object=} optConfig
      * @return {!App}
      */
-    static createApp(id, config) {
+    static createApp(id, optConfig) {
       const permissionIds = [
         PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
         PwaPermissionType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -46,24 +46,25 @@ cr.define('app_management', function() {
         id: id,
         type: apps.mojom.AppType.kWeb,
         title: 'App Title',
+        description: '',
         version: '5.1',
         size: '9.0MB',
-        isPinned: apps.mojom.OptionalBool.kUnknown,
+        isPinned: apps.mojom.OptionalBool.kFalse,
         permissions: permissions,
       };
 
-      if (config) {
-        Object.assign(app, config);
+      if (optConfig) {
+        Object.assign(app, optConfig);
       }
 
       return app;
     }
 
     /**
-     * @param {appManagement.mojom.PageInterface} page
+     * @param {appManagement.mojom.PageProxy} page
      */
     constructor(page) {
-      /** @type {appManagement.mojom.PageInterface} */
+      /** @type {appManagement.mojom.PageProxy} */
       this.page = page;
 
       /** @type {!Array<App>} */
@@ -128,6 +129,31 @@ cr.define('app_management', function() {
      * @param {string} appId
      */
     openNativeSettings(appId) {}
+
+    /**
+     * @param {string} id
+     * @param {Object=} optConfig
+     */
+    async addApp(id, optConfig) {
+      this.page.onAppAdded(FakePageHandler.createApp(id, optConfig));
+      await this.flushForTesting();
+    }
+
+    /**
+     * Takes an app id and an object mapping app fields to the values they
+     * should be changed to, and dispatches an action to carry out these
+     * changes.
+     * @param {string} id
+     * @param {Object} changes
+     */
+    async changeApp(id, changes) {
+      this.page.onAppChanged(FakePageHandler.createApp(id, changes));
+      await this.flushForTesting();
+    }
+
+    async flushForTesting() {
+      await this.page.flushForTesting();
+    }
   }
 
   return {FakePageHandler: FakePageHandler};

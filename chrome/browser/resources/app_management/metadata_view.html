@@ -36,19 +36,20 @@
       justify-content: space-around;
     }
     </style>
-    <template is="dom-if" if="[[pinToShelfToggleVisible_(app)]]">
+    <template is="dom-if" if="[[pinToShelfToggleVisible_(app_)]]">
       <div id="shelf-switch-row">
         <span id="shelf-switch" class="header-text">
           $i18n{pinToShelf}
-          <cr-toggle checked="[[isPinned_(app)]]" on-change="togglePinned_">
+          <cr-toggle id="pin-to-shelf-toggle" checked="[[isPinned_(app_)]]"
+              on-change="togglePinned_">
           </cr-toggle>
         </span>
       </div>
     </template>
 
     <div id="metadata-overview" class="secondary-text">
-      <span>[[versionString_(app)]]</span>
-      <span>[[sizeString_(app)]]</span>
+      <span>[[versionString_(app_)]]</span>
+      <span>[[sizeString_(app_)]]</span>
       <!--TODO(ceciliani): Placeholder for legal declaration-->
     </div>
   </template>

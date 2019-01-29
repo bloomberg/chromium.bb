@@ -5,11 +5,20 @@
 Polymer({
   is: 'app-management-metadata-view',
 
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /** @type {App} */
-    app: {
+    app_: {
       type: Object,
     },
+  },
+
+  attached: function() {
+    this.watch('app_', state => app_management.util.getSelectedApp(state));
+    this.updateFromStore();
   },
 
   /**
@@ -18,7 +27,7 @@ Polymer({
    * @private
    */
   pinToShelfToggleVisible_: function(app) {
-    return !(app.isPinned === OptionalBool.kUnknown);
+    return app.isPinned !== OptionalBool.kUnknown;
   },
 
   /**
@@ -33,11 +42,9 @@ Polymer({
   },
 
   togglePinned_: function() {
-    assert(this.app);
-
     let newPinnedValue;
 
-    switch (this.app.isPinned) {
+    switch (this.app_.isPinned) {
       case OptionalBool.kFalse:
         newPinnedValue = OptionalBool.kTrue;
         break;
@@ -49,12 +56,12 @@ Polymer({
     }
 
     app_management.BrowserProxy.getInstance().handler.setPinned(
-        this.app.id, newPinnedValue);
+        this.app_.id, newPinnedValue);
   },
 
   /**
    * @param {App} app
-   * @return {string?}
+   * @return {?string}
    * @private
    */
   versionString_: function(app) {
@@ -67,7 +74,7 @@ Polymer({
 
   /**
    * @param {App} app
-   * @return {string?}
+   * @return {?string}
    * @private
    */
   sizeString_: function(app) {

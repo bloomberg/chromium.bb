@@ -56,10 +56,24 @@ cr.define('app_management.util', function() {
     return `chrome://extension-icon/${app.id}/128/1`;
   }
 
+  /**
+   * If there is no selected app, returns undefined so that Polymer bindings
+   * won't be updated.
+   * @param {AppManagementPageState} state
+   * @return {App|undefined}
+   */
+  function getSelectedApp(state) {
+    const selectedAppId = state.currentPage.selectedAppId;
+    if (selectedAppId) {
+      return state.apps[selectedAppId];
+    }
+  }
+
   return {
     createEmptyState: createEmptyState,
     createInitialState: createInitialState,
     createPermission: createPermission,
     getAppIcon: getAppIcon,
+    getSelectedApp: getSelectedApp,
   };
 });
