@@ -163,7 +163,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Creates |current_generation_item_| for |element| if |element| is a
   // generation enabled element. If |current_generation_item_| is already
   // created for |element| it is not recreated.
-  void MaybeCreateCurrentGenerationItem(blink::WebInputElement element);
+  void MaybeCreateCurrentGenerationItem(
+      blink::WebInputElement element,
+      uint32_t confirmation_password_renderer_id);
 
   // Runs HTML parsing based classifier and saves its outcome to proto.
   // TODO(crbug.com/621442): Remove client-side form classifier when server-side
