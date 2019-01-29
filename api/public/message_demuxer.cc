@@ -189,7 +189,7 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBuffer(
     auto consumed_or_error = callback_entry->second->OnStreamMessage(
         endpoint_id, connection_id, message_type, buffer->data() + 1,
         buffer->size() - 1);
-    if (consumed_or_error.is_error()) {
+    if (!consumed_or_error) {
       if (consumed_or_error.error().code() !=
           Error::Code::kCborIncompleteMessage) {
         buffer->clear();

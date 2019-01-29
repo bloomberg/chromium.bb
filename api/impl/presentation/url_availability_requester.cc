@@ -190,8 +190,7 @@ void UrlAvailabilityRequester::ReceiverRequester::RequestUrlAvailabilities(
     return;
   uint64_t request_id = next_request_id++;
   ErrorOr<uint64_t> watch_id_or_error(0);
-  if (!connection ||
-      (watch_id_or_error = SendRequest(request_id, urls)).is_value()) {
+  if (!connection || (watch_id_or_error = SendRequest(request_id, urls))) {
     request_by_id.emplace(request_id,
                           Request{watch_id_or_error.value(), std::move(urls)});
   } else {
@@ -324,7 +323,7 @@ void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedRequests(
     for (auto& url : still_observed_urls)
       urls.emplace_back(std::move(url));
     if (!connection ||
-        (watch_id_or_error = SendRequest(new_request_id, urls)).is_value()) {
+        (watch_id_or_error = SendRequest(new_request_id, urls))) {
       new_requests.emplace(new_request_id,
                            Request{watch_id_or_error.value(), std::move(urls)});
     } else {
@@ -386,8 +385,7 @@ void UrlAvailabilityRequester::ReceiverRequester::OnConnectionOpened(
   this->connection = std::move(connection);
   ErrorOr<uint64_t> watch_id_or_error(0);
   for (auto entry = request_by_id.begin(); entry != request_by_id.end();) {
-    if ((watch_id_or_error = SendRequest(entry->first, entry->second.urls))
-            .is_value()) {
+    if ((watch_id_or_error = SendRequest(entry->first, entry->second.urls))) {
       entry->second.watch_id = watch_id_or_error.value();
       ++entry;
     } else {

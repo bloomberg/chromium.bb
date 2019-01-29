@@ -56,8 +56,6 @@ class ConnectionCallback final
       : connection_(connection) {}
   ~ConnectionCallback() override = default;
 
-  bool failed() const { return failed_; }
-
   void OnConnectionOpened(
       uint64_t request_id,
       std::unique_ptr<ProtocolConnection>&& connection) override {

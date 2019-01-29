@@ -11,6 +11,8 @@
 #include <string>
 #include <type_traits>
 
+#include "base/error.h"
+
 namespace openscreen {
 
 class IPAddress {
@@ -25,9 +27,7 @@ class IPAddress {
 
   // Parses a text representation of an IPv4 address (e.g. "192.168.0.1") or an
   // IPv6 address (e.g. "abcd::1234") and puts the result into |address|.
-  // Returns true if the parsing was successful and |address| was set, false
-  // otherwise.
-  static bool Parse(const std::string& s, IPAddress* address);
+  static ErrorOr<IPAddress> Parse(const std::string& s);
 
   IPAddress();
   explicit IPAddress(const std::array<uint8_t, 4>& bytes);
@@ -73,8 +73,8 @@ class IPAddress {
   void CopyToV6(uint8_t* x) const;
 
  private:
-  static bool ParseV4(const std::string& s, IPAddress* address);
-  static bool ParseV6(const std::string& s, IPAddress* address);
+  static ErrorOr<IPAddress> ParseV4(const std::string& s);
+  static ErrorOr<IPAddress> ParseV6(const std::string& s);
 
   friend class IPEndpointComparator;
 

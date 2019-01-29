@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/error.h"
 #include "platform/api/logging.h"
 #include "platform/posix/socket.h"
 
@@ -17,24 +18,24 @@ namespace platform {
 namespace {
 
 template <typename T>
-bool WatchUdpSocket(std::vector<T>* watched_sockets, T socket) {
+Error WatchUdpSocket(std::vector<T>* watched_sockets, T socket) {
   for (const auto* s : *watched_sockets) {
     if (s->fd == socket->fd)
-      return false;
+      return Error::Code::kAlreadyListening;
   }
   watched_sockets->push_back(socket);
-  return true;
+  return Error::None();
 }
 
 template <typename T>
-bool StopWatchingUdpSocket(std::vector<T>* watched_sockets, T socket) {
+Error StopWatchingUdpSocket(std::vector<T>* watched_sockets, T socket) {
   const auto it = std::find_if(watched_sockets->begin(), watched_sockets->end(),
                                [socket](T s) { return s->fd == socket->fd; });
   if (it == watched_sockets->end())
-    return false;
+    return Error::Code::kNoItemFound;
 
   watched_sockets->erase(it);
-  return true;
+  return Error::None();
 }
 
 }  // namespace
@@ -52,35 +53,37 @@ void DestroyEventWaiter(EventWaiterPtr waiter) {
   delete waiter;
 }
 
-bool WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket) {
+Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket) {
   return WatchUdpSocket(&waiter->read_sockets, socket);
 }
 
-bool StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket) {
+Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter,
+                                    UdpSocketPtr socket) {
   return StopWatchingUdpSocket(&waiter->read_sockets, socket);
 }
 
-bool WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket) {
+Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket) {
   return WatchUdpSocket(&waiter->write_sockets, socket);
 }
 
-bool StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket) {
+Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter,
+                                    UdpSocketPtr socket) {
   return StopWatchingUdpSocket(&waiter->write_sockets, socket);
 }
 
-bool WatchNetworkChange(EventWaiterPtr waiter) {
+Error WatchNetworkChange(EventWaiterPtr waiter) {
   // TODO(btolsch): Implement network change watching.
   OSP_UNIMPLEMENTED();
-  return false;
+  return Error::Code::kNotImplemented;
 }
 
-bool StopWatchingNetworkChange(EventWaiterPtr waiter) {
+Error StopWatchingNetworkChange(EventWaiterPtr waiter) {
   // TODO(btolsch): Implement stop network change watching.
   OSP_UNIMPLEMENTED();
-  return false;
+  return Error::Code::kNotImplemented;
 }
 
-int WaitForEvents(EventWaiterPtr waiter, Events* events) {
+ErrorOr<Events> WaitForEvents(EventWaiterPtr waiter) {
   int max_fd = -1;
   fd_set readfds;
   fd_set writefds;
@@ -95,22 +98,24 @@ int WaitForEvents(EventWaiterPtr waiter, Events* events) {
     max_fd = std::max(max_fd, write_socket->fd);
   }
   if (max_fd == -1)
-    return 0;
+    return Error::Code::kIOFailure;
 
   struct timeval tv = {};
   const int rv = select(max_fd + 1, &readfds, &writefds, nullptr, &tv);
   if (rv == -1 || rv == 0)
-    return rv;
+    return Error::Code::kIOFailure;
 
+  Events events;
   for (auto* read_socket : waiter->read_sockets) {
     if (FD_ISSET(read_socket->fd, &readfds))
-      events->udp_readable_events.push_back({read_socket});
+      events.udp_readable_events.push_back({read_socket});
   }
   for (auto* write_socket : waiter->write_sockets) {
     if (FD_ISSET(write_socket->fd, &writefds))
-      events->udp_writable_events.push_back({write_socket});
+      events.udp_writable_events.push_back({write_socket});
   }
-  return rv;
+
+  return std::move(events);
 }
 
 }  // namespace platform

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "api/public/service_info.h"
+#include "base/error.h"
 
 namespace openscreen {
 
@@ -20,17 +21,9 @@ class ReceiverList {
 
   void OnReceiverAdded(const ServiceInfo& info);
 
-  // Returns true if |info.service_id| matched an item in |receivers_| and was
-  // therefore changed, otherwise false.
-  bool OnReceiverChanged(const ServiceInfo& info);
-
-  // Returns true if an item matching |info| was removed from |receivers_|,
-  // otherwise false.
-  bool OnReceiverRemoved(const ServiceInfo& info);
-
-  // Returns true if |receivers_| was not empty before this call, otherwise
-  // false.
-  bool OnAllReceiversRemoved();
+  Error OnReceiverChanged(const ServiceInfo& info);
+  Error OnReceiverRemoved(const ServiceInfo& info);
+  Error OnAllReceiversRemoved();
 
   const std::vector<ServiceInfo>& receivers() const { return receivers_; }
 

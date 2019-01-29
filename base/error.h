@@ -20,6 +20,7 @@ class Error {
   enum class Code {
     // No error occurred.
     kNone = 0,
+
     // CBOR errors.
     kCborParsing = 1,
     kCborEncoding,
@@ -33,23 +34,50 @@ class Error {
     kNoPresentationFound,
     kPreviousStartInProgress,
     kUnknownStartError,
+
+    kAddressInUse,
+    kAlreadyListening,
+    kDomainNameTooLong,
+    kDomainNameLabelTooLong,
+
+    kGenericPlatformError,
+
+    kIOFailure,
+    kInitializationFailure,
+    kInvalidIPV4Address,
+    kInvalidIPV6Address,
+
+    kSocketOptionSettingFailure,
+    kSocketBindFailure,
+    kSocketClosedFailure,
+    kSocketReadFailure,
+
+    kMdnsRegisterFailure,
+
+    kNoItemFound,
+    kNotImplemented,
+    kNotRunning,
   };
 
   Error();
   Error(const Error& error);
   Error(Error&& error) noexcept;
-  explicit Error(Code code);
+
+  Error(Code code);
   Error(Code code, const std::string& message);
   Error(Code code, std::string&& message);
+  ~Error();
 
   Error& operator=(const Error& other);
   Error& operator=(Error&& other);
   bool operator==(const Error& other) const;
+  bool ok() const { return code_ == Code::kNone; }
 
   Code code() const { return code_; }
   const std::string& message() const { return message_; }
 
   static std::string CodeToString(Error::Code code);
+  static const Error& None();
 
  private:
   Code code_ = Code::kNone;
@@ -79,8 +107,13 @@ std::ostream& operator<<(std::ostream& out, const Error& error);
 template <typename Value>
 class ErrorOr {
  public:
+  static ErrorOr<Value> None() {
+    static ErrorOr<Value> error(Error::Code::kNone);
+    return error;
+  }
+
   ErrorOr(ErrorOr&& error_or) = default;
-  ErrorOr(Value&& value) noexcept : value_(value) {}
+  ErrorOr(Value&& value) noexcept : value_(std::move(value)) {}
   ErrorOr(Error error) : error_(std::move(error)) {}
   ErrorOr(Error::Code code) : error_(code) {}
   ErrorOr(Error::Code code, std::string message)
@@ -91,6 +124,11 @@ class ErrorOr {
 
   bool is_error() const { return error_.code() != Error::Code::kNone; }
   bool is_value() const { return !is_error(); }
+
+  // Unlike Error, we CAN provide an operator bool here, since it is
+  // more obvious to callers that ErrorOr<Foo> will be true if it's Foo.
+  operator bool() const { return is_value(); }
+
   const Error& error() const { return error_; }
 
   Error&& MoveError() { return std::move(error_); }

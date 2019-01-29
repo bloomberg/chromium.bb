@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/error.h"
 #include "platform/api/socket.h"
 #include "platform/api/time.h"
 
@@ -43,37 +44,18 @@ struct Events {
 EventWaiterPtr CreateEventWaiter();
 void DestroyEventWaiter(EventWaiterPtr waiter);
 
-// Returns true if |socket| was successfully added to the set of watched
-// sockets, false otherwise.  It will also return false if |socket| is already
-// being watched.
-bool WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
+Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
+Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
 
-// Returns true if |socket| was successfully removed from the set of watched
-// sockets.
-bool StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocketPtr socket);
+Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
+Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
 
-// Returns true if |socket| was successfully added to the set of watched
-// sockets, false otherwise.  It will also return false if |socket| is already
-// being watched.
-bool WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
-
-// Returns true if |socket| was successfully removed from the set of watched
-// sockets.
-bool StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocketPtr socket);
-
-// Returns true if |waiter| successfully started monitoring network change
-// events, false otherwise.  It will also return false if |waiter| is already
-// monitoring network change events.
-bool WatchNetworkChange(EventWaiterPtr waiter);
-
-// Returns true if |waiter| successfully stopped monitoring network change
-// events, false otherwise.  It will also return false if |waiter| wasn't
-// monitoring network change events already.
-bool StopWatchingNetworkChange(EventWaiterPtr waiter);
+Error WatchNetworkChange(EventWaiterPtr waiter);
+Error StopWatchingNetworkChange(EventWaiterPtr waiter);
 
 // Returns the number of events that were added to |events| if there were any, 0
 // if there were no events, and -1 if an error occurred.
-int WaitForEvents(EventWaiterPtr waiter, Events* events);
+ErrorOr<Events> WaitForEvents(EventWaiterPtr waiter);
 
 }  // namespace platform
 }  // namespace openscreen

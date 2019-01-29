@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "api/impl/receiver_list.h"
-
+#include "base/error.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
@@ -50,8 +50,8 @@ TEST(ReceiverListTest, ChangeReceivers) {
   list.OnReceiverAdded(receiver1);
   list.OnReceiverAdded(receiver2);
 
-  EXPECT_TRUE(list.OnReceiverChanged(receiver1_alt_name));
-  EXPECT_FALSE(list.OnReceiverChanged(receiver3));
+  EXPECT_TRUE(list.OnReceiverChanged(receiver1_alt_name).ok());
+  EXPECT_FALSE(list.OnReceiverChanged(receiver3).ok());
 
   ASSERT_EQ(2u, list.receivers().size());
   EXPECT_EQ(receiver1_alt_name, list.receivers()[0]);
@@ -64,13 +64,13 @@ TEST(ReceiverListTest, RemoveReceivers) {
       "id1", "name1", 1, {{192, 168, 1, 10}, 12345}, {}};
   const ServiceInfo receiver2{
       "id2", "name2", 1, {{192, 168, 1, 11}, 12345}, {}};
-  EXPECT_FALSE(list.OnReceiverRemoved(receiver1));
+  EXPECT_FALSE(list.OnReceiverRemoved(receiver1).ok());
   list.OnReceiverAdded(receiver1);
-  EXPECT_FALSE(list.OnReceiverRemoved(receiver2));
+  EXPECT_FALSE(list.OnReceiverRemoved(receiver2).ok());
   list.OnReceiverAdded(receiver2);
   list.OnReceiverAdded(receiver1);
 
-  EXPECT_TRUE(list.OnReceiverRemoved(receiver1));
+  EXPECT_TRUE(list.OnReceiverRemoved(receiver1).ok());
 
   ASSERT_EQ(1u, list.receivers().size());
   EXPECT_EQ(receiver2, list.receivers()[0]);
@@ -82,11 +82,11 @@ TEST(ReceiverListTest, RemoveAllReceivers) {
       "id1", "name1", 1, {{192, 168, 1, 10}, 12345}, {}};
   const ServiceInfo receiver2{
       "id2", "name2", 1, {{192, 168, 1, 11}, 12345}, {}};
-  EXPECT_FALSE(list.OnAllReceiversRemoved());
+  EXPECT_FALSE(list.OnAllReceiversRemoved().ok());
   list.OnReceiverAdded(receiver1);
   list.OnReceiverAdded(receiver2);
 
-  EXPECT_TRUE(list.OnAllReceiversRemoved());
+  EXPECT_TRUE(list.OnAllReceiversRemoved().ok());
   ASSERT_TRUE(list.receivers().empty());
 }
 

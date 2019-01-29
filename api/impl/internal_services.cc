@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "api/impl/mdns_responder_service.h"
+#include "base/error.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
 #include "platform/api/error.h"
 #include "platform/api/logging.h"
@@ -36,31 +37,35 @@ class MdnsResponderAdapterImplFactory final
   }
 };
 
-bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
-                          platform::NetworkInterfaceIndex ifindex) {
-  do {
-    const IPAddress broadcast_address =
-        IsIPv6Socket(socket) ? kMulticastIPv6Address : kMulticastAddress;
-    if (!JoinUdpMulticastGroup(socket, broadcast_address, ifindex)) {
-      OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
-                    << ": " << platform::GetLastErrorString();
-      break;
-    }
-
-    if (!BindUdpSocket(socket, {{}, kMulticastListeningPort}, ifindex)) {
-      OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
-                    << platform::GetLastErrorString();
-      break;
-    }
-
-    return true;
-  } while (false);
-
+Error GetLastError() {
+  // TODO(jophba): Add platform error handling, we shouldn't know about
+  // EADDRINUSE here.
   if (platform::GetLastError() == EADDRINUSE) {
     OSP_LOG_ERROR
         << "Is there a mDNS service, such as Bonjour, already running?";
+    return Error::Code::kAddressInUse;
   }
-  return false;
+
+  return Error::Code::kGenericPlatformError;
+}
+
+Error SetUpMulticastSocket(platform::UdpSocketPtr socket,
+                           platform::NetworkInterfaceIndex ifindex) {
+  const IPAddress broadcast_address =
+      IsIPv6Socket(socket) ? kMulticastIPv6Address : kMulticastAddress;
+  if (!JoinUdpMulticastGroup(socket, broadcast_address, ifindex).ok()) {
+    OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
+                  << ": " << platform::GetLastErrorString();
+    return GetLastError();
+  }
+
+  if (!BindUdpSocket(socket, {{}, kMulticastListeningPort}, ifindex).ok()) {
+    OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
+                  << platform::GetLastErrorString();
+    return GetLastError();
+  }
+
+  return Error::None();
 }
 
 // Ref-counted singleton instance of InternalServices. This lives only as long
@@ -139,7 +144,7 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
     auto* socket = addr.addresses.front().address.IsV4()
                        ? platform::CreateUdpSocketIPv4()
                        : platform::CreateUdpSocketIPv6();
-    if (!SetUpMulticastSocket(socket, index)) {
+    if (!SetUpMulticastSocket(socket, index).ok()) {
       DestroyUdpSocket(socket);
       continue;
     }

@@ -6,6 +6,8 @@
 
 #include <sstream>
 
+#include "base/error.h"
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
@@ -13,8 +15,14 @@ namespace mdns {
 
 namespace {
 
-bool FromLabels(const std::vector<std::string>& labels, DomainName* result) {
-  return DomainName::FromLabels(labels.begin(), labels.end(), result);
+ErrorOr<DomainName> FromLabels(const std::vector<std::string>& labels) {
+  return DomainName::FromLabels(labels.begin(), labels.end());
+}
+
+template <typename T>
+T UnpackErrorOr(ErrorOr<T> error_or) {
+  EXPECT_TRUE(error_or);
+  return error_or.MoveValue();
 }
 
 }  // namespace
@@ -52,48 +60,42 @@ TEST(DomainNameTest, FromLabels) {
   const auto typical =
       std::vector<uint8_t>{10,  'o', 'p', 'e', 'n', 's', 'c', 'r',
                            'e', 'e', 'n', 3,   'o', 'r', 'g', 0};
-  DomainName result;
-  ASSERT_TRUE(FromLabels({"openscreen", "org"}, &result));
+  DomainName result = UnpackErrorOr(FromLabels({"openscreen", "org"}));
   EXPECT_EQ(result.domain_name(), typical);
 
   const auto includes_dot =
       std::vector<uint8_t>{11,  'o', 'p', 'e', 'n', '.', 's', 'c', 'r',
                            'e', 'e', 'n', 3,   'o', 'r', 'g', 0};
-  ASSERT_TRUE(FromLabels({"open.screen", "org"}, &result));
+  result = UnpackErrorOr(FromLabels({"open.screen", "org"}));
   EXPECT_EQ(result.domain_name(), includes_dot);
 
   const auto includes_non_ascii =
       std::vector<uint8_t>{11,  'o', 'p', 'e', 'n', 7,   's', 'c', 'r',
                            'e', 'e', 'n', 3,   'o', 'r', 'g', 0};
-  ASSERT_TRUE(FromLabels({"open\7screen", "org"}, &result));
+  result = UnpackErrorOr(FromLabels({"open\7screen", "org"}));
   EXPECT_EQ(result.domain_name(), includes_non_ascii);
 
-  ASSERT_FALSE(FromLabels({"extremely-long-label-that-is-actually-too-long-"
-                           "for-rfc-1034-and-will-not-generate"},
-                          &result));
+  ASSERT_FALSE(
+      FromLabels({"extremely-long-label-that-is-actually-too-long-"
+                  "for-rfc-1034-and-will-not-generate"}));
 
-  ASSERT_FALSE(FromLabels(
-      {
-          "extremely-long-domain-name-that-is-made-of",
-          "valid-labels",
-          "however-overall-it-is-too-long-for-rfc-1034",
-          "so-it-should-fail-to-generate",
-          "filler-filler-filler-filler-filler",
-          "filler-filler-filler-filler-filler",
-          "filler-filler-filler-filler-filler",
-          "filler-filler-filler-filler-filler",
-      },
-      &result));
+  ASSERT_FALSE(FromLabels({
+      "extremely-long-domain-name-that-is-made-of",
+      "valid-labels",
+      "however-overall-it-is-too-long-for-rfc-1034",
+      "so-it-should-fail-to-generate",
+      "filler-filler-filler-filler-filler",
+      "filler-filler-filler-filler-filler",
+      "filler-filler-filler-filler-filler",
+      "filler-filler-filler-filler-filler",
+  }));
 }
 
 TEST(DomainNameTest, Equality) {
-  DomainName alpha;
-  DomainName beta;
-  DomainName alpha_copy;
+  DomainName alpha = UnpackErrorOr(FromLabels({"alpha", "openscreen", "org"}));
+  DomainName beta = UnpackErrorOr(FromLabels({"beta", "openscreen", "org"}));
 
-  ASSERT_TRUE(FromLabels({"alpha", "openscreen", "org"}, &alpha));
-  ASSERT_TRUE(FromLabels({"beta", "openscreen", "org"}, &beta));
-  alpha_copy = alpha;
+  const DomainName alpha_copy = alpha;
 
   EXPECT_TRUE(alpha == alpha);
   EXPECT_FALSE(alpha != alpha);
@@ -105,12 +107,10 @@ TEST(DomainNameTest, Equality) {
 
 TEST(DomainNameTest, EndsWithLocalDomain) {
   DomainName alpha;
-  DomainName beta;
-
   EXPECT_FALSE(alpha.EndsWithLocalDomain());
 
-  ASSERT_TRUE(FromLabels({"alpha", "openscreen", "org"}, &alpha));
-  ASSERT_TRUE(FromLabels({"beta", "local"}, &beta));
+  alpha = UnpackErrorOr(FromLabels({"alpha", "openscreen", "org"}));
+  DomainName beta = UnpackErrorOr(FromLabels({"beta", "local"}));
 
   EXPECT_FALSE(alpha.EndsWithLocalDomain());
   EXPECT_TRUE(beta.EndsWithLocalDomain());
@@ -123,36 +123,44 @@ TEST(DomainNameTest, IsEmpty) {
   EXPECT_TRUE(alpha.IsEmpty());
   EXPECT_TRUE(beta.IsEmpty());
 
-  ASSERT_TRUE(FromLabels({"alpha", "openscreen", "org"}, &alpha));
+  alpha = UnpackErrorOr(FromLabels({"alpha", "openscreen", "org"}));
   EXPECT_FALSE(alpha.IsEmpty());
 }
 
 TEST(DomainNameTest, Append) {
+  const auto expected_service_name =
+      std::vector<uint8_t>{5, 'a', 'l', 'p', 'h', 'a', '\0'};
+  const auto expected_service_type_initial = std::vector<uint8_t>{
+      11, '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e', 'e', 'n', '\0'};
+  const auto expected_protocol =
+      std::vector<uint8_t>{5, '_', 'q', 'u', 'i', 'c', '\0'};
   const auto expected_service_type =
       std::vector<uint8_t>{11,  '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e',
-                           'e', 'n', 5,   '_', 'q', 'u', 'i', 'c', 0};
+                           'e', 'n', 5,   '_', 'q', 'u', 'i', 'c', '\0'};
   const auto total_expected = std::vector<uint8_t>{
       5,   'a', 'l', 'p', 'h', 'a', 11,  '_', 'o', 'p', 'e', 'n', 's',
-      'c', 'r', 'e', 'e', 'n', 5,   '_', 'q', 'u', 'i', 'c', 0};
-  DomainName service_name;
-  DomainName service_type;
-  DomainName protocol;
-  ASSERT_TRUE(FromLabels({"alpha"}, &service_name));
-  ASSERT_TRUE(FromLabels({"_openscreen"}, &service_type));
-  ASSERT_TRUE(FromLabels({"_quic"}, &protocol));
+      'c', 'r', 'e', 'e', 'n', 5,   '_', 'q', 'u', 'i', 'c', '\0'};
 
-  EXPECT_TRUE(service_type.Append(protocol));
+  DomainName service_name = UnpackErrorOr(FromLabels({"alpha"}));
+  EXPECT_EQ(service_name.domain_name(), expected_service_name);
+
+  DomainName service_type = UnpackErrorOr(FromLabels({"_openscreen"}));
+  EXPECT_EQ(service_type.domain_name(), expected_service_type_initial);
+
+  DomainName protocol = UnpackErrorOr(FromLabels({"_quic"}));
+  EXPECT_EQ(protocol.domain_name(), expected_protocol);
+
+  EXPECT_TRUE(service_type.Append(protocol).ok());
   EXPECT_EQ(service_type.domain_name(), expected_service_type);
 
-  DomainName result;
-  EXPECT_TRUE(DomainName::Append(service_name, service_type, &result));
+  DomainName result =
+      UnpackErrorOr(DomainName::Append(service_name, service_type));
   EXPECT_EQ(result.domain_name(), total_expected);
 }
 
 TEST(DomainNameTest, GetLabels) {
   const auto labels = std::vector<std::string>{"alpha", "beta", "gamma", "org"};
-  DomainName d;
-  ASSERT_TRUE(FromLabels(labels, &d));
+  DomainName d = UnpackErrorOr(FromLabels(labels));
   EXPECT_EQ(d.GetLabels(), labels);
 }
 

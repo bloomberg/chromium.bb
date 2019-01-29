@@ -194,12 +194,14 @@ void MdnsStatusCallback(mDNS* mdns, mStatus result) {
 MdnsResponderAdapterImpl::MdnsResponderAdapterImpl() = default;
 MdnsResponderAdapterImpl::~MdnsResponderAdapterImpl() = default;
 
-bool MdnsResponderAdapterImpl::Init() {
+Error MdnsResponderAdapterImpl::Init() {
   const auto err =
       mDNS_Init(&mdns_, &platform_storage_, rr_cache_, kRrCacheSize,
                 mDNS_Init_DontAdvertiseLocalAddresses, &MdnsStatusCallback,
                 mDNS_Init_NoInitCallbackContext);
-  return err == mStatus_NoError;
+
+  return (err == mStatus_NoError) ? Error::None()
+                                  : Error::Code::kInitializationFailure;
 }
 
 void MdnsResponderAdapterImpl::Close() {
@@ -223,9 +225,9 @@ void MdnsResponderAdapterImpl::Close() {
   service_records_.clear();
 }
 
-bool MdnsResponderAdapterImpl::SetHostLabel(const std::string& host_label) {
+Error MdnsResponderAdapterImpl::SetHostLabel(const std::string& host_label) {
   if (host_label.size() > DomainName::kDomainNameMaxLabelLength)
-    return false;
+    return Error::Code::kDomainNameTooLong;
 
   MakeDomainLabelFromLiteralString(&mdns_.hostlabel, host_label.c_str());
   mDNS_SetFQDN(&mdns_);
@@ -233,16 +235,16 @@ bool MdnsResponderAdapterImpl::SetHostLabel(const std::string& host_label) {
     DeadvertiseInterfaces();
     AdvertiseInterfaces();
   }
-  return true;
+  return Error::None();
 }
 
-bool MdnsResponderAdapterImpl::RegisterInterface(
+Error MdnsResponderAdapterImpl::RegisterInterface(
     const platform::InterfaceInfo& interface_info,
     const platform::IPSubnet& interface_address,
     platform::UdpSocketPtr socket) {
   const auto info_it = responder_interface_info_.find(socket);
   if (info_it != responder_interface_info_.end())
-    return true;
+    return Error::None();
 
   NetworkInterfaceInfo& info = responder_interface_info_[socket];
   std::memset(&info, 0, sizeof(NetworkInterfaceInfo));
@@ -268,14 +270,16 @@ bool MdnsResponderAdapterImpl::RegisterInterface(
   auto result = mDNS_RegisterInterface(&mdns_, &info, mDNSfalse);
   OSP_LOG_IF(WARN, result != mStatus_NoError)
       << "mDNS_RegisterInterface failed: " << result;
-  return result == mStatus_NoError;
+
+  return (result == mStatus_NoError) ? Error::None()
+                                     : Error::Code::kMdnsRegisterFailure;
 }
 
-bool MdnsResponderAdapterImpl::DeregisterInterface(
+Error MdnsResponderAdapterImpl::DeregisterInterface(
     platform::UdpSocketPtr socket) {
   const auto info_it = responder_interface_info_.find(socket);
   if (info_it == responder_interface_info_.end())
-    return false;
+    return Error::Code::kNoItemFound;
 
   const auto it = std::find(platform_storage_.sockets.begin(),
                             platform_storage_.sockets.end(), socket);
@@ -287,7 +291,7 @@ bool MdnsResponderAdapterImpl::DeregisterInterface(
   }
   mDNS_DeregisterInterface(&mdns_, &info_it->second, mDNSfalse);
   responder_interface_info_.erase(info_it);
-  return true;
+  return Error::None();
 }
 
 void MdnsResponderAdapterImpl::OnDataReceived(
@@ -366,13 +370,14 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartPtrQuery(
               service_type.domain_name().end(), question.qname.c);
   } else {
     const DomainName local_domain = DomainName::GetLocalDomain();
-    DomainName service_type_with_local;
-    if (!DomainName::Append(service_type, local_domain,
-                            &service_type_with_local)) {
+    ErrorOr<DomainName> service_type_with_local =
+        DomainName::Append(service_type, local_domain);
+    if (!service_type_with_local) {
       return MdnsResponderErrorCode::kDomainOverflowError;
     }
-    std::copy(service_type_with_local.domain_name().begin(),
-              service_type_with_local.domain_name().end(), question.qname.c);
+    std::copy(service_type_with_local.value().domain_name().begin(),
+              service_type_with_local.value().domain_name().end(),
+              question.qname.c);
   }
   question.qtype = kDNSType_PTR;
   question.qclass = kDNSClass_IN;

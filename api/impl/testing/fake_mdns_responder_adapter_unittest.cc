@@ -110,10 +110,10 @@ TEST(FakeMdnsResponderAdapterTest, PtrQueries) {
   EXPECT_EQ(kTestServiceInstance, labels[0]);
 
   // TODO(btolsch): qname if PtrEvent gets it.
-  mdns::DomainName st;
-  ASSERT_TRUE(
-      mdns::DomainName::FromLabels(labels.begin() + 1, labels.end(), &st));
-  EXPECT_EQ(kTestServiceTypeCanon, st);
+  ErrorOr<mdns::DomainName> st =
+      mdns::DomainName::FromLabels(labels.begin() + 1, labels.end());
+  ASSERT_TRUE(st);
+  EXPECT_EQ(kTestServiceTypeCanon, st.value());
 
   result = mdns_responder.StopPtrQuery(default_socket, kTestServiceType);
   EXPECT_EQ(mdns::MdnsResponderErrorCode::kNoError, result);
@@ -255,26 +255,26 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
 
   auto socket1 = reinterpret_cast<platform::UdpSocketPtr>(16);
   auto socket2 = reinterpret_cast<platform::UdpSocketPtr>(24);
-  auto result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
-                                                 platform::IPSubnet{}, socket1);
-  EXPECT_TRUE(result);
+  Error result = mdns_responder.RegisterInterface(
+      platform::InterfaceInfo{}, platform::IPSubnet{}, socket1);
+  EXPECT_TRUE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
   result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
                                             platform::IPSubnet{}, socket1);
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
   result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
                                             platform::IPSubnet{}, socket2);
-  EXPECT_TRUE(result);
+  EXPECT_TRUE(result.ok());
   EXPECT_EQ(2u, mdns_responder.registered_interfaces().size());
 
   result = mdns_responder.DeregisterInterface(socket2);
-  EXPECT_TRUE(result);
+  EXPECT_TRUE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
   result = mdns_responder.DeregisterInterface(socket2);
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.ok());
   EXPECT_EQ(1u, mdns_responder.registered_interfaces().size());
 
   mdns_responder.Close();
@@ -283,7 +283,7 @@ TEST(FakeMdnsResponderAdapterTest, RegisterInterfaces) {
 
   result = mdns_responder.RegisterInterface(platform::InterfaceInfo{},
                                             platform::IPSubnet{}, socket1);
-  EXPECT_FALSE(result);
+  EXPECT_FALSE(result.ok());
   EXPECT_EQ(0u, mdns_responder.registered_interfaces().size());
 }
 

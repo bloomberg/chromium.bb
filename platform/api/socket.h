@@ -5,6 +5,7 @@
 #ifndef PLATFORM_API_SOCKET_H_
 #define PLATFORM_API_SOCKET_H_
 
+#include "base/error.h"
 #include "base/ip_address.h"
 #include "platform/api/network_interface.h"
 #include "third_party/abseil/src/absl/types/optional.h"
@@ -29,12 +30,12 @@ bool IsIPv6Socket(UdpSocketPtr socket);
 // Closes the underlying platform socket and frees any allocated memory.
 void DestroyUdpSocket(UdpSocketPtr socket);
 
-bool BindUdpSocket(UdpSocketPtr socket,
-                   const IPEndpoint& endpoint,
-                   NetworkInterfaceIndex ifindex);
-bool JoinUdpMulticastGroup(UdpSocketPtr socket,
-                           const IPAddress& address,
-                           NetworkInterfaceIndex ifindex);
+Error BindUdpSocket(UdpSocketPtr socket,
+                    const IPEndpoint& endpoint,
+                    NetworkInterfaceIndex ifindex);
+Error JoinUdpMulticastGroup(UdpSocketPtr socket,
+                            const IPAddress& address,
+                            NetworkInterfaceIndex ifindex);
 
 absl::optional<int64_t> ReceiveUdp(UdpSocketPtr socket,
                                    void* data,

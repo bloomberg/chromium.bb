@@ -15,31 +15,31 @@ void ReceiverList::OnReceiverAdded(const ServiceInfo& info) {
   receivers_.emplace_back(info);
 }
 
-bool ReceiverList::OnReceiverChanged(const ServiceInfo& info) {
+Error ReceiverList::OnReceiverChanged(const ServiceInfo& info) {
   auto existing_info = std::find_if(receivers_.begin(), receivers_.end(),
                                     [&info](const ServiceInfo& x) {
                                       return x.service_id == info.service_id;
                                     });
   if (existing_info == receivers_.end())
-    return false;
+    return Error::Code::kNoItemFound;
 
   *existing_info = info;
-  return true;
+  return Error::None();
 }
 
-bool ReceiverList::OnReceiverRemoved(const ServiceInfo& info) {
+Error ReceiverList::OnReceiverRemoved(const ServiceInfo& info) {
   const auto it = std::remove(receivers_.begin(), receivers_.end(), info);
   if (it == receivers_.end())
-    return false;
+    return Error::Code::kNoItemFound;
 
   receivers_.erase(it, receivers_.end());
-  return true;
+  return Error::None();
 }
 
-bool ReceiverList::OnAllReceiversRemoved() {
+Error ReceiverList::OnAllReceiversRemoved() {
   const auto empty = receivers_.empty();
   receivers_.clear();
-  return !empty;
+  return empty ? Error::Code::kNoItemFound : Error::None();
 }
 
 }  // namespace openscreen

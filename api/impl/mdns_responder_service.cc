@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/error.h"
 #include "base/make_unique.h"
 #include "platform/api/logging.h"
 
@@ -241,17 +242,17 @@ void MdnsResponderService::StartListening() {
                                          interface.subnet, interface.socket);
     }
   }
-  mdns::DomainName service_type;
-  OSP_CHECK(mdns::DomainName::FromLabels(service_type_.begin(),
-                                         service_type_.end(), &service_type));
+  ErrorOr<mdns::DomainName> service_type =
+      mdns::DomainName::FromLabels(service_type_.begin(), service_type_.end());
+  OSP_CHECK(service_type);
   for (const auto& interface : bound_interfaces_)
-    mdns_responder_->StartPtrQuery(interface.socket, service_type);
+    mdns_responder_->StartPtrQuery(interface.socket, service_type.value());
 }
 
 void MdnsResponderService::StopListening() {
-  mdns::DomainName service_type;
-  OSP_CHECK(mdns::DomainName::FromLabels(service_type_.begin(),
-                                         service_type_.end(), &service_type));
+  ErrorOr<mdns::DomainName> service_type =
+      mdns::DomainName::FromLabels(service_type_.begin(), service_type_.end());
+  OSP_CHECK(service_type);
   for (const auto& kv : network_scoped_domain_to_host_) {
     const NetworkScopedDomainName& scoped_domain = kv.first;
 
@@ -268,7 +269,7 @@ void MdnsResponderService::StopListening() {
   }
   service_by_name_.clear();
   for (const auto& interface : bound_interfaces_)
-    mdns_responder_->StopPtrQuery(interface.socket, service_type);
+    mdns_responder_->StopPtrQuery(interface.socket, service_type.value());
   RemoveAllReceivers();
 }
 
@@ -298,13 +299,16 @@ void MdnsResponderService::StartService() {
     }
   }
   mdns_responder_->SetHostLabel(service_hostname_);
-  mdns::DomainName domain_name;
-  OSP_CHECK(mdns::DomainName::FromLabels(&service_hostname_,
-                                         &service_hostname_ + 1, &domain_name))
-      << "bad hostname configured: " << service_hostname_;
-  OSP_CHECK(domain_name.Append(mdns::DomainName::GetLocalDomain()));
+  ErrorOr<mdns::DomainName> domain_name =
+      mdns::DomainName::FromLabels(&service_hostname_, &service_hostname_ + 1);
+  OSP_CHECK(domain_name) << "bad hostname configured: " << service_hostname_;
+  mdns::DomainName name = domain_name.MoveValue();
+
+  Error error = name.Append(mdns::DomainName::GetLocalDomain());
+  OSP_CHECK(error.ok());
+
   mdns_responder_->RegisterService(service_instance_name_, service_type_[0],
-                                   service_type_[1], domain_name, service_port_,
+                                   service_type_[1], name, service_port_,
                                    service_txt_data_);
 }
 

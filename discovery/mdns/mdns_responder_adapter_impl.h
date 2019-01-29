@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/error.h"
 #include "discovery/mdns/mdns_responder_adapter.h"
 #include "platform/api/socket.h"
 #include "third_party/mDNSResponder/src/mDNSCore/mDNSEmbeddedAPI.h"
@@ -23,15 +24,15 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   MdnsResponderAdapterImpl();
   ~MdnsResponderAdapterImpl() override;
 
-  bool Init() override;
+  Error Init() override;
   void Close() override;
 
-  bool SetHostLabel(const std::string& host_label) override;
+  Error SetHostLabel(const std::string& host_label) override;
 
-  bool RegisterInterface(const platform::InterfaceInfo& interface_info,
-                         const platform::IPSubnet& interface_address,
-                         platform::UdpSocketPtr socket) override;
-  bool DeregisterInterface(platform::UdpSocketPtr socket) override;
+  Error RegisterInterface(const platform::InterfaceInfo& interface_info,
+                          const platform::IPSubnet& interface_address,
+                          platform::UdpSocketPtr socket) override;
+  Error DeregisterInterface(platform::UdpSocketPtr socket) override;
 
   void OnDataReceived(const IPEndpoint& source,
                       const IPEndpoint& original_destination,

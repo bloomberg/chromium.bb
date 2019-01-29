@@ -13,9 +13,11 @@
 namespace openscreen {
 
 // static
-bool IPAddress::Parse(const std::string& s, IPAddress* address) {
-  return ParseV4(s, address) || ParseV6(s, address);
-}
+ErrorOr<IPAddress> IPAddress::Parse(const std::string& s) {
+  ErrorOr<IPAddress> v4 = ParseV4(s);
+
+  return v4 ? std::move(v4) : ParseV6(s);
+}  // namespace openscreen
 
 IPAddress::IPAddress() : version_(Version::kV4), bytes_({}) {}
 IPAddress::IPAddress(const std::array<uint8_t, 4>& bytes)
@@ -99,49 +101,50 @@ void IPAddress::CopyToV6(uint8_t x[16]) const {
 }
 
 // static
-bool IPAddress::ParseV4(const std::string& s, IPAddress* address) {
+ErrorOr<IPAddress> IPAddress::ParseV4(const std::string& s) {
   if (s.size() > 0 && s[0] == '.')
-    return false;
+    return Error::Code::kInvalidIPV4Address;
 
+  IPAddress address;
   uint16_t next_octet = 0;
   int i = 0;
   bool previous_dot = false;
   for (auto c : s) {
     if (c == '.') {
       if (previous_dot) {
-        return false;
+        return Error::Code::kInvalidIPV4Address;
       }
-      address->bytes_[i++] = static_cast<uint8_t>(next_octet);
+      address.bytes_[i++] = static_cast<uint8_t>(next_octet);
       next_octet = 0;
       previous_dot = true;
       if (i > 3)
-        return false;
+        return Error::Code::kInvalidIPV4Address;
 
       continue;
     }
     previous_dot = false;
     if (!std::isdigit(c))
-      return false;
+      return Error::Code::kInvalidIPV4Address;
 
     next_octet = next_octet * 10 + (c - '0');
     if (next_octet > 255)
-      return false;
+      return Error::Code::kInvalidIPV4Address;
   }
   if (previous_dot)
-    return false;
+    return Error::Code::kInvalidIPV4Address;
 
   if (i != 3)
-    return false;
+    return Error::Code::kInvalidIPV4Address;
 
-  address->bytes_[i] = static_cast<uint8_t>(next_octet);
-  address->version_ = Version::kV4;
-  return true;
+  address.bytes_[i] = static_cast<uint8_t>(next_octet);
+  address.version_ = Version::kV4;
+  return address;
 }
 
 // static
-bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
+ErrorOr<IPAddress> IPAddress::ParseV6(const std::string& s) {
   if (s.size() > 1 && s[0] == ':' && s[1] != ':')
-    return false;
+    return Error::Code::kInvalidIPV6Address;
 
   uint16_t next_value = 0;
   uint8_t values[16];
@@ -153,11 +156,11 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
       ++num_previous_colons;
       if (num_previous_colons == 2) {
         if (double_colon_index) {
-          return false;
+          return Error::Code::kInvalidIPV6Address;
         }
         double_colon_index = i;
       } else if (i >= 15 || num_previous_colons > 2) {
-        return false;
+        return Error::Code::kInvalidIPV6Address;
       } else {
         values[i++] = static_cast<uint8_t>(next_value >> 8);
         values[i++] = static_cast<uint8_t>(next_value & 0xff);
@@ -173,37 +176,39 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
       } else if (c >= 'A' && c <= 'F') {
         x = c - 'A' + 10;
       } else {
-        return false;
+        return Error::Code::kInvalidIPV6Address;
       }
       if (next_value & 0xf000) {
-        return false;
+        return Error::Code::kInvalidIPV6Address;
       } else {
         next_value = static_cast<uint16_t>(next_value * 16 + x);
       }
     }
   }
   if (num_previous_colons == 1)
-    return false;
+    return Error::Code::kInvalidIPV6Address;
 
   if (i >= 15)
-    return false;
+    return Error::Code::kInvalidIPV6Address;
 
   values[i++] = static_cast<uint8_t>(next_value >> 8);
   values[i] = static_cast<uint8_t>(next_value & 0xff);
   if (!((i == 15 && !double_colon_index) || (i < 14 && double_colon_index))) {
-    return false;
+    return Error::Code::kInvalidIPV6Address;
   }
+
+  IPAddress address;
   for (int j = 15; j >= 0;) {
     if (double_colon_index && (i == double_colon_index)) {
-      address->bytes_[j--] = values[i--];
+      address.bytes_[j--] = values[i--];
       while (j > i)
-        address->bytes_[j--] = 0;
+        address.bytes_[j--] = 0;
     } else {
-      address->bytes_[j--] = values[i--];
+      address.bytes_[j--] = values[i--];
     }
   }
-  address->version_ = Version::kV6;
-  return true;
+  address.version_ = Version::kV6;
+  return address;
 }
 
 bool operator==(const IPEndpoint& a, const IPEndpoint& b) {

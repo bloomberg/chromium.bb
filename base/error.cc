@@ -20,6 +20,8 @@ Error::Error(Code code, const std::string& message)
 Error::Error(Code code, std::string&& message)
     : code_(code), message_(std::move(message)) {}
 
+Error::~Error() = default;
+
 Error& Error::operator=(const Error& other) = default;
 
 Error& Error::operator=(Error&& other) = default;
@@ -48,6 +50,12 @@ std::string Error::CodeToString(Error::Code code) {
     default:
       return "Unknown";
   }
+}
+
+// static
+const Error& Error::None() {
+  static Error& error = *new Error(Code::kNone);
+  return error;
 }
 
 std::ostream& operator<<(std::ostream& out, const Error& error) {

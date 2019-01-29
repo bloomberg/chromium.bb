@@ -18,28 +18,31 @@ DomainName DomainName::GetLocalDomain() {
 }
 
 // static
-bool DomainName::Append(const DomainName& first,
-                        const DomainName& second,
-                        DomainName* result) {
+ErrorOr<DomainName> DomainName::Append(const DomainName& first,
+                                       const DomainName& second) {
   OSP_CHECK(first.domain_name_.size());
   OSP_CHECK(second.domain_name_.size());
-  OSP_DCHECK_EQ(first.domain_name_.back(), 0);
-  OSP_DCHECK_EQ(second.domain_name_.back(), 0);
+
+  // Both vectors should represent null terminated domain names.
+  OSP_DCHECK_EQ(first.domain_name_.back(), '\0');
+  OSP_DCHECK_EQ(second.domain_name_.back(), '\0');
   if ((first.domain_name_.size() + second.domain_name_.size() - 1) >
       kDomainNameMaxLength) {
-    return false;
+    return Error::Code::kDomainNameTooLong;
   }
-  result->domain_name_.clear();
-  result->domain_name_.insert(result->domain_name_.begin(),
-                              first.domain_name_.begin(),
-                              first.domain_name_.end());
-  result->domain_name_.insert(result->domain_name_.end() - 1,
-                              second.domain_name_.begin(),
-                              second.domain_name_.end() - 1);
-  return true;
+
+  DomainName result;
+  result.domain_name_.clear();
+  result.domain_name_.insert(result.domain_name_.begin(),
+                             first.domain_name_.begin(),
+                             first.domain_name_.end());
+  result.domain_name_.insert(result.domain_name_.end() - 1,
+                             second.domain_name_.begin(),
+                             second.domain_name_.end() - 1);
+  return result;
 }
 
-DomainName::DomainName() : domain_name_{0} {}
+DomainName::DomainName() : domain_name_{'\0'} {}
 DomainName::DomainName(std::vector<uint8_t>&& domain_name)
     : domain_name_(std::move(domain_name)) {
   OSP_CHECK_LE(domain_name_.size(), kDomainNameMaxLength);
@@ -69,16 +72,18 @@ bool DomainName::EndsWithLocalDomain() const {
                     domain_name_.end() - local_domain.domain_name_.size());
 }
 
-bool DomainName::Append(const DomainName& after) {
+Error DomainName::Append(const DomainName& after) {
   OSP_CHECK(after.domain_name_.size());
-  OSP_DCHECK_EQ(after.domain_name_.back(), 0);
+  OSP_DCHECK_EQ(after.domain_name_.back(), '\0');
+
   if ((domain_name_.size() + after.domain_name_.size() - 1) >
       kDomainNameMaxLength) {
-    return false;
+    return Error::Code::kDomainNameTooLong;
   }
+
   domain_name_.insert(domain_name_.end() - 1, after.domain_name_.begin(),
                       after.domain_name_.end() - 1);
-  return true;
+  return Error::None();
 }
 
 std::vector<std::string> DomainName::GetLabels() const {

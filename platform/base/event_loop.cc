@@ -14,41 +14,41 @@ namespace platform {
 ReceivedData::ReceivedData() = default;
 ReceivedData::~ReceivedData() = default;
 
-bool ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
-                          ReceivedData* data) {
+Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
+                           ReceivedData* data) {
   OSP_DCHECK(data);
   absl::optional<int> len =
       ReceiveUdp(read_event.socket, &data->bytes[0], data->bytes.size(),
                  &data->source, &data->original_destination);
   if (!len) {
     OSP_LOG_ERROR << "recv() failed: " << GetLastErrorString();
-    return false;
+    return Error::Code::kSocketReadFailure;
   } else if (len == 0) {
     OSP_LOG_WARN << "recv() = 0, closed?";
-    return false;
+    return Error::Code::kSocketClosedFailure;
   }
   OSP_DCHECK_LE(*len, kUdpMaxPacketSize);
   data->length = *len;
   data->socket = read_event.socket;
-  return true;
+  return Error::None();
 }
 
 std::vector<ReceivedData> HandleUdpSocketReadEvents(const Events& events) {
   std::vector<ReceivedData> data;
   for (const auto& read_event : events.udp_readable_events) {
     ReceivedData next_data;
-    if (ReceiveDataFromEvent(read_event, &next_data))
+    if (ReceiveDataFromEvent(read_event, &next_data).ok())
       data.emplace_back(std::move(next_data));
   }
   return data;
 }
 
 std::vector<ReceivedData> OnePlatformLoopIteration(EventWaiterPtr waiter) {
-  Events events;
-  if (!WaitForEvents(waiter, &events))
+  ErrorOr<Events> events = WaitForEvents(waiter);
+  if (!events)
     return {};
 
-  return HandleUdpSocketReadEvents(events);
+  return HandleUdpSocketReadEvents(events.value());
 }
 
 }  // namespace platform

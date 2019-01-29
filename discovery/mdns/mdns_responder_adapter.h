@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/error.h"
 #include "base/ip_address.h"
 #include "discovery/mdns/domain_name.h"
 #include "discovery/mdns/mdns_responder_platform.h"
@@ -170,7 +171,7 @@ class MdnsResponderAdapter {
 
   // Initializes mDNSResponder.  This should be called before any queries or
   // service registrations are made.
-  virtual bool Init() = 0;
+  virtual Error Init() = 0;
 
   // Stops all open queries and service registrations.  If this is not called
   // before destruction, any registered services will not send their goodbye
@@ -181,16 +182,16 @@ class MdnsResponderAdapter {
   // when any service is active (via RegisterService).  Returns true if the
   // label was set successfully, false otherwise (e.g. the label did not meet
   // DNS name requirements).
-  virtual bool SetHostLabel(const std::string& host_label) = 0;
+  virtual Error SetHostLabel(const std::string& host_label) = 0;
 
   // The following methods register and deregister a network interface with
   // mDNSResponder.  |socket| will be used to identify which interface received
   // the data in OnDataReceived and will be used to send data via the platform
   // layer.
-  virtual bool RegisterInterface(const platform::InterfaceInfo& interface_info,
-                                 const platform::IPSubnet& interface_address,
-                                 platform::UdpSocketPtr socket) = 0;
-  virtual bool DeregisterInterface(platform::UdpSocketPtr socket) = 0;
+  virtual Error RegisterInterface(const platform::InterfaceInfo& interface_info,
+                                  const platform::IPSubnet& interface_address,
+                                  platform::UdpSocketPtr socket) = 0;
+  virtual Error DeregisterInterface(platform::UdpSocketPtr socket) = 0;
 
   virtual void OnDataReceived(const IPEndpoint& source,
                               const IPEndpoint& original_destination,

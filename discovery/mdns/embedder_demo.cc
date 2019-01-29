@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "base/error.h"
 #include "base/make_unique.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
 #include "platform/api/error.h"
@@ -101,13 +102,14 @@ std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
   std::vector<platform::UdpSocketPtr> fds;
   for (const auto ifindex : index_list) {
     auto* socket = platform::CreateUdpSocketIPv4();
-    if (!JoinUdpMulticastGroup(socket, IPAddress{224, 0, 0, 251}, ifindex)) {
+    if (!JoinUdpMulticastGroup(socket, IPAddress{224, 0, 0, 251}, ifindex)
+             .ok()) {
       OSP_LOG_ERROR << "join multicast group failed for interface " << ifindex
                     << ": " << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
       continue;
     }
-    if (!BindUdpSocket(socket, {{}, 5353}, ifindex)) {
+    if (!BindUdpSocket(socket, {{}, 5353}, ifindex).ok()) {
       OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
                     << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
@@ -222,10 +224,11 @@ void BrowseDemo(const std::string& service_name,
                 const std::string& service_instance) {
   SignalThings();
 
-  mdns::DomainName service_type;
   std::vector<std::string> labels{service_name, service_protocol};
-  if (!mdns::DomainName::FromLabels(labels.begin(), labels.end(),
-                                    &service_type)) {
+  ErrorOr<mdns::DomainName> service_type =
+      mdns::DomainName::FromLabels(labels.begin(), labels.end());
+
+  if (!service_type) {
     OSP_LOG_ERROR << "bad domain labels: " << service_name << ", "
                   << service_protocol;
     return;
@@ -268,7 +271,7 @@ void BrowseDemo(const std::string& service_name,
 
   for (auto* socket : sockets) {
     platform::WatchUdpSocketReadable(waiter, socket);
-    mdns_adapter->StartPtrQuery(socket, service_type);
+    mdns_adapter->StartPtrQuery(socket, service_type.value());
   }
 
   while (!g_done) {

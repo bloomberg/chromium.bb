@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "api/public/service_info.h"
+#include "base/error.h"
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -24,7 +25,10 @@ TEST(ServiceInfoTest, Compare) {
   const ServiceInfo receiver1_alt_port{
       "id3", "name1", 1, {{192, 168, 1, 10}, 12645}, {}};
   ServiceInfo receiver1_ipv6{"id3", "name1", 1, {}, {}};
-  ASSERT_TRUE(IPAddress::Parse("::12:34", &receiver1_ipv6.v6_endpoint.address));
+
+  ErrorOr<IPAddress> address = IPAddress::Parse("::12:34");
+  ASSERT_TRUE(address);
+  receiver1_ipv6.v6_endpoint.address = address.value();
 
   EXPECT_EQ(receiver1, receiver1);
   EXPECT_EQ(receiver2, receiver2);

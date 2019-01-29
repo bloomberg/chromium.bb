@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "api/impl/service_listener_impl.h"
-
+#include "base/error.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -67,20 +67,20 @@ void ServiceListenerImpl::OnReceiverAdded(const ServiceInfo& info) {
 }
 
 void ServiceListenerImpl::OnReceiverChanged(const ServiceInfo& info) {
-  const auto any_changed = receiver_list_.OnReceiverChanged(info);
-  if (any_changed && observer_)
+  const Error changed_error = receiver_list_.OnReceiverChanged(info);
+  if (changed_error.ok() && observer_)
     observer_->OnReceiverChanged(info);
 }
 
 void ServiceListenerImpl::OnReceiverRemoved(const ServiceInfo& info) {
-  const auto any_removed = receiver_list_.OnReceiverRemoved(info);
-  if (any_removed && observer_)
+  const Error removed_error = receiver_list_.OnReceiverRemoved(info);
+  if (removed_error.ok() && observer_)
     observer_->OnReceiverRemoved(info);
 }
 
 void ServiceListenerImpl::OnAllReceiversRemoved() {
-  const auto any_removed = receiver_list_.OnAllReceiversRemoved();
-  if (any_removed && observer_)
+  const Error removed_all_error = receiver_list_.OnAllReceiversRemoved();
+  if (removed_all_error.ok() && observer_)
     observer_->OnAllReceiversRemoved();
 }
 
