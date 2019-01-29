@@ -731,6 +731,8 @@ TEST_F(PeopleHandlerTest, SetNewCustomPassphrase) {
   base::ListValue list_args;
   list_args.AppendString(kTestCallbackId);
   list_args.AppendString(args);
+  ON_CALL(*mock_pss_->GetUserSettingsMock(), IsEncryptEverythingAllowed())
+      .WillByDefault(Return(true));
   ON_CALL(*mock_pss_->GetUserSettingsMock(),
           IsPassphraseRequiredForDecryption())
       .WillByDefault(Return(false));
@@ -1067,11 +1069,6 @@ TEST_F(PeopleHandlerTest, ShowSetupEncryptAllDisallowed) {
 }
 
 TEST_F(PeopleHandlerTest, TurnOnEncryptAllDisallowed) {
-  std::string args = GetConfiguration(
-      NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_ALL_DATA);
-  base::ListValue list_args;
-  list_args.AppendString(kTestCallbackId);
-  list_args.AppendString(args);
   ON_CALL(*mock_pss_->GetUserSettingsMock(),
           IsPassphraseRequiredForDecryption())
       .WillByDefault(Return(false));
@@ -1080,8 +1077,20 @@ TEST_F(PeopleHandlerTest, TurnOnEncryptAllDisallowed) {
   SetupInitializedProfileSyncService();
   ON_CALL(*mock_pss_->GetUserSettingsMock(), IsEncryptEverythingAllowed())
       .WillByDefault(Return(false));
+
+  base::DictionaryValue dict;
+  dict.SetBoolean("setNewPassphrase", true);
+  std::string args = GetConfiguration(&dict, SYNC_ALL_DATA, GetAllTypes(),
+                                      "password", ENCRYPT_ALL_DATA);
+  base::ListValue list_args;
+  list_args.AppendString(kTestCallbackId);
+  list_args.AppendString(args);
+
   EXPECT_CALL(*mock_pss_->GetUserSettingsMock(), EnableEncryptEverything())
       .Times(0);
+  EXPECT_CALL(*mock_pss_->GetUserSettingsMock(), SetEncryptionPassphrase(_))
+      .Times(0);
+
   handler_->HandleSetEncryption(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
