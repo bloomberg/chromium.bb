@@ -1492,11 +1492,29 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  std::vector<base::ScopedFD> passed_dmabuf_fds;
+  std::vector<base::ScopedFD> dmabuf_fds;
 #if defined(USE_OZONE)
-  for (const auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
-    DCHECK_NE(fd.fd, -1);
-    passed_dmabuf_fds.push_back(base::ScopedFD(fd.fd));
+  DCHECK_EQ(gpu_memory_buffer_handle.native_pixmap_handle.fds.size(),
+            gpu_memory_buffer_handle.native_pixmap_handle.planes.size());
+  // If the driver does not accept as many fds as we received from the client,
+  // we have to check if the additional fds are actually duplicated fds pointing
+  // to previous planes; if so, we can close the duplicates and keep only the
+  // original fd(s).
+  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
+  // Otherwise, if offset == 0, return error as it may be pointing to a new
+  // plane.
+  for (auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
+    dmabuf_fds.emplace_back(fd.fd);
+  }
+  for (size_t i = dmabuf_fds.size() - 1; i >= output_planes_count_; i--) {
+    if (gpu_memory_buffer_handle.native_pixmap_handle.planes[i].offset == 0) {
+      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
+    // buffer and the appropriate address can be accessed by associated offset.
+    dmabuf_fds.pop_back();
   }
 #endif
 
@@ -1518,8 +1536,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
       FROM_HERE,
       base::BindOnce(
           &V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask,
-          base::Unretained(this), picture_buffer_id,
-          std::move(passed_dmabuf_fds)));
+          base::Unretained(this), picture_buffer_id, std::move(dmabuf_fds)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(

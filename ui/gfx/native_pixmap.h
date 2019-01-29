@@ -26,6 +26,8 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   NativePixmap() {}
 
   virtual bool AreDmaBufFdsValid() const = 0;
+  // TODO(crbug.com/911370): Remove this because the number of fds will always
+  // be equal to the number of planes.
   virtual size_t GetDmaBufFdCount() const = 0;
   virtual int GetDmaBufFd(size_t plane) const = 0;
   virtual int GetDmaBufPitch(size_t plane) const = 0;

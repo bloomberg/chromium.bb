@@ -554,6 +554,40 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
+  std::vector<base::ScopedFD> dmabuf_fds;
+  int32_t stride = 0;
+#if defined(USE_OZONE)
+  DCHECK_EQ(gpu_memory_buffer_handle.native_pixmap_handle.fds.size(),
+            gpu_memory_buffer_handle.native_pixmap_handle.planes.size());
+
+  // If the driver does not accept as many fds as we received from the client,
+  // we have to check if the additional fds are actually duplicated fds pointing
+  // to previous planes; if so, we can close the duplicates and keep only the
+  // original fd(s).
+  // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
+  // Otherwise, if offset == 0, return error as it may be pointing to a new
+  // plane.
+  for (auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
+    dmabuf_fds.emplace_back(fd.fd);
+  }
+  for (size_t i = dmabuf_fds.size() - 1; i >= egl_image_planes_count_; i--) {
+    if (gpu_memory_buffer_handle.native_pixmap_handle.planes[i].offset == 0) {
+      VLOGF(1) << "The dmabuf fd points to a new buffer, ";
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+    // Drop safely, because this fd is duplicate dmabuf fd pointing to previous
+    // buffer and the appropriate address can be accessed by associated offset.
+    dmabuf_fds.pop_back();
+  }
+
+  stride = gpu_memory_buffer_handle.native_pixmap_handle.planes[0].stride;
+  for (const auto& plane :
+       gpu_memory_buffer_handle.native_pixmap_handle.planes) {
+    DVLOGF(3) << ": offset=" << plane.offset << ", stride=" << plane.stride;
+  }
+#endif
+
   if (output_mode_ != Config::OutputMode::IMPORT) {
     VLOGF(1) << "Cannot import in non-import mode";
     NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -569,20 +603,6 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPicture(
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
-
-  std::vector<base::ScopedFD> dmabuf_fds;
-  int32_t stride = 0;
-#if defined(USE_OZONE)
-  for (const auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
-    DCHECK_NE(fd.fd, -1);
-    dmabuf_fds.push_back(base::ScopedFD(fd.fd));
-  }
-  stride = gpu_memory_buffer_handle.native_pixmap_handle.planes[0].stride;
-  for (const auto& plane :
-       gpu_memory_buffer_handle.native_pixmap_handle.planes) {
-    DVLOGF(3) << ": offset=" << plane.offset << ", stride=" << plane.stride;
-  }
-#endif
 
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE,
