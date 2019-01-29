@@ -19,9 +19,7 @@ enum MediaControlElementType {
   kMediaOverlayCastOnButton,
   kMediaOverflowButton,
   kMediaOverflowList,
-  kMediaScrubbingMessage,
   kMediaDisplayCutoutFullscreenButton,
-  kMediaAnimatedArrowContainer,
   kMediaIgnore
 };
 
