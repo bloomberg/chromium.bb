@@ -514,16 +514,14 @@ class EchoCancellationContainer {
     }
 
     base::Optional<bool> override_aec3 = GetOverrideAec3();
-    if (override_aec3) {
-      bool use_aec3 = override_aec3.value_or(
-          base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
-      if ((use_aec3 && ec_mode_allowed_values_.Contains(
-                           EchoCancellationType::kEchoCancellationAec3)) ||
-          (!use_aec3 && ec_mode_allowed_values_.Contains(
-                            EchoCancellationType::kEchoCancellationAec2))) {
-        return use_aec3 ? EchoCancellationType::kEchoCancellationAec3
-                        : EchoCancellationType::kEchoCancellationAec2;
-      }
+    bool use_aec3 = override_aec3.value_or(
+        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
+    if ((use_aec3 && ec_mode_allowed_values_.Contains(
+                         EchoCancellationType::kEchoCancellationAec3)) ||
+        (!use_aec3 && ec_mode_allowed_values_.Contains(
+                          EchoCancellationType::kEchoCancellationAec2))) {
+      return use_aec3 ? EchoCancellationType::kEchoCancellationAec3
+                      : EchoCancellationType::kEchoCancellationAec2;
     }
 
     // If the previous tie breakers were not enough to determine the selected

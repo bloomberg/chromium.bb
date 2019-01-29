@@ -338,7 +338,7 @@ class MediaStreamConstraintsUtilAudioTest
     const auto& properties = result.audio_processing_properties();
     if (IsDeviceCapture()) {
       EXPECT_EQ(properties.echo_cancellation_type,
-                EchoCancellationType::kEchoCancellationAec2);
+                EchoCancellationType::kEchoCancellationAec3);
     } else {
       EXPECT_EQ(properties.echo_cancellation_type,
                 EchoCancellationType::kEchoCancellationDisabled);
@@ -1134,7 +1134,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactValidDeviceID) {
       expected_echo_cancellation_type =
           has_system_echo_cancellation
               ? EchoCancellationType::kEchoCancellationSystem
-              : EchoCancellationType::kEchoCancellationAec2;
+              : EchoCancellationType::kEchoCancellationAec3;
     }
     EXPECT_EQ(expected_echo_cancellation_type,
               result.audio_processing_properties().echo_cancellation_type);
@@ -1159,7 +1159,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExactGroupID) {
       expected_echo_cancellation_type =
           has_system_echo_cancellation
               ? EchoCancellationType::kEchoCancellationSystem
-              : EchoCancellationType::kEchoCancellationAec2;
+              : EchoCancellationType::kEchoCancellationAec3;
     }
     EXPECT_EQ(expected_echo_cancellation_type,
               result.audio_processing_properties().echo_cancellation_type);
@@ -1192,7 +1192,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, EchoCancellationWithWebRtc) {
         // only the echo_cancellation properties. The other audio processing
         // properties default to false.
         const EchoCancellationType expected_echo_cancellation_type =
-            value ? EchoCancellationType::kEchoCancellationAec2
+            value ? EchoCancellationType::kEchoCancellationAec3
                   : EchoCancellationType::kEchoCancellationDisabled;
         EXPECT_EQ(expected_echo_cancellation_type,
                   properties.echo_cancellation_type);
@@ -1308,7 +1308,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, GoogEchoCancellationWithWebRtc) {
         // echo_cancellation properties. The other audio processing properties
         // use the default values.
         const EchoCancellationType expected_echo_cancellation_type =
-            value ? EchoCancellationType::kEchoCancellationAec2
+            value ? EchoCancellationType::kEchoCancellationAec3
                   : EchoCancellationType::kEchoCancellationDisabled;
         EXPECT_EQ(expected_echo_cancellation_type,
                   properties.echo_cancellation_type);
@@ -1508,7 +1508,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
           if (ec_value) {
             const EchoCancellationType expected_echo_cancellation_type =
                 ec_type_value == blink::WebString()
-                    ? EchoCancellationType::kEchoCancellationAec2
+                    ? EchoCancellationType::kEchoCancellationAec3
                     : GetEchoCancellationTypeFromConstraintString(
                           ec_type_value);
             EXPECT_EQ(expected_echo_cancellation_type,
