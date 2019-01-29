@@ -60,24 +60,27 @@ void Supervisor::SetClientConnectionManagerConstructor(
 
 void Supervisor::Start(content::ServiceManagerConnection* connection,
                        base::OnceClosure closure) {
+  // TODO(alph): Obtain stream_samples from the command line / Finch.
   Start(connection, GetModeForStartup(), GetStackModeForStartup(),
-        GetSamplingRateForStartup(), std::move(closure));
+        true /* stream_samples */, GetSamplingRateForStartup(),
+        std::move(closure));
 }
 
 void Supervisor::Start(content::ServiceManagerConnection* connection,
                        Mode mode,
                        mojom::StackMode stack_mode,
+                       bool stream_samples,
                        uint32_t sampling_rate,
                        base::OnceClosure closure) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!started_);
 
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&Supervisor::StartServiceOnIOThread,
-                                base::Unretained(this),
-                                connection->GetConnector()->Clone(), mode,
-                                stack_mode, sampling_rate, std::move(closure)));
+      ->PostTask(FROM_HERE, base::BindOnce(&Supervisor::StartServiceOnIOThread,
+                                           base::Unretained(this),
+                                           connection->GetConnector()->Clone(),
+                                           mode, stack_mode, stream_samples,
+                                           sampling_rate, std::move(closure)));
 }
 
 Mode Supervisor::GetMode() {
@@ -180,12 +183,13 @@ void Supervisor::StartServiceOnIOThread(
     std::unique_ptr<service_manager::Connector> connector,
     Mode mode,
     mojom::StackMode stack_mode,
+    bool stream_samples,
     uint32_t sampling_rate,
     base::OnceClosure closure) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  controller_.reset(
-      new Controller(std::move(connector), stack_mode, sampling_rate));
+  controller_.reset(new Controller(std::move(connector), stack_mode,
+                                   stream_samples, sampling_rate));
   base::WeakPtr<Controller> controller_weak_ptr = controller_->GetWeakPtr();
 
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})

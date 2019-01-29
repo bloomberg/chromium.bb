@@ -16,10 +16,12 @@ namespace heap_profiling {
 
 Controller::Controller(std::unique_ptr<service_manager::Connector> connector,
                        mojom::StackMode stack_mode,
+                       bool stream_samples,
                        uint32_t sampling_rate)
     : connector_(std::move(connector)),
       sampling_rate_(sampling_rate),
       stack_mode_(stack_mode),
+      stream_samples_(stream_samples),
       weak_factory_(this) {
   DCHECK_NE(sampling_rate, 0u);
 
@@ -50,6 +52,7 @@ void Controller::StartProfilingClient(mojom::ProfilingClientPtr client,
 
   mojom::ProfilingParamsPtr params = mojom::ProfilingParams::New();
   params->sampling_rate = sampling_rate_;
+  params->stream_samples = stream_samples_;
   params->sender_pipe = mojo::WrapPlatformHandle(pipes.PassSender());
   params->stack_mode = stack_mode_;
   heap_profiling_service_->AddProfilingClient(
