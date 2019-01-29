@@ -323,7 +323,7 @@ TEST_F(InkDropImplTest, RippleAndHighlightRecreatedOnSizeChange) {
 typedef InkDropImplAutoHighlightTest InkDropImplCommonAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     InkDropImplCommonAutoHighlightTest,
     testing::Values(InkDropImpl::AutoHighlightMode::NONE,
@@ -371,9 +371,9 @@ TEST_P(InkDropImplCommonAutoHighlightTest,
 typedef InkDropImplAutoHighlightTest InkDropImplNoAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(,
-                        InkDropImplNoAutoHighlightTest,
-                        testing::Values(InkDropImpl::AutoHighlightMode::NONE));
+INSTANTIATE_TEST_SUITE_P(,
+                         InkDropImplNoAutoHighlightTest,
+                         testing::Values(InkDropImpl::AutoHighlightMode::NONE));
 
 TEST_P(InkDropImplNoAutoHighlightTest, VisibleHighlightDuringRippleAnimations) {
   test_api()->SetShouldHighlight(true);
@@ -407,7 +407,7 @@ TEST_P(InkDropImplNoAutoHighlightTest, HiddenHighlightDuringRippleAnimations) {
 typedef InkDropImplAutoHighlightTest InkDropImplHideAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     InkDropImplHideAutoHighlightTest,
     testing::Values(InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE));
@@ -567,7 +567,7 @@ TEST_P(InkDropImplHideAutoHighlightTest, NoCrashDuringRippleTearDown) {
 typedef InkDropImplAutoHighlightTest InkDropImplShowAutoHighlightTest;
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     InkDropImplShowAutoHighlightTest,
     testing::Values(InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE));
