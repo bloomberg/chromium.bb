@@ -43,7 +43,7 @@ class MigratableCreditCard {
     FAILURE_ON_UPLOAD,
   };
 
-  MigratableCreditCard(const CreditCard& credit_card);
+  explicit MigratableCreditCard(const CreditCard& credit_card);
   ~MigratableCreditCard();
 
   CreditCard credit_card() const { return credit_card_; }
@@ -66,6 +66,16 @@ class MigratableCreditCard {
 // Owned by FormDataImporter.
 class LocalCardMigrationManager {
  public:
+  // An observer class used by browsertests that gets notified whenever
+  // particular actions occur.
+  class ObserverForTest {
+   public:
+    virtual void OnDecideToRequestLocalCardMigration() = 0;
+    virtual void OnReceivedGetUploadDetailsResponse() = 0;
+    virtual void OnSentMigrateCardsRequest() = 0;
+    virtual void OnReceivedMigrateCardsResponse() = 0;
+  };
+
   // The parameters should outlive the LocalCardMigrationManager.
   LocalCardMigrationManager(AutofillClient* client,
                             payments::PaymentsClient* payments_client,
@@ -141,6 +151,7 @@ class LocalCardMigrationManager {
   payments::PaymentsClient* payments_client_;
 
  private:
+  friend class LocalCardMigrationBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationPermanentFailure);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
@@ -160,6 +171,11 @@ class LocalCardMigrationManager {
 
   // Finalizes the migration request and calls PaymentsClient.
   void SendMigrateLocalCardsRequest();
+
+  // For testing.
+  void SetEventObserverForTesting(ObserverForTest* observer) {
+    observer_for_testing_ = observer;
+  }
 
   std::unique_ptr<base::DictionaryValue> legal_message_;
 
@@ -186,6 +202,9 @@ class LocalCardMigrationManager {
 
   // Record the triggering source of the local card migration.
   AutofillMetrics::LocalCardMigrationOrigin local_card_migration_origin_;
+
+  // Initialized only during tests.
+  ObserverForTest* observer_for_testing_ = nullptr;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 
