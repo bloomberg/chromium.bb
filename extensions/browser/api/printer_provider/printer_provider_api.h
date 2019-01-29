@@ -81,7 +81,7 @@ class PrinterProviderAPI : public KeyedService {
   // manages printer with id |job.printer_id|.
   // |callback| is passed the print status returned by the extension, and it
   // must not be null.
-  virtual void DispatchPrintRequested(const PrinterProviderPrintJob& job,
+  virtual void DispatchPrintRequested(PrinterProviderPrintJob job,
                                       PrintCallback callback) = 0;
 
   // Returns print job associated with the print request with id |request_id|

@@ -22,6 +22,9 @@ class CloudDeviceDescription {
   ~CloudDeviceDescription();
 
   bool InitFromString(const std::string& json);
+  bool InitFromValue(base::Value value);
+
+  static bool IsValidTicket(const base::Value& value);
 
   std::string ToString() const;
 

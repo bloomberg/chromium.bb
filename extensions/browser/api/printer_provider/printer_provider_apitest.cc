@@ -118,12 +118,12 @@ class PrinterProviderApiTest : public ShellApiTest {
                                    PrinterProviderAPI::PrintCallback callback) {
     PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
-    job.ticket_json = "{}";
+    job.ticket = base::Value(base::Value::Type::DICTIONARY);
     job.content_type = "application/pdf";
 
     PrinterProviderAPIFactory::GetInstance()
         ->GetForBrowserContext(browser_context())
-        ->DispatchPrintRequested(job, std::move(callback));
+        ->DispatchPrintRequested(std::move(job), std::move(callback));
   }
 
   void StartPrintRequestUsingDocumentBytes(
@@ -132,7 +132,7 @@ class PrinterProviderApiTest : public ShellApiTest {
     PrinterProviderPrintJob job;
     job.printer_id = extension_id + ":printer_id";
     job.job_title = base::ASCIIToUTF16("Print job");
-    job.ticket_json = "{}";
+    job.ticket = base::Value(base::Value::Type::DICTIONARY);
     job.content_type = "application/pdf";
     const unsigned char kDocumentBytes[] = {'b', 'y', 't', 'e', 's'};
     job.document_bytes =
@@ -140,7 +140,7 @@ class PrinterProviderApiTest : public ShellApiTest {
 
     PrinterProviderAPIFactory::GetInstance()
         ->GetForBrowserContext(browser_context())
-        ->DispatchPrintRequested(job, std::move(callback));
+        ->DispatchPrintRequested(std::move(job), std::move(callback));
   }
 
   void StartCapabilityRequest(

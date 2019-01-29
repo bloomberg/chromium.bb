@@ -48,9 +48,9 @@ class PrivetPrinterHandler
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
                   const base::string16& job_title,
-                  const std::string& ticket_json,
+                  base::Value ticket,
                   const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
 
   // PrivetLocalPrinterLister::Delegate implementation.
@@ -78,15 +78,15 @@ class PrivetPrinterHandler
   void OnGotCapabilities(const base::DictionaryValue* capabilities);
   void PrintUpdateClient(
       const base::string16& job_title,
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      const std::string& print_ticket,
+      scoped_refptr<base::RefCountedMemory> print_data,
+      base::Value print_ticket,
       const std::string& capabilities,
       const gfx::Size& page_size,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   bool UpdateClient(std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void StartPrint(const base::string16& job_title,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
-                  const std::string& print_ticket,
+                  scoped_refptr<base::RefCountedMemory> print_data,
+                  base::Value print_ticket,
                   const std::string& capabilities,
                   const gfx::Size& page_size);
   void CreateHTTP(

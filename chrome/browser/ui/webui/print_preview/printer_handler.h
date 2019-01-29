@@ -10,15 +10,10 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "chrome/common/buildflags.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class RefCountedMemory;
-class Value;
-}
 
 namespace content {
 class WebContents;
@@ -119,18 +114,17 @@ class PrinterHandler {
   // |destination_id|: The printer to which print job should be sent.
   // |capability|: Capability reported by the printer.
   // |job_title|: The  title used for print job.
-  // |ticket_json|: The print job ticket as JSON string.
+  // |ticket|: The print job ticket.
   // |page_size|: The document page size.
   // |print_data|: The document bytes to print.
   // |callback| should be called in the response to the request.
-  virtual void StartPrint(
-      const std::string& destination_id,
-      const std::string& capability,
-      const base::string16& job_title,
-      const std::string& ticket_json,
-      const gfx::Size& page_size,
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      PrintCallback callback) = 0;
+  virtual void StartPrint(const std::string& destination_id,
+                          const std::string& capability,
+                          const base::string16& job_title,
+                          base::Value ticket,
+                          const gfx::Size& page_size,
+                          scoped_refptr<base::RefCountedMemory> print_data,
+                          PrintCallback callback) = 0;
 };
 
 }  // namespace printing
