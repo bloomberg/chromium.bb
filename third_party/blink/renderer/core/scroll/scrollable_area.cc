@@ -372,7 +372,7 @@ void ScrollableArea::MouseEnteredContentArea() const {
 
 void ScrollableArea::MouseExitedContentArea() const {
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator())
-    scroll_animator->MouseEnteredContentArea();
+    scroll_animator->MouseExitedContentArea();
 }
 
 void ScrollableArea::MouseMovedInContentArea() const {
