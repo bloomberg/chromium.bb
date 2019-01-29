@@ -103,7 +103,10 @@ class Controller : public ScriptExecutorDelegate,
   void StartPeriodicScriptChecks();
   void StopPeriodicScriptChecks();
   void OnPeriodicScriptCheck();
-  void GiveUp(Metrics::DropOutReason reason);
+
+  // Shows the given message and stops the controller with |reason|.
+  void OnFatalError(const std::string& error_message,
+                    Metrics::DropOutReason reason);
 
   // Runs autostart scripts from |runnable_scripts|, if the conditions are
   // right. Returns true if a script was auto-started.
