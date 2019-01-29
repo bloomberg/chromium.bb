@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_WS_GPU_HOST_ARC_CLIENT_H_
-#define SERVICES_WS_GPU_HOST_ARC_CLIENT_H_
+#ifndef SERVICES_WS_GPU_HOST_ARC_GPU_CLIENT_H_
+#define SERVICES_WS_GPU_HOST_ARC_GPU_CLIENT_H_
 
-#include "services/ws/public/mojom/arc.mojom.h"
+#include "services/ws/public/mojom/arc_gpu.mojom.h"
 
 namespace viz {
 namespace mojom {
@@ -18,13 +18,13 @@ namespace gpu_host {
 
 // The implementation that relays requests from clients to the real
 // service implementation in the GPU process over mojom.GpuService.
-class ArcClient : public mojom::Arc {
+class ArcGpuClient : public mojom::ArcGpu {
  public:
-  explicit ArcClient(viz::mojom::GpuService* gpu_service);
-  ~ArcClient() override;
+  explicit ArcGpuClient(viz::mojom::GpuService* gpu_service);
+  ~ArcGpuClient() override;
 
  private:
-  // mojom::Arc overrides:
+  // mojom::ArcGpu overrides:
   void CreateVideoDecodeAccelerator(
       arc::mojom::VideoDecodeAcceleratorRequest vda_request) override;
 
@@ -40,10 +40,10 @@ class ArcClient : public mojom::Arc {
   // The objects these pointers refer to are owned by the GpuHost object.
   viz::mojom::GpuService* gpu_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcClient);
+  DISALLOW_COPY_AND_ASSIGN(ArcGpuClient);
 };
 
 }  // namespace gpu_host
 }  // namespace ws
 
-#endif  // SERVICES_WS_GPU_HOST_ARC_CLIENT_H_
+#endif  // SERVICES_WS_GPU_HOST_ARC_GPU_CLIENT_H_

@@ -41,7 +41,7 @@ mojom("mojom") {
   ]
 
   if (is_chromeos) {
-    sources += [ "arc.mojom" ]
+    sources += [ "arc_gpu.mojom" ]
     public_deps += [ "//components/arc/common:media" ]
   }
 }

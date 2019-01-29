@@ -26,7 +26,7 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/arc.mojom.h"
+#include "services/ws/public/mojom/arc_gpu.mojom.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
@@ -98,7 +98,7 @@ class VideoAcceleratorFactoryServiceViz
     DETACH_FROM_THREAD(thread_checker_);
     auto* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(ws::mojom::kServiceName, &arc_);
+    connector->BindInterface(ws::mojom::kServiceName, &arc_gpu_);
   }
 
   ~VideoAcceleratorFactoryServiceViz() override {
@@ -108,25 +108,25 @@ class VideoAcceleratorFactoryServiceViz
   void CreateDecodeAccelerator(
       mojom::VideoDecodeAcceleratorRequest request) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    arc_->CreateVideoDecodeAccelerator(std::move(request));
+    arc_gpu_->CreateVideoDecodeAccelerator(std::move(request));
   }
 
   void CreateEncodeAccelerator(
       mojom::VideoEncodeAcceleratorRequest request) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    arc_->CreateVideoEncodeAccelerator(std::move(request));
+    arc_gpu_->CreateVideoEncodeAccelerator(std::move(request));
   }
 
   void CreateProtectedBufferAllocator(
       mojom::VideoProtectedBufferAllocatorRequest request) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    arc_->CreateVideoProtectedBufferAllocator(std::move(request));
+    arc_gpu_->CreateVideoProtectedBufferAllocator(std::move(request));
   }
 
  private:
   THREAD_CHECKER(thread_checker_);
 
-  ws::mojom::ArcPtr arc_;
+  ws::mojom::ArcGpuPtr arc_gpu_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryServiceViz);
 };
