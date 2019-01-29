@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "extensions/browser/lazy_context_task_queue.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -29,6 +30,7 @@ LazyContextTaskQueue::ContextInfo::ContextInfo(
       render_process_host(render_process_host),
       service_worker_version_id(service_worker_version_id),
       worker_thread_id(worker_thread_id),
-      url(url) {}
+      url(url),
+      browser_context(render_process_host->GetBrowserContext()) {}
 
 }  // namespace extensions
