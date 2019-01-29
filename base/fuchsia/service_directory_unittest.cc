@@ -68,8 +68,7 @@ TEST_F(ServiceDirectoryTest, DirectoryGone) {
   service_directory_.reset();
 
   fidl::InterfacePtr<testfidl::TestInterface> stub;
-  zx_status_t status =
-      client_context_->ConnectToService(FidlInterfaceRequest(&stub));
+  zx_status_t status = client_context_->ConnectToService(stub.NewRequest());
   EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
 
   VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);

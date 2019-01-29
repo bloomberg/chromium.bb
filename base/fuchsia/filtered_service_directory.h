@@ -8,21 +8,22 @@
 #include "base/fuchsia/service_directory.h"
 
 #include <lib/zx/channel.h>
+#include <memory>
 
 #include "base/macros.h"
 
 namespace base {
 namespace fuchsia {
 
-class ComponentContext;
+class ServiceDirectoryClient;
 
 // ServiceDirectory that uses the supplied ComponentContext to satisfy requests
 // for only a restricted set of services.
 class BASE_EXPORT FilteredServiceDirectory {
  public:
-  // Creates proxy that proxies requests to the specified |component_context|,
+  // Creates proxy that proxies requests to the specified service |directory|,
   // which must outlive the proxy.
-  explicit FilteredServiceDirectory(ComponentContext* component_context);
+  explicit FilteredServiceDirectory(const ServiceDirectoryClient* directory);
   ~FilteredServiceDirectory();
 
   // Adds the specified service to the list of whitelisted services.
@@ -35,11 +36,11 @@ class BASE_EXPORT FilteredServiceDirectory {
  private:
   void HandleRequest(const char* service_name, zx::channel channel);
 
-  ComponentContext* const component_context_;
-  std::unique_ptr<ServiceDirectory> service_directory_;
+  const ServiceDirectoryClient* const directory_;
+  std::unique_ptr<ServiceDirectory> outgoing_directory_;
 
-  // Client side of the channel used by |service_directory_|.
-  zx::channel directory_client_channel_;
+  // Client side of the channel used by |outgoing_directory_|.
+  zx::channel outgoing_directory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredServiceDirectory);
 };
