@@ -53,8 +53,8 @@ class WebServiceWorkerProviderClient {
   virtual void SetController(WebServiceWorkerObjectInfo,
                              bool should_notify_controller_change) = 0;
 
-  virtual void DispatchMessageEvent(WebServiceWorkerObjectInfo,
-                                    TransferableMessage) = 0;
+  virtual void ReceiveMessage(WebServiceWorkerObjectInfo source,
+                              TransferableMessage) = 0;
   virtual void CountFeature(mojom::WebFeature) = 0;
 };
 

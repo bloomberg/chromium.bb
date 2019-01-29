@@ -201,7 +201,7 @@ void WebServiceWorkerProviderImpl::PostMessageToClient(
   if (!provider_client_)
     return;
 
-  provider_client_->DispatchMessageEvent(
+  provider_client_->ReceiveMessage(
       source.To<blink::WebServiceWorkerObjectInfo>(), std::move(message));
 }
 

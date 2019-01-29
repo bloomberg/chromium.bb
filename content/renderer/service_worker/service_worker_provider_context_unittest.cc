@@ -100,9 +100,9 @@ class MockWebServiceWorkerProviderClientImpl
     was_set_controller_called_ = true;
   }
 
-  void DispatchMessageEvent(blink::WebServiceWorkerObjectInfo info,
-                            blink::TransferableMessage message) override {
-    was_dispatch_message_event_called_ = true;
+  void ReceiveMessage(blink::WebServiceWorkerObjectInfo info,
+                      blink::TransferableMessage message) override {
+    was_receive_message_called_ = true;
   }
 
   void CountFeature(blink::mojom::WebFeature feature) override {
@@ -111,8 +111,8 @@ class MockWebServiceWorkerProviderClientImpl
 
   bool was_set_controller_called() const { return was_set_controller_called_; }
 
-  bool was_dispatch_message_event_called() const {
-    return was_dispatch_message_event_called_;
+  bool was_receive_message_called() const {
+    return was_receive_message_called_;
   }
 
   const std::set<blink::mojom::WebFeature>& used_features() const {
@@ -121,7 +121,7 @@ class MockWebServiceWorkerProviderClientImpl
 
  private:
   bool was_set_controller_called_ = false;
-  bool was_dispatch_message_event_called_ = false;
+  bool was_receive_message_called_ = false;
   std::set<blink::mojom::WebFeature> used_features_;
 };
 
@@ -658,7 +658,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
       std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
   auto client = std::make_unique<MockWebServiceWorkerProviderClientImpl>();
   provider_impl->SetClient(client.get());
-  ASSERT_FALSE(client->was_dispatch_message_event_called());
+  ASSERT_FALSE(client->was_receive_message_called());
 
   container_ptr->PostMessageToClient(std::move(object_info),
                                      blink::TransferableMessage());
@@ -666,7 +666,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
 
   // The passed reference should be owned by the provider client (but the
   // reference is immediately released by the mock provider client).
-  EXPECT_TRUE(client->was_dispatch_message_event_called());
+  EXPECT_TRUE(client->was_receive_message_called());
   EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
 }
 

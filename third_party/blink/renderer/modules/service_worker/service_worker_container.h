@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_CONTAINER_H_
 
 #include <memory>
+#include <vector>
+
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/message_from_service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/registration_options.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
@@ -91,8 +94,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
   // WebServiceWorkerProviderClient implementation.
   void SetController(WebServiceWorkerObjectInfo,
                      bool should_notify_controller_change) override;
-  void DispatchMessageEvent(WebServiceWorkerObjectInfo,
-                            TransferableMessage) override;
+  void ReceiveMessage(WebServiceWorkerObjectInfo source,
+                      TransferableMessage) override;
   void CountFeature(mojom::WebFeature) override;
 
   // EventTarget overrides.
@@ -100,6 +103,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
   const AtomicString& InterfaceName() const override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange, kControllerchange);
+  // TODO(falken): Enable the client message queue when onmessage is assigned
+  // to.
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
 
   // Returns the ServiceWorkerRegistration object described by the given info.
@@ -112,12 +117,18 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ServiceWorker* GetOrCreateServiceWorker(WebServiceWorkerObjectInfo);
 
  private:
+  class DomContentLoadedListener;
   class GetRegistrationForReadyCallback;
+
   using ReadyProperty =
       ScriptPromiseProperty<Member<ServiceWorkerContainer>,
                             Member<ServiceWorkerRegistration>,
                             Member<ServiceWorkerRegistration>>;
   ReadyProperty* CreateReadyProperty();
+
+  void EnableClientMessageQueue();
+  void DispatchMessageEvent(WebServiceWorkerObjectInfo source,
+                            TransferableMessage);
 
   std::unique_ptr<WebServiceWorkerProvider> provider_;
   Member<ServiceWorker> controller_;
@@ -137,6 +148,14 @@ class MODULES_EXPORT ServiceWorkerContainer final
               WTF::IntHash<int64_t>,
               WTF::UnsignedWithZeroKeyHashTraits<int64_t>>
       service_worker_objects_;
+
+  // For https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
+  // Rather than pausing/resuming the task runner, we implement enabling the
+  // queue using this flag since the task runner is shared with other task
+  // sources.
+  bool is_client_message_queue_enabled_ = false;
+  std::vector<std::unique_ptr<MessageFromServiceWorker>> queued_messages_;
+  Member<DomContentLoadedListener> dom_content_loaded_observer_;
 };
 
 }  // namespace blink

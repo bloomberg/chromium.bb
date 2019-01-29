@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -66,6 +67,10 @@
 namespace blink {
 
 namespace {
+
+bool HasFiredDomContentLoaded(const Document& document) {
+  return !document.GetTiming().DomContentLoadedEventStart().is_null();
+}
 
 mojom::ServiceWorkerUpdateViaCache ParseUpdateViaCache(const String& value) {
   if (value == "imports")
@@ -121,6 +126,27 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
 };
 
 }  // namespace
+
+class ServiceWorkerContainer::DomContentLoadedListener final
+    : public NativeEventListener {
+ public:
+  void Invoke(ExecutionContext* execution_context, Event* event) override {
+    DCHECK_EQ(event->type(), "DOMContentLoaded");
+
+    Document& document = *To<Document>(execution_context);
+    DCHECK(HasFiredDomContentLoaded(document));
+
+    auto* container =
+        Supplement<Document>::From<ServiceWorkerContainer>(document);
+    if (!container) {
+      // There is no container for some reason, which means there's no message
+      // queue to start. Just abort.
+      return;
+    }
+
+    container->EnableClientMessageQueue();
+  }
+};
 
 class ServiceWorkerContainer::GetRegistrationForReadyCallback
     : public WebServiceWorkerProvider::
@@ -196,6 +222,7 @@ void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
 void ServiceWorkerContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
+  visitor->Trace(dom_content_loaded_observer_);
   visitor->Trace(service_worker_registration_objects_);
   visitor->Trace(service_worker_objects_);
   EventTargetWithInlineData::Trace(visitor);
@@ -473,28 +500,44 @@ void ServiceWorkerContainer::SetController(
     DispatchEvent(*Event::Create(event_type_names::kControllerchange));
 }
 
-void ServiceWorkerContainer::DispatchMessageEvent(
-    WebServiceWorkerObjectInfo info,
-    TransferableMessage message) {
-  if (!GetExecutionContext() || !GetExecutionContext()->ExecutingWindow())
+void ServiceWorkerContainer::ReceiveMessage(WebServiceWorkerObjectInfo source,
+                                            TransferableMessage message) {
+  auto* context = GetExecutionContext();
+  if (!context || !context->ExecutingWindow())
     return;
-  auto msg = ToBlinkTransferableMessage(std::move(message));
-  MessagePortArray* ports =
-      MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
-  ServiceWorker* source =
-      ServiceWorker::From(GetExecutionContext(), std::move(info));
-  MessageEvent* event;
-  if (!msg.locked_agent_cluster_id ||
-      GetExecutionContext()->IsSameAgentCluster(*msg.locked_agent_cluster_id)) {
-    event = MessageEvent::Create(
-        ports, std::move(msg.message),
-        GetExecutionContext()->GetSecurityOrigin()->ToString(),
-        String() /* lastEventId */, source);
-  } else {
-    event = MessageEvent::CreateError(
-        GetExecutionContext()->GetSecurityOrigin()->ToString(), source);
+  // ServiceWorkerContainer is only supported on documents.
+  auto* document = DynamicTo<Document>(context);
+  DCHECK(document);
+
+  if (!is_client_message_queue_enabled_) {
+    if (!HasFiredDomContentLoaded(*document)) {
+      // Wait for DOMContentLoaded. This corresponds to the specification steps
+      // for "Parsing HTML documents": "The end" at
+      // https://html.spec.whatwg.org/multipage/parsing.html#the-end:
+      //
+      // 1. Fire an event named DOMContentLoaded at the Document object, with
+      // its bubbles attribute initialized to true.
+      // 2. Enable the client message queue of the ServiceWorkerContainer object
+      // whose associated service worker client is the Document object's
+      // relevant settings object.
+      if (!dom_content_loaded_observer_) {
+        dom_content_loaded_observer_ =
+            MakeGarbageCollected<DomContentLoadedListener>();
+        document->addEventListener(event_type_names::kDOMContentLoaded,
+                                   dom_content_loaded_observer_.Get(), false);
+      }
+      queued_messages_.emplace_back(std::make_unique<MessageFromServiceWorker>(
+          std::move(source), std::move(message)));
+      // The messages will be dispatched once EnableClientMessageQueue() is
+      // called.
+      return;
+    }
+
+    // DOMContentLoaded was fired already, so enable the queue.
+    EnableClientMessageQueue();
   }
-  EnqueueEvent(*event, TaskType::kServiceWorkerClientMessage);
+
+  DispatchMessageEvent(std::move(source), std::move(message));
 }
 
 void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {
@@ -553,6 +596,43 @@ ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {
   return MakeGarbageCollected<ReadyProperty>(GetExecutionContext(), this,
                                              ReadyProperty::kReady);
+}
+
+void ServiceWorkerContainer::EnableClientMessageQueue() {
+  dom_content_loaded_observer_ = nullptr;
+  is_client_message_queue_enabled_ = true;
+  std::vector<std::unique_ptr<MessageFromServiceWorker>> messages;
+  messages.swap(queued_messages_);
+  for (auto& message : messages) {
+    DispatchMessageEvent(std::move(message->source),
+                         std::move(message->message));
+  }
+}
+
+void ServiceWorkerContainer::DispatchMessageEvent(
+    WebServiceWorkerObjectInfo source,
+    TransferableMessage message) {
+  DCHECK(is_client_message_queue_enabled_);
+
+  auto msg = ToBlinkTransferableMessage(std::move(message));
+  MessagePortArray* ports =
+      MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
+  ServiceWorker* service_worker =
+      ServiceWorker::From(GetExecutionContext(), std::move(source));
+  MessageEvent* event;
+  if (!msg.locked_agent_cluster_id ||
+      GetExecutionContext()->IsSameAgentCluster(*msg.locked_agent_cluster_id)) {
+    event = MessageEvent::Create(
+        ports, std::move(msg.message),
+        GetExecutionContext()->GetSecurityOrigin()->ToString(),
+        String() /* lastEventId */, service_worker);
+  } else {
+    event = MessageEvent::CreateError(
+        GetExecutionContext()->GetSecurityOrigin()->ToString(), service_worker);
+  }
+  // Schedule the event to be dispatched on the correct task source:
+  // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
+  EnqueueEvent(*event, TaskType::kServiceWorkerClientMessage);
 }
 
 }  // namespace blink

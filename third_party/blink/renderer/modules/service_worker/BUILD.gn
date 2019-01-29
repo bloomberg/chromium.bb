@@ -16,6 +16,8 @@ blink_modules_sources("service_worker") {
     "fetch_respond_with_observer.h",
     "install_event.cc",
     "install_event.h",
+    "message_from_service_worker.cc",
+    "message_from_service_worker.h",
     "navigation_preload_manager.cc",
     "navigation_preload_manager.h",
     "navigator_service_worker.cc",
