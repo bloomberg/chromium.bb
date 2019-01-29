@@ -171,7 +171,8 @@ class TestFilter : public TestFilterSpecifyingChild {
       : TestFilterSpecifyingChild(
             browser_context,
             ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id(),
+                                                       browser_context);
   }
 
  protected:
@@ -696,7 +697,8 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
 
   // testing::Test
   void SetUp() override {
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(0);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(0,
+                                                       browser_context_.get());
     HandleScheme("test");
     scoped_refptr<SiteInstance> site_instance =
         SiteInstance::Create(browser_context_.get());

@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -593,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
                               RenderProcessHost* process, const GURL& url) {
     GURL site_url(SiteInstance::GetSiteForURL(browser_context, url));
     GURL lock_url(SiteInstanceImpl::DetermineProcessLockURL(
-        browser_context, isolation_context, url));
+        BrowserOrResourceContext(browser_context), isolation_context, url));
     return RenderProcessHostImpl::IsSuitableHost(
         process, browser_context, isolation_context, site_url, lock_url);
   };

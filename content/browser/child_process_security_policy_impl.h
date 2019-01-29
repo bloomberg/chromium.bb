@@ -43,6 +43,7 @@ class FileSystemURL;
 
 namespace content {
 
+class BrowserContext;
 class IsolationContext;
 class SiteInstance;
 
@@ -165,11 +166,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool IsPseudoScheme(const std::string& scheme);
 
   // Upon creation, child processes should register themselves by calling this
-  // this method exactly once.
-  void Add(int child_id);
+  // this method exactly once. This call must be made on the UI thread.
+  void Add(int child_id, BrowserContext* browser_context);
 
   // Upon destruction, child processes should unregister themselves by calling
-  // this method exactly once.
+  // this method exactly once. This call must be made on the UI thread.
   //
   // Note: Pre-Remove() permissions remain in effect on the IO thread until
   // the task posted to the IO thread by this call runs and removes the entry
@@ -397,7 +398,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   friend struct base::DefaultSingletonTraits<ChildProcessSecurityPolicyImpl>;
 
   // Adds child process during registration.
-  void AddChild(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void AddChild(int child_id, BrowserContext* browser_context)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Determines if certain permissions were granted for a file to given child
   // process. |permissions| is an internally defined bit-set.

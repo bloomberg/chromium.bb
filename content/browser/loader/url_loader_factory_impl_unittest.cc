@@ -84,7 +84,8 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
                 {BrowserThread::IO}))) {
     // Some tests specify request.report_raw_headers, but the RDH checks the
     // CanReadRawCookies permission before enabling it.
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kChildId);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kChildId,
+                                                       browser_context_.get());
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
         kChildId);
 

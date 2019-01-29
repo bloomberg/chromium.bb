@@ -20,6 +20,7 @@
 
 namespace content {
 class BrowsingInstance;
+class BrowserOrResourceContext;
 class RenderProcessHostFactory;
 
 class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
@@ -136,6 +137,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |should_use_effective_urls| defaults to true and specifies whether to
   // resolve |url| to an effective URL (via
   // ContentBrowserClient::GetEffectiveURL()) before determining the site.
+  static GURL GetSiteForURL(const BrowserOrResourceContext& context,
+                            const IsolationContext& isolation_context,
+                            const GURL& url,
+                            bool should_use_effective_urls = true);
+
+  // TODO(acolwell): Remove after all call sites have been updated to use
+  // BrowserOrResourceContext.
   static GURL GetSiteForURL(BrowserContext* context,
                             const IsolationContext& isolation_context,
                             const GURL& url,
@@ -151,7 +159,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Returns the URL to which a process should be locked for the given URL.
   // This is computed similarly to the site URL (see GetSiteForURL), but
   // without resolving effective URLs.
-  static GURL DetermineProcessLockURL(BrowserContext* context,
+  static GURL DetermineProcessLockURL(const BrowserOrResourceContext& context,
                                       const IsolationContext& isolation_context,
                                       const GURL& url);
 

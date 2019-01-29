@@ -16,6 +16,7 @@
 #include "content/browser/isolation_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -194,11 +195,12 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // URL is invalid.
   has_site_ = true;
   BrowserContext* browser_context = browsing_instance_->browser_context();
-  site_ = GetSiteForURL(browser_context, GetIsolationContext(), url,
+  site_ = GetSiteForURL(BrowserOrResourceContext(browser_context),
+                        GetIsolationContext(), url,
                         true /* should_use_effective_urls */);
   original_url_ = url;
-  lock_url_ =
-      DetermineProcessLockURL(browser_context, GetIsolationContext(), url);
+  lock_url_ = DetermineProcessLockURL(BrowserOrResourceContext(browser_context),
+                                      GetIsolationContext(), url);
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -280,7 +282,8 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   GURL site_url = SiteInstanceImpl::GetSiteForURL(
       browsing_instance_->browser_context(), GetIsolationContext(), url);
   GURL origin_lock = DetermineProcessLockURL(
-      browsing_instance_->browser_context(), GetIsolationContext(), url);
+      BrowserOrResourceContext(browsing_instance_->browser_context()),
+      GetIsolationContext(), url);
   return !RenderProcessHostImpl::IsSuitableHost(
       GetProcess(), browsing_instance_->browser_context(),
       GetIsolationContext(), site_url, origin_lock);
@@ -434,6 +437,9 @@ bool SiteInstanceImpl::IsSameWebSite(BrowserContext* browser_context,
 // static
 GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
                                  const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(browser_context);
+
   // By default, GetSiteForURL will resolve |real_url| to an effective URL
   // before computing its site, so set |should_use_effective_urls| to true.
   //
@@ -443,24 +449,33 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   // where needed.  Eventually, GetSiteForURL should always require an
   // IsolationContext to be passed in, and this implementation should just
   // become SiteInstanceImpl::GetSiteForURL.
-  return SiteInstanceImpl::GetSiteForURL(browser_context, IsolationContext(),
-                                         url,
-                                         true /* should_use_effective_urls */);
+  return SiteInstanceImpl::GetSiteForURL(
+      BrowserOrResourceContext(browser_context), IsolationContext(), url,
+      true /* should_use_effective_urls */);
 }
 
 // static
 GURL SiteInstanceImpl::DetermineProcessLockURL(
-    BrowserContext* browser_context,
+    const BrowserOrResourceContext& context,
     const IsolationContext& isolation_context,
     const GURL& url) {
   // For the process lock URL, convert |url| to a site without resolving |url|
   // to an effective URL.
-  return SiteInstanceImpl::GetSiteForURL(browser_context, isolation_context,
-                                         url,
+  return SiteInstanceImpl::GetSiteForURL(context, isolation_context, url,
                                          false /* should_use_effective_urls */);
 }
 
-GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
+// static
+GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* context,
+                                     const IsolationContext& isolation_context,
+                                     const GURL& url,
+                                     bool should_use_effective_urls) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return GetSiteForURL(BrowserOrResourceContext(context), isolation_context,
+                       url, should_use_effective_urls);
+}
+
+GURL SiteInstanceImpl::GetSiteForURL(const BrowserOrResourceContext& context,
                                      const IsolationContext& isolation_context,
                                      const GURL& real_url,
                                      bool should_use_effective_urls) {
@@ -468,8 +483,12 @@ GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
   if (real_url.SchemeIs(kGuestScheme))
     return real_url;
 
+  if (should_use_effective_urls)
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   GURL url = should_use_effective_urls
-                 ? SiteInstanceImpl::GetEffectiveURL(browser_context, real_url)
+                 ? SiteInstanceImpl::GetEffectiveURL(context.ToBrowserContext(),
+                                                     real_url)
                  : real_url;
   url::Origin origin = url::Origin::Create(url);
 
@@ -499,7 +518,7 @@ GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* browser_context,
     // a proper security principal.
     if (should_use_effective_urls && url != real_url) {
       std::string non_translated_site_url(
-          GetSiteForURL(browser_context, isolation_context, real_url,
+          GetSiteForURL(context, isolation_context, real_url,
                         false /* should_use_effective_urls */)
               .spec());
       GURL::Replacements replacements;
@@ -573,6 +592,7 @@ GURL SiteInstanceImpl::GetSiteForOrigin(const url::Origin& origin) {
 // static
 GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
                                        const GURL& url) {
+  DCHECK(browser_context);
   return GetContentClient()->browser()->GetEffectiveURL(browser_context, url);
 }
 

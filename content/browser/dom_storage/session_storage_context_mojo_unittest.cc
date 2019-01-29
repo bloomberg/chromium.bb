@@ -27,6 +27,7 @@
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
@@ -66,7 +67,8 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
     mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &SessionStorageContextMojoTest::OnBadMessage, base::Unretained(this)));
 
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kTestProcessId);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kTestProcessId,
+                                                       &browser_context_);
   }
 
   void TearDown() override {
@@ -160,6 +162,7 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
   bool bad_message_called_ = false;
 
  private:
+  TestBrowserContext browser_context_;
   SessionStorageContextMojo::BackingMode backing_mode_ =
       SessionStorageContextMojo::BackingMode::kRestoreDiskState;
   base::test::ScopedFeatureList features_;
