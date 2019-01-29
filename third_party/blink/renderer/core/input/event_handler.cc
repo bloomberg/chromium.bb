@@ -149,7 +149,6 @@ EventHandler::EventHandler(LocalFrame& frame)
           frame.GetTaskRunner(TaskType::kInternalUserInteraction),
           this,
           &EventHandler::CursorUpdateTimerFired),
-      event_handler_will_reset_capturing_mouse_events_node_(0),
       should_only_fire_drag_over_event_(false),
       event_handler_registry_(
           frame_->IsLocalRoot()
@@ -211,7 +210,6 @@ void EventHandler::Clear() {
   mouse_wheel_event_manager_->Clear();
   last_show_press_timestamp_.reset();
   last_deferred_tap_element_ = nullptr;
-  event_handler_will_reset_capturing_mouse_events_node_ = false;
   should_use_touch_event_adjusted_point_ = false;
   touch_adjustment_result_.unique_event_id = 0;
 }
@@ -609,8 +607,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (mouse_event.button == WebPointerProperties::Button::kNoButton)
     return WebInputEventResult::kHandledSuppressed;
 
-  if (event_handler_will_reset_capturing_mouse_events_node_)
-    capturing_mouse_events_element_ = nullptr;
+  capturing_mouse_events_element_ = nullptr;
   mouse_event_manager_->HandleMousePressEventUpdateStates(mouse_event);
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
@@ -643,10 +640,9 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     mouse_event_manager_->SetCapturesDragging(
         subframe->GetEventHandler().mouse_event_manager_->CapturesDragging());
     if (mouse_event_manager_->MousePressed() &&
-        mouse_event_manager_->CapturesDragging()) {
+        mouse_event_manager_->CapturesDragging())
       capturing_mouse_events_element_ = mev.InnerElement();
-      event_handler_will_reset_capturing_mouse_events_node_ = true;
-    }
+
     mouse_event_manager_->InvalidateClick();
     return result;
   }
@@ -837,8 +833,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
       !(mouse_event.GetModifiers() &
         WebInputEvent::Modifiers::kRelativeMotionEvent)) {
     mouse_event_manager_->ClearDragHeuristicState();
-    if (event_handler_will_reset_capturing_mouse_events_node_)
-      capturing_mouse_events_element_ = nullptr;
+    capturing_mouse_events_element_ = nullptr;
     CaptureMouseEventsToWidget(false);
   }
 
@@ -1036,8 +1031,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
                                                     mouse_event);
   LocalFrame* subframe = event_handling_util::GetTargetSubframe(
       mev, capturing_mouse_events_element_.Get());
-  if (event_handler_will_reset_capturing_mouse_events_node_)
-    capturing_mouse_events_element_ = nullptr;
+  capturing_mouse_events_element_ = nullptr;
   if (subframe)
     return PassMouseReleaseEventToSubframe(mev, subframe);
 
@@ -1232,11 +1226,6 @@ void EventHandler::AnimateSnapFling(base::TimeTicks monotonic_time) {
 
 void EventHandler::RecomputeMouseHoverState() {
   mouse_event_manager_->RecomputeMouseHoverState();
-}
-
-void EventHandler::SetCapturingMouseEventsElement(Element* n) {
-  CaptureMouseEventsToWidget(n);
-  capturing_mouse_events_element_ = n;
 }
 
 Element* EventHandler::EffectiveMouseEventTargetElement(
