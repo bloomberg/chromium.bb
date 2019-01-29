@@ -152,6 +152,23 @@ static_library("arc_base_enums") {
   ]
 }
 
+static_library("arc_base_utils") {
+  sources = [
+    "arc_features.cc",
+    "arc_features.h",
+    "arc_util.cc",
+    "arc_util.h",
+  ]
+
+  deps = [
+    "//ash/public/cpp",
+    "//base",
+    "//chromeos:chromeos_constants",
+    "//chromeos/dbus",
+    "//ui/aura",
+  ]
+}
+
 static_library("arc_base") {
   # TODO(hidehiko): Revisit here and move back some files to "arc"
   # on completion to move ArcSession task to ArcSessionManager.
@@ -167,8 +184,6 @@ static_library("arc_base") {
     "arc_container_client_adapter.h",
     "arc_data_remover.cc",
     "arc_data_remover.h",
-    "arc_features.cc",
-    "arc_features.h",
     "arc_features_parser.cc",
     "arc_features_parser.h",
     "arc_service_manager.cc",
@@ -179,8 +194,6 @@ static_library("arc_base") {
     "arc_session_impl.h",
     "arc_session_runner.cc",
     "arc_session_runner.h",
-    "arc_util.cc",
-    "arc_util.h",
     "arc_vm_client_adapter.cc",
     "arc_vm_client_adapter.h",
   ]
@@ -204,6 +217,7 @@ static_library("arc_base") {
 
   public_deps = [
     ":arc_base_enums",
+    ":arc_base_utils",
     ":connection_holder",
     ":prefs",
     "//components/arc/common",
