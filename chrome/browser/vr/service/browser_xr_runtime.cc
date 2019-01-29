@@ -32,6 +32,13 @@ BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRRuntimePtr runtime,
 
 BrowserXRRuntime::~BrowserXRRuntime() = default;
 
+void BrowserXRRuntime::ExitVrFromPresentingRendererDevice() {
+  auto* xr_device = GetPresentingRendererDevice();
+  if (xr_device) {
+    xr_device->ExitPresent();
+  }
+}
+
 void BrowserXRRuntime::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
   bool had_display_info = !!display_info_;

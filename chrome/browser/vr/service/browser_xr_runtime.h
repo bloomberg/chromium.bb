@@ -47,6 +47,8 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
                             device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntime() override;
 
+  void ExitVrFromPresentingRendererDevice();
+
   device::mojom::XRRuntime* GetRuntime() { return runtime_.get(); }
 
   // Methods called by XRDeviceImpl to interact with the runtime's device.

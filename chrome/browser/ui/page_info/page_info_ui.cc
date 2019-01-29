@@ -231,6 +231,9 @@ PageInfoUI::IdentityInfo::IdentityInfo()
 
 PageInfoUI::IdentityInfo::~IdentityInfo() {}
 
+PageInfoUI::PageFeatureInfo::PageFeatureInfo()
+    : is_vr_presentation_in_headset(false) {}
+
 std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
@@ -602,6 +605,13 @@ const gfx::ImageSkia PageInfoUI::GetSiteSettingsIcon(
     const SkColor related_text_color) {
   return gfx::CreateVectorIcon(
       kSettingsIcon, kVectorIconSize,
+      color_utils::DeriveDefaultIconColor(related_text_color));
+}
+
+// static
+const gfx::ImageSkia PageInfoUI::GetVrSettingsIcon(SkColor related_text_color) {
+  return gfx::CreateVectorIcon(
+      kVrHeadsetIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 #endif

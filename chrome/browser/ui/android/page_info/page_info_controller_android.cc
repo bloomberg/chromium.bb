@@ -99,6 +99,11 @@ void PageInfoControllerAndroid::SetCookieInfo(
   NOTIMPLEMENTED();
 }
 
+void PageInfoControllerAndroid::SetPageFeatureInfo(
+    const PageFeatureInfo& info) {
+  NOTIMPLEMENTED();
+}
+
 void PageInfoControllerAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     ChosenObjectInfoList chosen_object_info_list) {

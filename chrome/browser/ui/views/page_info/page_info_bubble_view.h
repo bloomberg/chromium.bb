@@ -80,6 +80,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
+    VIEW_ID_PAGE_INFO_BUTTON_END_VR,
   };
 
   // Creates the appropriate page info bubble for the given |url|.
@@ -135,6 +136,12 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetPageFeatureInfo(const PageFeatureInfo& info) override;
+
+  void LayoutPermissionsLikeUiRow(views::GridLayout* layout,
+                                  bool is_list_empty,
+                                  int column_id);
+
 #if defined(SAFE_BROWSING_DB_LOCAL)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
@@ -169,6 +176,10 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   // The view that contains the "Permissions" table of the bubble.
   views::View* permissions_view_;
+
+  // The view that contains ui related to features on a page, like a presenting
+  // VR page.
+  views::View* page_feature_info_view_;
 
   // The certificate provided by the site, if one exists.
   scoped_refptr<net::X509Certificate> certificate_;

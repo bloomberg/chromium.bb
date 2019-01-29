@@ -37,6 +37,8 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   static bool IsUiSuppressedInVr(content::WebContents* contents,
                                  UiSuppressedElement element);
 
+  static void ExitVrPresentation();
+
  private:
   explicit VrTabHelper(content::WebContents* contents);
 

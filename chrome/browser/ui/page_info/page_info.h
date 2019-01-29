@@ -203,6 +203,10 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // in the |ui_|.
   void PresentSiteIdentity();
 
+  // Presents feature related info in the |ui_|; like, if VR content is being
+  // presented in a headset.
+  void PresentPageFeatureInfo();
+
   // Helper function to get the site identification status and details by
   // malicious content status.
   void GetSiteIdentityByMaliciousContentStatus(

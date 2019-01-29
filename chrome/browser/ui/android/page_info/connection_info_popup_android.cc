@@ -148,6 +148,11 @@ void ConnectionInfoPopupAndroid::SetCookieInfo(
   NOTIMPLEMENTED();
 }
 
+void ConnectionInfoPopupAndroid::SetPageFeatureInfo(
+    const PageFeatureInfo& info) {
+  NOTIMPLEMENTED();
+}
+
 void ConnectionInfoPopupAndroid::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     ChosenObjectInfoList chosen_object_info_list) {

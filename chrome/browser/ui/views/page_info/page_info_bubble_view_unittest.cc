@@ -75,12 +75,12 @@ class PageInfoBubbleViewTestApi {
   // Returns the number of cookies shown on the link or button to open the
   // collected cookies dialog. This should always be shown.
   base::string16 GetCookiesLinkText() {
-      EXPECT_TRUE(view_->cookie_button_);
-      ui::AXNodeData data;
-      view_->cookie_button_->GetAccessibleNodeData(&data);
-      std::string name;
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
-      return base::ASCIIToUTF16(name);
+    EXPECT_TRUE(view_->cookie_button_);
+    ui::AXNodeData data;
+    view_->cookie_button_->GetAccessibleNodeData(&data);
+    std::string name;
+    data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
+    return base::ASCIIToUTF16(name);
   }
 
   base::string16 GetPermissionLabelTextAt(int index) {
@@ -368,7 +368,12 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
 // Test that updating the number of cookies used by the current page doesn't add
 // any extra views to Page Info.
 TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+  const int kExpectedChildren = 6;
+#else
   const int kExpectedChildren = 5;
+#endif
+
   EXPECT_EQ(kExpectedChildren, api_->view()->child_count());
 
   // Create a fake list of cookies.

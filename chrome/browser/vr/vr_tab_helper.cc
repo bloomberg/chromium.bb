@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -91,6 +92,13 @@ void VrTabHelper::SetIsContentDisplayedInHeadset(content::WebContents* contents,
     }
 #endif
   }
+}
+
+/* static */
+void VrTabHelper::ExitVrPresentation() {
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+  XRRuntimeManager::ExitImmersivePresentation();
+#endif
 }
 
 void VrTabHelper::SetIsContentDisplayedInHeadset(bool state) {
