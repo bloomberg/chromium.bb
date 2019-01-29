@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -406,6 +407,11 @@ void HeapVectorBacking<T, Traits>::Finalize(void* pointer) {
       !std::is_trivially_destructible<T>::value,
       "Finalization of trivially destructible classes should not happen.");
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
+
+  // TODO(keishi): Speculative check for crbug.com/918064
+  CHECK(!ThreadState::Current()->Heap().Compaction()->RangeHasInteriors(
+      header->Payload(), header->PayloadSize()));
+
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
   size_t length = header->PayloadSize() / sizeof(T);
@@ -435,6 +441,9 @@ void HeapHashTableBacking<Table>::Finalize(void* pointer) {
       !std::is_trivially_destructible<Value>::value,
       "Finalization of trivially destructible classes should not happen.");
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(pointer);
+  // TODO(keishi): Speculative check for crbug.com/918064
+  CHECK(!ThreadState::Current()->Heap().Compaction()->RangeHasInteriors(
+      header->Payload(), header->PayloadSize()));
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
   size_t length = header->PayloadSize() / sizeof(Value);
