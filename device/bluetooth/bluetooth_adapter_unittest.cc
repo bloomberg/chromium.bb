@@ -1794,12 +1794,12 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothTestWinrt,
     ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothTestWinrtOnly,
     ::testing::Values(true));
