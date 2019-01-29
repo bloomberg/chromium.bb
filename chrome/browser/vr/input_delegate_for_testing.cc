@@ -35,7 +35,8 @@ void SetOriginAndTransform(vr::ControllerModel* model) {
 
 namespace vr {
 
-InputDelegateForTesting::InputDelegateForTesting(UiInterface* ui) : ui_(ui) {
+InputDelegateForTesting::InputDelegateForTesting(UiInterface* ui)
+    : ui_(ui), last_touchpad_timestamp_(base::TimeTicks()) {
   gesture_detector_ = std::make_unique<GestureDetector>();
   cached_controller_model_.laser_direction = kForwardVector;
   SetOriginAndTransform(&cached_controller_model_);
@@ -128,6 +129,9 @@ void InputDelegateForTesting::UpdateController(const gfx::Transform& head_pose,
   }
   cached_controller_model_.last_orientation_timestamp = current_time;
   cached_controller_model_.last_button_timestamp = current_time;
+  if (cached_controller_model_.touching_touchpad) {
+    last_touchpad_timestamp_ = current_time;
+  }
 }
 
 ControllerModel InputDelegateForTesting::GetControllerModel(
@@ -138,7 +142,8 @@ ControllerModel InputDelegateForTesting::GetControllerModel(
 InputEventList InputDelegateForTesting::GetGestures(
     base::TimeTicks current_time) {
   PlatformControllerForTesting controller(&previous_controller_model_,
-                                          &cached_controller_model_);
+                                          &cached_controller_model_,
+                                          last_touchpad_timestamp_);
   return gesture_detector_->DetectGestures(controller, current_time);
 }
 

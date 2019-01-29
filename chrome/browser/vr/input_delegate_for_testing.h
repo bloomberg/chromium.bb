@@ -44,6 +44,7 @@ class InputDelegateForTesting : public InputDelegate {
   std::queue<ControllerModel> controller_model_queue_;
   ControllerModel cached_controller_model_;
   ControllerModel previous_controller_model_;
+  base::TimeTicks last_touchpad_timestamp_;
   std::unique_ptr<GestureDetector> gesture_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDelegateForTesting);

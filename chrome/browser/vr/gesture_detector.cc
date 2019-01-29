@@ -133,8 +133,32 @@ std::unique_ptr<InputEvent> GestureDetector::GetGestureFromTouchInfo(
       break;
   }
 
-  if (gesture)
-    gesture->set_time_stamp(touch_point.timestamp);
+  if (gesture) {
+    // |touch_point.timestamp| will only update when the touchpad is actually
+    // being touched. This causes issues with the three extra scroll updates we
+    // send after the touchpad is no longer touched (one in the SCROLLING state,
+    // two in the POST_SCROLL state). The timestamps for scroll events need to
+    // be monotonically increasing, but since we generate two scroll updates
+    // per frame, with the second being slightly in the future from the "real"
+    // timestamp, if the timestamp we provide does not increase each frame,
+    // we end up sending the timestamp sequence A -> A + 1 -> A, which hits
+    // a DCHECK because the second A timestamp is received after the (larger)
+    // A + 1.
+    // We also can't just pass |last_timestamp_| because it appears to be offset
+    // from the touchpad timestamp by ~10ms. Instead, keep track of the
+    // |last_timestamp_| value we had the last time the touchpad as actually
+    // touched, and add the difference between the current |last_timestamp_| and
+    // that to the |last_touch_timestamp_| to get a good approximation of the
+    // current timestamp in the touch timestamp's time base.
+    if (should_fake_timestamp_) {
+      auto fake_timestamp =
+          last_touch_timestamp_ +
+          (last_timestamp_ - last_touch_timestamp_local_timebase_);
+      gesture->set_time_stamp(fake_timestamp);
+    } else {
+      gesture->set_time_stamp(touch_point.timestamp);
+    }
+  }
 
   return gesture;
 }
@@ -231,6 +255,7 @@ bool GestureDetector::UpdateCurrentTouchPoint(
 
 void GestureDetector::ExtrapolateTouchPoint(TouchPoint* touch_point,
                                             base::TimeTicks current_timestamp) {
+  should_fake_timestamp_ = false;
   const bool effectively_scrolling =
       state_->label == SCROLLING || state_->label == POST_SCROLL;
   if (effectively_scrolling && extrapolated_touch_ < kMaxNumOfExtrapolations &&
@@ -243,11 +268,17 @@ void GestureDetector::ExtrapolateTouchPoint(TouchPoint* touch_point,
                                 state_->overall_velocity.x() * duration);
     touch_point->position.set_y(state_->cur_touch_point.position.y() +
                                 state_->overall_velocity.y() * duration);
+    if (last_touch_timestamp_ == touch_point->timestamp) {
+      should_fake_timestamp_ = true;
+    }
   } else {
     if (extrapolated_touch_ == kMaxNumOfExtrapolations) {
       state_->overall_velocity = {0, 0};
     }
     extrapolated_touch_ = 0;
+  }
+  if (touch_point->timestamp > last_touch_timestamp_) {
+    last_touch_timestamp_local_timebase_ = current_timestamp;
   }
   last_touch_timestamp_ = touch_point->timestamp;
   last_timestamp_ = current_timestamp;
