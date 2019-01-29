@@ -23,6 +23,7 @@
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace viz {
 
@@ -123,6 +124,7 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     uint32_t usage) {
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   shared_images_.insert(mailbox);
+  most_recent_size_ = size;
   return mailbox;
 }
 
@@ -144,6 +146,7 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     uint32_t usage) {
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
   shared_images_.insert(mailbox);
+  most_recent_size_ = gpu_memory_buffer->GetSize();
   return mailbox;
 }
 
@@ -162,6 +165,11 @@ void TestSharedImageInterface::DestroySharedImage(
 gpu::SyncToken TestSharedImageInterface::GenUnverifiedSyncToken() {
   return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferId(), ++release_id_);
+}
+
+bool TestSharedImageInterface::CheckSharedImageExists(
+    const gpu::Mailbox& mailbox) const {
+  return shared_images_.contains(mailbox);
 }
 
 // static

@@ -524,7 +524,11 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       image_factory_(image_factory) {
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
-  if (workarounds.max_texture_size) {
+  // When the passthrough command decoder is used, the max_texture_size
+  // workaround is implemented by ANGLE. Trying to adjust the max size here
+  // would cause discrepency between what we think the max size is and what
+  // ANGLE tells the clients.
+  if (!use_passthrough_ && workarounds.max_texture_size) {
     max_texture_size_ =
         std::min(max_texture_size_, workarounds.max_texture_size);
   }
@@ -825,22 +829,29 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
   GLuint service_id = MakeTextureAndSetParameters(
       api, target, for_framebuffer_attachment && texture_usage_angle_);
+  bool is_rgb_emulation = usage & SHARED_IMAGE_USAGE_RGB_EMULATION;
 
-  // TODO(piman): RGB emulation
   gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
   if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-    if (!image->BindTexImage(target)) {
+    bool is_bound = false;
+    if (is_rgb_emulation)
+      is_bound = image->BindTexImageWithInternalformat(target, GL_RGB);
+    else
+      is_bound = image->BindTexImage(target);
+    if (is_bound) {
+      image_state = gles2::Texture::BOUND;
+    } else {
       LOG(ERROR) << "Failed to bind image to target.";
       api->glDeleteTexturesFn(1, &service_id);
       return nullptr;
     }
-    image_state = gles2::Texture::BOUND;
   } else if (use_passthrough_) {
     image->CopyTexImage(target);
     image_state = gles2::Texture::COPIED;
   }
 
-  GLuint internal_format = image->GetInternalFormat();
+  GLuint internal_format =
+      is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
   GLenum gl_format =
       gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
   GLenum gl_type =

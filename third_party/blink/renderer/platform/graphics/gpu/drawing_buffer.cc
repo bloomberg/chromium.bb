@@ -43,8 +43,10 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -438,6 +440,10 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
         size_.Height(), GL_FALSE, GL_FALSE, GL_FALSE);
   }
 
+  // Signal we will no longer access |color_buffer_for_mailbox| before exporting
+  // it.
+  gl_->EndSharedImageAccessDirectCHROMIUM(color_buffer_for_mailbox->texture_id);
+
   // Put colorBufferForMailbox into its mailbox, and populate its
   // produceSyncToken with that point.
   {
@@ -460,7 +466,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
 
   // Populate the output mailbox and callback.
   {
-    bool is_overlay_candidate = color_buffer_for_mailbox->image_id != 0;
+    bool is_overlay_candidate = !!color_buffer_for_mailbox->gpu_memory_buffer;
     *out_resource = viz::TransferableResource::MakeGLOverlay(
         color_buffer_for_mailbox->mailbox, GL_LINEAR, texture_target_,
         color_buffer_for_mailbox->produce_sync_token, gfx::Size(size_),
@@ -567,7 +573,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
   // TODO(danakj): Instead of using PrepareTransferableResourceInternal(), we
   // could just use the actual texture id and avoid needing to produce/consume a
   // mailbox.
-  GLuint texture_id = gl_->CreateAndConsumeTextureCHROMIUM(
+  GLuint texture_id = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
       transferable_resource.mailbox_holder.mailbox.name);
 
   if (out_release_callback) {
@@ -597,7 +603,8 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
   // in DrawingBuffer.
   return AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
       sk_image_mailbox, sk_image_sync_token, texture_id,
-      context_provider_->GetWeakPtr(), size_);
+      context_provider_->GetWeakPtr(), size_,
+      AcceleratedStaticBitmapImage::MailboxType::kSharedImageId);
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateOrRecycleColorBuffer() {
@@ -608,6 +615,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateOrRecycleColorBuf
     if (recycled->receive_sync_token.HasData())
       gl_->WaitSyncTokenCHROMIUM(recycled->receive_sync_token.GetData());
     DCHECK(recycled->size == size_);
+    gl_->BeginSharedImageAccessDirectCHROMIUM(
+        recycled->texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
     return recycled;
   }
   return CreateColorBuffer(size_);
@@ -632,49 +641,24 @@ DrawingBuffer::ColorBuffer::ColorBuffer(
     DrawingBuffer* drawing_buffer,
     const IntSize& size,
     GLuint texture_id,
-    GLuint image_id,
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer)
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
+    gpu::Mailbox mailbox)
     : drawing_buffer(drawing_buffer),
       size(size),
       texture_id(texture_id),
-      image_id(image_id),
-      gpu_memory_buffer(std::move(gpu_memory_buffer)) {
-  gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
-  gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
-}
+      gpu_memory_buffer(std::move(gpu_memory_buffer)),
+      mailbox(mailbox) {}
 
 DrawingBuffer::ColorBuffer::~ColorBuffer() {
   gpu::gles2::GLES2Interface* gl = drawing_buffer->gl_;
-  GLenum texture_target = drawing_buffer->texture_target_;
-  if (receive_sync_token.HasData())
-    gl->WaitSyncTokenCHROMIUM(receive_sync_token.GetConstData());
-  if (image_id) {
-    gl->BindTexture(texture_target, texture_id);
-    gl->ReleaseTexImage2DCHROMIUM(texture_target, image_id);
-    if (rgb_workaround_texture_id) {
-      gl->BindTexture(texture_target, rgb_workaround_texture_id);
-      gl->ReleaseTexImage2DCHROMIUM(texture_target, image_id);
-    }
-    gl->DestroyImageCHROMIUM(image_id);
-    switch (texture_target) {
-      case GL_TEXTURE_2D:
-        // Restore the texture binding for GL_TEXTURE_2D, since the client will
-        // expect the previous state.
-        if (drawing_buffer->client_)
-          drawing_buffer->client_->DrawingBufferClientRestoreTexture2DBinding();
-        break;
-      case GC3D_TEXTURE_RECTANGLE_ARB:
-        // Rectangle textures aren't exposed to WebGL, so don't bother
-        // restoring this state (there is no meaningful way to restore it).
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-    gpu_memory_buffer.reset();
-  }
+  gpu::SharedImageInterface* sii =
+      drawing_buffer->ContextProvider()->SharedImageInterface();
+
+  sii->DestroySharedImage(receive_sync_token, mailbox);
+  gpu_memory_buffer.reset();
   gl->DeleteTextures(1, &texture_id);
   if (rgb_workaround_texture_id) {
+    sii->DestroySharedImage(receive_sync_token, rgb_workaround_mailbox);
     // Avoid deleting this texture if it was unused.
     gl->DeleteTextures(1, &rgb_workaround_texture_id);
   }
@@ -866,25 +850,23 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   // through a mailbox first.
   gpu::Mailbox mailbox;
   gpu::SyncToken produce_sync_token;
+  GLuint texture_id_to_restore_access = 0;
   if (src_buffer == kFrontBuffer && front_color_buffer_) {
     mailbox = front_color_buffer_->mailbox;
     produce_sync_token = front_color_buffer_->produce_sync_token;
   } else {
+    GLuint texture_id = 0;
     if (premultiplied_alpha_false_texture_) {
-      // If this texture exists, then it holds the rendering results at this
-      // point, rather than back_color_buffer_. back_color_buffer_ receives the
-      // contents of this texture later, premultiplying alpha into the color
-      // channels. We lazily produce a mailbox for it.
-      if (premultiplied_alpha_false_mailbox_.IsZero()) {
-        src_gl->ProduceTextureDirectCHROMIUM(
-            premultiplied_alpha_false_texture_,
-            premultiplied_alpha_false_mailbox_.name);
-      }
+      DCHECK(!premultiplied_alpha_false_mailbox_.IsZero());
       mailbox = premultiplied_alpha_false_mailbox_;
+      texture_id = premultiplied_alpha_false_texture_;
     } else {
       mailbox = back_color_buffer_->mailbox;
+      texture_id = back_color_buffer_->texture_id;
     }
+    src_gl->EndSharedImageAccessDirectCHROMIUM(texture_id);
     src_gl->GenUnverifiedSyncTokenCHROMIUM(produce_sync_token.GetData());
+    texture_id_to_restore_access = texture_id;
   }
 
   if (!produce_sync_token.HasData()) {
@@ -893,7 +875,9 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   }
 
   dst_gl->WaitSyncTokenCHROMIUM(produce_sync_token.GetConstData());
-  GLuint src_texture = dst_gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+
+  GLuint src_texture =
+      dst_gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
 
   GLboolean unpack_premultiply_alpha_needed = GL_FALSE;
   GLboolean unpack_unpremultiply_alpha_needed = GL_FALSE;
@@ -902,19 +886,25 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   else if (want_alpha_channel_ && !premultiplied_alpha_ && premultiply_alpha)
     unpack_premultiply_alpha_needed = GL_TRUE;
 
+  dst_gl->BeginSharedImageAccessDirectCHROMIUM(
+      src_texture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   dst_gl->CopySubTextureCHROMIUM(
       src_texture, 0, dst_texture_target, dst_texture, 0,
       dst_texture_offset.X(), dst_texture_offset.Y(), src_sub_rectangle.X(),
       src_sub_rectangle.Y(), src_sub_rectangle.Width(),
       src_sub_rectangle.Height(), flip_y, unpack_premultiply_alpha_needed,
       unpack_unpremultiply_alpha_needed);
-
+  dst_gl->EndSharedImageAccessDirectCHROMIUM(src_texture);
   dst_gl->DeleteTextures(1, &src_texture);
 
   gpu::SyncToken sync_token;
   dst_gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   src_gl->WaitSyncTokenCHROMIUM(sync_token.GetData());
-
+  if (texture_id_to_restore_access) {
+    src_gl->BeginSharedImageAccessDirectCHROMIUM(
+        texture_id_to_restore_access,
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  }
   return true;
 }
 
@@ -977,7 +967,12 @@ void DrawingBuffer::BeginDestruction() {
     gl_->DeleteRenderbuffers(1, &depth_stencil_buffer_);
 
   if (premultiplied_alpha_false_texture_) {
+    gl_->EndSharedImageAccessDirectCHROMIUM(premultiplied_alpha_false_texture_);
     gl_->DeleteTextures(1, &premultiplied_alpha_false_texture_);
+    gpu::SharedImageInterface* sii = ContextProvider()->SharedImageInterface();
+    gpu::SyncToken sync_token;
+    gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+    sii->DestroySharedImage(sync_token, premultiplied_alpha_false_mailbox_);
     premultiplied_alpha_false_mailbox_.SetZero();
   }
 
@@ -1009,42 +1004,36 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
   // via CopySubTextureCHROMIUM, performing the premultiplication step then.
   if (ShouldUseChromiumImage() && allocate_alpha_channel_ &&
       !premultiplied_alpha_) {
+    gpu::SharedImageInterface* sii = ContextProvider()->SharedImageInterface();
     state_restorer_->SetTextureBindingDirty();
     // TODO(kbr): unify with code in CreateColorBuffer.
     if (premultiplied_alpha_false_texture_) {
+      gl_->EndSharedImageAccessDirectCHROMIUM(
+          premultiplied_alpha_false_texture_);
       gl_->DeleteTextures(1, &premultiplied_alpha_false_texture_);
+      gpu::SyncToken sync_token;
+      gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+      sii->DestroySharedImage(sync_token, premultiplied_alpha_false_mailbox_);
       premultiplied_alpha_false_mailbox_.SetZero();
       premultiplied_alpha_false_texture_ = 0;
     }
-    gl_->GenTextures(1, &premultiplied_alpha_false_texture_);
-    // The command decoder forbids allocating "real" OpenGL textures with the
-    // GL_TEXTURE_RECTANGLE_ARB target. Allocate this temporary texture with
-    // type GL_TEXTURE_2D all the time. CopySubTextureCHROMIUM can handle
-    // copying between 2D and rectangular textures.
-    gl_->BindTexture(GL_TEXTURE_2D, premultiplied_alpha_false_texture_);
-    if (storage_texture_supported_) {
-      GLenum internal_storage_format = GL_RGBA8;
-      if (use_half_float_storage_) {
-        internal_storage_format = GL_RGBA16F_EXT;
-      }
-      gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_storage_format,
-                           size.Width(), size.Height());
-    } else {
-      GLenum internal_format = GL_RGBA;
-      GLenum format = internal_format;
-      GLenum data_type = GL_UNSIGNED_BYTE;
-      if (use_half_float_storage_) {
-        if (webgl_version_ > kWebGL1) {
-          internal_format = GL_RGBA16F;
-          data_type = GL_HALF_FLOAT;
-        } else {
-          internal_format = GL_RGBA;
-          data_type = GL_HALF_FLOAT_OES;
-        }
-      }
-      gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format, size.Width(),
-                      size.Height(), 0, format, data_type, nullptr);
-    }
+    viz::ResourceFormat format;
+    if (use_half_float_storage_)
+      format = viz::RGBA_F16;
+    else
+      format = viz::RGBA_8888;
+    premultiplied_alpha_false_mailbox_ = sii->CreateSharedImage(
+        format, static_cast<gfx::Size>(size), storage_color_space_,
+        gpu::SHARED_IMAGE_USAGE_GLES2 |
+            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT);
+    gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
+    gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+    premultiplied_alpha_false_texture_ =
+        gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
+            premultiplied_alpha_false_mailbox_.name);
+    gl_->BeginSharedImageAccessDirectCHROMIUM(
+        premultiplied_alpha_false_texture_,
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   }
 
   AttachColorBufferToReadFramebuffer();
@@ -1413,12 +1402,14 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   state_restorer_->SetFramebufferBindingDirty();
   state_restorer_->SetTextureBindingDirty();
 
-  // Select the parameters for the texture object. Allocate the backing
-  // GpuMemoryBuffer and GLImage, if one is going to be used.
-  GLuint image_id = 0;
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+  gpu::SharedImageInterface* sii = ContextProvider()->SharedImageInterface();
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       Platform::Current()->GetGpuMemoryBufferManager();
+
+  gpu::Mailbox mailbox;
+  GLuint texture_id = 0;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+
   if (ShouldUseChromiumImage()) {
     gfx::BufferFormat buffer_format;
     if (allocate_alpha_channel_) {
@@ -1433,67 +1424,57 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
         buffer_format = gfx::BufferFormat::BGRX_8888;
       }
     }
+    // TODO(crbug.com/911176): When RGB emulation is not needed, we should use
+    // the non-GMB CreateSharedImage with gpu::SHARED_IMAGE_USAGE_SCANOUT in
+    // order to allocate the GMB service-side and avoid a synchronous round-trip
+    // to the browser process here.
     gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
         gfx::Size(size), buffer_format, gfx::BufferUsage::SCANOUT,
         gpu::kNullSurfaceHandle);
+
     if (gpu_memory_buffer) {
-      gpu_memory_buffer->SetColorSpace(storage_color_space_);
-      const GLenum gl_format = allocate_alpha_channel_ ? GL_RGBA : GL_RGB;
-
-      image_id =
-          gl_->CreateImageCHROMIUM(gpu_memory_buffer->AsClientBuffer(),
-                                   size.Width(), size.Height(), gl_format);
-      if (!image_id)
-        gpu_memory_buffer.reset();
+      mailbox = sii->CreateSharedImage(
+          gpu_memory_buffer.get(), gpu_memory_buffer_manager,
+          storage_color_space_,
+          gpu::SHARED_IMAGE_USAGE_GLES2 |
+              gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+              gpu::SHARED_IMAGE_USAGE_DISPLAY |
+              gpu::SHARED_IMAGE_USAGE_SCANOUT);
     }
   }
 
-  // Allocate the texture for this object.
-  GLuint texture_id = 0;
-  {
-    gl_->GenTextures(1, &texture_id);
-    gl_->BindTexture(texture_target_, texture_id);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  }
-
-  // If this is GpuMemoryBuffer-backed, then bind the texture to the
-  // GpuMemoryBuffer's GLImage. Otherwise, allocate ordinary texture storage.
-  if (image_id) {
-    gl_->BindTexImage2DCHROMIUM(texture_target_, image_id);
-  } else {
-    if (storage_texture_supported_) {
-      GLenum internal_storage_format =
-          allocate_alpha_channel_ ? GL_RGBA8 : GL_RGB8;
-      if (use_half_float_storage_) {
-        DCHECK(want_alpha_channel_);
-        internal_storage_format = GL_RGBA16F_EXT;
-      }
-      gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_storage_format,
-                           size.Width(), size.Height());
+  // Create a normal SharedImage if GpuMemoryBuffer is not needed or the
+  // allocation above failed.
+  if (!gpu_memory_buffer) {
+    viz::ResourceFormat format;
+    if (allocate_alpha_channel_) {
+      if (use_half_float_storage_)
+        format = viz::RGBA_F16;
+      else
+        format = viz::RGBA_8888;
     } else {
-      GLenum internal_format = allocate_alpha_channel_ ? GL_RGBA : GL_RGB;
-      GLenum format = internal_format;
-      GLenum data_type = GL_UNSIGNED_BYTE;
-      if (use_half_float_storage_) {
-        DCHECK(want_alpha_channel_);
-        if (webgl_version_ > kWebGL1) {
-          internal_format = GL_RGBA16F;
-          data_type = GL_HALF_FLOAT;
-        } else {
-          internal_format = GL_RGBA;
-          data_type = GL_HALF_FLOAT_OES;
-        }
-      }
-      gl_->TexImage2D(texture_target_, 0, internal_format, size.Width(),
-                      size.Height(), 0, format, data_type, nullptr);
+      DCHECK(!use_half_float_storage_);
+      format = viz::RGBX_8888;
     }
+
+    mailbox = sii->CreateSharedImage(
+        format, static_cast<gfx::Size>(size), storage_color_space_,
+        gpu::SHARED_IMAGE_USAGE_GLES2 |
+            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+            gpu::SHARED_IMAGE_USAGE_DISPLAY);
   }
 
-  // Clear the alpha channel if this is RGB emulated.
-  if (image_id && !want_alpha_channel_ && have_alpha_channel_) {
+  // Import the allocated SharedImage into GL.
+  gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
+  gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  texture_id = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+  gl_->BindTexture(texture_target_, texture_id);
+  gl_->BeginSharedImageAccessDirectCHROMIUM(
+      texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+
+  // Clear the alpha channel if we allocated a GpuMemoryBuffer and RGB emulation
+  // is required.
+  if (gpu_memory_buffer && !want_alpha_channel_ && have_alpha_channel_) {
     GLuint fbo = 0;
 
     state_restorer_->SetClearStateDirty();
@@ -1510,8 +1491,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     gl_->DeleteFramebuffers(1, &fbo);
   }
 
-  return base::AdoptRef(new ColorBuffer(this, size, texture_id, image_id,
-                                        std::move(gpu_memory_buffer)));
+  return base::AdoptRef(new ColorBuffer(this, size, texture_id,
+                                        std::move(gpu_memory_buffer), mailbox));
 }
 
 void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
@@ -1573,7 +1554,7 @@ bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
 
   // If for some reason the back buffer doesn't exist or doesn't have a
   // CHROMIUM_image, don't proceed with this workaround.
-  if (!back_color_buffer_ || !back_color_buffer_->image_id)
+  if (!back_color_buffer_ || !back_color_buffer_->gpu_memory_buffer)
     return false;
 
   // Before allowing the BlitFramebuffer call to go through, it's necessary
@@ -1589,21 +1570,24 @@ bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
   GLuint rgb_texture = back_color_buffer_->rgb_workaround_texture_id;
   DCHECK_EQ(texture_target_, GC3D_TEXTURE_RECTANGLE_ARB);
   if (!rgb_texture) {
-    gl_->GenTextures(1, &rgb_texture);
-    gl_->BindTexture(texture_target_, rgb_texture);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl_->TexParameteri(texture_target_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // Bind this texture to the CHROMIUM_image instance that the color
-    // buffer owns. This is an expensive operation, so it's important that
-    // the result be cached.
-    gl_->BindTexImage2DWithInternalformatCHROMIUM(texture_target_, GL_RGB,
-                                                  back_color_buffer_->image_id);
+    gpu::SharedImageInterface* sii = ContextProvider()->SharedImageInterface();
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+        Platform::Current()->GetGpuMemoryBufferManager();
+    back_color_buffer_->rgb_workaround_mailbox = sii->CreateSharedImage(
+        back_color_buffer_->gpu_memory_buffer.get(), gpu_memory_buffer_manager,
+        storage_color_space_,
+        gpu::SHARED_IMAGE_USAGE_GLES2 |
+            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+            gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT |
+            gpu::SHARED_IMAGE_USAGE_RGB_EMULATION);
+    gl_->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
+    rgb_texture = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
+        back_color_buffer_->rgb_workaround_mailbox.name);
     back_color_buffer_->rgb_workaround_texture_id = rgb_texture;
   }
 
+  gl_->BeginSharedImageAccessDirectCHROMIUM(
+      rgb_texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER_ANGLE, GL_COLOR_ATTACHMENT0,
                             texture_target_, rgb_texture, 0);
   return true;
@@ -1613,7 +1597,9 @@ void DrawingBuffer::CleanupRGBEmulationForBlitFramebuffer() {
   // This will only be called if SetupRGBEmulationForBlitFramebuffer was.
   // Put the framebuffer back the way it was, and clear the alpha channel.
   DCHECK(back_color_buffer_);
-  DCHECK(back_color_buffer_->image_id);
+  DCHECK(back_color_buffer_->gpu_memory_buffer);
+  gl_->EndSharedImageAccessDirectCHROMIUM(
+      back_color_buffer_->rgb_workaround_texture_id);
   gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER_ANGLE, GL_COLOR_ATTACHMENT0,
                             texture_target_, back_color_buffer_->texture_id, 0);
   // Clear the alpha channel.
