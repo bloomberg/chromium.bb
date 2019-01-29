@@ -165,8 +165,8 @@ void UiControllerAndroid::HideProgressBar() {
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
-  Java_AutofillAssistantUiController_onAllowShowingSoftKeyboard(
-      AttachCurrentThread(), java_autofill_assistant_ui_controller_, enabled);
+  Java_AssistantModel_setAllowSoftKeyboard(AttachCurrentThread(), GetModel(),
+                                           enabled);
 }
 
 void UiControllerAndroid::ExpandBottomSheet() {

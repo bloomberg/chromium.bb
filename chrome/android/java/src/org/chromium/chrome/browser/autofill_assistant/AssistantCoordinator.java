@@ -69,6 +69,14 @@ class AssistantCoordinator {
         mOverlayCoordinator =
                 new AssistantOverlayCoordinator(activity, mAssistantView, mModel.getOverlayModel());
 
+        // Notify AssistantKeyboardCoordinator when we should (dis)allow the soft keyboard.
+        mModel.addObserver((source, propertyKey) -> {
+            if (AssistantModel.ALLOW_SOFT_KEYBOARD == propertyKey) {
+                mKeyboardCoordinator.allowShowingSoftKeyboard(
+                        mModel.get(AssistantModel.ALLOW_SOFT_KEYBOARD));
+            }
+        });
+
         showAssistantView();
     }
 
@@ -162,14 +170,6 @@ class AssistantCoordinator {
 
     public AssistantBottomBarCoordinator getBottomBarCoordinator() {
         return mBottomBarCoordinator;
-    }
-
-    public AssistantKeyboardCoordinator getKeyboardCoordinator() {
-        return mKeyboardCoordinator;
-    }
-
-    public AssistantOverlayCoordinator getOverlayCoordinator() {
-        return mOverlayCoordinator;
     }
 
     /**

@@ -112,11 +112,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onAllowShowingSoftKeyboard(boolean allowed) {
-        mCoordinator.getKeyboardCoordinator().allowShowingSoftKeyboard(allowed);
-    }
-
-    @CalledByNative
     private void onShutdown(@DropOutReason int reason) {
         mCoordinator.shutdownImmediately(reason);
     }
