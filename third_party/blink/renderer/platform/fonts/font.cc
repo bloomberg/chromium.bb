@@ -290,8 +290,8 @@ unsigned InterceptsFromBlobs(const ShapeResultBloberizer::BlobBuffer& blobs,
     SkScalar* offset_intercepts_buffer = nullptr;
     if (intercepts_buffer)
       offset_intercepts_buffer = &intercepts_buffer[num_intervals];
-    num_intervals += paint.getTextBlobIntercepts(
-        blob_info.blob.get(), bounds_array, offset_intercepts_buffer);
+    num_intervals += blob_info.blob->getIntercepts(
+        bounds_array, offset_intercepts_buffer, &paint);
   }
   return num_intervals;
 }
