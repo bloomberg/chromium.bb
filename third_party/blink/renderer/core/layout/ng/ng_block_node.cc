@@ -192,14 +192,10 @@ LayoutUnit CalculateAvailableInlineSizeForLegacy(
 LayoutUnit CalculateAvailableBlockSizeForLegacy(
     const LayoutBox& box,
     const NGConstraintSpace& space) {
-  if (box.StyleRef().LogicalHeight().IsPercent()) {
-    if (box.ShouldComputeSizeAsReplaced())
-      return space.ReplacedPercentageResolutionBlockSize();
+  if (box.ShouldComputeSizeAsReplaced())
+    return space.ReplacedPercentageResolutionBlockSize();
 
-    return space.PercentageResolutionBlockSize();
-  }
-
-  return space.AvailableSize().block_size;
+  return space.PercentageResolutionBlockSize();
 }
 
 }  // namespace
