@@ -11334,7 +11334,7 @@
           'hash': { 'type': 'string' }
         },
       },
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:73-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -11367,7 +11367,7 @@
       'name': 'DeviceNativePrintersAccessMode',
       'id': 387,
       'device_only': True,
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:73-'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -11406,7 +11406,7 @@
     },
     {
       'name': 'DeviceNativePrintersBlacklist',
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:73-'],
       'device_only': True,
       'id': 388,
       'type': 'list',
@@ -11429,7 +11429,7 @@
     },
     {
       'name': 'DeviceNativePrintersWhitelist',
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:73-'],
       'device_only': True,
       'id': 389,
       'type': 'list',
