@@ -38,7 +38,6 @@ class WebDataConsumerHandle;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
-class SourceKeyedCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
@@ -85,12 +84,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                           const ResourceResponse&) override;
 
   void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
-
-  // Used for code caching of scripts with source code inline in the HTML.
-  // Returns a cache handler which can store multiple cache metadata entries,
-  // keyed by the source code of the script. This is valid only if type is
-  // kMainResource.
-  SourceKeyedCachedMetadataHandler* InlineScriptCacheHandler();
 
   // Used for code caching of fetched code resources. Returns a cache handler
   // which can only store a single cache metadata entry. This is valid only if
@@ -145,9 +138,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 // TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
 // RawResources to MemoryCache.
 inline bool IsRawResource(ResourceType type) {
-  return type == ResourceType::kMainResource || type == ResourceType::kRaw ||
-         type == ResourceType::kTextTrack || type == ResourceType::kAudio ||
-         type == ResourceType::kVideo || type == ResourceType::kManifest ||
+  return type == ResourceType::kRaw || type == ResourceType::kTextTrack ||
+         type == ResourceType::kAudio || type == ResourceType::kVideo ||
+         type == ResourceType::kManifest ||
          type == ResourceType::kImportResource;
 }
 inline bool IsRawResource(const Resource& resource) {

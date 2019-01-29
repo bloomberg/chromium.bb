@@ -42,9 +42,6 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
   bool IsPaused() const override { return paused_; }
   bool IsDetached() const override { return false; }
   bool IsLoadComplete() const override { return load_complete_; }
-  bool ShouldBlockLoadingMainResource() const override {
-    return should_block_loading_main_resource_;
-  }
   bool ShouldBlockLoadingSubResource() const override {
     return should_block_loading_sub_resource_;
   }
@@ -56,9 +53,6 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
   void SetServiceWorkerId(int64_t id) { service_worker_id_ = id; }
   void SetIsPaused(bool value) { paused_ = value; }
   void SetIsLoadComplete(bool value) { load_complete_ = value; }
-  void SetShouldBlockLoadingMainResource(bool value) {
-    should_block_loading_main_resource_ = value;
-  }
   void SetShouldBlockLoadingSubResource(bool value) {
     should_block_loading_sub_resource_ = value;
   }
@@ -71,7 +65,6 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
   int64_t service_worker_id_ = 0;
   bool paused_ = false;
   bool load_complete_ = false;
-  bool should_block_loading_main_resource_ = false;
   bool should_block_loading_sub_resource_ = false;
 };
 

@@ -230,11 +230,10 @@ TEST_F(ResourceFetcherTest, Vary) {
 
 TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
   auto info = ResourceTimingInfo::Create(fetch_initiator_type_names::kDocument,
-                                         CurrentTimeTicks(),
-                                         true /* is_main_resource */);
+                                         CurrentTimeTicks());
   info->AddFinalTransferSize(5);
   EXPECT_EQ(info->TransferSize(), 5);
-  ResourceResponse redirect_response(KURL("https://example.com"));
+  ResourceResponse redirect_response(KURL("https://example.com/original"));
   redirect_response.SetHTTPStatusCode(200);
   redirect_response.SetEncodedDataLength(7);
   info->AddRedirect(redirect_response, KURL("https://example.com/redirect"));
@@ -1004,7 +1003,6 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   EXPECT_FALSE(properties.IsPaused());
   EXPECT_FALSE(properties.IsDetached());
   EXPECT_FALSE(properties.IsLoadComplete());
-  EXPECT_FALSE(properties.ShouldBlockLoadingMainResource());
   EXPECT_FALSE(properties.ShouldBlockLoadingSubResource());
 
   fetcher->ClearContext();
@@ -1022,7 +1020,6 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   EXPECT_FALSE(properties.IsPaused());
   EXPECT_TRUE(properties.IsDetached());
   EXPECT_FALSE(properties.IsLoadComplete());
-  EXPECT_TRUE(properties.ShouldBlockLoadingMainResource());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
 }
 
@@ -1050,7 +1047,6 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   original_properties.SetServiceWorkerId(133);
   original_properties.SetIsPaused(true);
   original_properties.SetIsLoadComplete(true);
-  original_properties.SetShouldBlockLoadingMainResource(true);
   original_properties.SetShouldBlockLoadingSubResource(true);
 
   const auto& client_settings_object =
@@ -1063,7 +1059,6 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   EXPECT_TRUE(properties.IsPaused());
   EXPECT_FALSE(properties.IsDetached());
   EXPECT_TRUE(properties.IsLoadComplete());
-  EXPECT_TRUE(properties.ShouldBlockLoadingMainResource());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
 
   fetcher->ClearContext();
@@ -1081,7 +1076,6 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   EXPECT_TRUE(properties.IsPaused());
   EXPECT_TRUE(properties.IsDetached());
   EXPECT_TRUE(properties.IsLoadComplete());
-  EXPECT_TRUE(properties.ShouldBlockLoadingMainResource());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
 }
 

@@ -71,8 +71,6 @@ class ResourceResponse;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
 
-enum FetchResourceType { kFetchMainResource, kFetchSubresource };
-
 // The FetchContext is an interface for performing context specific processing
 // in response to events in the ResourceFetcher. The ResourceFetcher or its job
 // class, ResourceLoader, may call the methods on a FetchContext.
@@ -98,7 +96,7 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void Trace(blink::Visitor*);
 
-  virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
+  virtual void AddAdditionalRequestHeaders(ResourceRequest&);
 
   const ResourceFetcherProperties& GetResourceFetcherProperties() const;
 

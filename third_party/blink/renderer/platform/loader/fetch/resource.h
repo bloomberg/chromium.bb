@@ -70,8 +70,8 @@ class SecurityOrigin;
 // |ResourceType| enum values are used in UMAs, so do not change the values of
 // existing types. When adding a new type, append it at the end.
 enum class ResourceType : uint8_t {
-  kMainResource,
-  kImage,
+  // We do not have kMainResource anymore, which used to have zero value.
+  kImage = 1,
   kCSSStyleSheet,
   kScript,
   kFont,

@@ -195,8 +195,7 @@ void FetchEvent::OnNavigationPreloadComplete(
   // According to the Resource Timing spec, the initiator type of
   // navigation preload request is "navigation".
   scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      "navigation", resource_response.GetResourceLoadTiming()->RequestTime(),
-      false /* is_main_resource */);
+      "navigation", resource_response.GetResourceLoadTiming()->RequestTime());
   info->SetNegativeAllowed(true);
   info->SetLoadFinishTime(completion_time);
   info->SetInitialURL(request_->url());

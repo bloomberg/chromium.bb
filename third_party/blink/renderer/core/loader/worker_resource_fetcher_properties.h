@@ -44,7 +44,6 @@ class WorkerResourceFetcherProperties final : public ResourceFetcherProperties {
   bool IsPaused() const override;
   bool IsDetached() const override { return false; }
   bool IsLoadComplete() const override { return false; }
-  bool ShouldBlockLoadingMainResource() const override { return false; }
   bool ShouldBlockLoadingSubResource() const override { return false; }
 
  private:

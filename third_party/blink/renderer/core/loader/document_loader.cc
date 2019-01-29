@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -1106,8 +1107,7 @@ void DocumentLoader::StartLoadingInternal() {
   main_resource_identifier_ = CreateUniqueIdentifier();
 
   navigation_timing_info_ = ResourceTimingInfo::Create(
-      fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
-      true /* is_main_resource */);
+      fetch_initiator_type_names::kDocument, GetTiming().NavigationStart());
   navigation_timing_info_->SetInitialURL(url_);
   report_timing_info_to_parent_ = ShouldReportTimingInfoToParent();
 
@@ -1123,24 +1123,23 @@ void DocumentLoader::StartLoadingInternal() {
   // Many parties are interested in resource loading, so we will notify
   // them through various DispatchXXX methods on FrameFetchContext.
 
-  // TODO(dgozman): get rid of fake request and initiator info, we only use them
-  // for DispatchWillSendRequest.
-  ResourceRequest fake_request;
-  fake_request.SetURL(url_);
-  fake_request.SetPriority(WebURLRequest::Priority::kVeryHigh);
-  fake_request.SetHTTPBody(http_body_);
-  fake_request.SetFrameType(
-      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                            : network::mojom::RequestContextFrameType::kNested);
-  fake_request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
-  FetchInitiatorInfo initiator_info;
-  initiator_info.name = fetch_initiator_type_names::kDocument;
-  fetcher_->Context().RecordLoadingActivity(
-      fake_request, ResourceType::kMainResource,
-      fetch_initiator_type_names::kDocument);
-  fetcher_->Context().DispatchWillSendRequest(
-      main_resource_identifier_, fake_request, ResourceResponse(),
-      ResourceType::kMainResource, initiator_info);
+  if (!fetcher_->Archive()) {
+    V8DOMActivityLogger* activity_logger =
+        V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
+    if (activity_logger) {
+      Vector<String> argv;
+      argv.push_back("Main resource");
+      argv.push_back(url_.GetString());
+      activity_logger->LogEvent("blinkRequestResource", argv.size(),
+                                argv.data());
+    }
+  }
+
+  GetFrameLoader().Progress().WillStartLoading(main_resource_identifier_,
+                                               ResourceLoadPriority::kVeryHigh);
+  probe::willSendNavigationRequest(GetFrame()->GetDocument(),
+                                   main_resource_identifier_, this, url_,
+                                   http_method_, http_body_.get());
 
   for (size_t i = 0; i < params_->redirects.size(); ++i) {
     WebNavigationParams::RedirectInfo& redirect = params_->redirects[i];
@@ -1148,7 +1147,6 @@ void DocumentLoader::StartLoadingInternal() {
     AtomicString new_http_method = redirect.new_http_method;
     if (http_method_ != new_http_method) {
       http_body_ = nullptr;
-      fake_request.SetHTTPBody(nullptr);
       http_method_ = new_http_method;
     }
     if (redirect.new_referrer.IsEmpty()) {
@@ -1160,16 +1158,22 @@ void DocumentLoader::StartLoadingInternal() {
     http_content_type_ = g_null_atom;
     // TODO(dgozman): check whether clearing origin policy is intended behavior.
     origin_policy_ = String();
-    fake_request.SetURL(url_);
+    probe::willSendNavigationRequest(GetFrame()->GetDocument(),
+                                     main_resource_identifier_, this, url_,
+                                     http_method_, http_body_.get());
     ResourceResponse redirect_response =
         redirect.redirect_response.ToResourceResponse();
-    fetcher_->Context().DispatchWillSendRequest(
-        main_resource_identifier_, fake_request, redirect_response,
-        ResourceType::kMainResource, initiator_info);
     navigation_timing_info_->AddRedirect(redirect_response, url_);
     HandleRedirect(redirect_response.CurrentRequestUrl());
   }
 
+  // TODO(dgozman): get rid of fake request, we only use it for
+  // DispatchDidReceiveResponse.
+  ResourceRequest fake_request;
+  fake_request.SetFrameType(
+      frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
+                            : network::mojom::RequestContextFrameType::kNested);
+  fake_request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   fetcher_->Context().DispatchDidReceiveResponse(
       main_resource_identifier_, fake_request, final_response, nullptr,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);

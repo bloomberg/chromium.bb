@@ -837,102 +837,6 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
       GetHeaderValue("https://www.example.com/1.gif", "ect").Ascii().length());
 }
 
-TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
-  // Default case
-  ResourceRequest request("http://www.example.com");
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kDefault,
-      GetFetchContext()->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // Post
-  ResourceRequest post_request("http://www.example.com");
-  post_request.SetHTTPMethod(http_names::kPOST);
-  EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
-            GetFetchContext()->ResourceRequestCachePolicy(
-                post_request, ResourceType::kMainResource,
-                FetchParameters::kNoDefer));
-
-  // Re-post
-  document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
-  EXPECT_EQ(mojom::FetchCacheMode::kOnlyIfCached,
-            GetFetchContext()->ResourceRequestCachePolicy(
-                post_request, ResourceType::kMainResource,
-                FetchParameters::kNoDefer));
-
-  // WebFrameLoadType::kReload
-  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kValidateCache,
-      GetFetchContext()->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // Conditional request
-  document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
-  ResourceRequest conditional("http://www.example.com");
-  conditional.SetHTTPHeaderField(http_names::kIfModifiedSince, "foo");
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kValidateCache,
-      GetFetchContext()->ResourceRequestCachePolicy(
-          conditional, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // WebFrameLoadType::kReloadBypassingCache
-  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kBypassCache,
-      GetFetchContext()->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // WebFrameLoadType::kReloadBypassingCache with a conditional request
-  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kBypassCache,
-      GetFetchContext()->ResourceRequestCachePolicy(
-          conditional, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // WebFrameLoadType::kReloadBypassingCache with a post request
-  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(mojom::FetchCacheMode::kBypassCache,
-            GetFetchContext()->ResourceRequestCachePolicy(
-                post_request, ResourceType::kMainResource,
-                FetchParameters::kNoDefer));
-
-  // Set up a child frame
-  FrameFetchContext* child_fetch_context = CreateChildFrame();
-
-  // Child frame as part of back/forward
-  document->Loader()->SetLoadType(WebFrameLoadType::kBackForward);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kForceCache,
-      child_fetch_context->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // Child frame as part of reload
-  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kDefault,
-      child_fetch_context->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // Child frame as part of reload bypassing cache
-  document->Loader()->SetLoadType(WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kBypassCache,
-      child_fetch_context->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-
-  // Per-frame bypassing reload, but parent load type is different.
-  // This is not the case users can trigger through user interfaces, but for
-  // checking code correctness and consistency.
-  document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  child_frame->Loader().GetDocumentLoader()->SetLoadType(
-      WebFrameLoadType::kReloadBypassingCache);
-  EXPECT_EQ(
-      mojom::FetchCacheMode::kBypassCache,
-      child_fetch_context->ResourceRequestCachePolicy(
-          request, ResourceType::kMainResource, FetchParameters::kNoDefer));
-}
-
 TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   // Reset load event state: if the load event is finished, we ignore the
   // DocumentLoader load type.
@@ -1042,14 +946,12 @@ TEST_F(FrameFetchContextTest, EnableDataSaver) {
   RecreateFetchContext();
 
   ResourceRequest resource_request("http://www.example.com");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
 
   // Subsequent call to addAdditionalRequestHeaders should not append to the
   // save-data header.
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
 }
 
@@ -1060,8 +962,7 @@ TEST_F(FrameFetchContextTest, DisabledDataSaver) {
   RecreateFetchContext();
 
   ResourceRequest resource_request("http://www.example.com");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
 }
 
@@ -1071,28 +972,24 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
   // Recreate the fetch context so that the updated save data settings are read.
   RecreateFetchContext();
   ResourceRequest resource_request("http://www.example.com");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
   RecreateFetchContext();
   document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
   RecreateFetchContext();
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ("on", resource_request.HttpHeaderField("Save-Data"));
 
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(false);
   RecreateFetchContext();
   document->Loader()->SetLoadType(WebFrameLoadType::kReload);
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(String(), resource_request.HttpHeaderField("Save-Data"));
 }
 
@@ -1202,7 +1099,7 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  GetFetchContext()->AddAdditionalRequestHeaders(request, kFetchSubresource);
+  GetFetchContext()->AddAdditionalRequestHeaders(request);
 
   EXPECT_EQ(origin, request.HttpHeaderField(http_names::kOrigin));
   EXPECT_EQ(String(origin + "/"),
@@ -1311,8 +1208,6 @@ TEST_F(FrameFetchContextTest, ShouldLoadNewResourceWhenDetached) {
   EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kImage));
   EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kRaw));
   EXPECT_FALSE(GetFetchContext()->ShouldLoadNewResource(ResourceType::kScript));
-  EXPECT_FALSE(
-      GetFetchContext()->ShouldLoadNewResource(ResourceType::kMainResource));
 }
 
 TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
@@ -1342,7 +1237,7 @@ TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
 
 TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {
   scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create("type", TimeTicksFromSeconds(0.3), false);
+      ResourceTimingInfo::Create("type", TimeTicksFromSeconds(0.3));
 
   dummy_page_holder = nullptr;
 
@@ -1417,15 +1312,13 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
       .WillRepeatedly(testing::Return(WebURLRequest::kPreviewsOff));
   ResourceRequest resource_request("http://www.example.com/style.css");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(g_null_atom, resource_request.HttpHeaderField("Intervention"));
 
   // Verify header is added if Lo-Fi is active.
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
       .WillRepeatedly(testing::Return(WebURLRequest::kClientLoFiOn));
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchSubresource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(
       "<https://www.chromestatus.com/features/6072546726248448>; "
       "level=\"warning\"",
@@ -1435,8 +1328,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   ResourceRequest resource_request2("http://www.example.com/getad.js");
   resource_request2.SetHTTPHeaderField("Intervention",
                                        "<https://otherintervention.org>");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request2,
-                                                 kFetchSubresource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request2);
   EXPECT_EQ(
       "<https://otherintervention.org>, "
       "<https://www.chromestatus.com/features/6072546726248448>; "
@@ -1451,15 +1343,13 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
       .WillRepeatedly(testing::Return(WebURLRequest::kPreviewsOff));
   ResourceRequest resource_request("http://www.example.com/style.css");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchMainResource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(g_null_atom, resource_request.HttpHeaderField("Intervention"));
 
   // Verify header is added if NoScript is active.
   EXPECT_CALL(*client, GetPreviewsStateForFrame())
       .WillRepeatedly(testing::Return(WebURLRequest::kNoScriptOn));
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request,
-                                                 kFetchSubresource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request);
   EXPECT_EQ(
       "<https://www.chromestatus.com/features/4775088607985664>; "
       "level=\"warning\"",
@@ -1469,8 +1359,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   ResourceRequest resource_request2("http://www.example.com/getad.js");
   resource_request2.SetHTTPHeaderField("Intervention",
                                        "<https://otherintervention.org>");
-  GetFetchContext()->AddAdditionalRequestHeaders(resource_request2,
-                                                 kFetchSubresource);
+  GetFetchContext()->AddAdditionalRequestHeaders(resource_request2);
   EXPECT_EQ(
       "<https://otherintervention.org>, "
       "<https://www.chromestatus.com/features/4775088607985664>; "

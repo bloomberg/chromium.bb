@@ -381,7 +381,8 @@ TEST_F(AdTrackerSimTest, FrameLoadedWhileExecutingAdScript) {
 
   EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kAdUrl));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
-  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
+  Frame* child_frame = GetDocument().GetFrame()->Tree().FirstChild();
+  EXPECT_TRUE(ToLocalFrame(child_frame)->IsAdSubframe());
 }
 
 // A script tagged as an ad in one frame shouldn't cause it to be considered

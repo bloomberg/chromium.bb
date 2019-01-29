@@ -101,6 +101,12 @@ class CORE_EXPORT InspectorNetworkAgent final
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
+  void WillSendNavigationRequest(ExecutionContext*,
+                                 unsigned long identifier,
+                                 DocumentLoader*,
+                                 const KURL&,
+                                 const AtomicString& http_method,
+                                 EncodedFormData* http_body);
   void MarkResourceAsCached(DocumentLoader*, unsigned long identifier);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,

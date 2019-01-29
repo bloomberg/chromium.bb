@@ -43,6 +43,7 @@ class ContainerNode;
 class Document;
 class DocumentLoader;
 class Element;
+class EncodedFormData;
 class Event;
 class ExecutionContext;
 struct FetchInitiatorInfo;
@@ -89,6 +90,12 @@ class CORE_EXPORT InspectorTraceEvents
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
+  void WillSendNavigationRequest(ExecutionContext*,
+                                 unsigned long identifier,
+                                 DocumentLoader*,
+                                 const KURL&,
+                                 const AtomicString& http_method,
+                                 EncodedFormData*);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
@@ -273,6 +280,14 @@ std::unique_ptr<TracedValue> Data(DocumentLoader*,
                                   unsigned long identifier,
                                   LocalFrame*,
                                   const ResourceRequest&);
+}
+
+namespace inspector_send_navigation_request_event {
+std::unique_ptr<TracedValue> Data(DocumentLoader*,
+                                  unsigned long identifier,
+                                  LocalFrame*,
+                                  const KURL&,
+                                  const AtomicString& http_method);
 }
 
 namespace inspector_receive_response_event {

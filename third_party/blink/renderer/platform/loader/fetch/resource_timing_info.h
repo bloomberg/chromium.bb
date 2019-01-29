@@ -49,12 +49,10 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
  public:
   static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
-                                                  const TimeTicks time,
-                                                  bool is_main_resource) {
-    return base::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
+                                                  const TimeTicks time) {
+    return base::AdoptRef(new ResourceTimingInfo(type, time));
   }
   TimeTicks InitialTime() const { return initial_time_; }
-  bool IsMainResource() const { return is_main_resource_; }
 
   const AtomicString& InitiatorType() const { return type_; }
 
@@ -100,10 +98,8 @@ class PLATFORM_EXPORT ResourceTimingInfo
   bool NegativeAllowed() const { return negative_allowed_; }
 
  private:
-  ResourceTimingInfo(const AtomicString& type,
-                     const TimeTicks time,
-                     bool is_main_resource)
-      : type_(type), initial_time_(time), is_main_resource_(is_main_resource) {}
+  ResourceTimingInfo(const AtomicString& type, const TimeTicks time)
+      : type_(type), initial_time_(time) {}
 
   AtomicString type_;
   AtomicString original_timing_allow_origin_;
@@ -113,7 +109,6 @@ class PLATFORM_EXPORT ResourceTimingInfo
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;
   long long transfer_size_ = 0;
-  bool is_main_resource_;
   bool has_cross_origin_redirect_ = false;
   bool negative_allowed_ = false;
 };

@@ -235,9 +235,8 @@ void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
   web_context_->WillSendRequest(webreq);
 }
 
-void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
-                                                     FetchResourceType type) {
-  BaseFetchContext::AddAdditionalRequestHeaders(request, type);
+void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
+  BaseFetchContext::AddAdditionalRequestHeaders(request);
 
   // The remaining modifications are only necessary for HTTP and HTTPS.
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())

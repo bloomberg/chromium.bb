@@ -66,9 +66,6 @@ class PLATFORM_EXPORT ResourceFetcherProperties
   // Returns whether the main resource for this global context is loaded.
   virtual bool IsLoadComplete() const = 0;
 
-  // Returns whether we should disallow a main resource loading.
-  virtual bool ShouldBlockLoadingMainResource() const = 0;
-
   // Returns whether we should disallow a sub resource loading.
   virtual bool ShouldBlockLoadingSubResource() const = 0;
 };
