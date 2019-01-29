@@ -4,12 +4,16 @@
 
 #include "net/tools/quic/synchronous_host_resolver.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/simple_thread.h"
@@ -62,20 +66,24 @@ void ResolverThread::Run() {
   std::unique_ptr<net::HostResolverImpl> resolver(
       new net::HostResolverImpl(options, &net_log));
 
-  std::unique_ptr<net::HostResolver::Request> request;
   HostPortPair host_port_pair(host_, 80);
+  std::unique_ptr<net::HostResolver::ResolveHostRequest> request =
+      resolver->CreateRequest(host_port_pair, NetLogWithSource(),
+                              base::nullopt);
+
   base::RunLoop run_loop;
-  rv_ = resolver->Resolve(
-      HostResolver::RequestInfo(host_port_pair), DEFAULT_PRIORITY, addresses_,
-      base::Bind(&ResolverThread::OnResolutionComplete, base::Unretained(this),
-                 run_loop.QuitClosure()),
-      &request, NetLogWithSource());
+  rv_ = request->Start(base::BindOnce(&ResolverThread::OnResolutionComplete,
+                                      base::Unretained(this),
+                                      run_loop.QuitClosure()));
 
-  if (rv_ != ERR_IO_PENDING)
-    return;
+  if (rv_ == ERR_IO_PENDING) {
+    // Run the message loop until OnResolutionComplete quits it.
+    run_loop.Run();
+  }
 
-  // Run the mesage loop until OnResolutionComplete quits it.
-  run_loop.Run();
+  if (rv_ == OK) {
+    *addresses_ = request->GetAddressResults().value();
+  }
 }
 
 int ResolverThread::Resolve(const std::string& host, AddressList* addresses) {
