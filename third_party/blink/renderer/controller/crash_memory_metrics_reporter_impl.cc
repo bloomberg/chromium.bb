@@ -4,10 +4,6 @@
 
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 
-#include <ctype.h>
-#include <fcntl.h>
-#include <unistd.h>
-
 #include "base/allocator/partition_allocator/oom_callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
@@ -19,25 +15,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
-
-namespace {
-
-// Roughly calculates amount of memory which is used to execute pages.
-uint64_t BlinkMemoryWorkloadCalculator() {
-  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
-  DCHECK(isolate);
-  v8::HeapStatistics heap_statistics;
-  isolate->GetHeapStatistics(&heap_statistics);
-  // TODO: Add memory usage for worker threads.
-  size_t v8_size =
-      heap_statistics.total_heap_size() + heap_statistics.malloced_memory();
-  size_t blink_gc_size = ProcessHeap::TotalAllocatedObjectSize() +
-                         ProcessHeap::TotalMarkedObjectSize();
-  size_t partition_alloc_size = WTF::Partitions::TotalSizeOfCommittedPages();
-  return v8_size + blink_gc_size + partition_alloc_size;
-}
-
-}  // namespace
 
 // static
 void CrashMemoryMetricsReporterImpl::Bind(
@@ -68,6 +45,11 @@ void CrashMemoryMetricsReporterImpl::SetSharedMemory(
   shared_metrics_mapping_ = shared_metrics_buffer.Map();
 }
 
+void CrashMemoryMetricsReporterImpl::OnMemoryPing(MemoryUsage usage) {
+  WriteIntoSharedMemory(
+      CrashMemoryMetricsReporterImpl::MemoryUsageToMetrics(usage));
+}
+
 void CrashMemoryMetricsReporterImpl::WriteIntoSharedMemory(
     const OomInterventionMetrics& metrics) {
   if (!shared_metrics_mapping_.IsValid())
@@ -96,31 +78,30 @@ void CrashMemoryMetricsReporterImpl::OnOOMCallback() {
 
 OomInterventionMetrics
 CrashMemoryMetricsReporterImpl::GetCurrentMemoryMetrics() {
-  // This can only be called after ResetFileDescriptors().
-  DCHECK(statm_fd_.is_valid() && status_fd_.is_valid());
-
-  OomInterventionMetrics metrics = {};
-  metrics.current_blink_usage_kb = BlinkMemoryWorkloadCalculator() / 1024;
-  uint64_t private_footprint, swap, vm_size;
-  if (MemoryUsageMonitorAndroid::CalculateProcessMemoryFootprint(
-          statm_fd_.get(), status_fd_.get(), &private_footprint, &swap,
-          &vm_size)) {
-    metrics.current_private_footprint_kb = private_footprint / 1024;
-    metrics.current_swap_kb = swap / 1024;
-    metrics.current_vm_size_kb = vm_size / 1024;
-  }
-  metrics.allocation_failed = 0;  // false
-  return metrics;
+  return MemoryUsageToMetrics(
+      MemoryUsageMonitor::Instance().GetCurrentMemoryUsage());
 }
 
-bool CrashMemoryMetricsReporterImpl::ResetFileDiscriptors() {
-  // See https://goo.gl/KjWnZP For details about why we read these files from
-  // sandboxed renderer. Keep these files open when detection is enabled.
-  if (!statm_fd_.is_valid())
-    statm_fd_.reset(open("/proc/self/statm", O_RDONLY));
-  if (!status_fd_.is_valid())
-    status_fd_.reset(open("/proc/self/status", O_RDONLY));
-  return !statm_fd_.is_valid() || !status_fd_.is_valid();
+// static
+OomInterventionMetrics CrashMemoryMetricsReporterImpl::MemoryUsageToMetrics(
+    MemoryUsage usage) {
+  OomInterventionMetrics metrics = {};
+
+  DCHECK(!std::isnan(usage.private_footprint_bytes));
+  DCHECK(!std::isnan(usage.swap_bytes));
+  DCHECK(!std::isnan(usage.vm_size_bytes));
+  metrics.current_blink_usage_kb =
+      (usage.v8_bytes + usage.blink_gc_bytes + usage.partition_alloc_bytes) /
+      1024;
+
+  DCHECK(!std::isnan(usage.private_footprint_bytes));
+  DCHECK(!std::isnan(usage.swap_bytes));
+  DCHECK(!std::isnan(usage.vm_size_bytes));
+  metrics.current_private_footprint_kb = usage.private_footprint_bytes / 1024;
+  metrics.current_swap_kb = usage.swap_bytes / 1024;
+  metrics.current_vm_size_kb = usage.vm_size_bytes / 1024;
+  metrics.allocation_failed = 0;  // false
+  return metrics;
 }
 
 }  // namespace blink
