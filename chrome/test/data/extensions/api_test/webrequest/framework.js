@@ -132,7 +132,7 @@ function navigateAndWait(url, callback) {
   chrome.tabs.update(tabId, {url: url});
 }
 
-// data: array of extected events, each one is a dictionary:
+// data: array of expected events, each one is a dictionary:
 //     { label: "<unique identifier>",
 //       event: "<webrequest event type>",
 //       details: { <expected details of the webrequest event> },
@@ -345,14 +345,25 @@ function captureEvent(name, details, callback) {
     delete details.responseHeaders;
   }
 
+  // Check if the equivalent event is already captured, and issue a unique
+  // |eventCount| to identify each.
+  var eventCount = 0;
+  capturedEventData.forEach(function (event) {
+    if (deepEq(event.event, name) && deepEq(event.details, details)) {
+      eventCount++;
+      // update |details| for the next match.
+      details.eventCount = eventCount;
+    }
+  });
+
   // find |details| in expectedEventData
   var found = false;
   var label = undefined;
   expectedEventData.forEach(function (exp) {
     if (deepEq(exp.event, name) && deepEq(exp.details, details)) {
       if (found) {
-        chrome.test.fail("Received event twice '" + name + "':" +
-            JSON.stringify(details));
+        chrome.test.fail("Duplicated expectation entry '" + exp.label +
+        "' should be identified by |eventCount|: " + JSON.stringify(details));
       } else {
         found = true;
         label = exp.label;
