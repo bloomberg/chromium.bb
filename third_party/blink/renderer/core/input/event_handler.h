@@ -161,7 +161,7 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleWheelEvent(const WebMouseWheelEvent&);
 
   WebInputEventResult HandleTargetedMouseEvent(
-      Node* target,
+      Element* target,
       const WebMouseEvent&,
       const AtomicString& event_type,
       const Vector<WebMouseEvent>& coalesced_events,

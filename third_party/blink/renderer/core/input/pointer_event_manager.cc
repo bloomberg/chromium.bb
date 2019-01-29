@@ -565,7 +565,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
 }
 
 WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
-    Node* target,
+    Element* target,
     const AtomicString& mouse_event_name,
     const WebMouseEvent& mouse_event,
     const Vector<WebMouseEvent>& coalesced_events,
@@ -599,7 +599,7 @@ WebInputEventResult PointerEventManager::CreateAndDispatchPointerEvent(
 // TODO(crbug.com/665924): Because this code path might have boundary events,
 // it is different from SendMousePointerEvent. We should merge them.
 WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
-    Node* target,
+    Element* target,
     const WebMouseEvent& event,
     const AtomicString& mouse_event_type,
     const Vector<WebMouseEvent>& coalesced_events,

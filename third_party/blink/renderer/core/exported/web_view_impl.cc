@@ -418,10 +418,11 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
         main_frame.GetEventHandler().HitTestResultAtLocation(location));
     result.SetToShadowHostIfInRestrictedShadowRoot();
     Node* hit_node = result.InnerNodeOrImageMapImage();
-
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
-        hit_node->GetLayoutObject()->IsEmbeddedObject()) {
-      mouse_capture_node_ = hit_node;
+        hit_node->GetLayoutObject()->IsEmbeddedObject() &&
+        hit_node->IsHTMLElement() &&
+        ToHTMLElement(hit_node)->IsPluginElement()) {
+      mouse_capture_element_ = ToHTMLPlugInElement(hit_node);
       main_frame.Client()->SetMouseCapture(true);
       TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
     }
@@ -429,7 +430,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
 
   PageWidgetEventHandler::HandleMouseDown(main_frame, event);
 
-  if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_node_) {
+  if (event.button == WebMouseEvent::Button::kLeft && mouse_capture_element_) {
     mouse_capture_gesture_token_ =
         main_frame.GetEventHandler().TakeLastMouseDownGestureToken();
   }
@@ -1758,11 +1759,11 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
   }
 
   // Skip the pointerrawmove for mouse capture case.
-  if (mouse_capture_node_ &&
+  if (mouse_capture_element_ &&
       input_event.GetType() == WebInputEvent::kPointerRawMove)
     return WebInputEventResult::kHandledSystem;
 
-  if (mouse_capture_node_ &&
+  if (mouse_capture_element_ &&
       WebInputEvent::IsMouseEventType(input_event.GetType()))
     return HandleCapturedMouseEvent(coalesced_event);
 
@@ -1777,7 +1778,7 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
   const WebInputEvent& input_event = coalesced_event.Event();
   TRACE_EVENT1("input", "captured mouse event", "type", input_event.GetType());
   // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-  Node* node = mouse_capture_node_;
+  HTMLPlugInElement* element = mouse_capture_element_;
 
   // Not all platforms call mouseCaptureLost() directly.
   if (input_event.GetType() == WebInputEvent::kMouseUp)
@@ -1803,7 +1804,7 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
     case WebInputEvent::kMouseDown:
       event_type = event_type_names::kMousedown;
       gesture_indicator = LocalFrame::NotifyUserActivation(
-          node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
+          element->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
       mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:
@@ -1818,9 +1819,9 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(MainFrameImpl()->GetFrameView(),
                              static_cast<const WebMouseEvent&>(input_event));
-  if (LocalFrame* frame = node->GetDocument().GetFrame()) {
+  if (LocalFrame* frame = element->GetDocument().GetFrame()) {
     frame->GetEventHandler().HandleTargetedMouseEvent(
-        node, transformed_event, event_type,
+        element, transformed_event, event_type,
         TransformWebMouseEventVector(
             MainFrameImpl()->GetFrameView(),
             coalesced_event.GetCoalescedEventsPointers()),
@@ -1838,7 +1839,7 @@ void WebViewImpl::SetCursorVisibilityState(bool is_visible) {
 
 void WebViewImpl::MouseCaptureLost() {
   TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
-  mouse_capture_node_ = nullptr;
+  mouse_capture_element_ = nullptr;
   if (AsView().page->DeprecatedLocalMainFrame())
     AsView().page->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(false);
 }

@@ -1327,7 +1327,7 @@ WebInputEventResult EventHandler::HandleWheelEvent(
 // TODO(crbug.com/665924): This function bypasses all Handle*Event path.
 // It should be using that flow instead of creating/sending events directly.
 WebInputEventResult EventHandler::HandleTargetedMouseEvent(
-    Node* target,
+    Element* target,
     const WebMouseEvent& event,
     const AtomicString& mouse_event_type,
     const Vector<WebMouseEvent>& coalesced_events,
