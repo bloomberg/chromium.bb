@@ -91,8 +91,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         mContentResolver = contentResolver;
 
         if (getAllContacts() == null && sTestContacts == null) {
-            mWorkerTask = new ContactsFetcherWorkerTask(
-                    mContentResolver, this, mCategoryView.includeEmails, mCategoryView.includeTel);
+            mWorkerTask = new ContactsFetcherWorkerTask(mContentResolver, this,
+                    mCategoryView.includeNames, mCategoryView.includeEmails,
+                    mCategoryView.includeTel);
             mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
             mContactDetails = sTestContacts;
