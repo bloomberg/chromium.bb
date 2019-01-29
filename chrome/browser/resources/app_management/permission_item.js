@@ -154,7 +154,11 @@ Polymer({
         newPermissionValue = TriState.kAllow;
         break;
       case TriState.kAllow:
-        newPermissionValue = TriState.kAsk;
+        // TODO(rekanorman): Eventually TriState.kAsk, but currently changing a
+        // permission to kAsk then opening the site settings page for the app
+        // produces the error:
+        // "Only extensions or enterprise policy can change the setting to ASK."
+        newPermissionValue = TriState.kBlock;
         break;
       default:
         assertNotReached();

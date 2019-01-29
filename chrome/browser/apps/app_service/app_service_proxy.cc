@@ -108,6 +108,13 @@ void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
   });
 }
 
+void AppServiceProxy::Shutdown() {
+#if defined(OS_CHROMEOS)
+  extension_apps_.Shutdown();
+  extension_web_apps_.Shutdown();
+#endif  // OS_CHROMEOS
+}
+
 void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }
