@@ -31,7 +31,7 @@ import unittest
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
-from blinkpy.web_tests import run_webkit_tests
+from blinkpy.web_tests import run_web_tests
 from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner, Sharder, TestRunInterruptedException
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
@@ -84,8 +84,8 @@ class WebTestRunnerTests(unittest.TestCase):
     # pylint: disable=protected-access
 
     def _runner(self, port=None):
-        # FIXME: we shouldn't have to use run_webkit_tests.py to get the options we need.
-        options = run_webkit_tests.parse_args(['--platform', 'test-mac-mac10.11'])[0]
+        # FIXME: we shouldn't have to use run_web_tests.py to get the options we need.
+        options = run_web_tests.parse_args(['--platform', 'test-mac-mac10.11'])[0]
         options.child_processes = '1'
 
         host = MockHost()
