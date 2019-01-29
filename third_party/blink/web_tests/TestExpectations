@@ -4190,6 +4190,11 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-align-baseline-vertical.html 
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
+crbug.com/926253 [ Linux Debug ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
+crbug.com/926253 [ Linux Debug ] fast/css-intrinsic-dimensions/height-css-tables-collapsed.html [ Failure ]
+crbug.com/926253 [ Linux Debug ] fast/css-intrinsic-dimensions/height-css-tables.html [ Failure ]
+crbug.com/926253 [ Linux Debug ] fast/css-intrinsic-dimensions/height-tables-collapsed.html [ Failure ]
+crbug.com/926253 [ Linux Debug ] fast/css-intrinsic-dimensions/height-tables.html [ Failure ]
 
 # [css-logical]
 crbug.com/913458 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
