@@ -78,6 +78,7 @@ SPECIAL_TESTS = {
     'lib/chroot_util_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/paygen/paygen_payload_lib_unittest': INSIDE,
+    'lib/paygen/signer_payloads_client_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
     'mobmonitor/checkfile/manager_unittest': INSIDE,
     'mobmonitor/scripts/mobmonitor_unittest': INSIDE,
