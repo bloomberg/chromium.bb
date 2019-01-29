@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "VerticalScrollbar",
+          "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [193, 100, 7, 200],
           "reason": "chunk disappeared"
         }

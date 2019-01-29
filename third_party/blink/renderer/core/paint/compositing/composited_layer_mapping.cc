@@ -3149,6 +3149,13 @@ void CompositedLayerMapping::DoPaintTask(
         paint_info.paint_layer->SubpixelAccumulation());
     PaintLayerPainter(*paint_info.paint_layer)
         .PaintLayerContents(context, painting_info, paint_layer_flags);
+
+    if (paint_info.paint_layer->ContainsDirtyOverlayScrollbars()) {
+      PaintLayerPainter(*paint_info.paint_layer)
+          .PaintLayerContents(
+              context, painting_info,
+              paint_layer_flags | kPaintLayerPaintingOverlayScrollbars);
+    }
   } else {
     PaintLayerPaintingInfo painting_info(
         paint_info.paint_layer, CullRect(dirty_rect), kGlobalPaintNormalPhase,

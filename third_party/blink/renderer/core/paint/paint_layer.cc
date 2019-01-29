@@ -148,6 +148,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       needs_position_update_(!IsRootLayer()),
 #endif
       has3d_transformed_descendant_(false),
+      contains_dirty_overlay_scrollbars_(false),
       needs_ancestor_dependent_compositing_inputs_update_(
           !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()),
       child_needs_compositing_inputs_update_(

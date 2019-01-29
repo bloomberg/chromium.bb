@@ -99,6 +99,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintFloatingChildren(NGPaintFragment::ChildList, const PaintInfo&);
   void PaintFloats(const PaintInfo&);
   void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintOverflowControlsIfNeeded(const PaintInfo&,
+                                     const LayoutPoint& paint_offset);
   void PaintAtomicInline(const PaintInfo&);
   void PaintBackground(const PaintInfo&,
                        const LayoutRect&,
