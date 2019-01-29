@@ -472,9 +472,8 @@ class SocketGetNetworkListFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetNetworkListOnFileThread();
-  void HandleGetNetworkListError();
-  void SendResponseOnUIThread(const net::NetworkInterfaceList& interface_list);
+  void GotNetworkList(
+      const base::Optional<net::NetworkInterfaceList>& interface_list);
 };
 
 class SocketJoinGroupFunction : public SocketAsyncApiFunction {
