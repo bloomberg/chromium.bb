@@ -513,6 +513,7 @@ TEST_F(ControllerTest, StateChanges) {
 
   EXPECT_EQ(AutofillAssistantState::STOPPED, GetUiDelegate()->GetState());
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT,
                                    AutofillAssistantState::STOPPED));
 }
 }  // namespace autofill_assistant
