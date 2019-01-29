@@ -13,15 +13,8 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-{%  for info in packaged_services %}
-#include "{{info.header}}"
-{%- endfor %}
-{%  for info in overlays %}
-#include "{{info.header}}"
-{%- endfor %}
 
-{%- macro generate_manifest_builder(manifest, packaged_services=[],
-                                    overlays=[]) -%}
+{%- macro generate_manifest_builder(manifest) -%}
 service_manager::ManifestBuilder()
     .WithServiceName("{{manifest['name']}}")
 {%-   if 'display_name' in manifest %}
@@ -109,36 +102,18 @@ service_manager::ManifestBuilder()
     .PackageService(
         {{generate_manifest_builder(packaged_service_manifest)|indent(8)}})
 {%-  endfor %}
-{%-  for info in packaged_services %}
-    .PackageService({{info.namespace}}::GetManifest())
-{%-  endfor %}
     .Build()
-{%-  for info in overlays %}
-        .Amend({{info.namespace}}::GetManifest())
-{%-  endfor %}
 {%- endmacro %}
 
 {% for namespace in namespaces %}
 namespace {{namespace}} {
 {%- endfor %}
 
-{%  if root_manifest %}
 const service_manager::Manifest& {{function_name}}() {
   static base::NoDestructor<service_manager::Manifest> manifest{
-      {{generate_manifest_builder(root_manifest,
-            packaged_services=packaged_services, overlays=overlays)
-            |indent(6)}} };
+      {{generate_manifest_builder(root_manifest)|indent(6)}} };
   return *manifest;
 }
-{%  else %}
-const std::vector<service_manager::Manifest>& {{function_name}}() {
-  static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{ {
-{%- for info in packaged_services %}
-      {{info.namespace}}::GetManifest(){%- if not loop.last %},{%- endif %}
-{%- endfor -%} }};
-  return *manifests;
-}
-{%  endif %}
 
 {%- for namespace in namespaces|reverse %}
 }  // namespace {{namespace}}

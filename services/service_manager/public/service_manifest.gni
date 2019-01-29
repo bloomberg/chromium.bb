@@ -48,14 +48,6 @@ template("service_manifest") {
     public_deps = [
       ":$generator_target_name",
     ]
-
-    deps = []
-    if (defined(invoker.packaged_services)) {
-      deps += invoker.packaged_services
-    }
-    if (defined(invoker.overlays)) {
-      deps += invoker.overlays
-    }
   }
 
   collator_target_name = "${target_name}__collator"
@@ -71,44 +63,8 @@ template("service_manifest") {
     ]
     outputs = generated_sources
 
-    submanifest_info = []
-    if (defined(invoker.packaged_services)) {
-      foreach(submanifest, invoker.packaged_services) {
-        manifest_dir = get_label_info(submanifest, "target_gen_dir")
-        manifest_target_name = get_label_info(submanifest, "name")
-        manifest_namespace_input =
-            "$manifest_dir/${manifest_target_name}.namespace"
-        manifest_namespace_path =
-            rebase_path(manifest_namespace_input, root_build_dir)
-        manifest_header_base =
-            rebase_path(manifest_dir, root_gen_dir) + "/${manifest_target_name}"
-        submanifest_info +=
-            [ "packaged@$manifest_namespace_path@$manifest_header_base" ]
-      }
-    }
-    if (defined(invoker.overlays)) {
-      foreach(submanifest, invoker.overlays) {
-        manifest_dir = get_label_info(submanifest, "target_gen_dir")
-        manifest_target_name = get_label_info(submanifest, "name")
-        manifest_namespace_input =
-            "$manifest_dir/${manifest_target_name}.namespace"
-        manifest_namespace_path =
-            rebase_path(manifest_namespace_input, root_build_dir)
-        manifest_header_base =
-            rebase_path(manifest_dir, root_gen_dir) + "/${manifest_target_name}"
-        submanifest_info +=
-            [ "overlay@$manifest_namespace_path@$manifest_header_base" ]
-      }
-    }
-
-    submanifest_info_file =
-        "${target_gen_dir}/${invoker.target_name}.submanifest_info"
-    write_file(submanifest_info_file, submanifest_info)
-
     args = [
       "--root-manifest=" + rebase_path(invoker.source, root_build_dir),
-      "--submanifest-info=" +
-          rebase_path(submanifest_info_file, root_build_dir),
       "--output-function-name=${output_namespace}::GetManifest",
       "--output-filename-base=" +
           rebase_path("$target_gen_dir/${invoker.target_name}", root_build_dir),
@@ -164,46 +120,5 @@ template("service_manifest") {
     if (is_debug || dcheck_always_on) {
       args += [ "--pretty" ]
     }
-
-    if (defined(invoker.overlays) && invoker.overlays != []) {
-      args += [ "--overlays" ]
-      foreach(manifest_target, invoker.overlays) {
-        manifest_target_dir = get_label_info(manifest_target, "target_gen_dir")
-        manifest_target_name = get_label_info(manifest_target, "name")
-        manifest_filename = "$manifest_target_dir/${manifest_target_name}.json"
-
-        inputs += [ manifest_filename ]
-        deps += [ manifest_target ]
-        args += [ rebase_path(manifest_filename, root_build_dir) ]
-
-        # Ensure that each entry does in fact reference a manifest rule.
-        label_no_toolchain =
-            get_label_info(manifest_target, "label_no_toolchain")
-        toolchain = get_label_info(manifest_target, "toolchain")
-        deps += [ "${label_no_toolchain}__is_service_manifest(${toolchain})" ]
-      }
-    }
-
-    if (defined(invoker.packaged_services)) {
-      args += [ "--packaged-services" ]
-      foreach(manifest_target, invoker.packaged_services) {
-        manifest_target_dir = get_label_info(manifest_target, "target_gen_dir")
-        manifest_target_name = get_label_info(manifest_target, "name")
-        manifest_filename = "$manifest_target_dir/${manifest_target_name}.json"
-
-        inputs += [ manifest_filename ]
-        deps += [ manifest_target ]
-        args += [ rebase_path(manifest_filename, root_build_dir) ]
-
-        # Ensure that each entry does in fact reference a manifest rule.
-        label_no_toolchain =
-            get_label_info(manifest_target, "label_no_toolchain")
-        toolchain = get_label_info(manifest_target, "toolchain")
-        deps += [ "${label_no_toolchain}__is_service_manifest(${toolchain})" ]
-      }
-    }
-  }
-
-  group("${target_name}__is_service_manifest") {
   }
 }
