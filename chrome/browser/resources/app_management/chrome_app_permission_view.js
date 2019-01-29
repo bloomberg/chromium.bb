@@ -24,23 +24,8 @@ Polymer({
   },
 
   attached: function() {
-    this.watch('app_', (state) => {
-      const selectedAppId = state.currentPage.selectedAppId;
-      if (selectedAppId) {
-        return state.apps[selectedAppId];
-      }
-    });
-
+    this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
-  },
-
-  /**
-   * @param {App} app
-   * @return {string}
-   * @private
-   */
-  iconUrlFromId_: function(app) {
-    return app_management.util.getAppIcon(app);
   },
 
   /**

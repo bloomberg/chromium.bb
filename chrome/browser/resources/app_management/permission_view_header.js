@@ -10,19 +10,13 @@ Polymer({
 
   properties: {
     /** @type {App} */
-    app: {
+    app_: {
       type: Object,
     },
   },
 
   attached: function() {
-    this.watch('app', (state) => {
-      const selectedAppId = state.currentPage.selectedAppId;
-      if (selectedAppId) {
-        return state.apps[selectedAppId];
-      }
-    });
-
+    this.watch('app_', state => app_management.util.getSelectedApp(state));
     this.updateFromStore();
   },
 
@@ -50,6 +44,6 @@ Polymer({
    * @private
    */
   onClickUninstallButton_: function() {
-    app_management.BrowserProxy.getInstance().handler.uninstall(this.app.id);
+    app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
   },
 });

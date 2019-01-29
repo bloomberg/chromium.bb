@@ -18,14 +18,15 @@ AppManagementBrowserTest.prototype = {
 
   browsePreload: 'chrome://apps',
 
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'test_util.js',
+  ]),
 
   featureList: ['features::kAppManagement', ''],
 
   /** override */
   runAccessibilityChecks: true,
 };
-
 
 function AppManagementAppTest() {}
 
@@ -52,6 +53,20 @@ AppManagementMainViewTest.prototype = {
 };
 
 TEST_F('AppManagementMainViewTest', 'All', function() {
+  mocha.run();
+});
+
+function AppManagementMetadataViewTest() {}
+
+AppManagementMetadataViewTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'metadata_view_test.js',
+  ]),
+};
+
+TEST_F('AppManagementMetadataViewTest', 'All', function() {
   mocha.run();
 });
 

@@ -117,6 +117,7 @@ if (!is_android) {
       ":browser_proxy",
       ":constants",
       ":fake_page_handler",
+      ":store_client",
       ":types",
     ]
   }
@@ -125,12 +126,15 @@ if (!is_android) {
     deps = [
       ":app_item",
       ":fake_page_handler",
+      ":store_client",
     ]
   }
 
   js_library("permission_item") {
     deps = [
       ":fake_page_handler",
+      ":store_client",
+      ":util",
     ]
   }
 

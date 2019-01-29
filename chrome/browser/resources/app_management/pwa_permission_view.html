@@ -59,7 +59,7 @@
       margin-inline-end: 16px;
     }
     </style>
-    <app-management-permission-view-header app="[[app_]]">
+    <app-management-permission-view-header>
       <div slot="extra-right-buttons" id="extra-button">
         <paper-button id="site-settings-button"
             class="secondary-text"
@@ -76,7 +76,6 @@
     <div id="permission-list" class="card-container">
       <app-management-permission-item
         class="permission-card-row separated-row header-text"
-        app="[[app_]]"
         permission-label="$i18n{notifications}"
         permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
       </app-management-permission-item>
@@ -100,21 +99,18 @@
           <iron-collapse opened="[[listExpanded_]]">
             <app-management-permission-item
                 class="subpermission-row"
-                app="[[app_]]"
                 icon="cr:location-on"
                 permission-label="$i18n{location}"
                 permission-type="CONTENT_SETTINGS_TYPE_GEOLOCATION">
             </app-management-permission-item>
             <app-management-permission-item
                 class="subpermission-row"
-                app="[[app_]]"
                 icon="cr:videocam"
                 permission-label="$i18n{camera}"
                 permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA">
             </app-management-permission-item>
             <app-management-permission-item
                 class="subpermission-row"
-                app="[[app_]]"
                 icon="cr:mic"
                 permission-label="$i18n{microphone}"
                 permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC">
