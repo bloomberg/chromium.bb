@@ -47,7 +47,7 @@ void AddJankySlices(std::set<int>* janky_slices,
   // Find each janky slice, and add it to |janky_slices|.
   while (jank_start < jank_end) {
     // Convert |jank_start| to a slice label.
-    int label = (jank_start - start_time) / kJankThreshold;
+    int64_t label = (jank_start - start_time) / kJankThreshold;
     janky_slices->insert(label);
 
     jank_start += kJankThreshold;
@@ -86,7 +86,7 @@ void Calculator::TaskOrEventFinishedOnIOThread(base::TimeTicks schedule_time,
   }
 }
 
-void Calculator::EmitResponsiveness(int janky_slices) {
+void Calculator::EmitResponsiveness(size_t janky_slices) {
   UMA_HISTOGRAM_COUNTS_1000(
       "Browser.Responsiveness.JankyIntervalsPerThirtySeconds", janky_slices);
 
@@ -139,9 +139,9 @@ void Calculator::CalculateResponsivenessIfNecessary(
   // At least |kMeasurementInterval| time has passed, so we want to move forward
   // |last_calculation_time_| and make measurements based on janks in that
   // interval.
-  int number_of_measurement_intervals =
+  int64_t number_of_measurement_intervals =
       time_since_last_calculation / kMeasurementInterval;
-  DCHECK(number_of_measurement_intervals >= 1);
+  DCHECK_GE(number_of_measurement_intervals, 1);
 
   base::TimeTicks new_calculation_time =
       last_calculation_time_ +

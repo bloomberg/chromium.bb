@@ -78,7 +78,7 @@ class CONTENT_EXPORT VideoCaptureController
   bool ResumeClient(VideoCaptureControllerID id,
                     VideoCaptureControllerEventHandler* event_handler);
 
-  int GetClientCount() const;
+  size_t GetClientCount() const;
 
   // Return true if there is client that isn't paused.
   bool HasActiveClient() const;

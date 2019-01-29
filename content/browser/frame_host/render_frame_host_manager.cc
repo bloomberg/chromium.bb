@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
@@ -2437,7 +2438,7 @@ RenderFrameProxyHost* RenderFrameHostManager::GetRenderFrameProxyHost(
   return nullptr;
 }
 
-int RenderFrameHostManager::GetProxyCount() {
+size_t RenderFrameHostManager::GetProxyCount() {
   return proxy_hosts_.size();
 }
 
@@ -2495,11 +2496,9 @@ void RenderFrameHostManager::CreateOpenerProxies(
   // this node first and this node last.  In the common case without cycles,
   // this will ensure that each tree's openers are created before the tree's
   // nodes need to reference them.
-  for (int i = opener_frame_trees.size() - 1; i >= 0; i--) {
-    opener_frame_trees[i]
-        ->root()
-        ->render_manager()
-        ->CreateOpenerProxiesForFrameTree(instance, skip_this_node);
+  for (FrameTree* tree : base::Reversed(opener_frame_trees)) {
+    tree->root()->render_manager()->CreateOpenerProxiesForFrameTree(
+        instance, skip_this_node);
   }
 
   // Set openers for nodes in |nodes_with_back_links| in a second pass.

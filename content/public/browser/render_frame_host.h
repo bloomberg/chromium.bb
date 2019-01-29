@@ -259,7 +259,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Get the number of proxies to this frame, in all processes. Exposed for
   // use by resource metrics.
-  virtual int GetProxyCount() = 0;
+  virtual size_t GetProxyCount() = 0;
 
   // Returns true if the frame has a selection.
   virtual bool HasSelection() = 0;
