@@ -69,11 +69,8 @@ ScriptPromise NotificationManager::RequestPermission(
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   if (!permission_service_) {
-    // See https://bit.ly/2S0zRAS for task types.
-    ConnectToPermissionService(
-        context,
-        mojo::MakeRequest(&permission_service_,
-                          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    ConnectToPermissionService(context,
+                               mojo::MakeRequest(&permission_service_));
     permission_service_.set_connection_error_handler(
         WTF::Bind(&NotificationManager::OnPermissionServiceConnectionError,
                   WrapWeakPersistent(this)));
@@ -228,10 +225,7 @@ const mojom::blink::NotificationServicePtr&
 NotificationManager::GetNotificationService() {
   if (!notification_service_) {
     if (auto* provider = GetSupplementable()->GetInterfaceProvider()) {
-      // See https://bit.ly/2S0zRAS for task types.
-      provider->GetInterface(mojo::MakeRequest(
-          &notification_service_,
-          GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+      provider->GetInterface(mojo::MakeRequest(&notification_service_));
 
       notification_service_.set_connection_error_handler(
           WTF::Bind(&NotificationManager::OnNotificationServiceConnectionError,
