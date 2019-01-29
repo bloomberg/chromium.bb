@@ -78,6 +78,9 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   gfx::NativeView native_view() const { return view_->native_view(); }
 #endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
+  // Clears the native view having focus. See FocusManager::ClearNativeFocus.
+  void ClearNativeFocus();
+
   // Has this view notify the UI subsystem of an accessibility tree change.
   void NotifyAccessibilityTreeChange();
 

@@ -58,6 +58,11 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
     WebContentsObserver::Observe(nullptr);
   }
 
+  bool TakeFocus(WebContents* source, bool reverse) override {
+    client_->ClearViewFocus();
+    return true;
+  }
+
  private:
   void NotifyAXTreeChange() {
     auto* rfh = web_contents_->GetMainFrame();

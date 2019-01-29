@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_node_data.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "ui/views/focus/focus_manager.h"  // nogncheck
 #include "ui/views/layout/fill_layout.h"  // nogncheck
 #include "ui/views/view.h"                // nogncheck
 
@@ -143,6 +144,14 @@ void NavigableContentsView::SetClientRunningInServiceProcess() {
 // static
 bool NavigableContentsView::IsClientRunningInServiceProcess() {
   return GetInServiceProcessFlag().IsSet();
+}
+
+void NavigableContentsView::ClearNativeFocus() {
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+  auto* focus_manager = view_->GetFocusManager();
+  if (focus_manager)
+    focus_manager->ClearNativeFocus();
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 }
 
 void NavigableContentsView::NotifyAccessibilityTreeChange() {

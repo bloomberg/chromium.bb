@@ -71,6 +71,7 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
 
  private:
   // mojom::NavigableContentsClient:
+  void ClearViewFocus() override;
   void DidFinishNavigation(
       const GURL& url,
       bool is_main_frame,

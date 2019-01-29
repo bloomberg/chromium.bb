@@ -59,6 +59,9 @@ interface NavigableContents {
 // A client interface used by the Content Service to push contents-scoped events
 // back to the application.
 interface NavigableContentsClient {
+  // Requests that the client relinquish focus from the content area's view.
+  ClearViewFocus();
+
   // Notifies the client that a navigation has finished.
   DidFinishNavigation(url.mojom.Url url,
                       bool is_main_frame,

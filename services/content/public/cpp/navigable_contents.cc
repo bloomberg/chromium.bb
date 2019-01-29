@@ -65,6 +65,11 @@ void NavigableContents::FocusThroughTabTraversal(bool reverse) {
   contents_->FocusThroughTabTraversal(reverse);
 }
 
+void NavigableContents::ClearViewFocus() {
+  if (view_)
+    view_->ClearNativeFocus();
+}
+
 void NavigableContents::DidFinishNavigation(
     const GURL& url,
     bool is_main_frame,

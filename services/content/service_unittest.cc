@@ -30,6 +30,7 @@ class TestNavigableContentsClient : public mojom::NavigableContentsClient {
 
  private:
   // mojom::NavigableContentsClient:
+  void ClearViewFocus() override {}
   void DidFinishNavigation(const GURL& url,
                            bool is_main_frame,
                            bool is_error_page,
