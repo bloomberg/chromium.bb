@@ -13,6 +13,8 @@
 #include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_animator.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 
@@ -20,7 +22,10 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarContainerCoordinator () <SigninPresenter>
+@interface InfobarContainerCoordinator () <
+    InfobarContainerPresenter,
+    UIViewControllerTransitioningDelegate,
+    SigninPresenter>
 
 @property(nonatomic, assign) TabModel* tabModel;
 
@@ -52,13 +57,10 @@
 
   // Create and setup the ViewController.
   if (experimental_flags::IsInfobarUIRebootEnabled()) {
-    self.containerViewController =
+    InfobarContainerViewController* container =
         [[InfobarContainerViewController alloc] init];
-    [self.baseViewController
-        addChildViewController:self.containerViewController];
-    [self.baseViewController.view addSubview:self.containerViewController.view];
-    [self.containerViewController
-        didMoveToParentViewController:self.baseViewController];
+    container.presenter = self;
+    self.containerViewController = container;
   } else {
     LegacyInfobarContainerViewController* legacyContainer =
         [[LegacyInfobarContainerViewController alloc] init];
@@ -106,6 +108,51 @@
     return YES;
   }
   return NO;
+}
+
+#pragma mark - InfobarContainerPresenter
+
+- (void)presentInfobarContainer {
+  // Should only be called in the new UI implementation.
+  DCHECK(experimental_flags::IsInfobarUIRebootEnabled());
+
+  self.containerViewController.transitioningDelegate = self;
+  [self.containerViewController
+      setModalPresentationStyle:UIModalPresentationCustom];
+  [self.baseViewController presentViewController:self.containerViewController
+                                        animated:YES
+                                      completion:nil];
+}
+
+#pragma mark - UIViewControllerTransitioningDelegate
+
+- (UIPresentationController*)
+    presentationControllerForPresentedViewController:
+        (UIViewController*)presented
+                            presentingViewController:
+                                (UIViewController*)presenting
+                                sourceViewController:(UIViewController*)source {
+  InfobarBannerPresentationController* presentationController =
+      [[InfobarBannerPresentationController alloc]
+          initWithPresentedViewController:presented
+                 presentingViewController:presenting];
+  return presentationController;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)
+    animationControllerForPresentedController:(UIViewController*)presented
+                         presentingController:(UIViewController*)presenting
+                             sourceController:(UIViewController*)source {
+  InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
+  animator.presenting = YES;
+  return animator;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)
+    animationControllerForDismissedController:(UIViewController*)dismissed {
+  InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
+  animator.presenting = NO;
+  return animator;
 }
 
 #pragma mark - SigninPresenter

@@ -26,7 +26,7 @@ source_set("infobars") {
     "//components/translate/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
-    "//ios/chrome/browser/ui/infobars/confirm_infobar",
+    "//ios/chrome/browser/ui/infobars/banners",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",

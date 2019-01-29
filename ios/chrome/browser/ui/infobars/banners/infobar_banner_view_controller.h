@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_CONFIRM_INFOBAR_CONFIRM_INFOBAR_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_INFOBARS_CONFIRM_INFOBAR_CONFIRM_INFOBAR_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_BANNERS_INFOBAR_BANNER_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_INFOBARS_BANNERS_INFOBAR_BANNER_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -13,7 +13,7 @@ class ConfirmInfoBarDelegate;
 
 // TODO(crbug.com/911864): PLACEHOLDER Work in Progress class for the new
 // InfobarUI.
-@interface ConfirmInfobarViewController : UIViewController <InfobarUIDelegate>
+@interface InfobarBannerViewController : UIViewController <InfobarUIDelegate>
 
 - (instancetype)initWithInfoBarDelegate:(ConfirmInfoBarDelegate*)infoBarDelegate
     NS_DESIGNATED_INITIALIZER;
@@ -25,4 +25,4 @@ class ConfirmInfoBarDelegate;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_CONFIRM_INFOBAR_CONFIRM_INFOBAR_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_BANNERS_INFOBAR_BANNER_VIEW_CONTROLLER_H_
