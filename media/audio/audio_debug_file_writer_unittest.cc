@@ -295,7 +295,7 @@ TEST_P(AudioDebugFileWriterBehavioralTest, DestroyStarted) {
   debug_writer_.reset();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioDebugFileWriterTest,
     AudioDebugFileWriterTest,
     // Using 10ms frames per buffer everywhere.
@@ -331,23 +331,23 @@ INSTANTIATE_TEST_CASE_P(
                         48000 / 100,
                         1500)));
 
-INSTANTIATE_TEST_CASE_P(AudioDebugFileWriterBehavioralTest,
-                        AudioDebugFileWriterBehavioralTest,
-                        // Using 10ms frames per buffer everywhere.
-                        testing::Values(
-                            // No writes.
-                            std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                                            44100,
-                                            44100 / 100,
-                                            100)));
+INSTANTIATE_TEST_SUITE_P(AudioDebugFileWriterBehavioralTest,
+                         AudioDebugFileWriterBehavioralTest,
+                         // Using 10ms frames per buffer everywhere.
+                         testing::Values(
+                             // No writes.
+                             std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                                             44100,
+                                             44100 / 100,
+                                             100)));
 
-INSTANTIATE_TEST_CASE_P(AudioDebugFileWriterSingleThreadTest,
-                        AudioDebugFileWriterSingleThreadTest,
-                        // Using 10ms frames per buffer everywhere.
-                        testing::Values(
-                            // No writes.
-                            std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                                            44100,
-                                            44100 / 100,
-                                            100)));
+INSTANTIATE_TEST_SUITE_P(AudioDebugFileWriterSingleThreadTest,
+                         AudioDebugFileWriterSingleThreadTest,
+                         // Using 10ms frames per buffer everywhere.
+                         testing::Values(
+                             // No writes.
+                             std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                                             44100,
+                                             44100 / 100,
+                                             100)));
 }  // namespace media

@@ -353,8 +353,8 @@ TEST_P(VirtualAudioInputStreamTest, ComprehensiveTest) {
   WaitUntilClosed();
 }
 
-INSTANTIATE_TEST_CASE_P(SingleVersusMultithreaded,
-                        VirtualAudioInputStreamTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(SingleVersusMultithreaded,
+                         VirtualAudioInputStreamTest,
+                         ::testing::Values(false, true));
 
 }  // namespace media

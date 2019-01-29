@@ -299,6 +299,6 @@ TEST_P(AudioInputControllerTest, SetVolume) {
   CloseAudioController();
 }
 
-INSTANTIATE_TEST_CASE_P(SyncAsync, AudioInputControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(SyncAsync, AudioInputControllerTest, testing::Bool());
 
 }  // namespace media

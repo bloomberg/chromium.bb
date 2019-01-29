@@ -141,7 +141,7 @@ class AudioSystemTestTemplate : public T {
   DISALLOW_COPY_AND_ASSIGN(AudioSystemTestTemplate);
 };
 
-TYPED_TEST_CASE_P(AudioSystemTestTemplate);
+TYPED_TEST_SUITE_P(AudioSystemTestTemplate);
 
 TYPED_TEST_P(AudioSystemTestTemplate, GetInputStreamParametersNormal) {
   base::RunLoop wait_loop;
@@ -340,7 +340,7 @@ TYPED_TEST_P(AudioSystemTestTemplate, GetInputDeviceInfoWithAssociation) {
   wait_loop.Run();
 }
 
-REGISTER_TYPED_TEST_CASE_P(
+REGISTER_TYPED_TEST_SUITE_P(
     AudioSystemTestTemplate,
     GetInputStreamParametersNormal,
     GetInputStreamParametersNoDevice,

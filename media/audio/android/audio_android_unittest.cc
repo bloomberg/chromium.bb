@@ -974,8 +974,8 @@ TEST_P(AudioAndroidInputTest,
   StopAndCloseAudioInputStreamOnAudioThread();
 }
 
-INSTANTIATE_TEST_CASE_P(AudioAndroidInputTest,
-                        AudioAndroidInputTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(AudioAndroidInputTest,
+                         AudioAndroidInputTest,
+                         testing::Bool());
 
 }  // namespace media

@@ -45,8 +45,8 @@ using AudioSystemTestBaseVariations =
     testing::Types<AudioSystemImplTestBase<false>,
                    AudioSystemImplTestBase<true>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(AudioSystemImpl,
-                              AudioSystemTestTemplate,
-                              AudioSystemTestBaseVariations);
+INSTANTIATE_TYPED_TEST_SUITE_P(AudioSystemImpl,
+                               AudioSystemTestTemplate,
+                               AudioSystemTestBaseVariations);
 
 }  // namespace media
