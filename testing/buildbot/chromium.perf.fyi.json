@@ -8,8 +8,7 @@
         "args": [
           "--gtest-benchmark-name",
           "load_library_perf_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "--non-telemetry=true"
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
