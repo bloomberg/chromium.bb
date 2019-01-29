@@ -2657,6 +2657,9 @@
             '--smoke-test-mode',
           ],
         },
+        'args': [
+          '--gtest-benchmark-name=components_perftests',
+        ],
       },
     },
 
@@ -2707,6 +2710,9 @@
             '--smoke-test-mode',
           ],
         },
+        'args': [
+          '--gtest-benchmark-name=views_perftests',
+        ],
       },
       'webkit_layout_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
@@ -3054,6 +3060,7 @@
     'gpu_angle_perftests': {
       'angle_perftests': {
         'args': [
+          '--gtest-benchmark-name=angle_perftests',
           '-v',
           # Tell the tests to exit after one frame for faster iteration.
           '--one-frame-only',
@@ -3061,6 +3068,12 @@
         'android_args': [
           '--shard-timeout=500',
         ],
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+          'args': [
+            '--smoke-test-mode',
+          ],
+        },
       },
     },
 
@@ -3096,12 +3109,19 @@
     'gpu_command_buffer_perftests_passthrough': {
       'passthrough_command_buffer_perftests': {
         'args': [
+          '--gtest-benchmark-name=passthrough_command_buffer_perftests',
           '-v',
           '--use-cmd-decoder=passthrough',
           '--use-angle=gl-null',
           '--fast-run',
         ],
         'isolate_name': 'command_buffer_perftests',
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+          'args': [
+            '--smoke-test-mode',
+          ],
+        },
         'should_retry_with_patch': False,
       },
     },
@@ -3109,12 +3129,19 @@
     'gpu_command_buffer_perftests_validating': {
       'validating_command_buffer_perftests': {
         'args': [
+          '--gtest-benchmark-name=validating_command_buffer_perftests',
           '-v',
           '--use-cmd-decoder=validating',
           '--use-stub',
           '--fast-run',
         ],
         'isolate_name': 'command_buffer_perftests',
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+          'args': [
+            '--smoke-test-mode',
+          ],
+        },
         'should_retry_with_patch': False,
       },
     },

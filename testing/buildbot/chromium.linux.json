@@ -1731,6 +1731,9 @@
         }
       },
       {
+        "args": [
+          "--gtest-benchmark-name=views_perftests"
+        ],
         "isolate_name": "views_perftests",
         "merge": {
           "args": [
@@ -2447,6 +2450,9 @@
         }
       },
       {
+        "args": [
+          "--gtest-benchmark-name=views_perftests"
+        ],
         "isolate_name": "views_perftests",
         "merge": {
           "args": [
@@ -3119,6 +3125,9 @@
         }
       },
       {
+        "args": [
+          "--gtest-benchmark-name=views_perftests"
+        ],
         "isolate_name": "views_perftests",
         "merge": {
           "args": [
@@ -4375,6 +4384,9 @@
         }
       },
       {
+        "args": [
+          "--gtest-benchmark-name=views_perftests"
+        ],
         "isolate_name": "views_perftests",
         "merge": {
           "args": [

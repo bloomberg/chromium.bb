@@ -206,10 +206,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -682,10 +689,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -728,12 +742,19 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name=passthrough_command_buffer_perftests",
           "-v",
           "--use-cmd-decoder=passthrough",
           "--use-angle=gl-null",
           "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "passthrough_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -749,12 +770,19 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name=validating_command_buffer_perftests",
           "-v",
           "--use-cmd-decoder=validating",
           "--use-stub",
           "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "validating_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -1055,11 +1083,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1154,11 +1189,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1253,11 +1295,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1487,11 +1536,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1586,11 +1642,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1685,11 +1748,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2024,11 +2094,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2825,11 +2902,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3749,11 +3833,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -4195,11 +4286,18 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
           "--shard-timeout=500"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5383,10 +5481,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -5890,10 +5995,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -7070,10 +7182,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -14569,10 +14688,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15324,10 +15450,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15864,10 +15997,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15928,12 +16068,19 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name=passthrough_command_buffer_perftests",
           "-v",
           "--use-cmd-decoder=passthrough",
           "--use-angle=gl-null",
           "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "passthrough_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -15958,12 +16105,19 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name=validating_command_buffer_perftests",
           "-v",
           "--use-cmd-decoder=validating",
           "--use-stub",
           "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "validating_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -17195,10 +17349,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18031,10 +18192,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19000,10 +19168,17 @@
     "isolated_scripts": [
       {
         "args": [
+          "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only"
         ],
         "isolate_name": "angle_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "angle_perftests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -19236,12 +19411,19 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name=passthrough_command_buffer_perftests",
           "-v",
           "--use-cmd-decoder=passthrough",
           "--use-angle=gl-null",
           "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "passthrough_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {
@@ -19381,12 +19563,19 @@
       },
       {
         "args": [
+          "--gtest-benchmark-name=validating_command_buffer_perftests",
           "-v",
           "--use-cmd-decoder=validating",
           "--use-stub",
           "--fast-run"
         ],
         "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
         "name": "validating_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {

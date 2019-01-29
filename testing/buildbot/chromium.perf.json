@@ -6,9 +6,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "components_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "components_perftests"
         ],
         "isolate_name": "components_perftests",
         "merge": {
@@ -47,9 +45,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "gpu_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "gpu_perftests"
         ],
         "isolate_name": "gpu_perftests",
         "merge": {
@@ -88,9 +84,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "tracing_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "tracing_perftests"
         ],
         "isolate_name": "tracing_perftests",
         "merge": {
@@ -270,9 +264,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "angle_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "angle_perftests"
         ],
         "isolate_name": "angle_perftests",
         "merge": {
@@ -309,9 +301,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "load_library_perf_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "load_library_perf_tests"
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
@@ -348,9 +338,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "media_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "media_perftests"
         ],
         "isolate_name": "media_perftests",
         "merge": {
@@ -388,8 +376,6 @@
         "args": [
           "--gtest-benchmark-name",
           "passthrough_command_buffer_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true",
           "--use-cmd-decoder=passthrough",
           "--use-angle=gl-null"
         ],
@@ -429,8 +415,6 @@
         "args": [
           "--gtest-benchmark-name",
           "validating_command_buffer_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true",
           "--use-cmd-decoder=validating",
           "--use-stub"
         ],
@@ -514,9 +498,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "components_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "components_perftests"
         ],
         "isolate_name": "components_perftests",
         "merge": {
@@ -553,9 +535,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "load_library_perf_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "load_library_perf_tests"
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
@@ -592,9 +572,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "media_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "media_perftests"
         ],
         "isolate_name": "media_perftests",
         "merge": {
@@ -729,8 +707,6 @@
         "args": [
           "--gtest-benchmark-name",
           "angle_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true",
           "--shard-timeout=300"
         ],
         "isolate_name": "angle_perftests",
@@ -770,9 +746,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "base_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "base_perftests"
         ],
         "isolate_name": "base_perftests",
         "merge": {
@@ -811,9 +785,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "components_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "components_perftests"
         ],
         "isolate_name": "components_perftests",
         "merge": {
@@ -852,9 +824,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "gpu_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "gpu_perftests"
         ],
         "isolate_name": "gpu_perftests",
         "merge": {
@@ -893,9 +863,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "media_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "media_perftests"
         ],
         "isolate_name": "media_perftests",
         "merge": {
@@ -934,9 +902,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "tracing_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "tracing_perftests"
         ],
         "isolate_name": "tracing_perftests",
         "merge": {
@@ -1034,9 +1000,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "base_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "base_perftests"
         ],
         "isolate_name": "base_perftests",
         "merge": {
@@ -1073,9 +1037,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "load_library_perf_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "load_library_perf_tests"
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
@@ -1112,9 +1074,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "media_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "media_perftests"
         ],
         "isolate_name": "media_perftests",
         "merge": {
@@ -1151,9 +1111,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "net_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "net_perftests"
         ],
         "isolate_name": "net_perftests",
         "merge": {
@@ -1190,9 +1148,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "performance_browser_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "performance_browser_tests"
         ],
         "isolate_name": "performance_browser_tests",
         "merge": {
@@ -1229,9 +1185,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "tracing_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "tracing_perftests"
         ],
         "isolate_name": "tracing_perftests",
         "merge": {
@@ -1313,9 +1267,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "load_library_perf_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "load_library_perf_tests"
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
@@ -1352,9 +1304,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "performance_browser_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "performance_browser_tests"
         ],
         "isolate_name": "performance_browser_tests",
         "merge": {
@@ -1436,9 +1386,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "base_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "base_perftests"
         ],
         "isolate_name": "base_perftests",
         "merge": {
@@ -1475,9 +1423,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "media_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "media_perftests"
         ],
         "isolate_name": "media_perftests",
         "merge": {
@@ -1514,9 +1460,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "net_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "net_perftests"
         ],
         "isolate_name": "net_perftests",
         "merge": {
@@ -1553,9 +1497,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "performance_browser_tests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "performance_browser_tests"
         ],
         "isolate_name": "performance_browser_tests",
         "merge": {
@@ -1592,9 +1534,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "views_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "views_perftests"
         ],
         "isolate_name": "views_perftests",
         "merge": {
@@ -1682,8 +1622,6 @@
         "args": [
           "--gtest-benchmark-name",
           "angle_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true",
           "--shard-timeout=300"
         ],
         "isolate_name": "angle_perftests",
@@ -1721,9 +1659,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "base_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "base_perftests"
         ],
         "isolate_name": "base_perftests",
         "merge": {
@@ -1760,9 +1696,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "components_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "components_perftests"
         ],
         "isolate_name": "components_perftests",
         "merge": {
@@ -1799,9 +1733,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "media_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "media_perftests"
         ],
         "isolate_name": "media_perftests",
         "merge": {
@@ -1838,9 +1770,7 @@
       {
         "args": [
           "--gtest-benchmark-name",
-          "views_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
+          "views_perftests"
         ],
         "isolate_name": "views_perftests",
         "merge": {
