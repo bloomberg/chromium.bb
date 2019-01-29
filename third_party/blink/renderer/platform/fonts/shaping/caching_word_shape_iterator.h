@@ -135,7 +135,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
       // ZWJ and modifier check in order not to split those Emoji sequences.
       if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK) ||
           ch == kZeroWidthJoinerCharacter || Character::IsModifier(ch) ||
-          Character::IsEmojiFlagSequenceTag(ch))
+          Character::IsEmojiTagSequence(ch) || ch == kCancelTag)
         continue;
       // Avoid delimiting COMMON/INHERITED alone, which makes harder to
       // identify the script.

@@ -258,12 +258,10 @@ bool Character::CanReceiveTextEmphasis(UChar32 c) {
   return true;
 }
 
-bool Character::IsEmojiFlagSequenceTag(UChar32 c) {
-  // Only allow valid sequences from
+bool Character::IsEmojiTagSequence(UChar32 c) {
   // http://www.unicode.org/reports/tr51/proposed.html#valid-emoji-tag-sequences
   return (c >= kTagDigitZero && c <= kTagDigitNine) ||
-         (c >= kTagLatinSmallLetterA && c <= kTagLatinSmallLetterZ) ||
-         c == kCancelTag;
+         (c >= kTagLatinSmallLetterA && c <= kTagLatinSmallLetterZ);
 }
 
 template <typename CharacterType>

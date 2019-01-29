@@ -153,7 +153,7 @@ class PLATFORM_EXPORT Character {
   static bool IsRegionalIndicator(UChar32);
   static bool IsModifier(UChar32 c) { return c >= 0x1F3FB && c <= 0x1F3FF; }
   // http://www.unicode.org/reports/tr51/proposed.html#flag-emoji-tag-sequences
-  static bool IsEmojiFlagSequenceTag(UChar32);
+  static bool IsEmojiTagSequence(UChar32);
 
   static inline UChar NormalizeSpaces(UChar character) {
     if (TreatAsSpace(character))
