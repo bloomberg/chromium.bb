@@ -49,6 +49,10 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
+  gpu::SharedImageInterface* GetSharedImageInterface() const override {
+    NOTREACHED();
+    return nullptr;
+  }
 
   bool BindToCurrentThread() override { return false; }
   void SetLostContextCallback(base::Closure) override {}

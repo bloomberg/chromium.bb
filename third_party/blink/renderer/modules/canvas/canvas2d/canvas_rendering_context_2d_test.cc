@@ -298,6 +298,9 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
   sk_sp<SkSurface> CreateSkSurface() const override {
     return sk_sp<SkSurface>();
   }
+  scoped_refptr<StaticBitmapImage> Snapshot() override {
+    return SnapshotInternal();
+  }
 
  private:
   bool is_accelerated_;
