@@ -18,9 +18,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
+#include "components/arc/common/app_permissions.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -221,7 +223,38 @@ void ArcApps::Launch(const std::string& app_id,
 
 void ArcApps::SetPermission(const std::string& app_id,
                             apps::mojom::PermissionPtr permission) {
-  NOTIMPLEMENTED();
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs_->GetApp(app_id);
+  if (!app_info) {
+    LOG(ERROR) << "SetPermission failed, could not find app with id " << app_id;
+    return;
+  }
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    LOG(WARNING) << "SetPermission failed, ArcServiceManager not available.";
+    return;
+  }
+
+  auto permission_type =
+      static_cast<arc::mojom::AppPermission>(permission->permission_id);
+  if (permission->value) {
+    auto* permissions_instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->app_permissions(),
+        GrantPermission);
+    if (permissions_instance) {
+      permissions_instance->GrantPermission(app_info->package_name,
+                                            permission_type);
+    }
+  } else {
+    auto* permissions_instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->app_permissions(),
+        RevokePermission);
+    if (permissions_instance) {
+      permissions_instance->RevokePermission(app_info->package_name,
+                                             permission_type);
+    }
+  }
 }
 
 void ArcApps::Uninstall(const std::string& app_id) {
