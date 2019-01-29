@@ -102,33 +102,6 @@ mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
   return mojo::MakeRequest(&info).PassMessagePipe();
 }
 
-#if defined(OS_ANDROID)
-class MockRendererMediaPlayerManager
-    : public RendererMediaPlayerManagerInterface {
- public:
-  MOCK_METHOD7(Initialize,
-               void(MediaPlayerHostMsg_Initialize_Type type,
-                    int player_id,
-                    const GURL& url,
-                    const GURL& site_for_cookies,
-                    const GURL& frame_url,
-                    bool allow_credentials,
-                    int delegate_id));
-  MOCK_METHOD1(Start, void(int player_id));
-  MOCK_METHOD2(Pause, void(int player_id, bool is_media_related_action));
-  MOCK_METHOD2(Seek, void(int player_id, base::TimeDelta time));
-  MOCK_METHOD2(SetVolume, void(int player_id, double volume));
-  MOCK_METHOD2(SetPoster, void(int player_id, const GURL& poster));
-  MOCK_METHOD1(SuspendAndReleaseResources, void(int player_id));
-  MOCK_METHOD1(DestroyPlayer, void(int player_id));
-  MOCK_METHOD1(RequestRemotePlayback, void(int player_id));
-  MOCK_METHOD1(RequestRemotePlaybackControl, void(int player_id));
-  MOCK_METHOD1(RequestRemotePlaybackStop, void(int player_id));
-  MOCK_METHOD1(RegisterMediaPlayer, int(RendererMediaPlayerInterface* player));
-  MOCK_METHOD1(UnregisterMediaPlayer, void(int player_id));
-};
-#endif
-
 class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
  public:
   MockWebMediaPlayerClient() = default;
@@ -426,10 +399,6 @@ class WebMediaPlayerImplTest : public testing::Test {
         web_local_frame_, &client_, &encrypted_client_, &delegate_,
         std::move(factory_selector), url_index_.get(), std::move(compositor),
         std::move(params));
-
-#if defined(OS_ANDROID)
-    wmpi_->SetMediaPlayerManager(&mock_media_player_manager_);
-#endif
   }
 
   ~WebMediaPlayerImplTest() override {
@@ -523,43 +492,31 @@ class WebMediaPlayerImplTest : public testing::Test {
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false,
-                                                   false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_FrameHidden() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false,
-                                                   true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Suspended() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, true,
-                                                   false);
-  }
-
-  WebMediaPlayerImpl::PlayState ComputePlayState_Remote() {
-    EXPECT_CALL(client_, WasAlwaysMuted())
-        .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(true, false, true, false,
-                                                   false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Flinging() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false,
-                                                   false);
+    return wmpi_->UpdatePlayState_ComputePlayState(true, true, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_BackgroundedStreaming() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false,
-                                                   true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
   }
 
   bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
@@ -732,10 +689,6 @@ class WebMediaPlayerImplTest : public testing::Test {
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
   MockWebMediaPlayerEncryptedMediaClient encrypted_client_;
-
-#if defined(OS_ANDROID)
-  NiceMock<MockRendererMediaPlayerManager> mock_media_player_manager_;
-#endif
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
   viz::LocalSurfaceId local_surface_id_ =
@@ -1249,19 +1202,6 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_ResumeForNeedFirstFrame) {
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PAUSED, state.delegate_state);
   EXPECT_TRUE(state.is_idle);
   EXPECT_FALSE(state.is_suspended);
-  EXPECT_FALSE(state.is_memory_reporting_enabled);
-}
-
-TEST_F(WebMediaPlayerImplTest, ComputePlayState_Remote) {
-  InitializeWebMediaPlayerImpl();
-  SetMetadata(true, true);
-  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
-
-  // Remote media via wmpi_cast is always suspended.
-  // TODO(sandersd): Decide whether this should count as idle or not.
-  WebMediaPlayerImpl::PlayState state = ComputePlayState_Remote();
-  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
-  EXPECT_TRUE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
