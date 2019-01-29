@@ -1528,7 +1528,7 @@ class RenderWidgetHostViewMacPinchTest
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMacPinchTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, RenderWidgetHostViewMacPinchTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, RenderWidgetHostViewMacPinchTest, testing::Bool());
 
 TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   // Do a gesture that crosses the threshold.
