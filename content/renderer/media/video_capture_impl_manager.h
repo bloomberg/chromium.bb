@@ -16,9 +16,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
@@ -70,8 +70,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   base::Closure StartCapture(
       media::VideoCaptureSessionId id,
       const media::VideoCaptureParams& params,
-      const VideoCaptureStateUpdateCB& state_update_cb,
-      const VideoCaptureDeliverFrameCB& deliver_frame_cb);
+      const blink::VideoCaptureStateUpdateCB& state_update_cb,
+      const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
@@ -83,13 +83,15 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
   // Get supported formats supported by the device for the given session
   // ID. |callback| will be called on the IO thread.
-  void GetDeviceSupportedFormats(media::VideoCaptureSessionId id,
-                                 const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceSupportedFormats(
+      media::VideoCaptureSessionId id,
+      const blink::VideoCaptureDeviceFormatsCB& callback);
 
   // Get supported formats currently in use for the given session ID.
   // |callback| will be called on the IO thread.
-  void GetDeviceFormatsInUse(media::VideoCaptureSessionId id,
-                             const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceFormatsInUse(
+      media::VideoCaptureSessionId id,
+      const blink::VideoCaptureDeviceFormatsCB& callback);
 
   // Make all VideoCaptureImpl instances in the input |video_devices|
   // stop/resume delivering video frames to their clients, depends on flag

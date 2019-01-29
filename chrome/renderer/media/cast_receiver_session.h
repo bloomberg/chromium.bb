@@ -60,7 +60,7 @@ class CastReceiverSession : public base::RefCounted<CastReceiverSession> {
   virtual ~CastReceiverSession();
   void StartAudio(scoped_refptr<CastReceiverAudioValve> audio_valve);
 
-  void StartVideo(content::VideoCaptureDeliverFrameCB frame_callback);
+  void StartVideo(blink::VideoCaptureDeliverFrameCB frame_callback);
   // Stop Video callbacks.
   // Note that this returns immediately, but callbacks do not stop immediately.
   void StopVideo();

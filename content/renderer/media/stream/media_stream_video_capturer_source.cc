@@ -41,7 +41,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   // VideoCaptureDelegate Implementation.
   media::VideoCaptureFormats GetPreferredFormats() override;
   void StartCapture(const media::VideoCaptureParams& params,
-                    const VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override;
   void RequestRefreshFrame() override;
   void MaybeSuspend() override;
@@ -49,7 +49,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   void StopCapture() override;
 
  private:
-  void OnStateUpdate(VideoCaptureState state);
+  void OnStateUpdate(blink::VideoCaptureState state);
 
   // |session_id_| identifies the capture device used for this capture session.
   const media::VideoCaptureSessionId session_id_;
@@ -92,7 +92,7 @@ media::VideoCaptureFormats LocalVideoCapturerSource::GetPreferredFormats() {
 
 void LocalVideoCapturerSource::StartCapture(
     const media::VideoCaptureParams& params,
-    const VideoCaptureDeliverFrameCB& new_frame_callback,
+    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
     const RunningCallback& running_callback) {
   DCHECK(params.requested_format.IsValid());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -130,27 +130,27 @@ void LocalVideoCapturerSource::StopCapture() {
     base::ResetAndReturn(&stop_capture_cb_).Run();
 }
 
-void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
+void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (running_callback_.is_null())
     return;
   switch (state) {
-    case VIDEO_CAPTURE_STATE_STARTED:
+    case blink::VIDEO_CAPTURE_STATE_STARTED:
       running_callback_.Run(true);
       break;
 
-    case VIDEO_CAPTURE_STATE_STOPPING:
-    case VIDEO_CAPTURE_STATE_STOPPED:
-    case VIDEO_CAPTURE_STATE_ERROR:
-    case VIDEO_CAPTURE_STATE_ENDED:
+    case blink::VIDEO_CAPTURE_STATE_STOPPING:
+    case blink::VIDEO_CAPTURE_STATE_STOPPED:
+    case blink::VIDEO_CAPTURE_STATE_ERROR:
+    case blink::VIDEO_CAPTURE_STATE_ENDED:
       release_device_cb_.Run();
       release_device_cb_ = manager_->UseDevice(session_id_);
       running_callback_.Run(false);
       break;
 
-    case VIDEO_CAPTURE_STATE_STARTING:
-    case VIDEO_CAPTURE_STATE_PAUSED:
-    case VIDEO_CAPTURE_STATE_RESUMED:
+    case blink::VIDEO_CAPTURE_STATE_STARTING:
+    case blink::VIDEO_CAPTURE_STATE_PAUSED:
+    case blink::VIDEO_CAPTURE_STATE_RESUMED:
       // Not applicable to reporting on device starts or errors.
       break;
   }
@@ -221,7 +221,7 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    const blink::VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = STARTING;
   frame_callback_ = frame_callback;

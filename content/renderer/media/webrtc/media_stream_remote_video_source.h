@@ -38,7 +38,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
  protected:
   // Implements MediaStreamVideoSource.
   void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) override;
+      const blink::VideoCaptureDeliverFrameCB& frame_callback) override;
 
   void StopSourceImpl() override;
 

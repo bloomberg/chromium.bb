@@ -21,7 +21,8 @@
 namespace content {
 
 namespace {
-void ResetCallback(std::unique_ptr<VideoCaptureDeliverFrameCB> callback) {
+void ResetCallback(
+    std::unique_ptr<blink::VideoCaptureDeliverFrameCB> callback) {
   // |callback| will be deleted when this exits.
 }
 
@@ -49,7 +50,8 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   // Add |callback| to receive video frames on the IO-thread.
   // Must be called on the main render thread.
-  void AddCallback(VideoSinkId id, const VideoCaptureDeliverFrameCB& callback);
+  void AddCallback(VideoSinkId id,
+                   const blink::VideoCaptureDeliverFrameCB& callback);
 
   // Removes |callback| associated with |id| from receiving video frames if |id|
   // has been added. It is ok to call RemoveCallback even if the |id| has not
@@ -66,7 +68,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   friend class base::RefCountedThreadSafe<FrameDeliverer>;
   virtual ~FrameDeliverer();
   void AddCallbackOnIO(VideoSinkId id,
-                       const VideoCaptureDeliverFrameCB& callback);
+                       const blink::VideoCaptureDeliverFrameCB& callback);
   void RemoveCallbackOnIO(
       VideoSinkId id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -86,7 +88,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   scoped_refptr<media::VideoFrame> black_frame_;
 
   using VideoIdCallbackPair =
-      std::pair<VideoSinkId, VideoCaptureDeliverFrameCB>;
+      std::pair<VideoSinkId, blink::VideoCaptureDeliverFrameCB>;
   std::vector<VideoIdCallbackPair> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
@@ -105,7 +107,7 @@ MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
     VideoSinkId id,
-    const VideoCaptureDeliverFrameCB& callback) {
+    const blink::VideoCaptureDeliverFrameCB& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -114,7 +116,7 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
     VideoSinkId id,
-    const VideoCaptureDeliverFrameCB& callback) {
+    const blink::VideoCaptureDeliverFrameCB& callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   callbacks_.push_back(std::make_pair(id, callback));
 }
@@ -134,8 +136,8 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
       // Callback is copied to heap and then deleted on the target thread.
-      std::unique_ptr<VideoCaptureDeliverFrameCB> callback;
-      callback.reset(new VideoCaptureDeliverFrameCB(it->second));
+      std::unique_ptr<blink::VideoCaptureDeliverFrameCB> callback;
+      callback.reset(new blink::VideoCaptureDeliverFrameCB(it->second));
       callbacks_.erase(it);
       task_runner->PostTask(
           FROM_HERE, base::BindOnce(&ResetCallback, std::move(callback)));
@@ -317,9 +319,10 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DVLOG(3) << "~MediaStreamVideoTrack()";
 }
 
-void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink,
-                                    const VideoCaptureDeliverFrameCB& callback,
-                                    bool is_sink_secure) {
+void MediaStreamVideoTrack::AddSink(
+    MediaStreamVideoSink* sink,
+    const blink::VideoCaptureDeliverFrameCB& callback,
+    bool is_sink_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(!base::ContainsValue(sinks_, sink));
   sinks_.push_back(sink);

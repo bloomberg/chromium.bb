@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/public/renderer/media_stream_video_sink.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "ui/gfx/geometry/size.h"
 

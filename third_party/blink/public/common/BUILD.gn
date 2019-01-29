@@ -65,6 +65,7 @@ source_set("headers") {
     "manifest/manifest.h",
     "manifest/manifest_icon_selector.h",
     "manifest/web_display_mode.h",
+    "media/video_capture.h",
     "mediastream/media_devices.h",
     "mediastream/media_devices_mojom_traits.h",
     "mediastream/media_stream_controls.h",
@@ -114,6 +115,7 @@ source_set("headers") {
     deps += [
       "//media",
       "//media/capture:capture_base",
+      "//media/capture:capture_lib",
     ]
   }
 

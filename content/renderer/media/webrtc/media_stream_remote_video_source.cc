@@ -32,7 +32,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
  public:
   RemoteVideoSourceDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const VideoCaptureDeliverFrameCB& new_frame_callback);
+      const blink::VideoCaptureDeliverFrameCB& new_frame_callback);
 
  protected:
   friend class base::RefCountedThreadSafe<RemoteVideoSourceDelegate>;
@@ -50,7 +50,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |frame_callback_| is accessed on the IO thread.
-  VideoCaptureDeliverFrameCB frame_callback_;
+  blink::VideoCaptureDeliverFrameCB frame_callback_;
 
   // Timestamp of the first received frame.
   base::TimeDelta start_timestamp_;
@@ -62,7 +62,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     RemoteVideoSourceDelegate(
         scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-        const VideoCaptureDeliverFrameCB& new_frame_callback)
+        const blink::VideoCaptureDeliverFrameCB& new_frame_callback)
     : io_task_runner_(io_task_runner),
       frame_callback_(new_frame_callback),
       start_timestamp_(media::kNoTimestamp),
@@ -226,7 +226,7 @@ void MediaStreamRemoteVideoSource::OnSourceTerminated() {
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    const blink::VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!delegate_.get());
   delegate_ = new RemoteVideoSourceDelegate(io_task_runner(), frame_callback);

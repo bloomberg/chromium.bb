@@ -17,7 +17,7 @@ MediaStreamVideoSink::~MediaStreamVideoSink() {
 
 void MediaStreamVideoSink::ConnectToTrack(
     const blink::WebMediaStreamTrack& track,
-    const VideoCaptureDeliverFrameCB& callback,
+    const blink::VideoCaptureDeliverFrameCB& callback,
     bool is_sink_secure) {
   DCHECK(connected_track_.IsNull());
   connected_track_ = track;

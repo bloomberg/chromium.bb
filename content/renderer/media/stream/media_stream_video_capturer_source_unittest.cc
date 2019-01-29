@@ -36,11 +36,11 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
   MOCK_METHOD0(GetPreferredFormats, media::VideoCaptureFormats());
   MOCK_METHOD3(MockStartCapture,
                void(const media::VideoCaptureParams& params,
-                    const VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback));
   MOCK_METHOD0(MockStopCapture, void());
   void StartCapture(const media::VideoCaptureParams& params,
-                    const VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override {
     running_cb_ = running_callback;
     capture_params_ = params;
@@ -224,7 +224,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
-  VideoCaptureDeliverFrameCB deliver_frame_cb;
+  blink::VideoCaptureDeliverFrameCB deliver_frame_cb;
   media::VideoCapturerSource::RunningCallback running_cb;
 
   InSequence s;

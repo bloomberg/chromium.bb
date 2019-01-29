@@ -4,14 +4,14 @@
 //
 // This file contains commonly used definitions of video capture.
 
-#ifndef CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
-#define CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIA_VIDEO_CAPTURE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIA_VIDEO_CAPTURE_H_
 
 #include "base/callback.h"
 #include "media/capture/video_capture_types.h"
 #include "media/capture/video_capturer_source.h"
 
-namespace content {
+namespace blink {
 
 using VideoCaptureDeviceFormatsCB =
     media::VideoCapturerSource::VideoCaptureDeviceFormatsCB;
@@ -36,6 +36,6 @@ enum VideoCaptureState {
 
 using VideoCaptureStateUpdateCB = base::Callback<void(VideoCaptureState)>;
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_MEDIA_VIDEO_CAPTURE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MEDIA_VIDEO_CAPTURE_H_

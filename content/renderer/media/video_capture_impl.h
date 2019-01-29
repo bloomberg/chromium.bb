@@ -14,11 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/video_capture.h"
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 
 namespace content {
 
@@ -43,8 +43,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   // |deliver_frame_cb| will be called when a frame is ready.
   void StartCapture(int client_id,
                     const media::VideoCaptureParams& params,
-                    const VideoCaptureStateUpdateCB& state_update_cb,
-                    const VideoCaptureDeliverFrameCB& deliver_frame_cb);
+                    const blink::VideoCaptureStateUpdateCB& state_update_cb,
+                    const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
   // Stop capturing. |client_id| is the identifier used to call StartCapture.
   void StopCapture(int client_id);
@@ -55,11 +55,13 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // Get capturing formats supported by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceSupportedFormats(const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceSupportedFormats(
+      const blink::VideoCaptureDeviceFormatsCB& callback);
 
   // Get capturing formats currently in use by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceFormatsInUse(const VideoCaptureDeviceFormatsCB& callback);
+  void GetDeviceFormatsInUse(
+      const blink::VideoCaptureDeviceFormatsCB& callback);
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 
@@ -99,11 +101,10 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StartCaptureInternal();
 
   void OnDeviceSupportedFormats(
-      const VideoCaptureDeviceFormatsCB& callback,
+      const blink::VideoCaptureDeviceFormatsCB& callback,
       const media::VideoCaptureFormats& supported_formats);
-  void OnDeviceFormatsInUse(
-      const VideoCaptureDeviceFormatsCB& callback,
-      const media::VideoCaptureFormats& formats_in_use);
+  void OnDeviceFormatsInUse(const blink::VideoCaptureDeviceFormatsCB& callback,
+                            const media::VideoCaptureFormats& formats_in_use);
 
   // Tries to remove |client_id| from |clients|, returning false if not found.
   bool RemoveClient(int client_id, ClientInfoMap* clients);
@@ -145,7 +146,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   // First captured frame reference time sent from browser process side.
   base::TimeTicks first_frame_ref_time_;
 
-  VideoCaptureState state_;
+  blink::VideoCaptureState state_;
 
   base::ThreadChecker io_thread_checker_;
 

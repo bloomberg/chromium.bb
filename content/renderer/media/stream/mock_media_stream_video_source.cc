@@ -67,7 +67,7 @@ void MockMediaStreamVideoSource::DoChangeSource(
 }
 
 void MockMediaStreamVideoSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    const blink::VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());
   attempted_to_start_ = true;
   frame_callback_ = frame_callback;

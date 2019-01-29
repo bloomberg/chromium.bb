@@ -99,7 +99,7 @@ void CastReceiverSession::StartAudio(
 }
 
 void CastReceiverSession::StartVideo(
-    content::VideoCaptureDeliverFrameCB frame_callback) {
+    blink::VideoCaptureDeliverFrameCB frame_callback) {
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&CastReceiverSessionDelegate::StartVideo,
