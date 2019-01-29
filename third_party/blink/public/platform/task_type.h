@@ -143,6 +143,9 @@ enum class TaskType : unsigned {
   // https://www.w3.org/TR/permissions/
   kPermission = 59,
 
+  // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
+  kServiceWorkerClientMessage = 60,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -217,7 +220,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 60,
+  kCount = 61,
 };
 
 }  // namespace blink
