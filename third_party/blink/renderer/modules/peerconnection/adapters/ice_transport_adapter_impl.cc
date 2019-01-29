@@ -37,6 +37,8 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
       this, &IceTransportAdapterImpl::OnStateChanged);
   p2p_transport_channel_->SignalNetworkRouteChanged.connect(
       this, &IceTransportAdapterImpl::OnNetworkRouteChanged);
+  p2p_transport_channel_->SignalRoleConflict.connect(
+      this, &IceTransportAdapterImpl::OnRoleConflict);
   // We need to set the ICE role even before Start is called since the Port
   // assumes that the role has been set before receiving incoming connectivity
   // checks. These checks can race with the information signaled for Start.
@@ -139,6 +141,39 @@ void IceTransportAdapterImpl::OnNetworkRouteChanged(
   delegate_->OnSelectedCandidatePairChanged(
       std::make_pair(selected_connection->local_candidate(),
                      selected_connection->remote_candidate()));
+}
+
+static const char* IceRoleToString(cricket::IceRole role) {
+  switch (role) {
+    case cricket::ICEROLE_CONTROLLING:
+      return "controlling";
+    case cricket::ICEROLE_CONTROLLED:
+      return "controlled";
+    default:
+      return "unknown";
+  }
+}
+
+static cricket::IceRole IceRoleReversed(cricket::IceRole role) {
+  switch (role) {
+    case cricket::ICEROLE_CONTROLLING:
+      return cricket::ICEROLE_CONTROLLED;
+    case cricket::ICEROLE_CONTROLLED:
+      return cricket::ICEROLE_CONTROLLING;
+    default:
+      return cricket::ICEROLE_UNKNOWN;
+  }
+}
+
+void IceTransportAdapterImpl::OnRoleConflict(
+    cricket::IceTransportInternal* transport) {
+  DCHECK_EQ(transport, p2p_transport_channel_.get());
+  // This logic is copied from JsepTransportController.
+  cricket::IceRole reversed_role =
+      IceRoleReversed(p2p_transport_channel_->GetIceRole());
+  LOG(INFO) << "Got role conflict; switching to "
+            << IceRoleToString(reversed_role) << " role.";
+  p2p_transport_channel_->SetIceRole(reversed_role);
 }
 
 }  // namespace blink

@@ -47,6 +47,7 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
   void OnStateChanged(cricket::IceTransportInternal* transport);
   void OnNetworkRouteChanged(
       absl::optional<rtc::NetworkRoute> new_network_route);
+  void OnRoleConflict(cricket::IceTransportInternal* transport);
 
   Delegate* const delegate_;
   std::unique_ptr<cricket::PortAllocator> port_allocator_;
