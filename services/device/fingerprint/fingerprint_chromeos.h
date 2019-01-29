@@ -79,9 +79,6 @@ class SERVICES_DEVICE_FINGERPRINT_EXPORT FingerprintChromeOS
   void OnCloseAuthSessionForEnroll(const std::string& user_id,
                                    const std::string& label,
                                    bool result);
-  void ScheduleStartEnroll(const std::string& user_id,
-                           const std::string& label);
-  void ScheduleStartAuth();
 
   void RunGetRecordsForUser(const std::string& user_id,
                             GetRecordsForUserCallback callback);
