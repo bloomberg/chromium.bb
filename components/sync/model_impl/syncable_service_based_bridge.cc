@@ -31,7 +31,6 @@ std::unique_ptr<EntityData> ConvertPersistedToEntityData(
     const std::string& client_tag_hash,
     sync_pb::PersistedEntityData data) {
   DCHECK(!client_tag_hash.empty());
-  DCHECK(!data.non_unique_name().empty());
   auto entity_data = std::make_unique<EntityData>();
 
   entity_data->non_unique_name = std::move(*data.mutable_non_unique_name());
@@ -47,8 +46,6 @@ std::unique_ptr<EntityData> ConvertPersistedToEntityData(
 
 sync_pb::PersistedEntityData CreatePersistedFromEntityData(
     const EntityData& entity_data) {
-  DCHECK(!entity_data.non_unique_name.empty());
-
   sync_pb::PersistedEntityData persisted;
   persisted.set_non_unique_name(entity_data.non_unique_name);
   *persisted.mutable_specifics() = entity_data.specifics;
