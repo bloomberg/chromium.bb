@@ -441,7 +441,7 @@ TEST_F(DemoExtensionsExternalLoaderTest,
   EXPECT_TRUE(external_provider_visitor_.loaded_crx_files().empty());
 }
 
-TEST_F(DemoExtensionsExternalLoaderTest, DISABLED_LoadApp) {
+TEST_F(DemoExtensionsExternalLoaderTest, LoadApp) {
   demo_mode_test_helper_->InitializeSession();
 
   // Create a temporary cache directory.
