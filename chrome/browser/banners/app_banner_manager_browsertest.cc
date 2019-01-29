@@ -109,10 +109,8 @@ class AppBannerManagerTest : public AppBannerManager {
   }
 
   void OnBannerPromptReply(blink::mojom::AppBannerControllerPtr controller,
-                           blink::mojom::AppBannerPromptReply reply,
-                           const std::string& referrer) override {
-    AppBannerManager::OnBannerPromptReply(std::move(controller), reply,
-                                          referrer);
+                           blink::mojom::AppBannerPromptReply reply) override {
+    AppBannerManager::OnBannerPromptReply(std::move(controller), reply);
     if (on_banner_prompt_reply_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, std::move(on_banner_prompt_reply_));

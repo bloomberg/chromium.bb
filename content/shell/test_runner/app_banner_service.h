@@ -34,8 +34,7 @@ class TEST_RUNNER_EXPORT AppBannerService
 
  private:
   void OnBannerPromptReply(base::OnceCallback<void(bool)> callback,
-                           blink::mojom::AppBannerPromptReply,
-                           const std::string& referrer);
+                           blink::mojom::AppBannerPromptReply);
 
   mojo::Binding<blink::mojom::AppBannerService> binding_;
   blink::mojom::AppBannerEventPtr event_;

@@ -404,7 +404,6 @@ void AppBannerManager::ResetCurrentPageData() {
   manifest_ = blink::Manifest();
   manifest_url_ = GURL();
   validated_url_ = GURL();
-  referrer_.erase();
   installable_ = Installable::UNKNOWN;
 }
 
@@ -639,8 +638,7 @@ InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
 
 void AppBannerManager::OnBannerPromptReply(
     blink::mojom::AppBannerControllerPtr controller,
-    blink::mojom::AppBannerPromptReply reply,
-    const std::string& referrer) {
+    blink::mojom::AppBannerPromptReply reply) {
   // The renderer might have requested the prompt to be canceled. They may
   // request that it is redisplayed later, so don't Terminate() here. However,
   // log that the cancelation was requested, so Terminate() can be called if a
@@ -651,7 +649,6 @@ void AppBannerManager::OnBannerPromptReply(
   // already been received before cancel was sent (e.g. if redisplay was
   // requested in the beforeinstallprompt event handler), we keep going and show
   // the banner immediately.
-  referrer_ = referrer;
   if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
     if (IsDebugMode()) {

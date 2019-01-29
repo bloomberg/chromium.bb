@@ -13,7 +13,7 @@ interface AppBannerController {
   // The browser asks the renderer if the app banner should be shown.
   BannerPromptRequest(AppBannerService service, AppBannerEvent& event,
                       array<string> platform, bool require_gesture) =>
-      (AppBannerPromptReply reply, string referrer);
+      (AppBannerPromptReply reply);
 };
 
 interface AppBannerEvent {
