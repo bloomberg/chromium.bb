@@ -28,16 +28,29 @@ AcceleratorFilter::AcceleratorFilter(
 AcceleratorFilter::~AcceleratorFilter() {
 }
 
+bool AcceleratorFilter::ShouldFilter(ui::KeyEvent* event) {
+  const ui::EventType type = event->type();
+  if (!event->target() ||
+      (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED) ||
+      event->is_char() || !event->target() ||
+      // Key events with key code of VKEY_PROCESSKEY, usually created by virtual
+      // keyboard (like handwriting input), have no effect on accelerator and
+      // they may disturb the accelerator history. So filter them out. (see
+      // https://crbug.com/918317)
+      event->key_code() == ui::VKEY_PROCESSKEY) {
+    return true;
+  }
+
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorFilter, EventFilter implementation:
 
 void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
-  const ui::EventType type = event->type();
   DCHECK(event->target());
-  if ((type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED) ||
-      event->is_char() || !event->target()) {
+  if (ShouldFilter(event))
     return;
-  }
 
   ui::Accelerator accelerator(*event);
   accelerator_history_->StoreCurrentAccelerator(accelerator);

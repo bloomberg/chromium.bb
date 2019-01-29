@@ -24,6 +24,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/accelerator_filter.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -464,8 +465,7 @@ void ScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
 
   // Key event is blocked. So have to record current accelerator here.
   if (event->stopped_propagation()) {
-    // Filter accelerators in the same way with AcceleratorFilter::OnKeyEvent.
-    if (event->is_char() || !event->target())
+    if (::wm::AcceleratorFilter::ShouldFilter(event))
       return;
 
     ui::Accelerator accelerator(*event);
