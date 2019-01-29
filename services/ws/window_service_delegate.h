@@ -75,6 +75,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   virtual void RunWindowMoveLoop(aura::Window* window,
                                  mojom::MoveLoopSource source,
                                  const gfx::Point& cursor,
+                                 int window_component,
                                  DoneCallback callback);
 
   // Called to cancel an in-progress window move loop that was started by
@@ -97,6 +98,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
 
   // Called to cancel an in-progress drag loop that was started by RunDragLoop.
   virtual void CancelDragLoop(aura::Window* window) {}
+
+  // Called to update resize shadow for the window.
+  virtual void SetWindowResizeShadow(aura::Window* window,
+                                     int window_component) {}
 
   // Called to update the text input state of the PlatformWindow associated with
   // |window|. It is a no-op if |window| is not focused.

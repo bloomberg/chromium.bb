@@ -391,7 +391,9 @@ void TestWindowTree::CancelDragDrop(ws::Id window_id) {}
 void TestWindowTree::PerformWindowMove(uint32_t change_id,
                                        ws::Id window_id,
                                        ws::mojom::MoveLoopSource source,
-                                       const gfx::Point& cursor_location) {
+                                       const gfx::Point& cursor_location,
+                                       int hit_test) {
+  last_move_hit_test_ = hit_test;
   OnChangeReceived(change_id);
 }
 
@@ -400,6 +402,11 @@ void TestWindowTree::CancelWindowMove(ws::Id window_id) {}
 void TestWindowTree::ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                                           ws::Id window_id) {}
 void TestWindowTree::StopObservingTopmostWindow() {}
+
+void TestWindowTree::SetWindowResizeShadow(ws::Id window_id, int hit_test) {
+  window_resize_shadow_count_++;
+  last_window_resize_shadow_ = hit_test;
+}
 
 void TestWindowTree::CancelActiveTouchesExcept(ws::Id not_cancelled_window_id) {
   last_not_cancelled_window_id_ = not_cancelled_window_id;

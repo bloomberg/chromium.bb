@@ -478,7 +478,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void PerformWindowMove(uint32_t change_id,
                          Id transport_window_id,
                          mojom::MoveLoopSource source,
-                         const gfx::Point& cursor) override;
+                         const gfx::Point& cursor,
+                         int hit_test) override;
   void CancelWindowMove(Id transport_window_id) override;
   void PerformDragDrop(
       uint32_t change_id,
@@ -493,6 +494,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void ObserveTopmostWindow(mojom::MoveLoopSource source,
                             Id window_id) override;
   void StopObservingTopmostWindow() override;
+  void SetWindowResizeShadow(Id window_id, int hit_test) override;
   void CancelActiveTouchesExcept(Id not_cancelled_window_id) override;
   void CancelActiveTouches(Id window_id) override;
   void TransferGestureEventsTo(Id current_id,

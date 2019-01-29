@@ -75,7 +75,7 @@ class NonClientDelegate : public test::TestWindowDelegate {
     NonClientDelegate* self = const_cast<NonClientDelegate*>(this);
     self->non_client_count_++;
     self->non_client_location_ = location;
-    return HTTOPLEFT;
+    return HTMENU;
   }
   void OnMouseEvent(ui::MouseEvent* event) override {
     mouse_event_count_++;

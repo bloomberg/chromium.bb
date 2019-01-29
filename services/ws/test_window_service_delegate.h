@@ -58,6 +58,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
   void RunWindowMoveLoop(aura::Window* window,
                          mojom::MoveLoopSource source,
                          const gfx::Point& cursor,
+                         int window_component,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;
   void RunDragLoop(aura::Window* window,

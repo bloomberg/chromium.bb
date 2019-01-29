@@ -12,4 +12,7 @@ traits_headers = [ "//ui/base/mojo/ui_base_types_struct_traits.h" ]
 type_mappings = [
   "ui.mojom.DialogButton=ui::DialogButton",
   "ui.mojom.ModalType=ui::ModalType",
+
+  # Note that HitTestCompat can't be used because it's not defined in Windows.
+  "ui.mojom.HitTest=int",
 ]

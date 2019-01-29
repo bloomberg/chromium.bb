@@ -153,6 +153,7 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   friend class NonClientFrameViewAshSizeLock;
   friend class NonClientFrameViewAshTestWidgetDelegate;
   friend class TestWidgetConstraintsDelegate;
+  friend class WindowServiceDelegateImplTest;
 
   // views::NonClientFrameView:
   bool DoesIntersectRect(const views::View* target,

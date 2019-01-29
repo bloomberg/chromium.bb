@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/non_client_frame_controller.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_finder.h"
@@ -113,6 +114,7 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
     aura::Window* window,
     ws::mojom::MoveLoopSource source,
     const gfx::Point& cursor,
+    int window_component,
     DoneCallback callback) {
   if (!ShouldStartMoveLoop(window)) {
     std::move(callback).Run(false);
@@ -134,7 +136,7 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
       ->toplevel_window_event_handler()
       ->wm_toplevel_window_event_handler()
       ->AttemptToStartDrag(
-          window, location_in_parent, HTCAPTION, aura_source,
+          window, location_in_parent, window_component, aura_source,
           base::BindOnce(&OnMoveLoopCompleted, std::move(callback)));
 }
 
@@ -171,6 +173,15 @@ void WindowServiceDelegateImpl::CancelDragLoop(aura::Window* window) {
     return;
 
   aura::client::GetDragDropClient(window->GetRootWindow())->DragCancel();
+}
+
+void WindowServiceDelegateImpl::SetWindowResizeShadow(aura::Window* window,
+                                                      int hit_test) {
+  ResizeShadowController* controller = Shell::Get()->resize_shadow_controller();
+  if (hit_test == HTNOWHERE)
+    controller->HideShadow(window);
+  else
+    controller->ShowShadow(window, hit_test);
 }
 
 void WindowServiceDelegateImpl::UpdateTextInputState(

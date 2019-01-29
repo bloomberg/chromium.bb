@@ -60,6 +60,7 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
       WindowTreeHostMus* window_tree_host,
       ws::mojom::MoveLoopSource mus_source,
       const gfx::Point& cursor_location,
+      int hit_test,
       base::OnceCallback<void(bool)> callback) = 0;
 
   // Called to cancel a move loop.

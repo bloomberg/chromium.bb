@@ -786,7 +786,7 @@ Widget::MoveLoopResult DesktopWindowTreeHostMus::RunMoveLoop(
   gfx::Point cursor_location = window()->GetBoundsInScreen().origin() +
                                gfx::ToFlooredVector2d(drag_offset);
   WindowTreeHostMus::PerformWindowMove(
-      content_window(), mus_source, cursor_location,
+      content_window(), mus_source, cursor_location, HTCAPTION,
       base::BindOnce(&OnMoveLoopEnd, &success, run_loop.QuitClosure()));
 
   run_loop.Run();
