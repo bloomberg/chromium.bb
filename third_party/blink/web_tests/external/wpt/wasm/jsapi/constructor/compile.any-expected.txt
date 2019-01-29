@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = AsyncCompile: Wasm decoding failed: expected 4 bytes, fell off end @+0
+Harness Error. harness_status.status = 1 , harness_status.message = AsyncCompile: Wasm decoding failed: expected string length @+10
 PASS Missing argument
 PASS Invalid arguments
 PASS Branding

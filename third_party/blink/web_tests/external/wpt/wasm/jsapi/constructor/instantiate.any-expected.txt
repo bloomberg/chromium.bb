@@ -1,0 +1,26 @@
+This is a testharness.js-based test.
+PASS Missing arguments
+PASS Branding
+PASS Invalid arguments
+PASS Promise type
+PASS Empty module without imports argument: BufferSource argument
+PASS Empty module without imports argument: Module argument
+PASS Empty module with undefined imports argument: BufferSource argument
+PASS Empty module with undefined imports argument: Module argument
+PASS Empty module with empty imports argument: BufferSource argument
+PASS Empty module with empty imports argument: Module argument
+PASS getter order for imports object: BufferSource argument
+PASS getter order for imports object: Module argument
+PASS imports: BufferSource argument
+PASS imports: Module argument
+FAIL No imports: BufferSource argument builder.setTableLength is not a function
+FAIL No imports: Module argument builder.setTableLength is not a function
+FAIL exports and imports: BufferSource argument promise_test: Unhandled rejection with value: object "CompileError: AsyncCompilation: (null): Compiling wasm function "wasm-function[0]" failed: function body must end with "end" opcode @+55"
+FAIL exports and imports: Module argument WebAssembly.Module(): Compiling wasm function "wasm-function[0]" failed: function body must end with "end" opcode @+55
+PASS stray argument: BufferSource argument
+PASS stray argument: Module argument
+PASS Empty buffer
+PASS Invalid code
+PASS Changing the buffer
+Harness: the test ran to completion.
+

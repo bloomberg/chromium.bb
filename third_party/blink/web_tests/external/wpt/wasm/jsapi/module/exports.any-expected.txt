@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Missing arguments
+PASS Non-Module arguments
+PASS Branding
+PASS Empty module
+PASS Empty module: array caching
+FAIL exports builder.setTableLength is not a function
+PASS Stray argument
+Harness: the test ran to completion.
+

@@ -1,0 +1,16 @@
+This is a testharness.js-based test.
+PASS name
+PASS length
+PASS No arguments
+PASS Non-Module arguments
+PASS Calling
+PASS Empty module without imports argument
+PASS Empty module with undefined imports argument
+PASS Empty module with empty imports argument
+PASS getter order for imports object
+PASS imports
+FAIL No imports builder.setTableLength is not a function
+FAIL exports and imports WebAssembly.Module(): Compiling wasm function "wasm-function[0]" failed: function body must end with "end" opcode @+55
+PASS stray argument
+Harness: the test ran to completion.
+
