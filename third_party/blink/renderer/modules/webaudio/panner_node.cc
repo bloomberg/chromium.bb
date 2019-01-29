@@ -228,6 +228,13 @@ void PannerHandler::ProcessSampleAccurateValues(AudioBus* destination,
                                               listener_position);
   }
 
+  // Update cached values in case automations end.
+  if (frames_to_process > 0) {
+    cached_azimuth_ = azimuth[frames_to_process - 1];
+    cached_elevation_ = elevation[frames_to_process - 1];
+    cached_distance_cone_gain_ = total_gain[frames_to_process - 1];
+  }
+
   panner_->PanWithSampleAccurateValues(azimuth, elevation, source, destination,
                                        frames_to_process,
                                        InternalChannelInterpretation());
