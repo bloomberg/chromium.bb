@@ -98,6 +98,15 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
         document,
         WebFeature::
             kRequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting);
+  } else {
+    // In the recent spec, the step 7 below allows user-agents to prompt the
+    // user for permission regardless of sysex option.
+    // https://webaudio.github.io/web-midi-api/#dom-navigator-requestmidiaccess
+    // https://crbug.com/662000.
+    Deprecation::CountDeprecation(
+        document, document.IsSecureContext()
+                      ? WebFeature::kNoSysexWebMIDIWithoutPermission
+                      : WebFeature::kNoSysexWebMIDIOnInsecureOrigin);
   }
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);

@@ -21466,6 +21466,8 @@ Called by update_net_error_codes.py.-->
       label="V8RTCQuicStream_WaitForWriteBufferedAmountBelow_Method"/>
   <int value="2768" label="V8RTCQuicStream_WaitForReadable_Method"/>
   <int value="2769" label="HTMLTemplateElement"/>
+  <int value="2770" label="NoSysexWebMIDIWithoutPermission"/>
+  <int value="2771" label="NoSysexWebMIDIOnInsecureOrigin"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
