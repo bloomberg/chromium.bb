@@ -701,7 +701,7 @@ TEST_P(TabModelTest, TabCreatedOnInsertion) {
   EXPECT_NSNE(nil, LegacyTabHelper::GetTabForWebState(web_state_ptr));
 }
 
-TEST_P(TabModelTest, PersistSelectionChange) {
+TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
   NSString* stashPath =
       base::SysUTF8ToNSString(chrome_browser_state_->GetStatePath().value());
 
