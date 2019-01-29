@@ -4,6 +4,7 @@
 
 assert(is_fuchsia)
 
+import("//build/toolchain/toolchain.gni")
 import("fuchsia_sdk_pkg.gni")
 
 config("sdk_lib_dirs_config") {
@@ -18,7 +19,7 @@ copy("sysroot_dist_libs") {
   ]
 
   outputs = [
-    "${root_out_dir}/{{source_file_part}}",
+    "${root_out_dir}${shlib_subdir}/{{source_file_part}}",
   ]
 }
 
@@ -29,7 +30,7 @@ group("runtime_library") {
     ":sysroot_dist_libs",
 
     # This is used directly from //build/config/fuchsia:compiler and thus
-    # needs to be included by default.
+    # also needs to be included by default.
     "sdk:fdio_dist_libs",
   ]
 }
@@ -50,7 +51,7 @@ copy("vulkan_image_pipe") {
   ]
 
   outputs = [
-    "${root_out_dir}/{{source_file_part}}",
+    "${root_out_dir}${shlib_subdir}/{{source_file_part}}",
   ]
 }
 
@@ -87,7 +88,7 @@ copy("vulkan_validation_libs") {
   ]
 
   outputs = [
-    "${root_out_dir}/{{source_file_part}}",
+    "${root_out_dir}${shlib_subdir}/{{source_file_part}}",
   ]
 }
 

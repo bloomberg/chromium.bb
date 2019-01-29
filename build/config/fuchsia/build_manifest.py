@@ -17,11 +17,9 @@ def MakePackagePath(file_path, roots):
   """Computes a path for |file_path| that is relative to one of the directory
   paths in |roots|.
 
-  file_path: The absolute file path to relativize.
-  roots: A list of absolute directory paths which may serve as a relative root
-         for |file_path|. At least one path must contain |file_path|.
-         Overlapping roots are permitted; the deepest matching root will be
-         chosen.
+  file_path: The file path to relativize.
+  roots: A list of directory paths which may serve as a relative root
+         for |file_path|.
 
   Examples:
 
@@ -46,28 +44,17 @@ def MakePackagePath(file_path, roots):
     if file_path.startswith(next_root):
       relative_path = file_path[len(next_root):]
 
-      # Move all dynamic libraries (ending in .so or .so.<number>) to lib/.
-      if re.search('.*\.so(\.\d+)?$', file_path):
-        relative_path = 'lib/' + os.path.basename(relative_path)
-
       return relative_path
 
-  raise Exception('Error: no matching root paths found for \'%s\'.' % file_path)
+  return file_path
 
 
 def _GetStrippedPath(bin_path):
   """Finds the stripped version of the binary |bin_path| in the build
   output directory."""
 
-  # Skip the resolution step for binaries that don't have stripped counterparts,
-  # like system libraries or other libraries built outside the Chromium build.
-  if not '.unstripped' in bin_path:
-    return bin_path
-
-  return os.path.normpath(os.path.join(bin_path,
-                                       os.path.pardir,
-                                       os.path.pardir,
-                                       os.path.basename(bin_path)))
+  return bin_path.replace('lib.unstripped/', 'lib/').replace(
+      'exe.unstripped/', '')
 
 
 def _IsBinary(path):
@@ -83,9 +70,9 @@ def BuildManifest(args):
   with open(args.output_path, 'w') as manifest, \
        open(args.depfile_path, 'w') as depfile:
     # Process the runtime deps file for file paths, recursively walking
-    # directories as needed. File paths are stored in absolute form,
-    # so that MakePackagePath() may relativize to either the source root or
-    # output directory.
+    # directories as needed.
+    # MakePackagePath() may relativize to either the source root or output
+    # directory.
     # runtime_deps may contain duplicate paths, so use a set for
     # de-duplication.
     expanded_files = set()
@@ -96,21 +83,20 @@ def BuildManifest(args):
           for current_file in files:
             if current_file.startswith('.'):
               continue
-            expanded_files.add(os.path.abspath(
-                os.path.join(root, current_file)))
+            expanded_files.add(
+                os.path.join(root, current_file))
       else:
-        expanded_files.add(os.path.abspath(next_path))
+        expanded_files.add(next_path)
 
     # Format and write out the manifest contents.
-    gen_dir = os.path.join(args.out_dir, "gen")
+    gen_dir = os.path.normpath(os.path.join(args.out_dir, "gen"))
     app_found = False
     excluded_files_set = set(args.exclude_file)
     for current_file in expanded_files:
       if _IsBinary(current_file):
         current_file = _GetStrippedPath(current_file)
 
-      absolute_file_path = os.path.join(args.out_dir, current_file)
-      in_package_path = MakePackagePath(absolute_file_path,
+      in_package_path = MakePackagePath(current_file,
                                         [gen_dir, args.root_dir, args.out_dir])
       if in_package_path == args.app_filename:
         app_found = True
@@ -119,11 +105,7 @@ def BuildManifest(args):
         excluded_files_set.remove(in_package_path)
         continue
 
-      # The source path is relativized so that it can be used on multiple
-      # environments with differing parent directory structures,
-      # e.g. builder bots and swarming clients.
-      manifest.write('%s=%s\n' % (in_package_path,
-                                  os.path.relpath(current_file, args.out_dir)))
+      manifest.write('%s=%s\n' % (in_package_path, current_file))
 
     if len(excluded_files_set) > 0:
       raise Exception('Some files were excluded with --exclude-file, but '

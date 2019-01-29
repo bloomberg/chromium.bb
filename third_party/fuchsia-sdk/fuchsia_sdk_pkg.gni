@@ -71,7 +71,7 @@ template("fuchsia_sdk_pkg") {
       }
 
       outputs = [
-        "${root_out_dir}/{{source_file_part}}",
+        "${root_out_dir}${shlib_subdir}/{{source_file_part}}",
       ]
     }
   }

@@ -217,7 +217,7 @@ if (!is_ios && !is_android) {
   # Copy boiler-plate files into the package.
   copy("cronet_package_copy") {
     sources = [
-      "$root_out_dir/$_cronet_shared_lib_file_name",
+      "${root_out_dir}${shlib_subdir}/${_cronet_shared_lib_file_name}",
       "//AUTHORS",
       "//chrome/VERSION",
     ]
