@@ -135,16 +135,13 @@ void AnimationHost::RegisterKeyframeEffectForElement(
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
   if (!element_animations) {
-    element_animations = ElementAnimations::Create();
-    element_animations->SetElementId(element_id);
+    element_animations = ElementAnimations::Create(this, element_id);
     element_to_animations_map_[element_animations->element_id()] =
         element_animations;
-  }
-
-  if (element_animations->animation_host() != this) {
-    element_animations->SetAnimationHost(this);
     element_animations->InitAffectedElementTypes();
   }
+
+  DCHECK(element_animations->AnimationHostIs(this));
 
   element_animations->AddKeyframeEffect(keyframe_effect);
 }
@@ -170,7 +167,7 @@ void AnimationHost::UnregisterKeyframeEffectForElement(
   if (element_animations->IsEmpty()) {
     element_animations->ClearAffectedElementTypes(element_id_map);
     element_to_animations_map_.erase(element_animations->element_id());
-    element_animations->SetAnimationHost(nullptr);
+    element_animations->ClearAnimationHost();
   }
 }
 

@@ -38,26 +38,22 @@ ElementId CalculateTargetElementId(const ElementAnimations* element_animations,
 
 }  // namespace
 
-scoped_refptr<ElementAnimations> ElementAnimations::Create() {
-  return base::WrapRefCounted(new ElementAnimations());
+scoped_refptr<ElementAnimations> ElementAnimations::Create(
+    AnimationHost* host,
+    ElementId element_id) {
+  DCHECK(element_id);
+  DCHECK(host);
+  return base::WrapRefCounted(new ElementAnimations(host, element_id));
 }
 
-ElementAnimations::ElementAnimations()
-    : animation_host_(),
-      element_id_(),
+ElementAnimations::ElementAnimations(AnimationHost* host, ElementId element_id)
+    : animation_host_(host),
+      element_id_(element_id),
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
       needs_push_properties_(false) {}
 
 ElementAnimations::~ElementAnimations() = default;
-
-void ElementAnimations::SetAnimationHost(AnimationHost* host) {
-  animation_host_ = host;
-}
-
-void ElementAnimations::SetElementId(ElementId element_id) {
-  element_id_ = element_id;
-}
 
 void ElementAnimations::InitAffectedElementTypes() {
   DCHECK(element_id_);
