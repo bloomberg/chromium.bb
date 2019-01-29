@@ -387,12 +387,6 @@ const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
 
-const char kPresentSadTabInViewControllerName[] =
-    "Present SadTab in UIViewController";
-const char kPresentSadTabInViewControllerDescription[] =
-    "When enabled, SadTab UI will be presented with UIViewController instead "
-    "of using WebState::ShowTransientView";
-
 const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";

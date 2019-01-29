@@ -124,9 +124,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
-#include "ios/chrome/browser/ui/sad_tab/features.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
-#import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
@@ -456,7 +454,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   AlertCoordinator* _alertCoordinator;
 
   // Coordinator for displaying Sad Tab.
-  id<SadTabTabHelperDelegate> _sadTabCoordinator;
+  SadTabCoordinator* _sadTabCoordinator;
 
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
 
@@ -2176,20 +2174,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       self.popupMenuCoordinator;
   self.tabStripCoordinator.longPressDelegate = self.popupMenuCoordinator;
 
-  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
-    SadTabCoordinator* sadTabCoordinator = [[SadTabCoordinator alloc]
-        initWithBaseViewController:self.browserContainerViewController
-                      browserState:_browserState];
-    sadTabCoordinator.dispatcher = self.dispatcher;
-    sadTabCoordinator.overscrollDelegate = self;
-    _sadTabCoordinator = sadTabCoordinator;
-  } else {
-    SadTabLegacyCoordinator* sadTabCoordinator =
-        [[SadTabLegacyCoordinator alloc] init];
-    sadTabCoordinator.baseViewController = self;
-    sadTabCoordinator.dispatcher = self.dispatcher;
-    _sadTabCoordinator = sadTabCoordinator;
-  }
+  _sadTabCoordinator = [[SadTabCoordinator alloc]
+      initWithBaseViewController:self.browserContainerViewController
+                    browserState:_browserState];
+  _sadTabCoordinator.dispatcher = self.dispatcher;
+  _sadTabCoordinator.overscrollDelegate = self;
 
   // If there are any existing SadTabHelpers in |self.tabModel|, update the
   // helpers delegate with the new |_sadTabCoordinator|.
@@ -2932,17 +2921,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [overlays addObject:downloadManagerOverlay];
   }
 
-  if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
-    UIViewController* viewController =
-        [base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator)
-            viewController];
-    UIView* sadTabView = viewController.view;
-    if (sadTabView) {
-      SnapshotOverlay* sadTabOverlay =
-          [[SnapshotOverlay alloc] initWithView:sadTabView
-                                        yOffset:self.headerHeight];
-      [overlays addObject:sadTabOverlay];
-    }
+  UIView* sadTabView = _sadTabCoordinator.viewController.view;
+  if (sadTabView) {
+    SnapshotOverlay* sadTabOverlay =
+        [[SnapshotOverlay alloc] initWithView:sadTabView
+                                      yOffset:self.headerHeight];
+    [overlays addObject:sadTabOverlay];
   }
 
   return overlays;
