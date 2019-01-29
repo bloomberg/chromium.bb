@@ -575,7 +575,7 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
   }
 }
 
-TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
+TEST_F(MediaSessionImplTest, TabFocusDoesNotCauseAudioFocus) {
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
   SetDelegateForTests(GetMediaSession(), delegate);
 
@@ -584,39 +584,6 @@ TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
     RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
     FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-  }
-
-  EXPECT_EQ(1, delegate->request_audio_focus_count());
-  GetMediaSession()->OnWebContentsFocused(nullptr);
-  EXPECT_EQ(2, delegate->request_audio_focus_count());
-}
-
-TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Inactive) {
-  MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
-  SetDelegateForTests(GetMediaSession(), delegate);
-  EXPECT_EQ(MediaSessionInfo::SessionState::kInactive,
-            GetState(GetMediaSession()));
-
-  EXPECT_EQ(0, delegate->request_audio_focus_count());
-  GetMediaSession()->OnWebContentsFocused(nullptr);
-  EXPECT_EQ(0, delegate->request_audio_focus_count());
-}
-
-TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Suspended) {
-  MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
-  SetDelegateForTests(GetMediaSession(), delegate);
-
-  {
-    MockMediaSessionMojoObserver observer(*GetMediaSession());
-    RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
-    FlushForTesting(GetMediaSession());
-    observer.WaitForState(MediaSessionInfo::SessionState::kActive);
-  }
-
-  {
-    MockMediaSessionMojoObserver observer(*GetMediaSession());
-    GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
-    observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
   }
 
   EXPECT_EQ(1, delegate->request_audio_focus_count());
