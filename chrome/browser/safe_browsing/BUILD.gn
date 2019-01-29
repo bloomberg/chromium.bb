@@ -281,11 +281,13 @@ static_library("advanced_protection") {
   ]
 
   deps = [
+    "//components/keyed_service/content",
     "//components/prefs:prefs",
     "//components/safe_browsing/common:common",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/signin/core/browser:browser",
     "//content/public/browser:browser",
+    "//services/identity/public/cpp",
   ]
 }
 
@@ -299,6 +301,10 @@ source_set("test_support") {
     deps = [
       ":safe_browsing",
       "//chrome/common/safe_browsing:proto",
+      "//components/safe_browsing/db:database_manager",
+      "//components/safe_browsing/db:test_database_manager",
+      "//components/safe_browsing/db:v4_feature_list",
+      "//components/safe_browsing/db:v4_protocol_manager_util",
       "//content/public/browser:browser",
     ]
   }
