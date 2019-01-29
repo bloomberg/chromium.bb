@@ -32,15 +32,22 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "rlz/buildflags/buildflags.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
-#include "ui/aura/env_observer.h"
-#include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "base/task/post_task.h"
 #include "components/rlz/rlz_tracker.h"
+#endif
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "apps/test/app_window_waiter.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/component_loader.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
 #endif
 
 namespace chromeos {
@@ -84,6 +91,7 @@ class LoginUtilsTest : public OobeBaseTest {
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 
+#if defined(GOOGLE_CHROME_BUILD)
 class LoginUtilsContainedShellTest : public LoginUtilsTest {
  public:
   void SetUp() override {
@@ -133,6 +141,9 @@ class FullscreenWindowEnvObserver : public aura::EnvObserver,
 // Checks that the Contained Experience window is launched on sign-in when the
 // feature is enabled.
 IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
+  // Enable all component extensions.
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
   WaitForSigninScreen();
 
   FullscreenWindowEnvObserver fullscreen_observer;
@@ -141,8 +152,16 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
 
   base::RunLoop().RunUntilIdle();
 
+  // Wait for the app to launch before verifying it is fullscreen.
+  apps::AppWindowWaiter waiter(
+      extensions::AppWindowRegistry::Get(ProfileHelper::Get()->GetProfileByUser(
+          user_manager::UserManager::Get()->GetActiveUser())),
+      extension_misc::kContainedHomeAppId);
+  waiter.WaitForShown();
+
   EXPECT_TRUE(fullscreen_observer.did_fullscreen_window_launch());
 }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 // Exercises login, like the desktopui_MashLogin Chrome OS autotest.
 IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MashLogin) {

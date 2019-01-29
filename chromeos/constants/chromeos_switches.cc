@@ -152,9 +152,6 @@ const char kChildWallpaperLarge[] = "child-wallpaper-large";
 // non-user-writable JPEG file).
 const char kChildWallpaperSmall[] = "child-wallpaper-small";
 
-// URL to display within the Contained Shell widget.
-const char kContainedShellUrl[] = "contained-shell-url";
-
 const char kConservativeThreshold[] = "conservative";
 
 // Forces use of Chrome OS Gaia API v1.

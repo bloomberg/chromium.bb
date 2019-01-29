@@ -95,6 +95,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_VIDEO_PLAYER_MANIFEST:
     case IDR_WALLPAPERMANAGER_MANIFEST:
 #if defined(GOOGLE_CHROME_BUILD)
+    case IDR_CONTAINED_HOME_MANIFEST:
     case IDR_GENIUS_APP_MANIFEST:
     case IDR_HELP_MANIFEST:
     case IDR_QUICKOFFICE_MANIFEST:
