@@ -97,10 +97,6 @@ class TestSyncService : public SyncService {
                        callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
-  // DataTypeEncryptionHandler implementation.
-  bool IsPassphraseRequired() const override;
-  ModelTypeSet GetEncryptedDataTypes() const override;
-
   // KeyedService implementation.
   void Shutdown() override;
 
@@ -119,7 +115,6 @@ class TestSyncService : public SyncService {
   ModelTypeSet active_data_types_;
 
   bool using_secondary_passphrase_ = false;
-  bool passphrase_required_ = false;
   bool passphrase_required_for_decryption_ = false;
 
   bool detailed_sync_status_engine_available_ = false;

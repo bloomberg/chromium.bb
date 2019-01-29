@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 struct AccountInfo;
@@ -48,7 +47,7 @@ class SyncSetupInProgressHandle {
   base::Closure on_destroy_;
 };
 
-class SyncService : public DataTypeEncryptionHandler, public KeyedService {
+class SyncService : public KeyedService {
  public:
   // The set of reasons due to which Sync can be disabled. Meant to be used as a
   // bitmask.

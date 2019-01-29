@@ -87,8 +87,19 @@ bool TestSyncUserSettings::IsEncryptEverythingEnabled() const {
 
 void TestSyncUserSettings::EnableEncryptEverything() {}
 
+ModelTypeSet TestSyncUserSettings::GetEncryptedDataTypes() const {
+  if (!service_->IsUsingSecondaryPassphrase()) {
+    // PASSWORDS are always encrypted.
+    return ModelTypeSet(PASSWORDS);
+  }
+  // Some types can never be encrypted, e.g. DEVICE_INFO and
+  // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
+  return Intersection(service_->GetPreferredDataTypes(),
+                      EncryptableUserTypes());
+}
+
 bool TestSyncUserSettings::IsPassphraseRequired() const {
-  return service_->IsPassphraseRequired();
+  return passphrase_required_;
 }
 
 bool TestSyncUserSettings::IsPassphraseRequiredForDecryption() const {
@@ -118,6 +129,10 @@ bool TestSyncUserSettings::SetDecryptionPassphrase(
 
 void TestSyncUserSettings::SetFirstSetupComplete(bool first_setup_complete) {
   first_setup_complete_ = first_setup_complete;
+}
+
+void TestSyncUserSettings::SetPassphraseRequired(bool required) {
+  passphrase_required_ = required;
 }
 
 }  // namespace syncer

@@ -7,10 +7,9 @@
 
 #include <string>
 
-#include "components/sync/driver/sync_user_settings.h"
-
 #include "base/callback.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_user_settings.h"
 
 namespace syncer {
 class SyncPrefs;
@@ -48,6 +47,7 @@ class SyncUserSettingsImpl : public syncer::SyncUserSettings {
   bool IsEncryptEverythingEnabled() const override;
   void EnableEncryptEverything() override;
 
+  syncer::ModelTypeSet GetEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForDecryption() const override;
   bool IsUsingSecondaryPassphrase() const override;
@@ -58,7 +58,6 @@ class SyncUserSettingsImpl : public syncer::SyncUserSettings {
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   syncer::ModelTypeSet GetPreferredDataTypes() const;
-  syncer::ModelTypeSet GetEncryptedDataTypes() const;
   bool IsEncryptedDatatypeEnabled() const;
   bool IsEncryptionPending() const;
 

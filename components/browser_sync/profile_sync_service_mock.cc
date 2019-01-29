@@ -45,10 +45,6 @@ bool ProfileSyncServiceMock::IsUsingSecondaryPassphrase() const {
   return user_settings_.IsUsingSecondaryPassphrase();
 }
 
-bool ProfileSyncServiceMock::IsPassphraseRequired() const {
-  return user_settings_.IsPassphraseRequired();
-}
-
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
 ProfileSyncServiceMock::GetSetupInProgressHandleConcrete() {
   return browser_sync::ProfileSyncService::GetSetupInProgressHandle();

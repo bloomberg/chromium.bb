@@ -11,13 +11,14 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/driver/data_type_encryption_handler.h"
 
 namespace syncer {
 
 // This class encapsulates all the user-configurable bits of Sync.
-class SyncUserSettings {
+class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
  public:
-  virtual ~SyncUserSettings() = default;
+  ~SyncUserSettings() override = default;
 
   // Whether the user wants Sync to run, a.k.a. the Sync feature toggle in
   // settings. This maps to DISABLE_REASON_USER_CHOICE.
@@ -63,10 +64,12 @@ class SyncUserSettings {
   // after calling this to force the encryption to occur.
   virtual void EnableEncryptEverything() = 0;
 
+  // The current set of encrypted data types.
+  syncer::ModelTypeSet GetEncryptedDataTypes() const override = 0;
   // Whether a passphrase is required for encryption or decryption to proceed.
   // Note that Sync might still be working fine if the user has disabled all
   // encrypted data types.
-  virtual bool IsPassphraseRequired() const = 0;
+  bool IsPassphraseRequired() const override = 0;
   // Whether a passphrase is required to decrypt the data for any currently
   // enabled data type.
   virtual bool IsPassphraseRequiredForDecryption() const = 0;

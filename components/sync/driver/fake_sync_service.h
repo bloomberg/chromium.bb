@@ -67,10 +67,6 @@ class FakeSyncService : public SyncService {
                        callback) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
-  // DataTypeEncryptionHandler implementation.
-  bool IsPassphraseRequired() const override;
-  ModelTypeSet GetEncryptedDataTypes() const override;
-
   // KeyedService implementation.
   void Shutdown() override;
 

@@ -159,14 +159,6 @@ void FakeSyncService::GetAllNodes(
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
-bool FakeSyncService::IsPassphraseRequired() const {
-  return false;
-}
-
-ModelTypeSet FakeSyncService::GetEncryptedDataTypes() const {
-  return ModelTypeSet();
-}
-
 void FakeSyncService::Shutdown() {}
 
 }  // namespace syncer
