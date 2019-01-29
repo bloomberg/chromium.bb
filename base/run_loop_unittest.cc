@@ -559,12 +559,12 @@ TEST_P(RunLoopTest, ExpiredDisallowRunningForTesting) {
   run_loop_.RunUntilIdle();
 }
 
-INSTANTIATE_TEST_CASE_P(Real,
-                        RunLoopTest,
-                        testing::Values(RunLoopTestType::kRealEnvironment));
-INSTANTIATE_TEST_CASE_P(Mock,
-                        RunLoopTest,
-                        testing::Values(RunLoopTestType::kTestDelegate));
+INSTANTIATE_TEST_SUITE_P(Real,
+                         RunLoopTest,
+                         testing::Values(RunLoopTestType::kRealEnvironment));
+INSTANTIATE_TEST_SUITE_P(Mock,
+                         RunLoopTest,
+                         testing::Values(RunLoopTestType::kTestDelegate));
 
 TEST(ScopedRunTimeoutForTestTest, TimesOut) {
   test::ScopedTaskEnvironment task_environment;

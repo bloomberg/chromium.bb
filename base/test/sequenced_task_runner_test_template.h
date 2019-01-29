@@ -122,7 +122,7 @@ class SequencedTaskRunnerTest : public testing::Test {
   TaskRunnerTestDelegate delegate_;
 };
 
-TYPED_TEST_CASE_P(SequencedTaskRunnerTest);
+TYPED_TEST_SUITE_P(SequencedTaskRunnerTest);
 
 // This test posts N non-nestable tasks in sequence, and expects them to run
 // in FIFO order, with no part of any two tasks' execution
@@ -303,20 +303,20 @@ TYPED_TEST_P(SequencedTaskRunnerTest, DelayedTaskAfterManyLongTasks) {
 
 // The SequencedTaskRunnerTest test case verifies behaviour that is expected
 // from a sequenced task runner in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(SequencedTaskRunnerTest,
-                           SequentialNonNestable,
-                           SequentialNestable,
-                           SequentialDelayedNonNestable,
-                           NonNestablePostFromNonNestableTask,
-                           DelayedTasksSameDelay,
-                           DelayedTaskAfterLongTask,
-                           DelayedTaskAfterManyLongTasks);
+REGISTER_TYPED_TEST_SUITE_P(SequencedTaskRunnerTest,
+                            SequentialNonNestable,
+                            SequentialNestable,
+                            SequentialDelayedNonNestable,
+                            NonNestablePostFromNonNestableTask,
+                            DelayedTasksSameDelay,
+                            DelayedTaskAfterLongTask,
+                            DelayedTaskAfterManyLongTasks);
 
 template <typename TaskRunnerTestDelegate>
 class SequencedTaskRunnerDelayedTest
     : public SequencedTaskRunnerTest<TaskRunnerTestDelegate> {};
 
-TYPED_TEST_CASE_P(SequencedTaskRunnerDelayedTest);
+TYPED_TEST_SUITE_P(SequencedTaskRunnerDelayedTest);
 
 // This test posts a delayed task, and checks that the task is run later than
 // the specified time.
@@ -343,7 +343,7 @@ TYPED_TEST_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic) {
 // SequencedTaskRunnerDelayedTest tests that the |delay| parameter of
 // is used to actually wait for |delay| ms before executing the task.
 // This is not mandatory for a SequencedTaskRunner to be compliant.
-REGISTER_TYPED_TEST_CASE_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic);
+REGISTER_TYPED_TEST_SUITE_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic);
 
 }  // namespace base
 

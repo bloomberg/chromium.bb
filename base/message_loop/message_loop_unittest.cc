@@ -1564,7 +1564,7 @@ TEST_P(MessageLoopTypedTest, IsIdleForTestingNonNestableTask) {
   EXPECT_TRUE(loop->IsIdleForTesting());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     MessageLoopTypedTest,
     ::testing::Values(TestType{MessageLoop::TYPE_DEFAULT,
