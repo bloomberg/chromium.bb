@@ -735,6 +735,12 @@ html[darkmode=true] #error-notice-link:active {
   transition: bottom 400ms;
 }
 
+/* TODO(https://crbug/925492): Remove once promos have been optimized for dark
+ * mode. */
+html[darkmode=true] #promo {
+  display: none;
+}
+
 #promo.float-down {
   bottom: -50px;
 }
