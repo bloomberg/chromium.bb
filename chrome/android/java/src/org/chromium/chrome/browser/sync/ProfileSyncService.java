@@ -211,6 +211,10 @@ public class ProfileSyncService {
         return nativeGetSyncEnterCustomPassphraseBodyText(mNativeProfileSyncServiceAndroid);
     }
 
+    public int getNumberOfSyncedDevices() {
+        return nativeGetNumberOfSyncedDevices(mNativeProfileSyncServiceAndroid);
+    }
+
     /**
      * Checks if sync is currently set to use a custom passphrase. The sync engine must be running
      * (isEngineInitialized() returns true) before calling this function.
@@ -642,6 +646,7 @@ public class ProfileSyncService {
     private native String nativeGetCurrentSignedInAccountText(long nativeProfileSyncServiceAndroid);
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             long nativeProfileSyncServiceAndroid);
+    private native int nativeGetNumberOfSyncedDevices(long nativeProfileSyncServiceAndroid);
     private native int[] nativeGetActiveDataTypes(long nativeProfileSyncServiceAndroid);
     private native int[] nativeGetChosenDataTypes(long nativeProfileSyncServiceAndroid);
     private native int[] nativeGetPreferredDataTypes(long nativeProfileSyncServiceAndroid);
