@@ -87,7 +87,7 @@ bool CrostiniUninstallerView::Accept() {
 
   // Kick off the Crostini Remove sequence.
   crostini::CrostiniManager::GetForProfile(profile_)->RemoveCrostini(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      crostini::kCrostiniDefaultVmName,
       base::BindOnce(&CrostiniUninstallerView::UninstallCrostiniFinished,
                      weak_ptr_factory_.GetWeakPtr()));
 

@@ -203,7 +203,6 @@ bool CrostiniInstallerView::Cancel() {
               base::Unretained(
                   crostini::CrostiniManager::GetForProfile(profile_)),
               crostini::kCrostiniDefaultVmName,
-              crostini::kCrostiniDefaultContainerName,
               base::BindOnce(&CrostiniInstallerView::FinishCleanup,
                              weak_ptr_factory_.GetWeakPtr())));
       UpdateState(State::CLEANUP);

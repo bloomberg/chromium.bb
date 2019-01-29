@@ -2144,11 +2144,10 @@ void CrostiniManager::OnGetContainerSshKeys(
 }
 
 void CrostiniManager::RemoveCrostini(std::string vm_name,
-                                     std::string container_name,
                                      RemoveCrostiniCallback callback) {
   AddRemoveCrostiniCallback(std::move(callback));
   auto crostini_remover = base::MakeRefCounted<CrostiniRemover>(
-      profile_, std::move(vm_name), std::move(container_name),
+      profile_, std::move(vm_name),
       base::BindOnce(&CrostiniManager::OnRemoveCrostini,
                      weak_ptr_factory_.GetWeakPtr()));
   crostini_remover->RemoveCrostini();

@@ -25,11 +25,9 @@ namespace crostini {
 CrostiniRemover::CrostiniRemover(
     Profile* profile,
     std::string vm_name,
-    std::string container_name,
     CrostiniManager::RemoveCrostiniCallback callback)
     : profile_(profile),
       vm_name_(std::move(vm_name)),
-      container_name_(std::move(container_name)),
       callback_(std::move(callback)) {}
 
 CrostiniRemover::~CrostiniRemover() = default;
@@ -70,10 +68,11 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
     std::move(callback_).Run(result);
     return;
   }
+
   CrostiniRegistryServiceFactory::GetForProfile(profile_)->ClearApplicationList(
-      vm_name_, container_name_);
+      vm_name_);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
-      vm_name_, container_name_);
+      vm_name_);
   CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(
       base::FilePath(vm_name_),
       vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
