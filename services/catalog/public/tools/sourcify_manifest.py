@@ -72,8 +72,6 @@ def main():
   parser.add_argument("--module-path")
   args, _ = parser.parse_known_args()
 
-  if args.submanifest_info is None:
-    raise Exception("--submanifest-info required")
   if args.output_filename_base is None:
     raise Exception("--output-filename-base is required")
   if args.output_function_name is None:
@@ -96,21 +94,8 @@ def main():
 
   overlays = []
   packaged_services = []
-  with open(args.submanifest_info, "r") as info_file:
-    for line in info_file.readlines():
-      submanifest_type, namespace_file, header_base = line.strip().split("@", 3)
-      with open(namespace_file, "r") as namespace_file:
-        namespace = namespace_file.readline().strip()
-      info = { "namespace": namespace, "header": header_base + ".h" }
-      if submanifest_type == "overlay":
-        overlays.append(info)
-      else:
-        packaged_services.append(info)
-
   global_vars = {
     "root_manifest": root_manifest,
-    "overlays": overlays,
-    "packaged_services": packaged_services,
     "function_name": function_name,
     "namespaces": namespaces,
     "path": args.module_path,
