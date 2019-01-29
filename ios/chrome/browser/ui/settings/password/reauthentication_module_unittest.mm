@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/reauthentication_module_for_testing.h"
+#import "ios/chrome/browser/ui/settings/password/reauthentication_module_for_testing.h"
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
@@ -17,7 +17,7 @@
 #endif
 
 @interface TestingSuccessfulReauthTimeAccessor
-    : NSObject<SuccessfulReauthTimeAccessor> {
+    : NSObject <SuccessfulReauthTimeAccessor> {
   // Object storing the time of a fake previous successful re-authentication
   // to be used by the |ReauthenticationModule|.
   NSDate* successfulReauthTime_;

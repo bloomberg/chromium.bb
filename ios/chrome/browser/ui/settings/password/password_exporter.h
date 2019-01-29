@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_EXPORTER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_EXPORTER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_EXPORTER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_EXPORTER_H_
 
 #import <Foundation/Foundation.h>
 
@@ -28,7 +28,7 @@ enum class ExportState {
 
 @protocol ReauthenticationProtocol;
 
-@protocol FileWriterProtocol<NSObject>
+@protocol FileWriterProtocol <NSObject>
 
 // Posts a task to write the data in |data| to the file at |fileURL| and
 // executes |handler| when the writing is finished.
@@ -38,7 +38,7 @@ enum class ExportState {
 
 @end
 
-@protocol PasswordSerializerBridge<NSObject>
+@protocol PasswordSerializerBridge <NSObject>
 
 // Posts task to serialize passwords and calls |serializedPasswordsHandler|
 // when serialization is finished.
@@ -48,7 +48,7 @@ enum class ExportState {
 
 @end
 
-@protocol PasswordExporterDelegate<NSObject>
+@protocol PasswordExporterDelegate <NSObject>
 
 // Displays a dialog informing the user that they must set up a passcode
 // in order to export passwords.
@@ -119,4 +119,4 @@ enum class ExportState {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_EXPORTER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_EXPORTER_H_

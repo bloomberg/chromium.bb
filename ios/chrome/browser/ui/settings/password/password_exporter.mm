@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/password_exporter.h"
+#import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -17,7 +17,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/settings/reauthentication_module.h"
+#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -35,7 +35,7 @@ enum class ReauthenticationStatus {
 
 }  // namespace
 
-@interface PasswordSerializerBridge : NSObject<PasswordSerializerBridge>
+@interface PasswordSerializerBridge : NSObject <PasswordSerializerBridge>
 @end
 
 @implementation PasswordSerializerBridge
@@ -52,7 +52,7 @@ enum class ReauthenticationStatus {
 
 @end
 
-@interface PasswordFileWriter : NSObject<FileWriterProtocol>
+@interface PasswordFileWriter : NSObject <FileWriterProtocol>
 @end
 
 @implementation PasswordFileWriter
@@ -192,19 +192,18 @@ enum class ReauthenticationStatus {
 
   base::Time exportPreparationStart = base::Time::Now();
   __weak PasswordExporter* weakSelf = self;
-  void (^onPasswordsSerialized)(std::string) =
-      ^(std::string serializedPasswords) {
-        PasswordExporter* strongSelf = weakSelf;
-        if (!strongSelf)
-          return;
-        strongSelf.serializedPasswords =
-            base::SysUTF8ToNSString(serializedPasswords);
-        strongSelf.serializingFinished = YES;
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "PasswordManager.TimeReadingExportedPasswords",
-            base::Time::Now() - exportPreparationStart);
-        [strongSelf tryExporting];
-      };
+  void (^onPasswordsSerialized)(std::string) = ^(
+      std::string serializedPasswords) {
+    PasswordExporter* strongSelf = weakSelf;
+    if (!strongSelf)
+      return;
+    strongSelf.serializedPasswords =
+        base::SysUTF8ToNSString(serializedPasswords);
+    strongSelf.serializingFinished = YES;
+    UMA_HISTOGRAM_MEDIUM_TIMES("PasswordManager.TimeReadingExportedPasswords",
+                               base::Time::Now() - exportPreparationStart);
+    [strongSelf tryExporting];
+  };
 
   [_passwordSerializerBridge serializePasswords:std::move(passwords)
                                         handler:onPasswordsSerialized];
