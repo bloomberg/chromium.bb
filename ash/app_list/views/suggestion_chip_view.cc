@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
@@ -26,24 +25,12 @@ namespace app_list {
 
 namespace {
 
-// Assistant specific style:
-constexpr SkColor kAssistantBackgroundColor = SK_ColorWHITE;
-constexpr SkColor kAssistantFocusColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
-constexpr SkColor kAssistantStrokeColor =
-    SkColorSetA(gfx::kGoogleGrey900, 0x24);
-constexpr SkColor kAssistantTextColor = gfx::kGoogleGrey700;
-constexpr int kAssistantStrokeWidthDip = 1;
-
-// App list specific style:
-constexpr SkColor kAppListBackgroundColor =
-    SkColorSetA(gfx::kGoogleGrey100, 0x14);
-constexpr SkColor kAppListTextColor = gfx::kGoogleGrey100;
-constexpr SkColor kAppListRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
-constexpr SkColor kAppListFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
-constexpr int kAppListMaxTextWidth = 192;
+constexpr SkColor kBackgroundColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
+constexpr SkColor kTextColor = gfx::kGoogleGrey100;
+constexpr SkColor kRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
+constexpr SkColor kFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
+constexpr int kMaxTextWidth = 192;
 constexpr int kBlurRadius = 5;
-
-// Shared style:
 constexpr int kIconMarginDip = 8;
 constexpr int kPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
@@ -62,15 +49,13 @@ SuggestionChipView::SuggestionChipView(const Params& params,
                                        views::ButtonListener* listener)
     : Button(listener),
       icon_view_(new views::ImageView()),
-      text_view_(new views::Label()),
-      assistant_style_(params.assistant_style) {
+      text_view_(new views::Label()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInkDropMode(InkDropMode::ON);
 
   // Set background blur for the chip and use mask layer to clip it into
   // rounded rect.
-  if (!assistant_style_)
-    SetBackgroundBlurEnabled(false);
+  SetBackgroundBlurEnabled(false);
 
   InitLayout(params);
 }
@@ -78,8 +63,6 @@ SuggestionChipView::SuggestionChipView(const Params& params,
 SuggestionChipView::~SuggestionChipView() = default;
 
 void SuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
-  DCHECK(!assistant_style_);
-
   // Background blur is enabled if and only if layer exists.
   if (!!layer() == enabled)
     return;
@@ -141,13 +124,9 @@ void SuggestionChipView::InitLayout(const Params& params) {
 
   // Text.
   text_view_->SetAutoColorReadabilityEnabled(false);
-  text_view_->SetEnabledColor(assistant_style_ ? kAssistantTextColor
-                                               : kAppListTextColor);
+  text_view_->SetEnabledColor(kTextColor);
   text_view_->SetSubpixelRenderingEnabled(false);
-  text_view_->SetFontList(
-      assistant_style_
-          ? ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1)
-          : AppListConfig::instance().app_title_font());
+  text_view_->SetFontList(AppListConfig::instance().app_title_font());
   SetText(params.text);
   AddChildView(text_view_);
 }
@@ -159,24 +138,10 @@ void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetContentsBounds();
 
   // Background.
-  flags.setColor(assistant_style_ ? kAssistantBackgroundColor
-                                  : kAppListBackgroundColor);
+  flags.setColor(kBackgroundColor);
   canvas->DrawRoundRect(bounds, height() / 2, flags);
   if (HasFocus()) {
-    flags.setColor(assistant_style_ ? kAssistantFocusColor
-                                    : kAppListFocusColor);
-    canvas->DrawRoundRect(bounds, height() / 2, flags);
-  }
-
-  // Border.
-  if (assistant_style_) {
-    // Stroke should be drawn within our contents bounds.
-    bounds.Inset(gfx::Insets(kAssistantStrokeWidthDip));
-
-    // Stroke.
-    flags.setColor(kAssistantStrokeColor);
-    flags.setStrokeWidth(kAssistantStrokeWidthDip);
-    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
+    flags.setColor(kFocusColor);
     canvas->DrawRoundRect(bounds, height() / 2, flags);
   }
 }
@@ -224,7 +189,7 @@ std::unique_ptr<views::InkDropRipple> SuggestionChipView::CreateInkDropRipple()
                    2 * ripple_radius, 2 * ripple_radius);
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(), kAppListRippleColor, 1.0f);
+      GetInkDropCenterBasedOnLastEvent(), kRippleColor, 1.0f);
 }
 
 std::unique_ptr<ui::Layer> SuggestionChipView::RecreateLayer() {
@@ -241,11 +206,9 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
 
 void SuggestionChipView::SetText(const base::string16& text) {
   text_view_->SetText(text);
-  if (!assistant_style_) {
-    gfx::Size size = text_view_->CalculatePreferredSize();
-    size.set_width(std::min(kAppListMaxTextWidth, size.width()));
-    text_view_->SetPreferredSize(size);
-  }
+  gfx::Size size = text_view_->CalculatePreferredSize();
+  size.set_width(std::min(kMaxTextWidth, size.width()));
+  text_view_->SetPreferredSize(size);
 }
 
 const base::string16& SuggestionChipView::GetText() const {

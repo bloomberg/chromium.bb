@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 
@@ -16,7 +17,7 @@ namespace ash {
 
 // AssistantOptInDelegate ------------------------------------------------------
 
-class AssistantOptInDelegate {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInDelegate {
  public:
   // Invoked when the Assistant opt in button is pressed.
   virtual void OnOptInButtonPressed() = 0;
@@ -27,7 +28,9 @@ class AssistantOptInDelegate {
 
 // AssistantOptInView ----------------------------------------------------------
 
-class AssistantOptInView : public views::View, public views::ButtonListener {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInView
+    : public views::View,
+      public views::ButtonListener {
  public:
   AssistantOptInView();
   ~AssistantOptInView() override;

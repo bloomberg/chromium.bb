@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"

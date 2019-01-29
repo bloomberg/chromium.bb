@@ -7,12 +7,14 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-class AssistantProgressIndicator : public views::View {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantProgressIndicator
+    : public views::View {
  public:
   AssistantProgressIndicator();
   ~AssistantProgressIndicator() override;

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/assistant/ui/assistant_container_view_animator.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -27,7 +28,7 @@ namespace ash {
 // AssistantContainerViewAnimator that performs rebounding of
 // AssistantContainerView at each frame in its resize animation. As such, it is
 // not very performant and we are working to deprecate this implementation.
-class AssistantContainerViewAnimatorLegacyImpl
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewAnimatorLegacyImpl
     : public AssistantContainerViewAnimator,
       public gfx::AnimationDelegate {
  public:

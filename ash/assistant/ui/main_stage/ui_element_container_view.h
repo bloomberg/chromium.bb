@@ -12,6 +12,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view_observer.h"
 
@@ -29,8 +30,9 @@ class AssistantViewDelegate;
 // UiElementContainerView is the child of AssistantMainView concerned with
 // laying out text views and embedded card views in response to Assistant
 // interaction model UI element events.
-class UiElementContainerView : public AssistantScrollView,
-                               public AssistantInteractionModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
+    : public AssistantScrollView,
+      public AssistantInteractionModelObserver {
  public:
   explicit UiElementContainerView(AssistantViewDelegate* delegate);
   ~UiElementContainerView() override;

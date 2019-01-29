@@ -10,6 +10,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/views/controls/button/button.h"
@@ -26,7 +27,7 @@ class AssistantViewDelegate;
 
 // TODO(wutao): Remove this class and call methods on AssistantViewDelegate
 // derectly.
-class AssistantMiniViewDelegate {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMiniViewDelegate {
  public:
   // Invoked when the AssistantMiniView is pressed.
   virtual void OnAssistantMiniViewPressed() {}
@@ -37,10 +38,11 @@ class AssistantMiniViewDelegate {
 
 // AssistantMiniView -----------------------------------------------------------
 
-class AssistantMiniView : public views::Button,
-                          public views::ButtonListener,
-                          public AssistantInteractionModelObserver,
-                          public AssistantUiModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMiniView
+    : public views::Button,
+      public views::ButtonListener,
+      public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantMiniView(AssistantViewDelegate* delegate);
   ~AssistantMiniView() override;

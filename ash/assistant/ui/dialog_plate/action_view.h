@@ -7,6 +7,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_button.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -18,8 +19,9 @@ class BaseLogoView;
 
 // A stateful view belonging to DialogPlate which indicates current user input
 // modality and delivers notification of press events.
-class ActionView : public AssistantButton,
-                   public AssistantInteractionModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) ActionView
+    : public AssistantButton,
+      public AssistantInteractionModelObserver {
  public:
   ActionView(views::ButtonListener* listener,
              AssistantViewDelegate* delegate,

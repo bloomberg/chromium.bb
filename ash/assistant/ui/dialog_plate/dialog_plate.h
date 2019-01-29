@@ -12,6 +12,7 @@
 #include "ash/assistant/model/assistant_query_history.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/action_view.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/views/controls/button/button.h"
@@ -34,7 +35,8 @@ class AssistantViewDelegate;
 
 // DialogPlateObserver ---------------------------------------------------------
 
-class DialogPlateObserver : public base::CheckedObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlateObserver
+    : public base::CheckedObserver {
  public:
   // Invoked when the dialog plate button identified by |id| is pressed.
   virtual void OnDialogPlateButtonPressed(AssistantButtonId id) {}
@@ -53,11 +55,12 @@ class DialogPlateObserver : public base::CheckedObserver {
 // provides a textfield for use with the keyboard input modality, and an
 // ActionView which serves to either commit a text query, or toggle voice
 // interaction as appropriate for the user's current input modality.
-class DialogPlate : public views::View,
-                    public views::TextfieldController,
-                    public AssistantInteractionModelObserver,
-                    public AssistantUiModelObserver,
-                    public views::ButtonListener {
+class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
+    : public views::View,
+      public views::TextfieldController,
+      public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver,
+      public views::ButtonListener {
  public:
   explicit DialogPlate(AssistantViewDelegate* delegate);
   ~DialogPlate() override;

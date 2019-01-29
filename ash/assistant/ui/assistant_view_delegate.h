@@ -21,6 +21,7 @@
 #include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
+#include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
@@ -34,7 +35,7 @@ enum class DeepLinkType;
 }  // namespace util
 }  // namespace assistant
 
-class ASH_PUBLIC_EXPORT AssistantViewDelegateObserver
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
     : public base::CheckedObserver {
  public:
   // Invoked when Assistant has received a deep link of the specified |type|
@@ -47,7 +48,7 @@ class ASH_PUBLIC_EXPORT AssistantViewDelegateObserver
 // A delegate of views in assistant/ui that handles views related actions e.g.
 // get models for the views, adding observers, closing the views, opening urls,
 // etc.
-class ASH_PUBLIC_EXPORT AssistantViewDelegate {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
