@@ -81,6 +81,7 @@ void WebAppProvider::Init() {
     registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
                                     weak_ptr_factory_.GetWeakPtr()));
   } else {
+    web_app_policy_manager_->Init();
     system_web_app_manager_->Init();
 
     web_app::ScanForExternalWebApps(

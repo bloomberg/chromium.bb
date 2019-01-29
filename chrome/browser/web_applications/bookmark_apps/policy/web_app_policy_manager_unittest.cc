@@ -120,6 +120,7 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledAppsPrefValue) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager->install_requests();
@@ -133,6 +134,7 @@ TEST_F(WebAppPolicyManagerTest, NoForceInstalledApps) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager->install_requests();
@@ -149,6 +151,7 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager->install_requests();
@@ -168,6 +171,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager->install_requests();
@@ -187,6 +191,7 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager->install_requests();
@@ -229,6 +234,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
 
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the policy.
@@ -247,6 +253,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
   WebAppPolicyManager web_app_policy_manager(profile(),
                                              pending_app_manager.get());
+  web_app_policy_manager.Init();
   base::RunLoop().RunUntilIdle();
 
   // Add two sites, one that opens in a window and one that opens in a tab.
