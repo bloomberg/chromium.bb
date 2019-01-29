@@ -465,7 +465,7 @@ void Geolocation::UpdateGeolocationConnection() {
   GetFrame()->GetInterfaceProvider().GetInterface(&geolocation_service_,
                                                   invalidator, task_runner);
   geolocation_service_->CreateGeolocation(
-      MakeRequest(&geolocation_, invalidator),
+      MakeRequest(&geolocation_, invalidator, task_runner),
       LocalFrame::HasTransientUserActivation(GetFrame()));
 
   geolocation_.set_connection_error_handler(WTF::Bind(
