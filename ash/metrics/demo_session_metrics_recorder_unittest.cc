@@ -129,7 +129,8 @@ class DemoSessionMetricsRecorderTest : public AshTestBase {
     window->SetProperty(
         kShelfIDKey,
         new std::string(ShelfID(app_id, std::string()).Serialize()));
-    window->SetProperty(kArcPackageNameKey, new std::string(package_name));
+    if (!package_name.empty())
+      window->SetProperty(kArcPackageNameKey, new std::string(package_name));
     return window;
   }
 
@@ -443,6 +444,80 @@ TEST_F(DemoSessionMetricsRecorderTest, IgnoreOnIdleSession) {
   DeleteMetricsRecorder();
 
   histogram_tester_->ExpectTotalCount("DemoMode.ActiveApp", 0);
+}
+
+TEST_F(DemoSessionMetricsRecorderTest, UniqueAppsLaunchedOnDeletion) {
+  // Activate each window twice.  Despite activating each twice,
+  // the count should only be incremented once per unique app.
+  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
+  wm::ActivateWindow(chrome_app_window.get());
+  wm::DeactivateWindow(chrome_app_window.get());
+  wm::ActivateWindow(chrome_app_window.get());
+
+  auto chrome_browser_window =
+      CreateChromeAppWindow(extension_misc::kChromeAppId);
+  wm::ActivateWindow(chrome_browser_window.get());
+  wm::DeactivateWindow(chrome_browser_window.get());
+  wm::ActivateWindow(chrome_browser_window.get());
+
+  auto arc_window_1 = CreateArcWindow("com.google.Photos");
+  wm::ActivateWindow(arc_window_1.get());
+  wm::DeactivateWindow(arc_window_1.get());
+  wm::ActivateWindow(arc_window_1.get());
+
+  auto arc_window_2 = CreateArcWindow("com.google.Maps");
+  wm::ActivateWindow(arc_window_2.get());
+  wm::DeactivateWindow(arc_window_2.get());
+  wm::ActivateWindow(arc_window_2.get());
+
+  // Popup windows shouldn't be counted at all.
+  auto popup_window = CreatePopupWindow();
+  wm::ActivateWindow(popup_window.get());
+  wm::DeactivateWindow(popup_window.get());
+  wm::ActivateWindow(popup_window.get());
+
+  DeleteMetricsRecorder();
+
+  histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 4, 1);
+}
+
+TEST_F(DemoSessionMetricsRecorderTest,
+       NoUniqueAppsLaunchedOnMissingArcPackageName) {
+  // Create an ARC window with no package name set yet
+  auto arc_window_1 = CreateArcWindow("");
+  wm::ActivateWindow(arc_window_1.get());
+
+  DeleteMetricsRecorder();
+
+  // There shuld be no unique apps reported if there was no package name.
+  histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 0, 1);
+}
+
+TEST_F(DemoSessionMetricsRecorderTest,
+       UniqueAppsLaunchedOnDelayedArcPackageName) {
+  // Create an ARC window with no package name set yet.
+  auto arc_window_1 = CreateArcWindow("");
+  wm::ActivateWindow(arc_window_1.get());
+
+  // Set the package name after window creation/activation.
+  arc_window_1->SetProperty(kArcPackageNameKey,
+                            new std::string("com.google.Photos"));
+
+  auto arc_window_2 = CreateArcWindow("com.google.Maps");
+  wm::ActivateWindow(arc_window_2.get());
+
+  DeleteMetricsRecorder();
+
+  // There should be 2 unique apps reported.
+  histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 2, 1);
+}
+
+TEST_F(DemoSessionMetricsRecorderTest, NoUniqueAppsLaunchedOnDeletion) {
+  DeleteMetricsRecorder();
+
+  // There should be no samples if the recorder is deleted with 0 unique apps
+  // launched.
+  histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 0, 1);
 }
 
 }  // namespace

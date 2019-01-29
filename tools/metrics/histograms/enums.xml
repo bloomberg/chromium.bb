@@ -10994,6 +10994,7 @@ Called by update_net_error_codes.py.-->
   <int value="16" label="Squid"/>
   <int value="17" label="Web Store"/>
   <int value="18" label="YouTube"/>
+  <int value="19" label="Screensaver"/>
 </enum>
 
 <enum name="DemoModeIdleLogoutWarningEvent">
