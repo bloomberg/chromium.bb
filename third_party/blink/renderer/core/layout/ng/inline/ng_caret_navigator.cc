@@ -58,6 +58,7 @@ NGCaretNavigator::Position
 NGCaretNavigator::CaretPositionFromTextContentOffsetAndAffinity(
     unsigned offset,
     TextAffinity affinity) const {
+  DCHECK_LE(offset, GetText().length());
   // Callers sometimes pass in (0, upstream) or (length, downstream), which
   // originate from legacy callers. Make sure they are fixed up.
   // TODO(xiaochengh): Catch and eliminate such callers.
