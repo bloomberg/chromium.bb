@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//device/vr/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom_component("mojom") {
@@ -21,6 +22,17 @@ mojom_component("mojom") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo:mojo",
   ]
+
+  enabled_features = []
+  if (enable_oculus_vr) {
+    enabled_features += [ "enable_oculus_vr" ]
+  }
+  if (enable_openvr) {
+    enabled_features += [ "enable_openvr" ]
+  }
+  if (enable_windows_mr) {
+    enabled_features += [ "enable_windows_mr" ]
+  }
 }
 
 mojom_component("test_mojom") {

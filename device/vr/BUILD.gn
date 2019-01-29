@@ -115,7 +115,7 @@ if (enable_vr) {
       ]
     }
 
-    if (is_win && (enable_openvr || enable_oculus_vr)) {
+    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr)) {
       libs = [
         "d3d11.lib",
         "DXGI.lib",
@@ -128,6 +128,15 @@ if (enable_vr) {
         "windows/d3d11_texture_helper.h",
         "windows/flip_pixel_shader.h",
         "windows/flip_vertex_shader.h",
+      ]
+    }
+
+    if (is_win && enable_windows_mr) {
+      sources += [
+        "windows_mixed_reality/mixed_reality_device.cc",
+        "windows_mixed_reality/mixed_reality_device.h",
+        "windows_mixed_reality/mixed_reality_statics.cc",
+        "windows_mixed_reality/mixed_reality_statics.h",
       ]
     }
 

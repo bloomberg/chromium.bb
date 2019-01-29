@@ -21,11 +21,12 @@ import "ui/gfx/mojo/transform.mojom";
 enum XRDeviceId {
   LAYOUT_TEST_DEVICE_ID = 0, // Fake device used by layout tests.
   GVR_DEVICE_ID = 1,
-  OPENVR_DEVICE_ID = 2,
-  OCULUS_DEVICE_ID = 3,
+  [EnableIf=enable_openvr] OPENVR_DEVICE_ID = 2,
+  [EnableIf=enable_oculus_vr] OCULUS_DEVICE_ID = 3,
   ARCORE_DEVICE_ID = 4,
   ORIENTATION_DEVICE_ID = 5,
   FAKE_DEVICE_ID = 6, // Fake device used by unit tests.
+  [EnableIf=enable_windows_mr] WINDOWS_MIXED_REALITY_ID = 7,
 };
 
 

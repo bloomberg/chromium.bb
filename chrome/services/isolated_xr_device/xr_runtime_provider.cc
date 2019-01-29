@@ -15,16 +15,20 @@
 #include "device/vr/oculus/oculus_device.h"
 #endif
 
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+#include "device/vr/windows_mixed_reality/mixed_reality_device.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#endif
+
 namespace {
 // Poll for device add/remove every 5 seconds.
 constexpr base::TimeDelta kTimeBetweenPollingEvents =
     base::TimeDelta::FromSecondsD(5);
 }  // namespace
 
-void IsolatedXRRuntimeProvider::PollForDeviceChanges(bool check_openvr,
-                                                     bool check_oculus) {
+void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-  if (check_oculus) {
+  if (check_oculus_) {
     bool oculus_available = (oculus_device_ && oculus_device_->IsAvailable()) ||
                             device::OculusDevice::IsHwAvailable();
     if (oculus_available && !oculus_device_) {
@@ -41,10 +45,9 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges(bool check_openvr,
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  if (check_openvr) {
-    bool openvr_available =
-        (openvr_device_ && !openvr_device_->IsAvailable()) ||
-        device::OpenVRDevice::IsHwAvailable();
+  if (check_openvr_) {
+    bool openvr_available = (openvr_device_ && openvr_device_->IsAvailable()) ||
+                            device::OpenVRDevice::IsHwAvailable();
     if (openvr_available && !openvr_device_) {
       openvr_device_ = std::make_unique<device::OpenVRDevice>();
       client_->OnDeviceAdded(openvr_device_->BindXRRuntimePtr(),
@@ -58,34 +61,52 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges(bool check_openvr,
   }
 #endif
 
-  if (check_openvr || check_oculus) {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (check_wmr_) {
+    bool wmr_available = wmr_statics_->IsHardwareAvailable();
+    if (wmr_available && !wmr_device_) {
+      wmr_device_ = std::make_unique<device::MixedRealityDevice>();
+      client_->OnDeviceAdded(
+          wmr_device_->BindXRRuntimePtr(), wmr_device_->BindGamepadFactory(),
+          wmr_device_->BindCompositorHost(), wmr_device_->GetId());
+    } else if (wmr_device_ && !wmr_available) {
+      client_->OnDeviceRemoved(wmr_device_->GetId());
+      wmr_device_ = nullptr;
+    }
+  }
+#endif
+
+  if (check_openvr_ || check_oculus_ || check_wmr_) {
     // Post a task to do this again later.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&IsolatedXRRuntimeProvider::PollForDeviceChanges,
-                       weak_ptr_factory_.GetWeakPtr(), check_openvr,
-                       check_oculus),
+                       weak_ptr_factory_.GetWeakPtr()),
         kTimeBetweenPollingEvents);
   }
 }
 
 void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
-  bool openvr_api_available = false;
-  bool oculus_api_available = false;
-
 #if BUILDFLAG(ENABLE_OCULUS_VR)
   if (base::FeatureList::IsEnabled(features::kOculusVR))
-    oculus_api_available = device::OculusDevice::IsApiAvailable();
+    check_oculus_ = device::OculusDevice::IsApiAvailable();
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
   if (base::FeatureList::IsEnabled(features::kOpenVR))
-    openvr_api_available = device::OpenVRDevice::IsApiAvailable();
+    check_openvr_ = device::OpenVRDevice::IsApiAvailable();
+#endif
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  if (base::FeatureList::IsEnabled(features::kWindowsMixedReality)) {
+    wmr_statics_ = device::MixedRealityDeviceStatics::CreateInstance();
+    check_wmr_ = wmr_statics_->IsApiAvailable();
+  }
 #endif
 
   // Post a task to call back every periodically.
-  if (openvr_api_available || oculus_api_available) {
-    PollForDeviceChanges(openvr_api_available, oculus_api_available);
+  if (check_openvr_ || check_oculus_ || check_wmr_) {
+    PollForDeviceChanges();
   }
 }
 
