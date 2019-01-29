@@ -130,7 +130,7 @@ class AutoLogin : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     DCHECK_EQ(chrome::NOTIFICATION_AUTH_NEEDED, type);
-    scoped_refptr<LoginHandler> login_handler =
+    LoginHandler* login_handler =
         content::Details<LoginNotificationDetails>(details)->handler();
     login_handler->SetAuth(username_, password_);
     logged_in_ = true;

@@ -1262,7 +1262,8 @@ void LoginPromptBrowserTest::TestCrossOriginPrompt(
     // Cancel and wait for the interstitial to detach.
     LoginHandler* handler = *observer.handlers().begin();
     content::RunTaskAndWaitForInterstitialDetach(
-        contents, base::BindOnce(&LoginHandler::CancelAuth, handler));
+        contents,
+        base::BindOnce(&LoginHandler::CancelAuth, base::Unretained(handler)));
 
     EXPECT_EQ(expected_hostname, contents->GetVisibleURL().host());
     EXPECT_FALSE(contents->ShowingInterstitialPage());
@@ -1360,7 +1361,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   // Cancel auth dialog for www.b.com and wait for the interstitial to detach.
   LoginHandler* handler = *observer.handlers().begin();
   content::RunTaskAndWaitForInterstitialDetach(
-      contents, base::BindOnce(&LoginHandler::CancelAuth, handler));
+      contents,
+      base::BindOnce(&LoginHandler::CancelAuth, base::Unretained(handler)));
   EXPECT_EQ("www.b.com", contents->GetVisibleURL().host());
   EXPECT_FALSE(contents->ShowingInterstitialPage());
 }
@@ -1419,7 +1421,8 @@ IN_PROC_BROWSER_TEST_F(
     // the correct origin.
     LoginHandler* handler = *observer.handlers().begin();
     content::RunTaskAndWaitForInterstitialDetach(
-        contents, base::BindOnce(&LoginHandler::CancelAuth, handler));
+        contents,
+        base::BindOnce(&LoginHandler::CancelAuth, base::Unretained(handler)));
 
     EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
     EXPECT_FALSE(contents->ShowingInterstitialPage());
@@ -1477,7 +1480,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
     // Cancel the auth prompt. This commits the navigation.
     LoginHandler* handler = *observer.handlers().begin();
     content::RunTaskAndWaitForInterstitialDetach(
-        contents, base::BindOnce(&LoginHandler::CancelAuth, handler));
+        contents,
+        base::BindOnce(&LoginHandler::CancelAuth, base::Unretained(handler)));
     EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
     EXPECT_FALSE(contents->ShowingInterstitialPage());
     EXPECT_EQ(auth_url, contents->GetLastCommittedURL());
