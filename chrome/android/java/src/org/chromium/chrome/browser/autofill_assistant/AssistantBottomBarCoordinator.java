@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.DisplayMetrics;
@@ -12,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
@@ -51,15 +51,15 @@ class AssistantBottomBarCoordinator {
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mCarouselCoordinator;
 
-    AssistantBottomBarCoordinator(ChromeActivity activity, WebContents webContents,
-            View assistantView, AssistantModel model) {
+    AssistantBottomBarCoordinator(
+            Context context, WebContents webContents, View assistantView, AssistantModel model) {
         mBottomBarView = assistantView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.autofill_assistant_bottombar);
         mSwipeIndicatorView = mBottomBarView.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.swipe_indicator);
         mBottomBarBehavior = BottomSheetBehavior.from(mBottomBarView);
 
-        DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         mChildrenHorizontalMargin = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, CHILDREN_HORIZONTAL_MARGIN_DP, displayMetrics);
         mDetailsOnlyVerticalMargin = (int) TypedValue.applyDimension(
@@ -72,10 +72,10 @@ class AssistantBottomBarCoordinator {
 
         // Instantiate child components.
         mHeaderCoordinator =
-                new AssistantHeaderCoordinator(activity, mBottomBarView, model.getHeaderModel());
-        mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
-        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(activity, webContents);
-        mCarouselCoordinator = new AssistantCarouselCoordinator(activity, model.getCarouselModel());
+                new AssistantHeaderCoordinator(context, mBottomBarView, model.getHeaderModel());
+        mDetailsCoordinator = new AssistantDetailsCoordinator(context, model.getDetailsModel());
+        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(context, webContents);
+        mCarouselCoordinator = new AssistantCarouselCoordinator(context, model.getCarouselModel());
 
         // Add child views to bottom bar.
         mBottomBarView.addView(mDetailsCoordinator.getView());

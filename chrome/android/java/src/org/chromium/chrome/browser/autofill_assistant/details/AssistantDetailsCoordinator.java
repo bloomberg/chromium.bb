@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.autofill_assistant.details;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsViewBinder.ViewHolder;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -21,11 +21,11 @@ public class AssistantDetailsCoordinator {
     private Runnable mOnVisibilityChanged;
     private final View mView;
 
-    public AssistantDetailsCoordinator(ChromeActivity activity, AssistantDetailsModel model) {
-        mView = LayoutInflater.from(activity).inflate(
+    public AssistantDetailsCoordinator(Context context, AssistantDetailsModel model) {
+        mView = LayoutInflater.from(context).inflate(
                 R.layout.autofill_assistant_details, /* root= */ null);
-        ViewHolder viewHolder = new ViewHolder(activity, mView);
-        AssistantDetailsViewBinder viewBinder = new AssistantDetailsViewBinder(activity);
+        ViewHolder viewHolder = new ViewHolder(context, mView);
+        AssistantDetailsViewBinder viewBinder = new AssistantDetailsViewBinder(context);
         PropertyModelChangeProcessor.create(model, viewHolder, viewBinder);
 
         // Details view is initially hidden.
