@@ -2,11 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#container[popupStyle] {
+#container:not([expandStyle]) {
   padding-top: 8px;
 }
 
-#container:not([popupStyle]) {
+#container[expandStyle] {
   align-items: center;
   height: 48px;
 }
@@ -34,11 +34,11 @@
 }
 
 cr-expand-button {
-  padding-right: 8px;
+  padding-inline-end: 8px;
 }
 
 .toggle {
-  padding-right: 20px;
+  padding-inline-end: 20px;
 }
 
 .indent {
