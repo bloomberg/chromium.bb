@@ -666,6 +666,13 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   const GURL kFullUrl = GURL("https://www.example.com/");
 
   void SetUp() override {
+#if defined(OS_CHROMEOS)
+    // This is necessary in Mash because the touch handles which get created
+    // during GestureTaps require a MusClient.
+    if (features::IsUsingWindowService())
+      set_native_widget_type(NativeWidgetType::kDesktop);
+#endif
+
     OmniboxViewViewsTest::SetUp();
 
     // Advance 5 seconds from epoch so the time is not considered null.
@@ -778,9 +785,6 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
-  // TODO(crbug.com/916256): fix for mash.
-  if (features::IsSingleProcessMash())
-    return;
   ui::GestureEvent tap_down(0, 0, 0, ui::EventTimeForNow(),
                             ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
   omnibox_textfield()->OnGestureEvent(&tap_down);

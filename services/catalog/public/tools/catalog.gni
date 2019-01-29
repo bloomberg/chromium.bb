@@ -51,6 +51,7 @@ template("catalog_cpp_source") {
     testonly = defined(invoker.testonly) && invoker.testonly
     script = "//services/catalog/public/tools/sourcify_manifest.py"
     inputs = [
+      "$catalog_target_dir/${catalog_target_name}.submanifests",
       "//services/catalog/public/tools/catalog.cc.tmpl",
       "//services/catalog/public/tools/catalog.h.tmpl",
     ]

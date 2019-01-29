@@ -22,6 +22,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/test/views_test_helper_aura.h"
@@ -87,6 +88,7 @@ class PlatformTestHelperMus::ServiceManagerConnection {
     // (e.g. AuraTestSuiteSetup).
     params.window_tree_client =
         aura::test::EnvTestHelper().GetWindowTreeClient();
+    params.running_in_ws_process = features::IsSingleProcessMash();
     return std::make_unique<MusClient>(params);
   }
 
@@ -110,33 +112,23 @@ class PlatformTestHelperMus::ServiceManagerConnection {
   }
 
   void SetUpConnectionsOnBackgroundThread(base::WaitableEvent* wait) {
+    static const char* kServiceName = "views_unittests";
+
     background_service_manager_ =
         std::make_unique<service_manager::BackgroundServiceManager>(
             nullptr, std::vector<service_manager::Manifest>{
                          test_ws::GetManifest(), test_ime_driver::GetManifest(),
-
-                         // The manifest used for the test service instance when
-                         // running as a "views_unitttests" executable.
                          service_manager::ManifestBuilder()
-                             .WithServiceName("views_unittests")
+                             .WithServiceName(kServiceName)
                              .RequireCapability("*", "app")
                              .RequireCapability("*", "test")
-                             .Build(),
-
-                         // The manifest used for the test service instance when
-                         // running as a "views_unitttests" executable.
-                         service_manager::ManifestBuilder()
-                             .WithServiceName("interactive_ui_tests")
-                             .RequireCapability("*", "app")
-                             .RequireCapability("*", "test")
-                             .RequireCapability(ws::mojom::kServiceName,
-                                                "window_manager")
                              .Build()});
 
     service_manager::mojom::ServicePtr service;
     default_service_binding_.Bind(mojo::MakeRequest(&service));
+    // The service name matches the name field in unittests_manifest.json.
     background_service_manager_->RegisterService(
-        service_manager::Identity(GetTestName(),
+        service_manager::Identity(kServiceName,
                                   service_manager::kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
         std::move(service), nullptr);
@@ -150,15 +142,6 @@ class PlatformTestHelperMus::ServiceManagerConnection {
     default_service_binding_.Close();
     background_service_manager_.reset();
     wait->Signal();
-  }
-
-  // Returns the name of the test executable, e.g. "views_unittests".
-  std::string GetTestName() {
-    base::FilePath executable = base::CommandLine::ForCurrentProcess()
-                                    ->GetProgram()
-                                    .BaseName()
-                                    .RemoveExtension();
-    return executable.MaybeAsASCII();
   }
 
   base::Thread thread_;
