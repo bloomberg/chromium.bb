@@ -196,6 +196,9 @@ cr.define('print_preview', function() {
         ],
       ]);
 
+      /** @private {!Set<string>} */
+      this.inFlightCloudPrintRequests_ = new Set();
+
       /**
        * Maps user account to the list of origins for which destinations are
        * already loaded.
@@ -451,6 +454,14 @@ cr.define('print_preview', function() {
      * @private
      */
     fetchPreselectedDestination_(serializedDestination, autoSelect) {
+      const key =
+          print_preview.createRecentDestinationKey(serializedDestination);
+      if (this.inFlightCloudPrintRequests_.has(key)) {
+        // Don't send another request if we are already fetching this
+        // destination.
+        return true;
+      }
+
       const id = serializedDestination.id;
       const origin = serializedDestination.origin;
       if (autoSelect) {
@@ -468,6 +479,7 @@ cr.define('print_preview', function() {
 
       if (this.cloudPrintInterface_ &&
           print_preview.CloudOrigins.includes(origin)) {
+        this.inFlightCloudPrintRequests_.add(key);
         this.cloudPrintInterface_.printer(
             id, origin, serializedDestination.account);
         return true;
@@ -924,6 +936,11 @@ cr.define('print_preview', function() {
      * @param {string} id The ID of the destination to load.
      */
     startLoadCookieDestination(id) {
+      if (this.destinationMap_.get(print_preview.createDestinationKey(
+              id, print_preview.DestinationOrigin.COOKIES, this.activeUser_))) {
+        // Already loaded.
+        return;
+      }
       this.fetchPreselectedDestination_(
           {
             id: id,
@@ -1141,6 +1158,7 @@ cr.define('print_preview', function() {
     reset_() {
       this.destinations_ = [];
       this.destinationMap_.clear();
+      this.inFlightCloudPrintRequests_.clear();
       this.selectDestination(null);
       this.loadedCloudOrigins_.clear();
       for (const printerType of Object.values(print_preview.PrinterType)) {
@@ -1293,39 +1311,39 @@ cr.define('print_preview', function() {
     /**
      * Called when /printer call completes. Updates the specified destination's
      * print capabilities.
-     * @param {!CustomEvent} event Contains detailed information about the
-     *     destination.
+     * @param {!CustomEvent<!print_preview.Destination>} event Contains
+     *     detailed information about the destination.
      * @private
      */
     onCloudPrintPrinterDone_(event) {
-      this.updateDestination_(
-          /** @type {!print_preview.Destination} */ (event.detail));
+      this.updateDestination_(event.detail);
+      this.inFlightCloudPrintRequests_.delete(event.detail.key);
     }
 
     /**
      * Called when the Google Cloud Print interface fails to lookup a
      * destination. Selects another destination if the failed destination was
      * the initial destination.
-     * @param {!CustomEvent} event Contains the ID of the destination that was
-     *     failed to be looked up.
+     * @param {!CustomEvent<!cloudprint.CloudPrintInterfacePrinterFailedDetail>}
+     *     event Contains the ID of the destination that failed to be looked up.
      * @private
      */
     onCloudPrintPrinterFailed_(event) {
-      const eventDetail =
-          /** @type {!cloudprint.CloudPrintInterfacePrinterFailedDetail } */ (
-              event.detail);
+      const key = print_preview.createDestinationKey(
+          event.detail.destinationId, event.detail.origin, this.activeUser_);
+      this.inFlightCloudPrintRequests_.delete(key);
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
-              eventDetail.destinationId, eventDetail.origin)) {
+              event.detail.destinationId, event.detail.origin)) {
         console.warn(
             'Failed to fetch last used printer caps: ' +
-            eventDetail.destinationId);
+            event.detail.destinationId);
         this.selectDefaultDestination_();
       } else {
         // Log the failure
         console.warn(
             'Failed to fetch printer capabilities for ' +
-            eventDetail.destinationId + ' with origin ' + eventDetail.origin);
+            event.detail.destinationId + ' with origin ' + event.detail.origin);
       }
     }
 
