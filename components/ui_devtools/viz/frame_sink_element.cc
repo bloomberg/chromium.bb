@@ -21,7 +21,7 @@ FrameSinkElement::FrameSinkElement(
     UIElement* parent,
     bool is_root,
     bool has_created_frame_sink)
-    : UIElement(UIElementType::FRAMESINK, ui_element_delegate, parent),
+    : VizElement(UIElementType::FRAMESINK, ui_element_delegate, parent),
       frame_sink_id_(frame_sink_id),
       frame_sink_manager_(frame_sink_manager),
       is_root_(is_root),

@@ -14,6 +14,8 @@ source_set("viz") {
     "overlay_agent_viz.h",
     "surface_element.cc",
     "surface_element.h",
+    "viz_element.cc",
+    "viz_element.h",
   ]
 
   deps = [

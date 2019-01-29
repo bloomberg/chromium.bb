@@ -41,17 +41,27 @@ class UI_DEVTOOLS_EXPORT UIElement {
   void set_is_updating(bool is_updating) { is_updating_ = is_updating; }
   void set_owns_children(bool owns_children) { owns_children_ = owns_children; }
 
+  using ElementCompare = bool (*)(const UIElement*, const UIElement*);
+
   // |child| is inserted in front of |before|. If |before| is null, it
   // is inserted at the end. Parent takes ownership of the added child.
   void AddChild(UIElement* child, UIElement* before = nullptr);
+
+  // |child| is inserted according to a custom ordering function.
+  // |notify_delegate| calls OnUIElementAdded, which creates the subtree of
+  // UIElements at |child|, and the corresponding DOM nodes.
+  void AddOrderedChild(UIElement* child,
+                       ElementCompare compare,
+                       bool notify_delegate = true);
 
   // Removes all elements from |children_|. Caller is responsible for destroying
   // children.
   void ClearChildren();
 
   // Remove |child| out of vector |children_| but |child| is not destroyed.
-  // The caller is responsible for destroying |child|.
-  void RemoveChild(UIElement* child);
+  // The caller is responsible for destroying |child|. |notify_delegate| calls
+  // OnUIElementRemoved, which destroys the DOM node for |child|.
+  void RemoveChild(UIElement* child, bool notify_delegate = true);
 
   // Move |child| to position new_index in |children_|.
   void ReorderChild(UIElement* child, int new_index);
