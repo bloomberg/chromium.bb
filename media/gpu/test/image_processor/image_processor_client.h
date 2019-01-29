@@ -17,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/gpu/image_processor.h"
-#include "media/gpu/test/video_image_info.h"
 
 namespace base {
 
@@ -30,6 +29,8 @@ namespace media {
 class VideoFrame;
 
 namespace test {
+
+class Image;
 
 // ImageProcessorClient is a client of ImageProcessor for testing purpose.
 // All the public functions must be called on the same thread, usually the test
@@ -50,8 +51,9 @@ class ImageProcessorClient {
   ~ImageProcessorClient();
 
   // Process |input_frame| and |output_frame| with |image_processor_|.
-  void Process(const VideoImageInfo& input_info,
-               const VideoImageInfo& output_info);
+  // Processing is done asynchronously, the WaitUntilNumImageProcessed()
+  // function can be used to wait for the results.
+  void Process(const Image& input_image, const Image& output_image);
 
   // TODO(crbug.com/917951): Add Reset() when we test Reset() test case.
 
@@ -74,7 +76,7 @@ class ImageProcessorClient {
   size_t GetErrorCount() const;
 
  private:
-  ImageProcessorClient(bool store_processed_video_frames);
+  explicit ImageProcessorClient(bool store_processed_video_frames);
 
   // Create ImageProcessor with |input_config|, |output_config| and
   // |num_buffers|.
@@ -100,11 +102,9 @@ class ImageProcessorClient {
   // These are test helper functions to create a VideoFrame from VideoImageInfo,
   // which will be input in Process().
   // Create a VideoFrame using the input layout required by |image_processor_|.
-  scoped_refptr<VideoFrame> CreateInputFrame(
-      const VideoImageInfo& input_image_info) const;
+  scoped_refptr<VideoFrame> CreateInputFrame(const Image& input_image) const;
   // Create a VideoFrame using the output layout required by |image_processor_|.
-  scoped_refptr<VideoFrame> CreateOutputFrame(
-      const VideoImageInfo& output_image_info) const;
+  scoped_refptr<VideoFrame> CreateOutputFrame(const Image& output_image) const;
 
   std::unique_ptr<ImageProcessor> image_processor_;
 

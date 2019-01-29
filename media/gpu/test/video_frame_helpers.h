@@ -6,6 +6,7 @@
 #define MEDIA_GPU_TEST_VIDEO_FRAME_HELPERS_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -59,6 +60,12 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
 // Create a shared GPU memory handle to the |video_frame|'s data.
 gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     scoped_refptr<VideoFrame> video_frame);
+
+// Create a video frame layout for the specified |pixel_format| and |size|. The
+// created layout will have a separate buffer for each plane in the format.
+base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& size);
 
 }  // namespace test
 }  // namespace media

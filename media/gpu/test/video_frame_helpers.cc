@@ -191,5 +191,14 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   return handle;
 }
 
+base::Optional<VideoFrameLayout> CreateVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& size) {
+  return VideoFrameLayout::CreateWithStrides(
+      pixel_format, size, VideoFrame::ComputeStrides(pixel_format, size),
+      std::vector<size_t>(VideoFrame::NumPlanes(pixel_format),
+                          0) /* buffer_sizes */);
+}
+
 }  // namespace test
 }  // namespace media
