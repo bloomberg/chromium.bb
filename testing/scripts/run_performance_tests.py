@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs several telemetry benchmarks.
+"""Runs telemetry benchmarks and gtest perf tests.
 
 This script attempts to emulate the contract of gtest-style tests
 invoked via recipes. The main contract is that the caller passes the
@@ -56,7 +56,25 @@ import traceback
 import common
 
 import run_telemetry_benchmark_as_googletest
-import run_gtest_perf_test
+
+CHROMIUM_SRC_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+PERF_DIR = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
+# Add src/tools/perf where generate_legacy_perf_dashboard_json.py lives
+sys.path.append(PERF_DIR)
+
+import generate_legacy_perf_dashboard_json
+
+# Add src/testing/ into sys.path for importing xvfb and test_env.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import xvfb
+import test_env
+
+# Unfortunately we need to copy these variables from ../test_env.py.
+# Importing it and using its get_sandbox_env breaks test runs on Linux
+# (it seems to unset DISPLAY).
+CHROME_SANDBOX_ENV = 'CHROME_DEVEL_SANDBOX'
+CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
 
 
 def get_sharding_map_path(args):
@@ -87,8 +105,68 @@ def print_duration(step, start):
   print 'Duration of %s: %d seconds' % (step, time.time() - start)
 
 
-def execute_benchmark(benchmark, isolated_out_dir,
-                      args, rest_args, is_reference, stories=None):
+def IsWindows():
+  return sys.platform == 'cygwin' or sys.platform.startswith('win')
+
+
+def execute_gtest_perf_test(args, rest_args):
+  env = os.environ.copy()
+  # Assume we want to set up the sandbox environment variables all the
+  # time; doing so is harmless on non-Linux platforms and is needed
+  # all the time on Linux.
+  env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
+
+  rc = 0
+  try:
+    executable = rest_args[0]
+    extra_flags = []
+    if len(rest_args) > 1:
+      extra_flags = rest_args[1:]
+
+    # These flags are to make sure that test output perf metrics in the log.
+    if not '--verbose' in extra_flags:
+      extra_flags.append('--verbose')
+    if not '--test-launcher-print-test-stdio=always' in extra_flags:
+      extra_flags.append('--test-launcher-print-test-stdio=always')
+    if args.isolated_script_test_filter:
+      filter_list = common.extract_filter_list(
+        args.isolated_script_test_filter)
+      extra_flags.append('--gtest_filter=' + ':'.join(filter_list))
+
+    if IsWindows():
+      executable = '.\%s.exe' % executable
+    else:
+      executable = './%s' % executable
+    with common.temporary_file() as tempfile_path:
+      env['CHROME_HEADLESS'] = '1'
+      cmd = [executable] + extra_flags
+
+      if args.xvfb:
+        rc = xvfb.run_executable(cmd, env, stdoutfile=tempfile_path)
+      else:
+        rc = test_env.run_command_with_output(cmd, env=env,
+                                              stdoutfile=tempfile_path)
+
+      # Now get the correct json format from the stdout to write to the perf
+      # results file
+      results_processor = (
+          generate_legacy_perf_dashboard_json.LegacyResultsProcessor())
+      charts = results_processor.GenerateJsonResults(tempfile_path)
+  except Exception:
+    traceback.print_exc()
+    rc = 1
+
+  valid = (rc == 0)
+  failures = [] if valid else ['(entire test suite)']
+  output_json = {
+      'valid': valid,
+      'failures': failures,
+    }
+  return rc, charts, output_json
+
+
+def execute_telemetry_benchmark(
+    benchmark, isolated_out_dir, args, rest_args, is_reference, stories=None):
   start = time.time()
   # While we are between chartjson and histogram set we need
   # to determine which output format to look for or see if it was
@@ -160,6 +238,7 @@ def append_output_format(args, rest_args):
     is_histograms = True
   return is_histograms
 
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -205,7 +284,7 @@ def main():
     # is converted to always pass --gtest-benchmark-name flag.
     if not benchmark_name:
       benchmark_name = rest_args[0]
-    return_code, charts, output_json = run_gtest_perf_test.execute_perf_test(
+    return_code, charts, output_json = execute_gtest_perf_test(
         args, rest_args)
 
     write_results(benchmark_name, charts, output_json,
@@ -217,7 +296,7 @@ def main():
     if args.benchmarks:
       benchmarks = args.benchmarks.split(',')
       for benchmark in benchmarks:
-        return_code = (execute_benchmark(
+        return_code = (execute_telemetry_benchmark(
             benchmark, isolated_out_dir, args, rest_args, False) or return_code)
     else:
       # First determine what shard we are running on to know how to
@@ -248,14 +327,15 @@ def main():
 
       for benchmark, stories in sharding.iteritems():
         # Need to run the benchmark twice on browser and reference build
-        return_code = (execute_benchmark(
+        return_code = (execute_telemetry_benchmark(
             benchmark, isolated_out_dir, args, rest_args,
             False, stories=stories) or return_code)
         # We ignore the return code of the reference build since we do not
         # monitor it.
         if args.run_ref_build:
-          execute_benchmark(benchmark, isolated_out_dir, args, rest_args, True,
-                            stories=stories)
+          execute_telemetry_benchmark(
+              benchmark, isolated_out_dir, args, rest_args, True,
+              stories=stories)
 
   return return_code
 
