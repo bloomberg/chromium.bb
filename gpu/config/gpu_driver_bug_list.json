@@ -3067,23 +3067,6 @@
       "features": [
         "disable_direct_composition"
       ]
-    },
-    {
-      "id": 287,
-      "description": "glCopyTexImage2D on Adreno 4xx fails if source is GL_RGB10_A2 and destination is not.",
-      "cr_bugs": [925986],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": ">=",
-          "value": "5.0.0"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "gl_renderer": ".*4\\d\\d",
-      "features": [
-        "disable_copy_tex_image_2d_rgb10_a2"
-      ]
     }
   ]
 }

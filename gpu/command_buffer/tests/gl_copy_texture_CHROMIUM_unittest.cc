@@ -14,12 +14,10 @@
 #include <stdint.h>
 
 #include "base/stl_util.h"
-#include "build/build_config.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace gpu {
@@ -155,11 +153,11 @@ void setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t* color) {
   color[3] = a;
 }
 
-void getExpectedColorAndMask(GLenum src_internal_format,
-                             GLenum dest_internal_format,
-                             const uint8_t* color,
-                             uint8_t* expected_color,
-                             uint8_t* expected_mask) {
+void getExpectedColor(GLenum src_internal_format,
+                      GLenum dest_internal_format,
+                      uint8_t* color,
+                      uint8_t* expected_color,
+                      uint8_t* mask) {
   uint8_t adjusted_color[4];
   switch (src_internal_format) {
     case GL_ALPHA:
@@ -189,34 +187,37 @@ void getExpectedColorAndMask(GLenum src_internal_format,
     case GL_BGRA8_EXT:
       setColor(color[2], color[1], color[0], color[3], adjusted_color);
       break;
-    case GL_RGB10_A2: {
-      // Map the source 2-bit Alpha to 8-bits.
-      const uint8_t alpha_value = (color[3] & 0x3) * 255 / 3;
-      setColor(color[0] >> 2, color[1] >> 2, color[2] >> 2, alpha_value,
-               adjusted_color);
-      break;
-    }
     default:
-      NOTREACHED() << gl::GLEnums::GetStringEnum(src_internal_format);
+      NOTREACHED();
       break;
   }
 
   switch (dest_internal_format) {
-    // TODO(crbug.com/577144): Enable GL_ALPHA, GL_LUMINANCE and
-    // GL_LUMINANCE_ALPHA.
+    case GL_ALPHA:
+      setColor(0, 0, 0, adjusted_color[3], expected_color);
+      setColor(0, 0, 0, 1, mask);
+      break;
     case GL_R8:
     case GL_R16F:
     case GL_R32F:
     case GL_R8UI:
       setColor(adjusted_color[0], 0, 0, 0, expected_color);
-      setColor(1, 0, 0, 0, expected_mask);
+      setColor(1, 0, 0, 0, mask);
+      break;
+    case GL_LUMINANCE:
+      setColor(adjusted_color[0], 0, 0, 0, expected_color);
+      setColor(1, 0, 0, 0, mask);
+      break;
+    case GL_LUMINANCE_ALPHA:
+      setColor(adjusted_color[0], 0, 0, adjusted_color[3], expected_color);
+      setColor(1, 0, 0, 1, mask);
       break;
     case GL_RG8:
     case GL_RG16F:
     case GL_RG32F:
     case GL_RG8UI:
       setColor(adjusted_color[0], adjusted_color[1], 0, 0, expected_color);
-      setColor(1, 1, 0, 0, expected_mask);
+      setColor(1, 1, 0, 0, mask);
       break;
     case GL_RGB:
     case GL_RGB8:
@@ -230,7 +231,7 @@ void getExpectedColorAndMask(GLenum src_internal_format,
     case GL_RGB8UI:
       setColor(adjusted_color[0], adjusted_color[1], adjusted_color[2], 0,
                expected_color);
-      setColor(1, 1, 1, 0, expected_mask);
+      setColor(1, 1, 1, 0, mask);
       break;
     case GL_RGBA:
     case GL_RGBA8:
@@ -244,25 +245,8 @@ void getExpectedColorAndMask(GLenum src_internal_format,
     case GL_RGBA8UI:
       setColor(adjusted_color[0], adjusted_color[1], adjusted_color[2],
                adjusted_color[3], expected_color);
-      setColor(1, 1, 1, 1, expected_mask);
+      setColor(1, 1, 1, 1, mask);
       break;
-    case GL_RGB10_A2: {
-      //  Map the 2-bit Alpha values back to full bytes.
-      constexpr uint8_t step = 0x55;
-      const uint8_t alpha_value = (adjusted_color[3] + step / 2) / step * step;
-
-      setColor(adjusted_color[0], adjusted_color[1], adjusted_color[2],
-               alpha_value, expected_color);
-#if defined(OS_MACOSX)
-      // The alpha channel values for LUMINANCE_ALPHA source don't work as
-      // expected on Mac, so skip comparison of those.
-      setColor(1, 1, 1, src_internal_format != GL_LUMINANCE_ALPHA,
-               expected_mask);
-#else
-      setColor(1, 1, 1, 1, expected_mask);
-#endif
-      break;
-    }
     case GL_RGB5_A1:
       setColor(adjusted_color[0], adjusted_color[1], adjusted_color[2],
                (adjusted_color[3] >> 7) ? 0xFF : 0x0, expected_color);
@@ -270,10 +254,10 @@ void getExpectedColorAndMask(GLenum src_internal_format,
       // channel of expected color is the source alpha value other than 255.
       // This should be wrong. Skip the alpha channel check and revisit this in
       // future.
-      setColor(1, 1, 1, 0, expected_mask);
+      setColor(1, 1, 1, 0, mask);
       break;
     default:
-      NOTREACHED() << gl::GLEnums::GetStringEnum(dest_internal_format);
+      NOTREACHED();
       break;
   }
 }
@@ -287,51 +271,38 @@ std::unique_ptr<uint8_t[]> getTextureDataAndExpectedRGBA(
     uint8_t* expected_mask) {
   const uint32_t src_channel_count = gles2::GLES2Util::ElementsPerGroup(
       src_format_type.format, src_format_type.type);
-  constexpr uint8_t color[4] = {1u, 63u, 127u, 255u};
-  getExpectedColorAndMask(src_format_type.internal_format,
-                          dest_format_type.internal_format, color,
-                          expected_color, expected_mask);
-  const size_t num_pixels = width * height;
-  // TODO(mcasas): use std::make_unique<uint8_t[]> in this function.
-
+  uint8_t color[4] = {1u, 63u, 127u, 255u};
+  getExpectedColor(src_format_type.internal_format,
+                   dest_format_type.internal_format, color, expected_color,
+                   expected_mask);
   if (src_format_type.type == GL_UNSIGNED_BYTE) {
     std::unique_ptr<uint8_t[]> pixels(
-        new uint8_t[num_pixels * src_channel_count]);
-    for (uint32_t i = 0; i < num_pixels * src_channel_count;
+        new uint8_t[width * height * src_channel_count]);
+    for (uint32_t i = 0; i < width * height * src_channel_count;
          i += src_channel_count) {
       for (uint32_t j = 0; j < src_channel_count; ++j)
         pixels[i + j] = color[j];
     }
     return pixels;
   } else if (src_format_type.type == GL_UNSIGNED_SHORT) {
-    constexpr uint16_t color_16bit[4] = {color[0] << 8, color[1] << 8,
-                                         color[2] << 8, color[3] << 8};
+    uint16_t color_16bit[4] = {1u << 8, 63u << 8, 127u << 8, 255u << 8};
     std::unique_ptr<uint8_t[]> data(
-        new uint8_t[num_pixels * src_channel_count * sizeof(uint16_t)]);
+        new uint8_t[width * height * src_channel_count * sizeof(uint16_t)]);
     uint16_t* pixels = reinterpret_cast<uint16_t*>(data.get());
     int16_t flip_sign = -1;
-    for (uint32_t i = 0; i < num_pixels * src_channel_count;
+    for (uint32_t i = 0; i < width * height * src_channel_count;
          i += src_channel_count) {
       for (uint32_t j = 0; j < src_channel_count; ++j) {
         // Introduce an offset to the value to check. Expected value should be
         // the same as without the offset.
         flip_sign *= -1;
         pixels[i + j] =
-            color_16bit[j] + flip_sign * (0x7F * (i + j)) / num_pixels;
+            color_16bit[j] + flip_sign * (0x7F * (i + j)) / (width * height);
       }
     }
     return data;
-  } else if (src_format_type.type == GL_UNSIGNED_INT_2_10_10_10_REV) {
-    DCHECK_EQ(src_channel_count, 1u);
-    constexpr uint32_t color_rgb10_a2 = ((color[3] & 0x3) << 30) +
-                                        (color[2] << 20) + (color[1] << 10) +
-                                        color[0];
-    std::unique_ptr<uint8_t[]> data(new uint8_t[num_pixels * sizeof(uint32_t)]);
-    uint32_t* pixels = reinterpret_cast<uint32_t*>(data.get());
-    std::fill(pixels, pixels + num_pixels, color_rgb10_a2);
-    return data;
   }
-  NOTREACHED() << gl::GLEnums::GetStringEnum(src_format_type.type);
+  NOTREACHED();
   return nullptr;
 }
 
@@ -506,9 +477,7 @@ class GLCopyTextureCHROMIUMTest
                                textures_[1], dest_level, 0, 0, 0, 0, width_,
                                height_, false, false, false);
     }
-    const GLenum last_error = glGetError();
-    EXPECT_TRUE(last_error == GL_NO_ERROR)
-        << gl::GLEnums::GetStringError(last_error);
+    EXPECT_TRUE(glGetError() == GL_NO_ERROR);
 
     // Draw destination texture to a fbo with a TEXTURE_2D texture attachment
     // in RGBA format.
@@ -602,19 +571,6 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
 #endif
     return !gl_.decoder()->GetFeatureInfo()->feature_flags().ext_texture_norm16;
   }
-
-  bool ShouldSkipRGB10A2() const {
-    DCHECK(!ShouldSkipTest());
-    const gl::GLVersionInfo& gl_version_info =
-        gl_.decoder()->GetFeatureInfo()->gl_version_info();
-    // XB30 support was introduced in GLES 3.0/ OpenGL 3.3, before that it was
-    // signalled via a specific extension.
-    const bool supports_rgb10_a2 =
-        gl_version_info.IsAtLeastGL(3, 3) ||
-        gl_version_info.IsAtLeastGLES(3, 0) ||
-        GLTestHelper::HasExtension("GL_EXT_texture_type_2_10_10_10_REV");
-    return !supports_rgb10_a2;
-  }
 };
 
 INSTANTIATE_TEST_CASE_P(CopyType,
@@ -671,7 +627,7 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
         << "Passthrough command decoder expected failure. Skipping test...";
     return;
   }
-  const CopyType copy_type = GetParam();
+  CopyType copy_type = GetParam();
 
   FormatType src_format_types[] = {
       {GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE},
@@ -683,7 +639,6 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
       {GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
       {GL_BGRA8_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
       {GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT},
-      {GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},
   };
 
   FormatType dest_format_types[] = {
@@ -728,7 +683,6 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
       {GL_RGBA16F, GL_RGBA, GL_FLOAT},
       {GL_RGBA32F, GL_RGBA, GL_FLOAT},
       {GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE},
-      {GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},
   };
 
   for (auto src_format_type : src_format_types) {
@@ -741,17 +695,13 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
         continue;
       }
       if (gles2::GLES2Util::IsFloatFormat(dest_format_type.internal_format) &&
-          ShouldSkipFloatFormat()) {
+          ShouldSkipFloatFormat())
         continue;
-      }
       if ((dest_format_type.internal_format == GL_SRGB_EXT ||
            dest_format_type.internal_format == GL_SRGB_ALPHA_EXT) &&
-          ShouldSkipSRGBEXT()) {
+          ShouldSkipSRGBEXT())
         continue;
-      }
       if (src_format_type.internal_format == GL_R16_EXT && ShouldSkipNorm16())
-        continue;
-      if (src_format_type.internal_format == GL_RGB10_A2 && ShouldSkipRGB10A2())
         continue;
 
       RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, 0,

@@ -903,13 +903,6 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
       break;
   }
 
-  // Sometimes glCopyTexImage2D() fails if source is GL_RGB10_A2 and dest isn't.
-  if (feature_info->workarounds().disable_copy_tex_image_2d_rgb10_a2 &&
-      source_internal_format == GL_RGB10_A2 &&
-      dest_internal_format != GL_RGB10_A2) {
-    return CopyTextureMethod::DRAW_AND_COPY;
-  }
-
   // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
   // GL_BGRA8_EXT. https://crbug.com/663086.
   bool copy_tex_image_format_valid =
@@ -1025,8 +1018,7 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
       source_internal_format == GL_BGRA8_EXT ||
       source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
-      source_internal_format == GL_R16_EXT ||
-      source_internal_format == GL_RGB10_A2;
+      source_internal_format == GL_R16_EXT;
   if (!valid_source_format) {
     *output_error_msg = "invalid source internal format " +
                         GLES2Util::GetStringEnum(source_internal_format);
