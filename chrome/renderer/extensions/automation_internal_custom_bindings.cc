@@ -969,6 +969,15 @@ void AutomationInternalCustomBindings::AddRoutes() {
         result.Set(v8::Boolean::New(isolate, value));
       });
   RouteNodeIDFunction(
+      "GetDetectedLanguage",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::string detectedLanguage = node->GetLanguage();
+        result.Set(v8::String::NewFromUtf8(isolate, detectedLanguage.c_str(),
+                                           v8::NewStringType::kNormal)
+                       .ToLocalChecked());
+      });
+  RouteNodeIDFunction(
       "GetCustomActions",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {

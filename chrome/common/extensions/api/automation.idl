@@ -844,8 +844,11 @@
     // A data url with the contents of this object's image or thumbnail.
     DOMString? imageDataUrl;
 
-    // The language code for this subtree.
+    // The author-provided language code for this subtree.
     DOMString? language;
+
+    // The detected language code for this subtree.
+    DOMString? detectedLanguage;
 
     // Indicates the availability and type of interactive popup element
     // true - the popup is a menu

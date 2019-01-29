@@ -380,6 +380,13 @@ var GetTableCellColumnIndex = natives.GetTableCellColumnIndex;
  */
 var GetTableCellRowIndex = natives.GetTableCellRowIndex;
 
+/**
+ * @param {string} axTreeId The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {string} Detected language for this node.
+ */
+var GetDetectedLanguage = natives.GetDetectedLanguage;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -562,6 +569,10 @@ AutomationNodeImpl.prototype = {
 
   get lineThrough() {
     return GetLineThrough(this.treeID, this.id);
+  },
+
+  get detectedLanguage() {
+    return GetDetectedLanguage(this.treeID, this.id)
   },
 
   get customActions() {
@@ -1551,6 +1562,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'italic',
         'underline',
         'lineThrough',
+        'detectedLanguage',
         'customActions',
         'standardActions',
         'unclippedLocation',
