@@ -494,7 +494,7 @@ void ServiceWorkerContainer::DispatchMessageEvent(
     event = MessageEvent::CreateError(
         GetExecutionContext()->GetSecurityOrigin()->ToString(), source);
   }
-  DispatchEvent(*event);
+  EnqueueEvent(*event, TaskType::kServiceWorkerClientMessage);
 }
 
 void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {

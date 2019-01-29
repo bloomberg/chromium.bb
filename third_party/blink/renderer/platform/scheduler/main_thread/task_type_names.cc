@@ -73,6 +73,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "BackgroundFetch";
     case TaskType::kPermission:
       return "Permission";
+    case TaskType::kServiceWorkerClientMessage:
+      return "ServiceWorkerClientMessage";
     case TaskType::kInternalDefault:
       return "InternalDefault";
     case TaskType::kInternalLoading:

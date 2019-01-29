@@ -435,6 +435,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
+    case TaskType::kServiceWorkerClientMessage:
     case TaskType::kWorkerAnimation:
     // UserInteraction tasks should be run even when expecting a user gesture.
     case TaskType::kUserInteraction:
