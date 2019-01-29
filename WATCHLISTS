@@ -1000,7 +1000,8 @@
       'filepath': 'ui/events/devices/',
     },
     'installable': {
-      'filepath': 'chrome/browser/installable/',
+      'filepath': 'chrome/browser/extensions/bookmark_app*'\
+                  '|chrome/browser/installable/',
     },
     'installer_linux': {
       'filepath': 'chrome/installer/linux/',
@@ -1069,7 +1070,9 @@
     },
     'manifest': {
       'filepath': 'content/(browser|renderer)/manifest/'\
-                  '|content/public/common/manifest*',
+                  '|content/public/common/manifest*'\
+                  '|third_party/blink/(common|mojom)/manifest/'\
+                  '|third_party/blink/renderer/modules/manifest/',
     },
     'mash_buildbot_filters': {
       'filepath': 'testing/buildbot/filters/mash.*filter',
@@ -2250,7 +2253,8 @@
     'linux_sandboxing': ['jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
     'mac' : ['mac-reviews@chromium.org'],
-    'manifest': ['mlamouri+watch-manifest@chromium.org'],
+    'manifest': ['dominickn+watch-manifest@chromium.org',
+                 'mlamouri+watch-manifest@chromium.org'],
     'mash_buildbot_filters': ['dxie+watch@chromium.org',
                               'jamescook+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
