@@ -17,7 +17,7 @@
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
-#include "services/ws/test_ws/manifest.h"
+#include "services/ws/test_ws/test_manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"

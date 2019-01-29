@@ -12,7 +12,7 @@
 #include "services/ws/common/switches.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
-#include "services/ws/test_ws/manifest.h"
+#include "services/ws/test_ws/test_manifest.h"
 #include "ui/gl/gl_switches.h"
 
 namespace ws {

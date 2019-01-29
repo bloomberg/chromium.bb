@@ -16,7 +16,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/ws/ime/test_ime_driver/manifest.h"
 #include "services/ws/public/mojom/constants.mojom.h"
-#include "services/ws/test_ws/manifest.h"
+#include "services/ws/test_ws/test_manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/env_test_helper.h"

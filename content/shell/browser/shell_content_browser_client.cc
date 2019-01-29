@@ -76,7 +76,7 @@
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/gpu_interface_provider_factory.h"
 #include "services/ws/public/mojom/constants.mojom.h"         // nogncheck
-#include "services/ws/test_ws/manifest.h"                     // nogncheck
+#include "services/ws/test_ws/test_manifest.h"                // nogncheck
 #include "services/ws/test_ws/test_window_service_factory.h"  // nogncheck
 #include "services/ws/test_ws/test_ws.mojom.h"                // nogncheck
 #endif

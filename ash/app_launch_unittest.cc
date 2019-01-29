@@ -4,7 +4,8 @@
 
 #include "ash/components/quick_launch/manifest.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
-#include "ash/manifest.h"
+#include "ash/public/cpp/manifest.h"
+#include "ash/public/cpp/test_manifest.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -32,7 +33,9 @@ class AppLaunchTest : public testing::Test {
  public:
   AppLaunchTest()
       : test_service_manager_(
-            {GetManifest(), quick_launch_app::GetManifest(),
+            {service_manager::Manifest(GetManifest())
+                 .Amend(GetManifestOverlayForTesting()),
+             quick_launch_app::GetManifest(),
              service_manager::ManifestBuilder()
                  .WithServiceName(kTestServiceName)
                  .RequireCapability(mojom::kServiceName, "")

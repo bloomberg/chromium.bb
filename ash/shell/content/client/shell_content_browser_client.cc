@@ -13,7 +13,8 @@
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/manifest.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
-#include "ash/manifest.h"
+#include "ash/public/cpp/manifest.h"
+#include "ash/public/cpp/test_manifest.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
@@ -59,7 +60,8 @@ const service_manager::Manifest& GetAshShellBrowserOverlayManifest() {
 const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
-          .PackageService(ash::GetManifest())
+          .PackageService(service_manager::Manifest(ash::GetManifest())
+                              .Amend(ash::GetManifestOverlayForTesting()))
           .PackageService(quick_launch_app::GetManifest())
           .PackageService(shortcut_viewer_app::GetManifest())
           .PackageService(tap_visualizer_app::GetManifest())
