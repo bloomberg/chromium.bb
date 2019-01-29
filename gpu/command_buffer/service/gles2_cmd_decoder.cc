@@ -605,6 +605,11 @@ Outputter* GLES2Decoder::outputter() const {
   return outputter_;
 }
 
+int GLES2Decoder::GetRasterDecoderId() const {
+  NOTREACHED();
+  return -1;
+}
+
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {

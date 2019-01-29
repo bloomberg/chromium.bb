@@ -219,6 +219,13 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
 
   // Restores texture states for a given service id.
   virtual void RestoreTextureState(unsigned service_id) = 0;
+
+  //
+  // Methods required by ImageDecodeAcceleratorStub
+  //
+  // Returns the ID of a RasterDecoder. This is not applicable to other
+  // implementations and it returns a negative number in that case.
+  virtual int GetRasterDecoderId() const = 0;
 };
 
 }  // namespace gpu
