@@ -14,6 +14,7 @@
 #include "base/test/test_file_util.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,7 +71,8 @@ class NetworkServiceClientTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kRendererProcessId);
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kRendererProcessId,
+                                                       &browser_context_);
   }
 
   void TearDown() override {
@@ -79,6 +81,7 @@ class NetworkServiceClientTest : public testing::Test {
 
  protected:
   TestBrowserThreadBundle scoped_task_environment_;
+  TestBrowserContext browser_context_;
   network::mojom::NetworkServiceClientPtr client_ptr_;
   NetworkServiceClient client_;
   base::ScopedTempDir temp_dir_;

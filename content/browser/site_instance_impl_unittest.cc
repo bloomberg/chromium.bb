@@ -26,6 +26,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -425,7 +426,6 @@ TEST_F(SiteInstanceTest, GetSiteForURL) {
 
 // Test that process lock URLs are computed without using effective URLs.
 TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
-  TestBrowserContext context;
   GURL test_url("https://some.app.foo.com/");
   GURL nonapp_site_url("https://foo.com/");
   GURL app_url("https://app.com/");
@@ -440,12 +440,13 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   // URL's site (app.com) and the original URL's site (foo.com).
   GURL expected_app_site_url(app_url.spec() + "#" + nonapp_site_url.spec());
   {
+    BrowserOrResourceContext context(browser_context.get());
     GURL site_url = SiteInstanceImpl::GetSiteForURL(
-        &context, isolation_context, test_url, false /* use_effective_urls */);
+        context, isolation_context, test_url, false /* use_effective_urls */);
     EXPECT_EQ(nonapp_site_url, site_url);
 
     site_url = SiteInstanceImpl::GetSiteForURL(
-        &context, isolation_context, test_url, true /* use_effective_urls */);
+        context, isolation_context, test_url, true /* use_effective_urls */);
     EXPECT_EQ(expected_app_site_url, site_url);
   }
 

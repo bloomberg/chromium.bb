@@ -13,6 +13,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -35,9 +36,10 @@ TEST(BrowserFileSystemHelperTest,
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestBrowserThreadBundle thread_bundle;
+  TestBrowserContext browser_context;
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  p->Add(kRendererID);
+  p->Add(kRendererID, &browser_context);
 
   // Prepare |original_file| FileSystemURL that comes from a |sensitive_origin|.
   // This attempts to simulate for unit testing the drive URL from
@@ -139,9 +141,10 @@ TEST(BrowserFileSystemHelperTest, PrepareDropDataForChildProcess_LocalFiles) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestBrowserThreadBundle thread_bundle;
+  TestBrowserContext browser_context;
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  p->Add(kRendererID);
+  p->Add(kRendererID, &browser_context);
 
   // Prepare content::DropData containing some local files.
   const base::FilePath kDraggedFile =

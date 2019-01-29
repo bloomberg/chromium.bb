@@ -155,6 +155,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
@@ -1612,7 +1613,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   widget_helper_ = new RenderWidgetHelper();
 
-  ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
+  ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
 
   CHECK(!BrowserMainRunner::ExitedMainMessageLoop());
   RegisterHost(GetID(), this);
@@ -3981,7 +3982,7 @@ RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForURL(
       SiteInstanceImpl::GetSiteForURL(browser_context, isolation_context, url,
                                       true /* should_use_effective_urls */);
   GURL lock_url = SiteInstanceImpl::DetermineProcessLockURL(
-      browser_context, isolation_context, url);
+      BrowserOrResourceContext(browser_context), isolation_context, url);
   return GetSoleProcessHostForSite(browser_context, isolation_context, site_url,
                                    lock_url);
 }

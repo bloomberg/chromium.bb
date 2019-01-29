@@ -170,8 +170,11 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
     EXPECT_FALSE(p->CanDeleteFileSystemFile(kRendererID, url));
   }
 
+  BrowserContext* browser_context() { return &browser_context_; }
+
  private:
   TestBrowserThreadBundle thread_bundle_;
+  TestBrowserContext browser_context_;
   ChildProcessSecurityPolicyTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;
 };
@@ -215,7 +218,7 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   // Safe to request, redirect or commit.
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("http://www.google.com/")));
@@ -277,7 +280,7 @@ TEST_F(ChildProcessSecurityPolicyTest, BlobSchemeTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   EXPECT_TRUE(
       p->CanRequestURL(kRendererID, GURL("blob:http://localhost/some-guid")));
@@ -342,7 +345,7 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("about:blank")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:BlAnK")));
@@ -415,7 +418,7 @@ TEST_F(ChildProcessSecurityPolicyTest, JavaScriptTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("javascript:alert('xss')")));
   EXPECT_FALSE(p->CanRedirectToURL(GURL("javascript:alert('xss')")));
@@ -436,7 +439,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RegisterWebSafeSchemeTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   // Currently, "asdf" is destined for ShellExecute, so it is allowed to be
   // requested but not committed.
@@ -467,7 +470,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceCommandsTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
   EXPECT_TRUE(p->CanRedirectToURL(GURL("file:///etc/passwd")));
@@ -482,7 +485,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceCommandsTest) {
 
   // We should forget our state if we repeat a renderer id.
   p->Remove(kRendererID);
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
   EXPECT_TRUE(p->CanRedirectToURL(GURL("file:///etc/passwd")));
   EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
@@ -495,7 +498,7 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   // Child processes cannot request view source URLs.
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
@@ -560,7 +563,7 @@ TEST_F(ChildProcessSecurityPolicyTest, GrantCommitURLToNonStandardScheme) {
   ASSERT_TRUE(url::Origin::Create(url2).opaque());
   RegisterTestScheme("httpxml");
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, url2));
@@ -591,7 +594,7 @@ TEST_F(ChildProcessSecurityPolicyTest, SpecificFile) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   GURL icon_url("file:///tmp/foo.png");
   GURL sensitive_url("file:///etc/passwd");
@@ -631,7 +634,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FileSystemGrantsTest) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   std::string read_id =
       storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
           storage::kFileSystemTypeTest, "read_filesystem", base::FilePath());
@@ -691,7 +694,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FileSystemGrantsTest) {
   CheckHasNoFileSystemPermission(p, delete_from_id);
 
   // Test having no permissions upon re-adding same renderer ID.
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   CheckHasNoFileSystemPermission(p, read_id);
   CheckHasNoFileSystemPermission(p, read_write_id);
   CheckHasNoFileSystemPermission(p, copy_into_id);
@@ -713,7 +716,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
       storage::kFileSystemTypeTest,
       storage::FILE_PERMISSION_USE_FILE_PERMISSION);
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   base::FilePath file(TEST_PATH("/dir/testfile"));
   file = file.NormalizePathSeparators();
   storage::FileSystemURL url = storage::FileSystemURL::CreateForTest(
@@ -761,7 +764,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   CheckHasNoFileSystemFilePermission(p, file, url);
 
   // Test having no permissions upon re-adding same renderer ID.
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   CheckHasNoFileSystemFilePermission(p, file, url);
 
   // Cleanup.
@@ -790,7 +793,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Grant permissions for a file.
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, granted_file,
                                         base::File::FLAG_OPEN));
 
@@ -843,7 +846,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   p->Remove(kRendererID);
 
   // Grant permissions for the directory the file is in.
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, granted_file,
                                         base::File::FLAG_OPEN));
   GrantPermissionsForFile(p, kRendererID, parent_file,
@@ -857,7 +860,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   p->Remove(kRendererID);
 
   // Grant permissions for the directory the file is in (with trailing '/').
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, granted_file,
                                         base::File::FLAG_OPEN));
   GrantPermissionsForFile(p, kRendererID, parent_slash_file,
@@ -888,8 +891,7 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
                                         base::File::FLAG_TEMPORARY));
   p->Remove(kRendererID);
 
-
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
   GrantPermissionsForFile(p, kRendererID, relative_file,
                              base::File::FLAG_OPEN);
   EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, relative_file,
@@ -905,7 +907,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
   const GURL other_url("chrome://not-thumb/");
   const url::Origin origin = url::Origin::Create(url);
   {
-    p->Add(kRendererID);
+    p->Add(kRendererID, browser_context());
 
     EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
 
@@ -942,7 +944,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
     p->Remove(kRendererID);
   }
   {
-    p->Add(kRendererID);
+    p->Add(kRendererID, browser_context());
 
     EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
 
@@ -979,7 +981,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceWebUIBindings) {
     p->Remove(kRendererID);
   }
   {
-    p->Add(kRendererID);
+    p->Add(kRendererID, browser_context());
 
     EXPECT_FALSE(p->HasWebUIBindings(kRendererID));
 
@@ -1025,7 +1027,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace) {
   GURL url("file:///etc/passwd");
   base::FilePath file(TEST_PATH("/etc/passwd"));
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   p->GrantCommitURL(kRendererID, url);
   p->GrantReadFile(kRendererID, file);
@@ -1065,7 +1067,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
 
   GURL url("file:///etc/passwd");
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   base::WaitableEvent ready_for_remove_event;
   base::WaitableEvent remove_called_event;
@@ -1179,7 +1181,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin) {
   EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, http2_url));
 
   TestBrowserContext browser_context;
-  p->Add(kRendererID);
+  p->Add(kRendererID, &browser_context);
 
   // Verify unlocked origin permissions.
   EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, file_url));
@@ -1218,7 +1220,7 @@ TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
-  p->Add(kRendererID);
+  p->Add(kRendererID, browser_context());
 
   GURL url_foo1("chrome://foo/resource1");
   GURL url_foo2("chrome://foo/resource2");

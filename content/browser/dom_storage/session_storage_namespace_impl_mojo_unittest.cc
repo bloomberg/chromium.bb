@@ -15,6 +15,7 @@
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
@@ -72,9 +73,9 @@ class SessionStorageNamespaceImplMojoTest
         StdStringToUint8Vector("data1");
 
     auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    security_policy->Add(kTestProcessIdOrigin1);
-    security_policy->Add(kTestProcessIdAllOrigins);
-    security_policy->Add(kTestProcessIdOrigin3);
+    security_policy->Add(kTestProcessIdOrigin1, &browser_context_);
+    security_policy->Add(kTestProcessIdAllOrigins, &browser_context_);
+    security_policy->Add(kTestProcessIdOrigin3, &browser_context_);
     security_policy->AddIsolatedOrigins(
         {test_origin1_, test_origin2_, test_origin3_});
     security_policy->LockToOrigin(IsolationContext(), kTestProcessIdOrigin1,
@@ -159,6 +160,7 @@ class SessionStorageNamespaceImplMojoTest
 
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
+  TestBrowserContext browser_context_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;
