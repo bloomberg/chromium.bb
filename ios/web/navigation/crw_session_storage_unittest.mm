@@ -75,7 +75,8 @@ class CRWNSessionStorageTest : public PlatformTest {
     [item_storage setTimestamp:base::Time::Now()];
     [item_storage setTitle:base::SysNSStringToUTF16(@"Title")];
     [item_storage
-        setDisplayState:web::PageDisplayState(0.0, 0.0, 0.0, 0.0, 0.0)];
+        setDisplayState:web::PageDisplayState(CGPointZero, UIEdgeInsetsZero,
+                                              0.0, 0.0, 0.0)];
     [item_storage
         setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
     [item_storage setHTTPRequestHeaders:@{ @"HeaderKey" : @"HeaderValue" }];

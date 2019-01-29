@@ -3588,19 +3588,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // If a native controller is present, record its display state instead of that
   // of the underlying placeholder webview.
   if (self.nativeController) {
-    if ([self.nativeController respondsToSelector:@selector(scrollOffset)]) {
-      displayState.scroll_state().set_offset_x(
-          [self.nativeController scrollOffset].x);
-      displayState.scroll_state().set_offset_y(
-          [self.nativeController scrollOffset].y);
+    if ([self.nativeController respondsToSelector:@selector(contentOffset)]) {
+      displayState.scroll_state().set_content_offset(
+          [self.nativeController contentOffset]);
+    }
+    if ([self.nativeController respondsToSelector:@selector(contentInset)]) {
+      displayState.scroll_state().set_content_inset(
+          [self.nativeController contentInset]);
     }
   } else if (_webView) {
-    CGPoint scrollOffset = [self scrollPosition];
-    UIEdgeInsets contentInset = self.webScrollView.contentInset;
-    displayState.scroll_state().set_offset_x(
-        std::floor(scrollOffset.x + contentInset.left));
-    displayState.scroll_state().set_offset_y(
-        std::floor(scrollOffset.y + contentInset.top));
+    displayState.set_scroll_state(web::PageScrollState(
+        self.scrollPosition, self.webScrollView.contentInset));
     UIScrollView* scrollView = self.webScrollView;
     displayState.zoom_state().set_minimum_zoom_scale(
         scrollView.minimumZoomScale);
@@ -3619,10 +3617,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // scrolled or changed the zoom scale while the page is still loading, don't
     // restore any state since it will confuse the user.
     web::PageDisplayState currentPageDisplayState = self.pageDisplayState;
-    if (currentPageDisplayState.scroll_state().offset_x() ==
-            _displayStateOnStartLoading.scroll_state().offset_x() &&
-        currentPageDisplayState.scroll_state().offset_y() ==
-            _displayStateOnStartLoading.scroll_state().offset_y() &&
+    if (currentPageDisplayState.scroll_state() ==
+            _displayStateOnStartLoading.scroll_state() &&
         !_pageHasZoomed) {
       [self applyPageDisplayState:displayState];
     }
@@ -3769,18 +3765,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState {
   DCHECK(scrollState.IsValid());
-  UIEdgeInsets contentInset = self.webScrollView.contentInset;
-  CGPoint scrollOffset = CGPointMake(scrollState.offset_x() - contentInset.left,
-                                     scrollState.offset_y() - contentInset.top);
+  CGPoint contentOffset = scrollState.GetEffectiveContentOffsetForContentInset(
+      self.webScrollView.contentInset);
   if (_loadPhase == web::PAGE_LOADED) {
     // If the page is loaded, update the scroll immediately.
-    [self.webScrollView setContentOffset:scrollOffset];
+    self.webScrollView.contentOffset = contentOffset;
   } else {
     // If the page isn't loaded, store the action to update the scroll
     // when the page finishes loading.
     __weak UIScrollView* weakScrollView = self.webScrollView;
     ProceduralBlock action = [^{
-      [weakScrollView setContentOffset:scrollOffset];
+      weakScrollView.contentOffset = contentOffset;
     } copy];
     [_pendingLoadCompleteActions addObject:action];
   }

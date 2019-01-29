@@ -23,8 +23,9 @@
 // Called when a snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
 
-// The scroll offset of this native view.
-- (CGPoint)scrollOffset;
+// The content inset and offset of the scroll view.
+- (UIEdgeInsets)contentInset;
+- (CGPoint)contentOffset;
 
 // The current NTP view.
 - (UIView*)view;

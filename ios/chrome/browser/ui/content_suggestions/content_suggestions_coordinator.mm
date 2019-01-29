@@ -281,7 +281,11 @@
   [self.NTPMediator dismissModals];
 }
 
-- (CGPoint)scrollOffset {
+- (UIEdgeInsets)contentInset {
+  return self.suggestionsViewController.collectionView.contentInset;
+}
+
+- (CGPoint)contentOffset {
   CGPoint collectionOffset =
       self.suggestionsViewController.collectionView.contentOffset;
   collectionOffset.y -=

@@ -80,8 +80,9 @@ struct ContextMenuParams;
 // content.
 - (GURL)virtualURL;
 
-// The scroll offset of this native view.
-- (CGPoint)scrollOffset;
+// The content inset and offset of this native view.
+- (CGPoint)contentOffset;
+- (UIEdgeInsets)contentInset;
 
 @end
 

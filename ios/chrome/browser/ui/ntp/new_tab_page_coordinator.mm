@@ -102,17 +102,16 @@
   return self.viewController.view;
 }
 
-- (CGPoint)scrollOffset {
-  return [self.contentSuggestionsCoordinator scrollOffset];
+- (UIEdgeInsets)contentInset {
+  return [self.contentSuggestionsCoordinator contentInset];
+}
+
+- (CGPoint)contentOffset {
+  return [self.contentSuggestionsCoordinator contentOffset];
 }
 
 - (void)willUpdateSnapshot {
   [self.contentSuggestionsCoordinator willUpdateSnapshot];
-}
-
-- (UIEdgeInsets)contentInset {
-  return self.contentSuggestionsCoordinator.viewController.collectionView
-      .contentInset;
 }
 
 - (void)setContentInset:(UIEdgeInsets)contentInset {

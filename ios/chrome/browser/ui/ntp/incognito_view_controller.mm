@@ -63,7 +63,11 @@
 - (void)wasHidden {
 }
 
-- (CGPoint)scrollOffset {
+- (UIEdgeInsets)contentInset {
+  return UIEdgeInsetsZero;
+}
+
+- (CGPoint)contentOffset {
   return CGPointZero;
 }
 

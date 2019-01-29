@@ -2845,8 +2845,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   id nativeController =
       [self nativeControllerForTab:[self.tabModel currentTab]];
   if ([nativeController conformsToProtocol:@protocol(NewTabPageOwning)] &&
-      [nativeController respondsToSelector:@selector(scrollOffset)]) {
-    return [nativeController scrollOffset].y == 0;
+      [nativeController respondsToSelector:@selector(contentOffset)]) {
+    CGFloat scrolledToTopOffset =
+        [nativeController respondsToSelector:@selector(contentInset)]
+            ? [nativeController contentInset].top
+            : 0.0;
+    return [nativeController contentOffset].y == scrolledToTopOffset;
   }
 
   CRWWebViewScrollViewProxy* scrollProxy =
