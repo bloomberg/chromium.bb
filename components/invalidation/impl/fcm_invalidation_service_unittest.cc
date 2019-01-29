@@ -187,7 +187,7 @@ TEST(FCMInvalidationServiceLoggingTest, DetailedStatusCallbacksWork) {
   invalidator->RequestDetailedStatus(
       base::BindRepeating(&internal::FakeCallbackContainer::FakeCallback,
                           fake_container.weak_ptr_factory_.GetWeakPtr()));
-  EXPECT_FALSE(fake_container.called_);
+  EXPECT_TRUE(fake_container.called_);
 
   delegate->InitializeInvalidationService();
 
