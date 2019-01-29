@@ -63,19 +63,12 @@ class CORE_EXPORT PointerEventManager
                                          const WebMouseEvent&);
 
   WebInputEventResult DirectDispatchMousePointerEvent(
-      Node* target,
+      Element* target,
       const WebMouseEvent&,
       const AtomicString& event_type,
       const Vector<WebMouseEvent>& coalesced_events,
       const Vector<WebMouseEvent>& predicted_events,
       const String& canvas_node_id = String());
-
-  WebInputEventResult CreateAndDispatchPointerEvent(
-      Node* target,
-      const AtomicString& mouse_event_name,
-      const WebMouseEvent&,
-      const Vector<WebMouseEvent>& coalesced_events,
-      const Vector<WebMouseEvent>& predicted_events);
 
   // Resets the internal state of this object.
   void Clear();
@@ -164,6 +157,13 @@ class CORE_EXPORT PointerEventManager
   // in the scrolling case which scroll starts and pointerevents stop and
   // touchevents continue to fire).
   void HandlePointerInterruption(const WebPointerEvent&);
+
+  WebInputEventResult CreateAndDispatchPointerEvent(
+      Element* target,
+      const AtomicString& mouse_event_name,
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events);
 
   // Returns PointerEventTarget for a WebTouchPoint, hit-testing as necessary.
   event_handling_util::PointerEventTarget ComputePointerEventTarget(

@@ -60,6 +60,7 @@ class AnimationWorkletMutatorDispatcherImpl;
 class CompositorAnimationHost;
 class Frame;
 class Element;
+class HTMLPlugInElement;
 class LocalFrame;
 class PaintLayerCompositor;
 class UserGestureToken;
@@ -194,8 +195,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   base::Optional<WebSize> size_;
 
-  // If set, the (plugin) node which has mouse capture.
-  Member<Node> mouse_capture_node_;
+  // If set, the (plugin) element which has mouse capture.
+  Member<HTMLPlugInElement> mouse_capture_element_;
   scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the

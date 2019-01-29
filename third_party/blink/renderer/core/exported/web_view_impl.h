@@ -81,6 +81,7 @@ class CompositorAnimationHost;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
+class HTMLPlugInElement;
 class PageScaleConstraintsSet;
 class PaintLayerCompositor;
 class UserGestureToken;
@@ -638,8 +639,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Whether the user can press tab to focus links.
   bool tabs_to_links_;
 
-  // If set, the (plugin) node which has mouse capture.
-  Persistent<Node> mouse_capture_node_;
+  // If set, the (plugin) element which has mouse capture.
+  Persistent<HTMLPlugInElement> mouse_capture_element_;
   scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   // WebViews, and WebWidgets, are used to host a Page and present it via a
