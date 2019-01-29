@@ -35,6 +35,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
 #include "chrome/test/chromedriver/chrome/chrome_desktop_impl.h"
@@ -481,6 +482,16 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
     // Check to see if Chrome has crashed.
     chrome_status = base::GetTerminationStatus(process.Handle(), &exit_code);
     if (chrome_status != base::TERMINATION_STATUS_STILL_RUNNING) {
+#if defined(OS_WIN)
+      if (exit_code == chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED)
+#else
+      if (WEXITSTATUS(exit_code) ==
+          chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED)
+#endif
+        return Status(kInvalidArgument,
+                      "user data directory is already in use, "
+                      "please specify a unique value for --user-data-dir "
+                      "argument, or don't use --user-data-dir");
       std::string termination_reason =
           internal::GetTerminationReason(chrome_status);
       Status failure_status = Status(
