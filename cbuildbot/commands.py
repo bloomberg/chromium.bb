@@ -25,6 +25,7 @@ from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
+from chromite.lib import cipd
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gob_util
@@ -1174,6 +1175,101 @@ def _SkylabHWTestWait(cmd, suite_id, **kwargs):
     sys.stdout.write('######## END Output for buildbot annotations ######## \n')
     sys.stdout.flush()
 
+
+def _InstallSkylabTool():
+  """Install skylab tool.
+
+  Returns:
+    the path of installed skylab tool.
+  """
+  instance_id = cipd.GetInstanceID(
+      cipd.GetCIPDFromCache(),
+      constants.CIPD_SKYLAB_PACKAGE,
+      'latest')
+  cache_dir = os.path.join(path_util.GetCacheDir(), 'cipd/packages')
+  path = cipd.InstallPackage(
+      cipd.GetCIPDFromCache(),
+      constants.CIPD_SKYLAB_PACKAGE,
+      instance_id,
+      cache_dir)
+  return os.path.join(path, 'skylab')
+
+
+# pylint: disable=docstring-missing-args
+def _SkylabCreateTestArgs(build, pool, test_name,
+                          board=None,
+                          model=None,
+                          timeout_mins=None,
+                          tags=None,
+                          keyvals=None,
+                          test_args=None):
+  """Get a list of args for skylab create-test.
+
+  Args:
+    See args of RunSkylabHWTEST.
+
+  Returns:
+    A list of string args for skylab create-test.
+  """
+  args = ['-image', build]
+  args += ['-pool', 'DUT_POOL_%s' % pool.upper()]
+  if board is None and model is None:
+    raise ValueError('Need to specify either board or model.')
+
+  if board is not None:
+    args += ['-board', board]
+
+  if model is not None:
+    args += ['-model', model]
+
+  if timeout_mins is not None:
+    args += ['-timeout-mins', str(timeout_mins)]
+
+  if tags is not None:
+    for tag in tags:
+      args += ['-tag', tag]
+
+  if keyvals is not None:
+    for k in keyvals:
+      args += ['-keyval', k]
+
+  if test_args is not None:
+    args += ['-test-args', test_args]
+
+  return args + [test_name]
+
+
+def RunSkylabHWTest(build, pool, test_name,
+                    board=None,
+                    model=None,
+                    timeout_mins=None,
+                    tags=None,
+                    keyvals=None,
+                    test_args=None):
+  """Run a skylab test in the Autotest lab using skylab tool.
+
+  Args:
+    build: A string full image name.
+    pool: A string pool to run the test on.
+    test_name: A string testname to run.
+    board: A string board to run the test on.
+    model: A string model to run the test on.
+    timeout_mins: An integer to indicate the test's timeout.
+    tags: A list of strings to tag the task in swarming.
+    keyvals: A list of strings to be passed to the test as job_keyvals.
+    test_args: A string to be passed to the test as arguments. The format is:
+               'X1=Y1 X2=Y2 X3=Y3 ...'
+
+  Returns:
+    A swarming task link if the test is created successfully.
+  """
+  skylab_path = _InstallSkylabTool()
+  args = _SkylabCreateTestArgs(build, pool, test_name,
+                               board, model, timeout_mins, tags, keyvals,
+                               test_args)
+  result = cros_build_lib.RunCommand(
+      [skylab_path, 'create-test'] + args, capture_output=True)
+  return result.output.strip()
 
 # pylint: disable=docstring-missing-args
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,

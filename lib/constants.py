@@ -780,6 +780,9 @@ SKYLAB_HWTEST_PRIORITIES_MAP = {
 ENV_SKYLAB = 'skylab'
 ENV_AUTOTEST = 'autotest'
 
+# The cipd package for skylab tool
+CIPD_SKYLAB_PACKAGE = 'chromiumos/infra/skylab/linux-amd64'
+
 # HWTest result statuses
 HWTEST_STATUS_PASS = 'pass'
 HWTEST_STATUS_FAIL = 'fail'
