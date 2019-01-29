@@ -32,7 +32,7 @@ if sys.platform == 'win32':
   import msvcrt  # pylint: disable=F0401
   import _subprocess  # pylint: disable=F0401
 
-  FILE_ATTRIBUTE_NORMAL = 0x00000080
+  FILE_ATTRIBUTE_NORMAL = 0x80
   FILE_SHARE_READ = 1
   FILE_SHARE_WRITE = 2
   FILE_SHARE_DELETE = 4
