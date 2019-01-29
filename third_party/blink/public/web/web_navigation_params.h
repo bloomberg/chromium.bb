@@ -161,6 +161,16 @@ struct BLINK_EXPORT WebNavigationParams {
       const KURL& base_url);
 #endif
 
+  // Fills |body_loader| based on the provided static data.
+  static void FillBodyLoader(WebNavigationParams*, base::span<const char> data);
+
+  // Fills |response| and |body_loader| based on the provided static data.
+  // |url| must be set already.
+  static void FillStaticResponse(WebNavigationParams*,
+                                 WebString mime_type,
+                                 WebString text_encoding,
+                                 base::span<const char> data);
+
   // This block defines the request used to load the main resource
   // for this navigation.
 
@@ -191,17 +201,17 @@ struct BLINK_EXPORT WebNavigationParams {
 
   // This block defines the document content. The alternatives in the order
   // of precedence are:
-  // 1. If |data| is supplied, it is used as document content.
-  // 2. If url loads as an empty document (according to
-  //    WebDocumentLoader::WillLoadUrlAsEmpty), the document will be empty.
-  // 3. If loading an iframe of mhtml archive, the document will be
-  //    retrieved from the archive.
-  // 4. Otherwise, provided redirects and response are used to construct
+  // 1. If |is_static_data| is false:
+  //   1a. If url loads as an empty document (according to
+  //       WebDocumentLoader::WillLoadUrlAsEmpty), the document will be empty.
+  //   1b. If loading an iframe of mhtml archive, the document will be
+  //       retrieved from the archive.
+  // 2. Otherwise, provided redirects and response are used to construct
   //    the final response.
-  //   4a. If body loader is present, it will be used to fetch the content.
-  //   4b. If body loader is missing, but url is a data url, it will be
+  //   2a. If body loader is present, it will be used to fetch the content.
+  //   2b. If body loader is missing, but url is a data url, it will be
   //       decoded and used as response and document content.
-  //   4c. If decoding data url fails, or url is not a data url, the
+  //   2c. If decoding data url fails, or url is not a data url, the
   //       navigation will fail.
 
   struct RedirectInfo {
@@ -226,15 +236,9 @@ struct BLINK_EXPORT WebNavigationParams {
   WebURLResponse response;
   // The body loader which allows to retrieve the response body when available.
   std::unique_ptr<WebNavigationBodyLoader> body_loader;
-
-  // If the data is non null, it will be used as a main resource content
-  // instead of redirects, response and body loader.
-  WebData data;
-  // Specifies the mime type of the raw data. Must be set together with the
-  // data.
-  WebString mime_type;
-  // The encoding of the raw data. Must be set together with the data.
-  WebString text_encoding;
+  // Whether |response| and |body_loader| represent static data. In this case
+  // we skip some security checks and insist on loading this exact content.
+  bool is_static_data = false;
 
   // This block defines the type of the navigation.
 

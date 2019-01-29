@@ -325,7 +325,6 @@ class CORE_EXPORT DocumentLoader
   void HandleData(const char* data, size_t length);
 
   void LoadEmpty();
-  void CreateBodyLoaderFromStaticData(const SharedBuffer&);
 
   bool IsRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 

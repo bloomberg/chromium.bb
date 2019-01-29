@@ -161,29 +161,28 @@ DocumentLoader::DocumentLoader(
   unreachable_url_ = params_->unreachable_url;
   previews_state_ = params_->previews_state;
 
-  if (params_->data.IsNull() && url_.IsAboutSrcdocURL()) {
+  if (!params_->is_static_data && url_.IsAboutSrcdocURL()) {
     loading_srcdoc_ = true;
-    params_->mime_type = "text/html";
-    params_->text_encoding = "UTF-8";
     // TODO(dgozman): instead of reaching to the owner here, we could instead:
     // - grab the "srcdoc" value when starting a navigation right in the owner;
     // - pass it around through BeginNavigation to CommitNavigation as |data|;
     // - use it here instead of re-reading from the owner.
     // This way we will get rid of extra dependency between starting and
     // committing navigation.
+    CString encoded_srcdoc;
     HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
     if (!IsHTMLIFrameElement(owner_element) ||
         !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
       // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
       // cleared) - load empty instead.
-      params_->data = SharedBuffer::Create();
     } else {
       String srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
       DCHECK(!srcdoc.IsNull());
-      CString encoded_srcdoc = srcdoc.Utf8();
-      params_->data =
-          SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length());
+      encoded_srcdoc = srcdoc.Utf8();
     }
+    WebNavigationParams::FillStaticResponse(
+        params_.get(), "text/html", "UTF-8",
+        base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
   }
 
   WebNavigationTimings& timings = params_->navigation_timings;
@@ -1027,14 +1026,6 @@ void DocumentLoader::LoadEmpty() {
   FinishedLoading(CurrentTimeTicks());
 }
 
-void DocumentLoader::CreateBodyLoaderFromStaticData(const SharedBuffer& data) {
-  DCHECK(!body_loader_);
-  auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
-  body_loader->Write(data);
-  body_loader->Finish();
-  body_loader_ = std::move(body_loader);
-}
-
 void DocumentLoader::StartLoading() {
   StartLoadingInternal();
   params_ = nullptr;
@@ -1046,21 +1037,13 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK(params_);
   state_ = kProvisional;
 
-  if (params_->data.IsNull() && WillLoadUrlAsEmpty(url_)) {
+  if (!params_->is_static_data && WillLoadUrlAsEmpty(url_)) {
     LoadEmpty();
     return;
   }
 
   // See WebNavigationParams for special case explanations.
-  ResourceResponse final_response;
-  if (!params_->data.IsNull()) {
-    // Use provided data instead of loading resource body.
-    params_->redirects.Clear();
-    final_response.SetCurrentRequestUrl(url_);
-    final_response.SetMimeType(params_->mime_type);
-    final_response.SetExpectedContentLength(params_->data.size());
-    final_response.SetTextEncodingName(params_->text_encoding);
-    CreateBodyLoaderFromStaticData(params_->data);
+  if (params_->is_static_data) {
     has_substitute_data_ = true;
   } else if (fetcher_->Archive()) {
     // If we have an archive loaded in some ancestor frame, we should
@@ -1071,14 +1054,16 @@ void DocumentLoader::StartLoadingInternal() {
     ArchiveResource* archive_resource =
         fetcher_->Archive()->SubresourceForURL(url_);
     if (archive_resource) {
-      params_->redirects.Clear();
-      final_response.SetCurrentRequestUrl(url_);
-      final_response.SetMimeType(archive_resource->MimeType());
-      final_response.SetExpectedContentLength(archive_resource->Data()->size());
-      final_response.SetTextEncodingName(archive_resource->TextEncoding());
-      CreateBodyLoaderFromStaticData(*archive_resource->Data());
+      SharedBuffer* archive_data = archive_resource->Data();
+      WebNavigationParams::FillStaticResponse(
+          params_.get(), archive_resource->MimeType(),
+          archive_resource->TextEncoding(),
+          base::make_span(archive_data->Data(), archive_data->size()));
     }
-  } else if (!params_->body_loader) {
+  }
+
+  ResourceResponse final_response;
+  if (!params_->body_loader) {
     // We can handle data urls in place.
     // TODO(dgozman): This is currently only used in tests. Perhaps we should
     // either handle all data urls locally, or rework tests.
@@ -1087,8 +1072,12 @@ void DocumentLoader::StartLoadingInternal() {
       data =
           network_utils::ParseDataURLAndPopulateResponse(url_, final_response);
     }
-    if (data)
-      CreateBodyLoaderFromStaticData(*data);
+    if (data) {
+      auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+      body_loader->Write(*data);
+      body_loader->Finish();
+      body_loader_ = std::move(body_loader);
+    }
   } else {
     // The common case - both final response and body loader should be
     // provided.

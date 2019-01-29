@@ -5,6 +5,7 @@
 #include "third_party/blink/public/web/web_navigation_params.h"
 
 #include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
+#include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -47,9 +48,7 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateWithHTMLString(
     const WebURL& base_url) {
   auto result = std::make_unique<WebNavigationParams>();
   result->url = base_url;
-  result->data = WebData(html.data(), html.size());
-  result->mime_type = "text/html";
-  result->text_encoding = "UTF-8";
+  FillStaticResponse(result.get(), "text/html", "UTF-8", html);
   return result;
 }
 
@@ -73,11 +72,32 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateWithHTMLBuffer(
     const KURL& base_url) {
   auto result = std::make_unique<WebNavigationParams>();
   result->url = base_url;
-  result->data = WebData(std::move(buffer));
-  result->mime_type = "text/html";
-  result->text_encoding = "UTF-8";
+  FillStaticResponse(result.get(), "text/html", "UTF-8",
+                     base::make_span(buffer->Data(), buffer->size()));
   return result;
 }
 #endif
+
+// static
+void WebNavigationParams::FillBodyLoader(WebNavigationParams* params,
+                                         base::span<const char> data) {
+  params->response.SetExpectedContentLength(data.size());
+  auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
+  body_loader->Write(data.data(), data.size());
+  body_loader->Finish();
+  params->body_loader = std::move(body_loader);
+  params->is_static_data = true;
+}
+
+// static
+void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
+                                             WebString mime_type,
+                                             WebString text_encoding,
+                                             base::span<const char> data) {
+  params->response = WebURLResponse(params->url);
+  params->response.SetMIMEType(mime_type);
+  params->response.SetTextEncodingName(text_encoding);
+  FillBodyLoader(params, data);
+}
 
 }  // namespace blink
