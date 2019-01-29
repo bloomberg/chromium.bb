@@ -108,6 +108,8 @@ bool ConsumeFont(bool important,
     if (!font_style && (id == CSSValueNormal || id == CSSValueItalic ||
                         id == CSSValueOblique)) {
       font_style = css_parsing_utils::ConsumeFontStyle(range, context.Mode());
+      if (!font_style)
+        return false;
       continue;
     }
     if (!font_variant_caps &&
