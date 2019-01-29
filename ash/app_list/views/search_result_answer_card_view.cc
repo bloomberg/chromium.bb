@@ -30,7 +30,6 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace app_list {
@@ -110,13 +109,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
                        AppListViewDelegate* view_delegate)
       : container_(container), view_delegate_(view_delegate) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    // Center the card horizontally in the container. Padding is set on the
-    // server.
-    auto answer_container_layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
-    answer_container_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-    SetLayoutManager(std::move(answer_container_layout));
+    SetLayoutManager(std::make_unique<views::FillLayout>());
 
     view_delegate_->GetNavigableContentsFactory(
         mojo::MakeRequest(&contents_factory_));
