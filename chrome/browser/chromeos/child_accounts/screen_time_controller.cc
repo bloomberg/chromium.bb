@@ -169,6 +169,14 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
 void ScreenTimeController::ForceScreenLockByPolicy(
     base::Time next_unlock_time) {
   DCHECK(!session_manager::SessionManager::Get()->IsScreenLocked());
+
+  // Avoid abrupt session restart that looks like a crash and happens when lock
+  // screen is requested before sign in completion. It is safe, because time
+  // limits will be reevaluated when session state changes to active.
+  if (session_manager::SessionManager::Get()->session_state() !=
+      session_manager::SessionState::ACTIVE)
+    return;
+
   chromeos::DBusThreadManager::Get()
       ->GetSessionManagerClient()
       ->RequestLockScreen();

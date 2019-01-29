@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -71,9 +73,17 @@ class CountNotificationObserver : public content::NotificationObserver {
 
 namespace policy {
 
-class UserCloudPolicyManagerTest : public LoginPolicyTestBase {
+class UserCloudPolicyManagerTest
+    : public LoginPolicyTestBase,
+      public testing::WithParamInterface<std::vector<base::Feature>> {
  protected:
-  UserCloudPolicyManagerTest() {}
+  UserCloudPolicyManagerTest() {
+    scoped_feature_list_.InitWithFeatures(
+        GetParam() /* enabled_features */,
+        std::vector<base::Feature>() /* disabled_features */);
+  }
+
+  ~UserCloudPolicyManagerTest() override = default;
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     std::unique_ptr<base::ListValue> list(new base::ListValue);
@@ -86,10 +96,21 @@ class UserCloudPolicyManagerTest : public LoginPolicyTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
+// TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
+// once it is enabled by default.
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    UserCloudPolicyManagerTest,
+    testing::Values(std::vector<base::Feature>(),
+                    std::vector<base::Feature>{
+                        features::kDMServerOAuthForChildUser}));
+
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
   const char* const kStartupURLs[] = {"chrome://policy", "chrome://about"};
   // User hasn't signed in yet, so shouldn't know if the user requires policy.
   AccountId account_id =
@@ -133,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
           arc::prefs::kArcEnabled));
 }
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
   // Delete the policy file - this will cause a 500 error on policy requests.
   user_policy_helper()->DeletePolicyFile();
   SkipToLoginScreen();
@@ -159,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 }
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest,
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
                        ErrorLoadingPolicyForUnmanagedUser) {
   // Mark user as not needing policy - errors loading policy should be
   // ignored (unlike previous ErrorLoadingPolicy test).
@@ -188,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
 }
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, MigrateForExistingUser) {
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, MigrateForExistingUser) {
   // Mark user as already having initialized the profile - this should allow
   // the policy code to ignore errors (because we presume we already have a
   // valid cache). We can remove this test when we fix crbug.com/731726 and
@@ -251,7 +272,16 @@ class UserCloudPolicyManagerNonEnterpriseTest
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerNonEnterpriseTest);
 };
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerNonEnterpriseTest,
+// TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
+// once it is enabled by default.
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    UserCloudPolicyManagerNonEnterpriseTest,
+    testing::Values(std::vector<base::Feature>(),
+                    std::vector<base::Feature>{
+                        features::kDMServerOAuthForChildUser}));
+
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerNonEnterpriseTest,
                        NoPolicyForConsumer) {
   EXPECT_TRUE(
       policy::BrowserPolicyConnector::IsNonEnterpriseUser(GetAccount()));
@@ -289,20 +319,21 @@ class UserCloudPolicyManagerChildTest
     return chromeos::test::GetChildAccountOAuthIdToken();
   }
 
-  // UserCloudPolicyManagerNonEnterpriseTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        arc::kAvailableForChildAccountFeature);
-    UserCloudPolicyManagerNonEnterpriseTest::SetUp();
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChildTest);
 };
 
-IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
+// TODO(agawronska): Remove test instantiation with kDMServerOAuthForChildUser
+// once it is enabled by default.
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    UserCloudPolicyManagerChildTest,
+    testing::Values(
+        std::vector<base::Feature>{arc::kAvailableForChildAccountFeature},
+        std::vector<base::Feature>{arc::kAvailableForChildAccountFeature,
+                                   features::kDMServerOAuthForChildUser}));
+
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
   EXPECT_TRUE(
       policy::BrowserPolicyConnector::IsNonEnterpriseUser(GetAccount()));
   // If a user signs in with a known non-enterprise account there should be no

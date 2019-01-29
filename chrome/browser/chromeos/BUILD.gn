@@ -620,6 +620,8 @@ source_set("chromeos") {
     "certificate_provider/sign_requests.h",
     "certificate_provider/thread_safe_certificate_map.cc",
     "certificate_provider/thread_safe_certificate_map.h",
+    "child_accounts/child_policy_observer.cc",
+    "child_accounts/child_policy_observer.h",
     "child_accounts/consumer_status_reporting_service.cc",
     "child_accounts/consumer_status_reporting_service.h",
     "child_accounts/consumer_status_reporting_service_factory.cc",

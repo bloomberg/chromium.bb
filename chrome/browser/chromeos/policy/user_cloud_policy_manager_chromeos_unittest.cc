@@ -202,7 +202,6 @@ class UserCloudPolicyManagerChromeOSTest
         .Times(AnyNumber());
 
     AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kTestGaiaId);
-    user_manager_->AddUser(account_id);
     TestingProfile* profile =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
     user_manager_->AddUserWithAffiliationAndTypeAndProfile(account_id, false,

@@ -222,10 +222,11 @@ void CloudPolicyService::RefreshCompleted(bool success) {
   callbacks.swap(refresh_callbacks_);
   refresh_state_ = REFRESH_NONE;
 
-  for (auto callback(callbacks.begin()); callback != callbacks.end();
-       ++callback) {
-    callback->Run(success);
-  }
+  for (auto& callback : callbacks)
+    callback.Run(success);
+
+  for (auto& observer : observers_)
+    observer.OnPolicyRefreshed(success);
 }
 
 void CloudPolicyService::UnregisterCompleted(bool success) {

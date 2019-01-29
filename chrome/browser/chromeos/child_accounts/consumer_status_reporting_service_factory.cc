@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace chromeos {
@@ -28,7 +29,9 @@ ConsumerStatusReportingServiceFactory::GetInstance() {
 ConsumerStatusReportingServiceFactory::ConsumerStatusReportingServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "ConsumerStatusReportingServiceFactory",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(policy::UserPolicyManagerFactoryChromeOS::GetInstance());
+}
 
 ConsumerStatusReportingServiceFactory::
     ~ConsumerStatusReportingServiceFactory() = default;
