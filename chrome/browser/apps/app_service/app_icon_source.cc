@@ -36,7 +36,7 @@ void LoadDefaultImage(const content::URLDataSource::GotDataCallback& callback) {
 
 void RunCallback(const content::URLDataSource::GotDataCallback& callback,
                  apps::mojom::IconValuePtr iv) {
-  if (!iv->compressed.has_value()) {
+  if (!iv->compressed.has_value() || iv->compressed.value().empty()) {
     LoadDefaultImage(callback);
     return;
   }

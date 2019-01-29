@@ -41,6 +41,11 @@ std::vector<uint8_t> ReadFileAsCompressedData(const base::FilePath path) {
   return std::vector<uint8_t>(data.begin(), data.end());
 }
 
+std::vector<uint8_t> CompressedDataFromResource(
+    const extensions::ExtensionResource resource) {
+  return ReadFileAsCompressedData(resource.GetFilePath());
+}
+
 // Runs |callback| passing an IconValuePtr with a compressed image: a
 // std::vector<uint8_t>.
 void RunCallbackWithCompressedData(
@@ -188,8 +193,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         // decoding from and re-encoding to PNG before and after the filter.
         base::PostTaskWithTraitsAndReplyWithResult(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-            base::BindOnce(&ReadFileAsCompressedData,
-                           ext_resource.GetFilePath()),
+            base::BindOnce(&CompressedDataFromResource, ext_resource),
             base::BindOnce(&RunCallbackWithCompressedData,
                            std::move(callback)));
         return;
