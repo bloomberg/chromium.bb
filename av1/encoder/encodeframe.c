@@ -6530,7 +6530,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 
   av1_setup_frame_buf_refs(cm);
-  if (cpi->sf.selective_ref_frame >= 3) enforce_max_ref_frames(cpi);
+  if (cpi->sf.selective_ref_frame >= 3 && cpi->oxcf.max_reference_frames == 7) {
+    enforce_max_ref_frames(cpi);
+  }
   av1_setup_frame_sign_bias(cm);
 
 #if CONFIG_MISMATCH_DEBUG
