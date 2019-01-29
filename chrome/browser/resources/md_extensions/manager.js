@@ -284,14 +284,14 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!CustomEvent} event
+     * @param {!CustomEvent<string>} event
      * @private
      */
     onFilterChanged_: function(event) {
       if (this.currentPage_.page !== Page.LIST) {
         extensions.navigation.navigateTo({page: Page.LIST});
       }
-      this.filter = /** @type {string} */ (event.detail);
+      this.filter = event.detail;
     },
 
     /** @private */
@@ -543,7 +543,7 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!CustomEvent} e
+     * @param {!Event} e
      * @private
      */
     onViewExitStart_: function(e) {
@@ -552,7 +552,7 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!CustomEvent} e
+     * @param {!Event} e
      * @private
      */
     onViewExitFinish_: function(e) {
@@ -577,14 +577,14 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {!CustomEvent} e
+     * @param {!CustomEvent<!Array<string>>} e
      * @private
      */
     onShowInstallWarnings_: function(e) {
       // Leverage Polymer data bindings instead of just assigning the
       // installWarnings on the dialog since the dialog hasn't been stamped
       // in the DOM yet.
-      this.installWarnings_ = /** @type{!Array<string>} */ (e.detail);
+      this.installWarnings_ = e.detail;
       this.showInstallWarningsDialog_ = true;
     },
 

@@ -145,7 +145,7 @@ Polymer({
   },
 
   /**
-   * @param {CustomEvent} e
+   * @param {!Event} e
    * @private
    */
   onMenuButtonTap_: function(e) {

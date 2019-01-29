@@ -153,7 +153,7 @@ Polymer({
    * A handler for the 'showing-section' event fired from settings-basic-page,
    * indicating that a section should be scrolled into view as a result of a
    * navigation.
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<!HTMLElement>} e
    * @private
    */
   onShowingSection_: function(e) {
