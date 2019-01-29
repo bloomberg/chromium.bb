@@ -212,11 +212,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
     return frame_connector_;
   }
 
-  // Returns the current surface scale factor.
-  float current_surface_scale_factor() {
-    return last_activated_surface_info_.device_scale_factor();
-  }
-
   // Returns the view into which this view is directly embedded. This can
   // return nullptr when this view's associated child frame is not connected
   // to the frame tree.

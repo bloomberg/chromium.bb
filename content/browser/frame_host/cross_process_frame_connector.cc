@@ -223,15 +223,15 @@ bool CrossProcessFrameConnector::TransformPointToLocalCoordSpaceLegacy(
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
   *transformed_point =
-      gfx::ConvertPointToPixel(view_->current_surface_scale_factor(), point);
+      gfx::ConvertPointToPixel(view_->GetDeviceScaleFactor(), point);
   viz::SurfaceHittest hittest(nullptr,
                               GetFrameSinkManager()->surface_manager());
   if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
                                              transformed_point))
     return false;
 
-  *transformed_point = gfx::ConvertPointToDIP(
-      view_->current_surface_scale_factor(), *transformed_point);
+  *transformed_point =
+      gfx::ConvertPointToDIP(view_->GetDeviceScaleFactor(), *transformed_point);
   return true;
 }
 
