@@ -1033,7 +1033,8 @@ def ValidateBoardConfig(board):
 
 
 def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
-                          debug, test_env, job_keyvals=None):
+                          debug, payload_test_configs, test_env,
+                          job_keyvals=None):
   """Run the appropriate command to schedule the Autotests we have prepped.
 
   Args:
@@ -1043,23 +1044,35 @@ def ScheduleAutotestTests(suite_name, board, model, build, skip_duts_check,
     build: A string representing the name of the archive build.
     skip_duts_check: A boolean indicating to not check minimum available DUTs.
     debug: A boolean indicating whether or not we are in debug mode.
+    payload_test_configs: A list of test_params.TestConfig objets to be
+                          scheduled with.
     test_env: A string to indicate the env that the test should run in. The
               value could be constants.ENV_SKYLAB, constants.ENV_AUTOTEST.
     job_keyvals: A dict of job keyvals to be injected to suite control file.
   """
   timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
   if test_env == constants.ENV_SKYLAB:
-    cmd_result = commands.RunSkylabHWTestSuite(
-        build=build,
-        suite=suite_name,
-        board=board,
-        model=model,
-        pool='bvt',
-        wait_for_results=False,
-        priority=constants.HWTEST_BUILD_PRIORITY,
-        timeout_mins=timeout_mins,
-        retry=True,
-        job_keyvals=job_keyvals)
+    tags = ['build:%s' % build,
+            'suite:%s' % suite_name,
+            'user:PaygenTestStage']
+    for payload_test in payload_test_configs:
+      test_name = test_control.get_test_name()
+      tko_label = '%s_%s' % (test_name, payload_test.unique_name_suffix())
+      keyvals = ['build:%s' % build,
+                 'suite:%s' % suite_name,
+                 'label:%s' % tko_label]
+      test_args = payload_test.get_cmdline_args()
+      cmd_result = commands.RunSkylabHWTest(
+          build=build,
+          pool='bvt',
+          test_name=test_control.get_test_name(),
+          shown_test_name=tko_label,
+          board=board,
+          model=model,
+          timeout_mins=timeout_mins,
+          tags=tags,
+          keyvals=keyvals,
+          test_args=test_args)
   else:
     cmd_result = commands.RunHWTestSuite(
         board=board,

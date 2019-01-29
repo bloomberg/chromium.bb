@@ -139,7 +139,7 @@ def GetInstanceID(cipd_path, package, version, service_account_json=None):
     service_account_flag = ['-service-account-json', service_account_json]
 
   result = cros_build_lib.RunCommand(
-      [cipd_path, 'resolce', package, '-version', version] +
+      [cipd_path, 'resolve', package, '-version', version] +
       service_account_flag, capture_output=True)
   # An example output of resolve is like:
   #   Packages:\n package:instance_id

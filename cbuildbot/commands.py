@@ -20,6 +20,7 @@ import shutil
 import sys
 import tempfile
 
+from chromite.lib import buildbot_annotations
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
@@ -1236,10 +1237,13 @@ def _SkylabCreateTestArgs(build, pool, test_name,
   if test_args is not None:
     args += ['-test-args', test_args]
 
+  args += ['-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT]
+
   return args + [test_name]
 
 
 def RunSkylabHWTest(build, pool, test_name,
+                    shown_test_name=None,
                     board=None,
                     model=None,
                     timeout_mins=None,
@@ -1252,6 +1256,12 @@ def RunSkylabHWTest(build, pool, test_name,
     build: A string full image name.
     pool: A string pool to run the test on.
     test_name: A string testname to run.
+    shown_test_name: A string to print the test in cbuildbot. Usually it's the
+                     same as test_name. But for parameterized tests, it could
+                     vary due to different test_args, e.g. for paygen au tests:
+                       test_name: autoupdate_EndToEndTest
+                       shown_test_name:
+                         autoupdate_EndToEndTest_paygen_au_beta_full_11316.66.0
     board: A string board to run the test on.
     model: A string model to run the test on.
     timeout_mins: An integer to indicate the test's timeout.
@@ -1263,13 +1273,33 @@ def RunSkylabHWTest(build, pool, test_name,
   Returns:
     A swarming task link if the test is created successfully.
   """
+  if shown_test_name is None:
+    shown_test_name = test_name
+
   skylab_path = _InstallSkylabTool()
   args = _SkylabCreateTestArgs(build, pool, test_name,
                                board, model, timeout_mins, tags, keyvals,
                                test_args)
-  result = cros_build_lib.RunCommand(
-      [skylab_path, 'create-test'] + args, capture_output=True)
-  return result.output.strip()
+  try:
+    result = cros_build_lib.RunCommand(
+        [skylab_path, 'create-test'] + args, capture_output=True)
+    return HWTestSuiteResult(None, None)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    to_raise = failures_lib.TestFailure(
+        '** HWTest failed (code %d) **' % result.returncode)
+    return HWTestSuiteResult(to_raise, None)
+  finally:
+    # This is required to output buildbot annotations, e.g. 'STEP_LINKS'.
+    output = result.output.strip()
+    # The format of output is:
+    #   Created Swarming task https://chromeos-swarming.appspot.com/task?id=XX
+    sys.stdout.write('%s \n' % output)
+    sys.stdout.write('######## Output for buildbot annotations ######## \n')
+    sys.stdout.write('%s \n' % str(buildbot_annotations.StepLink(
+        shown_test_name, output.split()[-1])))
+    sys.stdout.write('######## END Output for buildbot annotations ######## \n')
+    sys.stdout.flush()
 
 # pylint: disable=docstring-missing-args
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
