@@ -327,11 +327,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNupPrinting;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;
 
-#if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kRemoveSupervisedUsersOnStartup;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSafeSearchUrlReporting;
 
