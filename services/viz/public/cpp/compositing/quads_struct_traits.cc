@@ -103,7 +103,8 @@ bool StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad>::
   return data.ReadResourceSizeInPixels(
              &quad->overlay_resources.size_in_pixels
                   [viz::StreamVideoDrawQuad::kResourceIdIndex]) &&
-         data.ReadMatrix(&quad->matrix);
+         data.ReadUvTopLeft(&quad->uv_top_left) &&
+         data.ReadUvBottomRight(&quad->uv_bottom_right);
 }
 
 // static

@@ -2280,14 +2280,19 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
   static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], quad->matrix);
+  gfx::Transform matrix;
+  matrix.Scale(quad->uv_bottom_right.x() - quad->uv_top_left.x(),
+               quad->uv_bottom_right.y() - quad->uv_top_left.y());
+  matrix.Translate(quad->uv_top_left.x(), quad->uv_top_left.y());
+  ToGLMatrix(&gl_matrix[0], matrix);
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       current_program_->tex_matrix_location(), false, gl_matrix);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
   gfx::Size texture_size = lock.size();
-  gfx::Vector2dF uv = quad->matrix.Scale2d();
-  gfx::RectF uv_visible_rect(0, 0, uv.x(), uv.y());
+  gfx::RectF uv_visible_rect(quad->uv_top_left.x(), quad->uv_top_left.y(),
+                             quad->uv_bottom_right.x() - quad->uv_top_left.x(),
+                             quad->uv_bottom_right.y() - quad->uv_top_left.y());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
   Float4 tex_clamp_rect = UVClampRect(uv_visible_rect, texture_size, sampler);
   gl_->Uniform4f(current_program_->tex_clamp_rect_location(),

@@ -265,10 +265,16 @@ struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad> {
         .size_in_pixels[viz::StreamVideoDrawQuad::kResourceIdIndex];
   }
 
-  static const gfx::Transform& matrix(const viz::DrawQuad& input) {
+  static const gfx::PointF& uv_top_left(const viz::DrawQuad& input) {
     const viz::StreamVideoDrawQuad* quad =
         viz::StreamVideoDrawQuad::MaterialCast(&input);
-    return quad->matrix;
+    return quad->uv_top_left;
+  }
+
+  static const gfx::PointF& uv_bottom_right(const viz::DrawQuad& input) {
+    const viz::StreamVideoDrawQuad* quad =
+        viz::StreamVideoDrawQuad::MaterialCast(&input);
+    return quad->uv_bottom_right;
   }
 
   static bool Read(viz::mojom::StreamVideoQuadStateDataView data,

@@ -255,24 +255,28 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
   bool needs_blending = true;
   ResourceId resource_id = 64;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
-  gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
+  gfx::PointF uv_top_left(0.25f, 0.3f);
+  gfx::PointF uv_bottom_right(0.75f, 0.7f);
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW(StreamVideoDrawQuad, visible_rect, needs_blending,
-                  resource_id, resource_size_in_pixels, matrix);
+                  resource_id, resource_size_in_pixels, uv_top_left,
+                  uv_bottom_right);
   EXPECT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(needs_blending, copy_quad->needs_blending);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
   EXPECT_EQ(resource_size_in_pixels, copy_quad->resource_size_in_pixels());
-  EXPECT_EQ(matrix, copy_quad->matrix);
+  EXPECT_EQ(uv_top_left, copy_quad->uv_top_left);
+  EXPECT_EQ(uv_bottom_right, copy_quad->uv_bottom_right);
 
   CREATE_QUAD_ALL(StreamVideoDrawQuad, resource_id, resource_size_in_pixels,
-                  matrix);
+                  uv_top_left, uv_bottom_right);
   EXPECT_EQ(DrawQuad::STREAM_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id());
   EXPECT_EQ(resource_size_in_pixels, copy_quad->resource_size_in_pixels());
-  EXPECT_EQ(matrix, copy_quad->matrix);
+  EXPECT_EQ(uv_top_left, copy_quad->uv_top_left);
+  EXPECT_EQ(uv_bottom_right, copy_quad->uv_bottom_right);
 }
 
 TEST(DrawQuadTest, CopySurfaceDrawQuad) {
@@ -567,11 +571,13 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   ResourceId resource_id = 64;
   gfx::Size resource_size_in_pixels = gfx::Size(40, 41);
-  gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
+  gfx::PointF uv_top_left(0.25f, 0.3f);
+  gfx::PointF uv_bottom_right(0.75f, 0.7f);
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW(StreamVideoDrawQuad, visible_rect, needs_blending,
-                  resource_id, resource_size_in_pixels, matrix);
+                  resource_id, resource_size_in_pixels, uv_top_left,
+                  uv_bottom_right);
   EXPECT_EQ(resource_id, quad_new->resource_id());
   EXPECT_EQ(resource_size_in_pixels, quad_new->resource_size_in_pixels());
   EXPECT_EQ(1, IterateAndCount(quad_new));

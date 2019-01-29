@@ -984,13 +984,11 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const bool needs_blending6 = false;
   const ResourceId resource_id6(1234);
   const gfx::Size resource_size_in_pixels(1234, 5678);
-  const gfx::Transform matrix(16.1f, 15.3f, 14.3f, 13.7f, 12.2f, 11.4f, 10.4f,
-                              9.8f, 8.1f, 7.3f, 6.3f, 5.7f, 4.8f, 3.4f, 2.4f,
-                              1.2f);
   StreamVideoDrawQuad* stream_video_draw_quad =
       render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
   stream_video_draw_quad->SetNew(sqs, rect6, rect6, needs_blending6,
-                                 resource_id6, resource_size_in_pixels, matrix);
+                                 resource_id6, resource_size_in_pixels,
+                                 uv_top_left, uv_bottom_right);
 
   std::unique_ptr<RenderPass> output;
   mojo::test::SerializeAndDeserialize<mojom::RenderPass>(&render_pass, &output);
@@ -1065,7 +1063,8 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(resource_id6, out_stream_video_draw_quad->resource_id());
   EXPECT_EQ(resource_size_in_pixels,
             out_stream_video_draw_quad->resource_size_in_pixels());
-  EXPECT_EQ(matrix, out_stream_video_draw_quad->matrix);
+  EXPECT_EQ(uv_top_left, out_stream_video_draw_quad->uv_top_left);
+  EXPECT_EQ(uv_bottom_right, out_stream_video_draw_quad->uv_bottom_right);
 }
 
 TEST_F(StructTraitsTest, SurfaceId) {

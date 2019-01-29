@@ -11,7 +11,7 @@
 
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/viz_common_export.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace viz {
 
@@ -27,7 +27,8 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
               bool needs_blending,
               unsigned resource_id,
               gfx::Size resource_size_in_pixels,
-              const gfx::Transform& matrix);
+              const gfx::PointF& uv_top_left,
+              const gfx::PointF& uv_bottom_right);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -35,9 +36,11 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
               bool needs_blending,
               unsigned resource_id,
               gfx::Size resource_size_in_pixels,
-              const gfx::Transform& matrix);
+              const gfx::PointF& uv_top_left,
+              const gfx::PointF& uv_bottom_right);
 
-  gfx::Transform matrix;
+  gfx::PointF uv_top_left;
+  gfx::PointF uv_bottom_right;
 
   struct OverlayResources {
     OverlayResources();
