@@ -4,14 +4,13 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_local.h"
 
 namespace base {
@@ -24,8 +23,9 @@ base::LazyInstance<base::ThreadLocalPointer<ThreadTaskRunnerHandle>>::Leaky
 }  // namespace
 
 // static
-scoped_refptr<SingleThreadTaskRunner> ThreadTaskRunnerHandle::Get() {
-  ThreadTaskRunnerHandle* current = thread_task_runner_tls.Pointer()->Get();
+const scoped_refptr<SingleThreadTaskRunner>& ThreadTaskRunnerHandle::Get() {
+  const ThreadTaskRunnerHandle* current =
+      thread_task_runner_tls.Pointer()->Get();
   CHECK(current) << "Error: This caller requires a single-threaded context "
                     "(i.e. the current task needs to run from a "
                     "SingleThreadTaskRunner).";
@@ -41,16 +41,8 @@ bool ThreadTaskRunnerHandle::IsSet() {
 ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
     scoped_refptr<SingleThreadTaskRunner> overriding_task_runner) {
   // OverrideForTesting() is not compatible with a SequencedTaskRunnerHandle
-  // being set (but SequencedTaskRunnerHandle::IsSet() includes
-  // ThreadTaskRunnerHandle::IsSet() so that's discounted as the only valid
-  // excuse for it to be true). Sadly this means that tests that merely need a
-  // SequencedTaskRunnerHandle on their main thread can be forced to use a
-  // ThreadTaskRunnerHandle if they're also using test task runners (that
-  // OverrideForTesting() when running their tasks from said main thread). To
-  // solve this: sequence_task_runner_handle.cc and thread_task_runner_handle.cc
-  // would have to be merged into a single impl file and share TLS state. This
-  // was deemed unecessary for now as most tests should use higher level
-  // constructs and not have to instantiate task runner handles on their own.
+  // already being set on this thread (except when it's set by the current
+  // ThreadTaskRunnerHandle).
   DCHECK(!SequencedTaskRunnerHandle::IsSet() || IsSet());
 
   if (!IsSet()) {
@@ -64,6 +56,7 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
   ThreadTaskRunnerHandle* ttrh = thread_task_runner_tls.Pointer()->Get();
   // Swap the two (and below bind |overriding_task_runner|, which is now the
   // previous one, as the |task_runner_to_restore|).
+  ttrh->sequenced_task_runner_handle_.task_runner_ = overriding_task_runner;
   ttrh->task_runner_.swap(overriding_task_runner);
 
   auto no_running_during_override =
@@ -80,6 +73,8 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
             << "Nested overrides must expire their ScopedClosureRunners "
                "in LIFO order.";
 
+        ttrh->sequenced_task_runner_handle_.task_runner_ =
+            task_runner_to_restore;
         ttrh->task_runner_.swap(task_runner_to_restore);
       },
       std::move(overriding_task_runner),
@@ -89,11 +84,10 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
 
 ThreadTaskRunnerHandle::ThreadTaskRunnerHandle(
     scoped_refptr<SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {
+    : task_runner_(std::move(task_runner)),
+      sequenced_task_runner_handle_(task_runner_) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  // No SequencedTaskRunnerHandle (which includes ThreadTaskRunnerHandles)
-  // should already be set for this thread.
-  DCHECK(!SequencedTaskRunnerHandle::IsSet());
+  DCHECK(!thread_task_runner_tls.Pointer()->Get());
   thread_task_runner_tls.Pointer()->Set(this);
 }
 
