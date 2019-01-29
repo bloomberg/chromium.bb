@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/message_loop/message_loop_impl.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
@@ -586,18 +585,15 @@ void RunTest_WaitForIO() {
 // that message loops work properly in all configurations.  Of course, in some
 // cases, a unit test may only be for a particular type of loop.
 
-struct TestType {
-  MessageLoop::Type pump_type;
-  MessageLoop::BackendType backend_type;
-};
-
-class MessageLoopTypedTest : public ::testing::TestWithParam<TestType> {
+class MessageLoopTypedTest
+    : public ::testing::TestWithParam<MessageLoop::Type> {
  public:
   MessageLoopTypedTest() = default;
   ~MessageLoopTypedTest() = default;
 
-  static std::string PumpTypeToString(MessageLoop::Type pump_type) {
-    switch (pump_type) {
+  static std::string ParamInfoToString(
+      ::testing::TestParamInfo<MessageLoop::Type> param_info) {
+    switch (param_info.param) {
       case MessageLoop::TYPE_DEFAULT:
         return "default_pump";
       case MessageLoop::TYPE_IO:
@@ -614,26 +610,9 @@ class MessageLoopTypedTest : public ::testing::TestWithParam<TestType> {
     return "";
   }
 
-  static std::string BackendTypeToString(
-      MessageLoop::BackendType backend_type) {
-    switch (backend_type) {
-      case MessageLoop::BackendType::MESSAGE_LOOP_IMPL:
-        return "backend_MessageLoopImpl";
-      case MessageLoop::BackendType::SEQUENCE_MANAGER:
-        return "backend_SequenceManager";
-    }
-  }
-
-  static std::string ParamInfoToString(
-      ::testing::TestParamInfo<TestType> param_info) {
-    return PumpTypeToString(param_info.param.pump_type) + "_" +
-           BackendTypeToString(param_info.param.backend_type);
-  }
-
   std::unique_ptr<MessageLoop> CreateMessageLoop() {
-    auto message_loop = base::WrapUnique(new MessageLoop(
-        GetParam().pump_type, MessageLoop::MessagePumpFactoryCallback(),
-        GetParam().backend_type));
+    auto message_loop = base::WrapUnique(
+        new MessageLoop(GetParam(), MessageLoop::MessagePumpFactoryCallback()));
     message_loop->BindToCurrentThread();
     return message_loop;
   }
@@ -1564,22 +1543,12 @@ TEST_P(MessageLoopTypedTest, IsIdleForTestingNonNestableTask) {
   EXPECT_TRUE(loop->IsIdleForTesting());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    MessageLoopTypedTest,
-    ::testing::Values(TestType{MessageLoop::TYPE_DEFAULT,
-                               MessageLoop::BackendType::MESSAGE_LOOP_IMPL},
-                      TestType{MessageLoop::TYPE_DEFAULT,
-                               MessageLoop::BackendType::SEQUENCE_MANAGER},
-                      TestType{MessageLoop::TYPE_UI,
-                               MessageLoop::BackendType::MESSAGE_LOOP_IMPL},
-                      TestType{MessageLoop::TYPE_UI,
-                               MessageLoop::BackendType::SEQUENCE_MANAGER},
-                      TestType{MessageLoop::TYPE_IO,
-                               MessageLoop::BackendType::MESSAGE_LOOP_IMPL},
-                      TestType{MessageLoop::TYPE_IO,
-                               MessageLoop::BackendType::SEQUENCE_MANAGER}),
-    MessageLoopTypedTest::ParamInfoToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         MessageLoopTypedTest,
+                         ::testing::Values(MessageLoop::TYPE_DEFAULT,
+                                           MessageLoop::TYPE_UI,
+                                           MessageLoop::TYPE_IO),
+                         MessageLoopTypedTest::ParamInfoToString);
 
 #if defined(OS_WIN)
 

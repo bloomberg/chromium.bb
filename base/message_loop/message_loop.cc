@@ -4,42 +4,26 @@
 
 #include "base/message_loop/message_loop.h"
 
-#include <algorithm>
-#include <atomic>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
-#include "base/debug/task_annotator.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_impl.h"
-#include "base/message_loop/message_loop_task_runner.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
-#include "base/message_loop/sequenced_task_source.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "base/threading/thread_id_name_manager.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
 #endif
 
 namespace base {
-namespace features {
-const Feature kMessageLoopUsesSequenceManager{"MessageLoopUsesSequenceManager",
-                                              FEATURE_ENABLED_BY_DEFAULT};
-}  // namespace features
 
 namespace {
 
@@ -188,21 +172,11 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
 }
 
 MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
-    : MessageLoop(
-          type,
-          std::move(pump_factory),
-          FeatureList::IsEnabled(features::kMessageLoopUsesSequenceManager)
-              ? BackendType::SEQUENCE_MANAGER
-              : BackendType::MESSAGE_LOOP_IMPL) {}
-
-MessageLoop::MessageLoop(Type type,
-                         MessagePumpFactoryCallback pump_factory,
-                         BackendType backend_type)
-    : pump_(nullptr),
-      backend_(backend_type == BackendType::MESSAGE_LOOP_IMPL
-                   ? CreateMessageLoopImpl(type)
-                   : CreateSequenceManager(type)),
-      default_task_queue_(CreateDefaultTaskQueue(backend_type)),
+    : backend_(
+          sequence_manager::internal::SequenceManagerImpl::
+              CreateUnboundWithPump(sequence_manager::SequenceManager::Settings{
+                  .message_loop_type = type})),
+      default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
       pump_factory_(std::move(pump_factory)) {
   // If type is TYPE_CUSTOM non-null pump_factory must be given.
@@ -212,26 +186,8 @@ MessageLoop::MessageLoop(Type type,
   DETACH_FROM_THREAD(bound_thread_checker_);
 }
 
-std::unique_ptr<MessageLoopBase> MessageLoop::CreateMessageLoopImpl(
-    MessageLoop::Type type) {
-  return std::make_unique<MessageLoopImpl>(type);
-}
-
-std::unique_ptr<MessageLoopBase> MessageLoop::CreateSequenceManager(
-    MessageLoop::Type type) {
-  std::unique_ptr<sequence_manager::internal::SequenceManagerImpl> manager =
-      sequence_manager::internal::SequenceManagerImpl::CreateUnboundWithPump(
-          sequence_manager::SequenceManager::Settings{.message_loop_type =
-                                                          type});
-  // std::move() for nacl, it doesn't properly handle returning unique_ptr
-  // for subtypes.
-  return std::move(manager);
-}
-
-scoped_refptr<sequence_manager::TaskQueue> MessageLoop::CreateDefaultTaskQueue(
-    BackendType backend_type) {
-  if (backend_type == BackendType::MESSAGE_LOOP_IMPL)
-    return nullptr;
+scoped_refptr<sequence_manager::TaskQueue>
+MessageLoop::CreateDefaultTaskQueue() {
   sequence_manager::internal::SequenceManagerImpl* manager =
       static_cast<sequence_manager::internal::SequenceManagerImpl*>(
           backend_.get());
