@@ -167,7 +167,7 @@ bool MojoFailureReasonFromRegistrationProto(
 
 GURL MakeCacheUrlUnique(const GURL& url,
                         const std::string& unique_id,
-                        int request_index) {
+                        size_t request_index) {
   std::string query = url.query();
   query += unique_id + base::NumberToString(request_index);
 

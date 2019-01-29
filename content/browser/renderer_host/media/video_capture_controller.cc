@@ -400,7 +400,7 @@ bool VideoCaptureController::ResumeClient(
   return true;
 }
 
-int VideoCaptureController::GetClientCount() const {
+size_t VideoCaptureController::GetClientCount() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return controller_clients_.size();
 }

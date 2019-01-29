@@ -241,7 +241,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   content::PageVisibilityState GetVisibilityState() override;
   bool IsRenderFrameLive() override;
   bool IsCurrent() override;
-  int GetProxyCount() override;
+  size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
       const TextSurroundingSelectionCallback& callback,

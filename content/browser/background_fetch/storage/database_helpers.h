@@ -78,7 +78,7 @@ bool MojoFailureReasonFromRegistrationProto(
 // `RemoveUniqueParamFromCacheURL` when querying from the cache.
 CONTENT_EXPORT GURL MakeCacheUrlUnique(const GURL& url,
                                        const std::string& unique_id,
-                                       int request_index);
+                                       size_t request_index);
 CONTENT_EXPORT GURL RemoveUniqueParamFromCacheURL(const GURL& url,
                                                   const std::string& unique_id);
 

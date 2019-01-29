@@ -70,7 +70,7 @@ class CONTENT_EXPORT FrameTokenMessageQueue {
   // consistent incase a new renderer is created.
   void Reset();
 
-  uint32_t size() const { return callback_map_.size(); }
+  size_t size() const { return callback_map_.size(); }
 
  protected:
   // Once both the frame and its swap messages arrive, we call this method to

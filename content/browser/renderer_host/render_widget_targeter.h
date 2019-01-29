@@ -104,7 +104,7 @@ class RenderWidgetTargeter {
     async_hit_test_timeout_delay_ = delay;
   }
 
-  unsigned num_requests_in_queue_for_testing() { return requests_.size(); }
+  size_t num_requests_in_queue_for_testing() { return requests_.size(); }
   bool is_request_in_flight_for_testing() { return request_in_flight_; }
 
  private:

@@ -73,7 +73,7 @@ void ProcessInternalsHandlerImpl::GetIsolationMode(
 
 void ProcessInternalsHandlerImpl::GetIsolatedOriginsSize(
     GetIsolatedOriginsSizeCallback callback) {
-  int size = SiteIsolationPolicy::GetIsolatedOrigins().size();
+  size_t size = SiteIsolationPolicy::GetIsolatedOrigins().size();
   std::move(callback).Run(size);
 }
 

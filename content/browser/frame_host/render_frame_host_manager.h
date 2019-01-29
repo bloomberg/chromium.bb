@@ -453,7 +453,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   void SetRWHViewForInnerContents(RenderWidgetHostView* child_rwhv);
 
   // Returns the number of RenderFrameProxyHosts for this frame.
-  int GetProxyCount();
+  size_t GetProxyCount();
 
   // Sends an IPC message to every process in the FrameTree. This should only be
   // called in the top-level RenderFrameHostManager.  |instance_to_skip|, if

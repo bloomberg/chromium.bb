@@ -643,8 +643,8 @@ class FileURLLoader : public network::mojom::URLLoader {
     // In case of a range request, seek to the appropriate position before
     // sending the remaining bytes asynchronously. Under normal conditions
     // (i.e., no range request) this Seek is effectively a no-op.
-    int new_position = file.Seek(base::File::FROM_BEGIN,
-                                 static_cast<int64_t>(first_byte_to_send));
+    int64_t new_position = file.Seek(base::File::FROM_BEGIN,
+                                     static_cast<int64_t>(first_byte_to_send));
     if (observer)
       observer->OnSeekComplete(new_position);
 
