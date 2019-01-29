@@ -321,6 +321,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     NOTIMPLEMENTED();
     return false;
   }
+  int GetRasterDecoderId() const override;
   int DecoderIdForTest() override;
   ServiceTransferCache* GetTransferCacheForTest() override;
   void SetUpForRasterCHROMIUMForTest() override;
@@ -1372,6 +1373,10 @@ bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
                                                     int height) {
   NOTREACHED();
   return false;
+}
+
+int RasterDecoderImpl::GetRasterDecoderId() const {
+  return raster_decoder_id_;
 }
 
 int RasterDecoderImpl::DecoderIdForTest() {

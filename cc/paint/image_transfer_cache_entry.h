@@ -5,12 +5,19 @@
 #ifndef CC_PAINT_IMAGE_TRANSFER_CACHE_ENTRY_H_
 #define CC_PAINT_IMAGE_TRANSFER_CACHE_ENTRY_H_
 
-#include <vector>
+#include <stddef.h>
+#include <stdint.h>
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
-#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+
+class GrContext;
+class SkColorSpace;
+class SkImage;
+struct SkImageInfo;
+class SkPixmap;
 
 namespace cc {
 
@@ -53,6 +60,16 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   ServiceImageTransferCacheEntry& operator=(
       ServiceImageTransferCacheEntry&& other);
 
+  // Populates this entry using |decoded_image| described by |row_bytes| and
+  // |image_info|. The image is uploaded to the GPU if its dimensions are both
+  // at most |context_|->maxTextureSize().
+  bool BuildFromDecodedData(GrContext* context,
+                            base::span<const uint8_t> decoded_image,
+                            size_t row_bytes,
+                            const SkImageInfo& image_info,
+                            bool needs_mips,
+                            sk_sp<SkColorSpace> target_color_space);
+
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
   bool Deserialize(GrContext* context, base::span<const uint8_t> data) final;
@@ -64,7 +81,12 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   void EnsureMips();
 
  private:
-  GrContext* context_;
+  bool MakeSkImage(const SkPixmap& pixmap,
+                   uint32_t width,
+                   uint32_t height,
+                   sk_sp<SkColorSpace> target_color_space);
+
+  GrContext* context_ = nullptr;
   sk_sp<SkImage> image_;
   bool has_mips_ = false;
   size_t size_ = 0;

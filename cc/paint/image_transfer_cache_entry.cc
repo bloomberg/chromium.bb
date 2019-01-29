@@ -4,12 +4,20 @@
 
 #include "cc/paint/image_transfer_cache_entry.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace cc {
 namespace {
@@ -133,6 +141,31 @@ ServiceImageTransferCacheEntry::ServiceImageTransferCacheEntry(
 ServiceImageTransferCacheEntry& ServiceImageTransferCacheEntry::operator=(
     ServiceImageTransferCacheEntry&& other) = default;
 
+bool ServiceImageTransferCacheEntry::BuildFromDecodedData(
+    GrContext* context,
+    base::span<const uint8_t> decoded_image,
+    size_t row_bytes,
+    const SkImageInfo& image_info,
+    bool needs_mips,
+    sk_sp<SkColorSpace> target_color_space) {
+  context_ = context;
+  has_mips_ = needs_mips;
+  size_ = image_info.computeByteSize(row_bytes);
+  if (size_ == SIZE_MAX)
+    return false;
+  DCHECK_EQ(size_, decoded_image.size());
+
+  uint32_t width;
+  uint32_t height;
+  if (!base::CheckedNumeric<int>(image_info.width()).AssignIfValid(&width) ||
+      !base::CheckedNumeric<int>(image_info.height()).AssignIfValid(&height)) {
+    return false;
+  }
+
+  return MakeSkImage(SkPixmap(image_info, decoded_image.data(), row_bytes),
+                     width, height, target_color_space);
+}
+
 size_t ServiceImageTransferCacheEntry::CachedSize() const {
   return size_;
 }
@@ -186,18 +219,26 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   // this as the worst case scenario is visual corruption.
   SkPixmap pixmap(image_info, const_cast<const void*>(pixel_data),
                   image_info.minRowBytes());
+  return MakeSkImage(pixmap, width, height, target_color_space);
+}
+
+bool ServiceImageTransferCacheEntry::MakeSkImage(
+    const SkPixmap& pixmap,
+    uint32_t width,
+    uint32_t height,
+    sk_sp<SkColorSpace> target_color_space) {
+  DCHECK(context_);
 
   // Depending on whether the pixmap will fit in a GPU texture, either create
   // a software or GPU SkImage.
-  uint32_t max_size = context->maxTextureSize();
+  uint32_t max_size = context_->maxTextureSize();
   fits_on_gpu_ = width <= max_size && height <= max_size;
   if (fits_on_gpu_) {
     sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
     if (!image)
       return false;
-    image_ =
-        MakeTextureImage(context, std::move(image), target_color_space,
-                         needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo);
+    image_ = MakeTextureImage(context_, std::move(image), target_color_space,
+                              has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo);
   } else {
     sk_sp<SkImage> original =
         SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);

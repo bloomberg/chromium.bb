@@ -97,6 +97,7 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));
   MOCK_METHOD0(GetImageManagerForTest, gles2::ImageManager*());
   MOCK_METHOD0(GetTransferCacheForTest, ServiceTransferCache*());
+  MOCK_CONST_METHOD0(GetRasterDecoderId, int());
   MOCK_METHOD0(DecoderIdForTest, int());
   MOCK_METHOD0(SetUpForRasterCHROMIUMForTest, void());
   MOCK_METHOD0(SetOOMErrorForTest, void());

@@ -5,6 +5,10 @@
 #ifndef GPU_IPC_SERVICE_IMAGE_DECODE_ACCELERATOR_STUB_H_
 #define GPU_IPC_SERVICE_IMAGE_DECODE_ACCELERATOR_STUB_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/containers/queue.h"
@@ -15,6 +19,8 @@
 #include "base/thread_annotations.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -74,10 +80,13 @@ class ImageDecodeAcceleratorStub
                               uint64_t decode_release_count);
 
   // The |worker_| calls this when a decode is completed. If the decode is
-  // successful (i.e., |rgba_output| is not empty), |sequence_| will be enabled
-  // so that ProcessCompletedDecode() is called. If the decode is not
-  // successful, we destroy the channel (see OnError()).
-  void OnDecodeCompleted(std::vector<uint8_t> rgba_output);
+  // successful (i.e., |output| is not empty), |sequence_| will be enabled so
+  // that ProcessCompletedDecode() is called. If the decode is not successful,
+  // we destroy the channel (see OnError()).
+  void OnDecodeCompleted(gfx::Size expected_output_size,
+                         std::vector<uint8_t> output,
+                         size_t row_bytes,
+                         SkImageInfo image_info);
 
   // Triggers the destruction of the channel asynchronously and makes it so that
   // we stop accepting completed decodes. On entry, |channel_| must not be
@@ -87,14 +96,27 @@ class ImageDecodeAcceleratorStub
   // The object to which the actual decoding can be delegated.
   ImageDecodeAcceleratorWorker* worker_ = nullptr;
 
+  struct CompletedDecode {
+    CompletedDecode(std::vector<uint8_t> output,
+                    size_t row_bytes,
+                    SkImageInfo image_info);
+    ~CompletedDecode();
+
+    std::vector<uint8_t> output;
+    size_t row_bytes;
+    SkImageInfo image_info;
+
+    DISALLOW_COPY_AND_ASSIGN(CompletedDecode);
+  };
+
   base::Lock lock_;
   GpuChannel* channel_ GUARDED_BY(lock_) = nullptr;
   SequenceId sequence_ GUARDED_BY(lock_);
   scoped_refptr<SyncPointClientState> sync_point_client_state_
       GUARDED_BY(lock_);
-  base::queue<std::vector<uint8_t>> pending_completed_decodes_
+  base::queue<std::unique_ptr<CompletedDecode>> pending_completed_decodes_
       GUARDED_BY(lock_);
-  bool accepting_completed_decodes_ GUARDED_BY(lock_) = true;
+  bool destroying_channel_ GUARDED_BY(lock_) = false;
   uint64_t last_release_count_ GUARDED_BY(lock_) = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
@@ -199,6 +200,10 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   gles2::Outputter* outputter() const override {
     NOTIMPLEMENTED();
     return nullptr;
+  }
+  int GetRasterDecoderId() const override {
+    NOTREACHED();
+    return -1;
   }
 
  private:

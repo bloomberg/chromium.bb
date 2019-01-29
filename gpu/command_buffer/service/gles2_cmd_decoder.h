@@ -136,6 +136,8 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
 
   Outputter* outputter() const override;
 
+  int GetRasterDecoderId() const override;
+
   // Set the surface associated with the default FBO.
   virtual void SetSurface(const scoped_refptr<gl::GLSurface>& surface) = 0;
   // Releases the surface associated with the GL context.
