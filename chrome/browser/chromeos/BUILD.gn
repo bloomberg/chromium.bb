@@ -2046,6 +2046,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "accessibility/test_accessibility_focus_ring_controller.cc",
+    "accessibility/test_accessibility_focus_ring_controller.h",
     "android_sms/fake_android_sms_app_manager.cc",
     "android_sms/fake_android_sms_app_manager.h",
     "android_sms/fake_android_sms_app_setup_controller.cc",
@@ -2322,6 +2324,7 @@ source_set("unit_tests") {
     "login/error_screens_histogram_helper_unittest.cc",
     "login/existing_user_controller_auto_login_unittest.cc",
     "login/hwid_checker_unittest.cc",
+    "login/lock/screen_locker_unittest.cc",
     "login/profile_auth_data_unittest.cc",
     "login/quick_unlock/fingerprint_storage_unittest.cc",
     "login/quick_unlock/pin_storage_prefs_unittest.cc",
