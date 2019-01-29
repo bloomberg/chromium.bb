@@ -275,24 +275,6 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(contents_a, contents_b)
 
   @cros_test_lib.NetworkTest()
-  def testGetFileInTempFile(self):
-    """Just create a download cache, and GetFileInTempFile on it."""
-
-    cache = download_cache.DownloadCache(self.cache_dir)
-
-    # Fetch a file
-    file_t = cache.GetFileInTempFile(self.uri_a)
-
-    with cache.GetFileObject(self.uri_a) as f:
-      contents_a = f.read()
-
-    with file_t as f:
-      contents_t = f.read()
-
-    self.assertEqual(contents_t, contents_a)
-    self.assertEqual(contents_t, self.ctx.Cat(self.uri_a))
-
-  @cros_test_lib.NetworkTest()
   def testPurgeLogic(self):
     cache = download_cache.DownloadCache(self.cache_dir)
 
