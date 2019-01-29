@@ -597,6 +597,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&,
                                          bool should_check_children) const;
 
+  bool ContainsDirtyOverlayScrollbars() const {
+    return contains_dirty_overlay_scrollbars_;
+  }
+  void SetContainsDirtyOverlayScrollbars(bool dirty_scrollbars) {
+    contains_dirty_overlay_scrollbars_ = dirty_scrollbars;
+  }
+
   // If the input CompositorFilterOperation is not empty, it will be populated
   // only if |filter_on_effect_node_dirty_| is true or the reference box has
   // changed. Otherwise it will be populated unconditionally.
@@ -1264,6 +1271,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Set on a stacking context layer that has 3D descendants anywhere
   // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
   unsigned has3d_transformed_descendant_ : 1;
+
+  unsigned contains_dirty_overlay_scrollbars_ : 1;
 
   unsigned needs_ancestor_dependent_compositing_inputs_update_ : 1;
   unsigned child_needs_compositing_inputs_update_ : 1;
