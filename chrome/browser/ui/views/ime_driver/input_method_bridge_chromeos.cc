@@ -53,6 +53,11 @@ void InputMethodBridge::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {
     input_method_chromeos_->OnCaretBoundsChanged(client_.get());
 }
 
+void InputMethodBridge::OnTextInputClientDataChanged(
+    ws::mojom::TextInputClientDataPtr data) {
+  client_->SetTextInputClientData(std::move(data));
+}
+
 void InputMethodBridge::ProcessKeyEvent(std::unique_ptr<ui::Event> event,
                                         ProcessKeyEventCallback callback) {
   DCHECK(event->IsKeyEvent());

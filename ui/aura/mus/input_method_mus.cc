@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/strings/string16.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -33,6 +34,32 @@ void CallEventResultCallback(InputMethodMus::EventResultCallback ack_callback,
 
   std::move(ack_callback)
       .Run(handled ? EventResult::HANDLED : EventResult::UNHANDLED);
+}
+
+ws::mojom::TextInputClientDataPtr GetTextInputClientData(
+    const ui::TextInputClient* client) {
+  auto data = ws::mojom::TextInputClientData::New();
+  data->has_composition_text = client->HasCompositionText();
+
+  gfx::Range text_range;
+  if (client->GetTextRange(&text_range))
+    data->text_range = text_range;
+
+  base::string16 text;
+  if (data->text_range.has_value() &&
+      client->GetTextFromRange(*data->text_range, &text)) {
+    data->text = std::move(text);
+  }
+
+  gfx::Range composition_text_range;
+  if (client->GetCompositionTextRange(&composition_text_range))
+    data->composition_text_range = composition_text_range;
+
+  gfx::Range editable_selection_range;
+  if (client->GetEditableSelectionRange(&editable_selection_range))
+    data->editable_selection_range = editable_selection_range;
+
+  return data;
 }
 
 }  // namespace
@@ -121,6 +148,7 @@ void InputMethodMus::OnCaretBoundsChanged(const ui::TextInputClient* client) {
     input_method_->OnCaretBoundsChanged(client->GetCaretBounds());
 
   NotifyTextInputCaretBoundsChanged(client);
+  OnTextInputClientDataChanged(client);
 }
 
 void InputMethodMus::CancelComposition(const ui::TextInputClient* client) {
@@ -188,11 +216,14 @@ void InputMethodMus::OnDidChangeFocusedClient(
     input_method_ = nullptr;
     input_method_ptr_.reset();
     text_input_client_.reset();
+    last_sent_text_input_client_data_.reset();
     return;
   }
 
-  text_input_client_ =
-      std::make_unique<TextInputClientImpl>(focused, delegate());
+  text_input_client_ = std::make_unique<TextInputClientImpl>(
+      focused, delegate(),
+      base::BindRepeating(&InputMethodMus::OnTextInputClientDataChanged,
+                          base::Unretained(this)));
 
   if (ime_driver_) {
     ws::mojom::SessionDetailsPtr details = ws::mojom::SessionDetails::New();
@@ -200,6 +231,8 @@ void InputMethodMus::OnDidChangeFocusedClient(
         focused->GetTextInputType(), focused->GetTextInputMode(),
         focused->GetTextDirection(), focused->GetTextInputFlags());
     details->caret_bounds = focused->GetCaretBounds();
+    details->data = GetTextInputClientData(focused);
+    last_sent_text_input_client_data_ = details->data->Clone();
     ime_driver_->StartSession(MakeRequest(&input_method_ptr_),
                               text_input_client_->CreateInterfacePtrAndBind(),
                               std::move(details));
@@ -236,6 +269,19 @@ void InputMethodMus::ProcessKeyEventCallback(
   EventResultCallback ack_callback = std::move(pending_callbacks_.front());
   pending_callbacks_.pop_front();
   CallEventResultCallback(std::move(ack_callback), handled);
+}
+
+void InputMethodMus::OnTextInputClientDataChanged(
+    const ui::TextInputClient* client) {
+  if (!input_method_ || !IsTextInputClientFocused(client))
+    return;
+
+  auto data = GetTextInputClientData(client);
+  if (last_sent_text_input_client_data_ == data)
+    return;
+
+  last_sent_text_input_client_data_ = data->Clone();
+  input_method_->OnTextInputClientDataChanged(std::move(data));
 }
 
 }  // namespace aura

@@ -64,6 +64,10 @@ class TestInputMethod : public ws::mojom::InputMethod {
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
     was_on_caret_bounds_changed_called_ = true;
   }
+  void OnTextInputClientDataChanged(
+      ws::mojom::TextInputClientDataPtr data) override {
+    was_on_text_input_client_data_changed_called_ = true;
+  }
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override {
     process_key_event_callbacks_.push_back(std::move(callback));
@@ -73,25 +77,39 @@ class TestInputMethod : public ws::mojom::InputMethod {
     was_show_virtual_keyboard_if_enabled_called_ = true;
   }
 
-  bool was_on_text_input_state_changed_called() {
+  void Reset() {
+    was_on_text_input_state_changed_called_ = false;
+    was_on_caret_bounds_changed_called_ = false;
+    was_on_text_input_client_data_changed_called_ = false;
+    was_cancel_composition_called_ = false;
+    was_show_virtual_keyboard_if_enabled_called_ = false;
+  }
+
+  bool was_on_text_input_state_changed_called() const {
     return was_on_text_input_state_changed_called_;
   }
 
-  bool was_on_caret_bounds_changed_called() {
+  bool was_on_caret_bounds_changed_called() const {
     return was_on_caret_bounds_changed_called_;
   }
 
-  bool was_cancel_composition_called() {
+  bool was_on_text_input_client_data_changed_called() const {
+    return was_on_text_input_client_data_changed_called_;
+    ;
+  }
+
+  bool was_cancel_composition_called() const {
     return was_cancel_composition_called_;
   }
 
-  bool was_show_virtual_keyboard_if_enabled_called() {
+  bool was_show_virtual_keyboard_if_enabled_called() const {
     return was_show_virtual_keyboard_if_enabled_called_;
   }
 
  private:
   bool was_on_text_input_state_changed_called_ = false;
   bool was_on_caret_bounds_changed_called_ = false;
+  bool was_on_text_input_client_data_changed_called_ = false;
   bool was_cancel_composition_called_ = false;
   bool was_show_virtual_keyboard_if_enabled_called_ = false;
   ProcessKeyEventCallbacks process_key_event_callbacks_;
@@ -379,6 +397,34 @@ TEST_F(InputMethodMusTest, AckUnhandledCallsDispatchKeyEventPostUnhandled) {
   // InputMethodChromeOS -> RemoteTextInputClient -> TextInputClientImpl ->
   // InputMethodMus's delegate.
   EXPECT_FALSE(input_method_delegate.was_dispatch_key_event_post_ime_called());
+}
+
+// Tests that cached ui::TextInputClient data is pushed to remote
+// mojom::InputMethods when it changes.
+TEST_F(InputMethodMusTest, TextInputClientDataUpdate) {
+  ui::DummyTextInputClient focused_input_client;
+  TestInputMethodDelegate input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, nullptr);
+  input_method_mus.SetFocusedTextInputClient(&focused_input_client);
+
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+
+  EXPECT_FALSE(
+      test_input_method.was_on_text_input_client_data_changed_called());
+
+  // Things like caret bounds change triggers an update.
+  InputMethodMusTestApi::CallOnCaretBoundsChanged(&input_method_mus,
+                                                  &focused_input_client);
+  EXPECT_TRUE(test_input_method.was_on_text_input_client_data_changed_called());
+
+  test_input_method.Reset();
+
+  // Do it again. No call happens because the data is not changed.
+  InputMethodMusTestApi::CallOnCaretBoundsChanged(&input_method_mus,
+                                                  &focused_input_client);
+  EXPECT_FALSE(
+      test_input_method.was_on_text_input_client_data_changed_called());
 }
 
 }  // namespace aura

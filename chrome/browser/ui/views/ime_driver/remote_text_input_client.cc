@@ -27,6 +27,11 @@ void RemoteTextInputClient::SetCaretBounds(const gfx::Rect& caret_bounds) {
   details_->caret_bounds = caret_bounds;
 }
 
+void RemoteTextInputClient::SetTextInputClientData(
+    ws::mojom::TextInputClientDataPtr data) {
+  details_->data = std::move(data);
+}
+
 void RemoteTextInputClient::OnDispatchKeyEventPostIMECompleted(bool completed) {
   RunNextPendingCallback(completed);
 }
@@ -88,9 +93,7 @@ bool RemoteTextInputClient::GetCompositionCharacterBounds(
 }
 
 bool RemoteTextInputClient::HasCompositionText() const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return details_->data->has_composition_text;
 }
 
 ui::TextInputClient::FocusReason RemoteTextInputClient::GetFocusReason() const {
@@ -98,21 +101,27 @@ ui::TextInputClient::FocusReason RemoteTextInputClient::GetFocusReason() const {
 }
 
 bool RemoteTextInputClient::GetTextRange(gfx::Range* range) const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (!details_->data->text_range.has_value())
+    return false;
+
+  *range = details_->data->text_range.value();
+  return true;
 }
 
 bool RemoteTextInputClient::GetCompositionTextRange(gfx::Range* range) const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (!details_->data->composition_text_range.has_value())
+    return false;
+
+  *range = details_->data->composition_text_range.value();
+  return true;
 }
 
 bool RemoteTextInputClient::GetEditableSelectionRange(gfx::Range* range) const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (!details_->data->editable_selection_range.has_value())
+    return false;
+
+  *range = details_->data->editable_selection_range.value();
+  return true;
 }
 
 bool RemoteTextInputClient::SetEditableSelectionRange(const gfx::Range& range) {
@@ -129,9 +138,13 @@ bool RemoteTextInputClient::DeleteRange(const gfx::Range& range) {
 
 bool RemoteTextInputClient::GetTextFromRange(const gfx::Range& range,
                                              base::string16* text) const {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (!details_->data->text.has_value() ||
+      range.GetMin() >= details_->data->text->length()) {
+    return false;
+  }
+
+  *text = details_->data->text->substr(range.GetMin(), range.length());
+  return true;
 }
 
 void RemoteTextInputClient::OnInputMethodChanged() {

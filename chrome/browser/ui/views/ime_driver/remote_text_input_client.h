@@ -23,6 +23,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
 
   void SetTextInputState(ws::mojom::TextInputStatePtr text_input_state);
   void SetCaretBounds(const gfx::Rect& caret_bounds);
+  void SetTextInputClientData(ws::mojom::TextInputClientDataPtr data);
 
  private:
   // See |pending_callbacks_| for details.
