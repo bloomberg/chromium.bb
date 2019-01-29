@@ -5,3 +5,4 @@
 module image_annotation.mojom;
 
 const string kServiceName = "image_annotation";
+const string kAnnotationCapability = "annotation";

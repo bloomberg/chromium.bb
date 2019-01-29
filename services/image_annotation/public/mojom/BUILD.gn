@@ -9,6 +9,10 @@ mojom("mojom") {
     "image_annotation.mojom",
   ]
 
+  public_deps = [
+    ":constants",
+  ]
+
   deps = [
     "//mojo/public/mojom/base",
   ]

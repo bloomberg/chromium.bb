@@ -138,6 +138,8 @@
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/constants.mojom.h"
+#include "services/image_annotation/image_annotation_service.h"
+#include "services/image_annotation/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
@@ -1272,6 +1274,11 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
   if (service_name == prefs::mojom::kServiceName) {
     return InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
         ->CreatePrefService(std::move(request));
+  }
+
+  if (service_name == image_annotation::mojom::kServiceName) {
+    return std::make_unique<image_annotation::ImageAnnotationService>(
+        std::move(request), GetURLLoaderFactory());
   }
 
 #if !defined(OS_ANDROID)

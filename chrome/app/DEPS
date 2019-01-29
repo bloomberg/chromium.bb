@@ -61,6 +61,7 @@ specific_include_rules = {
     "+extensions/buildflags",
     "+extensions/common",
     "+services/identity",
+    "+services/image_annotation/public",
     "+services/resource_coordinator/public",
     "+services/ws/common",
   ],
