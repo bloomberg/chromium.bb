@@ -12,12 +12,18 @@ source_set("hid") {
   sources = [
     "fake_input_service_linux.cc",
     "fake_input_service_linux.h",
+    "hid_collection.cc",
+    "hid_collection.h",
     "hid_device_filter.cc",
     "hid_device_filter.h",
+    "hid_item_state_table.cc",
+    "hid_item_state_table.h",
     "hid_report_descriptor.cc",
     "hid_report_descriptor.h",
     "hid_report_descriptor_item.cc",
     "hid_report_descriptor_item.h",
+    "hid_report_item.cc",
+    "hid_report_item.h",
     "hid_usage_and_page.cc",
     "hid_usage_and_page.h",
   ]
