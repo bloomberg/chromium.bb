@@ -72,7 +72,8 @@ bool SymbolsIterator::Consume(unsigned* symbols_limit,
             next_char_ == kStaffOfAesculapiusCharacter) &&
            previous_font_fallback_priority_ ==
                FontFallbackPriority::kEmojiEmoji) &&
-         !Character::IsEmojiFlagSequenceTag(next_char_)) ||
+         !Character::IsEmojiTagSequence(next_char_) &&
+         kCancelTag != next_char_) ||
         current_font_fallback_priority_ == FontFallbackPriority::kInvalid) {
       current_font_fallback_priority_ =
           FontFallbackPriorityForCharacter(next_char_);
