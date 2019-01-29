@@ -500,7 +500,7 @@ void LayerTreeView::SynchronouslyComposite(
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
     delegate_->BeginMainFrame(base::TimeTicks::Now());
-    delegate_->UpdateVisualState(false /* record_main_frame_metrics */);
+    delegate_->UpdateVisualState();
     return;
   }
 
@@ -602,8 +602,8 @@ void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void LayerTreeView::UpdateLayerTreeHost(bool record_main_frame_metrics) {
-  delegate_->UpdateVisualState(record_main_frame_metrics);
+void LayerTreeView::UpdateLayerTreeHost() {
+  delegate_->UpdateVisualState();
 }
 
 void LayerTreeView::ApplyViewportChanges(
@@ -702,6 +702,10 @@ void LayerTreeView::DidPresentCompositorFrame(
       std::move(callback).Run(feedback.timestamp);
     presentation_callbacks_.erase(front);
   }
+}
+
+void LayerTreeView::RecordStartOfFrameMetrics() {
+  delegate_->RecordStartOfFrameMetrics();
 }
 
 void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {

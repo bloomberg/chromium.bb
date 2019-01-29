@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -383,7 +384,8 @@ void WebPagePopupImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   page_->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time) {
+
+void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time, bool) {
   if (!page_)
     return;
   // FIXME: This should use lastFrameTimeMonotonic but doing so

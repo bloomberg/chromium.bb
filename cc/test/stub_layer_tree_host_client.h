@@ -18,10 +18,11 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {}
+  void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
-  void UpdateLayerTreeHost(bool record_main_frame_metrics) override {}
+  void UpdateLayerTreeHost() override {}
   void ApplyViewportChanges(const ApplyViewportChangesArgs&) override {}
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}

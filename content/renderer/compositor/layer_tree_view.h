@@ -191,7 +191,7 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
-  void UpdateLayerTreeHost(bool record_main_frame_metrics) override;
+  void UpdateLayerTreeHost() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
@@ -211,6 +211,7 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
+  void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void DidGenerateLocalSurfaceIdAllocation(
       const viz::LocalSurfaceIdAllocation& allocation) override {}

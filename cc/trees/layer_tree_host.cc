@@ -277,8 +277,8 @@ const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHost::RequestMainFrameUpdate(bool record_main_frame_metrics) {
-  client_->UpdateLayerTreeHost(record_main_frame_metrics);
+void LayerTreeHost::RequestMainFrameUpdate() {
+  client_->UpdateLayerTreeHost();
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
@@ -644,7 +644,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
-  RequestMainFrameUpdate(false /* record_main_frame_metrics */);
+  RequestMainFrameUpdate();
   UpdateLayers();
 }
 
@@ -940,6 +940,10 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   ApplyViewportChanges(*info);
 
   RecordWheelAndTouchScrollingCount(*info);
+}
+
+void LayerTreeHost::RecordStartOfFrameMetrics() {
+  client_->RecordStartOfFrameMetrics();
 }
 
 void LayerTreeHost::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {

@@ -132,6 +132,8 @@ class CORE_EXPORT LocalFrameUkmAggregator {
     kStyleAndLayout,
     kForcedStyleAndLayout,
     kScrollingCoordinator,
+    kHandleInputEvents,
+    kAnimate,
     kCount
   };
 
@@ -149,7 +151,9 @@ class CORE_EXPORT LocalFrameUkmAggregator {
                            "PrePaint",
                            "StyleAndLayout",
                            "ForcedStyleAndLayout",
-                           "ScrollingCoordinator"};
+                           "ScrollingCoordinator",
+                           "HandleInputEvents",
+                           "Animate"};
     return *strings;
   }
 
@@ -201,6 +205,8 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   void RecordSample(size_t metric_index, TimeTicks start, TimeTicks end);
 
   void BeginMainFrame();
+
+  bool InMainFrame() { return in_main_frame_update_; }
 
  private:
   struct AbsoluteMetricRecord {

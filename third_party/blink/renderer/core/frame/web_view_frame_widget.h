@@ -48,7 +48,11 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void BeginFrame(base::TimeTicks last_frame_time,
+                  bool record_main_frame_metrics) override;
+  void BeginRafAlignedInput() override;
+  void EndRafAlignedInput() override;
+  void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;

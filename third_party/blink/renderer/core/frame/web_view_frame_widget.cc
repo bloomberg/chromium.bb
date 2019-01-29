@@ -56,8 +56,21 @@ void WebViewFrameWidget::SetSuppressFrameRequestsWorkaroundFor704763Only(
   web_view_->SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebViewFrameWidget::BeginFrame(base::TimeTicks last_frame_time) {
-  web_view_->BeginFrame(last_frame_time);
+void WebViewFrameWidget::BeginFrame(base::TimeTicks last_frame_time,
+                                    bool record_main_frame_metrics) {
+  web_view_->BeginFrame(last_frame_time, record_main_frame_metrics);
+}
+
+void WebViewFrameWidget::BeginRafAlignedInput() {
+  web_view_->BeginRafAlignedInput();
+}
+
+void WebViewFrameWidget::EndRafAlignedInput() {
+  web_view_->EndRafAlignedInput();
+}
+
+void WebViewFrameWidget::RecordStartOfFrameMetrics() {
+  web_view_->RecordStartOfFrameMetrics();
 }
 
 void WebViewFrameWidget::RecordEndOfFrameMetrics(

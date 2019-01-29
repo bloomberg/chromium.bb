@@ -95,12 +95,28 @@ class WebWidget {
 
   // Called to update imperative animation state. This should be called before
   // paint, although the client can rate-limit these calls.
-  // |last_frame_time| is in seconds.
-  virtual void BeginFrame(base::TimeTicks last_frame_time) {}
+  // |last_frame_time| is in seconds. |record_main_frame_metrics| is true when
+  // UMA and UKM metrics should be emitted for animation work.
+  virtual void BeginFrame(base::TimeTicks last_frame_time,
+                          bool record_main_frame_metrics) {}
+
+  // Called when main frame metrics are desired. The local frame's UKM
+  // aggregator must be informed that collection is starting for the
+  // frame.
+  virtual void RecordStartOfFrameMetrics() {}
 
   // Called when a main frame time metric should be emitted, along with
   // any metrics that depend upon the main frame total time.
   virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {}
+
+  // Methods called to mark the beginning and end of input processing work
+  // before rAF scripts are executed. Only called when gathering main frame
+  // UMA and UKM. That is, when RecordStartOfFrameMetrics has been called, and
+  // before RecordEndOfFrameMetrics has been called. Only implement if the
+  // rAF input update will be called as part of a layer tree view main frame
+  // update.
+  virtual void BeginRafAlignedInput() {}
+  virtual void EndRafAlignedInput() {}
 
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,

@@ -562,7 +562,7 @@ static void SendDamagedRectsRecursive(ui::Layer* layer) {
     SendDamagedRectsRecursive(child);
 }
 
-void Compositor::UpdateLayerTreeHost(bool record_main_frame_metrics) {
+void Compositor::UpdateLayerTreeHost() {
   if (!root_layer())
     return;
   SendDamagedRectsRecursive(root_layer());

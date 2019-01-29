@@ -1997,11 +1997,6 @@ bool LocalFrameView::UpdateLifecycleToLayoutClean() {
       DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
-void LocalFrameView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
-  LocalFrameUkmAggregator& ukm_aggregator = EnsureUkmAggregator();
-  ukm_aggregator.RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
-}
-
 void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
   LocalFrame& local_frame_root = GetFrame().LocalFrameRoot();
   if (local_frame_root.View()->current_update_lifecycle_phases_target_state_ <
@@ -2144,9 +2139,6 @@ bool LocalFrameView::UpdateLifecyclePhases(
     UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
-
-  if (reason == DocumentLifecycle::LifecycleUpdateReason::kBeginMainFrame)
-    EnsureUkmAggregator().BeginMainFrame();
 
   for (auto& observer : lifecycle_observers_)
     observer->WillStartLifecycleUpdate();

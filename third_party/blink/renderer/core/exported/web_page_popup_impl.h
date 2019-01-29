@@ -83,9 +83,10 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // WebWidget functions
   void SetLayerTreeView(WebLayerTreeView*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void BeginFrame(base::TimeTicks last_frame_time,
+                  bool record_main_frame_metrics) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason /* Not used */) override;
+                       LifecycleUpdateReason reason) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void WillCloseLayerTreeView() override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
@@ -136,6 +137,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   WebLayerTreeView* layer_tree_view_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
+  base::TimeTicks raf_aligned_input_start_time_;
   bool is_accelerated_compositing_active_ = false;
 
   friend class WebPagePopup;

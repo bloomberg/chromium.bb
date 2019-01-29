@@ -313,8 +313,9 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
+  void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  void UpdateVisualState(bool record_main_frame_metrics) override;
+  void UpdateVisualState() override;
   void WillBeginCompositorFrame() override;
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
