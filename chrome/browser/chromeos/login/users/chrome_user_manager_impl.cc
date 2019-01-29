@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -847,9 +848,23 @@ void ChromeUserManagerImpl::PerformPreUserListLoadingActions() {
 }
 
 void ChromeUserManagerImpl::PerformPostUserListLoadingActions() {
-  for (user_manager::UserList::iterator ui = users_.begin(), ue = users_.end();
-       ui != ue; ++ui) {
-    GetUserImageManager((*ui)->GetAccountId())->LoadUserImage();
+  std::vector<user_manager::User*> users_to_remove;
+
+  for (user_manager::User* user : users_) {
+    // TODO(http://crbug/866790): Remove supervised user accounts. After we have
+    // enough confidence that there are no more supervised users on devices in
+    // the wild, remove this.
+    if (base::FeatureList::IsEnabled(
+            features::kRemoveSupervisedUsersOnStartup) &&
+        user->IsSupervised()) {
+      users_to_remove.push_back(user);
+    } else {
+      GetUserImageManager(user->GetAccountId())->LoadUserImage();
+    }
+  }
+
+  for (user_manager::User* user : users_to_remove) {
+    RemoveUser(user->GetAccountId(), nullptr);
   }
 }
 

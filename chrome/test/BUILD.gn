@@ -1787,6 +1787,7 @@ test("browser_tests") {
         "../browser/chromeos/login/users/avatar/user_image_manager_browsertest.cc",
         "../browser/chromeos/login/users/avatar/user_image_manager_test_util.cc",
         "../browser/chromeos/login/users/avatar/user_image_manager_test_util.h",
+        "../browser/chromeos/login/users/remove_supervised_users_browsertest.cc",
         "../browser/chromeos/login/users/user_manager_hide_supervised_users_browsertest.cc",
         "../browser/chromeos/login/users/wallpaper_policy_browsertest.cc",
         "../browser/chromeos/login/webview_login_browsertest.cc",
