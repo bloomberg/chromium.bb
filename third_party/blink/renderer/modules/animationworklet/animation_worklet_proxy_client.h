@@ -34,6 +34,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
 
  public:
   static const char kSupplementName[];
+  static const wtf_size_t kNumStatelessGlobalScopes;
 
   // This client is hooked to the given |mutatee|, on the given
   // |mutatee_runner|.
@@ -46,7 +47,7 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   void Trace(blink::Visitor*) override;
 
   virtual void SynchronizeAnimatorName(const String& animator_name);
-  virtual void SetGlobalScope(WorkletGlobalScope*);
+  virtual void AddGlobalScope(WorkletGlobalScope*);
   void Dispose();
 
   // AnimationWorkletMutator:
@@ -55,10 +56,25 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   std::unique_ptr<AnimationWorkletOutput> Mutate(
       std::unique_ptr<AnimationWorkletInput> input) override;
 
+  void AddGlobalScopeForTesting(WorkletGlobalScope*);
+
   static AnimationWorkletProxyClient* FromDocument(Document*, int worklet_id);
   static AnimationWorkletProxyClient* From(WorkerClients*);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletGlobalScopeTest, SelectGlobalScope);
+
+  // Separate global scope selectors are used instead of overriding
+  // Worklet::SelectGlobalScope since two different selection mechanisms are
+  // required in order to support statefulness and enforce statelessness
+  // depending on the animators.
+  // The stateless global scope periodically switches in order to enforce
+  // stateless behavior. Prior state is lost on each switch to global scope.
+  AnimationWorkletGlobalScope* SelectStatelessGlobalScope();
+  // The stateful global scope remains fixed to preserve state between mutate
+  // calls.
+  AnimationWorkletGlobalScope* SelectStatefulGlobalScope();
+
   const int worklet_id_;
 
   struct MutatorItem {
@@ -72,9 +88,12 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   };
   WTF::Vector<MutatorItem> mutator_items_;
 
-  CrossThreadPersistent<AnimationWorkletGlobalScope> global_scope_;
+  Vector<CrossThreadPersistent<AnimationWorkletGlobalScope>> global_scopes_;
 
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
+
+  int next_global_scope_switch_countdown_;
+  wtf_size_t current_stateless_global_scope_index_;
 };
 
 void MODULES_EXPORT

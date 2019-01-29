@@ -28,20 +28,25 @@ AnimationWorklet::AnimationWorklet(Document* document)
 AnimationWorklet::~AnimationWorklet() = default;
 
 bool AnimationWorklet::NeedsToCreateGlobalScope() {
-  // For now, create only one global scope per document.
-  // TODO(nhiroki): Revisit this later.
-  return GetNumberOfGlobalScopes() == 0;
+  return GetNumberOfGlobalScopes() <
+         AnimationWorkletProxyClient::kNumStatelessGlobalScopes;
 }
 
 WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
 
-  Document* document = To<Document>(GetExecutionContext());
-  AnimationWorkletProxyClient* proxy_client =
-      AnimationWorkletProxyClient::FromDocument(document, worklet_id_);
+  if (!proxy_client_) {
+    // TODO(kevers|majidvp): Consider refactoring so that proxy client
+    // initialization can move to the constructor. Currently, initialization
+    // in the constructor leads to test failures as the document frame has not
+    // been initialized at the time of the constructor call.
+    Document* document = To<Document>(GetExecutionContext());
+    proxy_client_ =
+        AnimationWorkletProxyClient::FromDocument(document, worklet_id_);
+  }
 
   WorkerClients* worker_clients = WorkerClients::Create();
-  ProvideAnimationWorkletProxyClientTo(worker_clients, proxy_client);
+  ProvideAnimationWorkletProxyClientTo(worker_clients, proxy_client_);
 
   AnimationWorkletMessagingProxy* proxy =
       MakeGarbageCollected<AnimationWorkletMessagingProxy>(
@@ -58,6 +63,7 @@ WorkletAnimationId AnimationWorklet::NextWorkletAnimationId() {
 
 void AnimationWorklet::Trace(blink::Visitor* visitor) {
   Worklet::Trace(visitor);
+  visitor->Trace(proxy_client_);
 }
 
 }  // namespace blink

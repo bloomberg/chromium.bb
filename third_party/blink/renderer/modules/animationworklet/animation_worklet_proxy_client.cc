@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 
+#include <memory>
+
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -14,8 +18,19 @@
 
 namespace blink {
 
+namespace {
+
+static const wtf_size_t kMaxMutateCountToSwitch = 10u;
+static const wtf_size_t kStatefulGlobalScopeIndex = 0u;
+
+}  // end namespace
+
+/* static */
 const char AnimationWorkletProxyClient::kSupplementName[] =
     "AnimationWorkletProxyClient";
+
+/* static */
+const wtf_size_t AnimationWorkletProxyClient::kNumStatelessGlobalScopes = 2u;
 
 AnimationWorkletProxyClient::AnimationWorkletProxyClient(
     int worklet_id,
@@ -25,7 +40,10 @@ AnimationWorkletProxyClient::AnimationWorkletProxyClient(
     base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
         main_thread_mutator_dispatcher,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutator_runner)
-    : worklet_id_(worklet_id), state_(RunState::kUninitialized) {
+    : worklet_id_(worklet_id),
+      state_(RunState::kUninitialized),
+      next_global_scope_switch_countdown_(0),
+      current_stateless_global_scope_index_(0) {
   DCHECK(IsMainThread());
   mutator_items_.emplace_back(std::move(compositor_mutator_dispatcher),
                               std::move(compositor_mutator_runner));
@@ -59,18 +77,27 @@ void AnimationWorkletProxyClient::SynchronizeAnimatorName(
   }
 }
 
-void AnimationWorkletProxyClient::SetGlobalScope(
+void AnimationWorkletProxyClient::AddGlobalScope(
     WorkletGlobalScope* global_scope) {
   DCHECK(global_scope);
   DCHECK(global_scope->IsContextThread());
   if (state_ == RunState::kDisposed)
     return;
-  DCHECK(state_ == RunState::kUninitialized);
 
-  global_scope_ = static_cast<AnimationWorkletGlobalScope*>(global_scope);
+  global_scopes_.push_back(To<AnimationWorkletGlobalScope>(global_scope));
+
+  if (state_ != RunState::kUninitialized) {
+    return;
+  }
+
+  // Wait for all global scopes to load before proceeding with registration.
+  if (global_scopes_.size() < kNumStatelessGlobalScopes) {
+    return;
+  }
+
   // TODO(majidvp): Add an AnimationWorklet task type when the spec is final.
   scoped_refptr<base::SingleThreadTaskRunner> global_scope_runner =
-      global_scope_->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+      global_scope->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
 
   for (auto& mutator_item : mutator_items_) {
@@ -98,22 +125,18 @@ void AnimationWorkletProxyClient::Dispose() {
                           WrapCrossThreadPersistent(this)));
     }
 
-    DCHECK(global_scope_);
-    DCHECK(global_scope_->IsContextThread());
-
     // At worklet scope termination break the reference cycle between
     // AnimationWorkletGlobalScope and AnimationWorkletProxyClient.
-    global_scope_ = nullptr;
+    global_scopes_.clear();
   }
 
   mutator_items_.clear();
-
-  DCHECK(state_ != RunState::kDisposed);
   state_ = RunState::kDisposed;
 }
 
 std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
     std::unique_ptr<AnimationWorkletInput> input) {
+  base::ElapsedTimer timer;
   DCHECK(input);
 #if DCHECK_IS_ON()
   DCHECK(input->ValidateId(worklet_id_))
@@ -121,14 +144,55 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
       << worklet_id_;
 #endif
 
-  if (!global_scope_)
-    return nullptr;
+  // Create or destroy instances of animators on each global scope.
+  for (auto global_scope : global_scopes_) {
+    global_scope->UpdateAnimatorsList(*input);
+  }
 
-  auto output = global_scope_->Mutate(*input);
+  std::unique_ptr<AnimationWorkletOutput> output =
+      std::make_unique<AnimationWorkletOutput>();
 
-  // TODO(petermayo): https://crbug.com/791280 PostCrossThreadTask to supply
-  // this rather than return it.
+  // Assume animators are stateful.
+  // TODO(https://crbug.com/914918): Implement filter for detecting stateless
+  // and stateful animators. Call mutate on stateful and stateless global
+  // scopes with appropriate predicates.
+  AnimationWorkletGlobalScope* stateful_global_scope =
+      SelectStatefulGlobalScope();
+  DCHECK(stateful_global_scope);
+  stateful_global_scope->UpdateAnimators(*input, output.get(),
+                                         [](Animator*) { return true; });
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Animation.AnimationWorklet.MutateDuration", timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+      50);
+
   return output;
+}
+
+AnimationWorkletGlobalScope*
+AnimationWorkletProxyClient::SelectStatelessGlobalScope() {
+  if (--next_global_scope_switch_countdown_ < 0) {
+    current_stateless_global_scope_index_ =
+        (++current_stateless_global_scope_index_ % global_scopes_.size());
+    // Introduce an element of randomness in the switching interval to make
+    // stateful dependences easier to spot.
+    next_global_scope_switch_countdown_ =
+        base::RandInt(0, kMaxMutateCountToSwitch - 1);
+  }
+  return global_scopes_[current_stateless_global_scope_index_];
+}
+
+AnimationWorkletGlobalScope*
+AnimationWorkletProxyClient::SelectStatefulGlobalScope() {
+  return global_scopes_[kStatefulGlobalScopeIndex];
+}
+
+void AnimationWorkletProxyClient::AddGlobalScopeForTesting(
+    WorkletGlobalScope* global_scope) {
+  DCHECK(global_scope);
+  DCHECK(global_scope->IsContextThread());
+  global_scopes_.push_back(To<AnimationWorkletGlobalScope>(global_scope));
 }
 
 // static

@@ -40,16 +40,27 @@ class MockAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
  public:
   MockAnimationWorkletProxyClient()
       : AnimationWorkletProxyClient(0, nullptr, nullptr, nullptr, nullptr),
-        did_set_global_scope_(false) {}
-  void SetGlobalScope(WorkletGlobalScope*) override {
-    did_set_global_scope_ = true;
+        did_add_global_scope_(false) {}
+  void AddGlobalScope(WorkletGlobalScope*) override {
+    did_add_global_scope_ = true;
   }
   void SynchronizeAnimatorName(const String&) override{};
-  bool did_set_global_scope() { return did_set_global_scope_; }
+  bool did_add_global_scope() { return did_add_global_scope_; }
 
  private:
-  bool did_set_global_scope_;
+  bool did_add_global_scope_;
 };
+
+std::unique_ptr<AnimationWorkletOutput> ProxyClientMutate(
+    AnimationWorkletInput& state,
+    AnimationWorkletGlobalScope* global_scope) {
+  std::unique_ptr<AnimationWorkletOutput> output =
+      std::make_unique<AnimationWorkletOutput>();
+  global_scope->UpdateAnimatorsList(state);
+  global_scope->UpdateAnimators(state, output.get(),
+                                [](Animator*) { return true; });
+  return output;
+}
 
 }  // namespace
 
@@ -226,8 +237,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
                                                     nullptr, 1);
 
     std::unique_ptr<AnimationWorkletOutput> output =
-        global_scope->Mutate(state);
-    EXPECT_TRUE(output);
+        ProxyClientMutate(state, global_scope);
+    EXPECT_EQ(output->animations.size(), 1ul);
 
     ScriptValue constructed_after =
         global_scope->ScriptController()->EvaluateAndReturnValueForTest(
@@ -278,8 +289,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
                                                     nullptr, 1);
 
     std::unique_ptr<AnimationWorkletOutput> output =
-        global_scope->Mutate(state);
-    EXPECT_TRUE(output);
+        ProxyClientMutate(state, global_scope);
 
     EXPECT_EQ(output->animations.size(), 1ul);
     EXPECT_EQ(output->animations[0].local_times[0],
@@ -322,19 +332,23 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     state.updated_animations.push_back({animation_id, 5000});
     EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
     EXPECT_EQ(state.updated_animations.size(), 1u);
-    global_scope->Mutate(state);
+
+    std::unique_ptr<AnimationWorkletOutput> output =
+        ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     state.removed_animations.push_back(animation_id);
     EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
     EXPECT_EQ(state.removed_animations.size(), 1u);
-    global_scope->Mutate(state);
+
+    output = ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     state.added_and_updated_animations.push_back(
         {animation_id, "test", 5000, nullptr, 1});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
-    global_scope->Mutate(state);
+
+    output = ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
     waitable_event->Signal();
   }
@@ -372,23 +386,35 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     state.added_and_updated_animations.push_back(
         {animation_id, "test", 5000, nullptr, 1});
     EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
-    global_scope->Mutate(state);
+
+    std::unique_ptr<AnimationWorkletOutput> output =
+        ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
 
     state.added_and_updated_animations.clear();
     state.updated_animations.push_back({animation_id, 6000});
     EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
     EXPECT_EQ(state.updated_animations.size(), 1u);
-    global_scope->Mutate(state);
+
+    output = ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
 
     state.updated_animations.clear();
     state.removed_animations.push_back(animation_id);
     EXPECT_EQ(state.updated_animations.size(), 0u);
     EXPECT_EQ(state.removed_animations.size(), 1u);
-    global_scope->Mutate(state);
+
+    output = ProxyClientMutate(state, global_scope);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
+    waitable_event->Signal();
+  }
+
+  void AddGlobalScopeForTesting(WorkerThread* thread,
+                                AnimationWorkletProxyClient* proxy_client,
+                                WaitableEvent* waitable_event) {
+    proxy_client->AddGlobalScopeForTesting(
+        To<WorkletGlobalScope>(thread->GlobalScope()));
     waitable_event->Signal();
   }
 
@@ -447,7 +473,7 @@ TEST_F(AnimationWorkletGlobalScopeTest,
       CreateAnimationAndPaintWorkletThread(proxy_client);
   // Animation worklet global scope (AWGS) should not register itself upon
   // creation.
-  EXPECT_FALSE(proxy_client->did_set_global_scope());
+  EXPECT_FALSE(proxy_client->did_add_global_scope());
 
   WaitableEvent waitable_event;
   String source_code =
@@ -467,10 +493,84 @@ TEST_F(AnimationWorkletGlobalScopeTest,
   waitable_event.Wait();
 
   // AWGS should register itself first time an animator is registered with it.
-  EXPECT_TRUE(proxy_client->did_set_global_scope());
+  EXPECT_TRUE(proxy_client->did_add_global_scope());
 
   worklet->Terminate();
   worklet->WaitForShutdownForTesting();
+}
+
+TEST_F(AnimationWorkletGlobalScopeTest, SelectGlobalScope) {
+  AnimationWorkletProxyClient* proxy_client =
+      MakeGarbageCollected<MockAnimationWorkletProxyClient>();
+
+  // Global scopes must be created on worker threads.
+  std::unique_ptr<WorkerThread> first_worklet =
+      CreateAnimationAndPaintWorkletThread(proxy_client);
+  std::unique_ptr<WorkerThread> second_worklet =
+      CreateAnimationAndPaintWorkletThread(proxy_client);
+
+  ASSERT_NE(first_worklet, second_worklet);
+
+  // Register global scopes with proxy client. This step must be performed on
+  // the worker threads.
+  WaitableEvent waitable_event;
+  PostCrossThreadTask(
+      *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBind(
+          &AnimationWorkletGlobalScopeTest::AddGlobalScopeForTesting,
+          CrossThreadUnretained(this),
+          CrossThreadUnretained(first_worklet.get()),
+          CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client),
+          CrossThreadUnretained(&waitable_event)));
+  waitable_event.Wait();
+
+  waitable_event.Reset();
+  PostCrossThreadTask(
+      *second_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBind(
+          &AnimationWorkletGlobalScopeTest::AddGlobalScopeForTesting,
+          CrossThreadUnretained(this),
+          CrossThreadUnretained(second_worklet.get()),
+          CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client),
+          CrossThreadUnretained(&waitable_event)));
+  waitable_event.Wait();
+
+  AnimationWorkletGlobalScope* stateful_global_scope =
+      proxy_client->global_scopes_[0];
+  AnimationWorkletGlobalScope* first_stateless_global_scope =
+      proxy_client->global_scopes_[0];
+  AnimationWorkletGlobalScope* second_stateless_global_scope =
+      proxy_client->global_scopes_[1];
+
+  // Initialize switch countdown to 1, to force a switch in the stateless
+  // global scope on the second call.
+  proxy_client->next_global_scope_switch_countdown_ = 1;
+  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
+            first_stateless_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
+            second_stateless_global_scope);
+
+  // Increase countdown and verify that the switchover adjusts as expected.
+  proxy_client->next_global_scope_switch_countdown_ = 3;
+  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
+            second_stateless_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
+            second_stateless_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
+            second_stateless_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatefulGlobalScope(), stateful_global_scope);
+  EXPECT_EQ(proxy_client->SelectStatelessGlobalScope(),
+            first_stateless_global_scope);
+
+  first_worklet->Terminate();
+  first_worklet->WaitForShutdownForTesting();
+  second_worklet->Terminate();
+  second_worklet->WaitForShutdownForTesting();
 }
 
 }  // namespace blink
