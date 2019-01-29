@@ -29,6 +29,7 @@
       "chrome/app/chromium_strings.grd",
       "chrome/app/generated_resources.grd",
       "chrome/app/google_chrome_strings.grd",
+      "chrome/browser/resources/chromeos/camera/strings/camera_strings.grd",
       "chrome/browser/resources/chromeos/chromevox/strings/chromevox_strings.grd",
       "chrome/browser/resources/chromeos/select_to_speak/strings/select_to_speak_strings.grd",
       "chrome/credential_provider/gaiacp/gaia_resources.grd",
