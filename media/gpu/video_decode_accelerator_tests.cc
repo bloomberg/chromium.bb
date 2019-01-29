@@ -84,12 +84,12 @@ class VideoDecoderTest : public ::testing::Test {
   std::unique_ptr<VideoPlayer> CreateVideoPlayer(
       const Video* video,
       const VideoDecoderClientConfig& config = VideoDecoderClientConfig()) {
-    frame_validator_ =
-        media::test::VideoFrameValidator::Create(video->FrameChecksums());
-    // TODO(dstaessens@) allow enabling/disabling file writing
+    frame_validators_.push_back(
+        media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     return VideoPlayer::Create(
         video, g_env->dummy_frame_renderer_.get(),
-        {frame_validator_.get(), g_env->frame_file_writer_.get()}, config);
+        {frame_validators_.back().get(), g_env->frame_file_writer_.get()},
+        config);
   }
 
   void SetUp() override {
@@ -104,8 +104,12 @@ class VideoDecoderTest : public ::testing::Test {
 
   void TearDown() override { g_env->frame_file_writer_->WaitUntilDone(); }
 
+  const VideoFrameValidator* GetFrameValidator(size_t index = 0) {
+    return frame_validators_[index].get();
+  }
+
  protected:
-  std::unique_ptr<VideoFrameValidator> frame_validator_;
+  std::vector<std::unique_ptr<VideoFrameValidator>> frame_validators_;
 };
 
 }  // namespace
@@ -120,7 +124,7 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream) {
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Flush the decoder immediately after initialization.
@@ -134,7 +138,7 @@ TEST_F(VideoDecoderTest, FlushAfterInitialize) {
 
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Flush the decoder immediately after doing a mid-stream reset, without waiting
@@ -156,7 +160,7 @@ TEST_F(VideoDecoderTest, FlushBeforeResetDone) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Reset the decoder immediately after initialization.
@@ -171,7 +175,7 @@ TEST_F(VideoDecoderTest, ResetAfterInitialize) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Reset the decoder when the middle of the stream is reached.
@@ -190,7 +194,7 @@ TEST_F(VideoDecoderTest, ResetMidStream) {
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(),
             numFramesDecoded + g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Reset the decoder when the end of the stream is reached.
@@ -208,7 +212,7 @@ TEST_F(VideoDecoderTest, ResetEndOfStream) {
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFlushDoneCount(), 2u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames() * 2);
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Reset the decoder immediately when the end-of-stream flush starts, without
@@ -230,22 +234,7 @@ TEST_F(VideoDecoderTest, ResetBeforeFlushDone) {
   EXPECT_LE(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
   EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
-}
-
-// Play video from start to end. Multiple buffer decodes will be queued in the
-// decoder, without waiting for the result of the previous decode requests.
-TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
-  VideoDecoderClientConfig config;
-  config.max_outstanding_decode_requests = 5;
-  auto tvp = CreateVideoPlayer(g_env->video_, config);
-
-  tvp->Play();
-  EXPECT_TRUE(tvp->WaitForFlushDone());
-
-  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(frame_validator_->WaitUntilValidated());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
 }
 
 // Reset the decoder immediately when encountering the first config info in a
@@ -271,7 +260,43 @@ TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
   EXPECT_EQ(tvp->GetFrameDecodedCount(),
             numFramesDecoded + g_env->video_->NumFrames());
   EXPECT_GE(tvp->GetEventCount(VideoPlayerEvent::kConfigInfo), 1u);
-  EXPECT_EQ(0u, frame_validator_->GetMismatchedFramesCount());
+  EXPECT_EQ(0u, GetFrameValidator()->GetMismatchedFramesCount());
+}
+
+// Play video from start to end. Multiple buffer decodes will be queued in the
+// decoder, without waiting for the result of the previous decode requests.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
+  VideoDecoderClientConfig config;
+  config.max_outstanding_decode_requests = 5;
+  auto tvp = CreateVideoPlayer(g_env->video_, config);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
+  EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
+}
+
+// Play multiple videos simultaneously from start to finish.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
+  // The minimal number of concurrent decoders we expect to be supported.
+  constexpr size_t kMinSupportedConcurrentDecoders = 3;
+
+  std::vector<std::unique_ptr<VideoPlayer>> tvps(
+      kMinSupportedConcurrentDecoders);
+  for (size_t i = 0; i < kMinSupportedConcurrentDecoders; ++i)
+    tvps[i] = CreateVideoPlayer(g_env->video_);
+
+  for (size_t i = 0; i < kMinSupportedConcurrentDecoders; ++i)
+    tvps[i]->Play();
+
+  for (size_t i = 0; i < kMinSupportedConcurrentDecoders; ++i) {
+    EXPECT_TRUE(tvps[i]->WaitForFlushDone());
+    EXPECT_EQ(tvps[i]->GetFlushDoneCount(), 1u);
+    EXPECT_EQ(tvps[i]->GetFrameDecodedCount(), g_env->video_->NumFrames());
+    EXPECT_TRUE(GetFrameValidator()->WaitUntilValidated());
+  }
 }
 
 }  // namespace test
