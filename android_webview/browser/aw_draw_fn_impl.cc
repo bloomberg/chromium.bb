@@ -153,7 +153,7 @@ class VulkanState : public base::RefCounted<VulkanState> {
         .fDevice = params->device,
         .fQueue = params->queue,
         .fGraphicsQueueIndex = params->graphics_queue_index,
-        .fInstanceVersion = params->instance_version,
+        .fMaxAPIVersion = params->api_version,
         .fVkExtensions = &extensions,
         .fDeviceFeatures = params->device_features,
         .fDeviceFeatures2 = params->device_features_2,
