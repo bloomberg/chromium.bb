@@ -174,9 +174,9 @@ std::vector<TestParam> GetParams() {
   return params;
 }
 
-INSTANTIATE_TEST_CASE_P(Memlog,
-                        MemlogBrowserTest,
-                        ::testing::ValuesIn(GetParams()));
+INSTANTIATE_TEST_SUITE_P(Memlog,
+                         MemlogBrowserTest,
+                         ::testing::ValuesIn(GetParams()));
 
 }  // namespace heap_profiling
 
