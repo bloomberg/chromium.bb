@@ -50,6 +50,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
 #endif
       inside_draw_(false),
       defer_main_frame_update_(false),
+      defer_commits_(false),
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
@@ -266,7 +267,7 @@ bool SingleThreadProxy::RequestedAnimatePending() {
 
 void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   DCHECK(task_runner_provider_->IsMainThread());
-  // Deferring commits only makes sense if there's a scheduler.
+  // Deferring main frame updates only makes sense if there's a scheduler.
   if (!scheduler_on_impl_thread_)
     return;
   if (defer_main_frame_update_ == defer_main_frame_update)
@@ -280,7 +281,30 @@ void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
                            this);
 
   defer_main_frame_update_ = defer_main_frame_update;
-  scheduler_on_impl_thread_->SetDeferMainFrameUpdate(defer_main_frame_update);
+
+  // Force DeferCommits to be always on when DeferBeginMainFrameUpdate is on.
+  // TODO(schenney): defer_commits_ must alway match defer_main_frame_update_.
+  // Right now it's possible for it to not match because SetDeferCommits is
+  // public, but shortly we will correctly handle the case when they are
+  // out of sync.
+  SetDeferCommits(defer_main_frame_update_);
+}
+
+void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
+  DCHECK(task_runner_provider_->IsMainThread());
+  // Deferring commits only makes sense if there's a scheduler.
+  if (!scheduler_on_impl_thread_)
+    return;
+  if (defer_commits_ == defer_commits)
+    return;
+
+  if (defer_commits)
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "SingleThreadProxy::SetDeferCommits", this);
+  else
+    TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
+
+  defer_commits_ = defer_commits;
+  scheduler_on_impl_thread_->SetDeferCommits(defer_commits);
 }
 
 bool SingleThreadProxy::CommitRequested() const {
@@ -750,10 +774,10 @@ void SingleThreadProxy::BeginMainFrame(
   animate_requested_ = false;
 
   if (defer_main_frame_update_) {
-    TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
+    TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     BeginMainFrameAbortedOnImplThread(
-        CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
+        CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE);
     return;
   }
 
@@ -776,7 +800,8 @@ void SingleThreadProxy::BeginMainFrame(
 
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
-  if (defer_main_frame_update_ || begin_frame_args.animate_only) {
+  if (defer_main_frame_update_ || defer_commits_ ||
+      begin_frame_args.animate_only) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     BeginMainFrameAbortedOnImplThread(

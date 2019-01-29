@@ -52,6 +52,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool RequestedAnimatePending() override;
   void NotifyInputThrottledUntilCommit() override {}
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
+  void SetDeferCommits(bool defer_commits) override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
@@ -179,6 +180,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 #endif
   bool inside_draw_;
   bool defer_main_frame_update_;
+  bool defer_commits_;
   bool animate_requested_;
   bool commit_requested_;
   bool inside_synchronous_composite_;
