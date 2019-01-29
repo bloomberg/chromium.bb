@@ -7144,23 +7144,47 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates_Version) {
   AddProfileToPersonalDataManager(profile1);
 
   auto profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, profiles.size());
 
-  // Pretend that the validity states are updated.
-  profiles[0]->set_is_client_validity_states_updated(true);
-  profiles[1]->set_is_client_validity_states_updated(true);
+  EXPECT_TRUE(profiles[0]->is_client_validity_states_updated());
+  EXPECT_TRUE(profiles[1]->is_client_validity_states_updated());
+  EXPECT_EQ(CHROME_VERSION_MAJOR, GetLastVersionValidatedUpdate());
 
-  // Should validate regardless of the validity update flag, because of the
-  // major version update.
-  ResetAutofillLastVersionValidated();
+  // No validation as both validity update flags are true, and the validation
+  // version is set to this version.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*personal_data_, OnValidated(testing::_)).Times(0);
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+  personal_data_->UpdateClientValidityStates(profiles);
 
   profiles = personal_data_->GetProfiles();
   ASSERT_EQ(2U, profiles.size());
+  ResetAutofillLastVersionValidated();
 
-  UpdateClientValidityStatesOnPersonalDataManager(profiles);
+  EXPECT_EQ(0, GetLastVersionValidatedUpdate());
+  EXPECT_TRUE(profiles[0]->is_client_validity_states_updated());
+  EXPECT_TRUE(profiles[1]->is_client_validity_states_updated());
+
+  // Should validate regardless of the validity update flag, because of the
+  // major version update.
+  EXPECT_CALL(*personal_data_, OnValidated(testing::_)).Times(2);
+  ON_CALL(*personal_data_, OnValidated(testing::_))
+      .WillByDefault(testing::Invoke(personal_data_.get(),
+                                     &PersonalDataManagerMock::OnValidatedPDM));
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
+      .WillRepeatedly(QuitMessageLoop(&run_loop));
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(2);
+  // Validate the profiles through the client validation API.
+  personal_data_->UpdateClientValidityStates(profiles);
+  run_loop.Run();
 
   profiles = personal_data_->GetProfiles();
   ASSERT_EQ(2U, profiles.size());
   ASSERT_EQ(profiles[0]->guid(), profile1.guid());
+
+  // Verify that the version of the last update is set to this version.
+  EXPECT_EQ(CHROME_VERSION_MAJOR, GetLastVersionValidatedUpdate());
 
   EXPECT_EQ(AutofillProfile::VALID,
             profiles[0]->GetValidityState(ADDRESS_HOME_COUNTRY,
@@ -7175,9 +7199,6 @@ TEST_F(PersonalDataManagerMockTest, UpdateClientValidityStates_Version) {
   EXPECT_EQ(AutofillProfile::INVALID,
             profiles[1]->GetValidityState(ADDRESS_HOME_STATE,
                                           AutofillProfile::CLIENT));
-
-  // Verify that the version of the last update is set to this version.
-  EXPECT_EQ(CHROME_VERSION_MAJOR, GetLastVersionValidatedUpdate());
 }
 
 // Verifies that the profiles are validated when added, updated.
