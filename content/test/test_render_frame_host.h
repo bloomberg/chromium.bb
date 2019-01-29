@@ -165,10 +165,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Used to simulate the commit of a navigation having been processed in the
   // renderer. If parameters required to commit are not provided, they will be
   // set to default null values.
-  void SimulateCommitProcessed(int64_t navigation_id, bool was_successful);
   void SimulateCommitProcessed(
       int64_t navigation_id,
-      bool was_successful,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request,
@@ -201,6 +199,16 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // implementation, but will never receive any interface requests.
   static blink::mojom::DocumentInterfaceBrokerRequest
   CreateStubDocumentInterfaceBrokerRequest();
+
+  // This simulates aborting a cross document navigation.
+  // Will abort the navigation with the given |navigation_id|.
+  void AbortCommit(int64_t navigation_id);
+
+  // Returns the navigations that are trying to commit.
+  const std::map<int64_t, std::unique_ptr<NavigationRequest>>&
+  navigation_requests() {
+    return navigation_requests_;
+  }
 
  protected:
   void SendCommitNavigation(

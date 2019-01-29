@@ -437,15 +437,8 @@ void TestRenderFrameHost::PrepareForCommitIfNecessary() {
     PrepareForCommit();
 }
 
-void TestRenderFrameHost::SimulateCommitProcessed(int64_t navigation_id,
-                                                  bool was_successful) {
-  SimulateCommitProcessed(navigation_id, was_successful, nullptr, nullptr,
-                          nullptr, nullptr, false);
-}
-
 void TestRenderFrameHost::SimulateCommitProcessed(
     int64_t navigation_id,
-    bool was_successful,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
     blink::mojom::DocumentInterfaceBrokerRequest
@@ -453,9 +446,9 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     blink::mojom::DocumentInterfaceBrokerRequest
         document_interface_broker_blink_request,
     bool same_document) {
-  blink::mojom::CommitResult result = was_successful
-                                          ? blink::mojom::CommitResult::Ok
-                                          : blink::mojom::CommitResult::Aborted;
+  CHECK(params);
+  blink::mojom::CommitResult result = blink::mojom::CommitResult::Ok;
+
   if (!same_document) {
     // Note: Although the code does not prohibit the running of multiple
     // callbacks, no more than 1 callback will ever run, because navigation_id
@@ -483,15 +476,13 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     }
   }
 
-  if (params) {
-    SendNavigateWithParamsAndInterfaceParams(
-        params.release(),
-        mojom::DidCommitProvisionalLoadInterfaceParams::New(
-            std::move(interface_provider_request),
-            std::move(document_interface_broker_content_request),
-            std::move(document_interface_broker_blink_request)),
-        same_document);
-  }
+  SendNavigateWithParamsAndInterfaceParams(
+      params.release(),
+      mojom::DidCommitProvisionalLoadInterfaceParams::New(
+          std::move(interface_provider_request),
+          std::move(document_interface_broker_content_request),
+          std::move(document_interface_broker_blink_request)),
+      same_document);
 }
 
 WebBluetoothServiceImpl*
@@ -644,6 +635,11 @@ TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
       std::move(document_interface_broker_content_request),
       std::move(document_interface_broker_blink_request));
   return interface_params;
+}
+
+void TestRenderFrameHost::AbortCommit(int64_t navigation_id) {
+  OnCrossDocumentCommitProcessed(navigation_id,
+                                 blink::mojom::CommitResult::Aborted);
 }
 
 // static

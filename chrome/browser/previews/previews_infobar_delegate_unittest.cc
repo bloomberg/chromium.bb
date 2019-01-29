@@ -432,8 +432,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
       PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
 
   std::unique_ptr<content::NavigationSimulator> simulator =
-      content::NavigationSimulator::CreateFromPendingBrowserInitiated(
-          web_contents());
+      content::NavigationSimulator::CreateFromPending(web_contents());
   simulator->Commit();
 
   EXPECT_EQ(content::ReloadType::ORIGINAL_REQUEST_URL,
@@ -566,8 +565,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 
   std::unique_ptr<content::NavigationSimulator> simulator =
-      content::NavigationSimulator::CreateFromPendingBrowserInitiated(
-          web_contents());
+      content::NavigationSimulator::CreateFromPending(web_contents());
   simulator->Commit();
 
   EXPECT_EQ(content::ReloadType::ORIGINAL_REQUEST_URL,

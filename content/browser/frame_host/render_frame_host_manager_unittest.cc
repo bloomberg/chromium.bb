@@ -48,9 +48,9 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_widget_input_handler.h"
+#include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame_host.h"
@@ -843,24 +843,17 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // into a view-source mode and then navigating to the inner URL, so that's why
   // the bare URL is what's committed and returned by the last committed entry's
   // GetURL() call.
-  controller().LoadURL(
-      kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-
+  auto navigation = NavigationSimulatorImpl::CreateBrowserInitiated(
+      kViewSourceUrl, contents());
+  navigation->Start();
   NavigationRequest* request =
       main_test_rfh()->frame_tree_node()->navigation_request();
   CHECK(request);
-
-  // Simulate response from RenderFrame for DispatchBeforeUnload.
-  contents()->GetMainFrame()->PrepareForCommit();
   ASSERT_TRUE(contents()->GetPendingMainFrame())
       << "Expected new pending RenderFrameHost to be created.";
   RenderFrameHost* last_rfh = contents()->GetPendingMainFrame();
-  contents()->GetPendingMainFrame()->SimulateCommitProcessed(
-      request->navigation_handle()->GetNavigationId(),
-      true /* was_successful */);
-  contents()->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl);
 
+  navigation->Commit();
   EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
   NavigationEntry* last_committed = controller().GetLastCommittedEntry();
   ASSERT_NE(nullptr, last_committed);
@@ -875,23 +868,19 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
   process()->sink().ClearMessages();
 
   // Navigate, again.
-  controller().LoadURL(
-      kViewSourceUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  navigation = NavigationSimulatorImpl::CreateBrowserInitiated(kViewSourceUrl,
+                                                               contents());
+  navigation->set_did_create_new_entry(false);
+  navigation->Start();
   request = main_test_rfh()->frame_tree_node()->navigation_request();
   CHECK(request);
-  entry_id = controller().GetPendingEntry()->GetUniqueID();
-  contents()->GetMainFrame()->PrepareForCommit();
 
   // The same RenderViewHost should be reused.
+  navigation->ReadyToCommit();
   EXPECT_FALSE(contents()->GetPendingMainFrame());
   EXPECT_EQ(last_rfh, contents()->GetMainFrame());
 
-  // The renderer sends a commit.
-  contents()->GetMainFrame()->SimulateCommitProcessed(
-      request->navigation_handle()->GetNavigationId(),
-      true /* was_successful */);
-  contents()->GetMainFrame()->SendNavigateWithTransition(
-      entry_id, false, kUrl, ui::PAGE_TRANSITION_TYPED);
+  navigation->Commit();
   EXPECT_EQ(1, controller().GetLastCommittedEntryIndex());
   EXPECT_FALSE(controller().GetPendingEntry());
 

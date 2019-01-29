@@ -127,10 +127,10 @@ class NavigationSimulator {
       const GURL& original_url,
       RenderFrameHost* render_frame_host);
 
-  // Creates a NavigationSimulator for an already-started browser initiated
-  // navigation via LoadURL / Reload / GoToOffset. Can be used to drive the
-  // navigation to completion.
-  static std::unique_ptr<NavigationSimulator> CreateFromPendingBrowserInitiated(
+  // Creates a NavigationSimulator for an already-started navigation via
+  // LoadURL / Reload / GoToOffset / history.GoBack() scripts, etc. Can be used
+  // to drive the navigation to completion.
+  static std::unique_ptr<NavigationSimulator> CreateFromPending(
       WebContents* contents);
 
   virtual ~NavigationSimulator() {}
