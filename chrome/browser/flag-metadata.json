@@ -137,6 +137,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "arc-graphics-buffer-visualization-tool",
+    "owners": [ "khmel" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "arc-native-bridge-experiment",
     "owners": [ "levarum@google.com" ],
     "expiry_milestone": 76

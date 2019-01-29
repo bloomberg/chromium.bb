@@ -723,6 +723,12 @@
         <include name="IDR_SMART_DIM_EXAMPLE_PREPROCESSOR_CONFIG_PB" file="chromeos\power\ml\smart_dim\example_preprocessor_config.pb" type="BINDATA" />
         <include name="IDR_SMART_DIM_LITE_EXAMPLE_PREPROCESSOR_CONFIG_PB" file="chromeos\power\ml\smart_dim\lite_example_preprocessor_config.pb" type="BINDATA" />
       </if>
+      <if expr="chromeos">
+        <include name="IDR_ARC_GRAPHICS_TRACING_HTML" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.html" compress="gzip" type="BINDATA"/>
+        <include name="IDR_ARC_GRAPHICS_TRACING_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ARC_GRAPHICS_TRACING_UI_JS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing_ui.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ARC_GRAPHICS_TRACING_CSS" file="resources\chromeos\arc_graphics_tracing\arc_graphics_tracing.css" compress="gzip" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
