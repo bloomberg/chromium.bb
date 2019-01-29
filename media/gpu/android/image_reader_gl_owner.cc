@@ -60,10 +60,16 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
         texture_owner_(std::move(texture_owner)),
         image_(image) {}
   ~ScopedHardwareBufferImpl() override {
-    texture_owner_->ReleaseRefOnImage(image_);
+    texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
+  }
+
+  void SetReadFence(base::ScopedFD fence_fd) final {
+    DCHECK(!read_fence_.is_valid());
+    read_fence_ = std::move(fence_fd);
   }
 
  private:
+  base::ScopedFD read_fence_;
   scoped_refptr<ImageReaderGLOwner> texture_owner_;
   AImage* image_;
 };
@@ -292,35 +298,42 @@ ImageReaderGLOwner::GetAHardwareBuffer() {
   auto fence_fd = base::ScopedFD(HANDLE_EINTR(dup(current_image_fence_.get())));
 
   // Add a ref that the caller will release.
-  auto it = external_image_refs_.find(current_image_);
-  if (it == external_image_refs_.end())
-    external_image_refs_[current_image_] = 1;
-  else
-    it->second++;
-
+  external_image_refs_[current_image_].count++;
   return std::make_unique<ScopedHardwareBufferImpl>(
       this, current_image_,
       base::android::ScopedHardwareBufferHandle::Create(buffer),
       std::move(fence_fd));
 }
 
-void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image) {
+void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image,
+                                           base::ScopedFD fence_fd) {
   auto it = external_image_refs_.find(image);
   DCHECK(it != external_image_refs_.end());
-  DCHECK_GT(it->second, 0u);
-  it->second--;
 
-  if (it->second > 0)
+  auto& image_ref = it->second;
+  DCHECK_GT(image_ref.count, 0u);
+  image_ref.count--;
+
+  // TODO(khushalsagar): We should probably merge this fence with any
+  // pre-existing fence, and there are also a couple of other cases that are
+  // being ignored here (delete image async if it is the |current_image| using
+  // this fence, combining display compositor fence with the |fence_fd| here).
+  // But all of this is going to be automagically fixed with SharedImages, so
+  // need to do the proper thing once media switches to that.
+  image_ref.fence_fd = std::move(fence_fd);
+
+  if (image_ref.count > 0)
     return;
+
+  // Delete the image if it has no pending refs and it is not the current image.
+  if (image != current_image_) {
+    if (image_ref.fence_fd.is_valid())
+      loader_.AImage_deleteAsync(image, image_ref.fence_fd.release());
+    else
+      loader_.AImage_delete(image);
+  }
+
   external_image_refs_.erase(it);
-
-  if (image == current_image_)
-    return;
-
-  // No refs on the image. If it is no longer current, delete it. Note that this
-  // can be deleted synchronously here since the caller ensures that any pending
-  // GPU work for the image is finished before marking it for release.
-  loader_.AImage_delete(image);
 }
 
 void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
@@ -396,5 +409,11 @@ void ImageReaderGLOwner::WaitForFrameAvailable() {
              << "ms";
   }
 }
+
+ImageReaderGLOwner::ImageRef::ImageRef() = default;
+ImageReaderGLOwner::ImageRef::~ImageRef() = default;
+ImageReaderGLOwner::ImageRef::ImageRef(ImageRef&& other) = default;
+ImageReaderGLOwner::ImageRef& ImageReaderGLOwner::ImageRef::operator=(
+    ImageRef&& other) = default;
 
 }  // namespace media

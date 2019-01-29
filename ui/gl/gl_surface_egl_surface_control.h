@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_handle.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/gl/android/android_surface_control_compat.h"
@@ -25,7 +26,7 @@ class ScopedHardwareBufferFenceSync;
 
 namespace gl {
 
-class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
+class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
  public:
   explicit GLSurfaceEGLSurfaceControl(
       ANativeWindow* window,
@@ -33,7 +34,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
 
   // GLSurface implementation.
   int GetBufferCount() const override;
-  bool Initialize(gl::GLSurfaceFormat format) override;
+  bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -50,10 +51,10 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
       const SwapCompletionCallback& completion_callback,
       const PresentationCallback& presentation_callback) override;
   gfx::Size GetSize() override;
-  bool OnMakeCurrent(gl::GLContext* context) override;
+  bool OnMakeCurrent(GLContext* context) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
-                            gl::GLImage* image,
+                            GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
@@ -85,11 +86,20 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
     gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
     bool opaque = true;
 
-    gl::SurfaceControl::Surface surface;
+    scoped_refptr<SurfaceControl::Surface> surface;
   };
 
-  using ResourceRefs = std::vector<
-      std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>>;
+  struct ResourceRef {
+    ResourceRef();
+    ~ResourceRef();
+
+    ResourceRef(ResourceRef&& other);
+    ResourceRef& operator=(ResourceRef&& other);
+
+    scoped_refptr<SurfaceControl::Surface> surface;
+    std::unique_ptr<base::android::ScopedHardwareBufferFenceSync> scoped_buffer;
+  };
+  using ResourceRefs = base::flat_map<ASurfaceControl*, ResourceRef>;
 
   void CommitPendingTransaction(
       const SwapCompletionCallback& completion_callback,
@@ -97,13 +107,14 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
 
   // Called on the |gpu_task_runner_| when a transaction is acked by the
   // framework.
-  void OnTransactionAckOnGpuThread(SwapCompletionCallback completion_callback,
-                                   PresentationCallback presentation_callback,
-                                   ResourceRefs released_resources,
-                                   int32_t present_fence);
+  void OnTransactionAckOnGpuThread(
+      SwapCompletionCallback completion_callback,
+      PresentationCallback presentation_callback,
+      ResourceRefs released_resources,
+      SurfaceControl::TransactionStats transaction_stats);
 
   // Holds the surface state changes made since the last call to SwapBuffers.
-  base::Optional<gl::SurfaceControl::Transaction> pending_transaction_;
+  base::Optional<SurfaceControl::Transaction> pending_transaction_;
 
   // The list of Surfaces and the corresponding state. The initial
   // |pending_surfaces_count_| surfaces in this list are surfaces with state
@@ -128,7 +139,10 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public gl::GLSurfaceEGL {
 
   // The root surface tied to the ANativeWindow that places the content of this
   // GLSurface in the java view tree.
-  gl::SurfaceControl::Surface root_surface_;
+  scoped_refptr<SurfaceControl::Surface> root_surface_;
+
+  // The last context made current with this surface.
+  scoped_refptr<GLContext> context_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;

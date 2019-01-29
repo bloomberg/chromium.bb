@@ -63,7 +63,10 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   bool MaybeDeleteCurrentImage();
 
   void EnsureTexImageBound();
-  void ReleaseRefOnImage(AImage* image);
+
+  // Releases an external ref on the image, with the fence that must be signaled
+  // before the |image| can be resued by the AImageReader.
+  void ReleaseRefOnImage(AImage* image, base::ScopedFD fence_fd);
 
   // AImageReader instance
   AImageReader* image_reader_;
@@ -80,7 +83,19 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   // A map consisting of pending external refs on an AImage. If an image has any
   // external refs, it is automatically released once the ref-count is 0 and the
   // image is no longer current.
-  using AImageRefMap = base::flat_map<AImage*, size_t>;
+  struct ImageRef {
+    ImageRef();
+    ~ImageRef();
+
+    ImageRef(ImageRef&& other);
+    ImageRef& operator=(ImageRef&& other);
+
+    size_t count = 0u;
+    base::ScopedFD fence_fd;
+
+    DISALLOW_COPY_AND_ASSIGN(ImageRef);
+  };
+  using AImageRefMap = base::flat_map<AImage*, ImageRef>;
   AImageRefMap external_image_refs_;
 
   // reference to the class instance which is used to dynamically
