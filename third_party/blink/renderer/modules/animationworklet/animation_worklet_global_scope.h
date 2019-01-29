@@ -44,8 +44,12 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   void Dispose() override;
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 
-  // Invokes the |animate| function of all of its active animators.
-  std::unique_ptr<AnimationWorkletOutput> Mutate(const AnimationWorkletInput&);
+  void UpdateAnimatorsList(const AnimationWorkletInput&);
+
+  // Invokes the |animate| function of selected animators.
+  void UpdateAnimators(const AnimationWorkletInput&,
+                       AnimationWorkletOutput*,
+                       bool (*predicate)(Animator*));
 
   // Registers a animator definition with the given name and constructor.
   void registerAnimator(const String& name,

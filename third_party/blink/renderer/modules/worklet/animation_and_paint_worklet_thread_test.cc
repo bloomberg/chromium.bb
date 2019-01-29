@@ -40,7 +40,7 @@ class TestAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
  public:
   TestAnimationWorkletProxyClient()
       : AnimationWorkletProxyClient(0, nullptr, nullptr, nullptr, nullptr){};
-  void SetGlobalScope(WorkletGlobalScope*) override {}
+  void AddGlobalScope(WorkletGlobalScope*) override {}
 };
 
 }  // namespace

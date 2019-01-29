@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 
-#include "base/metrics/histogram_macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -80,21 +78,17 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
   return animator;
 }
 
-std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
-    const AnimationWorkletInput& mutator_input) {
-  base::ElapsedTimer timer;
+void AnimationWorkletGlobalScope::UpdateAnimatorsList(
+    const AnimationWorkletInput& input) {
   DCHECK(IsContextThread());
 
   ScriptState* script_state = ScriptController()->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  std::unique_ptr<AnimationWorkletOutput> result =
-      std::make_unique<AnimationWorkletOutput>();
-
-  for (const auto& worklet_animation_id : mutator_input.removed_animations)
+  for (const auto& worklet_animation_id : input.removed_animations)
     animators_.erase(worklet_animation_id.animation_id);
 
-  for (const auto& animation : mutator_input.added_and_updated_animations) {
+  for (const auto& animation : input.added_and_updated_animations) {
     int id = animation.worklet_animation_id.animation_id;
     DCHECK(!animators_.Contains(id));
     const String name =
@@ -104,44 +98,54 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
     WorkletAnimationOptions* options =
         static_cast<WorkletAnimationOptions*>(animation.options.get());
 
-    Animator* animator =
-        CreateAnimatorFor(id, name, options, animation.num_effects);
-    if (!animator)
-      continue;
-
-    UpdateAnimation(animator, script_state, animation.worklet_animation_id,
-                    animation.current_time, result.get());
+    CreateAnimatorFor(id, name, options, animation.num_effects);
   }
+}
 
-  for (const auto& animation : mutator_input.updated_animations) {
+void AnimationWorkletGlobalScope::UpdateAnimators(
+    const AnimationWorkletInput& input,
+    AnimationWorkletOutput* output,
+    bool (*predicate)(Animator*)) {
+  DCHECK(IsContextThread());
+
+  ScriptState* script_state = ScriptController()->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
+  for (const auto& animation : input.added_and_updated_animations) {
     int id = animation.worklet_animation_id.animation_id;
     Animator* animator = animators_.at(id);
     // We don't try to create an animator if there isn't any.
-    if (!animator)
+    // This can only happen if constructing an animator instance has failed
+    // e.g., the constructor throws an exception.
+    if (!animator || !predicate(animator))
       continue;
 
     UpdateAnimation(animator, script_state, animation.worklet_animation_id,
-                    animation.current_time, result.get());
+                    animation.current_time, output);
   }
 
-  for (const auto& worklet_animation_id : mutator_input.peeked_animations) {
+  for (const auto& animation : input.updated_animations) {
+    int id = animation.worklet_animation_id.animation_id;
+    Animator* animator = animators_.at(id);
+    // We don't try to create an animator if there isn't any.
+    if (!animator || !predicate(animator))
+      continue;
+
+    UpdateAnimation(animator, script_state, animation.worklet_animation_id,
+                    animation.current_time, output);
+  }
+
+  for (const auto& worklet_animation_id : input.peeked_animations) {
     int id = worklet_animation_id.animation_id;
     Animator* animator = animators_.at(id);
-    if (!animator)
+    if (!animator || !predicate(animator))
       continue;
 
     AnimationWorkletDispatcherOutput::AnimationState animation_output(
         worklet_animation_id);
     animation_output.local_times = animator->GetLocalTimes();
-    result->animations.push_back(animation_output);
+    output->animations.push_back(animation_output);
   }
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Animation.AnimationWorklet.GlobalScope.MutateDuration", timer.Elapsed(),
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(100), 50);
-
-  return result;
 }
 
 void AnimationWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {
@@ -150,7 +154,7 @@ void AnimationWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {
 
   if (AnimationWorkletProxyClient* proxy_client =
           AnimationWorkletProxyClient::From(Clients())) {
-    proxy_client->SetGlobalScope(this);
+    proxy_client->AddGlobalScope(this);
     registered_ = true;
   }
 }
@@ -194,6 +198,8 @@ void AnimationWorkletGlobalScope::registerAnimator(
   AnimatorDefinition* definition =
       MakeGarbageCollected<AnimatorDefinition>(isolate, constructor, animate);
 
+  // TODO(https://crbug.com/923063): Ensure worklet definitions are compatible
+  // across global scopes.
   animator_definitions_.Set(name, definition);
   // TODO(yigu): Currently one animator name is synced back per registration.
   // Eventually all registered names should be synced in batch once a module

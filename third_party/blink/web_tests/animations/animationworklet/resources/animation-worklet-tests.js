@@ -54,4 +54,3 @@ function runAnimationWorkletTests() {
 
   runTests(testcases);
 }
-
