@@ -756,10 +756,6 @@ interface NetworkContext {
   //
   // All outstanding requests are cancelled if the NetworkContext is destroyed.
   // Such requests will receive ERR_FAILED via |response_client|.
-  //
-  // TODO(crbug.com/821021): Consider deleting this if most/all usage goes
-  // through CreateHostResolver, but most likely most usage except proxy
-  // resolver will directly use this method.
   ResolveHost(HostPortPair host,
               ResolveHostParameters? optional_parameters,
               ResolveHostClient response_client);
