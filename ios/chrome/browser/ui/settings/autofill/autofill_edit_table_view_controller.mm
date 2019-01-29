@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_edit_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller.h"
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
-#import "ios/chrome/browser/ui/settings/autofill_edit_table_view_controller+protected.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller+protected.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

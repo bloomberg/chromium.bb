@@ -205,6 +205,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/settings/autofill",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
