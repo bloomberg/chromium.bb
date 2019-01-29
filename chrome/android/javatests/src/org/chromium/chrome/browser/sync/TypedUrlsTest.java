@@ -138,7 +138,8 @@ public class TypedUrlsTest {
                                                      SyncEnums.PageTransition.TYPED.getNumber())
                                              .build())
                         .build();
-        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(url /* name */, specifics);
+        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(
+                url /* nonUniqueName */, url /* clientTag */, specifics);
     }
 
     private List<TypedUrl> getClientTypedUrls() throws JSONException {

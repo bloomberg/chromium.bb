@@ -200,10 +200,12 @@ public class OpenTabsTest {
     private void addFakeServerTabs(String clientName, String... urls) throws InterruptedException {
         String tag = makeSessionTag();
         EntitySpecifics header = makeSessionEntity(tag, clientName, urls.length);
-        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(tag, header);
+        mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(
+                "" /* nonUniqueName */, tag /* clientTag */, header);
         for (int i = 0; i < urls.length; i++) {
             EntitySpecifics tab = makeTabEntity(tag, urls[i], i);
-            mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(tag + " " + i, tab);
+            mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(
+                    "" /* nonUniqueName */, tag + " " + i /* clientTag */, tab);
         }
     }
 

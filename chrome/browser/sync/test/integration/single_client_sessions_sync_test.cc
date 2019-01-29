@@ -550,7 +550,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
 
   for (const sync_pb::EntitySpecifics& specifics : {tab1, tab2, header}) {
     GetFakeServer()->InjectEntity(
-        syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+        syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+            /*non_unique_name=*/"",
             sync_sessions::SessionStore::GetClientTag(specifics.session()),
             specifics,
             /*creation_time=*/syncer::TimeToProtoTime(kLastModifiedTime),
@@ -583,8 +584,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CorruptInitialForeignTab) {
   specifics.mutable_session()->set_tab_node_id(-1);
 
   GetFakeServer()->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          "someclienttag", specifics,
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          "somename", "someclienttag", specifics,
           /*creation_time=*/0,
           /*last_modified_time=*/0));
 
@@ -607,8 +608,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CorruptForeignTabUpdate) {
   specifics.mutable_session()->set_tab_node_id(-1);
 
   GetFakeServer()->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          "someclienttag", specifics,
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          "somename", "someclienttag", specifics,
           /*creation_time=*/0,
           /*last_modified_time=*/0));
 

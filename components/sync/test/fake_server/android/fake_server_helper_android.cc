@@ -138,7 +138,8 @@ void FakeServerHelperAndroid::InjectUniqueClientEntity(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jlong fake_server,
-    const JavaParamRef<jstring>& name,
+    const JavaParamRef<jstring>& non_unique_name,
+    const JavaParamRef<jstring>& client_tag,
     const JavaParamRef<jbyteArray>& serialized_entity_specifics) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
@@ -149,9 +150,10 @@ void FakeServerHelperAndroid::InjectUniqueClientEntity(
 
   int64_t now = syncer::TimeToProtoTime(base::Time::Now());
   fake_server_ptr->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          base::android::ConvertJavaStringToUTF8(env, name), entity_specifics,
-          /*creation_time=*/now, /*last_modified_time=*/now));
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          base::android::ConvertJavaStringToUTF8(env, non_unique_name),
+          base::android::ConvertJavaStringToUTF8(env, client_tag),
+          entity_specifics, /*creation_time=*/now, /*last_modified_time=*/now));
 }
 
 void FakeServerHelperAndroid::SetWalletData(
