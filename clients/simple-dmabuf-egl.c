@@ -66,6 +66,7 @@
 /* Possible options that affect the displayed image */
 #define OPT_IMMEDIATE     (1 << 0)  /* create wl_buffer immediately */
 #define OPT_IMPLICIT_SYNC (1 << 1)  /* force implicit sync */
+#define OPT_MANDELBROT    (1 << 2)  /* render mandelbrot */
 
 #define BUFFER_FORMAT DRM_FORMAT_XRGB8888
 #define MAX_BUFFER_PLANES 4
@@ -147,6 +148,7 @@ struct window {
 		GLuint color;
 		GLuint offset_uniform;
 	} gl;
+	bool render_mandelbrot;
 };
 
 static sig_atomic_t running = 1;
@@ -485,6 +487,40 @@ static const char *frag_shader_text =
 	"  gl_FragColor = v_color;\n"
 	"}\n";
 
+static const char *vert_shader_mandelbrot_text =
+	"uniform float offset;\n"
+	"attribute vec4 pos;\n"
+	"varying vec2 v_pos;\n"
+	"void main() {\n"
+	"  v_pos = pos.xy;\n"
+	"  gl_Position = pos + vec4(offset, offset, 0.0, 0.0);\n"
+	"}\n";
+
+
+/* Mandelbrot set shader using the escape time algorithm. */
+static const char *frag_shader_mandelbrot_text =
+	"precision mediump float;\n"
+	"varying vec2 v_pos;\n"
+	"void main() {\n"
+	"  const int max_iteration = 500;\n"
+	"  // Scale and translate position to get a nice mandelbrot drawing for\n"
+	"  // the used v_pos x and y range (-0.5 to 0.5).\n"
+	"  float x0 = 3.0 * v_pos.x - 0.5;\n"
+	"  float y0 = 3.0 * v_pos.y;\n"
+	"  float x = 0.0;\n"
+	"  float y = 0.0;\n"
+	"  int iteration = 0;\n"
+	"  while (x * x + y * y <= 4.0 && iteration < max_iteration) {\n"
+	"    float xtemp = x * x - y * y + x0;\n"
+	"    y = 2.0 * x * y + y0;\n"
+	"    x = xtemp;\n"
+	"    ++iteration;\n"
+	"  }\n"
+	"  float red = iteration == max_iteration ?\n"
+	"              0.0 : 1.0 - fract(float(iteration) / 20.0);\n"
+	"  gl_FragColor = vec4(red, 0.0, 0.0, 1.0);\n"
+	"}\n";
+
 static GLuint
 create_shader(const char *source, GLenum shader_type)
 {
@@ -536,8 +572,14 @@ create_and_link_program(GLuint vert, GLuint frag)
 static bool
 window_set_up_gl(struct window *window)
 {
-	GLuint vert = create_shader(vert_shader_text, GL_VERTEX_SHADER);
-	GLuint frag = create_shader(frag_shader_text, GL_FRAGMENT_SHADER);
+	GLuint vert = create_shader(
+		window->render_mandelbrot ? vert_shader_mandelbrot_text :
+					    vert_shader_text,
+		GL_VERTEX_SHADER);
+	GLuint frag = create_shader(
+		window->render_mandelbrot ? frag_shader_mandelbrot_text :
+					    frag_shader_text,
+		GL_FRAGMENT_SHADER);
 
 	window->gl.program = create_and_link_program(vert, frag);
 
@@ -582,7 +624,7 @@ destroy_window(struct window *window)
 }
 
 static struct window *
-create_window(struct display *display, int width, int height)
+create_window(struct display *display, int width, int height, int opts)
 {
 	struct window *window;
 	int i;
@@ -650,6 +692,8 @@ create_window(struct display *display, int width, int height)
 		if (ret < 0)
 			goto error;
 	}
+
+	window->render_mandelbrot = opts & OPT_MANDELBROT;
 
 	if (!window_set_up_gl(window))
 		goto error;
@@ -756,6 +800,63 @@ render(struct window *window, struct buffer *buffer)
 }
 
 static void
+render_mandelbrot(struct window *window, struct buffer *buffer)
+{
+	/* Complete a movement iteration in 5000 ms. */
+	static const uint64_t iteration_ms = 5000;
+	/* Split drawing in a square grid consisting of grid_side * grid_side
+	 * cells. */
+	static const int grid_side = 4;
+	GLfloat norm_cell_side = 1.0 / grid_side;
+	int num_cells = grid_side * grid_side;
+	GLfloat offset;
+	struct timeval tv;
+	uint64_t time_ms;
+	int i;
+
+	gettimeofday(&tv, NULL);
+	time_ms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+
+	/* Split time_ms in repeating windows of [0, iteration_ms) and map them
+	 * to offsets in the [-0.5, 0.5) range. */
+	offset = (time_ms % iteration_ms) / (float) iteration_ms - 0.5;
+
+	/* Direct all GL draws to the buffer through the FBO */
+	glBindFramebuffer(GL_FRAMEBUFFER, buffer->gl_fbo);
+
+	glViewport(0, 0, window->width, window->height);
+
+	glUniform1f(window->gl.offset_uniform, offset);
+
+	glClearColor(0.6, 0.6, 0.6, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	for (i = 0; i < num_cells; ++i) {
+		/* Calculate the vertex coordinates of the current grid cell. */
+		int row = i / grid_side;
+		int col = i % grid_side;
+		GLfloat left = -0.5 + norm_cell_side * col;
+		GLfloat right = left + norm_cell_side;
+		GLfloat top = 0.5 - norm_cell_side * row;
+		GLfloat bottom = top - norm_cell_side;
+		GLfloat verts[4][2] = {
+			{ left,  bottom },
+			{ left,  top },
+			{ right, bottom },
+			{ right, top }
+		};
+
+		/* ... and draw it. */
+		glVertexAttribPointer(window->gl.pos, 2, GL_FLOAT, GL_FALSE, 0, verts);
+		glEnableVertexAttribArray(window->gl.pos);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+		glDisableVertexAttribArray(window->gl.pos);
+	}
+}
+
+static void
 buffer_fenced_release(void *data,
 		      struct zwp_linux_buffer_release_v1 *release,
                       int32_t fence)
@@ -836,7 +937,10 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	if (buffer->release_fence_fd >= 0)
 		wait_for_buffer_release_fence(buffer);
 
-	render(window, buffer);
+	if (window->render_mandelbrot)
+		render_mandelbrot(window, buffer);
+	else
+		render(window, buffer);
 
 	if (window->display->use_explicit_sync) {
 		int fence_fd = create_egl_fence_fd(window);
@@ -1295,7 +1399,9 @@ print_usage_and_exit(void)
 		"\n\t\tthe window size in pixels (default: 256)\n"
 		"\t'-e,--explicit-sync=<>'"
 		"\n\t\t0 to disable explicit sync, "
-		"\n\t\t1 to enable explicit sync (default: 1)\n");
+		"\n\t\t1 to enable explicit sync (default: 1)\n"
+		"\t'-m,--mandelbrot'"
+		"\n\t\trender a mandelbrot set with multiple draw calls\n");
 	exit(0);
 }
 
@@ -1328,12 +1434,13 @@ main(int argc, char **argv)
 		{"drm-render-node",  required_argument, 0,  'd' },
 		{"size",	     required_argument, 0,  's' },
 		{"explicit-sync",    required_argument, 0,  'e' },
+		{"mandelbrot",       no_argument,	0,  'm' },
 		{"help",             no_argument      , 0,  'h' },
 		{0, 0, 0, 0}
 	};
 
-	while ((c = getopt_long(argc, argv, "hi:d:s:e:",
-				  long_options, &option_index)) != -1) {
+	while ((c = getopt_long(argc, argv, "hi:d:s:e:m",
+				long_options, &option_index)) != -1) {
 		switch (c) {
 		case 'i':
 			if (is_true(optarg))
@@ -1349,6 +1456,9 @@ main(int argc, char **argv)
 			if (!is_true(optarg))
 				opts |= OPT_IMPLICIT_SYNC;
 			break;
+		case 'm':
+			opts |= OPT_MANDELBROT;
+			break;
 		default:
 			print_usage_and_exit();
 		}
@@ -1357,7 +1467,7 @@ main(int argc, char **argv)
 	display = create_display(drm_render_node, opts);
 	if (!display)
 		return 1;
-	window = create_window(display, window_size, window_size);
+	window = create_window(display, window_size, window_size, opts);
 	if (!window)
 		return 1;
 
