@@ -271,18 +271,9 @@ class SharedImageRepresentationSkiaVkAHB
     SharedImageBackingAHB* ahb_backing =
         static_cast<SharedImageBackingAHB*>(backing);
     DCHECK(ahb_backing);
-    SharedContextState* context_state = ahb_backing->GetContextState();
-    DCHECK(context_state);
-    DCHECK(context_state->vk_context_provider());
-
-    vk_device_ = context_state->vk_context_provider()
-                     ->GetDeviceQueue()
-                     ->GetVulkanDevice();
-    vk_phy_device_ = context_state->vk_context_provider()
-                         ->GetDeviceQueue()
-                         ->GetVulkanPhysicalDevice();
-    vk_implementation_ =
-        context_state->vk_context_provider()->GetVulkanImplementation();
+    context_state_ = ahb_backing->GetContextState();
+    DCHECK(context_state_);
+    DCHECK(context_state_->vk_context_provider());
   }
 
   ~SharedImageRepresentationSkiaVkAHB() override { DCHECK(!read_surface_); }
@@ -306,18 +297,20 @@ class SharedImageRepresentationSkiaVkAHB
     // Synchronise the read access with the GL writes.
     base::ScopedFD sync_fd = ahb_backing()->TakeGLWriteSyncFd();
 
+    VkSemaphore semaphore = VK_NULL_HANDLE;
     // We need to wait only if there is a valid fd.
     if (sync_fd.is_valid()) {
-      // Do a client side wait for now.
-      // TODO(vikassoni): There seems to be a skia bug -
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=916812 currently
-      // where wait() on the sk surface crashes. Remove the sync_wait() and
-      // apply CL mentioned in the bug when the issue is fixed.
-      static const int InfiniteSyncWaitTimeout = -1;
-      if (sync_wait(sync_fd.get(), InfiniteSyncWaitTimeout) < 0) {
-        LOG(ERROR) << "Failed while waiting on GL Write sync fd";
+      // Import the above sync fd into a semaphore.
+      if (!vk_implementation()->ImportSemaphoreFdKHR(
+              vk_device(), std::move(sync_fd), &semaphore)) {
         return nullptr;
       }
+
+      // Submit wait semaphore to the queue. Note that Skia uses the same queue
+      // exposed by vk_queue(), so this will work due to Vulkan queue ordering.
+      if (!vk_implementation()->SubmitWaitSemaphore(vk_queue(), semaphore))
+        vkDestroySemaphore(vk_device(), semaphore, nullptr);
+      return nullptr;
     }
 
     // Create a VkImage and import AHB.
@@ -325,8 +318,8 @@ class SharedImageRepresentationSkiaVkAHB
     VkImageCreateInfo vk_image_info;
     VkDeviceMemory vk_device_memory;
     VkDeviceSize mem_allocation_size;
-    if (!vk_implementation_->CreateVkImageAndImportAHB(
-            vk_device_, vk_phy_device_, size(), ahb_backing()->GetAhbHandle(),
+    if (!vk_implementation()->CreateVkImageAndImportAHB(
+            vk_device(), vk_phy_device(), size(), ahb_backing()->GetAhbHandle(),
             &vk_image, &vk_image_info, &vk_device_memory,
             &mem_allocation_size)) {
       return nullptr;
@@ -345,8 +338,8 @@ class SharedImageRepresentationSkiaVkAHB
     auto promise_texture = SkPromiseImageTexture::Make(
         GrBackendTexture(size().width(), size().height(), vk_info));
     if (!promise_texture) {
-      vkDestroyImage(vk_device_, vk_image, nullptr);
-      vkFreeMemory(vk_device_, vk_device_memory, nullptr);
+      vkDestroyImage(vk_device(), vk_image, nullptr);
+      vkFreeMemory(vk_device(), vk_device_memory, nullptr);
       return nullptr;
     }
 
@@ -354,6 +347,18 @@ class SharedImageRepresentationSkiaVkAHB
     // EndReadAccess. Also make sure previous read_surface_ have been consumed
     // by EndReadAccess() call.
     read_surface_ = sk_surface;
+
+    // TODO(vikassoni): Need to do better semaphore cleanup management. Waiting
+    // on device to be idle to delete the semaphore is costly. Instead use a
+    // fence to get signal when semaphore submission is done.
+    if (semaphore != VK_NULL_HANDLE) {
+      VkResult result = vkQueueWaitIdle(vk_queue());
+      if (result != VK_SUCCESS) {
+        LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
+        return nullptr;
+      }
+      vkDestroySemaphore(vk_device(), semaphore, nullptr);
+    }
     return promise_texture;
   }
 
@@ -372,10 +377,9 @@ class SharedImageRepresentationSkiaVkAHB
     sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     sem_info.pNext = &export_info;
     sem_info.flags = 0;
-    bool result =
-        vkCreateSemaphore(vk_device_, &sem_info, nullptr, &vk_semaphore);
+    VkResult result =
+        vkCreateSemaphore(vk_device(), &sem_info, nullptr, &vk_semaphore);
     if (result != VK_SUCCESS) {
-      // TODO(vikassoni): add more error handling rather than just return ?
       LOG(ERROR) << "vkCreateSemaphore failed";
       read_surface_ = nullptr;
       return;
@@ -388,7 +392,7 @@ class SharedImageRepresentationSkiaVkAHB
     // instruct the GPU to wait on any of the semaphores.
     if (read_surface_->flushAndSignalSemaphores(1, &gr_semaphore) ==
         GrSemaphoresSubmitted::kNo) {
-      vkDestroySemaphore(vk_device_, vk_semaphore, nullptr);
+      vkDestroySemaphore(vk_device(), vk_semaphore, nullptr);
       read_surface_ = nullptr;
       return;
     }
@@ -400,7 +404,7 @@ class SharedImageRepresentationSkiaVkAHB
     // GPU. The caller must delete the semaphores created.
     // Export a sync fd from the semaphore.
     base::ScopedFD sync_fd;
-    vk_implementation_->GetSemaphoreFdKHR(vk_device_, vk_semaphore, &sync_fd);
+    vk_implementation()->GetSemaphoreFdKHR(vk_device(), vk_semaphore, &sync_fd);
 
     // pass this sync fd to the backing.
     ahb_backing()->SetVkReadSyncFd(std::move(sync_fd));
@@ -411,8 +415,12 @@ class SharedImageRepresentationSkiaVkAHB
     // in a STL queue instead of destroying it. Later use a fence to check if
     // the batch that refers the semaphore has completed execution. Delete the
     // semaphore once the fence is signalled.
-    vkDeviceWaitIdle(vk_device_);
-    vkDestroySemaphore(vk_device_, vk_semaphore, nullptr);
+    result = vkQueueWaitIdle(vk_queue());
+    if (result != VK_SUCCESS) {
+      LOG(ERROR) << "vkQueueWaitIdle failed: " << result;
+      return;
+    }
+    vkDestroySemaphore(vk_device(), vk_semaphore, nullptr);
   }
 
  private:
@@ -420,10 +428,30 @@ class SharedImageRepresentationSkiaVkAHB
     return static_cast<SharedImageBackingAHB*>(backing());
   }
 
+  gpu::VulkanImplementation* vk_implementation() {
+    return context_state_->vk_context_provider()->GetVulkanImplementation();
+  }
+
+  VkDevice vk_device() {
+    return context_state_->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetVulkanDevice();
+  }
+
+  VkPhysicalDevice vk_phy_device() {
+    return context_state_->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetVulkanPhysicalDevice();
+  }
+
+  VkQueue vk_queue() {
+    return context_state_->vk_context_provider()
+        ->GetDeviceQueue()
+        ->GetVulkanQueue();
+  }
+
   SkSurface* read_surface_ = nullptr;
-  gpu::VulkanImplementation* vk_implementation_ = nullptr;
-  VkDevice vk_device_ = VK_NULL_HANDLE;
-  VkPhysicalDevice vk_phy_device_ = VK_NULL_HANDLE;
+  SharedContextState* context_state_ = nullptr;
 };
 
 SharedImageBackingAHB::SharedImageBackingAHB(
