@@ -27,7 +27,7 @@ class MockDelegate : public QpackEncoderStreamReceiver::Delegate {
   MOCK_METHOD2(OnInsertWithoutNameReference,
                void(QuicStringPiece name, QuicStringPiece value));
   MOCK_METHOD1(OnDuplicate, void(uint64_t index));
-  MOCK_METHOD1(OnDynamicTableSizeUpdate, void(uint64_t max_size));
+  MOCK_METHOD1(OnSetDynamicTableCapacity, void(uint64_t capacity));
   MOCK_METHOD1(OnErrorDetected, void(QuicStringPiece error_message));
 };
 
@@ -149,16 +149,16 @@ TEST_F(QpackEncoderStreamReceiverTest, DuplicateIndexTooLarge) {
   Decode(QuicTextUtils::HexDecode("1fffffffffffffffffffff"));
 }
 
-TEST_F(QpackEncoderStreamReceiverTest, DynamicTableSizeUpdate) {
-  // Small max size fits in prefix.
-  EXPECT_CALL(*delegate(), OnDynamicTableSizeUpdate(17));
-  // Large max size requires two extension bytes.
-  EXPECT_CALL(*delegate(), OnDynamicTableSizeUpdate(500));
+TEST_F(QpackEncoderStreamReceiverTest, SetDynamicTableCapacity) {
+  // Small capacity fits in prefix.
+  EXPECT_CALL(*delegate(), OnSetDynamicTableCapacity(17));
+  // Large capacity requires two extension bytes.
+  EXPECT_CALL(*delegate(), OnSetDynamicTableCapacity(500));
 
   Decode(QuicTextUtils::HexDecode("313fd503"));
 }
 
-TEST_F(QpackEncoderStreamReceiverTest, DynamicTableSizeUpdateMaxSizeTooLarge) {
+TEST_F(QpackEncoderStreamReceiverTest, SetDynamicTableCapacityTooLarge) {
   EXPECT_CALL(*delegate(), OnErrorDetected(Eq("Encoded integer too large.")));
 
   Decode(QuicTextUtils::HexDecode("3fffffffffffffffffffff"));

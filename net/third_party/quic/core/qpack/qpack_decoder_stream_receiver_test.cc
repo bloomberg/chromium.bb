@@ -20,7 +20,7 @@ class MockDelegate : public QpackDecoderStreamReceiver::Delegate {
  public:
   ~MockDelegate() override = default;
 
-  MOCK_METHOD1(OnTableStateSynchronize, void(uint64_t insert_count));
+  MOCK_METHOD1(OnInsertCountIncrement, void(uint64_t increment));
   MOCK_METHOD1(OnHeaderAcknowledgement, void(QuicStreamId stream_id));
   MOCK_METHOD1(OnStreamCancellation, void(QuicStreamId stream_id));
   MOCK_METHOD1(OnErrorDetected, void(QuicStringPiece error_message));
@@ -35,17 +35,17 @@ class QpackDecoderStreamReceiverTest : public QuicTest {
   StrictMock<MockDelegate> delegate_;
 };
 
-TEST_F(QpackDecoderStreamReceiverTest, TableStateSynchronize) {
-  EXPECT_CALL(delegate_, OnTableStateSynchronize(0));
+TEST_F(QpackDecoderStreamReceiverTest, InsertCountIncrement) {
+  EXPECT_CALL(delegate_, OnInsertCountIncrement(0));
   stream_.Decode(QuicTextUtils::HexDecode("00"));
 
-  EXPECT_CALL(delegate_, OnTableStateSynchronize(10));
+  EXPECT_CALL(delegate_, OnInsertCountIncrement(10));
   stream_.Decode(QuicTextUtils::HexDecode("0a"));
 
-  EXPECT_CALL(delegate_, OnTableStateSynchronize(63));
+  EXPECT_CALL(delegate_, OnInsertCountIncrement(63));
   stream_.Decode(QuicTextUtils::HexDecode("3f00"));
 
-  EXPECT_CALL(delegate_, OnTableStateSynchronize(200));
+  EXPECT_CALL(delegate_, OnInsertCountIncrement(200));
   stream_.Decode(QuicTextUtils::HexDecode("3f8901"));
 
   EXPECT_CALL(delegate_, OnErrorDetected(Eq("Encoded integer too large.")));
