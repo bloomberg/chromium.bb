@@ -55,22 +55,35 @@ class EmbeddedFocusClient : public client::FocusClient, public WindowObserver {
   }
 
   void FocusWindowImpl(Window* window) {
-    Window* previously_focused_window = focused_window_;
+    Window* lost_focus = focused_window_;
 
-    if (previously_focused_window)
-      previously_focused_window->RemoveObserver(this);
+    if (lost_focus)
+      lost_focus->RemoveObserver(this);
     focused_window_ = window;
     if (focused_window_)
       focused_window_->AddObserver(this);
 
     WindowTracker window_tracker;
-    if (previously_focused_window)
-      window_tracker.Add(previously_focused_window);
+    if (lost_focus)
+      window_tracker.Add(lost_focus);
+
     for (auto& observer : observers_) {
       observer.OnWindowFocused(
-          focused_window_, window_tracker.Contains(previously_focused_window)
-                               ? previously_focused_window
-                               : nullptr);
+          focused_window_,
+          window_tracker.Contains(lost_focus) ? lost_focus : nullptr);
+    }
+    if (window_tracker.Contains(lost_focus)) {
+      client::FocusChangeObserver* observer =
+          client::GetFocusChangeObserver(lost_focus);
+      if (observer)
+        observer->OnWindowFocused(focused_window_, lost_focus);
+    }
+    client::FocusChangeObserver* observer =
+        client::GetFocusChangeObserver(focused_window_);
+    if (observer) {
+      observer->OnWindowFocused(
+          focused_window_,
+          window_tracker.Contains(lost_focus) ? lost_focus : nullptr);
     }
   }
 
