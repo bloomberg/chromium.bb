@@ -44,15 +44,15 @@ class CC_ANIMATION_EXPORT ElementAnimations
     : public AnimationTarget,
       public base::RefCounted<ElementAnimations> {
  public:
-  static scoped_refptr<ElementAnimations> Create();
+  static scoped_refptr<ElementAnimations> Create(AnimationHost* host,
+                                                 ElementId element_id);
+
+  bool AnimationHostIs(AnimationHost* host) const {
+    return animation_host_ == host;
+  }
+  void ClearAnimationHost() { animation_host_ = nullptr; }
 
   ElementId element_id() const { return element_id_; }
-  void SetElementId(ElementId element_id);
-
-  // Parent AnimationHost.
-  AnimationHost* animation_host() { return animation_host_; }
-  const AnimationHost* animation_host() const { return animation_host_; }
-  void SetAnimationHost(AnimationHost* host);
 
   void InitAffectedElementTypes();
   void ClearAffectedElementTypes(const PropertyToElementIdMap& element_id_map);
@@ -176,8 +176,12 @@ class CC_ANIMATION_EXPORT ElementAnimations
  private:
   friend class base::RefCounted<ElementAnimations>;
 
-  ElementAnimations();
+  ElementAnimations(AnimationHost* host, ElementId element_id);
   ~ElementAnimations() override;
+
+  // Parent AnimationHost.
+  AnimationHost* animation_host() { return animation_host_; }
+  const AnimationHost* animation_host() const { return animation_host_; }
 
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters,
