@@ -113,6 +113,8 @@
     },
     {
       name: "AutoPictureInPicture",
+      depends_on: ["PictureInPictureAPI"],
+      origin_trial_feature_name: "AutoPictureInPicture",
       status: "experimental",
     },
     {
