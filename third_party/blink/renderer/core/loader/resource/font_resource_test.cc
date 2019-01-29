@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -34,6 +36,18 @@ class FontResourceTest : public testing::Test {
         ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
+};
+
+class CacheAwareFontResourceTest : public FontResourceTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebFontsCacheAwareTimeoutAdaption);
+    FontResourceTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests if ResourceFetcher works fine with FontResource that requires defered
@@ -98,15 +112,12 @@ TEST_F(FontResourceTest,
 }
 
 // Tests if cache-aware font loading works correctly.
-TEST_F(FontResourceTest, CacheAwareFontLoading) {
+TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
-
-  RuntimeEnabledFeatures::Backup features_backup;
-  RuntimeEnabledFeatures::SetWebFontsCacheAwareTimeoutAdaptationEnabled(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
@@ -166,8 +177,6 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
 
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   GetMemoryCache()->Remove(&resource);
-
-  features_backup.Restore();
 }
 
 }  // namespace blink
