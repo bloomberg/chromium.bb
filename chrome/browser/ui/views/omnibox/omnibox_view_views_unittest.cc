@@ -644,10 +644,10 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutUserText) {
   EXPECT_EQ("user text", read_from_clipboard);
 }
 
-INSTANTIATE_TEST_CASE_P(OmniboxViewViewsClipboardTest,
-                        OmniboxViewViewsClipboardTest,
-                        ::testing::Values(ui::TextEditCommand::COPY,
-                                          ui::TextEditCommand::CUT));
+INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsClipboardTest,
+                         OmniboxViewViewsClipboardTest,
+                         ::testing::Values(ui::TextEditCommand::COPY,
+                                           ui::TextEditCommand::CUT));
 
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  public:
