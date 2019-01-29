@@ -75,9 +75,15 @@ void SharedWorkerReportingProxy::DidFetchScript() {
 }
 
 void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
+  // TODO(nhiroki): Add a runtime flag check for off-the-main-thread shared
+  // worker script fetch. This function should be called only when the flag is
+  // enabled (https://crbug.com/924041).
   DCHECK(!IsMainThread());
-  // TODO(nhiroki): Dispatch an error event at the SharedWorker object in the
-  // parent document.
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&WebSharedWorkerImpl::DidFailToFetchClassicScript,
+                      CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {

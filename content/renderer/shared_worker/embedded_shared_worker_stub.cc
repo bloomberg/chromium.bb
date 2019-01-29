@@ -208,7 +208,6 @@ void EmbeddedSharedWorkerStub::WorkerScriptLoaded() {
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
   host_->OnScriptLoadFailed();
   pending_channels_.clear();
-  delete this;
 }
 
 void EmbeddedSharedWorkerStub::WorkerScriptEvaluated(bool success) {

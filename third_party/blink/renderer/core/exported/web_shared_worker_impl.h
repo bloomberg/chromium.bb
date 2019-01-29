@@ -110,6 +110,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
   void DidFetchScript();
+  void DidFailToFetchClassicScript();
   void DidEvaluateClassicScript(bool success);
   void DidCloseWorkerGlobalScope();
   void DidTerminateWorkerThread();

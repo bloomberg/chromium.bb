@@ -49,10 +49,7 @@ struct NavigationResponseOverrideParameters;
 // A stub class to receive IPC from browser process and talk to
 // blink::WebSharedWorker. Implements blink::WebSharedWorkerClient.
 // This class is self-destructed (no one explicitly owns this). It deletes
-// itself when either one of following methods is called by
-// blink::WebSharedWorker:
-// - WorkerScriptLoadFailed() or
-// - WorkerContextDestroyed()
+// itself when WorkerContextDestroyed() is called by blink::WebSharedWorker.
 //
 // This class owns blink::WebSharedWorker.
 class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
