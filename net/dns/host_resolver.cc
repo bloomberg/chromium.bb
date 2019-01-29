@@ -34,7 +34,7 @@ const size_t kDefaultMaxProcTasks = 6u;
 // Wraps a ResolveHostRequest to implement Request objects from the legacy
 // Resolve() API. The wrapped request must not yet have been started.
 //
-// TODO(crbug.com/821021): Delete this class once all usage has been
+// TODO(crbug.com/922699): Delete this class once all usage has been
 // converted to the new CreateRequest() API.
 class LegacyRequestImpl : public HostResolver::Request {
  public:

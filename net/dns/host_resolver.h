@@ -51,7 +51,7 @@ class NET_EXPORT HostResolver {
   // HostResolver::Request class is used to cancel the request and change it's
   // priority. It must be owned by consumer. Deletion cancels the request.
   //
-  // TODO(crbug.com/821021): Delete this class once all usage has been
+  // TODO(crbug.com/922699): Delete this class once all usage has been
   // converted to the new CreateRequest() API.
   class Request {
    public:
@@ -156,7 +156,7 @@ class NET_EXPORT HostResolver {
   // The parameters for doing a Resolve(). A hostname and port are
   // required; the rest are optional (and have reasonable defaults).
   //
-  // TODO(crbug.com/821021): Delete this class once all usage has been
+  // TODO(crbug.com/922699): Delete this class once all usage has been
   // converted to the new CreateRequest() API.
   class NET_EXPORT RequestInfo {
    public:
@@ -325,9 +325,6 @@ class NET_EXPORT HostResolver {
   //
   // This method is intended as a direct replacement for the old Resolve()
   // method, but it may not yet cover all the capabilities of the old method.
-  //
-  // TODO(crbug.com/821021): Implement more complex functionality to meet
-  // capabilities of Resolve() and M/DnsClient functionality.
   virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
@@ -358,7 +355,7 @@ class NET_EXPORT HostResolver {
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
-  // TODO(crbug.com/821021): Delete this method once all usage has been
+  // TODO(crbug.com/922699): Delete this method once all usage has been
   // converted to CreateRequest().
   virtual int Resolve(const RequestInfo& info,
                       RequestPriority priority,
@@ -378,7 +375,7 @@ class NET_EXPORT HostResolver {
   // This acts like |Resolve()| if the hostname is IP literal, or cached value
   // or HOSTS entry exists. Otherwise, ERR_DNS_CACHE_MISS is returned.
   //
-  // TODO(crbug.com/821021): Delete this method once all usage has been
+  // TODO(crbug.com/922699): Delete this method once all usage has been
   // converted to CreateRequest().
   virtual int ResolveFromCache(const RequestInfo& info,
                                AddressList* addresses,
@@ -395,7 +392,7 @@ class NET_EXPORT HostResolver {
   // implementation supports it. Fills in |*stale_info| if a response is
   // returned to indicate how stale (or not) it is.
   //
-  // TODO(crbug.com/821021): Delete this method once all usage has been
+  // TODO(crbug.com/922699): Delete this method once all usage has been
   // converted to CreateRequest().
   virtual int ResolveStaleFromCache(const RequestInfo& info,
                                     AddressList* addresses,
@@ -469,7 +466,7 @@ class NET_EXPORT HostResolver {
   // Helpers for converting old Resolve() API parameters to new CreateRequest()
   // parameters.
   //
-  // TODO(crbug.com/821021): Delete these methods once all usage has been
+  // TODO(crbug.com/922699): Delete these methods once all usage has been
   // converted to the new CreateRequest() API.
   static ResolveHostParameters RequestInfoToResolveHostParameters(
       const RequestInfo& request_info,

@@ -240,9 +240,6 @@ interface HostResolver {
   // All outstanding requests are cancelled if the HostResolver or parent
   // NetworkContext are destroyed. Such requests will receive ERR_FAILED via
   // |response_client|.
-  //
-  // TODO(crbug.com/821021): Implement more complex functionality to meet full
-  // capabilities of Resolve() and DnsClient/MDnsClient functionality.
   ResolveHost(HostPortPair host,
               ResolveHostParameters? optional_parameters,
               ResolveHostClient response_client);
