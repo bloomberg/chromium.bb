@@ -9,6 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/test_touch.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -51,7 +53,7 @@ class WaylandTouchTest : public WaylandTest {
     EXPECT_EQ(event_type, key_event->type());
   }
 
-  wl::MockTouch* touch_;
+  wl::TestTouch* touch_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandTouchTest);

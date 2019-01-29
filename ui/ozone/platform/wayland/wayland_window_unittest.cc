@@ -17,6 +17,8 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/test_pointer.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_util.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -523,7 +525,7 @@ TEST_P(WaylandWindowTest, HasCaptureUpdatedOnPointerEvents) {
 
   Sync();
 
-  wl::MockPointer* pointer = server_.seat()->pointer();
+  wl::TestPointer* pointer = server_.seat()->pointer();
   ASSERT_TRUE(pointer);
 
   wl_pointer_send_enter(pointer->resource(), 1, surface_->resource(), 0, 0);

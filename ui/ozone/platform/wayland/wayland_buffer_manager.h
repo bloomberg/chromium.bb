@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -73,6 +74,8 @@ class WaylandBufferManager {
   void ClearState();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest, ValidateDataFromGpu);
+
   // This is an internal helper representation of a wayland buffer object, which
   // the GPU process creates when CreateBuffer is called. It's used for
   // asynchronous buffer creation and stores |params| parameter to find out,
