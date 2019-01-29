@@ -369,9 +369,6 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean();
 
-  // Record any UMA and UKM metrics that depend on the end of a main frame.
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
-
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
   bool InvalidateViewportConstrainedObjects();

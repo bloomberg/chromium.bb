@@ -84,7 +84,11 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void BeginFrame(base::TimeTicks last_frame_time,
+                  bool record_main_frame_metrics) override;
+  void BeginRafAlignedInput() override;
+  void EndRafAlignedInput() override;
+  void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
@@ -204,6 +208,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   scoped_refptr<cc::Layer> root_layer_;
   GraphicsLayer* root_graphics_layer_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
+  base::TimeTicks raf_aligned_input_start_time_;
   bool is_accelerated_compositing_active_;
   bool layer_tree_view_closed_;
 

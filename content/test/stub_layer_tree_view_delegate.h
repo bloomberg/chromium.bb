@@ -26,13 +26,14 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void SendScrollEndEventFromImplSide(
       cc::ElementId scroll_latched_element_id) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}
+  void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
-  void UpdateVisualState(bool record_main_frame_metrics) override {}
+  void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
       std::unique_ptr<viz::CopyOutputRequest> request) override;

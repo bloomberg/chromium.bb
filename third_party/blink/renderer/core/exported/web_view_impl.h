@@ -427,7 +427,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void BeginFrame(base::TimeTicks last_frame_time,
+                  bool record_main_frame_metrics) override;
+  void BeginRafAlignedInput() override;
+  void EndRafAlignedInput() override;
+  void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
@@ -697,6 +701,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       scoped_defer_main_frame_update_;
 
   Persistent<ResizeViewportAnchor> resize_viewport_anchor_;
+
+  base::TimeTicks raf_aligned_input_start_time_;
 };
 
 // We have no ways to check if the specified WebView is an instance of

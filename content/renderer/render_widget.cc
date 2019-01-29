@@ -206,6 +206,21 @@ class WebWidgetLockTarget : public content::MouseLockDispatcher::LockTarget {
   blink::WebWidget* webwidget_;
 };
 
+class ScopedUkmRafAlignedInputTimer {
+ public:
+  explicit ScopedUkmRafAlignedInputTimer(blink::WebWidget* webwidget)
+      : webwidget_(webwidget) {
+    webwidget_->BeginRafAlignedInput();
+  }
+
+  ~ScopedUkmRafAlignedInputTimer() { webwidget_->EndRafAlignedInput(); }
+
+ private:
+  blink::WebWidget* webwidget_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUkmRafAlignedInputTimer);
+};
+
 bool IsDateTimeInput(ui::TextInputType type) {
   return type == ui::TEXT_INPUT_TYPE_DATE ||
          type == ui::TEXT_INPUT_TYPE_DATE_TIME ||
@@ -983,10 +998,19 @@ void RenderWidget::SendScrollEndEventFromImplSide(
 void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   if (!GetWebWidget())
     return;
-  if (input_event_queue_)
-    input_event_queue_->DispatchRafAlignedInput(frame_time);
 
-  GetWebWidget()->BeginFrame(frame_time);
+  // We record metrics only when running in multi-threaded mode, not
+  // single-thread mode for testing.
+  bool record_main_frame_metrics =
+      !!compositor_deps_->GetCompositorImplThreadTaskRunner();
+  if (input_event_queue_) {
+    base::Optional<ScopedUkmRafAlignedInputTimer> ukm_timer;
+    if (record_main_frame_metrics)
+      ukm_timer.emplace(GetWebWidget());
+    input_event_queue_->DispatchRafAlignedInput(frame_time);
+  }
+
+  GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
 }
 
 void RenderWidget::RequestNewLayerTreeFrameSink(
@@ -1120,9 +1144,14 @@ void RenderWidget::SetShowHitTestBorders(bool show) {
   host->SetDebugState(debug_state);
 }
 
-void RenderWidget::UpdateVisualState(bool record_main_frame_metrics) {
+void RenderWidget::UpdateVisualState() {
   if (!GetWebWidget())
     return;
+
+  // We record metrics only when running in multi-threaded mode, not
+  // single-thread mode for testing.
+  bool record_main_frame_metrics =
+      !!compositor_deps_->GetCompositorImplThreadTaskRunner();
 
   // When recording main frame metrics set the lifecycle reason to
   // kBeginMainFrame, because this is the calller of UpdateLifecycle
@@ -1156,6 +1185,13 @@ void RenderWidget::RecordTimeToFirstActivePaint() {
         "AfterBackgrounded.5min",
         sample);
   }
+}
+
+void RenderWidget::RecordStartOfFrameMetrics() {
+  if (!GetWebWidget())
+    return;
+
+  GetWebWidget()->RecordStartOfFrameMetrics();
 }
 
 void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {

@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -284,7 +285,8 @@ void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(
   GetPage()->Animator().SetSuppressFrameRequestsWorkaroundFor704763Only(
       suppress_frame_requests);
 }
-void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
+void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time,
+                                    bool record_main_frame_metrics) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                last_frame_time);
   DCHECK(!last_frame_time.is_null());
@@ -294,10 +296,36 @@ void WebFrameWidgetImpl::BeginFrame(base::TimeTicks last_frame_time) {
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
-  PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
+  if (record_main_frame_metrics) {
+    SCOPED_UMA_AND_UKM_TIMER(
+        LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator(),
+        LocalFrameUkmAggregator::kAnimate);
+    PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
+  } else {
+    PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
+  }
   // Animate can cause the local frame to detach.
   if (LocalRootImpl())
     GetPage()->GetValidationMessageClient().LayoutOverlay();
+}
+
+void WebFrameWidgetImpl::BeginRafAlignedInput() {
+  raf_aligned_input_start_time_ = CurrentTimeTicks();
+}
+
+void WebFrameWidgetImpl::EndRafAlignedInput() {
+  if (LocalRootImpl()) {
+    LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
+        LocalFrameUkmAggregator::kHandleInputEvents,
+        raf_aligned_input_start_time_, CurrentTimeTicks());
+  }
+}
+
+void WebFrameWidgetImpl::RecordStartOfFrameMetrics() {
+  if (!LocalRootImpl())
+    return;
+
+  LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().BeginMainFrame();
 }
 
 void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
@@ -305,8 +333,11 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
   if (!LocalRootImpl())
     return;
 
-  LocalRootImpl()->GetFrame()->View()->RecordEndOfFrameMetrics(
-      frame_begin_time);
+  LocalRootImpl()
+      ->GetFrame()
+      ->View()
+      ->EnsureUkmAggregator()
+      .RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,

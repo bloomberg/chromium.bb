@@ -439,11 +439,10 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->BeginMainFrame(args);
   }
 
+  void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
 
-  void UpdateLayerTreeHost(bool record_main_frame_metrics) override {
-    test_hooks_->UpdateLayerTreeHost();
-  }
+  void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     test_hooks_->ApplyViewportChanges(args);

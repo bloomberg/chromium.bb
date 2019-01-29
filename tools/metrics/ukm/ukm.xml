@@ -659,6 +659,39 @@ be describing additional metrics about the same event.
     compositing, and layout update times. The metrics are recorded once per 30
     seconds and at the destruction of the local frame root.
   </summary>
+  <metric name="Animate.Average">
+    <summary>
+      The average time taken for main frame animation in microseconds in the
+      event period.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Animate.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken for main frame animation to the total time for the main frame. An
+      int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="Animate.WorstCase">
+    <summary>
+      The longest single time taken for main frame animation in microseconds in
+      the event period.
+    </summary>
+  </metric>
+  <metric name="Animate.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever used for main frame animation
+      within the sample window. An int in the range [0,100].
+    </summary>
+  </metric>
   <metric name="Compositing.Average">
     <summary>
       The average time taken by the compositing phase in microseconds in the
@@ -758,6 +791,40 @@ be describing additional metrics about the same event.
       The highest proportion of a frame ever taken by forced style recalc and
       layouts at the end of the blink lifecycle to the total time for the main
       frame. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="HandleInputEvents.Average">
+    <summary>
+      The average time taken to process rAF-aligned input for the main frame in
+      microseconds in the event period.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="HandleInputEvents.AverageRatio">
+    <summary>
+      The average over frames within the sample window of the ratio of time
+      taken to process rAF-aligned input for the main frame to the total time
+      for the main frame. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="HandleInputEvents.WorstCase">
+    <summary>
+      The longest single time taken to process rAF-aligned input for the main
+      frame in microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="HandleInputEvents.WorstCaseRatio">
+    <summary>
+      The highest proportion of a frame ever taken to process rAF-aligned input
+      for the main frame to the total time for the main frame. An int in the
+      range [0,100].
     </summary>
   </metric>
   <metric name="IntersectionObservation.Average">
