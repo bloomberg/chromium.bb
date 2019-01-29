@@ -119,6 +119,11 @@ class ExpectsNullCursorClientDuringTearDown : public aura::WindowObserver {
 // Tests that the window service can set the initial show state for a window.
 // https://crbug.com/899055
 TEST_F(DesktopWindowTreeHostMusTest, ShowStateFromWindowService) {
+  // Wait for the window created by
+  // aura::TestScreen::CreateHostForPrimaryDisplay() lest it be the one that is
+  // impacted by MaximizeNextWindow().
+  aura::test::WaitForAllChangesToComplete();
+
   // Configure the window service to maximize the next top-level window.
   test_ws::mojom::TestWsPtr test_ws_ptr;
   MusClient::Get()->window_tree_client()->connector()->BindInterface(
@@ -507,6 +512,10 @@ TEST_F(DesktopWindowTreeHostMusTestHighDPI, InitializeMenuWithDIPBounds) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
+  // No ScreenMus in single process Mash.
+  if (features::IsSingleProcessMash())
+    return;
+
   ScreenMus* screen = MusClientTestApi::screen();
 
   // Add a second display to the right of the primary.
