@@ -76,8 +76,7 @@ BitmapImage::BitmapImage(ImageObserver* observer, bool is_multipart)
       repetition_count_(kAnimationNone),
       frame_count_(0) {}
 
-BitmapImage::~BitmapImage() {
-}
+BitmapImage::~BitmapImage() {}
 
 bool BitmapImage::CurrentFrameHasSingleSecurityOrigin() const {
   return true;

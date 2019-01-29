@@ -16,7 +16,7 @@ class SkCanvas;
 namespace cc {
 class ImageDecodeCache;
 class PaintCanvas;
-}
+}  // namespace cc
 
 namespace gpu {
 namespace gles2 {
@@ -48,7 +48,6 @@ class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT CanvasResourceProvider
     : public WebGraphicsContext3DProviderWrapper::DestructionObserver {
-
  public:
   enum ResourceUsage {
     kSoftwareResourceUsage,

@@ -402,7 +402,7 @@ int AdjustedFocusRingOffset(int offset) {
 #endif
 }
 
-}  // anonymous ns
+}  // namespace
 
 int GraphicsContext::FocusRingOutsetExtent(int offset, int width) {
   // Unlike normal outlines (whole width is outside of the offset), focus

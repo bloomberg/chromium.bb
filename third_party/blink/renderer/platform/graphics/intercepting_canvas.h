@@ -40,7 +40,6 @@
 namespace blink {
 
 class InterceptingCanvasBase : public SkCanvas {
-
  public:
   template <typename DerivedCanvas>
   class CanvasInterceptorBase {

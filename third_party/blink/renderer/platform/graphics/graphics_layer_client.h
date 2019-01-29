@@ -48,8 +48,7 @@ enum GraphicsLayerPaintingPhaseFlags {
   kGraphicsLayerPaintDecoration = (1 << 7),
   kGraphicsLayerPaintAllWithOverflowClip =
       (kGraphicsLayerPaintBackground | kGraphicsLayerPaintForeground |
-       kGraphicsLayerPaintMask |
-       kGraphicsLayerPaintDecoration)
+       kGraphicsLayerPaintMask | kGraphicsLayerPaintDecoration)
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 

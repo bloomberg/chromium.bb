@@ -62,7 +62,7 @@
 namespace cc {
 class PictureImageLayer;
 class PictureLayer;
-}
+}  // namespace cc
 
 namespace blink {
 
@@ -126,9 +126,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // The offset is the origin of the layoutObject minus the origin of the
   // graphics layer (so either zero or negative).
-  IntSize OffsetFromLayoutObject() const {
-    return offset_from_layout_object_;
-  }
+  IntSize OffsetFromLayoutObject() const { return offset_from_layout_object_; }
   void SetOffsetFromLayoutObject(const IntSize&);
   LayoutSize OffsetFromLayoutObjectWithSubpixelAccumulation() const;
 

@@ -53,7 +53,7 @@ struct SkImageInfo;
 namespace cc {
 class Layer;
 class TextureLayer;
-}
+}  // namespace cc
 
 namespace blink {
 
@@ -73,7 +73,6 @@ class StaticBitmapImage;
 #define CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU 0
 
 class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
-
  public:
   enum AccelerationMode {
     kDisableAcceleration,

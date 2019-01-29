@@ -64,6 +64,7 @@
 
 #include <memory>
 
+using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::InSequence;
@@ -71,7 +72,6 @@ using testing::Pointee;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::Test;
-using testing::_;
 
 namespace blink {
 

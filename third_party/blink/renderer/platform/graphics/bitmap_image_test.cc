@@ -295,8 +295,7 @@ TEST_F(BitmapImageTest, jpegHasColorProfile) {
 }
 
 TEST_F(BitmapImageTest, pngHasColorProfile) {
-  LoadImage(
-      "palatted-color-png-gamma-one-color-profile.png");
+  LoadImage("palatted-color-png-gamma-one-color-profile.png");
   image_->PaintImageForCurrentFrame();
   EXPECT_EQ(65536u, DecodedSize());
   EXPECT_TRUE(image_->HasColorProfile());

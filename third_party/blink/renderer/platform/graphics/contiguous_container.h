@@ -167,12 +167,12 @@ class ContiguousContainer : public ContiguousContainerBase {
     return *this;
   }
 
-  using ContiguousContainerBase::size;
-  using ContiguousContainerBase::IsEmpty;
   using ContiguousContainerBase::CapacityInBytes;
-  using ContiguousContainerBase::UsedCapacityInBytes;
+  using ContiguousContainerBase::IsEmpty;
   using ContiguousContainerBase::MemoryUsageInBytes;
   using ContiguousContainerBase::ShrinkToFit;
+  using ContiguousContainerBase::size;
+  using ContiguousContainerBase::UsedCapacityInBytes;
 
   iterator begin() { return iterator(elements_.begin()); }
   iterator end() { return iterator(elements_.end()); }

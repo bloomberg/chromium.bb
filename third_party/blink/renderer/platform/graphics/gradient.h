@@ -48,7 +48,6 @@ namespace blink {
 class FloatPoint;
 
 class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
-
  public:
   enum class Type { kLinear, kRadial, kConic };
 
