@@ -2528,6 +2528,10 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
   if (item->GetSubmenu()->GetMenuItemCount() > 0)
     to_select = FindInitialSelectableMenuItem(item, INCREMENT_SELECTION_DOWN);
   if (to_select) {
+    // Selection is going from the ACTIONABLE to the SUBMENU region of the
+    // ACTIONABLE_SUBMENU, so highlight the SUBMENU area.
+    if (item->type_ == MenuItemView::ACTIONABLE_SUBMENU)
+      item->SetSelectionOfActionableSubmenu(true);
     SetSelection(to_select, SELECTION_UPDATE_IMMEDIATELY);
     return;
   }
