@@ -4,6 +4,8 @@
 
 #include "services/device/serial/buffer.h"
 
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "net/base/io_buffer.h"
 
@@ -36,7 +38,7 @@ void SendBuffer::DoneWithError(uint32_t bytes_read, int32_t error) {
                            static_cast<device::mojom::SerialSendError>(error));
 }
 
-ReceiveBuffer::ReceiveBuffer(scoped_refptr<net::IOBuffer> buffer,
+ReceiveBuffer::ReceiveBuffer(char* buffer,
                              uint32_t size,
                              ReceiveCompleteCallback callback)
     : buffer_(buffer), size_(size), callback_(std::move(callback)) {}
@@ -44,7 +46,7 @@ ReceiveBuffer::ReceiveBuffer(scoped_refptr<net::IOBuffer> buffer,
 ReceiveBuffer::~ReceiveBuffer() = default;
 
 char* ReceiveBuffer::GetData() {
-  return buffer_->data();
+  return buffer_;
 }
 
 uint32_t ReceiveBuffer::GetSize() {

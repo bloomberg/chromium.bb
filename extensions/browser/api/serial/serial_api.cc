@@ -179,9 +179,9 @@ void SerialConnectFunction::FinishConnect(
           connections->Remove(extension_id, api_resource_id);
         },
         manager_->data_, extension_->id(), id));
-
     info->connection_id = id;
-    serial_port_manager_->PollConnection(extension_->id(), id);
+    // Start polling.
+    serial_port_manager_->StartConnectionPolling(extension_->id(), id);
     results_ = serial::Connect::Results::Create(*info);
   }
   AsyncWorkCompleted();
@@ -321,10 +321,6 @@ void SerialSetPausedFunction::Work() {
 
   if (params_->paused != connection->paused()) {
     connection->set_paused(params_->paused);
-    if (!params_->paused) {
-      serial_port_manager_->PollConnection(extension_->id(),
-                                           params_->connection_id);
-    }
   }
 
   results_ = serial::SetPaused::Results::Create();

@@ -105,7 +105,7 @@ var testSerial = function() {
   var onReceive = function(receiveInfo) {
     var data = new Uint8Array(receiveInfo.data);
     bytesToReceive -= data.length;
-    var receiveBufferIndex = bufferLength - data.length;
+    var receiveBufferIndex = bufferLength - bytesToReceive - data.length;
     for (var i = 0; i < data.length; i++)
       receiveBufferUint8View[i + receiveBufferIndex] = data[i];
     if (bytesToReceive == 0) {
@@ -118,7 +118,28 @@ var testSerial = function() {
   };
 
   var onReceiveError = function(errorInfo) {
-    chrome.test.fail('Failed to receive serial data');
+    chrome.test.assertEq(connectionId, errorInfo.connectionId,
+                         "Unmatch connectionId for ReceiveError");
+    if (errorInfo.error == "parity_error") {
+      serial.getInfo(connectionId, onGetInfoToReconnect);
+    } else {
+      chrome.test.fail('Failed to receive serial data');
+    }
+  };
+
+  var onGetInfoToReconnect = function(connectionInfo) {
+    chrome.test.assertEq(true, connectionInfo.paused,
+                         'Failed to pause connection on read error.');
+    // Try to reconnect the read data pipe.
+    serial.setPaused(connectionId, false, () => {
+      serial.getInfo(connectionId, onGetInfoAfterReconnect);
+    });
+  };
+
+  var onGetInfoAfterReconnect = function(connectionInfo) {
+    if (connectionInfo.paused != false) {
+      chrome.test.fail('Failed to reconnect on read error.');
+    }
   };
 
   var onSend = function(sendInfo) {

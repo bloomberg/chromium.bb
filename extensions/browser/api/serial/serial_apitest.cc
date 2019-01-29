@@ -21,6 +21,8 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -55,7 +57,9 @@ namespace {
 
 class FakeSerialPort : public device::mojom::SerialPort {
  public:
-  explicit FakeSerialPort(const base::FilePath& path) {
+  explicit FakeSerialPort(const base::FilePath& path)
+      : out_stream_watcher_(FROM_HERE,
+                            mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
     options_.bitrate = 9600;
     options_.data_bits = device::mojom::SerialDataBits::EIGHT;
     options_.parity_bit = device::mojom::SerialParityBit::NO_PARITY;
@@ -68,29 +72,26 @@ class FakeSerialPort : public device::mojom::SerialPort {
  private:
   // device::mojom::SerialPort methods:
   void Open(device::mojom::SerialConnectionOptionsPtr options,
+            mojo::ScopedDataPipeProducerHandle out_stream,
+            device::mojom::SerialPortClientAssociatedPtrInfo client,
             OpenCallback callback) override {
     DoConfigurePort(*options);
+    DCHECK(client);
+    client_.Bind(std::move(client));
+    SetUpReadDataPipe(std::move(out_stream));
     std::move(callback).Run(true);
-  }
-  void Read(uint32_t bytes, ReadCallback callback) override {
-    DCHECK(!pending_read_callback_);
-    pending_read_callback_ = std::move(callback);
-    pending_read_bytes_ = bytes;
-    if (buffer_.empty())
-      return;
-
-    DoRead();
   }
   void Write(const std::vector<uint8_t>& data,
              WriteCallback callback) override {
     buffer_.insert(buffer_.end(), data.cbegin(), data.cend());
     std::move(callback).Run(data.size(), device::mojom::SerialSendError::NONE);
-    DoRead();
+    out_stream_watcher_.ArmOrNotify();
   }
-  void CancelRead(device::mojom::SerialReceiveError reason) override {
-    if (pending_read_callback_) {
-      std::move(pending_read_callback_).Run(std::vector<uint8_t>(), reason);
+  void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override {
+    if (out_stream_) {
+      return;
     }
+    SetUpReadDataPipe(std::move(producer));
   }
   void CancelWrite(device::mojom::SerialSendError reason) override {}
   void Flush(FlushCallback callback) override { std::move(callback).Run(true); }
@@ -127,17 +128,46 @@ class FakeSerialPort : public device::mojom::SerialPort {
     std::move(callback).Run(true);
   }
 
-  void DoRead() {
-    if (!pending_read_callback_) {
+  void SetUpReadDataPipe(mojo::ScopedDataPipeProducerHandle producer) {
+    out_stream_.swap(producer);
+    out_stream_watcher_.Watch(
+        out_stream_.get(),
+        MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+        base::BindRepeating(&FakeSerialPort::DoRead, base::Unretained(this)));
+    out_stream_watcher_.ArmOrNotify();
+  }
+
+  void DoRead(MojoResult result, const mojo::HandleSignalsState& state) {
+    if (result != MOJO_RESULT_OK) {
+      out_stream_.reset();
       return;
     }
-    size_t num_bytes =
-        std::min(buffer_.size(), static_cast<size_t>(pending_read_bytes_));
-    std::move(pending_read_callback_)
-        .Run(std::vector<uint8_t>(buffer_.data(), buffer_.data() + num_bytes),
-             device::mojom::SerialReceiveError::NONE);
+    if (buffer_.empty()) {
+      return;
+    }
+    read_step_++;
+    if (read_step_ == 1) {
+      // Write one byte first.
+      WriteOutReadData(1);
+    } else if (read_step_ == 2) {
+      // Write one byte in second step and trigger a break error.
+      WriteOutReadData(1);
+      DCHECK(client_);
+      client_->OnReadError(device::mojom::SerialReceiveError::PARITY_ERROR);
+      out_stream_.reset();
+      return;
+    } else {
+      // Write out the rest data after reconnecting.
+      WriteOutReadData(buffer_.size());
+    }
+    out_stream_watcher_.ArmOrNotify();
+  }
+
+  void WriteOutReadData(uint32_t num_bytes) {
+    out_stream_->WriteData(buffer_.data(), &num_bytes,
+                           MOJO_WRITE_DATA_FLAG_NONE);
     buffer_.erase(buffer_.begin(), buffer_.begin() + num_bytes);
-    pending_read_bytes_ = 0;
   }
 
   void DoConfigurePort(const device::mojom::SerialConnectionOptions& options) {
@@ -163,8 +193,10 @@ class FakeSerialPort : public device::mojom::SerialPort {
   // Currently applied connection options.
   device::mojom::SerialConnectionOptions options_;
   std::vector<uint8_t> buffer_;
-  FakeSerialPort::ReadCallback pending_read_callback_;
-  uint32_t pending_read_bytes_ = 0;
+  int read_step_ = 0;
+  device::mojom::SerialPortClientAssociatedPtr client_;
+  mojo::ScopedDataPipeProducerHandle out_stream_;
+  mojo::SimpleWatcher out_stream_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPort);
 };

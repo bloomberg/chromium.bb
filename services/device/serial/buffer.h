@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/callback.h"
 #include "net/base/io_buffer.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -64,9 +66,7 @@ class ReceiveBuffer : public device::WritableBuffer {
  public:
   using ReceiveCompleteCallback =
       base::OnceCallback<void(int, device::mojom::SerialReceiveError)>;
-  ReceiveBuffer(scoped_refptr<net::IOBuffer> buffer,
-                uint32_t size,
-                ReceiveCompleteCallback callback);
+  ReceiveBuffer(char* buffer, uint32_t size, ReceiveCompleteCallback callback);
   ~ReceiveBuffer() override;
 
   char* GetData() override;
@@ -75,7 +75,7 @@ class ReceiveBuffer : public device::WritableBuffer {
   void DoneWithError(uint32_t bytes_written, int32_t error) override;
 
  private:
-  scoped_refptr<net::IOBuffer> buffer_;
+  char* buffer_;
   const uint32_t size_;
   ReceiveCompleteCallback callback_;
 };

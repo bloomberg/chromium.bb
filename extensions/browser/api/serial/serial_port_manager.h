@@ -43,8 +43,9 @@ class SerialPortManager : public BrowserContextKeyedAPI {
   void GetPort(const std::string& path,
                device::mojom::SerialPortRequest request);
 
-  // Start receiving data and firing events for a connection.
-  void PollConnection(const std::string& extension_id, int connection_id);
+  // Start the poilling process for the connection.
+  void StartConnectionPolling(const std::string& extension_id,
+                              int connection_id);
 
  private:
   typedef ApiResourceManager<SerialConnection>::ApiResourceData ConnectionData;
@@ -66,12 +67,9 @@ class SerialPortManager : public BrowserContextKeyedAPI {
     scoped_refptr<ConnectionData> connections;
     int connection_id;
   };
-
-  static void StartReceive(const ReceiveParams& params);
-
-  static void ReceiveCallback(const ReceiveParams& params,
-                              std::vector<uint8_t> data,
-                              serial::ReceiveError error);
+  static void DispatchReceiveEvent(const ReceiveParams& params,
+                                   std::vector<uint8_t> data,
+                                   serial::ReceiveError error);
 
   static void PostEvent(const ReceiveParams& params,
                         std::unique_ptr<extensions::Event> event);
