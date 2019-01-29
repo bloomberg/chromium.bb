@@ -18,6 +18,10 @@
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
 #endif
 
+namespace wl {
+class MockSurface;
+}  // namespace wl
+
 namespace ui {
 
 const uint32_t kXdgShellV5 = 5;

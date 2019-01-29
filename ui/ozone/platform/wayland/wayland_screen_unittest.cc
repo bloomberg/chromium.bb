@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_screen.h"
@@ -110,7 +111,7 @@ class WaylandScreenTest : public WaylandTest {
     EXPECT_EQ(display_for_widget.id(), expected_display_id);
   }
 
-  wl::MockOutput* output_ = nullptr;
+  wl::TestOutput* output_ = nullptr;
   WaylandOutputManager* output_manager_ = nullptr;
 
   std::unique_ptr<WaylandScreen> platform_screen_;
@@ -142,7 +143,7 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
       platform_screen_->GetPrimaryDisplay().id();
 
   // Add a second display.
-  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
+  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
 
   Sync();
 
@@ -295,7 +296,7 @@ TEST_P(WaylandScreenTest, GetDisplayMatching) {
   const display::Display primary_display =
       platform_screen_->GetPrimaryDisplay();
 
-  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
+  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
 
   Sync();
 
@@ -366,7 +367,7 @@ TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
       platform_screen_->GetPrimaryDisplay();
 
   // Create an additional display.
-  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
+  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
 
   Sync();
 

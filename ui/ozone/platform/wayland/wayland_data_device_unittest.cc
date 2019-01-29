@@ -10,6 +10,12 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
+#include "ui/ozone/platform/wayland/test/constants.h"
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/test_data_device.h"
+#include "ui/ozone/platform/wayland/test/test_data_device_manager.h"
+#include "ui/ozone/platform/wayland/test/test_data_offer.h"
+#include "ui/ozone/platform/wayland/test/test_data_source.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
@@ -77,7 +83,7 @@ class WaylandDataDeviceManagerTest : public WaylandTest {
   }
 
  protected:
-  wl::MockDataDeviceManager* data_device_manager_;
+  wl::TestDataDeviceManager* data_device_manager_;
   std::unique_ptr<MockClipboardClient> clipboard_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandDataDeviceManagerTest);
@@ -104,7 +110,7 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClibpard) {
   // focused and compositor sends data_device data to it.
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
   data_offer->OnOffer(wl::kTextMimeTypeUtf8);
-  data_device_manager_->data_device()->OnSelection(*data_offer);
+  data_device_manager_->data_device()->OnSelection(data_offer);
   Sync();
 
   // The client requests to reading clipboard data from the server.
@@ -168,7 +174,7 @@ TEST_P(WaylandDataDeviceManagerTest, ReceiveDrag) {
   // The server sends an enter event.
   data_device_manager_->data_device()->OnEnter(
       1002, surface_->resource(), wl_fixed_from_int(entered_point.x()),
-      wl_fixed_from_int(entered_point.y()), *data_offer);
+      wl_fixed_from_int(entered_point.y()), data_offer);
 
   int64_t time =
       (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() & UINT32_MAX;
