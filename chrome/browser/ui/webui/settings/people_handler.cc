@@ -546,8 +546,10 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   // Don't allow "encrypt all" if the SyncService doesn't allow it.
   // The UI is hidden, but the user may have enabled it e.g. by fiddling with
   // the web inspector.
-  if (!service->GetUserSettings()->IsEncryptEverythingAllowed())
+  if (!service->GetUserSettings()->IsEncryptEverythingAllowed()) {
     configuration.encrypt_all = false;
+    configuration.set_new_passphrase = false;
+  }
 
   // Note: Data encryption will not occur until configuration is complete
   // (when the PSS receives its CONFIGURE_DONE notification from the sync
