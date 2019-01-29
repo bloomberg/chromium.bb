@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -20,7 +21,6 @@
 
 namespace certificate_manager {
 
-class CertIdMap;
 class FileAccessProvider;
 
 class CertificatesHandler : public content::WebUIMessageHandler,
@@ -156,6 +156,13 @@ class CertificatesHandler : public content::WebUIMessageHandler,
 
   gfx::NativeWindow GetParentWindow() const;
 
+  // Assuming that |args| is a list, parses the list element at |arg_index| as
+  // an id for |cert_info_id_map_| and looks up the corresponding CertInfo. If
+  // anything goes wrong, returns nullptr.
+  CertificateManagerModel::CertInfo* GetCertInfoFromCallbackArgs(
+      const base::Value& args,
+      size_t arg_index);
+
   // The Certificates Manager model
   bool requested_certificate_manager_model_;
   std::unique_ptr<CertificateManagerModel> certificate_manager_model_;
@@ -178,7 +185,8 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   base::CancelableTaskTracker tracker_;
   scoped_refptr<FileAccessProvider> file_access_provider_;
 
-  std::unique_ptr<CertIdMap> cert_id_map_;
+  base::IDMap<std::unique_ptr<CertificateManagerModel::CertInfo>>
+      cert_info_id_map_;
 
   base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_;
 
