@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 27
+version_id: 28
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -24,7 +24,8 @@ default_file_type {
 ## General cross-platform file types
 ##
 
-# Files that are not dangerous but for which we want to track via UMA.
+# Files that are not dangerous, and are popular enough that we'd like to
+# exclude them from download pings.
 file_types {
   extension: "bin"
   uma_value: 159
@@ -39,6 +40,106 @@ file_types {
 file_types {
   extension: "rtf"
   uma_value: 244
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "jpg"
+  uma_value: 322
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "jpeg"
+  uma_value: 323
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "mp3"
+  uma_value: 324
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "mp4"
+  uma_value: 325
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "png"
+  uma_value: 326
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "xls"
+  uma_value: 327
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "doc"
+  uma_value: 328
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "pptx"
+  uma_value: 329
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "csv"
+  uma_value: 330
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ica"
+  uma_value: 331
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "ppt"
+  uma_value: 332
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "gif"
+  uma_value: 333
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "txt"
+  uma_value: 334
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "package"
+  uma_value: 335
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "tif"
+  uma_value: 336
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "rtf"
+  uma_value: 337
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "webp"
+  uma_value: 338
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "mkv"
+  uma_value: 339
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "wav"
+  uma_value: 340
+  ping_setting: SAMPLED_PING
+}
+file_types {
+  extension: "mov"
+  uma_value: 341
   ping_setting: SAMPLED_PING
 }
 

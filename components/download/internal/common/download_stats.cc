@@ -404,6 +404,26 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".pyo"),      // 319
     FILE_PATH_LITERAL(".desktop"),  // 320
     FILE_PATH_LITERAL(".cpi"),      // 321
+    FILE_PATH_LITERAL(".jpg"),      // 322
+    FILE_PATH_LITERAL(".jpeg"),     // 323
+    FILE_PATH_LITERAL(".mp3"),      // 324
+    FILE_PATH_LITERAL(".mp4"),      // 325
+    FILE_PATH_LITERAL(".png"),      // 326
+    FILE_PATH_LITERAL(".xls"),      // 327
+    FILE_PATH_LITERAL(".doc"),      // 328
+    FILE_PATH_LITERAL(".pptx"),     // 329
+    FILE_PATH_LITERAL(".csv"),      // 330
+    FILE_PATH_LITERAL(".ica"),      // 331
+    FILE_PATH_LITERAL(".ppt"),      // 332
+    FILE_PATH_LITERAL(".gif"),      // 333
+    FILE_PATH_LITERAL(".txt"),      // 334
+    FILE_PATH_LITERAL(".package"),  // 335
+    FILE_PATH_LITERAL(".tif"),      // 336
+    FILE_PATH_LITERAL(".rtf"),      // 337
+    FILE_PATH_LITERAL(".webp"),     // 338
+    FILE_PATH_LITERAL(".mkv"),      // 339
+    FILE_PATH_LITERAL(".wav"),      // 340
+    FILE_PATH_LITERAL(".mov"),      // 341
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
