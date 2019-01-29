@@ -201,6 +201,10 @@ class CONTENT_EXPORT GestureEventQueue {
   // taps.
   FlingController fling_controller_;
 
+  // True when the last GSE event is either in the debouncing_deferral_queue_ or
+  // pushed to the queue and dropped from it later on.
+  bool scroll_end_filtered_by_deboucing_deferral_queue_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);
 };
 

@@ -304,6 +304,8 @@ void FlingController::GenerateAndSendGestureScrollEvents(
     DCHECK_EQ(WebInputEvent::kGestureScrollEnd, type);
     synthetic_gesture.event.data.scroll_end.inertial_phase =
         WebGestureEvent::kMomentumPhase;
+    synthetic_gesture.event.data.scroll_end.generated_by_fling_controller =
+        true;
   }
   event_sender_client_->SendGeneratedGestureScrollEvents(synthetic_gesture);
 }
