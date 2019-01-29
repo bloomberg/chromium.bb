@@ -495,12 +495,6 @@ const base::Feature kNupPrinting{"NupPrinting",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-// Enables permanent removal of Legacy Supervised Users on startup.
-const base::Feature kRemoveSupervisedUsersOnStartup{
-    "RemoveSupervisedUsersOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
