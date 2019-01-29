@@ -15,6 +15,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -457,6 +458,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestCreateHidden) {
 #define MAYBE_TestFullscreen TestFullscreen
 #endif
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestFullscreen) {
+  // Flaky on CrOS + IsUsingWindowService. https://crbug.com/926007
+  if (features::IsUsingWindowService())
+    return;
   ASSERT_TRUE(RunAppWindowInteractiveTest("testFullscreen")) << message_;
 }
 
