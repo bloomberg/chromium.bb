@@ -128,6 +128,10 @@ void Client::FlushMemlogPipe(uint32_t barrier_id) {
   SamplingProfilerWrapper::FlushPipe(barrier_id);
 }
 
+void Client::RetrieveHeapProfile(RetrieveHeapProfileCallback callback) {
+  std::move(callback).Run(sampling_profiler_->RetrieveHeapProfile());
+}
+
 void Client::StartProfilingInternal(mojom::ProfilingParamsPtr params) {
   sampling_profiler_->StartProfiling(sender_pipe_.get(), std::move(params));
 }

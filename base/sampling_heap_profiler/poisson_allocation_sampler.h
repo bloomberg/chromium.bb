@@ -54,6 +54,8 @@ class BASE_EXPORT PoissonAllocationSampler {
    public:
     ScopedMuteThreadSamples();
     ~ScopedMuteThreadSamples();
+
+    static bool IsMuted();
   };
 
   // Must be called early during the process initialization. It creates and
