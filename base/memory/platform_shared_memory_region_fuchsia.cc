@@ -112,9 +112,9 @@ bool PlatformSharedMemoryRegion::MapAtInternal(off_t offset,
                                                void** memory,
                                                size_t* mapped_size) const {
   uintptr_t addr;
-  zx_vm_option_t options = ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_FLAG_PERM_READ;
+  zx_vm_option_t options = ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_PERM_READ;
   if (mode_ != Mode::kReadOnly)
-    options |= ZX_VM_FLAG_PERM_WRITE;
+    options |= ZX_VM_PERM_WRITE;
   zx_status_t status = zx::vmar::root_self()->map(
       /*vmar_offset=*/0, handle_, offset, size, options, &addr);
   if (status != ZX_OK) {

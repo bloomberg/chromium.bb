@@ -85,9 +85,9 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (memory_)
     return false;
 
-  zx_vm_option_t options = ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_FLAG_PERM_READ;
+  zx_vm_option_t options = ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_PERM_READ;
   if (!read_only_)
-    options |= ZX_VM_FLAG_PERM_WRITE;
+    options |= ZX_VM_PERM_WRITE;
   uintptr_t addr;
   zx_status_t status = zx::vmar::root_self()->map(
       /*vmar_offset=*/0, *zx::unowned_vmo(shm_.GetHandle()), offset, bytes,

@@ -226,7 +226,7 @@ class OutputBuffer : public base::RefCountedThreadSafe<OutputBuffer> {
 
     zx_status_t status = zx::vmar::root_self()->map(
         /*vmar_offset=*/0, buffer_.vmo(), 0, buffer_.size(),
-        ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_FLAG_PERM_READ, &mapped_memory_);
+        ZX_VM_REQUIRE_NON_RESIZABLE | ZX_VM_PERM_READ, &mapped_memory_);
 
     if (status != ZX_OK) {
       ZX_DLOG(ERROR, status) << "zx_vmar_map";
