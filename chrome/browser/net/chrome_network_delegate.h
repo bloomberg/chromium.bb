@@ -153,7 +153,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   std::unique_ptr<ChromeExtensionsNetworkDelegate> extensions_delegate_;
 
-  void* profile_;
   base::FilePath profile_path_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 

@@ -187,7 +187,6 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     extensions::EventRouterForwarder* event_router)
     : extensions_delegate_(
           ChromeExtensionsNetworkDelegate::Create(event_router)),
-      profile_(nullptr),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalWebPlatformFeatures)) {}
@@ -200,7 +199,6 @@ void ChromeNetworkDelegate::set_extension_info_map(
 }
 
 void ChromeNetworkDelegate::set_profile(void* profile) {
-  profile_ = profile;
   extensions_delegate_->set_profile(profile);
 }
 
