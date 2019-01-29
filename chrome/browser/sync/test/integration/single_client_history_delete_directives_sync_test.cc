@@ -154,8 +154,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
                                           1);
 
   fake_server_->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          "name", specifics, /*creation_time=*/0, /*last_modified_time=*/0));
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          "non_unique_name", "client_tag", specifics, /*creation_time=*/0,
+          /*last_modified_time=*/0));
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 
   // Verify history exists prior to starting sync.

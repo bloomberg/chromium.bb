@@ -202,11 +202,14 @@ public class FakeServerHelper {
      * Injects an entity into the fake Sync server. This method only works for entities that will
      * eventually contain a unique client tag (e.g., preferences, typed URLs).
      *
-     * @param name the human-readable name for the entity. This value will be used for the
-     *             SyncEntity.name value
+     * @param nonUniqueName the human-readable name for the entity. This value will be used for the
+     *        SyncEntity.name value
+     * @param clientTag the ID that makes this entity unique across clients. This value will be used
+     *        in hashed form in SyncEntity.server_defined_unique_tag
      * @param entitySpecifics the EntitySpecifics proto that represents the entity to inject
      */
-    public void injectUniqueClientEntity(final String name, final EntitySpecifics entitySpecifics) {
+    public void injectUniqueClientEntity(final String nonUniqueName, final String clientTag,
+            final EntitySpecifics entitySpecifics) {
         checkFakeServerInitialized("useFakeServer must be called before data injection.");
         ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
@@ -214,7 +217,7 @@ public class FakeServerHelper {
                 // The protocol buffer is serialized as a byte array because it can be easily
                 // deserialized from this format in native code.
                 nativeInjectUniqueClientEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer,
-                        name, entitySpecifics.toByteArray());
+                        nonUniqueName, clientTag, entitySpecifics.toByteArray());
                 return null;
             }
         });
@@ -415,7 +418,8 @@ public class FakeServerHelper {
     private native byte[][] nativeGetSyncEntitiesByModelType(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, int modelType);
     private native void nativeInjectUniqueClientEntity(long nativeFakeServerHelperAndroid,
-            long nativeFakeServer, String name, byte[] serializedEntitySpecifics);
+            long nativeFakeServer, String nonUniqueName, String clientTag,
+            byte[] serializedEntitySpecifics);
     private native void nativeSetWalletData(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, byte[] serializedEntity);
     private native void nativeModifyEntitySpecifics(long nativeFakeServerHelperAndroid,

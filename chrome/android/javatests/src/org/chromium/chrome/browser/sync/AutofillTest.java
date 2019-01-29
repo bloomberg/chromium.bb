@@ -173,7 +173,8 @@ public class AutofillTest {
 
     private void addServerAutofillProfile(EntitySpecifics specifics) {
         mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(
-                specifics.getAutofillProfile().getAddressHomeLine1() /* name */, specifics);
+                specifics.getAutofillProfile().getAddressHomeLine1() /* nonUniqueName */,
+                specifics.getAutofillProfile().getAddressHomeLine1() /* clientTag */, specifics);
     }
 
     private List<Autofill> getClientAutofillProfiles() throws JSONException {

@@ -110,9 +110,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
   for (int i = 0; i < kNumEntities; i++) {
     specifics.mutable_preference()->set_name(base::StringPrintf("pref%d", i));
     fake_server_->InjectEntity(
-        syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-            specifics.preference().name(), specifics, /*creation_time=*/0,
-            /*last_modified_time=*/0));
+        syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+            /*non_unique_name=*/"",
+            /*client_tag=*/specifics.preference().name(), specifics,
+            /*creation_time=*/0, /*last_modified_time=*/0));
   }
 
   base::HistogramTester histogram_tester;
@@ -127,8 +128,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_preference()->set_name("testing.my-test-preference");
   fake_server_->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          specifics.preference().name(), specifics, /*creation_time=*/0,
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          /*non_unique_name=*/"",
+          /*client_tag=*/specifics.preference().name(), specifics,
+          /*creation_time=*/0,
           /*last_modified_time=*/0));
 
   base::HistogramTester histogram_tester;
@@ -143,8 +146,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientPreferencesSyncTest,
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_preference()->set_name("testing.my-test-preference");
   fake_server_->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          specifics.preference().name(), specifics, /*creation_time=*/0,
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          /*non_unique_name=*/"",
+          /*client_tag=*/specifics.preference().name(), specifics,
+          /*creation_time=*/0,
           /*last_modified_time=*/0));
 
   base::HistogramTester histogram_tester;

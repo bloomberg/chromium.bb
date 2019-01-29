@@ -182,8 +182,9 @@ void InjectAutofillProfileOnFakeSyncServer(std::string guid,
   autofill_profile->set_guid(guid);
 
   std::unique_ptr<syncer::LoopbackServerEntity> entity =
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          guid, entity_specifics, 12345, 12345);
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          /*non_unique_name=*/std::string(), /*client_tag=*/guid,
+          entity_specifics, 12345, 12345);
   gSyncFakeServer->InjectEntity(std::move(entity));
 }
 
@@ -272,8 +273,9 @@ void InjectTypedURLOnFakeSyncServer(const std::string& url) {
   typedUrl->add_visit_transitions(sync_pb::SyncEnums::TYPED);
 
   std::unique_ptr<syncer::LoopbackServerEntity> entity =
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          url, entitySpecifics, 12345, 12345);
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          /*non_unique_name=*/std::string(), /*client_tag=*/url,
+          entitySpecifics, 12345, 12345);
   gSyncFakeServer->InjectEntity(std::move(entity));
 }
 
