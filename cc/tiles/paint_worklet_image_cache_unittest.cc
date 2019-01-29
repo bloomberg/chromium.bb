@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "cc/tiles/paint_worklet_image_cache.h"
 
 #include "cc/paint/draw_image.h"
@@ -87,15 +89,17 @@ TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
   TestTileTaskRunner::ProcessTask(task1.get());
   TestTileTaskRunner::ProcessTask(task2.get());
 
-  base::flat_map<PaintWorkletInput*, sk_sp<PaintRecord>> records =
-      cache.GetRecordsForTest();
+  base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+      records = cache.GetRecordsForTest();
   EXPECT_EQ(records.size(), 2u);
 
-  PaintRecord* record1 = records[paint_image1.paint_worklet_input()].get();
+  PaintRecord* record1 =
+      records[paint_image1.paint_worklet_input()].first.get();
   EXPECT_TRUE(record1);
   TestPaintRecord(record1);
 
-  PaintRecord* record2 = records[paint_image2.paint_worklet_input()].get();
+  PaintRecord* record2 =
+      records[paint_image2.paint_worklet_input()].first.get();
   EXPECT_TRUE(record2);
   TestPaintRecord(record2);
 }
