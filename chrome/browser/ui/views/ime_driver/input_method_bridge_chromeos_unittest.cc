@@ -115,6 +115,7 @@ class InputMethodBridgeChromeOSTest : public testing::Test {
     details->state = ws::mojom::TextInputState::New(
         ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
         base::i18n::LEFT_TO_RIGHT, 0);
+    details->data = ws::mojom::TextInputClientData::New();
     input_method_ = std::make_unique<InputMethodBridge>(
         std::make_unique<RemoteTextInputClient>(std::move(client_ptr),
                                                 std::move(details)));

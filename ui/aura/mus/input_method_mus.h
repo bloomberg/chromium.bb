@@ -5,6 +5,8 @@
 #ifndef UI_AURA_MUS_INPUT_METHOD_MUS_H_
 #define UI_AURA_MUS_INPUT_METHOD_MUS_H_
 
+#include <memory>
+
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -77,6 +79,10 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
       const ui::KeyEvent& event,
       bool handled);
 
+  // Callback for |text_input_client_| when the input client data may have
+  // changed.
+  void OnTextInputClientDataChanged(const ui::TextInputClient* client);
+
   // Delegate used to update window related ime state. This may be null in
   // tests.
   InputMethodMusDelegate* input_method_mus_delegate_;
@@ -93,6 +99,10 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   // the response from the server. These are removed when the response is
   // received (ProcessKeyEventCallback()).
   base::circular_deque<EventResultCallback> pending_callbacks_;
+
+  // Data that was sent to RemoteTextInputClient. Used to suppress sending
+  // duplicate data.
+  ws::mojom::TextInputClientDataPtr last_sent_text_input_client_data_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMus);
 };

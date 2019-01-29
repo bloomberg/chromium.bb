@@ -29,10 +29,12 @@ void OnKeyEventProcessed(
 
 TextInputClientImpl::TextInputClientImpl(
     ui::TextInputClient* text_input_client,
-    ui::internal::InputMethodDelegate* delegate)
+    ui::internal::InputMethodDelegate* delegate,
+    OnClientDataChangedCallback on_client_data_changed)
     : text_input_client_(text_input_client),
       binding_(this),
-      delegate_(delegate) {}
+      delegate_(delegate),
+      on_client_data_changed_(std::move(on_client_data_changed)) {}
 
 TextInputClientImpl::~TextInputClientImpl() = default;
 
@@ -42,26 +44,38 @@ ws::mojom::TextInputClientPtr TextInputClientImpl::CreateInterfacePtrAndBind() {
   return ptr;
 }
 
+void TextInputClientImpl::NotifyClientDataChanged() {
+  if (!on_client_data_changed_)
+    return;
+
+  on_client_data_changed_.Run(text_input_client_);
+}
+
 void TextInputClientImpl::SetCompositionText(
     const ui::CompositionText& composition) {
   text_input_client_->SetCompositionText(composition);
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::ConfirmCompositionText() {
   text_input_client_->ConfirmCompositionText();
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::ClearCompositionText() {
   text_input_client_->ClearCompositionText();
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::InsertText(const base::string16& text) {
   text_input_client_->InsertText(text);
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::InsertChar(std::unique_ptr<ui::Event> event) {
   DCHECK(event->IsKeyEvent());
   text_input_client_->InsertChar(*event->AsKeyEvent());
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::DispatchKeyEventPostIME(

@@ -120,6 +120,16 @@ struct TextInputState {
   int32 text_input_flags;  // A bitfield of ui::TextInputFlags.
 };
 
+// Cached input context information so that RemoteTextInputClient could support
+// synchronous getters.
+struct TextInputClientData {
+  gfx.mojom.Range? text_range;
+  mojo_base.mojom.String16? text;
+  bool has_composition_text;
+  gfx.mojom.Range? composition_text_range;
+  gfx.mojom.Range? editable_selection_range;
+};
+
 // Represents how a text client gets focused. Corresponds to
 // ui::TextInputClient::FocusReason.
 enum FocusReason {
@@ -137,6 +147,9 @@ struct SessionDetails {
 
   // Caret bounds of the text input client.
   gfx.mojom.Rect caret_bounds;
+
+  // Data of the text input client.
+  TextInputClientData data;
 
   // How the text input client was focused.
   FocusReason focus_reason;
@@ -175,6 +188,9 @@ interface InputMethod {
   // Client sends |caret_bounds| in focused window coordinates,
   // Mus translates it to global coordinates and sends it to IME app.
   OnCaretBoundsChanged(gfx.mojom.Rect caret_bounds);
+
+  // Update the cached text input client data.
+  OnTextInputClientDataChanged(TextInputClientData data);
 
   // Called to process a key event. The callback function will be called to
   // notify the client if the event was handled or not. A handled event may

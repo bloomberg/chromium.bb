@@ -28,6 +28,10 @@ class TestInputMethod : public mojom::InputMethod {
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override {
     NOTIMPLEMENTED_LOG_ONCE();
   }
+  void OnTextInputClientDataChanged(
+      ws::mojom::TextInputClientDataPtr data) override {
+    NOTIMPLEMENTED();
+  }
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override {
     DCHECK(key_event->IsKeyEvent());
