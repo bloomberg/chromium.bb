@@ -72,10 +72,10 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
 };
 
 DEFINE_TYPE_CASTS(CSSUnitValue,
-                  CSSNumericValue,
+                  CSSStyleValue,
                   value,
-                  value->IsUnitValue(),
-                  value.IsUnitValue());
+                  value->GetType() == CSSStyleValue::StyleValueType::kUnitType,
+                  value.GetType() == CSSStyleValue::StyleValueType::kUnitType);
 
 }  // namespace blink
 

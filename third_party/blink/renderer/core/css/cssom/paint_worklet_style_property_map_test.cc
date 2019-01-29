@@ -108,7 +108,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 
     const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>& values =
         map->ValuesForTest();
-    EXPECT_EQ(values.size(), 6u);
+    EXPECT_EQ(values.size(), 7u);
     EXPECT_EQ(values.at("color")->ToCSSStyleValue()->CSSText(),
               "rgb(0, 255, 0)");
     EXPECT_EQ(values.at("color")->ToCSSStyleValue()->GetType(),
@@ -131,9 +131,13 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     EXPECT_EQ(values.at("--keyword")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
     EXPECT_EQ(
-        static_cast<CSSKeywordValue*>(values.at("--keyword")->ToCSSStyleValue())
-            ->value(),
+        ToCSSKeywordValue(values.at("--keyword")->ToCSSStyleValue())->value(),
         "test");
+    EXPECT_EQ(values.at("--x")->ToCSSStyleValue()->GetType(),
+              CSSStyleValue::StyleValueType::kUnitType);
+    EXPECT_EQ(ToCSSUnitValue(values.at("--x")->ToCSSStyleValue())->value(), 10);
+    EXPECT_EQ(ToCSSUnitValue(values.at("--x")->ToCSSStyleValue())->unit(),
+              "px");
 
     waitable_event->Signal();
   }
@@ -208,13 +212,18 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
       &GetDocument(), "color", "rgb(0, 255, 0)", "", ASSERT_NO_EXCEPTION);
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "display", "block", "", ASSERT_NO_EXCEPTION);
-  Vector<AtomicString> custom_properties({"--foo", "--bar", "--keyword"});
+  Vector<AtomicString> custom_properties(
+      {"--foo", "--bar", "--keyword", "--x"});
   css_test_helpers::RegisterProperty(GetDocument(), "--keyword", "test", "test",
+                                     false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "42px",
                                      false);
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "--foo", "PaintWorklet", "", ASSERT_NO_EXCEPTION);
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "--keyword", "test", "", ASSERT_NO_EXCEPTION);
+  GetDocument().documentElement()->style()->setProperty(
+      &GetDocument(), "--x", "10px", "", ASSERT_NO_EXCEPTION);
 
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
