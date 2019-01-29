@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -634,10 +635,12 @@ public class PersonalDataManager {
      */
     public ArrayList<AutofillProfile> getBillingAddressesToSuggest() {
         ThreadUtils.assertOnUiThread();
+        boolean includeOrganizationInLabel =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME);
         return getProfilesWithLabels(
-                nativeGetProfileLabelsToSuggest(
-                        mPersonalDataManagerAndroid, true /* includeNameInLabel */,
-                        false /* includeOrganizationInLabel */, false /* includeCountryInLabel */),
+                nativeGetProfileLabelsToSuggest(mPersonalDataManagerAndroid,
+                        true /* includeNameInLabel */, includeOrganizationInLabel,
+                        false /* includeCountryInLabel */),
                 nativeGetProfileGUIDsToSuggest(mPersonalDataManagerAndroid));
     }
 
