@@ -39,6 +39,8 @@
     [CallWith=ScriptState] Promise<ServiceWorkerRegistration> getRegistration(optional USVString documentURL = "");
     [CallWith=ScriptState] Promise<sequence<ServiceWorkerRegistration>> getRegistrations();
 
+    void startMessages();
+
     attribute EventHandler oncontrollerchange;
     attribute EventHandler onmessage;
 };

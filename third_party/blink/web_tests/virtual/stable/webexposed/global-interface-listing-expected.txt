@@ -6327,6 +6327,7 @@ interface ServiceWorkerContainer : EventTarget
     method getRegistration
     method getRegistrations
     method register
+    method startMessages
     setter oncontrollerchange
     setter onmessage
 interface ServiceWorkerRegistration : EventTarget

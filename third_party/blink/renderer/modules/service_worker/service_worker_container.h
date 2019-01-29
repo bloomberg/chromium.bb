@@ -89,6 +89,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ScriptPromise getRegistration(ScriptState*, const String& document_url);
   ScriptPromise getRegistrations(ScriptState*);
 
+  void startMessages();
+
   void ContextDestroyed(ExecutionContext*) override;
 
   // WebServiceWorkerProviderClient implementation.

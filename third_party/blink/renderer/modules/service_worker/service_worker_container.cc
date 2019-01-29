@@ -462,6 +462,13 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   return promise;
 }
 
+// https://w3c.github.io/ServiceWorker/#dom-serviceworkercontainer-startmessages
+void ServiceWorkerContainer::startMessages() {
+  // "startMessages() method must enable the context object’s client message
+  // queue if it is not enabled."
+  EnableClientMessageQueue();
+}
+
 ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
   if (!GetExecutionContext())
     return ScriptPromise();
