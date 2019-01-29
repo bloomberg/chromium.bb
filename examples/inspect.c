@@ -112,7 +112,7 @@ static const arg_def_t skip_non_transform_arg = ARG_DEF(
 static const arg_def_t combined_arg =
     ARG_DEF("comb", "combined", 1, "combinining parameters into one output.");
 
-int combined_parm_list[5];
+int combined_parm_list[15];
 int combined_parm_count = 0;
 
 static const arg_def_t *main_args[] = { &limit_arg,
