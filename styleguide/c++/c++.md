@@ -247,9 +247,14 @@ following conventions. Here we refer to the parameter type as `T` and name as
     pointers, and there should rarely be a need to pass smart pointers by const
     ref.
 
-Conventions for return values are similar: return raw pointers when the caller
-does not take ownership, and return smart pointers by value otherwise,
-potentially in conjunction with `std::move()`.
+Conventions for return values are similar with an important distinction:
+  * Return raw pointers if-and-only-if the caller does not take ownership.
+  * Return `std::unique_ptr<T>` or `scoped_refptr<T>` by value when the impl is
+    handing off ownership.
+  * **Distinction**: Return `const scoped_refptr<T>&` when the impl retains
+    ownership so the caller isn't required to take a ref: this avoids bumping
+    the reference count if the caller doesn't need ownership and also
+    [helps binary size](https://crrev.com/c/1435627)).
 
 A great deal of Chromium code predates the above rules. In particular, some
 functions take ownership of params passed as `T*`, or take `const
