@@ -67,6 +67,7 @@ group("gn_all") {
     "//base:base_perftests",
     "//base:base_unittests",
     "//chrome/installer",
+    "//chrome/updater",
     "//net:net_unittests",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
