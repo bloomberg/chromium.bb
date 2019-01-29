@@ -40,15 +40,15 @@ void GlowHoverController::SetSubtleOpacityScale(double opacity_scale) {
   subtle_opacity_scale_ = opacity_scale;
 }
 
-void GlowHoverController::Show(Style style) {
+void GlowHoverController::Show(ShowStyle style) {
   switch (style) {
-    case SUBTLE:
+    case ShowStyle::kSubtle:
       opacity_scale_ = subtle_opacity_scale_;
       animation_.SetSlideDuration(kTrackHoverDurationMs);
       animation_.SetTweenType(gfx::Tween::EASE_OUT);
       animation_.Show();
       break;
-    case PRONOUNCED:
+    case ShowStyle::kPronounced:
       opacity_scale_ = kPronouncedOpacityScale;
       // Force the end state to show immediately.
       animation_.Show();
@@ -57,15 +57,18 @@ void GlowHoverController::Show(Style style) {
   }
 }
 
-void GlowHoverController::Hide() {
-  animation_.SetTweenType(gfx::Tween::EASE_IN);
-  animation_.Hide();
-}
-
-void GlowHoverController::HideImmediately() {
-  if (ShouldDraw())
-    view_->SchedulePaint();
-  animation_.Reset();
+void GlowHoverController::Hide(HideStyle style) {
+  switch (style) {
+    case HideStyle::kGradual:
+      animation_.SetTweenType(gfx::Tween::EASE_IN);
+      animation_.Hide();
+      break;
+    case HideStyle::kImmediate:
+      if (ShouldDraw())
+        view_->SchedulePaint();
+      animation_.Reset();
+      break;
+  }
 }
 
 double GlowHoverController::GetAnimationValue() const {
