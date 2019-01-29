@@ -333,8 +333,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     ColorBuffer(DrawingBuffer*,
                 const IntSize&,
                 GLuint texture_id,
-                GLuint image_id,
-                std::unique_ptr<gfx::GpuMemoryBuffer>);
+                std::unique_ptr<gfx::GpuMemoryBuffer>,
+                gpu::Mailbox mailbox);
     ~ColorBuffer();
 
     // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
@@ -343,7 +343,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     scoped_refptr<DrawingBuffer> drawing_buffer;
     const IntSize size;
     const GLuint texture_id = 0;
-    const GLuint image_id = 0;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
 
     // If we're emulating an RGB back buffer using an RGBA Chromium
@@ -355,6 +354,9 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     // There are bugs in the semantics of RGB8 textures in this
     // situation (the alpha channel is zeroed), requiring more fixups.
     GLuint rgb_workaround_texture_id = 0;
+
+    // The mailbox for |rgb_workaround_texture_id|.
+    gpu::Mailbox rgb_workaround_mailbox;
 
     // The mailbox used to send this buffer to the compositor.
     gpu::Mailbox mailbox;

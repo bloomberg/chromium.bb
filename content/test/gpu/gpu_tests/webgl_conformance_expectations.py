@@ -198,6 +198,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'no_passthrough'], bug=626524)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
+    self.Skip('conformance/rendering/out-of-bounds-index-buffers.html',
+              ['win', 'nvidia', 'passthrough', 'vulkan'], bug=3018) # ANGLE bug
+
     # self.Fail('conformance/extensions/ext-sRGB.html',
     #     ['win', 'nvidia', 'no_passthrough'], bug=679696)
 
