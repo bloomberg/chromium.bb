@@ -471,10 +471,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
         WebString::FromASCII(scheme));
   }
 
-  main_thread_profiler_->SetMainThreadTaskRunner(
-      base::ThreadTaskRunnerHandle::Get());
-  ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-      thread->GetConnector());
+  // This doesn't work in single-process mode.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    main_thread_profiler_->SetMainThreadTaskRunner(
+        base::ThreadTaskRunnerHandle::Get());
+    ThreadProfiler::SetServiceManagerConnectorForChildProcess(
+        thread->GetConnector());
+  }
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(
