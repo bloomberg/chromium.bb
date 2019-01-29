@@ -1189,6 +1189,12 @@ chrome.automation.AutomationNode.prototype.imageDataUrl;
 chrome.automation.AutomationNode.prototype.language;
 
 /**
+ * The detected language code for this subtree.
+ * @type {(string|undefined)}
+ */
+chrome.automation.AutomationNode.prototype.detectedLanguage;
+
+/**
  * Indicates the availability and type of interactive popup element true - the popup is a menu menu - the popup is a menu listbox - the popup is a listbox tree - the popup is a tree grid - the popup is a grid dialog - the popup is a dialog
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-hasPopup
