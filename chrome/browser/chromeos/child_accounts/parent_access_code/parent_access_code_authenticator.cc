@@ -77,6 +77,8 @@ ParentAccessCodeAuthenticator::~ParentAccessCodeAuthenticator() = default;
 
 base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Generate(
     base::Time timestamp) {
+  DCHECK_LE(base::Time::UnixEpoch(), timestamp);
+
   // We find the beginning of the interval for the given timestamp and adjust by
   // the granularity.
   const int64_t interval =
@@ -115,7 +117,12 @@ base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Generate(
 base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::Validate(
     const std::string& code,
     base::Time timestamp) {
-  return ValidateInRange(code, timestamp - config_.clock_drift_tolerance(),
+  DCHECK_LE(base::Time::UnixEpoch(), timestamp);
+
+  base::Time valid_from = timestamp - config_.clock_drift_tolerance();
+  if (valid_from < base::Time::UnixEpoch())
+    valid_from = base::Time::UnixEpoch();
+  return ValidateInRange(code, valid_from,
                          timestamp + config_.clock_drift_tolerance());
 }
 
@@ -123,7 +130,9 @@ base::Optional<ParentAccessCode> ParentAccessCodeAuthenticator::ValidateInRange(
     const std::string& code,
     base::Time valid_from,
     base::Time valid_to) {
+  DCHECK_LE(base::Time::UnixEpoch(), valid_from);
   DCHECK_GE(valid_to, valid_from);
+
   const int64_t start_interval =
       valid_from.ToJavaTime() / kCodeGranularity.InMilliseconds();
   const int64_t end_interval =

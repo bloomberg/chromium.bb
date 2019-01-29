@@ -370,4 +370,18 @@ TEST_F(ParentAccessCodeAuthenticatorTest, ValidationWithClockDriftTolerance) {
   EXPECT_FALSE(validated_code_with_tolerance);
 }
 
+TEST_F(ParentAccessCodeAuthenticatorTest, UnixEpoch) {
+  // Test authenticator with Unix Epoch timestamp.
+  const base::Time unix_epoch = base::Time::UnixEpoch();
+
+  ParentAccessCodeAuthenticator authenticator(DefaultConfig());
+  base::Optional<ParentAccessCode> generated =
+      authenticator.Generate(unix_epoch);
+  ASSERT_NO_FATAL_FAILURE(Verify(generated, unix_epoch));
+  base::Optional<ParentAccessCode> validated =
+      authenticator.Validate(generated->code(), unix_epoch);
+  ASSERT_NO_FATAL_FAILURE(Verify(validated, unix_epoch));
+  EXPECT_EQ(generated, validated);
+}
+
 }  // namespace chromeos
