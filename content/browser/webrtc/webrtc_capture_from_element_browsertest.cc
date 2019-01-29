@@ -63,8 +63,6 @@ class WebRtcCaptureFromElementBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebRtcContentBrowserTestBase::SetUpCommandLine(command_line);
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "MediaCaptureFromVideo");
 
     // Allow <video>/<audio>.play() when not initiated by user gesture.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(

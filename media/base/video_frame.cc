@@ -985,7 +985,7 @@ gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
 }
 
 std::string VideoFrame::AsHumanReadableString() {
-  if (metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
+  if (metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
     return "end of stream";
 
   std::ostringstream s;
@@ -996,7 +996,7 @@ std::string VideoFrame::AsHumanReadableString() {
 }
 
 size_t VideoFrame::BitDepth() const {
-  return ::media::BitDepth(format());
+  return media::BitDepth(format());
 }
 
 // static
