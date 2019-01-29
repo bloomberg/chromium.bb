@@ -7,13 +7,14 @@
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,9 +44,6 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(
             testing_profile_.get());
-
-    account_tracker_service_ =
-        AccountTrackerServiceFactory::GetForProfile(testing_profile_.get());
   }
 
   ~AdvancedProtectionStatusManagerTest() override {}
@@ -92,7 +90,6 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
-  AccountTrackerService* account_tracker_service_;
 };
 
 }  // namespace
@@ -342,12 +339,23 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
   EXPECT_FALSE(aps_manager.IsRefreshScheduled());
 
   // Simulates account update.
-  account_tracker_service_->SetIsAdvancedProtectionAccount(
-      account_id, /* is_under_advanced_protection= */ true);
+  identity_test_env()
+      ->identity_manager()
+      ->GetAccountsMutator()
+      ->UpdateAccountInfo(account_id,
+                          /*is_child_account=*/false,
+                          /*is_under_advanced_protection=*/true);
   EXPECT_TRUE(aps_manager.is_under_advanced_protection());
   EXPECT_TRUE(aps_manager.IsRefreshScheduled());
 
-  account_tracker_service_->RemoveAccount(account_id);
+  AccountFetcherService* account_fetcher_service =
+      AccountFetcherServiceFactory::GetForProfile(testing_profile_.get());
+  // This call is necessary to ensure that the account removal is fully
+  // processed in this testing context.
+  account_fetcher_service->EnableNetworkFetchesForTest();
+  identity_test_env()->identity_manager()->GetAccountsMutator()->RemoveAccount(
+      account_id,
+      signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);
   EXPECT_FALSE(aps_manager.is_under_advanced_protection());
   EXPECT_TRUE(testing_profile_->GetPrefs()->HasPrefPath(
       prefs::kAdvancedProtectionLastRefreshInUs));
