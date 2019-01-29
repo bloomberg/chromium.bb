@@ -178,10 +178,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   ElementAnimations(AnimationHost* host, ElementId element_id);
   ~ElementAnimations() override;
 
-  // Parent AnimationHost.
-  AnimationHost* animation_host() { return animation_host_; }
-  const AnimationHost* animation_host() const { return animation_host_; }
-
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters,
                         KeyframeModel* keyframe_model);
