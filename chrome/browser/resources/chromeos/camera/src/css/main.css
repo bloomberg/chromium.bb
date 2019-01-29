@@ -66,13 +66,13 @@ body {
 button,
 input {
   background-color: transparent;
-  position: relative;
-  pointer-events: auto;
-  margin: 0;
-  padding: 0;
   border-radius: 4px;
   border-style: none;
+  margin: 0;
   outline: none;
+  padding: 0;
+  pointer-events: auto;
+  position: relative;
 }
 
 input {
@@ -81,14 +81,14 @@ input {
 
 button:focus:after,
 input:focus:after {
-  position: absolute;
   border: 2px solid rgba(37, 129, 223, 0.7);
   border-radius: 4px;
-  top: -3px;
-  left: -3px;
   bottom: -3px;
-  right: -3px;
   content: '';
+  left: -3px;
+  position: absolute;
+  right: -3px;
+  top: -3px;
 }
 
 #browser .media-wrapper:focus {
@@ -118,11 +118,11 @@ input:focus:after {
 .buttons input,
 .menu-header .icon,
 .menu-item .icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
   background-position: center;
   background-repeat: no-repeat;
+  flex-shrink: 0;
+  height: 40px;
+  width: 40px;
 }
 
 #browser-print {
@@ -142,8 +142,8 @@ input:focus:after {
 }
 
 ::-webkit-scrollbar {
-  width: 0;
   height: 0;
+  width: 0;
 }
 
 ::-webkit-scrollbar-track {
@@ -152,8 +152,8 @@ input:focus:after {
 
 ::-webkit-scrollbar-thumb {
   background: transparent;
-  width: 0;
   height: 0;
+  width: 0;
 }
 
 .top-stripe {
@@ -168,8 +168,8 @@ body.shift-top-stripe .top-stripe {
 
 .bottom-stripe,
 body:not(.tablet-landscape) .actions-group {
-  position: absolute;
   bottom: 56px;
+  position: absolute;
   transform: translateY(50%);
 }
 
@@ -183,8 +183,8 @@ body.shift-bottom-stripe:not(.tablet-landscape) .actions-group {
 }
 
 .left-stripe {
-  position: absolute;
   left: 48px;
+  position: absolute;
   transform: translateX(-50%);
 }
 
@@ -238,8 +238,8 @@ body.tablet-landscape .actions-group button {
 
 #shutter {
   background-image: url(../images/camera_shutter_photo_start.svg);
-  width: 72px;
   height: 72px;
+  width: 72px;
   z-index: 1;  /* On top of transforming switch-mode buttons. */
 }
 
@@ -277,8 +277,8 @@ body.record-mode.taking #shutter:hover {
 
 #switch-recordvideo,
 #switch-takephoto {
-  width: 56px;
   height: 56px;
+  width: 56px;
 }
 
 #switch-recordvideo {
@@ -316,9 +316,9 @@ body:not(.multi-camera) #switch-device {
 
 #camera-mode {
   background-image: url(../images/camera_mode_photo.svg);
-  width: 40px;
   height: 40px;
   visibility: hidden;
+  width: 40px;
 }
 
 body.record-mode #camera-mode {
@@ -331,22 +331,22 @@ body.mode-switching:not(.streaming) #camera-mode {
 
 #timer-tick-msg {
   color: white;
-  font-size: 72px;
   font-family: 'Roboto', sans-serif;
+  font-size: 72px;
   visibility: hidden;
 }
 
 #timer-tick-msg.animate {
-  transform: scale(1.8, 1.8);
   opacity: 0.2;
+  transform: scale(1.8, 1.8);
   transition: transform 500ms ease-out, opacity 500ms ease-out;
   visibility: visible;
 }
 
 #switch-device {
   background-image: url(../images/camera_button_switch_device.svg);
-  width: 48px;
   height: 48px;
+  width: 48px;
 }
 
 #switch-device.animate {
@@ -363,16 +363,16 @@ body.mode-switching:not(.streaming) #camera-mode {
 }
 
 #gallery-enter {
+  background-color: rgba(24, 24, 24, 1);
+  background-size: cover;
+  height: 48px;
   position: relative;
   width: 48px;
-  height: 48px;
-  background-size: cover;
-  background-color: rgba(24, 24, 24, 1);
 }
 
 .centered-overlay {
-  position: absolute;
   left: 50%;
+  position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
 }
@@ -450,8 +450,8 @@ body.browser #browser,
 body.dialog #dialog,
 body.warning #warning {
   opacity: 1;
-  visibility: visible;
   transition: opacity 100ms;
+  visibility: visible;
 }
 
 body.gridsettings #gridsettings,
@@ -483,8 +483,8 @@ body.shift-preview-top #preview-wrapper {
 }
 
 body.shift-preview-left #preview-wrapper {
-  position: absolute;
   left: 0;
+  position: absolute;
 }
 
 #preview-wrapper,
@@ -504,11 +504,11 @@ body.mirror #preview-focus {
 }
 
 #preview-focus {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
   bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 #preview-focus-aim {
@@ -527,12 +527,12 @@ body.mirror:not(.streaming) #preview-video {
 }
 
 #preview-grid {
-  position: absolute;
   bottom: 0;
   left: 0;
+  opacity: 0.5;
+  position: absolute;
   right: 0;
   top: 0;
-  opacity: 0.5;
 }
 
 body:not(.streaming) #preview-grid,
@@ -546,22 +546,22 @@ body:not(.streaming) .options-group {
 #preview-grid-horizontal {
   border-bottom: 1px solid white;
   border-top: 1px solid white;
-  position: absolute;
+  height: 100%;
   left: 0;
+  position: absolute;
   right: 0;
   top: 50%;
-  height: 100%;
   transform: translateY(-50%);
 }
 
 body._4x4 #preview-grid-horizontal:before {
   border-bottom: 1px solid white;
-  position: absolute;
+  content: '';
+  height: 0;
   left: 0;
+  position: absolute;
   right: 0;
   top: 0;
-  height: 0;
-  content: '';
 }
 
 body.grid._3x3 #preview-grid-horizontal,
@@ -584,22 +584,22 @@ body.gridsettings._4x4 #preview-grid-horizontal:before {
 #preview-grid-vertical {
   border-left: 1px solid white;
   border-right: 1px solid white;
-  position: absolute;
   bottom: 0;
-  top: 0;
   left: 50%;
-  width: 100%;
+  position: absolute;
+  top: 0;
   transform: translateX(-50%);
+  width: 100%;
 }
 
 body._4x4 #preview-grid-vertical:before {
   border-right: 1px solid white;
-  position: absolute;
   bottom: 0;
-  top: 0;
-  left: 0;
-  width: 0;
   content: '';
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 0;
 }
 
 body.grid._3x3 #preview-grid-vertical,
@@ -638,13 +638,13 @@ body:not(.grid):not(.gridsettings) #preview-grid-vertical:before {
 
 #record-time {
   align-items: center;
-  display: flex;
-  justify-content: flex-start;
-  pointer-events: none;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
+  display: flex;
   height: 32px;
+  justify-content: flex-start;
   padding: 0 12px;
+  pointer-events: none;
 }
 
 #record-time[hidden],
@@ -653,25 +653,25 @@ body:not(.grid):not(.gridsettings) #preview-grid-vertical:before {
 }
 
 #record-time .icon {
-  flex-shrink: 0;
   background-color: #ea4335;
-  width: 6px;
-  height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
+  height: 6px;
+  width: 6px;
 }
 
 #record-time #record-time-msg {
-  flex-shrink: 0;
   color: white;
-  font-size: 13px;
+  flex-shrink: 0;
   font-family: 'Roboto', sans-serif;
+  font-size: 13px;
   margin-left: 8px;
 }
 
 #browser .buttons {
+  left: 10px;
   position: fixed;
   top: 10px;
-  left: 10px;
 }
 
 #browser .buttons button {
@@ -695,9 +695,9 @@ body.ext-fs #browser-export {
 
 #browser div.media-wrapper {
   align-items: center;
-  justify-content: center;
   display: flex;
   flex-shrink: 0;
+  justify-content: center;
   margin: 4%;
   pointer-events: auto;
 }
@@ -749,9 +749,9 @@ body.ext-fs #browser-export {
 
   /* Set default styles and max-dimensions for printing the browser view. */
   #browser div.media-wrapper.selected {
-    display: block;  /* Allows to keep aspect ratio of children. */
     border: none;
     box-shadow: none;
+    display: block;  /* Allows to keep aspect ratio of children. */
     margin: auto;
     position: absolute;
   }
@@ -773,16 +773,16 @@ body.ext-fs #browser-export {
   background: rgba(241, 243, 244, 0.8);
   border-radius: 2px;
   color: #202124;
-  font-size: 12px;
   font-family: 'Roboto', sans-serif;
-  line-height: 22px;
-  white-space: nowrap;
-  padding: 0 8px;
+  font-size: 12px;
   left: 0;
+  line-height: 22px;
+  opacity: 0;
+  padding: 0 8px;
   pointer-events: none;
   position: absolute;
   top: 0;
-  opacity: 0;
+  white-space: nowrap;
   z-index: 100;
 }
 
@@ -795,12 +795,12 @@ body.ext-fs #browser-export {
   background: #1e1e23;
   border-radius: 16px;
   color: white;
-  font-size: 16px;
   font-family: 'Roboto', sans-serif;
+  font-size: 16px;
   line-height: 32px;
+  opacity: 0;
   padding: 0 16px;
   pointer-events: none;
-  opacity: 0;
   z-index: 100;
 }
 
@@ -834,32 +834,32 @@ body.ext-fs #browser-export {
   background: rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
-  position: absolute;
-  top: 0px;
-  left: 0px;
   height: 100%;
+  left: 0px;
   min-width: 360px;
   opacity: 0.9;
+  position: absolute;
+  top: 0px;
 }
 
 .menu-header,
 .menu-item {
   align-items: center;
+  color: #f1f3f4;
   display: flex;
   flex-shrink: 0;
-  justify-content: flex-start;
-  text-align: left;
-  padding: 0 20px 0 24px;
-  height: 64px;
-  color: #f1f3f4;
-  font-size: 13px;
   font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  height: 64px;
+  justify-content: flex-start;
+  padding: 0 20px 0 24px;
+  text-align: left;
 }
 
 .menu-header {
-  height: 88px;
   color: white;
   font-size: 20px;
+  height: 88px;
 }
 
 .menu-header .icon,
@@ -872,8 +872,8 @@ body.ext-fs #browser-export {
 }
 
 .menu-item .description {
-  margin-top: 5px;
   color: #bdc1c6;
+  margin-top: 5px;
 }
 
 .menu-item .description span {
@@ -889,25 +889,25 @@ body._10sec .description span[i18n-content=labelTimer10s] {
 }
 
 .menu-item input:before {
-  position: absolute;
-  top: 13px;
-  left: 13px;
-  bottom: 13px;
-  right: 13px;
-  box-shadow: 0px 0px 0px 2px #f1f3f4;
   border-radius: 50%;
+  bottom: 13px;
+  box-shadow: 0px 0px 0px 2px #f1f3f4;
   content: '';
+  left: 13px;
+  position: absolute;
+  right: 13px;
+  top: 13px;
 }
 
 .menu-item input:checked:before {
-  top: 12px;
-  left: 12px;
-  bottom: 12px;
-  right: 12px;
-  box-shadow: 0px 0px 0px 1px #f1f3f4;
-  background-color: #f1f3f4;
   background-clip: padding-box;
+  background-color: #f1f3f4;
   border: 4px solid transparent;
+  bottom: 12px;
+  box-shadow: 0px 0px 0px 1px #f1f3f4;
+  left: 12px;
+  right: 12px;
+  top: 12px;
   transition: border-width 100ms ease-in;
 }
 
@@ -955,10 +955,10 @@ body._10sec .description span[i18n-content=labelTimer10s] {
 }
 
 #warning #error-msg {
-  text-align: center;
-  font-size: 18px;
   font-family: 'Roboto', sans-serif;
+  font-size: 18px;
   line-height: 32px;
+  text-align: center;
   white-space: pre-wrap;
 }
 
@@ -967,12 +967,12 @@ body._10sec .description span[i18n-content=labelTimer10s] {
 }
 
 #dialog-popup {
-  transform: translateY(20px);
   background: white;
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  border-radius: 4px;
+  transform: translateY(20px);
   transition: transform 200ms;
 }
 
@@ -981,21 +981,21 @@ body.dialog #dialog #dialog-popup {
 }
 
 #dialog #dialog-msg {
-  user-select: text;  /* Allow copying the message. */
-  cursor: text;
   color: #202124;
-  font-size: 14px;
+  cursor: text;
   font-family: 'Roboto', sans-serif;
+  font-size: 14px;
   max-height: 320px;
   max-width: 472px;
   overflow: auto;
   padding: 20px 0;
+  user-select: text;  /* Allow copying the message. */
   white-space: pre-wrap;
 }
 
 #dialog #dialog-msg::-webkit-scrollbar {
-  width: 6px;
   height: 6px;
+  width: 6px;
 }
 
 #dialog #dialog-msg::-webkit-scrollbar-track {
@@ -1004,8 +1004,8 @@ body.dialog #dialog #dialog-popup {
 
 #dialog #dialog-msg::-webkit-scrollbar-thumb {
   background: gray;
-  width: 6px;
   height: 6px;
+  width: 6px;
 }
 
 #dialog-buttons {
@@ -1017,12 +1017,12 @@ body.dialog #dialog #dialog-popup {
 
 #dialog-buttons button {
   background-color: white;
-  color: #2581df;
-  font-size: 12px;
-  font-family: 'Roboto', sans-serif;
   border-style: solid;
-  padding: 6px 18px;
+  color: #2581df;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
   margin: 4px;
+  padding: 6px 18px;
 }
 
 #dialog-buttons button:focus {
@@ -1037,10 +1037,10 @@ body.dialog #dialog #dialog-popup {
 
 #spinner {
   background-image: url(../images/spinner.svg);
-  width: 32px;
   height: 32px;
-  z-index: 1;
   visibility: hidden;
+  width: 32px;
+  z-index: 1;
 }
 
 body:not(.mode-switching):not(.streaming) #spinner {
