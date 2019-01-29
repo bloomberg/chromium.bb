@@ -1039,6 +1039,39 @@ TEST_F(FocusManagerTest, AnchoredDialogOnContainerView) {
   EXPECT_TRUE(parent3->HasFocus());
 }
 
+// Checks that focus traverses from a View to a bubble anchored at that View
+// when in a pane.
+TEST_F(FocusManagerTest, AnchoredDialogInPane) {
+  // Set up a focusable view (to which we will anchor our bubble) inside an
+  // AccessiblePaneView.
+  View* root_view = GetWidget()->GetRootView();
+  AccessiblePaneView* pane =
+      root_view->AddChildView(std::make_unique<AccessiblePaneView>());
+  View* anchor = pane->AddChildView(std::make_unique<View>());
+  anchor->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  BubbleDialogDelegateView* bubble = new TestBubbleDialogDelegateView(anchor);
+  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      BubbleDialogDelegateView::CreateBubble(bubble));
+  bubble_widget->SetFocusTraversableParent(
+      bubble->anchor_widget()->GetFocusTraversable());
+  bubble_widget->SetFocusTraversableParentView(anchor);
+  bubble->set_close_on_deactivate(false);
+  bubble_widget->Show();
+
+  // We need a focusable view inside our bubble to check that focus traverses
+  // in.
+  View* bubble_child = bubble->AddChildView(std::make_unique<View>());
+  bubble_child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  // Verify that, when in pane focus mode, focus advances from the anchor view
+  // to inside the bubble.
+  pane->SetPaneFocus(anchor);
+  EXPECT_TRUE(anchor->HasFocus());
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(bubble_child->HasFocus());
+}
+
 // This test is specifically for the permutation where the main
 // widget is a DesktopNativeWidgetAura and the bubble is a
 // NativeWidgetAura. When focus moves back from the bubble to the

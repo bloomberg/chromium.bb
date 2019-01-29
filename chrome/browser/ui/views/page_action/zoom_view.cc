@@ -91,9 +91,11 @@ void ZoomView::ZoomChangedForActiveTab(bool can_show_bubble) {
       ZoomBubbleView::RefreshBubbleIfShowing(web_contents);
     }
   } else {
-    SetVisible(false);
+    // Close the bubble first to ensure focus is not lost when SetVisible(false)
+    // is called. See crbug.com/913829.
     if (HasAssociatedBubble())
       ZoomBubbleView::CloseCurrentBubble();
+    SetVisible(false);
   }
 }
 
