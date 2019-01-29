@@ -319,6 +319,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       DLOG(ERROR) << "Unexpected value for at_end: " << result.at_end;
       break;
   }
+  EnterState(AutofillAssistantState::PROMPT);
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
