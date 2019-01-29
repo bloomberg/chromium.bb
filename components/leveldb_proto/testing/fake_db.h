@@ -47,6 +47,12 @@ class FakeDB : public UniqueProtoDatabase<T> {
           entries_to_save,
       const KeyFilter& filter,
       Callbacks::UpdateCallback callback) override;
+  void UpdateEntriesWithRemoveFilter(
+      std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
+          entries_to_save,
+      const leveldb_proto::KeyFilter& filter,
+      const std::string& target_prefix,
+      Callbacks::UpdateCallback callback) override;
   void LoadEntries(
       typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
@@ -68,6 +74,11 @@ class FakeDB : public UniqueProtoDatabase<T> {
       const KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
+      override;
+  void LoadKeysAndEntriesInRange(
+      const std::string& start,
+      const std::string& end,
       typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
       override;
   void LoadKeys(Callbacks::LoadKeysCallback callback) override;
@@ -182,6 +193,27 @@ void FakeDB<T>::UpdateEntriesWithRemoveFilter(
 }
 
 template <typename T>
+void FakeDB<T>::UpdateEntriesWithRemoveFilter(
+    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
+    const leveldb_proto::KeyFilter& delete_key_filter,
+    const std::string& target_prefix,
+    Callbacks::UpdateCallback callback) {
+  for (const auto& pair : *entries_to_save)
+    (*db_)[pair.first] = pair.second;
+
+  auto it = db_->begin();
+  while (it != db_->end()) {
+    if (!delete_key_filter.is_null() && delete_key_filter.Run(it->first) &&
+        (it->first).compare(0, target_prefix.length(), target_prefix) == 0)
+      db_->erase(it++);
+    else
+      ++it;
+  }
+
+  update_callback_ = std::move(callback);
+}
+
+template <typename T>
 void FakeDB<T>::LoadEntries(
     typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter(KeyFilter(), std::move(callback));
@@ -239,6 +271,22 @@ void FakeDB<T>::LoadKeysAndEntriesWithFilter(
       if (pair.first.compare(0, target_prefix.length(), target_prefix) == 0)
         keys_entries->insert(pair);
     }
+  }
+
+  load_callback_ = base::BindOnce(RunLoadKeysAndEntriesCallback,
+                                  std::move(callback), std::move(keys_entries));
+}
+
+template <typename T>
+void FakeDB<T>::LoadKeysAndEntriesInRange(
+    const std::string& start,
+    const std::string& end,
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
+  auto keys_entries = std::make_unique<std::map<std::string, T>>();
+  for (const auto& pair : *db_) {
+    std::string key = pair.first;
+    if (start <= key && key <= end)
+      keys_entries->insert(pair);
   }
 
   load_callback_ = base::BindOnce(RunLoadKeysAndEntriesCallback,
