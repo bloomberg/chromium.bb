@@ -1212,9 +1212,8 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
     return;
 
   bool inline_settings_visible = !settings_row_->visible();
-
-  if (!inline_settings_visible && block_all_button_->checked())
-    MessageCenter::Get()->DisableNotification(notification_id());
+  bool disable_notification =
+      settings_row_->visible() && block_all_button_->checked();
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
@@ -1236,6 +1235,11 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   Layout();
   SchedulePaint();
+
+  // Call DisableNotification() at the end, because |this| can be deleted at any
+  // point after it's called.
+  if (disable_notification)
+    MessageCenter::Get()->DisableNotification(notification_id());
 }
 
 // TODO(yoshiki): Move this to the parent class (MessageView) and share the code

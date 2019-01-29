@@ -224,6 +224,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestDeleteOnDisableNotification);
 
   friend class NotificationViewMDTest;
 
