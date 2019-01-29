@@ -4,6 +4,9 @@
 
 #include "net/third_party/quic/core/qpack/qpack_progressive_decoder.h"
 
+#include <algorithm>
+#include <limits>
+
 #include "base/logging.h"
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
 #include "net/third_party/quic/core/qpack/qpack_header_table.h"

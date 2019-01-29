@@ -5,6 +5,8 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QPACK_OFFLINE_QPACK_OFFLINE_DECODER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QPACK_OFFLINE_QPACK_OFFLINE_DECODER_H_
 
+#include <list>
+
 #include "net/third_party/quic/core/qpack/qpack_decoder.h"
 #include "net/third_party/quic/core/qpack/qpack_decoder_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"

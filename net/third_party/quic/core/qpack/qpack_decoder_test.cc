@@ -4,6 +4,8 @@
 
 #include "net/third_party/quic/core/qpack/qpack_decoder.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "net/third_party/quic/core/qpack/qpack_decoder_test_utils.h"
 #include "net/third_party/quic/core/qpack/qpack_test_utils.h"
@@ -204,8 +206,7 @@ TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
       "2f0125a849e95ba97d7f"        // Huffman-encoded name.
       "0c637573746f6d2d76616c7565"  // Non-Huffman encoded value.
       "2703637573746f6d2d6b6579"    // Non-Huffman encoded name.
-      "8925a849e95bb8e8b4bf"        // Huffman-encoded value.
-      ));
+      "8925a849e95bb8e8b4bf"));     // Huffman-encoded value.
 }
 
 TEST_P(QpackDecoderTest, HuffmanNameDoesNotHaveEOSPrefix) {
