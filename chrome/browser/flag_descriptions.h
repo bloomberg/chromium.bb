@@ -1786,9 +1786,6 @@ extern const char kMacViewsNativeAppWindowsDescription[];
 extern const char kMacViewsTaskManagerName[];
 extern const char kMacViewsTaskManagerDescription[];
 
-extern const char kTextSuggestionsTouchBarName[];
-extern const char kTextSuggestionsTouchBarDescription[];
-
 // Non-Mac --------------------------------------------------------------------
 
 #else  // !defined(OS_MACOSX)

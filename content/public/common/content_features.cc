@@ -690,10 +690,6 @@ const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
 
 const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the suggested text touch bar for autocomplete in textfields.
-const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if defined(WEBRTC_USE_PIPEWIRE)

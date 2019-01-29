@@ -1943,9 +1943,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
 - (NSTouchBar*)makeTouchBar {
   if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
-      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
-      (base::FeatureList::IsEnabled(features::kTextSuggestionsTouchBar) ||
-       base::FeatureList::IsEnabled(features::kExperimentalUi))) {
+      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
     candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
         initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
     auto* candidateListItem = candidateListTouchBarItem_.get();
