@@ -198,7 +198,7 @@ def DefaultPages(base_name):
       'pixel_canvas2d_webgl.html',
       base_name + '_2DCanvasWebGL',
       test_rect=[0, 0, 300, 300],
-      revision=11),
+      revision=12),
 
     PixelTestPage(
       'pixel_background.html',
@@ -902,7 +902,7 @@ def SwiftShaderPages(base_name):
       'pixel_css3d.html',
       base_name + '_CSS3DBlueBox' + suffix,
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       browser_args=browser_args),
 
     PixelTestPage(
@@ -1012,12 +1012,12 @@ def MacSpecificPages(base_name):
       'filter_effects.html',
       base_name + '_CSSFilterEffects',
       test_rect=[0, 0, 300, 300],
-      revision=9),
+      revision=10),
     PixelTestPage(
       'filter_effects.html',
       base_name + '_CSSFilterEffects_NoOverlays',
       test_rect=[0, 0, 300, 300],
-      revision=9,
+      revision=10,
       tolerance=10,
       browser_args=no_overlays_args),
 
