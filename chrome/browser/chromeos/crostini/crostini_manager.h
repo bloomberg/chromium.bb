@@ -480,7 +480,6 @@ class CrostiniManager : public KeyedService,
       const vm_tools::cicerone::LxdContainerStartingSignal& signal) override;
 
   void RemoveCrostini(std::string vm_name,
-                      std::string container_name,
                       RemoveCrostiniCallback callback);
 
   void SetVmState(std::string vm_name, VmState vm_state);

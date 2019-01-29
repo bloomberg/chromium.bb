@@ -107,7 +107,7 @@ TEST_F(CrostiniMimeTypesServiceTest, MultipleContainers) {
 }
 
 // Test that ClearMimeTypes works, and only removes apps from the
-// specified container.
+// specified VM.
 TEST_F(CrostiniMimeTypesServiceTest, ClearMimeTypes) {
   service()->UpdateMimeTypes(
       CreateMimeTypesProto({"foo"}, {"foo/mime"}, "vm 1", "container 1"));
@@ -123,7 +123,7 @@ TEST_F(CrostiniMimeTypesServiceTest, ClearMimeTypes) {
   EXPECT_EQ("foobar/mime", service()->GetMimeType(base::FilePath("test.foobar"),
                                                   "vm 2", "container 1"));
 
-  service()->ClearMimeTypes("vm 2", "container 1");
+  service()->ClearMimeTypes("vm 2");
 
   EXPECT_EQ("foo/mime", service()->GetMimeType(base::FilePath("test.foo"),
                                                "vm 1", "container 1"));

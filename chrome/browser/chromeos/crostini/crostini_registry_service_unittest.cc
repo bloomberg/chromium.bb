@@ -286,7 +286,7 @@ TEST_F(CrostiniRegistryServiceTest, MultipleContainers) {
 }
 
 // Test that ClearApplicationList works, and only removes apps from the
-// specified container.
+// specified VM.
 TEST_F(CrostiniRegistryServiceTest, ClearApplicationList) {
   service()->UpdateApplicationList(
       CrostiniTestHelper::BasicAppList("app", "vm 1", "container 1"));
@@ -309,7 +309,7 @@ TEST_F(CrostiniRegistryServiceTest, ClearApplicationList) {
               testing::UnorderedElementsAre(app_id_1, app_id_2, app_id_3,
                                             app_id_4, kCrostiniTerminalId));
 
-  service()->ClearApplicationList("vm 2", "container 1");
+  service()->ClearApplicationList("vm 2");
 
   EXPECT_THAT(
       service()->GetRegisteredAppIds(),
