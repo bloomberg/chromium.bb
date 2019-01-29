@@ -106,6 +106,11 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
     return resource;
   }
 
+  scoped_refptr<StaticBitmapImage> Snapshot() override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderTexture::Snapshot");
+    return SnapshotInternal();
+  }
+
   sk_sp<SkSurface> CreateSkSurface() const override {
     TRACE_EVENT0("blink", "CanvasResourceProviderTexture::CreateSkSurface");
 
@@ -230,6 +235,11 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
  private:
   scoped_refptr<CanvasResource> ProduceFrame() override {
     return nullptr;  // Does not support direct compositing
+  }
+
+  scoped_refptr<StaticBitmapImage> Snapshot() override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderBitmap::Snapshot");
+    return SnapshotInternal();
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
@@ -405,6 +415,12 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
     return NewOrRecycledResource();
   }
 
+  scoped_refptr<StaticBitmapImage> Snapshot() override {
+    TRACE_EVENT0("blink",
+                 "CanvasResourceProviderDirectGpuMemoryBuffer::Snapshot");
+    return SnapshotInternal();
+  }
+
   sk_sp<SkSurface> CreateSkSurface() const override {
     if (IsGpuContextLost())
       return nullptr;
@@ -437,6 +453,102 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
   scoped_refptr<CanvasResource> resource_;
 };
 
+// * Renders to a SharedImage, which manage memory internally.
+// * Layers are overlay candidates.
+class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
+ public:
+  CanvasResourceProviderSharedImage(
+      const IntSize& size,
+      unsigned msaa_sample_count,
+      const CanvasColorParams color_params,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+          context_provider_wrapper,
+      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
+      bool is_origin_top_left,
+      bool is_overlay_candidate)
+      : CanvasResourceProvider(size,
+                               color_params,
+                               std::move(context_provider_wrapper),
+                               std::move(resource_dispatcher)),
+        msaa_sample_count_(msaa_sample_count),
+        is_origin_top_left_(is_origin_top_left),
+        is_overlay_candidate_(is_overlay_candidate) {
+    RecordTypeToUMA(kSharedImage);
+    resource_ = CanvasResourceSharedImage::Create(
+        size, ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
+        ColorParams(), is_overlay_candidate_);
+  }
+
+  ~CanvasResourceProviderSharedImage() override {}
+
+  bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
+  bool IsAccelerated() const final { return true; }
+  bool SupportsDirectCompositing() const override {
+    return is_overlay_candidate_;
+  }
+  bool SupportsSingleBuffering() const override { return false; }
+
+  scoped_refptr<CanvasResource> CreateResource() final {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::CreateResource");
+    DCHECK(resource_);
+    return resource_;
+  }
+
+ protected:
+  scoped_refptr<CanvasResource> ProduceFrame() override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::ProduceFrame");
+
+    scoped_refptr<CanvasResource> resource_snapshot = resource_;
+
+    resource_ = CanvasResourceSharedImage::Create(
+        Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
+        ColorParams(), is_overlay_candidate_);
+
+    return resource_snapshot;
+  }
+
+  scoped_refptr<StaticBitmapImage> Snapshot() override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::Snapshot");
+
+    scoped_refptr<CanvasResource> resource_snapshot = resource_;
+
+    resource_ = CanvasResourceSharedImage::Create(
+        Size(), ContextProviderWrapper(), CreateWeakPtr(), FilterQuality(),
+        ColorParams(), is_overlay_candidate_);
+
+    return resource_snapshot->Bitmap();
+  }
+
+  sk_sp<SkSurface> CreateSkSurface() const override {
+    TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::CreateSkSurface");
+
+    if (IsGpuContextLost())
+      return nullptr;
+
+    GrGLTextureInfo texture_info = {};
+    texture_info.fID = resource_->GetTextureIdForBackendTexture();
+    texture_info.fTarget = gpu::GetPlatformSpecificTextureTarget();
+    texture_info.fFormat = ColorParams().GLSizedInternalFormat();
+
+    const GrBackendTexture backend_texture(Size().Width(), Size().Height(),
+                                           GrMipMapped::kNo, texture_info);
+
+    const enum GrSurfaceOrigin surface_origin =
+        is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
+                            : kBottomLeft_GrSurfaceOrigin;
+
+    return SkSurface::MakeFromBackendTexture(
+        GetGrContext(), backend_texture, surface_origin, msaa_sample_count_,
+        ColorParams().GetSkColorType(), ColorParams().GetSkColorSpace(),
+        nullptr /*surface props*/);
+  }
+
+  const unsigned msaa_sample_count_;
+  const bool is_origin_top_left_;
+  const bool is_overlay_candidate_;
+  scoped_refptr<CanvasResource> resource_;
+};
+
 namespace {
 
 enum class CanvasResourceType {
@@ -446,6 +558,7 @@ enum class CanvasResourceType {
   kSharedBitmap,
   kTexture,
   kBitmap,
+  kSharedImage,
 };
 
 const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
@@ -469,6 +582,8 @@ const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
 
   static const std::vector<CanvasResourceType>
       kAcceleratedCompositedFallbackList({
+          // TODO(aaronhk) add CanvasResourceType::kSharedImage once resource
+          // recycling and copy on write is in place
           CanvasResourceType::kTextureGpuMemoryBuffer,
           CanvasResourceType::kTexture,
           // Fallback to software composited
@@ -513,7 +628,6 @@ const std::vector<CanvasResourceType>& GetResourceTypeFallbackList(
   }
   NOTREACHED();
 }
-
 }  // unnamed namespace
 
 std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
@@ -603,6 +717,11 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       case CanvasResourceType::kBitmap:
         provider = std::make_unique<CanvasResourceProviderBitmap>(
             size, color_params, context_provider_wrapper, resource_dispatcher);
+        break;
+      case CanvasResourceType::kSharedImage:
+        provider = std::make_unique<CanvasResourceProviderSharedImage>(
+            size, msaa_sample_count, color_params, context_provider_wrapper,
+            resource_dispatcher, is_origin_top_left, false);
         break;
     }
     if (!provider->IsValid())
@@ -805,7 +924,7 @@ void CanvasResourceProvider::ReleaseLockedImages() {
     canvas_image_provider_->ReleaseLockedImages();
 }
 
-scoped_refptr<StaticBitmapImage> CanvasResourceProvider::Snapshot() {
+scoped_refptr<StaticBitmapImage> CanvasResourceProvider::SnapshotInternal() {
   if (!IsValid())
     return nullptr;
 

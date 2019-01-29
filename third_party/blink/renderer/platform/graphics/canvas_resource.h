@@ -91,6 +91,12 @@ class PLATFORM_EXPORT CanvasResource
     return 0;
   }
 
+  virtual GLuint GetTextureIdForBackendTexture() {
+    // Only used for CanvasResourceSharedImage.
+    NOTREACHED();
+    return 0;
+  }
+
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
@@ -299,6 +305,65 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
 
   viz::SharedBitmapId shared_bitmap_id_;
   std::unique_ptr<base::SharedMemory> shared_memory_;
+  IntSize size_;
+  bool is_origin_clean_ = true;
+};
+
+// Resource type for SharedImage
+class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
+ public:
+  static scoped_refptr<CanvasResourceSharedImage> Create(
+      const IntSize&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      base::WeakPtr<CanvasResourceProvider>,
+      SkFilterQuality,
+      const CanvasColorParams&,
+      bool is_overlay_candidate);
+  ~CanvasResourceSharedImage() override;
+
+  bool IsRecycleable() const final { return false; }
+  bool IsAccelerated() const final { return true; }
+  bool SupportsAcceleratedCompositing() const override { return true; }
+  bool IsValid() const final;
+  IntSize Size() const final { return size_; }
+  scoped_refptr<StaticBitmapImage> Bitmap() final;
+  bool OriginClean() const final { return is_origin_clean_; }
+  void SetOriginClean(bool value) final { is_origin_clean_ = value; }
+  scoped_refptr<CanvasResource> MakeAccelerated(
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
+    NOTREACHED();
+    return nullptr;
+  };
+  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
+    NOTREACHED();
+    return nullptr;
+  }
+  void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
+  GLuint GetTextureIdForBackendTexture() override;
+
+ private:
+  void TearDown() override;
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+      const override;
+  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
+  bool HasGpuMailbox() const override;
+  const gpu::SyncToken GetSyncToken() override;
+  bool IsOverlayCandidate() const final { return is_overlay_candidate_; }
+
+  CanvasResourceSharedImage(const IntSize&,
+                            base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+                            base::WeakPtr<CanvasResourceProvider>,
+                            SkFilterQuality,
+                            const CanvasColorParams&,
+                            bool is_overlay_candidate);
+
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  gpu::Mailbox shared_image_mailbox_;
+  bool mailbox_needs_new_sync_token_ = false;
+  gpu::SyncToken sync_token_;
+  MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
+  GLuint texture_id_ = 0u;
+  bool is_overlay_candidate_ = false;
   IntSize size_;
   bool is_origin_clean_ = true;
 };

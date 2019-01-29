@@ -44,6 +44,10 @@ class WebGraphicsContext3DProviderForTests
   GrContext* GetGrContext() override { return nullptr; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
   bool BindToCurrentThread() override { return false; }
+  gpu::SharedImageInterface* GetSharedImageInterface() const override {
+    NOTREACHED();
+    return nullptr;
+  }
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
   }

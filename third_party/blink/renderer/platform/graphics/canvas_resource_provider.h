@@ -70,7 +70,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kSharedBitmap = 2,
     kTextureGpuMemoryBuffer = 3,
     kBitmapGpuMemoryBuffer = 4,
-    kMaxValue = kBitmapGpuMemoryBuffer,
+    kSharedImage = 5,
+    kMaxValue = kSharedImage,
   };
 
   void static RecordTypeToUMA(ResourceProviderType type);
@@ -89,7 +90,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // the compositor. Cases that are destined to be transferred via a
   // TransferableResource should call ProduceFrame() instead.
   virtual scoped_refptr<CanvasResource> ProduceFrame() = 0;
-  scoped_refptr<StaticBitmapImage> Snapshot();
+  virtual scoped_refptr<StaticBitmapImage> Snapshot() = 0;
 
   // WebGraphicsContext3DProvider::DestructionObserver implementation.
   void OnContextDestroyed() override;
@@ -155,6 +156,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<CanvasResourceProvider> CreateWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+  scoped_refptr<StaticBitmapImage> SnapshotInternal();
 
   CanvasResourceProvider(const IntSize&,
                          const CanvasColorParams&,
