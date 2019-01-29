@@ -121,8 +121,9 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
 
 PermissionService* ClipboardPromise::GetPermissionService() {
   if (!permission_service_) {
-    ConnectToPermissionService(ExecutionContext::From(script_state_),
-                               mojo::MakeRequest(&permission_service_));
+    ConnectToPermissionService(
+        ExecutionContext::From(script_state_),
+        mojo::MakeRequest(&permission_service_, GetTaskRunner()));
   }
   return permission_service_.get();
 }

@@ -336,8 +336,9 @@ void MediaDevices::OnDispatcherHostConnectionError() {
 const mojom::blink::MediaDevicesDispatcherHostPtr&
 MediaDevices::GetDispatcherHost(LocalFrame* frame) {
   if (!dispatcher_host_) {
-    frame->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&dispatcher_host_));
+    // See https://bit.ly/2S0zRAS for task types
+    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+        &dispatcher_host_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     dispatcher_host_.set_connection_error_handler(
         WTF::Bind(&MediaDevices::OnDispatcherHostConnectionError,
                   WrapWeakPersistent(this)));

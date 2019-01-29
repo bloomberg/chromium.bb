@@ -279,8 +279,11 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
 mojom::blink::PermissionService* PaymentInstruments::GetPermissionService(
     ScriptState* script_state) {
   if (!permission_service_) {
-    ConnectToPermissionService(ExecutionContext::From(script_state),
-                               mojo::MakeRequest(&permission_service_));
+    ExecutionContext* context = ExecutionContext::From(script_state);
+    ConnectToPermissionService(
+        context,
+        mojo::MakeRequest(&permission_service_,
+                          context->GetTaskRunner(TaskType::kUserInteraction)));
   }
   return permission_service_.get();
 }

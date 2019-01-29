@@ -147,8 +147,11 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
 PermissionService& StorageManager::GetPermissionService(
     ExecutionContext* execution_context) {
   if (!permission_service_) {
-    ConnectToPermissionService(execution_context,
-                               mojo::MakeRequest(&permission_service_));
+    // See https://bit.ly/2S0zRAS for task types.
+    ConnectToPermissionService(
+        execution_context, mojo::MakeRequest(&permission_service_,
+                                             execution_context->GetTaskRunner(
+                                                 TaskType::kMiscPlatformAPI)));
     permission_service_.set_connection_error_handler(
         WTF::Bind(&StorageManager::PermissionServiceConnectionError,
                   WrapWeakPersistent(this)));
@@ -171,8 +174,11 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
 mojom::blink::QuotaDispatcherHost& StorageManager::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
-    ConnectToQuotaDispatcherHost(execution_context,
-                                 mojo::MakeRequest(&quota_host_));
+    // See https://bit.ly/2S0zRAS for task types.
+    ConnectToQuotaDispatcherHost(
+        execution_context,
+        mojo::MakeRequest(&quota_host_, execution_context->GetTaskRunner(
+                                            TaskType::kMiscPlatformAPI)));
   }
   return *quota_host_;
 }
