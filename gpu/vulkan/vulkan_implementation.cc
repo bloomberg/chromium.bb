@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 
 namespace gpu {
@@ -31,6 +32,36 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
   }
 
   return device_queue;
+}
+
+bool VulkanImplementation::SubmitSignalSemaphore(VkQueue vk_queue,
+                                                 VkSemaphore vk_semaphore,
+                                                 VkFence vk_fence) {
+  // Structure specifying a queue submit operation.
+  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
+  submit_info.signalSemaphoreCount = 1;
+  submit_info.pSignalSemaphores = &vk_semaphore;
+  const unsigned int submit_count = 1;
+  if (vkQueueSubmit(vk_queue, submit_count, &submit_info, vk_fence) !=
+      VK_SUCCESS) {
+    return false;
+  }
+  return true;
+}
+
+bool VulkanImplementation::SubmitWaitSemaphore(VkQueue vk_queue,
+                                               VkSemaphore vk_semaphore,
+                                               VkFence vk_fence) {
+  // Structure specifying a queue submit operation.
+  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitSemaphores = &vk_semaphore;
+  const unsigned int submit_count = 1;
+  if (vkQueueSubmit(vk_queue, submit_count, &submit_info, vk_fence) !=
+      VK_SUCCESS) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace gpu

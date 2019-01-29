@@ -8,7 +8,6 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
@@ -30,8 +29,9 @@ class VulkanDeviceQueue;
 class VulkanSurface;
 class VulkanInstance;
 
-// This object provides factory functions for creating vulkan objects that use
-// platform-specific extensions (e.g. for creation of VkSurfaceKHR objects).
+// Base class which provides functions for creating vulkan objects for different
+// platforms that use platform-specific extensions (e.g. for creation of
+// VkSurfaceKHR objects). It also provides helper/utility functions.
 class VULKAN_EXPORT VulkanImplementation {
  public:
   VulkanImplementation();
@@ -61,6 +61,20 @@ class VULKAN_EXPORT VulkanImplementation {
   virtual std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) = 0;
+
+  // Submits a semaphore to be signalled to the vulkan queue. Semaphore is
+  // signalled once this submission is executed. vk_fence is an optional handle
+  // to fence to be signaled once this submission completes execution.
+  bool SubmitSignalSemaphore(VkQueue vk_queue,
+                             VkSemaphore vk_semaphore,
+                             VkFence vk_fence = VK_NULL_HANDLE);
+
+  // Submits a semaphore to be waited upon to the vulkan queue. Semaphore is
+  // waited on before this submission is executed. vk_fence is an optional
+  // handle to fence to be signaled once this submission completes execution.
+  bool SubmitWaitSemaphore(VkQueue vk_queue,
+                           VkSemaphore vk_semaphore,
+                           VkFence vk_fence = VK_NULL_HANDLE);
 
 #if defined(OS_ANDROID)
   // Import a VkSemaphore from a POSIX sync file descriptor. Importing a
