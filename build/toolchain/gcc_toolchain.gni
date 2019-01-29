@@ -241,6 +241,12 @@ template("gcc_toolchain") {
       default_shlib_extension = shlib_extension
     }
 
+    if (defined(invoker.default_shlib_subdir)) {
+      default_shlib_subdir = invoker.default_shlib_subdir
+    } else {
+      default_shlib_subdir = ""
+    }
+
     if (defined(invoker.executable_extension)) {
       default_executable_extension = invoker.executable_extension
     } else {
@@ -434,7 +440,7 @@ template("gcc_toolchain") {
       # specifies).
       default_output_extension = default_shlib_extension
 
-      default_output_dir = "{{root_out_dir}}"
+      default_output_dir = "{{root_out_dir}}${default_shlib_subdir}"
 
       output_prefix = "lib"
 
@@ -494,7 +500,7 @@ template("gcc_toolchain") {
         default_output_extension = default_shlib_extension
       }
 
-      default_output_dir = "{{root_out_dir}}"
+      default_output_dir = "{{root_out_dir}}${default_shlib_subdir}"
 
       output_prefix = "lib"
 
@@ -622,6 +628,7 @@ template("clang_toolchain") {
                            [
                              "strip",
                              "is_clang_analysis_supported",
+                             "default_shlib_subdir",
                              "enable_linker_map",
                              "use_unstripped_as_runtime_outputs",
                            ])

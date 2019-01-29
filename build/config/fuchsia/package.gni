@@ -85,21 +85,21 @@ template("fuchsia_package") {
 
     args = [
       "--root-dir",
-      rebase_path("//"),
+      rebase_path("//", root_build_dir),
       "--out-dir",
-      rebase_path(root_out_dir),
+      rebase_path(root_out_dir, root_build_dir),
       "--app-name",
       pkg.package_name,
       "--app-filename",
       get_label_info(pkg.binary, "name"),
       "--sandbox-policy-path",
-      rebase_path(pkg.sandbox_policy),
+      rebase_path(pkg.sandbox_policy, root_build_dir),
       "--runtime-deps-file",
-      rebase_path(_runtime_deps_file),
+      rebase_path(_runtime_deps_file, root_build_dir),
       "--depfile-path",
-      rebase_path(_depfile),
+      rebase_path(_depfile, root_build_dir),
       "--output-path",
-      rebase_path(_archive_manifest),
+      rebase_path(_archive_manifest, root_build_dir),
     ]
 
     if (defined(pkg.excluded_files)) {
