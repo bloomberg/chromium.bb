@@ -117,6 +117,10 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
+    # Flakes on Nexus 5X.
+    self.Flaky('Pixel_BackgroundImage',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=883500)
+
     # TODO(wangxianzhu): Re-enable after and rebaselining
     self.Fail('Pixel_CSSFilterEffects', bug=836884)
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', bug=836884)
