@@ -55,6 +55,24 @@ SyntheticPointerActionParams::Button ToSyntheticMouseButton(int button) {
   return SyntheticPointerActionParams::Button();
 }
 
+int ToKeyModifiers(std::string key) {
+  if (key == "Alt")
+    return blink::WebInputEvent::kAltKey;
+  if (key == "Control")
+    return blink::WebInputEvent::kControlKey;
+  if (key == "Meta")
+    return blink::WebInputEvent::kMetaKey;
+  if (key == "Shift")
+    return blink::WebInputEvent::kShiftKey;
+  if (key == "CapsLock")
+    return blink::WebInputEvent::kCapsLockOn;
+  if (key == "NumLock")
+    return blink::WebInputEvent::kNumLockOn;
+  if (key == "AltGraph")
+    return blink::WebInputEvent::kAltGrKey;
+  return 0;
+}
+
 }  // namespace
 
 ActionsParser::ActionsParser(base::Value* pointer_actions_value)
@@ -212,8 +230,7 @@ bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
     if (pointer_type != "touch" && action_index_ > 0) {
       error_message_ = std::string(
           "for input source type of mouse and pen, we only support one device "
-          "in "
-          "one sequence");
+          "in one sequence");
       return false;
     }
 
@@ -339,6 +356,25 @@ bool ActionsParser::ParseAction(
   SyntheticPointerActionParams::Button button =
       ToSyntheticMouseButton(button_id);
 
+  int key_modifiers = 0;
+  std::string keys;
+  if (action.HasKey("keys") && !action.GetString("keys", &keys)) {
+    error_message_ = base::StringPrintf(
+        "actions[%d].actions.key is not a string", action_index_);
+    return false;
+  }
+  std::vector<std::string> key_list =
+      base::SplitString(keys, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (std::string& key : key_list) {
+    int key_modifier = ToKeyModifiers(key);
+    if (key_modifier == 0) {
+      error_message_ = base::StringPrintf(
+          "actions[%d].actions.key is not a valid key", action_index_);
+      return false;
+    }
+    key_modifiers |= key_modifier;
+  }
+
   double duration = 0;
   int num_idle = 0;
   if (pointer_action_type ==
@@ -366,12 +402,15 @@ bool ActionsParser::ParseAction(
     case SyntheticPointerActionParams::PointerActionType::PRESS:
       action_param.set_position(gfx::PointF(position_x, position_y));
       action_param.set_button(button);
+      action_param.set_key_modifiers(key_modifiers);
       break;
     case SyntheticPointerActionParams::PointerActionType::MOVE:
       action_param.set_position(gfx::PointF(position_x, position_y));
+      action_param.set_key_modifiers(key_modifiers);
       break;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
       action_param.set_button(button);
+      action_param.set_key_modifiers(key_modifiers);
       break;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
     case SyntheticPointerActionParams::PointerActionType::IDLE:

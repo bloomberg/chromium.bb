@@ -463,4 +463,16 @@ TEST(ActionsParserTest, OldParseTouchPointerActionSequenceMultiMouse) {
       actions_parser.error_message());
 }
 
+TEST(ActionsParserTest, OldParsePointerActionSequenceInvalidKey) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+      R"( [{"source": "mouse", "id": 0,
+            "actions": [{"name": "pointerDown", "x": 3, "y": 5,
+                         "keys": "Ctrl"} ]}] )");
+
+  ActionsParser actions_parser(value.get());
+  EXPECT_FALSE(actions_parser.ParsePointerActionSequence());
+  EXPECT_EQ("actions[0].actions.key is not a valid key",
+            actions_parser.error_message());
+}
+
 }  // namespace content

@@ -144,6 +144,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
   IPC_STRUCT_TRAITS_MEMBER(pointer_id_)
   IPC_STRUCT_TRAITS_MEMBER(position_)
   IPC_STRUCT_TRAITS_MEMBER(button_)
+  IPC_STRUCT_TRAITS_MEMBER(key_modifiers_)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionListParams)

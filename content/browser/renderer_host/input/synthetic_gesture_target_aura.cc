@@ -24,6 +24,24 @@ using blink::WebMouseWheelEvent;
 
 namespace content {
 
+namespace {
+
+int WebEventButtonToUIEventButtonFlags(blink::WebMouseEvent::Button button) {
+  if (button == blink::WebMouseEvent::Button::kLeft)
+    return ui::EF_LEFT_MOUSE_BUTTON;
+  if (button == blink::WebMouseEvent::Button::kMiddle)
+    return ui::EF_MIDDLE_MOUSE_BUTTON;
+  if (button == blink::WebMouseEvent::Button::kRight)
+    return ui::EF_RIGHT_MOUSE_BUTTON;
+  if (button == blink::WebMouseEvent::Button::kBack)
+    return ui::EF_BACK_MOUSE_BUTTON;
+  if (button == blink::WebMouseEvent::Button::kForward)
+    return ui::EF_FORWARD_MOUSE_BUTTON;
+  return 0;
+}
+
+}  // namespace
+
 SyntheticGestureTargetAura::SyntheticGestureTargetAura(
     RenderWidgetHostImpl* host)
     : SyntheticGestureTargetBase(host) {
@@ -153,8 +171,14 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   int flags = ui::WebEventModifiersToEventFlags(web_mouse_event.GetModifiers());
   ui::PointerDetails pointer_details(
       ui::WebPointerTypeToEventPointerType(web_mouse_event.pointer_type));
+  int changed_button_flags = 0;
+  if (event_type == ui::ET_MOUSE_PRESSED ||
+      event_type == ui::ET_MOUSE_RELEASED) {
+    changed_button_flags =
+        WebEventButtonToUIEventButtonFlags(web_mouse_event.button);
+  }
   ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), flags, flags,
+                             ui::EventTimeForNow(), flags, changed_button_flags,
                              pointer_details);
   gfx::PointF location(
       web_mouse_event.PositionInWidget().x * device_scale_factor_,

@@ -26,11 +26,13 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
              float y,
              int index,
              SyntheticPointerActionParams::Button button =
-                 SyntheticPointerActionParams::Button::LEFT) override;
-  void Move(float x, float y, int index) override;
+                 SyntheticPointerActionParams::Button::LEFT,
+             int key_modifiers = 0) override;
+  void Move(float x, float y, int index, int key_modifiers = 0) override;
   void Release(int index,
                SyntheticPointerActionParams::Button button =
-                   SyntheticPointerActionParams::Button::LEFT) override;
+                   SyntheticPointerActionParams::Button::LEFT,
+               int key_modifiers = 0) override;
   void Leave(int index) override;
 
   bool UserInputCheck(

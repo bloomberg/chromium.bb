@@ -275,9 +275,11 @@ class MockSyntheticPointerMouseActionTarget
     }
 
     int modifiers = 0;
-    for (size_t index = 0; index < buttons.size(); ++index)
+    for (size_t index = 0; index < buttons.size(); ++index) {
       modifiers |= SyntheticPointerActionParams::GetWebMouseEventModifier(
           buttons[index]);
+    }
+    modifiers |= param.key_modifiers();
     if (modifiers_ != modifiers) {
       return testing::AssertionFailure() << "Pointer modifiers was "
                                          << modifiers_ << ", expected "
@@ -696,6 +698,54 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionMultiPress) {
   EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
       param6, 1, buttons, SyntheticPointerActionParams::Button::LEFT));
   buttons.pop_back();
+}
+
+TEST_F(SyntheticPointerActionTest, PointerMouseActionWithKey) {
+  CreateSyntheticPointerActionTarget<MockSyntheticPointerMouseActionTarget>();
+
+  // Send a mouse move.
+  SyntheticPointerActionParams param1 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+  param1.set_position(gfx::PointF(189, 62));
+  params_.PushPointerActionParams(param1);
+
+  // Move the mouse while alt and control keys are pressed.
+  SyntheticPointerActionParams param2 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+  param2.set_position(gfx::PointF(139, 98));
+  param2.set_key_modifiers(6);
+  params_.PushPointerActionParams(param2);
+
+  // Send a mouse down with left button while alt and control keys are pressed.
+  SyntheticPointerActionParams param3 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::PRESS);
+  param3.set_position(gfx::PointF(139, 98));
+  param3.set_button(SyntheticPointerActionParams::Button::LEFT);
+  param3.set_key_modifiers(6);
+  params_.PushPointerActionParams(param3);
+  pointer_action_.reset(new SyntheticPointerAction(params_));
+
+  ForwardSyntheticPointerAction();
+  MockSyntheticPointerMouseActionTarget* pointer_mouse_target =
+      static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  std::vector<SyntheticPointerActionParams::Button> buttons;
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      param1, 0, buttons));
+
+  ForwardSyntheticPointerAction();
+  EXPECT_EQ(2, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      param2, 0, buttons));
+
+  ForwardSyntheticPointerAction();
+  EXPECT_EQ(3, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  buttons.push_back(SyntheticPointerActionParams::Button::LEFT);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      param3, 1, buttons, SyntheticPointerActionParams::Button::LEFT));
 }
 
 TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {

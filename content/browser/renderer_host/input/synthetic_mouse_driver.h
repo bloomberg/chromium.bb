@@ -24,11 +24,13 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
              float y,
              int index = 0,
              SyntheticPointerActionParams::Button button =
-                 SyntheticPointerActionParams::Button::LEFT) override;
-  void Move(float x, float y, int index = 0) override;
+                 SyntheticPointerActionParams::Button::LEFT,
+             int key_modifiers = 0) override;
+  void Move(float x, float y, int index = 0, int key_modifiers = 0) override;
   void Release(int index = 0,
                SyntheticPointerActionParams::Button button =
-                   SyntheticPointerActionParams::Button::LEFT) override;
+                   SyntheticPointerActionParams::Button::LEFT,
+               int key_modifiers = 0) override;
   void Leave(int index = 0) override;
 
   bool UserInputCheck(
