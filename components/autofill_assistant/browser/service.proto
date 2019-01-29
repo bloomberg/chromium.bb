@@ -564,6 +564,9 @@ message PromptProto {
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
+
+    // The chip is only visible if the given element exists.
+    optional ElementReferenceProto show_only_if_element_exists = 6;
   }
   repeated Choice choices = 4;
 }
