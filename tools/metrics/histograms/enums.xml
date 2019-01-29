@@ -12702,6 +12702,26 @@ Called by update_net_error_codes.py.-->
   <int value="319" label="pyo"/>
   <int value="320" label="desktop"/>
   <int value="321" label="cpi"/>
+  <int value="322" label="jpg"/>
+  <int value="323" label="jpeg"/>
+  <int value="324" label="mp3"/>
+  <int value="325" label="mp4"/>
+  <int value="326" label="png"/>
+  <int value="327" label="xls"/>
+  <int value="328" label="doc"/>
+  <int value="329" label="pptx"/>
+  <int value="330" label="csv"/>
+  <int value="331" label="ica"/>
+  <int value="332" label="ppt"/>
+  <int value="333" label="gif"/>
+  <int value="334" label="txt"/>
+  <int value="335" label="package"/>
+  <int value="336" label="tif"/>
+  <int value="337" label="rtf"/>
+  <int value="338" label="webp"/>
+  <int value="339" label="mkv"/>
+  <int value="340" label="wav"/>
+  <int value="341" label="mov"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -46884,6 +46904,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="317" label="OXT"/>
   <int value="318" label="PYD"/>
   <int value="319" label="PYO"/>
+  <int value="320" label="DESKTOP"/>
+  <int value="321" label="CPI"/>
+  <int value="322" label="JPG"/>
+  <int value="323" label="JPEG"/>
+  <int value="324" label="MP3"/>
+  <int value="325" label="MP4"/>
+  <int value="326" label="PNG"/>
+  <int value="327" label="XLS"/>
+  <int value="328" label="DOC"/>
+  <int value="329" label="PPTX"/>
+  <int value="330" label="CSV"/>
+  <int value="331" label="ICA"/>
+  <int value="332" label="PPT"/>
+  <int value="333" label="GIF"/>
+  <int value="334" label="TXT"/>
+  <int value="335" label="PACKAGE"/>
+  <int value="336" label="TIF"/>
+  <int value="337" label="RTF"/>
+  <int value="338" label="WEBP"/>
+  <int value="339" label="MKV"/>
+  <int value="340" label="WAV"/>
+  <int value="341" label="MOV"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
