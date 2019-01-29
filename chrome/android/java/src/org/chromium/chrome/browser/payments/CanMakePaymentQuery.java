@@ -21,12 +21,13 @@ public class CanMakePaymentQuery {
      * @param topLevelOrigin The top level origin using the Payment Request API.
      * @param frameOrigin    The frame origin using the Payment Request API.
      * @param query          The payment method identifiers and payment method specific data.
+     * @param perMethodQuota Whether each payment method has its own query quota.
      *
      * @return True if the given query for canMakePayment() is allowed.
      */
     public static boolean canQuery(WebContents webContents, String topLevelOrigin,
-            String frameOrigin, Map<String, PaymentMethodData> query) {
-        return nativeCanQuery(webContents, topLevelOrigin, frameOrigin, query);
+            String frameOrigin, Map<String, PaymentMethodData> query, boolean perMethodQuota) {
+        return nativeCanQuery(webContents, topLevelOrigin, frameOrigin, query, perMethodQuota);
     }
 
     @CalledByNative
@@ -44,5 +45,5 @@ public class CanMakePaymentQuery {
     private CanMakePaymentQuery() {} // Do not instantiate.
 
     private static native boolean nativeCanQuery(WebContents webContents, String topLevelOrigin,
-            String frameOrigin, Map<String, PaymentMethodData> query);
+            String frameOrigin, Map<String, PaymentMethodData> query, boolean perMethodQuota);
 }

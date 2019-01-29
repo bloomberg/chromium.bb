@@ -761,13 +761,14 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
       IOSCanMakePaymentQueryFactory::GetForBrowserState(
           _browserState->GetOriginalChromeBrowserState());
   DCHECK(canMakePaymentQuery);
-  // iOS PaymentRequest does not support iframes.
+  // iOS PaymentRequest does not support iframes or origin trials.
   if (canMakePaymentQuery->CanQuery(
           GURL(url_formatter::FormatUrlForSecurityDisplay(
               _activeWebState->GetLastCommittedURL())),
           GURL(url_formatter::FormatUrlForSecurityDisplay(
               _activeWebState->GetLastCommittedURL())),
-          paymentRequest->stringified_method_data())) {
+          paymentRequest->stringified_method_data(),
+          /*per_method_quota=*/false)) {
     // canMakePayment should return false if user has not allowed canMakePayment
     // to return a truthful value.
     canMakePayment &=

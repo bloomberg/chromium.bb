@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/payments/address_errors.h"
 #include "third_party/blink/renderer/modules/payments/android_pay_method_data.h"
@@ -890,7 +891,14 @@ ScriptPromise PaymentRequest::hasEnrolledInstrument(ScriptState* script_state) {
                                            "Cannot query payment request"));
   }
 
-  payment_provider_->HasEnrolledInstrument();
+  bool per_method_quota =
+      origin_trials::PerMethodCanMakePaymentQuotaEnabled(GetExecutionContext());
+  if (per_method_quota) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kPerMethodCanMakePaymentQuota);
+  }
+
+  payment_provider_->HasEnrolledInstrument(per_method_quota);
 
   has_enrolled_instrument_resolver_ =
       ScriptPromiseResolver::Create(script_state);
