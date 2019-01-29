@@ -107,8 +107,8 @@ base::Closure VideoCaptureImplManager::UseDevice(
 base::Closure VideoCaptureImplManager::StartCapture(
     media::VideoCaptureSessionId id,
     const media::VideoCaptureParams& params,
-    const VideoCaptureStateUpdateCB& state_update_cb,
-    const VideoCaptureDeliverFrameCB& deliver_frame_cb) {
+    const blink::VideoCaptureStateUpdateCB& state_update_cb,
+    const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -174,7 +174,7 @@ void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
 
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId id,
-    const VideoCaptureDeviceFormatsCB& callback) {
+    const blink::VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -187,7 +187,7 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
 
 void VideoCaptureImplManager::GetDeviceFormatsInUse(
     media::VideoCaptureSessionId id,
-    const VideoCaptureDeviceFormatsCB& callback) {
+    const blink::VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),

@@ -72,14 +72,14 @@ void CastReceiverSessionDelegate::OnDecodedAudioFrame(
 }
 
 void CastReceiverSessionDelegate::StartVideo(
-    content::VideoCaptureDeliverFrameCB video_callback) {
+    blink::VideoCaptureDeliverFrameCB video_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   frame_callback_ = video_callback;
   cast_receiver_->RequestDecodedVideoFrame(on_video_decoded_cb_);
 }
 
 void  CastReceiverSessionDelegate::StopVideo() {
-  frame_callback_ = content::VideoCaptureDeliverFrameCB();
+  frame_callback_ = blink::VideoCaptureDeliverFrameCB();
 }
 
 void CastReceiverSessionDelegate::OnDecodedVideoFrame(

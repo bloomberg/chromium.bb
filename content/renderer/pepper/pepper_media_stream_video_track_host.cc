@@ -182,7 +182,7 @@ class PepperMediaStreamVideoTrackHost::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
   FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                 const VideoCaptureDeliverFrameCB& new_frame_callback);
+                 const blink::VideoCaptureDeliverFrameCB& new_frame_callback);
 
   void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
 
@@ -193,16 +193,16 @@ class PepperMediaStreamVideoTrackHost::FrameDeliverer
   void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  VideoCaptureDeliverFrameCB new_frame_callback_;
+  blink::VideoCaptureDeliverFrameCB new_frame_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::FrameDeliverer(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_task_runner_(io_task_runner), new_frame_callback_(new_frame_callback) {
-}
+    const blink::VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_task_runner_(io_task_runner),
+      new_frame_callback_(new_frame_callback) {}
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
 }
@@ -417,7 +417,7 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
   ~VideoSource() final { StopSourceImpl(); }
 
   void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) final {
+      const blink::VideoCaptureDeliverFrameCB& frame_callback) final {
     if (host_) {
       host_->frame_deliverer_ =
           new FrameDeliverer(io_task_runner(), frame_callback);

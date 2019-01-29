@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/media/video_capture.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace media {
@@ -60,7 +60,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   void OnHasConsumers(bool has_consumers) override;
   void OnCapturingLinkSecured(bool is_secure) override;
   void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) override;
+      const blink::VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
   void StopSourceForRestartImpl() override;
   void RestartSourceImpl(const media::VideoCaptureFormat& new_format) override;
@@ -97,7 +97,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   State state_ = STOPPED;
 
   media::VideoCaptureParams capture_params_;
-  VideoCaptureDeliverFrameCB frame_callback_;
+  blink::VideoCaptureDeliverFrameCB frame_callback_;
   DeviceVideoCapturerFactoryCallback device_video_capturer_factory_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);

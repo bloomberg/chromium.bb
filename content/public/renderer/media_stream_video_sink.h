@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/media/video_capture.h"
 #include "media/capture/video_capturer_source.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
@@ -46,7 +46,7 @@ class CONTENT_EXPORT MediaStreamVideoSink : public blink::WebMediaStreamSink {
   // meets output protection requirement). Generally, this should be false
   // unless you know what you are doing.
   void ConnectToTrack(const blink::WebMediaStreamTrack& track,
-                      const VideoCaptureDeliverFrameCB& callback,
+                      const blink::VideoCaptureDeliverFrameCB& callback,
                       bool is_sink_secure);
   void DisconnectFromTrack();
 

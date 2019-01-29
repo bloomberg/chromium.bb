@@ -266,7 +266,7 @@ VideoCaptureController::VideoCaptureController(
       device_launcher_(std::move(device_launcher)),
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       device_launch_observer_(nullptr),
-      state_(VIDEO_CAPTURE_STATE_STARTING),
+      state_(blink::VIDEO_CAPTURE_STATE_STARTING),
       has_received_frames_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -314,7 +314,7 @@ void VideoCaptureController::AddClient(
     video_capture_format_ = params.requested_format;
 
   // Signal error in case device is already in error state.
-  if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
+  if (state_ == blink::VIDEO_CAPTURE_STATE_ERROR) {
     event_handler->OnError(
         id,
         media::VideoCaptureError::kVideoCaptureControllerIsAlreadyInErrorState);
@@ -326,14 +326,14 @@ void VideoCaptureController::AddClient(
     return;
 
   // If the device has reported OnStarted event, report it to this client here.
-  if (state_ == VIDEO_CAPTURE_STATE_STARTED)
+  if (state_ == blink::VIDEO_CAPTURE_STATE_STARTED)
     event_handler->OnStarted(id);
 
   std::unique_ptr<ControllerClient> client =
       std::make_unique<ControllerClient>(id, event_handler, session_id, params);
   // If we already have gotten frame_info from the device, repeat it to the new
   // client.
-  if (state_ != VIDEO_CAPTURE_STATE_ERROR) {
+  if (state_ != blink::VIDEO_CAPTURE_STATE_ERROR) {
     controller_clients_.push_back(std::move(client));
   }
 }
@@ -502,7 +502,7 @@ void VideoCaptureController::OnFrameReadyInBuffer(
   buffer_context_iter->set_frame_feedback_id(frame_feedback_id);
   DCHECK(!buffer_context_iter->HasConsumers());
 
-  if (state_ != VIDEO_CAPTURE_STATE_ERROR) {
+  if (state_ != blink::VIDEO_CAPTURE_STATE_ERROR) {
     const int buffer_context_id = buffer_context_iter->buffer_context_id();
     for (const auto& client : controller_clients_) {
       if (client->session_closed || client->paused)
@@ -574,7 +574,7 @@ void VideoCaptureController::OnBufferRetired(int buffer_id) {
 
 void VideoCaptureController::OnError(media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  state_ = VIDEO_CAPTURE_STATE_ERROR;
+  state_ = blink::VIDEO_CAPTURE_STATE_ERROR;
   PerformForClientsWithOpenSession(base::BindRepeating(&CallOnError, error));
 }
 
@@ -616,7 +616,7 @@ void VideoCaptureController::OnLog(const std::string& message) {
 
 void VideoCaptureController::OnStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  state_ = VIDEO_CAPTURE_STATE_STARTED;
+  state_ = blink::VIDEO_CAPTURE_STATE_STARTED;
   PerformForClientsWithOpenSession(base::BindRepeating(&CallOnStarted));
 }
 

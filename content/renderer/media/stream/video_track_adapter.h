@@ -91,7 +91,7 @@ class VideoTrackAdapter
   // |source_frame_rate| is used to calculate a prudent interval to check for
   // passing frames and inform of the result via |on_muted_state_callback|.
   void AddTrack(const MediaStreamVideoTrack* track,
-                VideoCaptureDeliverFrameCB frame_callback,
+                blink::VideoCaptureDeliverFrameCB frame_callback,
                 VideoTrackSettingsCallback settings_callback,
                 VideoTrackFormatCallback track_callback,
                 const VideoTrackAdapterSettings& settings);
@@ -133,7 +133,7 @@ class VideoTrackAdapter
   friend class base::RefCountedThreadSafe<VideoTrackAdapter>;
 
   void AddTrackOnIO(const MediaStreamVideoTrack* track,
-                    VideoCaptureDeliverFrameCB frame_callback,
+                    blink::VideoCaptureDeliverFrameCB frame_callback,
                     VideoTrackSettingsCallback settings_callback,
                     VideoTrackFormatCallback track_callback,
                     const VideoTrackAdapterSettings& settings);

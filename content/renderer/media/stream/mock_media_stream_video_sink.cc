@@ -19,7 +19,7 @@ MockMediaStreamVideoSink::MockMediaStreamVideoSink()
 MockMediaStreamVideoSink::~MockMediaStreamVideoSink() {
 }
 
-VideoCaptureDeliverFrameCB
+blink::VideoCaptureDeliverFrameCB
 MockMediaStreamVideoSink::GetDeliverFrameCB() {
   return media::BindToCurrentLoop(
       base::Bind(

@@ -48,7 +48,7 @@ MediaStreamVideoSource::~MediaStreamVideoSource() {
 void MediaStreamVideoSource::AddTrack(
     MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& track_adapter_settings,
-    const VideoCaptureDeliverFrameCB& frame_callback,
+    const blink::VideoCaptureDeliverFrameCB& frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
     const ConstraintsCallback& callback) {
@@ -434,7 +434,7 @@ void MediaStreamVideoSource::UpdateTrackSettings(
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     MediaStreamVideoTrack* track,
-    const VideoCaptureDeliverFrameCB& frame_callback,
+    const blink::VideoCaptureDeliverFrameCB& frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,

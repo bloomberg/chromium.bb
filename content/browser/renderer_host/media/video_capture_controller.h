@@ -16,10 +16,10 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/common/content_export.h"
-#include "content/common/media/video_capture.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
@@ -257,7 +257,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   // Takes on only the states 'STARTING', 'STARTED' and 'ERROR'. 'ERROR' is an
   // absorbing state which stops the flow of data to clients.
-  VideoCaptureState state_;
+  blink::VideoCaptureState state_;
 
   FrameDropLogState frame_drop_log_state_;
 

@@ -60,7 +60,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
     return formats;
   }
   void StartCapture(const media::VideoCaptureParams& params,
-                    const VideoCaptureDeliverFrameCB& frame_callback,
+                    const blink::VideoCaptureDeliverFrameCB& frame_callback,
                     const RunningCallback& running_callback) override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
     if (canvas_handler_.get()) {

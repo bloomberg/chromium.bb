@@ -148,7 +148,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack
   // store the callback. This is important to ensure that we can release
   // the callback on render thread without reference to it on the IO-thread.
   void AddSink(MediaStreamVideoSink* sink,
-               const VideoCaptureDeliverFrameCB& callback,
+               const blink::VideoCaptureDeliverFrameCB& callback,
                bool is_sink_secure);
   void RemoveSink(MediaStreamVideoSink* sink);
 

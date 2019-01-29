@@ -122,7 +122,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
     : public base::RefCountedThreadSafe<VideoFrameResolutionAdapter> {
  public:
   struct VideoTrackCallbacks {
-    VideoCaptureDeliverFrameCB frame_callback;
+    blink::VideoCaptureDeliverFrameCB frame_callback;
     VideoTrackSettingsCallback settings_callback;
     VideoTrackFormatCallback format_callback;
   };
@@ -136,7 +136,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // |settings_callback| to set track settings on the main thread.
   // |frame_callback| will however be released on the main render thread.
   void AddCallbacks(const MediaStreamVideoTrack* track,
-                    VideoCaptureDeliverFrameCB frame_callback,
+                    blink::VideoCaptureDeliverFrameCB frame_callback,
                     VideoTrackSettingsCallback settings_callback,
                     VideoTrackFormatCallback format_callback);
 
@@ -187,7 +187,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // Bound to the IO-thread.
   THREAD_CHECKER(io_thread_checker_);
 
-  // The task runner where we will release VideoCaptureDeliverFrameCB
+  // The task runner where we will release blink::VideoCaptureDeliverFrameCB
   // registered in AddCallbacks.
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
@@ -239,7 +239,7 @@ VideoFrameResolutionAdapter::~VideoFrameResolutionAdapter() {
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallbacks(
     const MediaStreamVideoTrack* track,
-    VideoCaptureDeliverFrameCB frame_callback,
+    blink::VideoCaptureDeliverFrameCB frame_callback,
     VideoTrackSettingsCallback settings_callback,
     VideoTrackFormatCallback format_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
@@ -499,11 +499,12 @@ VideoTrackAdapter::~VideoTrackAdapter() {
   DCHECK(adapters_.empty());
 }
 
-void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
-                                 VideoCaptureDeliverFrameCB frame_callback,
-                                 VideoTrackSettingsCallback settings_callback,
-                                 VideoTrackFormatCallback format_callback,
-                                 const VideoTrackAdapterSettings& settings) {
+void VideoTrackAdapter::AddTrack(
+    const MediaStreamVideoTrack* track,
+    blink::VideoCaptureDeliverFrameCB frame_callback,
+    VideoTrackSettingsCallback settings_callback,
+    VideoTrackFormatCallback format_callback,
+    const VideoTrackAdapterSettings& settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   io_task_runner_->PostTask(
@@ -515,7 +516,7 @@ void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
 
 void VideoTrackAdapter::AddTrackOnIO(
     const MediaStreamVideoTrack* track,
-    VideoCaptureDeliverFrameCB frame_callback,
+    blink::VideoCaptureDeliverFrameCB frame_callback,
     VideoTrackSettingsCallback settings_callback,
     VideoTrackFormatCallback format_callback,
     const VideoTrackAdapterSettings& settings) {
