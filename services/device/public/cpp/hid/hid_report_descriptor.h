@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_DEVICE_PUBLIC_CPP_HID_HID_REPORT_DESCRIPTOR_H_
-#define SERVICES_DEVICE_PUBLIC_CPP_HID_HID_REPORT_DESCRIPTOR_H_
+#ifndef DEVICE_HID_HID_REPORT_DESCRIPTOR_H_
+#define DEVICE_HID_HID_REPORT_DESCRIPTOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "services/device/public/cpp/hid/hid_collection.h"
 #include "services/device/public/cpp/hid/hid_report_descriptor_item.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -28,29 +27,19 @@ class HidReportDescriptor {
     return items_;
   }
 
-  const std::vector<std::unique_ptr<HidCollection>>& collections() const {
-    return collections_;
-  }
-
-  // Return the top-level collections present in the descriptor,
-  // together with max report sizes.
+  // Returns top-level collections present in the descriptor,
+  // together with max report sizes
   void GetDetails(
       std::vector<mojom::HidCollectionInfoPtr>* top_level_collections,
       bool* has_report_id,
-      size_t* max_input_report_bytes,
-      size_t* max_output_report_bytes,
-      size_t* max_feature_report_bytes) const;
+      size_t* max_input_report_size,
+      size_t* max_output_report_size,
+      size_t* max_feature_report_size);
 
  private:
-  // An ordered sequence of HidReportDescriptorItem objects representing the
-  // items that make up a HID report descriptor.
   std::vector<std::unique_ptr<HidReportDescriptorItem>> items_;
-
-  // A hierarchichal representation of the collections and reports described by
-  // the HID report descriptor.
-  std::vector<std::unique_ptr<HidCollection>> collections_;
 };
 
 }  // namespace device
 
-#endif  // SERVICES_DEVICE_PUBLIC_CPP_HID_HID_REPORT_DESCRIPTOR_H_
+#endif  // DEVICE_HID_HID_REPORT_DESCRIPTOR_H_
