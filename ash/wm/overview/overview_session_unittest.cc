@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/exit_warning_handler.h"
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
@@ -320,6 +322,11 @@ class OverviewSessionTest : public AshTestBase {
   bool HasMaskForItem(OverviewItem* item) const {
     return !!item->transform_window_.mask_;
   }
+
+  static void StubForTest(ExitWarningHandler* ewh) {
+    ewh->stub_timer_for_test_ = true;
+  }
+  static bool is_ui_shown(ExitWarningHandler* ewh) { return !!ewh->widget_; }
 
  private:
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_api_;
@@ -1202,6 +1209,22 @@ TEST_F(OverviewSessionTest, BasicTabKeyNavigation) {
   EXPECT_EQ(GetSelectedWindow(), overview_windows[1]->GetWindow());
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(), overview_windows[0]->GetWindow());
+}
+
+TEST_F(OverviewSessionTest, AcceleratorInOverviewSession) {
+  ToggleOverview();
+  auto* accelerator_controller = Shell::Get()->accelerator_controller();
+  auto* ewh = accelerator_controller->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(ewh);
+  StubForTest(ewh);
+  EXPECT_FALSE(is_ui_shown(ewh));
+
+  ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
+  event_generator.PressKey(ui::VKEY_Q, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  event_generator.ReleaseKey(ui::VKEY_Q,
+                             ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(is_ui_shown(ewh));
 }
 
 // Tests that pressing Ctrl+W while a window is selected in overview closes it.

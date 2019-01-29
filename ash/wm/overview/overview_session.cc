@@ -765,7 +765,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       SelectWindow(grid_list_[selected_grid_index_]->SelectedWindow());
       break;
     default:
-      break;
+      return;
   }
 
   event->SetHandled();
