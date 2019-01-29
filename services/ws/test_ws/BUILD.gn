@@ -54,12 +54,19 @@ source_set("lib") {
   ]
 }
 
-service_manifest("manifest") {
+source_set("manifest") {
   testonly = true
-
-  name = "test_ws"
-  source = "manifest.json"
-  packaged_services = [ "//services/ws:manifest" ]
+  sources = [
+    "test_manifest.cc",
+    "test_manifest.h",
+  ]
+  deps = [
+    ":mojom",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+    "//services/ws:manifest",
+  ]
 }
 
 mojom("mojom") {

@@ -158,6 +158,46 @@ component("cpp") {
   output_name = "ash_public_cpp"
 }
 
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//ash/public/interfaces:interfaces_internal",
+    "//base",
+    "//chromeos/services/multidevice_setup/public/mojom",
+    "//services/catalog/public/mojom",
+    "//services/content/public/mojom",
+    "//services/data_decoder/public/mojom",
+    "//services/device/public/mojom",
+    "//services/preferences/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+    "//services/viz/public/interfaces",
+    "//services/ws:manifest",
+    "//services/ws/public/mojom",
+  ]
+}
+
+source_set("manifest_for_tests") {
+  testonly = true
+
+  sources = [
+    "test_manifest.cc",
+    "test_manifest.h",
+  ]
+
+  deps = [
+    ":manifest",
+    "//ash/public/interfaces:test_interfaces",
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
+  ]
+}
+
 # Using a test service because the traits need to pass handles around. Revisit
 # this after Deserialize(Serialize()) API works with handles.
 mojom("test_interfaces") {

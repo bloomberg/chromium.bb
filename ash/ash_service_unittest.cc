@@ -6,7 +6,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/manifest.h"
+#include "ash/public/cpp/manifest.h"
+#include "ash/public/cpp/test_manifest.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
@@ -78,7 +79,8 @@ class AshServiceTest : public testing::Test {
  public:
   AshServiceTest()
       : test_service_manager_(
-            {GetManifest(),
+            {service_manager::Manifest(GetManifest())
+                 .Amend(GetManifestOverlayForTesting()),
              service_manager::ManifestBuilder()
                  .WithServiceName(kTestServiceName)
                  .RequireCapability(ws::mojom::kServiceName, "app")

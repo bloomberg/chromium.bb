@@ -25,7 +25,7 @@
 #include "ash/components/quick_launch/manifest.h"
 #include "ash/components/shortcut_viewer/manifest.h"
 #include "ash/components/tap_visualizer/manifest.h"
-#include "ash/manifest.h"
+#include "ash/public/cpp/manifest.h"
 #include "chrome/browser/chromeos/ash_pref_connector_manifest.h"
 #include "chrome/services/cups_ipp_parser/manifest.h"
 #include "chromeos/services/ime/manifest.h"

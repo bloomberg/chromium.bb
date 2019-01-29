@@ -1518,7 +1518,6 @@ static_library("ash_shell_lib_with_content") {
 
   deps = [
     ":ash_shell_lib",
-    ":manifest",
     ":test_support",
     "//ash/components/quick_launch:lib",
     "//ash/components/quick_launch:manifest",
@@ -1530,6 +1529,8 @@ static_library("ash_shell_lib_with_content") {
     "//ash/components/tap_visualizer:manifest",
     "//ash/components/tap_visualizer/public/mojom",
     "//ash/public/cpp",
+    "//ash/public/cpp:manifest",
+    "//ash/public/cpp:manifest_for_tests",
     "//base:i18n",
     "//chrome:packed_resources",
     "//chromeos",
@@ -1892,7 +1893,6 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":ash_service_resources",
-    ":manifest",
     ":test_support",
     "//ash/app_list:test_support",
     "//ash/app_list/presenter",
@@ -1908,6 +1908,8 @@ test("ash_unittests") {
     "//ash/components/tap_visualizer:unit_tests",
     "//ash/keyboard/arc",
     "//ash/public/cpp",
+    "//ash/public/cpp:manifest",
+    "//ash/public/cpp:manifest_for_tests",
     "//ash/public/cpp:test_support",
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",
@@ -2286,12 +2288,6 @@ service_executable("ash_service") {
     ":ash_service_resources",
     ":ash_service_resources_200",
   ]
-}
-
-service_manifest("manifest") {
-  name = "ash"
-  source = "manifest.json"
-  packaged_services = [ "//services/ws:manifest" ]
 }
 
 # TODO: Load locale-specific strings.

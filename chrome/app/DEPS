@@ -1,5 +1,6 @@
 include_rules = [
   "+ash/components/quick_launch/public",
+  "+ash/public",
   "+chrome/browser",
   "+chrome/child",
   "+chrome/chrome_watcher",
@@ -79,7 +80,6 @@ specific_include_rules = {
     "+ash/components/quick_launch",
     "+ash/components/shortcut_viewer",
     "+ash/components/tap_visualizer",
-    "+ash/manifest.h",
     "+chrome/services/cups_ipp_parser",
     "+chrome/services/file_util",
     "+chrome/services/isolated_xr_device",

@@ -271,6 +271,8 @@ static_library("test_support") {
     public_deps += [
       "//ash",
       "//ash:test_support",
+      "//ash/public/cpp:manifest",
+      "//ash/public/cpp:manifest_for_tests",
       "//components/ownership",
       "//components/user_manager:test_support",
       "//ui/aura",
