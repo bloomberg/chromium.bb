@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -31,6 +32,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/device_info_sync_service.h"
+#include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
@@ -50,6 +54,7 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using browser_sync::ProfileSyncService;
 using content::BrowserThread;
+using syncer::DeviceInfo;
 using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace {
@@ -459,6 +464,20 @@ ProfileSyncServiceAndroid::GetCurrentSignedInAccountText(
   return base::android::ConvertUTF16ToJavaString(
       env, l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_INFO,
                                       base::ASCIIToUTF16(sync_username)));
+}
+
+jint ProfileSyncServiceAndroid::GetNumberOfSyncedDevices(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  syncer::DeviceInfoSyncService* device_sync_service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile_);
+  if (!device_sync_service) {
+    return 0;
+  }
+  const std::vector<std::unique_ptr<DeviceInfo>>& all_devices =
+      device_sync_service->GetDeviceInfoTracker()->GetAllDeviceInfo();
+  return all_devices.size();
 }
 
 ScopedJavaLocalRef<jstring>

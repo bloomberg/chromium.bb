@@ -147,6 +147,10 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  jint GetNumberOfSyncedDevices(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // UI string getters.
 
   base::android::ScopedJavaLocalRef<jstring>
