@@ -20,7 +20,6 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -37,7 +36,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -58,6 +57,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
+#include "components/signin/core/browser/child_account_info_fetcher_android.h"
 #else
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #endif
@@ -72,7 +72,6 @@ namespace policy {
 
 namespace {
 
-constexpr char kTestGaiaId[] = "gaia-id-testuser@test.com";
 constexpr char kTestUser[] = "testuser@test.com";
 
 #if !defined(OS_ANDROID)
@@ -106,8 +105,9 @@ class UserPolicySigninServiceTest : public testing::Test {
   UserPolicySigninServiceTest()
       : mock_store_(NULL),
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_account_id_(
-            AccountId::FromUserEmailGaiaId(kTestUser, kTestGaiaId)),
+        test_account_id_(AccountId::FromUserEmailGaiaId(
+            kTestUser,
+            identity::GetTestGaiaIdForEmail(kTestUser))),
         register_completed_(false),
         test_system_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -130,10 +130,10 @@ class UserPolicySigninServiceTest : public testing::Test {
         base::Bind(&UserPolicySigninServiceTest::OnRegisterCompleted,
                    base::Unretained(this));
 #if defined(OS_ANDROID)
-    identity_test_env()->SetRefreshTokenForAccount(
-        AccountTrackerServiceFactory::GetForProfile(profile_.get())
-            ->SeedAccountInfo(kTestGaiaId, kTestUser));
-    service->RegisterForPolicyWithAccountId(kTestUser, kTestGaiaId, callback);
+    AccountInfo account_info =
+        identity_test_env()->MakeAccountAvailable(kTestUser);
+    service->RegisterForPolicyWithAccountId(kTestUser, account_info.gaia,
+                                            callback);
     ASSERT_TRUE(IsRequestActive());
 #else
     service->RegisterForPolicyWithLoginToken(kTestUser, "mock_oauth_token",
@@ -430,16 +430,13 @@ TEST_F(UserPolicySigninServiceTest, InitRefreshTokenAvailableBeforeSignin) {
   ASSERT_FALSE(IsRequestActive());
 
   // Make oauth token available.
-  std::string account_id =
-      AccountTrackerServiceFactory::GetForProfile(profile_.get())
-          ->SeedAccountInfo(kTestGaiaId, kTestUser);
-  identity_test_env()->SetRefreshTokenForAccount(account_id);
+  identity_test_env()->MakeAccountAvailable(kTestUser);
 
   // Not signed in yet, so client registration should be deferred.
   ASSERT_FALSE(IsRequestActive());
 
   // Sign in to Chrome.
-  identity_test_env()->MakePrimaryAccountAvailable(kTestUser);
+  identity_test_env()->SetPrimaryAccount(kTestUser);
 
   // Complete initialization of the store.
   mock_store_->NotifyStoreLoaded();
@@ -783,9 +780,21 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicySuccess) {
 }
 
 TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
+#if defined(OS_ANDROID)
+  ChildAccountInfoFetcherAndroid::InitializeForTests();
+
+  // Explicitly forcing this call is necessary for the clearing of the primary
+  // account to result in the account being fully removed in this testing
+  // context.
+  AccountFetcherService* account_fetcher_service =
+      AccountFetcherServiceFactory::GetForProfile(profile_.get());
+  account_fetcher_service->EnableNetworkFetchesForTest();
+#endif
+
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
 
   EXPECT_CALL(*mock_store_, Clear());
+
   identity_test_env()->ClearPrimaryAccount();
   ASSERT_FALSE(manager_->core()->service());
 
