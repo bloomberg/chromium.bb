@@ -13,8 +13,6 @@ namespace blink {
 
 // 6 MB allows a reasonable amount to buffer on the read and write side.
 // TODO(https://crbug.com/874296): Consider exposing these configurations.
-// TODO(shampson): Investigate why wpt get slow throughput when this value
-// is higher (24 MB).
 const uint32_t RTCQuicStream::kWriteBufferSize = 6 * 1024 * 1024;
 const uint32_t RTCQuicStream::kReadBufferSize = 6 * 1024 * 1024;
 
