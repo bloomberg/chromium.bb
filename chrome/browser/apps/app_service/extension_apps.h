@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -30,7 +31,8 @@ namespace apps {
 //
 // See chrome/services/app_service/README.md.
 class ExtensionApps : public apps::mojom::Publisher,
-                      public extensions::ExtensionRegistryObserver {
+                      public extensions::ExtensionRegistryObserver,
+                      public content_settings::Observer {
  public:
   ExtensionApps();
   ~ExtensionApps() override;
@@ -38,6 +40,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   void Initialize(const apps::mojom::AppServicePtr& app_service,
                   Profile* profile,
                   apps::mojom::AppType type);
+  void Shutdown();
 
  private:
   // Determines whether the given extension should be treated as type app_type_,
@@ -61,6 +64,12 @@ class ExtensionApps : public apps::mojom::Publisher,
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
+  // content_settings::Observer overrides.
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               const std::string& resource_identifier) override;
+
   // extensions::ExtensionRegistryObserver overrides.
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const extensions::Extension* extension,
@@ -69,12 +78,16 @@ class ExtensionApps : public apps::mojom::Publisher,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
 
+  void Publish(apps::mojom::AppPtr app);
+
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
   // running.
   bool RunExtensionEnableFlow(const std::string& app_id);
 
   static bool IsBlacklisted(const std::string& app_id);
+  void PopulatePermissions(const extensions::Extension* extension,
+                           std::vector<mojom::PermissionPtr>* target);
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
                               apps::mojom::Readiness readiness);
   void ConvertVector(const extensions::ExtensionSet& extensions,

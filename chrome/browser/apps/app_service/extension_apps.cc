@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/extension_apps.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -24,6 +25,8 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -93,8 +96,15 @@ void ExtensionApps::Initialize(const apps::mojom::AppServicePtr& app_service,
   app_service->RegisterPublisher(std::move(publisher), app_type_);
 
   profile_ = profile;
+  DCHECK(profile_);
+  observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+  HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
+}
+
+void ExtensionApps::Shutdown() {
   if (profile_) {
-    observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+    HostContentSettingsMapFactory::GetForProfile(profile_)->RemoveObserver(
+        this);
   }
 }
 
@@ -292,6 +302,43 @@ void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
+void ExtensionApps::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  // If content_type is not one of the supported permissions, do nothing.
+  if (!base::ContainsValue(kSupportedPermissionTypes, content_type)) {
+    return;
+  }
+
+  DCHECK(profile_);
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+
+  std::unique_ptr<extensions::ExtensionSet> extensions =
+      registry->GenerateInstalledExtensionsSet(
+          extensions::ExtensionRegistry::ENABLED |
+          extensions::ExtensionRegistry::DISABLED |
+          extensions::ExtensionRegistry::TERMINATED);
+
+  for (const auto& extension : *extensions) {
+    const GURL url =
+        extensions::AppLaunchInfo::GetFullLaunchURL(extension.get());
+
+    if (extension->from_bookmark() && primary_pattern.Matches(url) &&
+        Accepts(extension.get())) {
+      apps::mojom::AppPtr app = apps::mojom::App::New();
+      app->app_type = apps::mojom::AppType::kWeb;
+      app->app_id = extension->id();
+      PopulatePermissions(extension.get(), &app->permissions);
+
+      Publish(std::move(app));
+    }
+  }
+}
+
 void ExtensionApps::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
@@ -303,13 +350,7 @@ void ExtensionApps::OnExtensionInstalled(
 
   // TODO(crbug.com/826982): Does the is_update case need to be handled
   // differently? E.g. by only passing through fields that have changed.
-  apps::mojom::AppPtr app = Convert(extension, apps::mojom::Readiness::kReady);
-
-  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
-    std::vector<apps::mojom::AppPtr> apps;
-    apps.push_back(app.Clone());
-    subscriber->OnApps(std::move(apps));
-  });
+  Publish(Convert(extension, apps::mojom::Readiness::kReady));
 }
 
 void ExtensionApps::OnExtensionUninstalled(
@@ -328,6 +369,10 @@ void ExtensionApps::OnExtensionUninstalled(
   app->app_id = extension->id();
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
 
+  Publish(std::move(app));
+}
+
+void ExtensionApps::Publish(apps::mojom::AppPtr app) {
   subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
     std::vector<apps::mojom::AppPtr> apps;
     apps.push_back(app.Clone());
@@ -357,6 +402,44 @@ bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
   return app_id == arc::kPlayStoreAppId;
 }
 
+void ExtensionApps::PopulatePermissions(
+    const extensions::Extension* extension,
+    std::vector<mojom::PermissionPtr>* target) {
+  const GURL url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
+
+  auto* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  DCHECK(host_content_settings_map);
+
+  for (ContentSettingsType type : kSupportedPermissionTypes) {
+    ContentSetting setting = host_content_settings_map->GetContentSetting(
+        url, url, type, std::string() /* resource_identifier */);
+
+    // Map ContentSettingsType to an apps::mojom::TriState value
+    apps::mojom::TriState setting_val;
+    switch (setting) {
+      case CONTENT_SETTING_ALLOW:
+        setting_val = apps::mojom::TriState::kAllow;
+        break;
+      case CONTENT_SETTING_ASK:
+        setting_val = apps::mojom::TriState::kAsk;
+        break;
+      case CONTENT_SETTING_BLOCK:
+        setting_val = apps::mojom::TriState::kBlock;
+        break;
+      default:
+        setting_val = apps::mojom::TriState::kAsk;
+    }
+
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_id = static_cast<uint32_t>(type);
+    permission->value_type = apps::mojom::PermissionValueType::kTriState;
+    permission->value = static_cast<uint32_t>(setting_val);
+
+    target->push_back(std::move(permission));
+  }
+}
+
 apps::mojom::AppPtr ExtensionApps::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {
@@ -375,38 +458,7 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   // Extensions where |from_bookmark| is true wrap websites and use web
   // permissions.
   if (extension->from_bookmark()) {
-    const GURL url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
-    auto* host_content_settings_map =
-        HostContentSettingsMapFactory::GetForProfile(profile_);
-    DCHECK(host_content_settings_map);
-
-    for (ContentSettingsType type : kSupportedPermissionTypes) {
-      ContentSetting setting = host_content_settings_map->GetContentSetting(
-          url, url, type, std::string() /* resource_identifier */);
-
-      // Map ContentSettingsType to an apps::mojom::TriState value
-      apps::mojom::TriState setting_val;
-      switch (setting) {
-        case CONTENT_SETTING_ALLOW:
-          setting_val = apps::mojom::TriState::kAllow;
-          break;
-        case CONTENT_SETTING_ASK:
-          setting_val = apps::mojom::TriState::kAsk;
-          break;
-        case CONTENT_SETTING_BLOCK:
-          setting_val = apps::mojom::TriState::kBlock;
-          break;
-        default:
-          setting_val = apps::mojom::TriState::kAsk;
-      }
-
-      auto permission = apps::mojom::Permission::New();
-      permission->permission_id = static_cast<uint32_t>(type);
-      permission->value_type = apps::mojom::PermissionValueType::kTriState;
-      permission->value = static_cast<uint32_t>(setting_val);
-
-      app->permissions.push_back(std::move(permission));
-    }
+    PopulatePermissions(extension, &app->permissions);
   }
 
   // TODO(crbug.com/826982): does this catch default installed web apps?

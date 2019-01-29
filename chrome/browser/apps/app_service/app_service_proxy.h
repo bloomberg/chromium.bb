@@ -56,6 +56,9 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
   void OpenNativeSettings(const std::string& app_id);
 
  private:
+  // KeyedService overrides.
+  void Shutdown() override;
+
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
   void Clone(apps::mojom::SubscriberRequest request) override;
