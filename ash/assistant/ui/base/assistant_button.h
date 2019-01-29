@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
@@ -25,8 +26,9 @@ namespace ash {
 
 enum class AssistantButtonId;
 
-class AssistantButton : public views::ImageButton,
-                        public views::ButtonListener {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
+    : public views::ImageButton,
+      public views::ButtonListener {
  public:
   AssistantButton(views::ButtonListener* listener, AssistantButtonId button_id);
   ~AssistantButton() override;

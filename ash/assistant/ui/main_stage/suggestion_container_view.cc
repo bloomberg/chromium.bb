@@ -116,8 +116,7 @@ void SuggestionContainerView::OnSuggestionsChanged(
     // suggestion chip view.
     const int id = suggestion.first;
 
-    app_list::SuggestionChipView::Params params;
-    params.assistant_style = true;
+    SuggestionChipView::Params params;
     params.text = base::UTF8ToUTF16(suggestion.second->text);
 
     if (!suggestion.second->icon_url.is_empty()) {
@@ -134,8 +133,8 @@ void SuggestionContainerView::OnSuggestionsChanged(
       params.icon = gfx::ImageSkia();
     }
 
-    app_list::SuggestionChipView* suggestion_chip_view =
-        new app_list::SuggestionChipView(params, /*listener=*/this);
+    SuggestionChipView* suggestion_chip_view =
+        new SuggestionChipView(params, /*listener=*/this);
     suggestion_chip_view->SetAccessibleName(params.text);
 
     // Given a suggestion chip view, we need to be able to look up the id of

@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_UI_ASSISTANT_MAIN_VIEW_H_
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -16,7 +17,9 @@ class AssistantViewDelegate;
 class CaptionBar;
 class DialogPlate;
 
-class AssistantMainView : public views::View, public AssistantUiModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMainView
+    : public views::View,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantMainView(AssistantViewDelegate* delegate);
   ~AssistantMainView() override;

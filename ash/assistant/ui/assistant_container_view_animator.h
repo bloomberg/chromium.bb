@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view_observer.h"
@@ -22,7 +23,8 @@ class AssistantViewDelegate;
 
 // The AssistantContainerViewAnimator is the class responsible for smoothly
 // animating bound changes for the AssistantContainerView.
-class AssistantContainerViewAnimator : public views::ViewObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewAnimator
+    : public views::ViewObserver {
  public:
   ~AssistantContainerViewAnimator() override;
 

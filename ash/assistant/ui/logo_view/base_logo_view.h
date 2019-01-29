@@ -5,12 +5,13 @@
 #ifndef ASH_ASSISTANT_UI_LOGO_VIEW_BASE_LOGO_VIEW_H_
 #define ASH_ASSISTANT_UI_LOGO_VIEW_BASE_LOGO_VIEW_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-class BaseLogoView : public views::View {
+class COMPONENT_EXPORT(ASSISTANT_UI) BaseLogoView : public views::View {
  public:
   enum class State {
     kUndefined,

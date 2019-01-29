@@ -9,6 +9,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -23,9 +24,10 @@ class BaseLogoView;
 
 // AssistantHeaderView is the child of UiElementContainerView which provides
 // the Assistant icon.
-class AssistantHeaderView : public views::View,
-                            public AssistantInteractionModelObserver,
-                            public AssistantUiModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantHeaderView
+    : public views::View,
+      public AssistantInteractionModelObserver,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantHeaderView(AssistantViewDelegate* delegate);
   ~AssistantHeaderView() override;

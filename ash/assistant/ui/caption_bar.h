@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_CAPTION_BAR_H_
 #define ASH_ASSISTANT_UI_CAPTION_BAR_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -17,7 +18,7 @@ enum class AssistantButtonId;
 
 // TODO(wutao): Remove this class and call methods on AssistantViewDelegate
 // derectly.
-class CaptionBarDelegate {
+class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBarDelegate {
  public:
   // Invoked when the caption button identified by |id| is pressed. Return
   // |true| to prevent default behavior from being performed, false otherwise.
@@ -29,7 +30,8 @@ class CaptionBarDelegate {
 
 // CaptionBar ------------------------------------------------------------------
 
-class CaptionBar : public views::View, views::ButtonListener {
+class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
+                                                  views::ButtonListener {
  public:
   CaptionBar();
   ~CaptionBar() override;

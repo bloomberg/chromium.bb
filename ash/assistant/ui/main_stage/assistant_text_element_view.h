@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_TEXT_ELEMENT_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_TEXT_ELEMENT_VIEW_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/label.h"
 
@@ -14,7 +15,8 @@ class AssistantTextElement;
 
 // AssistantTextElementView is the visual representation of an
 // AssistantTextElement. It is a child view of UiElementContainerView.
-class AssistantTextElementView : public views::Label {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantTextElementView
+    : public views::Label {
  public:
   explicit AssistantTextElementView(const AssistantTextElement* text_element);
   ~AssistantTextElementView() override;

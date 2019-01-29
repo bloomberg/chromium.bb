@@ -9,6 +9,7 @@
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_container_view_focus_traversable.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -24,8 +25,9 @@ class AssistantMiniView;
 class AssistantViewDelegate;
 class AssistantWebView;
 
-class AssistantContainerView : public views::BubbleDialogDelegateView,
-                               public AssistantUiModelObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
+    : public views::BubbleDialogDelegateView,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantContainerView(AssistantViewDelegate* delegate);
   ~AssistantContainerView() override;
