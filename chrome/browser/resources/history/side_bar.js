@@ -38,7 +38,7 @@ Polymer({
   },
 
   /**
-   * @param {CustomEvent} e
+   * @param {!CustomEvent<{keyboardEvent: !KeyboardEvent}>} e
    * @private
    */
   onSpacePressed_: function(e) {

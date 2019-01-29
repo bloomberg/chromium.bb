@@ -57,8 +57,7 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Fires
-     * @param {!CustomEvent} e
+     * @param {!CustomEvent<boolean>} e
      * @private
      */
     onCrToggleChange_: function(e) {

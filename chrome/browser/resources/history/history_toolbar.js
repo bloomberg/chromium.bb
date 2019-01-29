@@ -96,7 +96,7 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} event
+   * @param {!CustomEvent<string>} event
    * @private
    */
   onSearchChanged_: function(event) {

@@ -128,14 +128,14 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<!{
+   *     engine: !SearchEngine,
+   *     anchorElement: !HTMLElement
+   * }>} e
    * @private
    */
   onEditSearchEngine_: function(e) {
-    const params =
-        /** @type {!{engine: !SearchEngine, anchorElement: !HTMLElement}} */ (
-            e.detail);
-    this.openDialog_(params.engine, params.anchorElement);
+    this.openDialog_(e.detail.engine, e.detail.anchorElement);
   },
 
   /** @private */
