@@ -66,8 +66,8 @@ INSTANTIATE_TEST_CASE_P(,
                                FragmentMode::kOctetByOctet));
 
 TEST_P(QpackDecoderTest, NoPrefix) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Incomplete header data prefix.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("Incomplete header data prefix.")));
 
   // Header Data Prefix is at least two bytes long.
   DecodeHeaderBlock(QuicTextUtils::HexDecode("00"));
@@ -82,8 +82,7 @@ TEST_P(QpackDecoderTest, EmptyHeaderBlock) {
 }
 
 TEST_P(QpackDecoderTest, LiteralEntryEmptyName) {
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece(""), QuicStringPiece("foo")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(""), Eq("foo")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
               Write(Eq(kHeaderAcknowledgement)));
@@ -92,8 +91,7 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyName) {
 }
 
 TEST_P(QpackDecoderTest, LiteralEntryEmptyValue) {
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
               Write(Eq(kHeaderAcknowledgement)));
@@ -102,8 +100,7 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyValue) {
 }
 
 TEST_P(QpackDecoderTest, LiteralEntryEmptyNameAndValue) {
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece(""), QuicStringPiece("")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(""), Eq("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
               Write(Eq(kHeaderAcknowledgement)));
@@ -112,8 +109,7 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyNameAndValue) {
 }
 
 TEST_P(QpackDecoderTest, SimpleLiteralEntry) {
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("bar")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
               Write(Eq(kHeaderAcknowledgement)));
@@ -122,11 +118,9 @@ TEST_P(QpackDecoderTest, SimpleLiteralEntry) {
 }
 
 TEST_P(QpackDecoderTest, MultipleLiteralEntries) {
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("bar")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   QuicString str(127, 'a');
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("foobaar"),
-                                        QuicStringPiece(str)));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foobaar"), QuicStringPiece(str)));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
               Write(Eq(kHeaderAcknowledgement)));
@@ -146,24 +140,24 @@ TEST_P(QpackDecoderTest, MultipleLiteralEntries) {
 
 // Name Length value is too large for varint decoder to decode.
 TEST_P(QpackDecoderTest, NameLenTooLargeForVarintDecoder) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Encoded integer too large.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("Encoded integer too large.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000027ffffffffffffffffffff"));
 }
 
 // Name Length value can be decoded by varint decoder but exceeds 1 MB limit.
 TEST_P(QpackDecoderTest, NameLenExceedsLimit) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("String literal too long.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("String literal too long.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000027ffff7f"));
 }
 
 // Value Length value is too large for varint decoder to decode.
 TEST_P(QpackDecoderTest, ValueLenTooLargeForVarintDecoder) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Encoded integer too large.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("Encoded integer too large.")));
 
   DecodeHeaderBlock(
       QuicTextUtils::HexDecode("000023666f6f7fffffffffffffffffffff"));
@@ -171,33 +165,31 @@ TEST_P(QpackDecoderTest, ValueLenTooLargeForVarintDecoder) {
 
 // Value Length value can be decoded by varint decoder but exceeds 1 MB limit.
 TEST_P(QpackDecoderTest, ValueLenExceedsLimit) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("String literal too long.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("String literal too long.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000023666f6f7fffff7f"));
 }
 
 TEST_P(QpackDecoderTest, IncompleteHeaderBlock) {
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Incomplete header block.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("Incomplete header block.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("00002366"));
 }
 
 TEST_P(QpackDecoderTest, HuffmanSimple) {
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("custom-key"),
-                                        QuicStringPiece("custom-value")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("custom-key"), Eq("custom-value")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
               Write(Eq(kHeaderAcknowledgement)));
 
-  DecodeHeaderBlock(QuicTextUtils::HexDecode(
-      QuicStringPiece("00002f0125a849e95ba97d7f8925a849e95bb8e8b4bf")));
+  DecodeHeaderBlock(
+      QuicTextUtils::HexDecode("00002f0125a849e95ba97d7f8925a849e95bb8e8b4bf"));
 }
 
 TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("custom-key"),
-                                        QuicStringPiece("custom-value")))
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("custom-key"), Eq("custom-value")))
       .Times(4);
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
@@ -260,26 +252,19 @@ TEST_P(QpackDecoderTest, HuffmanValueEOSPrefixTooLong) {
 
 TEST_P(QpackDecoderTest, StaticTable) {
   // A header name that has multiple entries with different values.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":method"),
-                                        QuicStringPiece("GET")));
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":method"),
-                                        QuicStringPiece("POST")));
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":method"),
-                                        QuicStringPiece("TRACE")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("GET")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("POST")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("TRACE")));
 
   // A header name that has a single entry with non-empty value.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("accept-encoding"),
-                                        QuicStringPiece("gzip, deflate, br")));
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("accept-encoding"),
-                                        QuicStringPiece("compress")));
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("accept-encoding"),
-                                        QuicStringPiece("")));
+  EXPECT_CALL(handler_,
+              OnHeaderDecoded(Eq("accept-encoding"), Eq("gzip, deflate, br")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("accept-encoding"), Eq("compress")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("accept-encoding"), Eq("")));
 
   // A header name that has a single entry with empty value.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("location"),
-                                        QuicStringPiece("")));
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("location"),
-                                        QuicStringPiece("foo")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("location"), Eq("")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("location"), Eq("foo")));
 
   EXPECT_CALL(handler_, OnDecodingCompleted());
   EXPECT_CALL(decoder_stream_sender_delegate_,
@@ -291,12 +276,12 @@ TEST_P(QpackDecoderTest, StaticTable) {
 
 TEST_P(QpackDecoderTest, TooHighStaticTableIndex) {
   // This is the last entry in the static table with index 98.
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece("x-frame-options"),
-                                        QuicStringPiece("sameorigin")));
+  EXPECT_CALL(handler_,
+              OnHeaderDecoded(Eq("x-frame-options"), Eq("sameorigin")));
 
   // Addressing entry 99 should trigger an error.
-  EXPECT_CALL(handler_, OnDecodingErrorDetected(
-                            QuicStringPiece("Static table entry not found.")));
+  EXPECT_CALL(handler_,
+              OnDecodingErrorDetected(Eq("Static table entry not found.")));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("0000ff23ff24"));
 }
@@ -598,8 +583,7 @@ TEST_P(QpackDecoderTest, WrappedLargestReference) {
 }
 
 TEST_P(QpackDecoderTest, NonZeroLargestReferenceButNoDynamicEntries) {
-  EXPECT_CALL(handler_, OnHeaderDecoded(QuicStringPiece(":method"),
-                                        QuicStringPiece("GET")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("GET")));
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(Eq("Largest Reference too large.")));
 
@@ -657,8 +641,7 @@ TEST_P(QpackDecoderTest, PromisedLargestReferenceLargerThanLargestActualIndex) {
   // Duplicate entry.
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("00"));
 
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("bar")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(Eq("Largest Reference too large.")));
 
@@ -670,8 +653,7 @@ TEST_P(QpackDecoderTest, PromisedLargestReferenceLargerThanLargestActualIndex) {
                // largest reference in this header block, even though Largest
                // Reference is 2.
 
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("")));
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(Eq("Largest Reference too large.")));
 
@@ -683,8 +665,7 @@ TEST_P(QpackDecoderTest, PromisedLargestReferenceLargerThanLargestActualIndex) {
                  // absolute index 1.  This is the largest reference in this
                  // header block, even though Largest Reference is 2.
 
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("bar")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(Eq("Largest Reference too large.")));
 
@@ -696,8 +677,7 @@ TEST_P(QpackDecoderTest, PromisedLargestReferenceLargerThanLargestActualIndex) {
                // absolute index 2.  This is the largest reference in this
                // header block, even though Largest Reference is 3.
 
-  EXPECT_CALL(handler_,
-              OnHeaderDecoded(QuicStringPiece("foo"), QuicStringPiece("")));
+  EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("")));
   EXPECT_CALL(handler_,
               OnDecodingErrorDetected(Eq("Largest Reference too large.")));
 
