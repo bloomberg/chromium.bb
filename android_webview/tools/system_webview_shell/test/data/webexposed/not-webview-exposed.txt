@@ -54,14 +54,19 @@ interface HTMLMediaElement : HTMLElement
     getter remote                      # crbug.com/521319
 
 # permissions API (crbug.com/490120), presentation API (crbug.com/521319),
-# share API (crbug.com/765923) and custom scheme handlers (crbug.com/589502)
-# not supported in webview
+# share API (crbug.com/765923), custom scheme handlers (crbug.com/589502)
+# and media session API (crbug.com/925997) are not supported in webview.
 interface Navigator
+    getter mediaSession                # crbug.com/925997
     getter permissions                 # crbug.com/490120
     getter presentation                # crbug.com/521319
     method registerProtocolHandler     # crbug.com/589502
     method unregisterProtocolHandler   # crbug.com/589502
     method share                       # crbug.com/765923
+
+# Media Session API is not enabled in Android WebView (crbug.com/925997)
+interface MediaMetadata
+interface MediaSession
 
 # notifications not yet supported in webview, crbug.com/551446
 interface ServiceWorkerRegistration : EventTarget
