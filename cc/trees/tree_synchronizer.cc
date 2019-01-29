@@ -163,6 +163,7 @@ static void PushLayerPropertiesInternal(Iterator source_layers_begin,
     LayerImpl* target_layer = target_impl_tree->LayerById(source_layer->id());
     DCHECK(target_layer);
     // TODO(enne): http://crbug.com/918126 debugging
+    CHECK(source_layer);
     if (!target_layer) {
       bool host_set_on_source = source_layer->layer_tree_host() == host_tree;
 
