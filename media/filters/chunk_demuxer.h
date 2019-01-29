@@ -153,6 +153,20 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   MediaTrack::Id media_track_id() const { return media_track_id_; }
 
+  // Allows tests to verify invocations of Append().
+  using AppendObserverCB = base::RepeatingCallback<void(const BufferQueue*)>;
+  void set_append_observer_for_testing(AppendObserverCB append_observer_cb) {
+    append_observer_cb_ = std::move(append_observer_cb);
+  }
+
+  // Allows tests to verify invocations of OnStartOfCodedFrameGroup().
+  using GroupStartObserverCB =
+      base::RepeatingCallback<void(DecodeTimestamp, base::TimeDelta)>;
+  void set_group_start_observer_for_testing(
+      GroupStartObserverCB group_start_observer_cb) {
+    group_start_observer_cb_ = std::move(group_start_observer_cb);
+  }
+
  private:
   enum State {
     UNINITIALIZED,
@@ -180,6 +194,9 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
       GUARDED_BY(lock_);
 
   const MediaTrack::Id media_track_id_;
+
+  AppendObserverCB append_observer_cb_;
+  GroupStartObserverCB group_start_observer_cb_;
 
   mutable base::Lock lock_;
   State state_ GUARDED_BY(lock_);

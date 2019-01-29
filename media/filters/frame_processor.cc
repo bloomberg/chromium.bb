@@ -949,13 +949,14 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
 
       // When buffering by PTS intervals and an otherwise continuous coded frame
       // group (by DTS, and with non-decreasing keyframe PTS) contains a
-      // keyframe with PTS in the future, signal a new coded frame group with
+      // keyframe with PTS in the future significantly far enough that it may be
+      // outside of buffering fudge room, signal a new coded frame group with
       // start time set to the previous highest frame end time in the coded
       // frame group for this track. This lets the stream coalesce a potential
       // gap, and also pass internal buffer adjacency checks.
       signal_new_cfg |=
           track_buffer->highest_presentation_timestamp() != kNoTimestamp &&
-          track_buffer->highest_presentation_timestamp() <
+          track_buffer->highest_presentation_timestamp() + frame->duration() <
               presentation_timestamp;
     }
 
