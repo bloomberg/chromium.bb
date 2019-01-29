@@ -2078,19 +2078,8 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   EXPECT_FALSE(message->monitor_request());
 }
 
-TEST_F(InputMethodMacTest, TouchBarTextSuggestionsDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kTextSuggestionsTouchBar);
-  if (@available(macOS 10.12.2, *)) {
-    EXPECT_NSEQ(nil, candidate_list_item());
-    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_NSEQ(nil, candidate_list_item());
-  }
-}
-
 TEST_F(InputMethodMacTest, TouchBarTextSuggestionsPresence) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTextSuggestionsTouchBar);
   if (@available(macOS 10.12.2, *)) {
     EXPECT_NSEQ(nil, candidate_list_item());
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_PASSWORD);
@@ -2102,7 +2091,6 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsPresence) {
 
 TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTextSuggestionsTouchBar);
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<FakeSpellChecker> spellChecker(
         [[FakeSpellChecker alloc] init]);
@@ -2166,7 +2154,6 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
 // practice, but this has caused crashes in the field.
 TEST_F(InputMethodMacTest, TouchBarTextSuggestionsInvalidSelection) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kTextSuggestionsTouchBar);
   if (@available(macOS 10.12.2, *)) {
     base::scoped_nsobject<FakeSpellChecker> spellChecker(
         [[FakeSpellChecker alloc] init]);

@@ -3864,13 +3864,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSiteCharacteristicsDatabase)},
 #endif
 
-#if defined(OS_MACOSX)
-    {"enable-text-suggestions-touch-bar",
-     flag_descriptions::kTextSuggestionsTouchBarName,
-     flag_descriptions::kTextSuggestionsTouchBarDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kTextSuggestionsTouchBar)},
-#endif
-
 #if defined(OS_CHROMEOS)
     {"enable-arc-cups-api", flag_descriptions::kArcCupsApiName,
      flag_descriptions::kArcCupsApiDescription, kOsCrOS,
