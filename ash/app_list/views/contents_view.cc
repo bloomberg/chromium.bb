@@ -29,6 +29,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
@@ -353,15 +354,20 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
 
 void ContentsView::UpdateExpandArrowFocusBehavior(
     ash::AppListState current_state) {
-  if (current_state == ash::AppListState::kStateStart) {
-    // The expand arrow is only focusable and has InkDropMode on in peeking
-    // state.
-    expand_arrow_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
-    expand_arrow_view_->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
-    return;
-  }
-  expand_arrow_view_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
-  expand_arrow_view_->SetFocusBehavior(FocusBehavior::NEVER);
+  bool state_start = current_state == ash::AppListState::kStateStart;
+
+  // The expand arrow is only focusable and has InkDropMode on in peeking
+  // state.
+  expand_arrow_view_->SetFocusBehavior(state_start ? FocusBehavior::ALWAYS
+                                                   : FocusBehavior::NEVER);
+  expand_arrow_view_->SetInkDropMode(
+      state_start ? views::InkDropHostView::InkDropMode::ON
+                  : views::InkDropHostView::InkDropMode::OFF);
+
+  // Allow ChromeVox to focus the expand arrow only when peeking launcher.
+  expand_arrow_view_->GetViewAccessibility().OverrideIsIgnored(!state_start);
+  expand_arrow_view_->GetViewAccessibility().NotifyAccessibilityEvent(
+      ax::mojom::Event::kTreeChanged);
 }
 
 PaginationModel* ContentsView::GetAppsPaginationModel() {
