@@ -231,6 +231,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeErrorLoop,
                        "emulation/virtual-time-error-loop.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeFetchStream,
                        "emulation/virtual-time-fetch-stream.js");
+HEADLESS_PROTOCOL_TEST(VirtualTimeDialogWhileLoading,
+                       "emulation/virtual-time-dialog-while-loading.js");
 
 // Flaky Test crbug.com/859382
 HEADLESS_PROTOCOL_TEST(DISABLED_VirtualTimeHistoryNavigation,
