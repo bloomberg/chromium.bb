@@ -84,9 +84,14 @@ void SerialPortManager::GetPort(const std::string& path,
                      weak_factory_.GetWeakPtr(), path, std::move(request)));
 }
 
-void SerialPortManager::PollConnection(const std::string& extension_id,
-                                       int connection_id) {
+void SerialPortManager::StartConnectionPolling(const std::string& extension_id,
+                                               int connection_id) {
   DCHECK_CURRENTLY_ON(thread_id_);
+  auto* connection = connections_->Get(extension_id, connection_id);
+  if (!connection)
+    return;
+
+  DCHECK_EQ(extension_id, connection->owner_extension_id());
 
   ReceiveParams params;
   params.thread_id = thread_id_;
@@ -95,29 +100,13 @@ void SerialPortManager::PollConnection(const std::string& extension_id,
   params.connections = connections_;
   params.connection_id = connection_id;
 
-  StartReceive(params);
+  connection->StartPolling(base::BindRepeating(&DispatchReceiveEvent, params));
 }
 
 // static
-void SerialPortManager::StartReceive(const ReceiveParams& params) {
-  DCHECK_CURRENTLY_ON(params.thread_id);
-
-  SerialConnection* connection =
-      params.connections->Get(params.extension_id, params.connection_id);
-  if (!connection)
-    return;
-  DCHECK(params.extension_id == connection->owner_extension_id());
-
-  if (connection->paused())
-    return;
-
-  connection->Receive(base::BindOnce(&ReceiveCallback, params));
-}
-
-// static
-void SerialPortManager::ReceiveCallback(const ReceiveParams& params,
-                                        std::vector<uint8_t> data,
-                                        serial::ReceiveError error) {
+void SerialPortManager::DispatchReceiveEvent(const ReceiveParams& params,
+                                             std::vector<uint8_t> data,
+                                             serial::ReceiveError error) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   // Note that an error (e.g. timeout) does not necessarily mean that no data
@@ -151,10 +140,6 @@ void SerialPortManager::ReceiveCallback(const ReceiveParams& params,
         connection->set_paused(true);
     }
   }
-
-  // Queue up the next read operation.
-  base::PostTaskWithTraits(FROM_HERE, {params.thread_id},
-                           base::BindOnce(&StartReceive, params));
 }
 
 // static

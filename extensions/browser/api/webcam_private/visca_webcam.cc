@@ -267,22 +267,18 @@ void ViscaWebcam::OnSendCompleted(const CommandCompleteCallback& callback,
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // TODO(xdai): Check |bytes_sent|?
   if (error == api::serial::SEND_ERROR_NONE) {
-    ReceiveLoop(callback);
+    serial_connection_->StartPolling(
+        base::BindRepeating(&ViscaWebcam::OnReceiveEvent,
+                            weak_ptr_factory_.GetWeakPtr(), callback));
   } else {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::Bind(callback, false, std::vector<char>()));
   }
 }
 
-void ViscaWebcam::ReceiveLoop(const CommandCompleteCallback& callback) {
-  serial_connection_->Receive(base::Bind(&ViscaWebcam::OnReceiveCompleted,
-                                         weak_ptr_factory_.GetWeakPtr(),
-                                         callback));
-}
-
-void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
-                                     std::vector<uint8_t> data,
-                                     api::serial::ReceiveError error) {
+void ViscaWebcam::OnReceiveEvent(const CommandCompleteCallback& callback,
+                                 std::vector<uint8_t> data,
+                                 api::serial::ReceiveError error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   data_buffer_.insert(data_buffer_.end(), data.begin(), data.end());
 
@@ -292,17 +288,14 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
     response.swap(data_buffer_);
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::Bind(callback, false, response));
+    serial_connection_->set_paused(true);
     return;
   }
 
   // Success case. If waiting for more data, then loop until encounter the
   // terminator.
-  if (data_buffer_.back() != kViscaTerminator) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
-                              weak_ptr_factory_.GetWeakPtr(), callback));
+  if (data_buffer_.back() != kViscaTerminator)
     return;
-  }
 
   // Success case, and a complete response has been received.
   // Clear |data_buffer_|.
@@ -313,15 +306,13 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
       (static_cast<int>(response[1]) & 0xF0) == kViscaResponseError) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::Bind(callback, false, response));
+    serial_connection_->set_paused(true);
   } else if ((static_cast<int>(response[1]) & 0xF0) != kViscaResponseAck &&
              (static_cast<int>(response[1]) & 0xFF) !=
                  kViscaResponseNetworkChange) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::Bind(callback, true, response));
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
-                              weak_ptr_factory_.GetWeakPtr(), callback));
+    serial_connection_->set_paused(true);
   }
 }
 
