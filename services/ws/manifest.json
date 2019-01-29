@@ -21,7 +21,7 @@
           "ws.mojom.WindowTreeFactory"
         ],
         "arc_manager" : [
-          "ws.mojom.Arc"
+          "ws.mojom.ArcGpu"
         ],
         // Interfaces provided by mus-gpu for mus-ws.
         "ozone": [

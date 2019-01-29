@@ -40,8 +40,8 @@ source_set("gpu_host") {
 
   if (is_chromeos) {
     sources += [
-      "arc_client.cc",
-      "arc_client.h",
+      "arc_gpu_client.cc",
+      "arc_gpu_client.h",
     ]
   }
 

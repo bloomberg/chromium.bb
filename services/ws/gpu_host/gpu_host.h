@@ -14,7 +14,7 @@
 #include "services/ws/public/mojom/gpu.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "services/ws/public/mojom/arc.mojom.h"
+#include "services/ws/public/mojom/arc_gpu.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {
@@ -62,7 +62,7 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
   void Add(mojom::GpuRequest request);
 
 #if defined(OS_CHROMEOS)
-  void AddArc(mojom::ArcRequest request);
+  void AddArcGpu(mojom::ArcGpuRequest request);
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_OZONE)
@@ -127,7 +127,7 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
   std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
 
 #if defined(OS_CHROMEOS)
-  mojo::StrongBindingSet<mojom::Arc> arc_bindings_;
+  mojo::StrongBindingSet<mojom::ArcGpu> arc_gpu_bindings_;
 #endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(GpuHost);
