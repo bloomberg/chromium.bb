@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/password_exporter_for_testing.h"
+#import "ios/chrome/browser/ui/settings/password/password_exporter_for_testing.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -21,7 +21,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface FakePasswordSerialzerBridge : NSObject<PasswordSerializerBridge>
+@interface FakePasswordSerialzerBridge : NSObject <PasswordSerializerBridge>
 
 // Allows for on demand execution of the block that handles the serialized
 // passwords.
@@ -46,7 +46,7 @@
 
 @end
 
-@interface FakePasswordFileWriter : NSObject<FileWriterProtocol>
+@interface FakePasswordFileWriter : NSObject <FileWriterProtocol>
 
 // Allows for on demand execution of the block that should be executed after
 // the file has finished writing.

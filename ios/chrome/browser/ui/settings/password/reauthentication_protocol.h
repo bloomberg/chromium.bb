@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_REAUTHENTICATION_PROTOCOL_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_REAUTHENTICATION_PROTOCOL_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_REAUTHENTICATION_PROTOCOL_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_REAUTHENTICATION_PROTOCOL_H_
 
 #import <Foundation/Foundation.h>
 
-@protocol ReauthenticationProtocol<NSObject>
+@protocol ReauthenticationProtocol <NSObject>
 
 // Checks whether Touch ID and/or passcode is enabled for the device.
 - (BOOL)canAttemptReauth;
@@ -23,4 +23,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_REAUTHENTICATION_PROTOCOL_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_REAUTHENTICATION_PROTOCOL_H_

@@ -1,7 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#import "ios/chrome/browser/ui/settings/reauthentication_module.h"
+#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
@@ -42,8 +42,8 @@ constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
 - (BOOL)canAttemptReauth {
   LAContext* context = _createLAContext();
   // The authentication method is Touch ID, Face ID or passcode.
-  return
-      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication error:nil];
+  return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
+                              error:nil];
 }
 
 - (void)attemptReauthWithLocalizedReason:(NSString*)localizedReason
