@@ -148,6 +148,8 @@ const Details* Controller::GetDetails() const {
 void Controller::EnterState(AutofillAssistantState state) {
   if (state_ == state)
     return;
+  DCHECK_NE(state_, AutofillAssistantState::STOPPED)
+      << "Unexpected transition from STOPPED to " << static_cast<int>(state);
 
   state_ = state;
   GetUiController()->OnStateChanged(state);
@@ -205,10 +207,8 @@ void Controller::OnPeriodicScriptCheck() {
   if (should_fail_after_checking_scripts_ &&
       ++total_script_check_count_ >= kAutostartCheckCountLimit) {
     should_fail_after_checking_scripts_ = false;
-    SetStatusMessage(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
-    stop_reason_ = Metrics::AUTOSTART_TIMEOUT;
-    EnterState(AutofillAssistantState::STOPPED);
+    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+                 Metrics::AUTOSTART_TIMEOUT);
     return;
   }
 
@@ -224,6 +224,9 @@ void Controller::OnPeriodicScriptCheck() {
 void Controller::OnGetScripts(const GURL& url,
                               bool result,
                               const std::string& response) {
+  if (state_ == AutofillAssistantState::STOPPED)
+    return;
+
   // If the domain of the current URL changed since the request was sent, the
   // response is not relevant anymore and can be safely discarded.
   if (url.host() != script_domain_)
@@ -266,10 +269,8 @@ void Controller::OnScriptExecuted(const std::string& script_path,
                                   const ScriptExecutor::Result& result) {
   if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
-    SetStatusMessage(
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR));
-    stop_reason_ = Metrics::SCRIPT_FAILED;
-    EnterState(AutofillAssistantState::STOPPED);
+    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+                 Metrics::SCRIPT_FAILED);
     return;
   }
 
@@ -321,8 +322,13 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
-void Controller::GiveUp(Metrics::DropOutReason reason) {
-  SetStatusMessage(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
+void Controller::OnFatalError(const std::string& error_message,
+                              Metrics::DropOutReason reason) {
+  if (state_ == AutofillAssistantState::STOPPED)
+    return;
+
+  StopPeriodicScriptChecks();
+  SetStatusMessage(error_message);
   stop_reason_ = reason;
   EnterState(AutofillAssistantState::STOPPED);
 }
@@ -481,7 +487,8 @@ void Controller::OnNoRunnableScriptsAnymore() {
 
   // We're navigated to a page that has no scripts or the scripts have reached a
   // state from which they cannot recover through a DOM change.
-  GiveUp(Metrics::NO_SCRIPTS);
+  OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
+               Metrics::NO_SCRIPTS);
   return;
 }
 
@@ -489,7 +496,7 @@ void Controller::OnRunnableScriptsChanged(
     const std::vector<ScriptHandle>& runnable_scripts) {
   // Script selection is disabled when a script is already running. We will
   // check again and maybe update when the current script has finished.
-  if (script_tracker()->running())
+  if (script_tracker()->running() || state_ == AutofillAssistantState::STOPPED)
     return;
 
   if (!runnable_scripts.empty()) {
@@ -558,10 +565,8 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!started_)
-    return;
-
-  // The following types of navigations are allowed for the main frame:
+  // The following types of navigations are allowed for the main frame, when
+  // in PROMPT state:
   //  - first-time URL load
   //  - script-directed navigation, while a script is running unless
   //    there's a touchable area.
@@ -575,16 +580,14 @@ void Controller::DidStartNavigation(
   //
   // Everything else, such as going back to a previous page, or refreshing the
   // page is considered an end condition.
-  if (navigation_handle->IsInMainFrame() &&
+  if (state_ == AutofillAssistantState::PROMPT &&
+      navigation_handle->IsInMainFrame() &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsSameDocument() &&
       !navigation_handle->IsRendererInitiated()) {
-    // The action can define a touchable element area that prevents navigation.
-    if (!script_tracker_ || !script_tracker()->running() ||
-        touchable_element_area()->HasElements()) {
-      GiveUp(Metrics::NAVIGATION);
-    }
+    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
+                 Metrics::NAVIGATION);
   }
 }
 
