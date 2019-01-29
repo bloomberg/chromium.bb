@@ -1278,7 +1278,10 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 				wl_fixed_to_double(closure->args[i].f));
 			break;
 		case 's':
-			fprintf(stderr, "\"%s\"", closure->args[i].s);
+			if (closure->args[i].s)
+				fprintf(stderr, "\"%s\"", closure->args[i].s);
+			else
+				fprintf(stderr, "nil");
 			break;
 		case 'o':
 			if (closure->args[i].o)
