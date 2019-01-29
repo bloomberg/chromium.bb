@@ -86,6 +86,7 @@ class ParentAccessCode {
 };
 
 // Generates and validates ParentAccessCodes.
+// Does not support timestamp from before Unix Epoch.
 class ParentAccessCodeAuthenticator {
  public:
   // Granularity of which generation and verification are carried out. Should
@@ -97,18 +98,22 @@ class ParentAccessCodeAuthenticator {
   ~ParentAccessCodeAuthenticator();
 
   // Generates Parent Access Code from the given |timestamp|. Returns the code
-  // if generation was successful.
+  // if generation was successful. |timestamp| needs to be greater or equal Unix
+  // Epoch.
+
   base::Optional<ParentAccessCode> Generate(base::Time timestamp);
 
   // Returns ParentAccessCode structure with validity information, if |code| is
-  // valid for the given timestamp.
+  // valid for the given timestamp. |timestamp| needs to be greater or equal
+  // Unix Epoch.
   base::Optional<ParentAccessCode> Validate(const std::string& code,
                                             base::Time timestamp);
 
  private:
   // Returns ParentAccessCode structure with validity information, if |code| is
   // valid for the range [|valid_from|, |valid_to|). |valid_to| needs to be
-  // greater or equal to |valid_from|.
+  // greater or equal to |valid_from|. |valid_from| needs to be greater or equal
+  // Unix Epoch.
   base::Optional<ParentAccessCode> ValidateInRange(const std::string& code,
                                                    base::Time valid_from,
                                                    base::Time valid_to);
