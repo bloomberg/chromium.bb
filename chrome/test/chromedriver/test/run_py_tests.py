@@ -137,13 +137,9 @@ _OS_SPECIFIC_FILTER['mac'] = [
 _OS_VERSION_SPECIFIC_FILTER = {}
 
 _OS_VERSION_SPECIFIC_FILTER['mac', 'HEAD'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2710
-    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 _OS_VERSION_SPECIFIC_FILTER['mac', '73'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2710
-    'ChromeDriverSiteIsolation.testCanClickOOPIF',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -2039,8 +2035,20 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
     frame = self._driver.FindElement('tag name', 'iframe')
     self._driver.SwitchToFrame(frame)
     a_inner = self._driver.FindElement('tag name', 'a')
-    a_inner.Click()
-    frame_url = self._driver.ExecuteScript('return window.location.href')
+    if util.GetPlatformName() == 'mac':
+      # We are adding a loop for click into an Out of Process I-Frame (OOPIF)
+      # for Mac platform only because on Mac the I-Frame loads with a noticeable delay.
+      # This is a workaround for ChromeDriver bug 2710.
+      for i in range(20):
+        if i > 0:
+          time.sleep(0.5)
+        a_inner.Click()
+        frame_url = self._driver.ExecuteScript('return window.location.href')
+        if frame_url.endswith('#two'):
+          break
+    else:
+      a_inner.Click()
+      frame_url = self._driver.ExecuteScript('return window.location.href')
     self.assertTrue(frame_url.endswith('#two'))
 
 
