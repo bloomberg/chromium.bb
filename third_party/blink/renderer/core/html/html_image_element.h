@@ -240,7 +240,6 @@ class CORE_EXPORT HTMLImageElement final
   unsigned form_was_set_by_parser_ : 1;
   unsigned element_created_by_parser_ : 1;
   unsigned is_fallback_image_ : 1;
-  bool should_invert_color_;
   bool sizes_set_width_;
   bool is_default_overridden_intrinsic_size_;
 

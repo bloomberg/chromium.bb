@@ -104,7 +104,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
-      should_invert_color_(false),
       sizes_set_width_(false),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
   SetHasCustomStyleCallbacks();
