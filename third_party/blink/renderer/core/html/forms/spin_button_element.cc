@@ -110,6 +110,17 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
           DoStepAction(up_down_state_ == kUp ? 1 : -1);
         }
       }
+      // Check |GetLayoutObject| again to make sure element is not removed by
+      // |DoStepAction|
+      if (GetLayoutObject() && !capturing_) {
+        if (LocalFrame* frame = GetDocument().GetFrame()) {
+          frame->GetEventHandler().SetPointerCapture(
+              PointerEventFactory::kMouseId, this);
+          capturing_ = true;
+          if (Page* page = GetDocument().GetPage())
+            page->GetChromeClient().RegisterPopupOpeningObserver(this);
+        }
+      }
       event.SetDefaultHandled();
     }
   } else if (mouse_event.type() == event_type_names::kMouseup &&
@@ -118,14 +129,6 @@ void SpinButtonElement::DefaultEventHandler(Event& event) {
     ReleaseCapture();
   } else if (event.type() == event_type_names::kMousemove) {
     if (box->PixelSnappedBorderBoxRect().Contains(local)) {
-      if (!capturing_) {
-        if (LocalFrame* frame = GetDocument().GetFrame()) {
-          frame->GetEventHandler().SetCapturingMouseEventsElement(this);
-          capturing_ = true;
-          if (Page* page = GetDocument().GetPage())
-            page->GetChromeClient().RegisterPopupOpeningObserver(this);
-        }
-      }
       UpDownState old_up_down_state = up_down_state_;
       up_down_state_ = (local.Y() < box->Size().Height() / 2) ? kUp : kDown;
       if (up_down_state_ != old_up_down_state)
@@ -191,7 +194,8 @@ void SpinButtonElement::ReleaseCapture(EventDispatch event_dispatch) {
   if (!capturing_)
     return;
   if (LocalFrame* frame = GetDocument().GetFrame()) {
-    frame->GetEventHandler().SetCapturingMouseEventsElement(nullptr);
+    frame->GetEventHandler().ReleasePointerCapture(
+        PointerEventFactory::kMouseId, this);
     capturing_ = false;
     if (Page* page = GetDocument().GetPage())
       page->GetChromeClient().UnregisterPopupOpeningObserver(this);
