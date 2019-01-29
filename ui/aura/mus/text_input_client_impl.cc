@@ -108,4 +108,29 @@ void TextInputClientImpl::EnsureCaretNotInRect(const gfx::Rect& rect) {
   text_input_client_->EnsureCaretNotInRect(rect);
 }
 
+void TextInputClientImpl::SetEditableSelectionRange(const gfx::Range& range) {
+  if (text_input_client_->SetEditableSelectionRange(range))
+    NotifyClientDataChanged();
+}
+
+void TextInputClientImpl::DeleteRange(const gfx::Range& range) {
+  if (text_input_client_->DeleteRange(range))
+    NotifyClientDataChanged();
+}
+
+void TextInputClientImpl::OnInputMethodChanged() {
+  text_input_client_->OnInputMethodChanged();
+}
+
+void TextInputClientImpl::ChangeTextDirectionAndLayoutAlignment(
+    base::i18n::TextDirection direction) {
+  text_input_client_->ChangeTextDirectionAndLayoutAlignment(direction);
+}
+
+void TextInputClientImpl::ExtendSelectionAndDelete(uint32_t before,
+                                                   uint32_t after) {
+  text_input_client_->ExtendSelectionAndDelete(before, after);
+  NotifyClientDataChanged();
+}
+
 }  // namespace aura
