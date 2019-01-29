@@ -35,6 +35,7 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebInputElement;
@@ -880,11 +881,36 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationDoesntSuppressAutomatic) {
 
 TEST_F(PasswordGenerationAgentTest, ManualGenerationNoIds) {
   LoadHTMLWithUserGesture(kAccountCreationNoIds);
+  WebDocument document = GetMainFrame()->GetDocument();
+
   ExecuteJavaScriptForTests(
       "document.getElementsByClassName('first_password')[0].focus();");
-  // TODO(crbug/866444): generation doesn't work properly on the password field
-  // without name and id. Temporarily it's disabled.
-  SelectGenerationFallbackAndExpect(false);
+  WebInputElement first_password_element =
+      document.FocusedElement().To<WebInputElement>();
+  ASSERT_FALSE(first_password_element.IsNull());
+  SelectGenerationFallbackAndExpect(true);
+
+  // Simulate that the user accepts a generated password.
+  base::string16 password = ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
+  password_generation_->GeneratedPasswordAccepted(password);
+
+  // Check that the first password field is autofilled with the generated
+  // password.
+  EXPECT_EQ(password, first_password_element.Value().Utf16());
+  EXPECT_TRUE(first_password_element.IsAutofilled());
+
+  // Check that the second password field is autofilled with the generated
+  // password (since it is chosen as a confirmation password field).
+  ExecuteJavaScriptForTests(
+      "document.getElementsByClassName('second_password')[0].focus();");
+  WebInputElement second_password_element =
+      document.FocusedElement().To<WebInputElement>();
+  ASSERT_FALSE(second_password_element.IsNull());
+  EXPECT_EQ(password, second_password_element.Value().Utf16());
+  EXPECT_TRUE(second_password_element.IsAutofilled());
 }
 
 TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
