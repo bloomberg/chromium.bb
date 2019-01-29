@@ -128,13 +128,12 @@
     "args": [
       "angle_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       "--test-launcher-jobs=1",
       "--test-launcher-retry-limit=0",
     ],
     "label": "//chrome/test:angle_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "angle_translator_fuzzer": {
@@ -254,13 +253,12 @@
     "args": [
       "base_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       "--test-launcher-jobs=1",
       "--test-launcher-retry-limit=0",
     ],
     "label": "//base:base_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "base_unittests": {
@@ -624,12 +622,11 @@
     "args": [
       "command_buffer_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
     "label": "//gpu:command_buffer_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "compact_enc_det_fuzzer": {
@@ -656,11 +653,10 @@
     "args": [
       "--xvfb",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "components_perftests",
     ],
     "label": "//components:components_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "components_policy_junit_tests": {
@@ -1034,12 +1030,11 @@
     "args": [
       "gpu_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
     "label": "//gpu:gpu_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "gpu_raster_angle_fuzzer": {
@@ -1361,11 +1356,10 @@
     "args": [
       "load_library_perf_tests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
     ],
     "label": "//chrome/test:load_library_perf_tests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "lookup_affiliation_response_parser_fuzzer": {
@@ -1400,13 +1394,12 @@
     "args": [
       "media_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--single-process-tests",
       "--test-launcher-retry-limit=0",
       "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned",
     ],
     "label": "//media:media_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "media_pipeline_integration_fuzzer": {
@@ -1801,10 +1794,9 @@
     "args": [
       "net_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
     ],
     "label": "//net:net_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "net_quic_crypto_framer_parse_message_fuzzer": {
@@ -2032,7 +2024,6 @@
     "args": [
       "performance_browser_tests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       # TODO(crbug.com/759866): Figure out why CastV2PerformanceTest/0 sometimes
       # takes 15-30 seconds to start up and, once fixed, remove this workaround
@@ -2043,7 +2034,7 @@
       "--enable-gpu",
     ],
     "label": "//chrome/test:performance_browser_tests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "performance_test_suite": {
@@ -2450,13 +2441,12 @@
     "args": [
       "tracing_perftests",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "--test-launcher-print-test-stdio=always",
       "--adb-path",
       "src/third_party/android_tools/sdk/platform-tools/adb",
     ],
     "label": "//components/tracing:tracing_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "traffic_annotation_auditor_unittests": {
@@ -2592,11 +2582,10 @@
     "args": [
       "--xvfb",
       "--non-telemetry=true",
-      "--migrated-test=true",
       "views_perftests",
     ],
     "label": "//ui/views:views_perftests",
-    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
   "views_unittests": {
