@@ -312,6 +312,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/image_annotation/public/mojom/constants.mojom.h"
+#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
@@ -4332,6 +4334,15 @@ void ChromeContentBrowserClient::OverridePageVisibilityState(
   }
 }
 
+// Forward image Annotator requests to the image_annotation service.
+void BindImageAnnotator(image_annotation::mojom::AnnotatorRequest request,
+                        RenderFrameHost* const frame_host) {
+  content::BrowserContext::GetConnectorFor(
+      frame_host->GetProcess()->GetBrowserContext())
+      ->BindInterface(image_annotation::mojom::kServiceName,
+                      std::move(request));
+}
+
 void ChromeContentBrowserClient::InitWebContextInterfaces() {
   frame_interfaces_ = std::make_unique<service_manager::BinderRegistry>();
   frame_interfaces_parameterized_ = std::make_unique<
@@ -4348,6 +4359,8 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&InsecureSensitiveInputDriverFactory::BindDriver));
+  frame_interfaces_parameterized_->AddInterface(
+      base::BindRepeating(&BindImageAnnotator));
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(base::Bind(

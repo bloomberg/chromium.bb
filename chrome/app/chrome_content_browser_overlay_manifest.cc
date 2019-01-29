@@ -37,6 +37,9 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/identity/manifest.h"
+#include "services/image_annotation/public/cpp/manifest.h"
+#include "services/image_annotation/public/mojom/constants.mojom.h"
+#include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/preferences/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/platform/input_host.mojom.h"
@@ -146,6 +149,8 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("heap_profiling", "heap_profiler")
             .RequireCapability("heap_profiling", "profiling")
             .RequireCapability("identity", "identity_manager")
+            .RequireCapability(image_annotation::mojom::kServiceName,
+                               image_annotation::mojom::kAnnotationCapability)
             .RequireCapability("ime", "input_engine")
             // Only used in the classic Ash case
             .RequireCapability("local_state", "pref_client")
@@ -207,6 +212,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     extensions::mime_handler::BeforeUnloadControl,
                     extensions::mime_handler::MimeHandlerService,
 #endif
+                    image_annotation::mojom::Annotator,
                     media::mojom::MediaEngagementScoreDetailsProvider,
                     media_router::mojom::MediaRouter,
                     page_load_metrics::mojom::PageLoadMetrics,
@@ -238,6 +244,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     snippets_internals::mojom::PageHandlerFactory,
                     web_ui_test::mojom::TestRunner>())
             .PackageService(identity::GetManifest())
+            .PackageService(image_annotation::GetManifest())
             .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
             .PackageService(device_sync::GetManifest())
