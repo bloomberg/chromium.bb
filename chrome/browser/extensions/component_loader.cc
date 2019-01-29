@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
@@ -558,6 +560,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       std::string id = Add(IDR_QUICKOFFICE_MANIFEST, base::FilePath(
           FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
       EnableFileSystemInGuestMode(id);
+    }
+
+    if (base::FeatureList::IsEnabled(ash::features::kContainedShell)) {
+      Add(IDR_CONTAINED_HOME_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("chromeos/contained_home")));
     }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

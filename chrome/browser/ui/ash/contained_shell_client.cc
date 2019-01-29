@@ -6,23 +6,16 @@
 
 #include <utility>
 
+#include "apps/launcher.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "base/command_line.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/views/controls/webview/webview.h"
-#include "ui/views/widget/widget.h"
-#include "url/gurl.h"
-
-namespace {
-// TODO(b/119418627): implement the contained shell experience and put its URL
-// here.
-constexpr char kDefaultContainedShellUrl[] = "about:blank";
-}  // namespace
 
 ContainedShellClient::ContainedShellClient() {
   ash::mojom::ContainedShellControllerPtr contained_shell_controller;
@@ -38,24 +31,16 @@ ContainedShellClient::ContainedShellClient() {
 ContainedShellClient::~ContainedShellClient() = default;
 
 void ContainedShellClient::LaunchContainedShell(const AccountId& account_id) {
-  auto* web_view = new views::WebView(
-      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id));
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  // TODO(michaelpg): Create a dummy app for non-internal builds.
 
-  auto* widget = new views::Widget;
-  widget->Init(params);
-  widget->SetContentsView(web_view);
-
-  const std::string url_flag =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kContainedShellUrl);
-
-  if (!url_flag.empty())
-    web_view->LoadInitialURL(GURL(url_flag));
-  else
-    web_view->LoadInitialURL(GURL(kDefaultContainedShellUrl));
-
-  widget->SetFullscreen(true);
-  widget->Show();
+#if defined(GOOGLE_CHROME_BUILD)
+  Profile* profile =
+      chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  const extensions::Extension* app =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          extension_misc::kContainedHomeAppId);
+  DCHECK(app);
+  apps::LaunchPlatformApp(profile, app,
+                          extensions::AppLaunchSource::SOURCE_CHROME_INTERNAL);
+#endif
 }

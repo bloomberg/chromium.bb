@@ -46,7 +46,6 @@ CHROMEOS_EXPORT extern const char kCellularFirst[];
 CHROMEOS_EXPORT extern const char kChildWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kChildWallpaperSmall[];
 CHROMEOS_EXPORT extern const char kConservativeThreshold[];
-CHROMEOS_EXPORT extern const char kContainedShellUrl[];
 CHROMEOS_EXPORT extern const char kCrosGaiaApiV1[];
 CHROMEOS_EXPORT extern const char kCrosRegion[];
 CHROMEOS_EXPORT extern const char kCrosRegionsMode[];
