@@ -649,6 +649,9 @@ static LayoutTextSelectionStatus ComputeSelectionStatusForNode(
 
 LayoutTextSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const LayoutText& layout_text) const {
+  Document& document = frame_selection_->GetDocument();
+  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
   DCHECK(!has_pending_selection_);
   const SelectionState selection_state = GetSelectionStateFor(layout_text);
   if (selection_state == SelectionState::kNone)
@@ -683,6 +686,9 @@ LayoutTextSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
 // LayoutText and not of each NGPhysicalTextFragment for it.
 LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGPaintFragment& fragment) const {
+  Document& document = frame_selection_->GetDocument();
+  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
   // We don't paint selection on ellipsis.

@@ -777,11 +777,13 @@ TEST_P(LayoutSelectionTest, ClearByRemoveNode) {
 
   Node* baz = GetDocument().body()->lastChild();
   baz->remove();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foo', Start(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', Inside(0,3), ShouldInvalidate ",
+      "    'bar', End(0,3), ShouldInvalidate ",
       DumpSelectionInfo());
 
   UpdateAllLifecyclePhasesForTest();
@@ -808,12 +810,13 @@ TEST_P(LayoutSelectionTest, ClearByRemoveLayoutObject) {
 
   Element* span_baz = ToElement(GetDocument().body()->lastChild());
   span_baz->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  'foo', Start(0,3), ShouldInvalidate \n"
       "  SPAN, Contain, NotInvalidate \n"
-      "    'bar', Inside(0,3), ShouldInvalidate \n"
+      "    'bar', End(0,3), ShouldInvalidate \n"
       "  SPAN, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> ",
       DumpSelectionInfo());
@@ -851,12 +854,13 @@ TEST_P(LayoutSelectionTest, ClearBySlotChange) {
       GetDocument().body()->firstChild()->GetShadowRoot()->QuerySelector(
           "slot");
   slot->setAttribute("name", "s2");
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  Selection().CommitAppearanceIfNeeded();
   EXPECT_EQ(
       "BODY, Contain, NotInvalidate \n"
       "  DIV, Contain, NotInvalidate \n"
       "    #shadow-root \n"
-      "      'Foo', Start(0,3), ShouldInvalidate \n"
+      "      'Foo', StartAndEnd(0,3), ShouldInvalidate \n"
       "      SLOT, <null LayoutObject> \n"
       "    'baz', <null LayoutObject> \n"
       "    SPAN, <null LayoutObject> \n"
