@@ -103,9 +103,9 @@ class MODULES_EXPORT ServiceWorkerContainer final
   const AtomicString& InterfaceName() const override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange, kControllerchange);
-  // TODO(falken): Enable the client message queue when onmessage is assigned
-  // to.
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+
+  void setOnmessage(EventListener* listener);
+  EventListener* onmessage();
 
   // Returns the ServiceWorkerRegistration object described by the given info.
   // Creates a new object if needed, or else returns the existing one.
