@@ -98,7 +98,6 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void NotifyAnimationStarted(const AnimationEvent& event);
   void NotifyAnimationFinished(const AnimationEvent& event);
   void NotifyAnimationAborted(const AnimationEvent& event);
-  void NotifyAnimationPropertyUpdate(const AnimationEvent& event);
   void NotifyAnimationTakeover(const AnimationEvent& event);
 
   bool has_element_in_active_list() const {
