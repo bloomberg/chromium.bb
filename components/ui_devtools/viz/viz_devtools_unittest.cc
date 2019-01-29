@@ -263,7 +263,8 @@ TEST_F(VizDevToolsTest, FrameSinkHierarchyUnregistered) {
   DOM::Node* parent_node = FindFrameSinkNode(kFrameSink1, root());
   DOM::Node* child_node = FindFrameSinkNode(kFrameSink2, parent_node);
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
-  ExpectChildNodeInserted(dom_agent()->element_root()->node_id(), 0);
+  ExpectChildNodeInserted(dom_agent()->element_root()->node_id(),
+                          parent_node->getNodeId());
 }
 
 // Verify that the initial tree at viz devtools startup is correct, including an
@@ -284,6 +285,25 @@ TEST_F(VizDevToolsTest, InitialFrameSinkHierarchy) {
   EXPECT_EQ(node1, root()->getChildren(nullptr)->get(0));
   EXPECT_EQ(node2, node1->getChildren(nullptr)->get(0));
   EXPECT_EQ(node3, root()->getChildren(nullptr)->get(1));
+}
+
+// Verify that FrameSinkElements are inserted into the tree according to the
+// ordering of their FrameSinkIds.
+TEST_F(VizDevToolsTest, FrameSinkElementOrdering) {
+  RegisterFrameSinkId(kFrameSink2);
+
+  BuildDocument();
+
+  DOM::Node* frame_sink_node = FindFrameSinkNode(kFrameSink2, root());
+
+  // Create a frame sink element before the existing frame sink.
+  RegisterFrameSinkId(kFrameSink1);
+  ExpectChildNodeInserted(dom_agent()->element_root()->node_id(), 0);
+
+  // Create a frame sink element after the existing frame sink.
+  RegisterFrameSinkId(kFrameSink3);
+  ExpectChildNodeInserted(dom_agent()->element_root()->node_id(),
+                          frame_sink_node->getNodeId());
 }
 
 // Verify that creating a surface and adding a reference to the root surface
@@ -347,7 +367,8 @@ TEST_F(VizDevToolsTest, SurfaceReferenceRemoved) {
   DOM::Node* parent_node = FindSurfaceNode(id1, root());
   DOM::Node* child_node = FindSurfaceNode(id2, parent_node);
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
-  ExpectChildNodeInserted(dom_agent()->GetRootSurfaceElement()->node_id(), 0);
+  ExpectChildNodeInserted(dom_agent()->GetRootSurfaceElement()->node_id(),
+                          parent_node->getNodeId());
 }
 
 // Verify that a hierarchy of surfaces can be destroyed and cleaned up properly.
@@ -431,9 +452,10 @@ TEST_F(VizDevToolsTest, MultipleSurfaceReferences) {
   frontend_channel()->SetAllowNotifications(true);
 
   // Remove the reference to the second parent. This should move the child node
-  // to the root surface.
+  // to the root surface, after the second parent.
   RemoveSurfaceReference(parent_id_2, child_id);
-  ExpectChildNodeInserted(dom_agent()->GetRootSurfaceElement()->node_id(), 0);
+  ExpectChildNodeInserted(dom_agent()->GetRootSurfaceElement()->node_id(),
+                          parent_node_2->getNodeId());
   ExpectChildNodeRemoved(parent_node_2->getNodeId(), child_node->getNodeId());
 }
 
@@ -463,6 +485,50 @@ TEST_F(VizDevToolsTest, SurfaceReferenceAddedBeforeChildActivation) {
 
   DOM::Node* parent_node = FindSurfaceNode(parent_id, root());
   ExpectChildNodeInserted(parent_node->getNodeId(), 0);
+}
+
+// Verify that SurfaceElements are inserted into the tree according to the
+// ordering of their SurfaceIds.
+TEST_F(VizDevToolsTest, SurfaceElementOrdering) {
+  viz::SurfaceId id2 = CreateFrameSinkAndSurface(kFrameSink2, 1);
+  AddSurfaceReference(surface_manager()->GetRootSurfaceId(), id2);
+
+  BuildDocument();
+
+  DOM::Node* surface_node = FindSurfaceNode(id2, root());
+
+  // Create a surface element before the existing surface.
+  viz::SurfaceId id1 = CreateFrameSinkAndSurface(kFrameSink1, 1);
+  AddSurfaceReference(surface_manager()->GetRootSurfaceId(), id1);
+  ExpectChildNodeInserted(dom_agent()->GetRootSurfaceElement()->node_id(), 0);
+
+  // Create a surface element after the existing surface.
+  viz::SurfaceId id3 = CreateFrameSinkAndSurface(kFrameSink3, 1);
+  AddSurfaceReference(surface_manager()->GetRootSurfaceId(), id3);
+  ExpectChildNodeInserted(dom_agent()->GetRootSurfaceElement()->node_id(),
+                          surface_node->getNodeId());
+}
+
+// Verify that FrameSinkElements are placed before the root SurfaceElement.
+TEST_F(VizDevToolsTest, FrameSinkAndSurfaceElementOrdering) {
+  RegisterFrameSinkId(kFrameSink1);
+
+  BuildDocument();
+
+  DOM::Node* frame_sink_node = FindFrameSinkNode(kFrameSink1, root());
+  DOM::Node* root_surface_node =
+      FindSurfaceNode(surface_manager()->GetRootSurfaceId(), root());
+
+  // The frame sink should be before the root surface node.
+  EXPECT_EQ(frame_sink_node, root()->getChildren(nullptr)->get(0));
+  EXPECT_EQ(root_surface_node, root()->getChildren(nullptr)->get(1));
+
+  // Create a frame sink element with a large id, it should still be inserted
+  // before the root surface element.
+  viz::FrameSinkId big_frame_sink(50, 50);
+  RegisterFrameSinkId(big_frame_sink);
+  ExpectChildNodeInserted(dom_agent()->element_root()->node_id(),
+                          frame_sink_node->getNodeId());
 }
 
 }  // namespace ui_devtools

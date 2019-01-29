@@ -66,7 +66,7 @@ void DOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
   const auto& children = parent->children();
   auto iter = std::find(children.begin(), children.end(), child);
   int prev_node_id =
-      (iter == children.end() - 1) ? 0 : (*std::next(iter))->node_id();
+      (iter == children.begin()) ? 0 : (*std::prev(iter))->node_id();
   frontend()->childNodeInserted(parent->node_id(), prev_node_id,
                                 BuildTreeForUIElement(child));
 

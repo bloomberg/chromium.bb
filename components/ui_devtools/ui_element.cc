@@ -54,12 +54,23 @@ void UIElement::AddChild(UIElement* child, UIElement* before) {
   delegate_->OnUIElementAdded(this, child);
 }
 
+void UIElement::AddOrderedChild(UIElement* child,
+                                ElementCompare compare,
+                                bool notify_delegate) {
+  auto iter =
+      std::lower_bound(children_.begin(), children_.end(), child, compare);
+  children_.insert(iter, child);
+  if (notify_delegate)
+    delegate_->OnUIElementAdded(this, child);
+}
+
 void UIElement::ClearChildren() {
   children_.clear();
 }
 
-void UIElement::RemoveChild(UIElement* child) {
-  delegate()->OnUIElementRemoved(child);
+void UIElement::RemoveChild(UIElement* child, bool notify_delegate) {
+  if (notify_delegate)
+    delegate_->OnUIElementRemoved(child);
   auto iter = std::find(children_.begin(), children_.end(), child);
   DCHECK(iter != children_.end());
   children_.erase(iter);

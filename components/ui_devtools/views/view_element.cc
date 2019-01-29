@@ -37,8 +37,7 @@ void ViewElement::OnChildViewRemoved(views::View* parent, views::View* view) {
 
 void ViewElement::OnChildViewAdded(views::View* parent, views::View* view) {
   DCHECK_EQ(parent, view_);
-  AddChild(new ViewElement(view, delegate(), this),
-           children().empty() ? nullptr : children().back());
+  AddChild(new ViewElement(view, delegate(), this));
 }
 
 void ViewElement::OnChildViewReordered(views::View* parent, views::View* view) {

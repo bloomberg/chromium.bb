@@ -93,20 +93,9 @@ class DOMAgentViz : public viz::SurfaceObserver,
   // Destroy |element| and attach all its children to the root_element().
   void DestroyElementAndRemoveSubtree(UIElement* element);
 
-  // Destroy all children and move to |new_parent|. This also rebuilds the
-  // subtree via BuildTreeForUIElement.
-  // TODO(sgilhuly): Improve the way reparenting is handled. Currently, after
-  // the node is removed, you have to remove all of its children, and add the
-  // element back to the tree. Then, the list of children is repopulated.
-  void Reparent(UIElement* new_parent, UIElement* child);
-
   // Removes an element from either |frame_sink_elements_| or
   // |surface_elements_|.
   void DestroyElement(UIElement* element);
-
-  // Remove all subtree elements from either |frame_sink_elements_| or
-  // |surface_elements_|. |element| itself is preserved.
-  void DestroySubtree(UIElement* element);
 
   // Constructs a new FrameSinkElement with some default arguments, adds it to
   // |frame_sink_elements_|, and returns its pointer.

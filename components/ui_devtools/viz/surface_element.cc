@@ -16,7 +16,7 @@ SurfaceElement::SurfaceElement(const viz::SurfaceId& surface_id,
                                viz::FrameSinkManagerImpl* frame_sink_manager,
                                UIElementDelegate* ui_element_delegate,
                                UIElement* parent)
-    : UIElement(UIElementType::SURFACE, ui_element_delegate, parent),
+    : VizElement(UIElementType::SURFACE, ui_element_delegate, parent),
       surface_id_(surface_id),
       frame_sink_manager_(frame_sink_manager) {
   viz::Surface* surface =

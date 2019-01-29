@@ -48,8 +48,7 @@ void WindowElement::OnWindowHierarchyChanging(
 void WindowElement::OnWindowHierarchyChanged(
     const aura::WindowObserver::HierarchyChangeParams& params) {
   if (window_ == params.new_parent && params.receiver == params.new_parent) {
-    AddChild(new WindowElement(params.target, delegate(), this),
-             children().empty() ? nullptr : children().back());
+    AddChild(new WindowElement(params.target, delegate(), this));
   }
 }
 

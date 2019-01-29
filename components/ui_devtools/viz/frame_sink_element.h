@@ -6,7 +6,7 @@
 #define COMPONENTS_UI_DEVTOOLS_VIZ_FRAME_SINK_ELEMENT_H_
 
 #include "base/macros.h"
-#include "components/ui_devtools/ui_element.h"
+#include "components/ui_devtools/viz/viz_element.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
 namespace viz {
@@ -15,7 +15,7 @@ class FrameSinkManagerImpl;
 
 namespace ui_devtools {
 
-class FrameSinkElement : public UIElement {
+class FrameSinkElement : public VizElement {
  public:
   FrameSinkElement(const viz::FrameSinkId& frame_sink_id,
                    viz::FrameSinkManagerImpl* frame_sink_manager,
