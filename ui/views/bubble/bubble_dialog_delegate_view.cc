@@ -163,6 +163,16 @@ const char* BubbleDialogDelegateView::GetClassName() const {
   return kViewClassName;
 }
 
+void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
+  // To prevent keyboard focus traversal issues, the anchor view's
+  // kAnchoredDialogKey property is cleared immediately upon Close(). This
+  // avoids a bug that occured when a focused anchor view is made unfocusable
+  // right after the bubble is closed. Previously, focus would advance into the
+  // bubble then would be lost when the bubble was destroyed.
+  if (widget == GetWidget() && GetAnchorView())
+    GetAnchorView()->ClearProperty(kAnchoredDialogKey);
+}
+
 void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
     SetAnchorView(NULL);

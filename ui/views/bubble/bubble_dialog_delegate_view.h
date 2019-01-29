@@ -56,6 +56,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   const char* GetClassName() const override;
 
   // WidgetObserver:
+  void OnWidgetClosing(Widget* widget) override;
   void OnWidgetDestroying(Widget* widget) override;
   void OnWidgetVisibilityChanging(Widget* widget, bool visible) override;
   void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
