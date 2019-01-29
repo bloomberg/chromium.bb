@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "media/base/media_switches.h"
+
 namespace file_manager {
 
 template <GuestMode MODE>
@@ -79,12 +82,12 @@ IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, ChangeTracksPlayListIcon) {
   StartTest();
 }
 
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_NativeMediaKey DISABLED_NativeMediaKey
-#else
-#define MAYBE_NativeMediaKey NativeMediaKey
-#endif
-IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, MAYBE_NativeMediaKey) {
+IN_PROC_BROWSER_TEST_F(AudioPlayerBrowserTest, NativeMediaKey) {
+  // The HardwareMediaKeyHandling feature makes key handling flaky.
+  // See https://crbug.com/902519.
+  base::test::ScopedFeatureList disable_media_key_handling;
+  disable_media_key_handling.InitAndDisableFeature(
+      media::kHardwareMediaKeyHandling);
   set_test_case_name("mediaKeyNative");
   StartTest();
 }
