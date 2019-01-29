@@ -5,6 +5,8 @@
 #ifndef CC_TILES_PAINT_WORKLET_IMAGE_CACHE_H_
 #define CC_TILES_PAINT_WORKLET_IMAGE_CACHE_H_
 
+#include <utility>
+
 #include "base/containers/flat_map.h"
 #include "cc/cc_export.h"
 #include "cc/paint/draw_image.h"
@@ -32,15 +34,19 @@ class CC_EXPORT PaintWorkletImageCache {
   void PaintImageInTask(const PaintImage& paint_image);
 
   PaintRecord* GetPaintRecordForTest(PaintWorkletInput* input);
-  const base::flat_map<PaintWorkletInput*, sk_sp<PaintRecord>>&
+  const base::flat_map<PaintWorkletInput*,
+                       std::pair<sk_sp<PaintRecord>, size_t>>&
   GetRecordsForTest() {
     return records_;
   }
 
  private:
-  // The PaintRecord is produced by PaintWorkletLayerPainter::Paint(), and used
-  // for raster.
-  base::flat_map<PaintWorkletInput*, sk_sp<PaintRecord>> records_;
+  // This is a map of paint worklet inputs to a pair of paint record and a
+  // reference count. The paint record is the representation of the worklet
+  // output based on the input, and the reference count is the number of times
+  // that it is used for tile rasterization.
+  base::flat_map<PaintWorkletInput*, std::pair<sk_sp<PaintRecord>, size_t>>
+      records_;
   // The PaintWorkletImageCache is owned by ImageController, which has the same
   // life time as the LayerTreeHostImpl, that guarantees that the painter will
   // live as long as the LayerTreeHostImpl.

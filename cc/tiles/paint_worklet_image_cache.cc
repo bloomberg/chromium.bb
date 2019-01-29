@@ -50,12 +50,13 @@ scoped_refptr<TileTask> PaintWorkletImageCache::GetTaskForPaintWorkletImage(
 // then there is no need to call the Paint() function.
 void PaintWorkletImageCache::PaintImageInTask(const PaintImage& paint_image) {
   sk_sp<PaintRecord> record = painter_->Paint();
-  records_[paint_image.paint_worklet_input()] = record;
+  records_[paint_image.paint_worklet_input()] =
+      std::make_pair(std::move(record), 0);
 }
 
 PaintRecord* PaintWorkletImageCache::GetPaintRecordForTest(
     PaintWorkletInput* input) {
-  return records_[input].get();
+  return records_[input].first.get();
 }
 
 }  // namespace cc
