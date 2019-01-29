@@ -121,8 +121,12 @@ def ConvertCcPrebuiltLibrary(json):
   converted = ConvertCommonFields(json)
   converted['type'] = 'fuchsia_sdk_pkg'
   converted['sources'] = json['headers']
-  converted['libs'] = [json['name']]
   converted['include_dirs'] = [json['root'] + '/include']
+
+  if json['format'] == 'shared':
+    converted['shared_libs'] = [json['name']]
+  else:
+    converted['static_libs'] = [json['name']]
 
   return converted
 
