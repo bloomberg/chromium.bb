@@ -156,8 +156,11 @@ class FakeAppInstance : public mojom::AppInstance {
       GetAppShortcutGlobalQueryItemsCallback callback) override;
   void GetAppShortcutItems(const std::string& package_name,
                            GetAppShortcutItemsCallback callback) override;
+
   void StartPaiFlowDeprecated() override;
   void StartPaiFlow(StartPaiFlowCallback callback) override;
+  void GetAppReinstallCandidates(
+      GetAppReinstallCandidatesCallback callback) override;
   void StartFastAppReinstallFlow(
       const std::vector<std::string>& package_names) override;
   void RequestAssistStructure(RequestAssistStructureCallback callback) override;
@@ -231,6 +234,10 @@ class FakeAppInstance : public mojom::AppInstance {
     return launch_intents_;
   }
 
+  int get_app_reinstall_callback_count() const {
+    return get_app_reinstall_callback_count_;
+  }
+
   const std::vector<std::unique_ptr<IconRequest>>& icon_requests() const {
     return icon_requests_;
   }
@@ -239,6 +246,9 @@ class FakeAppInstance : public mojom::AppInstance {
   shortcut_icon_requests() const {
     return shortcut_icon_requests_;
   }
+
+  void SetAppReinstallCandidates(
+      const std::vector<arc::mojom::AppReinstallCandidatePtr>& candidates);
 
  private:
   using TaskIdToInfo = std::map<int32_t, std::unique_ptr<Request>>;
@@ -254,6 +264,11 @@ class FakeAppInstance : public mojom::AppInstance {
   int start_fast_app_reinstall_request_count_ = 0;
   // Keeps information about launch app shortcut requests.
   int launch_app_shortcut_item_count_ = 0;
+  // Keeps info about the number of times we got a request for app reinstalls.
+  int get_app_reinstall_callback_count_ = 0;
+
+  // Vector to send as app reinstall candidates.
+  std::vector<arc::mojom::AppReinstallCandidatePtr> app_reinstall_candidates_;
   // Keeps information about launch requests.
   std::vector<std::unique_ptr<Request>> launch_requests_;
   // Keeps information about launch intents.
