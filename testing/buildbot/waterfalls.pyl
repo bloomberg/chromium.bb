@@ -1459,6 +1459,7 @@
         },
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'linux-annotator-rel': {
