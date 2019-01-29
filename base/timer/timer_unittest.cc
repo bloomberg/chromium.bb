@@ -700,8 +700,8 @@ TEST(TimerTest, ContinuationReset) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        TimerTestWithThreadType,
-                        testing::ValuesIn(testing_main_threads));
+INSTANTIATE_TEST_SUITE_P(,
+                         TimerTestWithThreadType,
+                         testing::ValuesIn(testing_main_threads));
 
 }  // namespace base

@@ -419,11 +419,11 @@ TEST_P(WaitableEventWatcherDeletionTest, DeleteWatcherBeforeCallback) {
   EXPECT_FALSE(did_callback);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WaitableEventWatcherTest,
-                        testing::ValuesIn(testing_main_threads));
+INSTANTIATE_TEST_SUITE_P(,
+                         WaitableEventWatcherTest,
+                         testing::ValuesIn(testing_main_threads));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     WaitableEventWatcherDeletionTest,
     testing::Combine(testing::ValuesIn(testing_main_threads), testing::Bool()));

@@ -165,11 +165,11 @@ TEST_P(MessagePumpTest, TimerSlackWithLongDelays) {
   message_pump_->Run(&delegate);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MessagePumpTest,
-                        ::testing::Values(MessageLoop::TYPE_DEFAULT,
-                                          MessageLoop::TYPE_UI,
-                                          MessageLoop::TYPE_IO));
+INSTANTIATE_TEST_SUITE_P(,
+                         MessagePumpTest,
+                         ::testing::Values(MessageLoop::TYPE_DEFAULT,
+                                           MessageLoop::TYPE_UI,
+                                           MessageLoop::TYPE_IO));
 
 }  // namespace
 }  // namespace base

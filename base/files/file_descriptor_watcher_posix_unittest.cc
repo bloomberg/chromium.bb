@@ -301,12 +301,12 @@ TEST_P(FileDescriptorWatcherTest, DeleteControllerAfterDeleteMessagePumpForIO) {
   controller = nullptr;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MessagePumpForIOOnMainThread,
     FileDescriptorWatcherTest,
     ::testing::Values(
         FileDescriptorWatcherTestType::MESSAGE_PUMP_FOR_IO_ON_MAIN_THREAD));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MessagePumpForIOOnOtherThread,
     FileDescriptorWatcherTest,
     ::testing::Values(

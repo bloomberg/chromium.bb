@@ -247,8 +247,8 @@ TEST_P(MessageLoopPerfTest, PostTaskRate) {
                          "us/task", true);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MessageLoopPerfTest,
-                        ::testing::Values(1, 5, 10),
-                        MessageLoopPerfTest::ParamInfoToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         MessageLoopPerfTest,
+                         ::testing::Values(1, 5, 10),
+                         MessageLoopPerfTest::ParamInfoToString);
 }  // namespace base
