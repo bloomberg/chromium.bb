@@ -41,6 +41,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
+using chromeos::NetworkHandler;
+using chromeos::NetworkState;
+using chromeos::NetworkStateHandler;
+using chromeos::NetworkTypePattern;
+
 namespace ash {
 namespace tray {
 namespace {
@@ -53,8 +58,8 @@ struct CompareArcVPNProviderByLastLaunchTime {
 
 // Indicates whether |network| belongs to this VPN provider.
 bool VpnProviderMatchesNetwork(const VPNProvider& provider,
-                               const chromeos::NetworkState& network) {
-  const chromeos::NetworkState::VpnProviderInfo* network_vpn_provider =
+                               const NetworkState& network) {
+  const NetworkState::VpnProviderInfo* network_vpn_provider =
       network.vpn_provider();
   // Never display non-VPN networks or VPNs with no provider info.
   if (network.type() != shill::kTypeVPN || !network_vpn_provider)
@@ -139,8 +144,7 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
 class VPNListNetworkEntry : public HoverHighlightView,
                             public network_icon::AnimationObserver {
  public:
-  VPNListNetworkEntry(VPNListView* vpn_list_view,
-                      const chromeos::NetworkState* network);
+  VPNListNetworkEntry(VPNListView* vpn_list_view, const NetworkState* network);
   ~VPNListNetworkEntry() override;
 
   // network_icon::AnimationObserver:
@@ -150,7 +154,7 @@ class VPNListNetworkEntry : public HoverHighlightView,
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
-  void UpdateFromNetworkState(const chromeos::NetworkState* network);
+  void UpdateFromNetworkState(const NetworkState* network);
 
   VPNListView* const owner_;
   const std::string guid_;
@@ -161,7 +165,7 @@ class VPNListNetworkEntry : public HoverHighlightView,
 };
 
 VPNListNetworkEntry::VPNListNetworkEntry(VPNListView* owner,
-                                         const chromeos::NetworkState* network)
+                                         const NetworkState* network)
     : HoverHighlightView(owner), owner_(owner), guid_(network->guid()) {
   UpdateFromNetworkState(network);
 }
@@ -171,9 +175,9 @@ VPNListNetworkEntry::~VPNListNetworkEntry() {
 }
 
 void VPNListNetworkEntry::NetworkIconChanged() {
-  UpdateFromNetworkState(chromeos::NetworkHandler::Get()
-                             ->network_state_handler()
-                             ->GetNetworkStateFromGuid(guid_));
+  UpdateFromNetworkState(
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          guid_));
 }
 
 void VPNListNetworkEntry::ButtonPressed(Button* sender,
@@ -186,15 +190,14 @@ void VPNListNetworkEntry::ButtonPressed(Button* sender,
   chromeos::NetworkConnect::Get()->DisconnectFromNetworkId(guid_);
 }
 
-void VPNListNetworkEntry::UpdateFromNetworkState(
-    const chromeos::NetworkState* network) {
-  if (network && network->IsConnectingState())
+void VPNListNetworkEntry::UpdateFromNetworkState(const NetworkState* vpn) {
+  if (vpn && vpn->IsConnectingState())
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 
-  if (!network) {
-    // This is a transient state where the network has been removed already but
+  if (!vpn) {
+    // This is a transient state where the vpn has been removed already but
     // the network list in the UI has not been updated yet.
     return;
   }
@@ -202,11 +205,11 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
   disconnect_button_ = nullptr;
 
   gfx::ImageSkia image =
-      network_icon::GetImageForNetwork(network, network_icon::ICON_TYPE_LIST);
-  base::string16 label = network_icon::GetLabelForNetwork(
-      network, network_icon::ICON_TYPE_MENU_LIST);
+      network_icon::GetImageForVPN(vpn, network_icon::ICON_TYPE_LIST);
+  base::string16 label =
+      network_icon::GetLabelForNetwork(vpn, network_icon::ICON_TYPE_MENU_LIST);
   AddIconAndLabel(image, label);
-  if (network->IsConnectedState()) {
+  if (vpn->IsConnectedState()) {
     owner_->SetupConnectedScrollListItem(this);
     disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
         this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
@@ -216,7 +219,7 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
         views::CreateEmptyBorder(
             0, kTrayPopupButtonEndMargin - kTrayPopupLabelHorizontalPadding, 0,
             kTrayPopupButtonEndMargin));
-  } else if (network->IsConnectingState()) {
+  } else if (vpn->IsConnectingState()) {
     owner_->SetupConnectingScrollListItem(this);
   }
 
@@ -263,11 +266,9 @@ void VPNListView::UpdateNetworkList() {
   list_empty_ = true;
 
   // Get the list of available VPN networks, in shill's priority order.
-  chromeos::NetworkStateHandler::NetworkStateList networks;
-  chromeos::NetworkHandler::Get()
-      ->network_state_handler()
-      ->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::VPN(),
-                                    &networks);
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetVisibleNetworkListByType(
+      NetworkTypePattern::VPN(), &networks);
 
   // Show all VPN providers and all networks that are currently disconnected.
   AddProvidersAndNetworks(networks);
@@ -316,7 +317,7 @@ void VPNListView::OnVPNProvidersChanged() {
   UpdateNetworkList();
 }
 
-void VPNListView::AddNetwork(const chromeos::NetworkState* network) {
+void VPNListView::AddNetwork(const NetworkState* network) {
   views::View* entry(new VPNListNetworkEntry(this, network));
   scroll_content()->AddChildView(entry);
   network_view_guid_map_[entry] = network->guid();
@@ -325,7 +326,7 @@ void VPNListView::AddNetwork(const chromeos::NetworkState* network) {
 
 void VPNListView::AddProviderAndNetworks(
     const VPNProvider& vpn_provider,
-    const chromeos::NetworkStateHandler::NetworkStateList& networks) {
+    const NetworkStateHandler::NetworkStateList& networks) {
   // Add a visual separator, unless this is the topmost entry in the list.
   if (!list_empty_) {
     scroll_content()->AddChildView(CreateListSubHeaderSeparator());
@@ -344,14 +345,14 @@ void VPNListView::AddProviderAndNetworks(
   list_empty_ = false;
   // Add the networks belonging to this provider, in the priority order returned
   // by shill.
-  for (const chromeos::NetworkState* const& network : networks) {
+  for (const NetworkState* const& network : networks) {
     if (VpnProviderMatchesNetwork(vpn_provider, *network))
       AddNetwork(network);
   }
 }
 
 void VPNListView::AddProvidersAndNetworks(
-    const chromeos::NetworkStateHandler::NetworkStateList& networks) {
+    const NetworkStateHandler::NetworkStateList& networks) {
   // Get the list of VPN providers enabled in the primary user's profile.
   std::vector<VPNProvider> extension_providers =
       Shell::Get()->vpn_list()->extension_vpn_providers();
@@ -363,7 +364,7 @@ void VPNListView::AddProvidersAndNetworks(
 
   // Add connected ARCVPN network. If we can find the correct provider, nest
   // the network under the provider. Otherwise list it unnested.
-  for (const chromeos::NetworkState* const& network : networks) {
+  for (const NetworkState* const& network : networks) {
     if (!network->IsConnectingOrConnected())
       break;
     if (network->GetVpnProviderType() != shill::kProviderArcVpn)
@@ -388,7 +389,7 @@ void VPNListView::AddProvidersAndNetworks(
   // Add providers with at least one configured network along with their
   // networks. Providers are added in the order of their highest priority
   // network.
-  for (const chromeos::NetworkState* const& network : networks) {
+  for (const NetworkState* const& network : networks) {
     for (auto extension_provider_iter = extension_providers.begin();
          extension_provider_iter != extension_providers.end();
          ++extension_provider_iter) {
@@ -402,7 +403,7 @@ void VPNListView::AddProvidersAndNetworks(
 
   // Create a local networkstate list. Help AddProviderAndNetworks() by passing
   // empty list of network states.
-  chromeos::NetworkStateHandler::NetworkStateList networkstate_empty_list;
+  NetworkStateHandler::NetworkStateList networkstate_empty_list;
 
   // Add providers without any configured networks, in the order that the
   // providers were returned by the extensions system.

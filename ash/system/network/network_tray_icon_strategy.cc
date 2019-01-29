@@ -14,11 +14,11 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
+using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
-using chromeos::NetworkConnectionHandler;
 
 namespace ash {
 namespace tray {
@@ -70,7 +70,12 @@ gfx::ImageSkia DefaultNetworkTrayIconStrategy::GetNetworkIcon(bool* animating) {
   const NetworkState* network =
       GetConnectingOrConnectedNetwork(NetworkTypePattern::WiFi());
   if (network) {
-    return network_icon::GetImageForNetwork(network, icon_type, animating);
+    bool show_vpn_badge =
+        network->IsConnectedState() &&
+        NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+            NetworkTypePattern::VPN());
+    return network_icon::GetImageForNonVirtualNetwork(
+        network, icon_type, show_vpn_badge, animating);
   }
   *animating = false;
   return network_icon::GetDisconnectedImageForNetworkType(shill::kTypeWifi);
@@ -93,7 +98,8 @@ gfx::ImageSkia MobileNetworkTrayIconStrategy::GetNetworkIcon(bool* animating) {
           NetworkTypePattern::Mobile());
 
   if (network && network->IsConnectingOrConnected()) {
-    return network_icon::GetImageForNetwork(network, icon_type, animating);
+    return network_icon::GetImageForNonVirtualNetwork(
+        network, icon_type, false /* show_vpn_badge */, animating);
   }
 
   *animating = false;
