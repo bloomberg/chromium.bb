@@ -127,6 +127,14 @@ void XRRuntimeManager::RemoveObserver(XRRuntimeManagerObserver* observer) {
   g_xr_runtime_manager_observers.Get().RemoveObserver(observer);
 }
 
+/* static */
+void XRRuntimeManager::ExitImmersivePresentation() {
+  auto* browser_xr_runtime = GetInstance()->GetImmersiveRuntime();
+  if (browser_xr_runtime) {
+    browser_xr_runtime->ExitVrFromPresentingRendererDevice();
+  }
+}
+
 void XRRuntimeManager::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

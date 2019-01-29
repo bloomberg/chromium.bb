@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -343,6 +345,7 @@ PageInfo::PageInfo(PageInfoUI* ui,
   PresentSitePermissions();
   PresentSiteIdentity();
   PresentSiteData();
+  PresentPageFeatureInfo();
 
   // Every time the Page Info UI is opened a |PageInfo| object is
   // created. So this counts how ofter the Page Info UI is opened.
@@ -974,6 +977,14 @@ void PageInfo::PresentSiteIdentity() {
     }
   }
 #endif
+}
+
+void PageInfo::PresentPageFeatureInfo() {
+  PageInfoUI::PageFeatureInfo info;
+  info.is_vr_presentation_in_headset =
+      vr::VrTabHelper::IsContentDisplayedInHeadset(web_contents());
+
+  ui_->SetPageFeatureInfo(info);
 }
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {

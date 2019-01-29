@@ -87,6 +87,7 @@ class MockPageInfoUI : public PageInfoUI {
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
   MOCK_METHOD0(SetPermissionInfoStub, void());
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
+  MOCK_METHOD1(SetPageFeatureInfo, void(const PageFeatureInfo& info));
 
   void SetPermissionInfo(
       const PermissionInfoList& permission_info_list,

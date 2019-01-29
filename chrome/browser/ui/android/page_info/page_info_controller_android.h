@@ -46,6 +46,7 @@ class PageInfoControllerAndroid : public PageInfoUI {
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
+  void SetPageFeatureInfo(const PageFeatureInfo& info) override;
 
  private:
   // Returns an optional value which is set if this permission should be

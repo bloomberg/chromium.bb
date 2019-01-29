@@ -1247,6 +1247,10 @@ void VrShell::SetPermissionInfo(const PermissionInfoList& permission_info_list,
 
 void VrShell::SetIdentityInfo(const IdentityInfo& identity_info) {}
 
+void VrShell::SetPageFeatureInfo(const PageFeatureInfo& info) {
+  NOTIMPLEMENTED();
+}
+
 void VrShell::AcceptDoffPromptForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

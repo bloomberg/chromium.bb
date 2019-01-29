@@ -140,6 +140,13 @@ class PageInfoUI {
     bool show_change_password_buttons;
   };
 
+  struct PageFeatureInfo {
+    PageFeatureInfo();
+
+    // True if VR content is being presented in a headset.
+    bool is_vr_presentation_in_headset;
+  };
+
   using CookieInfoList = std::vector<CookieInfo>;
   using PermissionInfoList = std::vector<PermissionInfo>;
   using ChosenObjectInfoList = std::vector<std::unique_ptr<ChosenObjectInfo>>;
@@ -200,6 +207,9 @@ class PageInfoUI {
   // Returns the icon for the button / link to Site settings.
   static const gfx::ImageSkia GetSiteSettingsIcon(
       const SkColor related_text_color);
+
+  // Returns the icon for VR settings.
+  static const gfx::ImageSkia GetVrSettingsIcon(SkColor related_text_color);
 #endif
 
   // Return true if the given ContentSettingsType is in PageInfoUI.
@@ -215,6 +225,8 @@ class PageInfoUI {
 
   // Sets site identity information.
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
+
+  virtual void SetPageFeatureInfo(const PageFeatureInfo& page_feature_info) = 0;
 
   // Helper to get security description info to display to the user.
   std::unique_ptr<PageInfoUI::SecurityDescription> GetSecurityDescription(
