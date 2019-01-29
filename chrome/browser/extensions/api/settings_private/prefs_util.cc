@@ -372,6 +372,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[crostini::prefs::kCrostiniSharedUsbDevices] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[crostini::prefs::kCrostiniContainers] =
+      settings_api::PrefType::PREF_TYPE_LIST;
 
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =
