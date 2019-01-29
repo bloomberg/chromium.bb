@@ -49,11 +49,16 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)], bug=690277)
+    # TODO(wangxianzhu): This is commented out temporarily because of the entry
+    # for crbug.com/836884.
+    # self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)],
+    #     bug=690277)
 
     # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
     # mark failing, unfortunately.
-    self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
+    # TODO(wangxianzhu): This is commented out temporarily because of the entry
+    # for crbug.com/836884.
+    # self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
@@ -111,6 +116,12 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=883500)
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
+
+    # TODO(wangxianzhu): Re-enable after and rebaselining
+    self.Fail('Pixel_CSSFilterEffects', bug=836884)
+    self.Fail('Pixel_CSSFilterEffects_NoOverlays', bug=836884)
+    self.Fail('Pixel_2DCanvasWebGL', bug=836884)
+    self.Fail('Pixel_CSS3DBlueBox', bug=836884)
 
     # Fails on Mac Pro FYI Release (AMD)
     self.Fail('Pixel_Video_MP4',
