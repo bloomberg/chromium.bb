@@ -571,6 +571,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldGetAllDataForDebuggingWithHiddenPassword) {
       }));
 
   ASSERT_THAT(batch, NotNull());
+  EXPECT_TRUE(batch->HasNext());
   while (batch->HasNext()) {
     const syncer::KeyAndData& data_pair = batch->Next();
     EXPECT_EQ("hidden", data_pair.second->specifics.password()
