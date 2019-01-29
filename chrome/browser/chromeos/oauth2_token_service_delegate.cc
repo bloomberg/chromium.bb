@@ -146,7 +146,7 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
   }
 
   auto it = errors_.find(account_id);
-  if ((it != errors_.end())) {
+  if (it != errors_.end()) {
     // Update the existing error.
     if (error.state() == GoogleServiceAuthError::NONE)
       errors_.erase(it);
@@ -268,13 +268,24 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
   // invoked here, regardless. See the comment above |FireAuthErrorChanged| few
   // lines down.
   errors_.erase(account_id);
+  GoogleServiceAuthError error(GoogleServiceAuthError::AuthErrorNone());
+
+  // However, if we know that |account_key| has a dummy token, store a
+  // persistent error against it, so that we can pre-emptively reject access
+  // token requests for it.
+  if (account_manager_->HasDummyGaiaToken(account_key)) {
+    error = GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+        GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+            CREDENTIALS_REJECTED_BY_CLIENT);
+    errors_.emplace(account_id, AccountErrorStatus{error});
+  }
 
   ScopedBatchChange batch(this);
   FireRefreshTokenAvailable(account_id);
   // See |OAuth2TokenService::Observer::OnAuthErrorChanged|.
   // |OnAuthErrorChanged| must be always called after
   // |OnRefreshTokenAvailable|, when refresh token is updated.
-  FireAuthErrorChanged(account_id, GoogleServiceAuthError::AuthErrorNone());
+  FireAuthErrorChanged(account_id, error);
 }
 
 void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
