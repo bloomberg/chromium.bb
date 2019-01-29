@@ -2273,8 +2273,3 @@ repack("ash_service_resources_200") {
     "//ui/views/resources",
   ]
 }
-
-service_manifest("ash_unittests_manifest") {
-  name = "ash_unittests"
-  source = "ash_unittests_manifest.json"
-}
