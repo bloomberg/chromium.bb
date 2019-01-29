@@ -213,6 +213,12 @@ const char kBrowserContainerContainsNTPDescription[] =
     "When enabled, the BrowserContainer contains the NTP directly, rather than"
     "via native content.";
 
+const char kBrowserContainerKeepsContentViewName[] =
+    "Browser Container retains the content view";
+const char kBrowserContainerKeepsContentViewDescription[] =
+    "When enable, the browser container keeps the content view in the view "
+    "hierarchy, to avoid WKWebView from being unloaded from the process.";
+
 const char kExternalFilesLoadedInWebStateName[] =
     "External files loaded in WebState";
 const char kExternalFilesLoadedInWebStateDescription[] =

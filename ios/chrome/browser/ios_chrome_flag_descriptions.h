@@ -164,6 +164,11 @@ extern const char kBrowserContainerFullscreenDescription[];
 extern const char kBrowserContainerContainsNTPName[];
 extern const char kBrowserContainerContainsNTPDescription[];
 
+// Title and description for the flag to make browser container keep the
+// content view hierarchy directly.
+extern const char kBrowserContainerKeepsContentViewName[];
+extern const char kBrowserContainerKeepsContentViewDescription[];
+
 // Title and description for the flag to load external files with WebState
 // instead of using ExternalFileController.
 extern const char kExternalFilesLoadedInWebStateName[];

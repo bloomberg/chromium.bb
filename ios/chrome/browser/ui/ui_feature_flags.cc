@@ -11,6 +11,9 @@ const base::Feature kClosingLastIncognitoTab{"ClosingLastIncognitoTab",
 const base::Feature kBrowserContainerContainsNTP{
     "BrowserContainerContainsNTP", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kBrowserContainerKeepsContentView{
+    "BrowserContainerKeepsContentView", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{
     "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 
