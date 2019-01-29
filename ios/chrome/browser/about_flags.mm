@@ -58,7 +58,6 @@
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
-#include "ios/chrome/browser/ui/sad_tab/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -414,10 +413,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
-    {"present-sad-tab-in-view-controller",
-     flag_descriptions::kPresentSadTabInViewControllerName,
-     flag_descriptions::kPresentSadTabInViewControllerDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kPresentSadTabInViewController)},
     {"omnibox-popup-shortcuts",
      flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateName,
      flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateDescription,

@@ -11,7 +11,6 @@ source_set("sad_tab") {
     "sad_tab_view_controller.mm",
   ]
   deps = [
-    ":features",
     "//base",
     "//components/resources",
     "//components/strings",
@@ -32,23 +31,11 @@ source_set("sad_tab") {
   libs = [ "UIKit.framework" ]
 }
 
-source_set("features") {
-  sources = [
-    "features.cc",
-    "features.h",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
 source_set("coordinator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "sad_tab_coordinator.h",
     "sad_tab_coordinator.mm",
-    "sad_tab_legacy_coordinator.h",
-    "sad_tab_legacy_coordinator.mm",
   ]
   deps = [
     ":sad_tab",
