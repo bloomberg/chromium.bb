@@ -128,6 +128,11 @@ const char kAutofillProfileClientValidationName[] =
 const char kAutofillProfileClientValidationDescription[] =
     "Allows autofill to validate profiles on the client side";
 
+const char kAutofillProfileServerValidationName[] =
+    "Autofill Uses Server Validation";
+const char kAutofillProfileServerValidationDescription[] =
+    "Allows autofill to use server side validation";
+
 const char kAutofillPreviewStyleExperimentName[] =
     "Autofill Preview Style Experiment";
 const char kAutofillPreviewStyleExperimentDescription[] =

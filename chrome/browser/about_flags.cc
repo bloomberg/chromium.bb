@@ -3578,6 +3578,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillProfileClientValidationDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileClientValidation)},
 
+    {"autofill-profile-server-validation",
+     flag_descriptions::kAutofillProfileServerValidationName,
+     flag_descriptions::kAutofillProfileServerValidationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillProfileServerValidation)},
+
     {"autofill-restrict-formless-form-extraction",
      flag_descriptions::kAutofillRestrictUnownedFieldsToFormlessCheckoutName,
      flag_descriptions::

@@ -1113,39 +1113,6 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
   return profiles;
 }
 
-// static
-void PersonalDataManager::MaybeRemoveInvalidSuggestions(
-    const AutofillType& type,
-    std::vector<AutofillProfile*>* profiles) {
-  const bool suggest_invalid = base::FeatureList::IsEnabled(
-      features::kAutofillSuggestInvalidProfileData);
-
-  for (size_t i = 0; i < profiles->size(); ++i) {
-    bool is_client_invalid =
-        (*profiles)[i]->GetValidityState(type.GetStorableType(),
-                                         AutofillProfile::CLIENT) ==
-        AutofillProfile::INVALID;
-
-    bool is_server_invalid =
-        (*profiles)[i]->GetValidityState(type.GetStorableType(),
-                                         AutofillProfile::SERVER) ==
-        AutofillProfile::INVALID;
-
-    if ((is_server_invalid || is_client_invalid) && !suggest_invalid)
-      (*profiles)[i] = nullptr;
-    if (is_server_invalid || is_client_invalid)
-      UMA_HISTOGRAM_BOOLEAN("Autofill.InvalidProfileData.UsedForSuggestion",
-                            suggest_invalid);
-  }
-
-  if (!suggest_invalid) {
-    profiles->erase(
-        std::stable_partition(profiles->begin(), profiles->end(),
-                              [](AutofillProfile* p) { return p != nullptr; }),
-        profiles->end());
-  }
-}
-
 std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     const AutofillType& type,
     const base::string16& field_contents,
@@ -1171,9 +1138,6 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       suggestion_selection::RemoveProfilesNotUsedSinceTimestamp(
           min_last_used, &sorted_profiles);
     }
-    // We need the updated information on the validity states of the profiles.
-    UpdateProfilesServerValidityMapsIfNeeded(sorted_profiles);
-    MaybeRemoveInvalidSuggestions(type, &sorted_profiles);
   }
 
   std::vector<AutofillProfile*> matched_profiles;
