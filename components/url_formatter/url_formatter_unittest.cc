@@ -1012,8 +1012,21 @@ const IDNTestCase idn_cases[] = {
 
     // Test that top domains whose skeletons are the same as the domain name are
     // handled properly. In this case, tést.net should match test.net top
-    // domain.
+    // domain and not be converted to unicode.
     {"xn--tst-bma.net", L"t\x00e9st.net", false},
+    // Variations of the above, for testing crbug.com/925199.
+    // some.tést.net should match test.net.
+    {"some.xn--tst-bma.net", L"some.t\x00e9st.net", false},
+    // The following should not match test.net, so should be converted to
+    // unicode.
+    // ést.net (a suffix of tést.net).
+    {"xn--st-9ia.net", L"\x00e9st.net", true},
+    // some.ést.net
+    {"some.xn--st-9ia.net", L"some.\x00e9st.net", true},
+    // atést.net (tést.net is a suffix of atést.net)
+    {"xn--atst-cpa.net", L"at\x00e9st.net", true},
+    // some.atést.net
+    {"some.xn--atst-cpa.net", L"some.at\x00e9st.net", true},
 
     // Modifier-letter-voicing should be blocked (wwwˬtest.com).
     {"xn--wwwtest-2be.com", L"www\x02ectest.com", false},

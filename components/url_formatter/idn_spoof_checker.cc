@@ -35,24 +35,22 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
     if (!reader->Next(&is_same_skeleton))
       return false;
 
-    if (is_same_skeleton) {
-      *out_found = true;
-      result_ = search;
-      return true;
-    }
-
-    bool has_com_suffix = false;
-    if (!reader->Next(&has_com_suffix))
-      return false;
-
     std::string top_domain;
-    for (char c;; top_domain += c) {
-      huffman_decoder().Decode(reader, &c);
-      if (c == net::extras::PreloadDecoder::kEndOfTable)
-        break;
+    if (is_same_skeleton) {
+      top_domain = search;
+    } else {
+      bool has_com_suffix = false;
+      if (!reader->Next(&has_com_suffix))
+        return false;
+
+      for (char c;; top_domain += c) {
+        huffman_decoder().Decode(reader, &c);
+        if (c == net::extras::PreloadDecoder::kEndOfTable)
+          break;
+      }
+      if (has_com_suffix)
+        top_domain += ".com";
     }
-    if (has_com_suffix)
-      top_domain += ".com";
 
     if (current_search_offset == 0) {
       *out_found = true;
