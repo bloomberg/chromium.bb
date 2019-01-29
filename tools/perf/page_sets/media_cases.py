@@ -24,6 +24,7 @@ _PAGE_TAGS_LIST = [
     'vorbis',
     'opus',
     # Video codecs.
+    'av1',
     'h264',
     'vp8',
     'vp9',
@@ -204,7 +205,24 @@ class _MSEPage(_MediaPage):
       raise RuntimeError(action_runner.EvaluateJavaScript('window.__testError'))
 
 
-def _GetMediaPages(page_set):
+def _GetDesktopOnlyMediaPages(page_set):
+  return [
+        _BeginningToEndPlayPage(
+          url=_URL_BASE + 'video.html?src=tulip0.av1.mp4',
+          page_set=page_set,
+          tags=['av1', 'video_only']),
+        _SeekPage(
+          url=_URL_BASE + 'video.html?src=tulip0.av1.mp4&seek',
+          page_set=page_set,
+          tags=['av1', 'video_only', 'seek']),
+        _MSEPage(
+          url=_URL_BASE + 'mse.html?media=tulip0.av1.mp4',
+          page_set=page_set,
+          tags=['av1', 'video_only']),
+        ]
+
+
+def _GetCrossPlatformMediaPages(page_set):
   return [
       _BeginningToEndPlayPage(
           url=_URL_BASE + 'video.html?src=crowd.ogg&type=audio',
@@ -349,7 +367,8 @@ class MediaCasesDesktopStorySet(_MediaCasesStorySet):
   many other media-specific and generic metrics.
   """
   def _BuildPages(self):
-    return iter(_GetMediaPages(self))
+    return iter(
+        _GetCrossPlatformMediaPages(self) + _GetDesktopOnlyMediaPages(self))
 
 
 class MediaCasesMobileStorySet(_MediaCasesStorySet):
@@ -361,7 +380,7 @@ class MediaCasesMobileStorySet(_MediaCasesStorySet):
   devices.
   """
   def _BuildPages(self):
-    for page in _GetMediaPages(self):
+    for page in _GetCrossPlatformMediaPages(self):
       if 'is_4k' in page.tags or 'is_50fps' in page.tags:
         continue
       yield page
