@@ -289,9 +289,10 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
             // Object can be destroyed, but Android keeps calling onScanResult.
             if (mNativeBluetoothAdapterAndroid != 0) {
                 nativeCreateOrUpdateDeviceOnScan(mNativeBluetoothAdapterAndroid,
-                        result.getDevice().getAddress(), result.getDevice(), result.getRssi(),
-                        uuid_strings, result.getScanRecord_getTxPowerLevel(), serviceDataKeys,
-                        serviceDataValues, manufacturerDataKeys, manufacturerDataValues);
+                        result.getDevice().getAddress(), result.getDevice(),
+                        result.getScanRecord_getDeviceName(), result.getRssi(), uuid_strings,
+                        result.getScanRecord_getTxPowerLevel(), serviceDataKeys, serviceDataValues,
+                        manufacturerDataKeys, manufacturerDataValues);
             }
         }
 
@@ -349,8 +350,8 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
 
     // Binds to BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan.
     private native void nativeCreateOrUpdateDeviceOnScan(long nativeBluetoothAdapterAndroid,
-            String address, Wrappers.BluetoothDeviceWrapper deviceWrapper, int rssi,
-            String[] advertisedUuids, int txPower, String[] serviceDataKeys,
+            String address, Wrappers.BluetoothDeviceWrapper deviceWrapper, String localName,
+            int rssi, String[] advertisedUuids, int txPower, String[] serviceDataKeys,
             Object[] serviceDataValues, int[] manufacturerDataKeys,
             Object[] manufacturerDataValues);
 
