@@ -50,8 +50,7 @@ bool GLImageEGL::BindTexImage(unsigned target) {
   DCHECK_EQ(BIND, ShouldBindOrCopy());
 
   glEGLImageTargetTexture2DOES(target, egl_image_);
-  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  return true;
+  return glGetError() == static_cast<GLenum>(GL_NO_ERROR);
 }
 
 }  // namespace gl

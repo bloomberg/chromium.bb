@@ -792,15 +792,26 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     return nullptr;
   }
 
-  GLenum target = handle.type == gfx::SHARED_MEMORY_BUFFER
-                      ? GL_TEXTURE_2D
-                      : gpu::GetPlatformSpecificTextureTarget();
+  GLenum target =
+      (handle.type == gfx::SHARED_MEMORY_BUFFER ||
+       !NativeBufferNeedsPlatformSpecificTextureTarget(buffer_format))
+          ? GL_TEXTURE_2D
+          : gpu::GetPlatformSpecificTextureTarget();
   scoped_refptr<gl::GLImage> image = MakeGLImage(
       client_id, std::move(handle), buffer_format, surface_handle, size);
   if (!image) {
     LOG(ERROR) << "Failed to create image.";
     return nullptr;
   }
+  // If we decide to use GL_TEXTURE_2D at the target for a native buffer, we
+  // would like to verify that it will actually work. If the image expects to be
+  // copied, there is no way to do this verification here, because copying is
+  // done lazily after the SharedImage is created, so require that the image is
+  // bindable. Currently NativeBufferNeedsPlatformSpecificTextureTarget can
+  // only return false on Chrome OS where GLImageNativePixmap is used which is
+  // always bindable.
+  DCHECK(handle.type == gfx::SHARED_MEMORY_BUFFER || target != GL_TEXTURE_2D ||
+         image->ShouldBindOrCopy() == gl::GLImage::BIND);
   if (color_space.IsValid())
     image->SetColorSpace(color_space);
 
