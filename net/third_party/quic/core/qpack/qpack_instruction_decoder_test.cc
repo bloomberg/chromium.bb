@@ -4,6 +4,8 @@
 
 #include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
 #include "net/third_party/quic/core/qpack/qpack_test_utils.h"

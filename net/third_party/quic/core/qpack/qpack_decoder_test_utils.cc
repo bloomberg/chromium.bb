@@ -4,7 +4,9 @@
 
 #include "net/third_party/quic/core/qpack/qpack_decoder_test_utils.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <utility>
 
 #include "testing/gmock/include/gmock/gmock.h"
 
