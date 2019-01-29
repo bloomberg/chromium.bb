@@ -407,9 +407,9 @@ TEST_P(ExtensionActionViewControllerGrayscaleTest,
   RunGrayscaleTest(PermissionType::kScriptableHost);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ExtensionActionViewControllerGrayscaleTest,
-                        testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         ExtensionActionViewControllerGrayscaleTest,
+                         testing::Values(false, true));
 
 TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
   base::test::ScopedFeatureList feature_list;
