@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
@@ -60,6 +61,8 @@ class CONTENT_EXPORT SharedCorsOriginAccessList
 
  private:
   friend class base::RefCountedThreadSafe<SharedCorsOriginAccessList>;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedCorsOriginAccessList);
 };
 
 }  // namespace content
