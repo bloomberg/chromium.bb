@@ -4,7 +4,10 @@
 
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidator.h"
@@ -124,22 +127,26 @@ InvalidationLogger* FCMInvalidationService::GetInvalidationLogger() {
 void FCMInvalidationService::RequestDetailedStatus(
     base::RepeatingCallback<void(const base::DictionaryValue&)> return_callback)
     const {
+  return_callback.Run(*diagnostic_info_.CollectDebugData());
   if (IsStarted()) {
     invalidator_->RequestDetailedStatus(return_callback);
   }
 }
 
 void FCMInvalidationService::OnActiveAccountLogin() {
+  diagnostic_info_.active_account_login = base::Time::Now();
   if (!IsStarted() && IsReadyToStart())
     StartInvalidator();
 }
 
 void FCMInvalidationService::OnActiveAccountRefreshTokenUpdated() {
+  diagnostic_info_.active_account_token_updated = base::Time::Now();
   if (!IsStarted() && IsReadyToStart())
     StartInvalidator();
 }
 
 void FCMInvalidationService::OnActiveAccountLogout() {
+  diagnostic_info_.active_account_logged_out = base::Time::Now();
   if (IsStarted()) {
     StopInvalidator();
     if (!client_id_.empty())
@@ -184,7 +191,7 @@ void FCMInvalidationService::StartInvalidator() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!invalidator_);
   DCHECK(IsReadyToStart());
-
+  diagnostic_info_.service_was_started = base::Time::Now();
   auto network = std::make_unique<syncer::FCMNetworkHandler>(
       gcm_driver_, instance_id_driver_, kInvalidationGCMSenderId,
       kApplicationName);
@@ -204,12 +211,14 @@ void FCMInvalidationService::StartInvalidator() {
 
 void FCMInvalidationService::StopInvalidator() {
   DCHECK(invalidator_);
+  diagnostic_info_.service_was_stopped = base::Time::Now();
   // TODO(melandory): reset the network.
   invalidator_->UnregisterHandler(this);
   invalidator_.reset();
 }
 
 void FCMInvalidationService::PopulateClientID() {
+  diagnostic_info_.instance_id_requested = base::Time::Now();
   client_id_ = pref_service_->GetString(prefs::kFCMInvalidationClientIDCache);
   instance_id::InstanceID* instance_id =
       instance_id_driver_->GetInstanceID(kApplicationName);
@@ -226,6 +235,7 @@ void FCMInvalidationService::ResetClientID() {
 }
 
 void FCMInvalidationService::OnInstanceIdRecieved(const std::string& id) {
+  diagnostic_info_.instance_id_received = base::Time::Now();
   if (client_id_ != id) {
     client_id_ = id;
     pref_service_->SetString(prefs::kFCMInvalidationClientIDCache, id);
@@ -244,6 +254,32 @@ void FCMInvalidationService::DoUpdateRegisteredIdsIfNeeded() {
   auto registered_ids = invalidator_registrar_.GetAllRegisteredIds();
   CHECK(invalidator_->UpdateRegisteredIds(this, registered_ids));
   update_was_requested_ = false;
+}
+
+FCMInvalidationService::Diagnostics::Diagnostics() {}
+
+std::unique_ptr<base::DictionaryValue>
+FCMInvalidationService::Diagnostics::CollectDebugData() const {
+  std::unique_ptr<base::DictionaryValue> status =
+      std::make_unique<base::DictionaryValue>();
+
+  status->SetString("Active account login",
+                    base::TimeFormatShortDateAndTime(active_account_login));
+  status->SetString(
+      "Active account token updated",
+      base::TimeFormatShortDateAndTime(active_account_token_updated));
+  status->SetString(
+      "Active account logged out",
+      base::TimeFormatShortDateAndTime(active_account_logged_out));
+  status->SetString("Instance id requested",
+                    base::TimeFormatShortDateAndTime(instance_id_requested));
+  status->SetString("Instance id received",
+                    base::TimeFormatShortDateAndTime(instance_id_received));
+  status->SetString("Service was stopped",
+                    base::TimeFormatShortDateAndTime(service_was_stopped));
+  status->SetString("Service was started",
+                    base::TimeFormatShortDateAndTime(service_was_started));
+  return status;
 }
 
 }  // namespace invalidation
