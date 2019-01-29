@@ -356,25 +356,18 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
 
   gfx::NativePixmapHandle buffer_handle =
       buffer->CloneHandle().native_pixmap_handle;
-  // Take ownership of FD at index 0.
-  base::ScopedFD fd(buffer_handle.fds[0].fd);
-  // There should be only one FD. Close all remaining FDs if there are any.
-  DCHECK_EQ(buffer_handle.fds.size(), 1U);
-  for (size_t i = 1; i < buffer_handle.fds.size(); ++i)
-    base::ScopedFD scoped_fd(buffer_handle.fds[i].fd);
 
   size_t num_planes = buffer_handle.planes.size();
+  DCHECK_EQ(num_planes, buffer_handle.fds.size());
+  // Take ownership of fds.
+  std::vector<base::ScopedFD> fds(num_planes);
+  for (size_t i = 0; i < num_planes; ++i)
+    fds[i] = base::ScopedFD(buffer_handle.fds[i].fd);
+
   std::vector<StreamCaptureInterface::Plane> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
-    int dup_fd = dup(fd.get());
-    if (dup_fd == -1) {
-      device_context_->SetErrorState(
-          media::VideoCaptureError::kCrosHalV3BufferManagerFailedToDupFd,
-          FROM_HERE, "Failed to dup fd");
-      return;
-    }
     planes[i].fd =
-        mojo::WrapPlatformHandle(mojo::PlatformHandle(base::ScopedFD(dup_fd)));
+        mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fds[i])));
     if (!planes[i].fd.is_valid()) {
       device_context_->SetErrorState(
           media::VideoCaptureError::
