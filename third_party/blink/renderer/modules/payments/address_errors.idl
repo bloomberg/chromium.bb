@@ -15,6 +15,5 @@ dictionary AddressErrors {
     DOMString postalCode;
     DOMString recipient;
     DOMString region;
-    DOMString regionCode;
     DOMString sortingCode;
 };

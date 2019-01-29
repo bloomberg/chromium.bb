@@ -193,7 +193,6 @@ bool PaymentRequestSpec::has_shipping_address_error() const {
            details_->shipping_address_errors->postal_code.empty() &&
            details_->shipping_address_errors->recipient.empty() &&
            details_->shipping_address_errors->region.empty() &&
-           details_->shipping_address_errors->region_code.empty() &&
            details_->shipping_address_errors->sorting_code.empty());
 }
 
