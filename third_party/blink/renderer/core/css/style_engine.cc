@@ -1527,7 +1527,7 @@ bool StyleEngine::MediaQueryAffectedByDeviceChange() {
 
 bool StyleEngine::UpdateRemUnits(const ComputedStyle* old_root_style,
                                  const ComputedStyle* new_root_style) {
-  if (!UsesRemUnits())
+  if (!new_root_style || !UsesRemUnits())
     return false;
   if (!old_root_style ||
       old_root_style->FontSize() != new_root_style->FontSize()) {
