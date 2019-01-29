@@ -480,6 +480,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan'], bug=2905) # ANGLE bug ID
     self.Fail('WebglExtension_WEBGL_draw_buffers',
         ['win', 'passthrough', 'vulkan'], bug=2394) # ANGLE bug ID
+    self.Skip('deqp/data/gles2/shaders/swizzles.html',
+        ['win', 'passthrough', 'vulkan'], bug=3111) # ANGLE bug ID
 
     # Vulkan / Win / NVIDIA / Passthough command decoder
     self.Fail('conformance/canvas/' +
@@ -501,9 +503,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2915) # ANGLE bug ID
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['win', 'passthrough', 'vulkan', 'nvidia'], bug=2926) # ANGLE bug ID
-    self.Fail('deqp/data/gles2/shaders/swizzles.html',
-        ['win', 'passthrough', 'vulkan', 'nvidia', 'debug'],
-        bug=2940) # ANGLE bug ID
 
     # Vulkan / Win / Intel / Passthough command decoder
     self.Fail('conformance/rendering/clipping-wide-points.html',
