@@ -5,42 +5,49 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_PAGE_DISPLAY_STATE_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_PAGE_DISPLAY_STATE_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 namespace web {
 
-// Class used to represent the scrolling offset of a webview.  The offsets
-// stored are offsets from the scrolled-to-top-left resting position.  That
-// means an |offset_y| value of 0 corresponds to a UIScrollView.contentOffset.y
-// value of -UIScrollView.contentInset.top.
-// TODO(crbug.com/925073): Update this class to store contentInset and
-// contentOffset directly.
+// Class used to represent the scrolling state of a webview.
 class PageScrollState {
  public:
-  // Default constructor.  Initializes scroll offsets to NAN.
+  // Default constructor.  Initializes scroll values to NAN.
   PageScrollState();
   // Constructor with initial values.
-  PageScrollState(double offset_x, double offset_y);
+  PageScrollState(const CGPoint& content_offset,
+                  const UIEdgeInsets& content_inset);
   ~PageScrollState();
 
-  // The scroll offset is valid if its x and y values are both non-NAN.
+  // The scroll offset is valid if its content inset and offset contain only
+  // non-NAN values.
   bool IsValid() const;
 
-  // Accessors for scroll offsets.
-  double offset_x() const { return offset_x_; }
-  void set_offset_x(double offset_x) { offset_x_ = offset_x; }
-  double offset_y() const { return offset_y_; }
-  void set_offset_y(double offset_y) { offset_y_ = offset_y; }
+  // Returns the content offset that produces an equivalent scroll offset when
+  // applied to a UIScrollView whose contentInset is |content_inset|.
+  CGPoint GetEffectiveContentOffsetForContentInset(
+      UIEdgeInsets content_inset) const;
+
+  // Accessors for scroll offsets and zoom scale.
+  const CGPoint& content_offset() const { return content_offset_; }
+  CGPoint& content_offset() { return content_offset_; }
+  void set_content_offset(const CGPoint& content_offset) {
+    content_offset_ = content_offset;
+  }
+  const UIEdgeInsets& content_inset() const { return content_inset_; }
+  UIEdgeInsets& content_inset() { return content_inset_; }
+  void set_content_inset(const UIEdgeInsets& content_inset) {
+    content_inset_ = content_inset;
+  }
 
   // Comparator operators.
   bool operator==(const PageScrollState& other) const;
   bool operator!=(const PageScrollState& other) const;
 
  private:
-  // The x value of the page's UIScrollView contentOffset.
-  double offset_x_;
-  // The y value of the page's UIScrollView contentOffset.
-  double offset_y_;
+  // The content offset and content inset of the web view scroll view.
+  CGPoint content_offset_;
+  UIEdgeInsets content_inset_;
 };
 
 // Class used to represent the scrolling offset and the zoom scale of a webview.
@@ -49,9 +56,9 @@ class PageZoomState {
   // Default constructor.  Initializes scroll offsets and zoom scales to NAN.
   PageZoomState();
   // Constructor with initial values.
-  PageZoomState(double minimum_zoom_scale,
-                double maximum_zoom_scale,
-                double zoom_scale);
+  PageZoomState(CGFloat minimum_zoom_scale,
+                CGFloat maximum_zoom_scale,
+                CGFloat zoom_scale);
   ~PageZoomState();
 
   // Non-legacy zoom scales are valid if all three values are non-NAN and the
@@ -61,21 +68,21 @@ class PageZoomState {
   bool IsValid() const;
 
   // Returns the allowed zoom scale range for this scroll state.
-  double GetMinMaxZoomDifference() const {
+  CGFloat GetMinMaxZoomDifference() const {
     return maximum_zoom_scale_ - minimum_zoom_scale_;
   }
 
   // Accessors.
-  double minimum_zoom_scale() const { return minimum_zoom_scale_; }
-  void set_minimum_zoom_scale(double minimum_zoom_scale) {
+  CGFloat minimum_zoom_scale() const { return minimum_zoom_scale_; }
+  void set_minimum_zoom_scale(CGFloat minimum_zoom_scale) {
     minimum_zoom_scale_ = minimum_zoom_scale;
   }
-  double maximum_zoom_scale() const { return maximum_zoom_scale_; }
-  void set_maximum_zoom_scale(double maximum_zoom_scale) {
+  CGFloat maximum_zoom_scale() const { return maximum_zoom_scale_; }
+  void set_maximum_zoom_scale(CGFloat maximum_zoom_scale) {
     maximum_zoom_scale_ = maximum_zoom_scale;
   }
-  double zoom_scale() const { return zoom_scale_; }
-  void set_zoom_scale(double zoom_scale) { zoom_scale_ = zoom_scale; }
+  CGFloat zoom_scale() const { return zoom_scale_; }
+  void set_zoom_scale(CGFloat zoom_scale) { zoom_scale_ = zoom_scale; }
 
   // Comparator operators.
   bool operator==(const PageZoomState& other) const;
@@ -83,11 +90,11 @@ class PageZoomState {
 
  private:
   // The minimumZoomScale value of the page's UIScrollView.
-  double minimum_zoom_scale_;
+  CGFloat minimum_zoom_scale_;
   // The maximumZoomScale value of the page's UIScrollView.
-  double maximum_zoom_scale_;
+  CGFloat maximum_zoom_scale_;
   // The zoomScale value of the page's UIScrollView.
-  double zoom_scale_;
+  CGFloat zoom_scale_;
 };
 
 // Class used to represent the scroll offset and zoom scale of a webview.
@@ -98,11 +105,11 @@ class PageDisplayState {
   // Constructor with initial values.
   PageDisplayState(const PageScrollState& scroll_state,
                    const PageZoomState& zoom_state);
-  PageDisplayState(double offset_x,
-                   double offset_y,
-                   double minimum_zoom_scale,
-                   double maximum_zoom_scale,
-                   double zoom_scale);
+  PageDisplayState(const CGPoint& content_offset,
+                   const UIEdgeInsets& content_inset,
+                   CGFloat minimum_zoom_scale,
+                   CGFloat maximum_zoom_scale,
+                   CGFloat zoom_scale);
   PageDisplayState(NSDictionary* serialization);
   ~PageDisplayState();
 

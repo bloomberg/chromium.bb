@@ -573,12 +573,14 @@ const char kNTPHelpURL[] =
   web::NavigationManager* manager = webState->GetNavigationManager();
   web::NavigationItem* item = manager->GetLastCommittedItem();
   web::PageDisplayState displayState;
-  CGPoint scrollOffset =
+  UIEdgeInsets contentInset =
+      self.suggestionsViewController.collectionView.contentInset;
+  CGPoint contentOffset =
       self.suggestionsViewController.collectionView.contentOffset;
-  scrollOffset.y -=
+  contentOffset.y -=
       self.headerCollectionInteractionHandler.collectionShiftingOffset;
-  displayState.scroll_state().set_offset_x(scrollOffset.x);
-  displayState.scroll_state().set_offset_y(scrollOffset.y);
+  displayState.scroll_state() =
+      web::PageScrollState(contentOffset, contentInset);
   item->SetPageDisplayState(displayState);
 }
 
@@ -589,10 +591,10 @@ const char kNTPHelpURL[] =
   }
   web::NavigationManager* navigationManager = webState->GetNavigationManager();
   web::NavigationItem* item = navigationManager->GetVisibleItem();
-  if (item && item->GetPageDisplayState().scroll_state().offset_y() > 0) {
-    CGFloat offset = item->GetPageDisplayState().scroll_state().offset_y();
+  CGFloat offset =
+      item ? item->GetPageDisplayState().scroll_state().content_offset().y : 0;
+  if (offset > 0)
     [self.suggestionsViewController setContentOffset:offset];
-  }
 }
 
 @end

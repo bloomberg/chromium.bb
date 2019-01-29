@@ -34,7 +34,8 @@ class CRWNavigationItemStorageTest : public PlatformTest {
     [item_storage_ setTimestamp:base::Time::Now()];
     [item_storage_ setTitle:base::SysNSStringToUTF16(@"Title")];
     [item_storage_
-        setDisplayState:web::PageDisplayState(0.0, 0.0, 0.0, 0.0, 0.0)];
+        setDisplayState:web::PageDisplayState(CGPointZero, UIEdgeInsetsZero,
+                                              0.0, 0.0, 0.0)];
     [item_storage_
         setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
     [item_storage_ setHTTPRequestHeaders:@{ @"HeaderKey" : @"HeaderValue" }];

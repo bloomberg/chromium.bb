@@ -14,42 +14,103 @@ namespace web {
 
 namespace {
 // Serialiation keys.
-NSString* const kXOffsetKey = @"scrollX";
-NSString* const kYOffsetKey = @"scrollY";
+NSString* const kContentOffsetKey = @"contentOffset";
+NSString* const kContentInsetKey = @"contentInset";
 NSString* const kMinZoomKey = @"minZoom";
 NSString* const kMaxZoomKey = @"maxZoom";
 NSString* const kZoomKey = @"zoom";
-// Returns true if:
-// - both |value1| and |value2| are NAN, or
-// - |value1| and |value2| are equal non-NAN values.
-inline bool StateValuesAreEqual(double value1, double value2) {
+// Deprecated serialization keys.
+// TODO(crbug.com/926041): Remove these keys.
+NSString* const kDeprecatedXOffsetKey = @"scrollX";
+NSString* const kDeprecatedYOffsetKey = @"scrollY";
+// Invalid consts.
+const CGPoint kInvalidContentOffset = CGPointMake(NAN, NAN);
+const UIEdgeInsets kInvalidContentInset = UIEdgeInsetsMake(NAN, NAN, NAN, NAN);
+// Equality checkers.  Return true if both values are NAN or equivalent.
+inline bool StateValuesAreEqual(CGFloat value1, CGFloat value2) {
   return std::isnan(value1) ? std::isnan(value2) : value1 == value2;
 }
-// Returns the double stored under |key| in |serialization|, or NAN if it is not
-// set.
-inline double GetValue(NSString* key, NSDictionary* serialization) {
+inline bool StateContentOffsetsAreEqual(const CGPoint& offset1,
+                                        const CGPoint& offset2) {
+  return StateValuesAreEqual(offset1.x, offset2.x) &&
+         StateValuesAreEqual(offset1.y, offset2.y);
+}
+inline bool StateContentInsetsAreEqual(const UIEdgeInsets& inset1,
+                                       const UIEdgeInsets& inset2) {
+  return StateValuesAreEqual(inset1.top, inset2.top) &&
+         StateValuesAreEqual(inset1.left, inset2.left) &&
+         StateValuesAreEqual(inset1.bottom, inset2.bottom) &&
+         StateValuesAreEqual(inset1.right, inset2.right);
+}
+// Validity checker util functions.
+inline bool IsContentOffsetValid(const CGPoint& content_offset) {
+  return !std::isnan(content_offset.x) && !std::isnan(content_offset.y);
+}
+inline bool IsContentInsetValid(const UIEdgeInsets& content_inset) {
+  return !std::isnan(content_inset.top) && !std::isnan(content_inset.left) &&
+         !std::isnan(content_inset.bottom) && !std::isnan(content_inset.right);
+}
+// Returns the CGFloat stored under |key| in |serialization|, or NAN if it is
+// not set.
+inline CGFloat GetFloatValue(NSString* key, NSDictionary* serialization) {
   NSNumber* value = serialization[key];
   return value ? [value doubleValue] : NAN;
 }
+// Returns the contentOffset stored in |serialization|, or a NAN offset if it is
+// not set.
+inline CGPoint GetContentOffset(NSDictionary* serialization) {
+  NSValue* value = serialization[kContentOffsetKey];
+  if (value)
+    return [value CGPointValue];
+  // TODO(crbug.com/926041): Return kInvalidContentOffset when legacy keys are
+  // removed.
+  return CGPointMake(GetFloatValue(kDeprecatedXOffsetKey, serialization),
+                     GetFloatValue(kDeprecatedYOffsetKey, serialization));
+}
+// Returns the contentInset stored in |serialization|, or a NAN inset if it is
+// not set.
+inline UIEdgeInsets GetContentInset(NSDictionary* serialization) {
+  NSValue* value = serialization[kContentInsetKey];
+  if (value)
+    return [value UIEdgeInsetsValue];
+  if (serialization[kDeprecatedXOffsetKey] &&
+      serialization[kDeprecatedYOffsetKey]) {
+    // When restoring PageScrollStates created using the deprecated
+    // serialization keyes, use UIEdgeInsetsZero as default.
+    // TODO(crbug.com/926041): Just return kInvalidContentInset when legacy keys
+    // are removed.
+    return UIEdgeInsetsZero;
+  }
+  // Return an invalid inset if neither the new nor legacy keys were contained.
+  return kInvalidContentInset;
+}
 }  // namespace
 
-PageScrollState::PageScrollState() : offset_x_(NAN), offset_y_(NAN) {
-}
+PageScrollState::PageScrollState()
+    : content_offset_(kInvalidContentOffset),
+      content_inset_(kInvalidContentInset) {}
 
-PageScrollState::PageScrollState(double offset_x, double offset_y)
-    : offset_x_(offset_x), offset_y_(offset_y) {
-}
+PageScrollState::PageScrollState(const CGPoint& content_offset,
+                                 const UIEdgeInsets& content_inset)
+    : content_offset_(content_offset), content_inset_(content_inset) {}
 
-PageScrollState::~PageScrollState() {
-}
+PageScrollState::~PageScrollState() = default;
 
 bool PageScrollState::IsValid() const {
-  return !std::isnan(offset_x_) && !std::isnan(offset_y_);
+  return IsContentOffsetValid(content_offset_) &&
+         IsContentInsetValid(content_inset_);
+}
+
+CGPoint PageScrollState::GetEffectiveContentOffsetForContentInset(
+    UIEdgeInsets content_inset) const {
+  return CGPointMake(
+      content_offset_.x + content_inset_.left - content_inset.left,
+      content_offset_.y + content_inset_.top - content_inset.top);
 }
 
 bool PageScrollState::operator==(const PageScrollState& other) const {
-  return StateValuesAreEqual(offset_x_, other.offset_x_) &&
-         StateValuesAreEqual(offset_y_, other.offset_y_);
+  return StateContentOffsetsAreEqual(content_offset_, other.content_offset_) &&
+         StateContentInsetsAreEqual(content_inset_, other.content_inset_);
 }
 
 bool PageScrollState::operator!=(const PageScrollState& other) const {
@@ -60,13 +121,12 @@ PageZoomState::PageZoomState()
     : minimum_zoom_scale_(NAN), maximum_zoom_scale_(NAN), zoom_scale_(NAN) {
 }
 
-PageZoomState::PageZoomState(double minimum_zoom_scale,
-                             double maximum_zoom_scale,
-                             double zoom_scale)
+PageZoomState::PageZoomState(CGFloat minimum_zoom_scale,
+                             CGFloat maximum_zoom_scale,
+                             CGFloat zoom_scale)
     : minimum_zoom_scale_(minimum_zoom_scale),
       maximum_zoom_scale_(maximum_zoom_scale),
-      zoom_scale_(zoom_scale) {
-}
+      zoom_scale_(zoom_scale) {}
 
 PageZoomState::~PageZoomState() {
 }
@@ -96,21 +156,20 @@ PageDisplayState::PageDisplayState(const PageScrollState& scroll_state,
     : scroll_state_(scroll_state), zoom_state_(zoom_state) {
 }
 
-PageDisplayState::PageDisplayState(double offset_x,
-                                   double offset_y,
-                                   double minimum_zoom_scale,
-                                   double maximum_zoom_scale,
-                                   double zoom_scale)
-    : scroll_state_(offset_x, offset_y),
-      zoom_state_(minimum_zoom_scale, maximum_zoom_scale, zoom_scale) {
-}
+PageDisplayState::PageDisplayState(const CGPoint& content_offset,
+                                   const UIEdgeInsets& content_inset,
+                                   CGFloat minimum_zoom_scale,
+                                   CGFloat maximum_zoom_scale,
+                                   CGFloat zoom_scale)
+    : scroll_state_(content_offset, content_inset),
+      zoom_state_(minimum_zoom_scale, maximum_zoom_scale, zoom_scale) {}
 
 PageDisplayState::PageDisplayState(NSDictionary* serialization)
-    : PageDisplayState(GetValue(kXOffsetKey, serialization),
-                       GetValue(kYOffsetKey, serialization),
-                       GetValue(kMinZoomKey, serialization),
-                       GetValue(kMaxZoomKey, serialization),
-                       GetValue(kZoomKey, serialization)) {}
+    : PageDisplayState(GetContentOffset(serialization),
+                       GetContentInset(serialization),
+                       GetFloatValue(kMinZoomKey, serialization),
+                       GetFloatValue(kMaxZoomKey, serialization),
+                       GetFloatValue(kZoomKey, serialization)) {}
 
 PageDisplayState::~PageDisplayState() {
 }
@@ -130,8 +189,10 @@ bool PageDisplayState::operator!=(const PageDisplayState& other) const {
 
 NSDictionary* PageDisplayState::GetSerialization() const {
   return @{
-    kXOffsetKey : @(scroll_state_.offset_x()),
-    kYOffsetKey : @(scroll_state_.offset_y()),
+    kContentOffsetKey :
+        [NSValue valueWithCGPoint:scroll_state_.content_offset()],
+    kContentInsetKey :
+        [NSValue valueWithUIEdgeInsets:scroll_state_.content_inset()],
     kMinZoomKey : @(zoom_state_.minimum_zoom_scale()),
     kMaxZoomKey : @(zoom_state_.maximum_zoom_scale()),
     kZoomKey : @(zoom_state_.zoom_scale())
@@ -140,14 +201,15 @@ NSDictionary* PageDisplayState::GetSerialization() const {
 
 NSString* PageDisplayState::GetDescription() const {
   NSString* const kPageScrollStateDescriptionFormat =
-      @"{ scrollOffset:(%0.2f, %0.2f), zoomScaleRange:(%0.2f, %0.2f), "
+      @"{ contentOffset:%@, contentInset:%@, zoomScaleRange:(%0.2f, %0.2f), "
       @"zoomScale:%0.2f }";
-  return [NSString stringWithFormat:kPageScrollStateDescriptionFormat,
-                                    scroll_state_.offset_x(),
-                                    scroll_state_.offset_y(),
-                                    zoom_state_.minimum_zoom_scale(),
-                                    zoom_state_.maximum_zoom_scale(),
-                                    zoom_state_.zoom_scale()];
+  return [NSString
+      stringWithFormat:kPageScrollStateDescriptionFormat,
+                       NSStringFromCGPoint(scroll_state_.content_offset()),
+                       NSStringFromUIEdgeInsets(scroll_state_.content_inset()),
+                       zoom_state_.minimum_zoom_scale(),
+                       zoom_state_.maximum_zoom_scale(),
+                       zoom_state_.zoom_scale()];
 }
 
 }  // namespace web

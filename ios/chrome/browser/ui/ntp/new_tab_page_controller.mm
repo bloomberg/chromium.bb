@@ -233,8 +233,8 @@ using base::UserMetricsAction;
   [_currentController willUpdateSnapshot];
 }
 
-- (CGPoint)scrollOffset {
-  return [_currentController scrollOffset];
+- (CGPoint)contentOffset {
+  return [_currentController contentOffset];
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner
