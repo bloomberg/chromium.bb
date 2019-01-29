@@ -37,8 +37,8 @@ class QUIC_EXPORT_PRIVATE QpackDecoderStreamSender {
   // Methods for sending instructions, see
   // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#rfc.section.5.3
 
-  // 5.3.1 Table State Synchronize
-  void SendTableStateSynchronize(uint64_t insert_count);
+  // 5.3.1 Insert Count Increment
+  void SendInsertCountIncrement(uint64_t increment);
   // 5.3.2 Header Acknowledgement
   void SendHeaderAcknowledgement(QuicStreamId stream_id);
   // 5.3.3 Stream Cancellation

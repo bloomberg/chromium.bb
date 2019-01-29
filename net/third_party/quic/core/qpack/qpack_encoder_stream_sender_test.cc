@@ -95,14 +95,14 @@ TEST_F(QpackEncoderStreamSenderTest, Duplicate) {
   stream_.SendDuplicate(500);
 }
 
-TEST_F(QpackEncoderStreamSenderTest, DynamicTableSizeUpdate) {
-  // Small max size fits in prefix.
+TEST_F(QpackEncoderStreamSenderTest, SetDynamicTableCapacity) {
+  // Small capacity fits in prefix.
   EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("31"))));
-  stream_.SendDynamicTableSizeUpdate(17);
+  stream_.SendSetDynamicTableCapacity(17);
 
-  // Large max size requires two extension bytes.
+  // Large capacity requires two extension bytes.
   EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("3fd503"))));
-  stream_.SendDynamicTableSizeUpdate(500);
+  stream_.SendSetDynamicTableCapacity(500);
 }
 
 }  // namespace

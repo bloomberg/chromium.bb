@@ -35,7 +35,7 @@ void QpackEncoder::DecodeDecoderStreamData(QuicStringPiece data) {
   decoder_stream_receiver_.Decode(data);
 }
 
-void QpackEncoder::OnTableStateSynchronize(uint64_t insert_count) {
+void QpackEncoder::OnInsertCountIncrement(uint64_t increment) {
   // TODO(bnc): Implement dynamic table management for encoding.
 }
 

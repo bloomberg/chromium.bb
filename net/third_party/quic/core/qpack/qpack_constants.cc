@@ -69,7 +69,7 @@ const QpackInstruction* DuplicateInstruction() {
   return instruction;
 }
 
-const QpackInstruction* DynamicTableSizeUpdateInstruction() {
+const QpackInstruction* SetDynamicTableCapacityInstruction() {
   static const QpackInstructionOpcode* const opcode =
       new QpackInstructionOpcode{0b00100000, 0b11100000};
   static const QpackInstruction* const instruction =
@@ -81,12 +81,12 @@ const QpackLanguage* QpackEncoderStreamLanguage() {
   static const QpackLanguage* const language = new QpackLanguage{
       InsertWithNameReferenceInstruction(),
       InsertWithoutNameReferenceInstruction(), DuplicateInstruction(),
-      DynamicTableSizeUpdateInstruction()};
+      SetDynamicTableCapacityInstruction()};
   ValidateLangague(language);
   return language;
 }
 
-const QpackInstruction* TableStateSynchronizeInstruction() {
+const QpackInstruction* InsertCountIncrementInstruction() {
   static const QpackInstructionOpcode* const opcode =
       new QpackInstructionOpcode{0b00000000, 0b11000000};
   static const QpackInstruction* const instruction =
@@ -112,7 +112,7 @@ const QpackInstruction* StreamCancellationInstruction() {
 
 const QpackLanguage* QpackDecoderStreamLanguage() {
   static const QpackLanguage* const language = new QpackLanguage{
-      TableStateSynchronizeInstruction(), HeaderAcknowledgementInstruction(),
+      InsertCountIncrementInstruction(), HeaderAcknowledgementInstruction(),
       StreamCancellationInstruction()};
   ValidateLangague(language);
   return language;

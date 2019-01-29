@@ -55,7 +55,7 @@ class QUIC_EXPORT_PRIVATE QpackEncoder
   void DecodeDecoderStreamData(QuicStringPiece data);
 
   // QpackDecoderStreamReceiver::Delegate implementation
-  void OnTableStateSynchronize(uint64_t insert_count) override;
+  void OnInsertCountIncrement(uint64_t increment) override;
   void OnHeaderAcknowledgement(QuicStreamId stream_id) override;
   void OnStreamCancellation(QuicStreamId stream_id) override;
   void OnErrorDetected(QuicStringPiece error_message) override;

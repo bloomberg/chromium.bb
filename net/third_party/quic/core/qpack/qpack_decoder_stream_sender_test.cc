@@ -32,18 +32,18 @@ class QpackDecoderStreamSenderTest : public QuicTest {
   QpackDecoderStreamSender stream_;
 };
 
-TEST_F(QpackDecoderStreamSenderTest, TableStateSynchronize) {
+TEST_F(QpackDecoderStreamSenderTest, InsertCountIncrement) {
   EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("00"))));
-  stream_.SendTableStateSynchronize(0);
+  stream_.SendInsertCountIncrement(0);
 
   EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("0a"))));
-  stream_.SendTableStateSynchronize(10);
+  stream_.SendInsertCountIncrement(10);
 
   EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("3f00"))));
-  stream_.SendTableStateSynchronize(63);
+  stream_.SendInsertCountIncrement(63);
 
   EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("3f8901"))));
-  stream_.SendTableStateSynchronize(200);
+  stream_.SendInsertCountIncrement(200);
 }
 
 TEST_F(QpackDecoderStreamSenderTest, HeaderAcknowledgement) {

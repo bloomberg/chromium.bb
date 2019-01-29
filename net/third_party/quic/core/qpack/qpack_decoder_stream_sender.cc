@@ -18,11 +18,10 @@ QpackDecoderStreamSender::QpackDecoderStreamSender(Delegate* delegate)
   DCHECK(delegate_);
 }
 
-void QpackDecoderStreamSender::SendTableStateSynchronize(
-    uint64_t insert_count) {
-  instruction_encoder_.set_varint(insert_count);
+void QpackDecoderStreamSender::SendInsertCountIncrement(uint64_t increment) {
+  instruction_encoder_.set_varint(increment);
 
-  instruction_encoder_.Encode(TableStateSynchronizeInstruction());
+  instruction_encoder_.Encode(InsertCountIncrementInstruction());
 
   QuicString output;
 

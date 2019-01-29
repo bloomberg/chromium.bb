@@ -65,8 +65,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         break;
       }
       case 3: {
-        uint64_t max_size = provider.ConsumeIntegral<uint64_t>();
-        sender.SendDynamicTableSizeUpdate(max_size);
+        uint64_t capacity = provider.ConsumeIntegral<uint64_t>();
+        sender.SendSetDynamicTableCapacity(capacity);
         break;
       }
     }

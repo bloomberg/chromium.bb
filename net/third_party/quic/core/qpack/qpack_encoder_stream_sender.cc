@@ -65,10 +65,10 @@ void QpackEncoderStreamSender::SendDuplicate(uint64_t index) {
   delegate_->Write(output);
 }
 
-void QpackEncoderStreamSender::SendDynamicTableSizeUpdate(uint64_t max_size) {
-  instruction_encoder_.set_varint(max_size);
+void QpackEncoderStreamSender::SendSetDynamicTableCapacity(uint64_t capacity) {
+  instruction_encoder_.set_varint(capacity);
 
-  instruction_encoder_.Encode(DynamicTableSizeUpdateInstruction());
+  instruction_encoder_.Encode(SetDynamicTableCapacityInstruction());
 
   QuicString output;
 
