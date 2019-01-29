@@ -161,4 +161,47 @@ TEST_F(IdleManagerTest, Update) {
   loop.Run();
 }
 
+TEST_F(IdleManagerTest, RemoveMonitorStopsPolling) {
+  // Simulates the renderer disconnecting (e.g. on page reload) and verifies
+  // that the polling stops for the idle detection.
+
+  auto impl = std::make_unique<IdleManager>();
+  blink::mojom::IdleManagerPtr service_ptr;
+  GURL url("http://google.com");
+  impl->CreateService(mojo::MakeRequest(&service_ptr),
+                      url::Origin::Create(url));
+
+  blink::mojom::IdleMonitorPtr monitor_ptr;
+  blink::mojom::IdleMonitorRequest monitor_request =
+      mojo::MakeRequest(&monitor_ptr);
+  MockIdleMonitor monitor_impl;
+  mojo::Binding<blink::mojom::IdleMonitor> monitor_binding(
+      &monitor_impl, std::move(monitor_request));
+
+  {
+    base::RunLoop loop;
+
+    service_ptr->AddMonitor(
+        kTresholdInSecs, std::move(monitor_ptr),
+        base::BindLambdaForTesting(
+            [&](blink::mojom::IdleState state) { loop.Quit(); }));
+
+    loop.Run();
+  }
+
+  EXPECT_TRUE(impl->IsPollingForTest());
+
+  {
+    base::RunLoop loop;
+
+    // Simulates the renderer disconnecting.
+    monitor_binding.Close();
+
+    // Wait for the IdleManager to observe the pipe close.
+    loop.RunUntilIdle();
+  }
+
+  EXPECT_FALSE(impl->IsPollingForTest());
+}
+
 }  // namespace content
