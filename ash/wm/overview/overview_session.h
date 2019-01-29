@@ -201,8 +201,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
       const gfx::Rect& work_area,
       UpdateAnimationSettingsCallback callback);
 
-  // Shows or hides all the window selector items' mask and shadow.
-  void UpdateMaskAndShadow(bool show);
+  // Updates all the window selector items' mask and shadow.
+  void UpdateMaskAndShadow();
 
   // Called when the overview mode starting animation completes.
   void OnStartingAnimationComplete(bool canceled);

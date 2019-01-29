@@ -521,6 +521,10 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
       base::UserMetricsAction("Tablet_LongPressOverviewButtonEnterSplitView"));
 }
 
+bool OverviewController::IsInStartAnimation() {
+  return !start_animations_.empty();
+}
+
 std::vector<aura::Window*>
 OverviewController::GetWindowsListInOverviewGridsForTesting() {
   std::vector<aura::Window*> windows;
@@ -551,9 +555,10 @@ void OverviewController::OnSelectionEnded() {
     OnStartingAnimationComplete(/*canceled=*/true);
   start_animations_.clear();
 
-  overview_session_->UpdateMaskAndShadow(/*show=*/false);
-
   auto* overview_session = overview_session_.release();
+  // Do not show mask and show during overview shutdown.
+  overview_session->UpdateMaskAndShadow();
+
   Shell::Get()->NotifyOverviewModeEnding(overview_session);
   overview_session->Shutdown();
   // Don't delete |overview_session_| yet since the stack is still using it.

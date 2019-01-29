@@ -270,12 +270,8 @@ void OverviewItem::SetBounds(const gfx::Rect& target_bounds,
   // animations, manually set the shadow. Shadow relies on both the window
   // transform and |item_widget_|'s new bounds so set it after SetItemBounds
   // and UpdateHeaderLayout. Do not apply the shadow for drop target.
-  if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
-    SetShadowBounds(
-        overview_grid_->IsDropTargetWindow(GetWindow())
-            ? base::nullopt
-            : base::make_optional(transform_window_.GetTransformedBounds()));
-  }
+  if (new_animation_type == OVERVIEW_ANIMATION_NONE)
+    UpdateMaskAndShadow();
 
   UpdateBackdropBounds();
 }
@@ -348,15 +344,19 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
 }
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
+  is_being_dragged_ = (item == this);
   caption_container_view_->SetHeaderVisibility(
-      item == this
+      is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
           : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
+  UpdateMaskAndShadow();
 }
 
 void OverviewItem::OnSelectorItemDragEnded() {
+  is_being_dragged_ = false;
   caption_container_view_->SetHeaderVisibility(
       CaptionContainerView::HeaderVisibility::kVisible);
+  UpdateMaskAndShadow();
 }
 
 ScopedOverviewTransformWindow::GridWindowFillMode
@@ -557,16 +557,38 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
   shadow_->SetContentBounds(bounds_in_item);
 }
 
-void OverviewItem::UpdateMaskAndShadow(bool show) {
-  transform_window_.UpdateMask(show);
+void OverviewItem::UpdateMaskAndShadow() {
+  // Do not show mask and shadow if:
+  // 1) overview is shutting down or
+  // 2) this overview item is in an overview grid that contains more than 10
+  //    windows. In this case don't apply rounded corner mask because it can
+  //    push the compositor memory usage to the limit. TODO(oshima): Remove
+  //    this once new rounded corner impl is available. (crbug.com/903486)
+  // 3) we're currently in entering overview animation or
+  // 4) this overview item is being dragged or
+  // 5) this overview item is the drop target window or
+  // 6) this overview item is in animation.
+  bool should_show = true;
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->IsSelecting() ||
+      overview_grid_->window_list().size() > 10 ||
+      overview_controller->IsInStartAnimation() || is_being_dragged_ ||
+      overview_grid_->IsDropTargetWindow(GetWindow()) ||
+      transform_window_.GetOverviewWindow()
+          ->layer()
+          ->GetAnimator()
+          ->is_animating()) {
+    should_show = false;
+  }
 
-  // Do not apply the shadow for the drop target in overview.
-  if (!show || overview_grid_->IsDropTargetWindow(GetWindow())) {
+  if (!should_show) {
+    transform_window_.UpdateMask(false);
     SetShadowBounds(base::nullopt);
     DisableBackdrop();
     return;
   }
 
+  transform_window_.UpdateMask(true);
   SetShadowBounds(transform_window_.GetTransformedBounds());
   EnableBackdropIfNeeded();
 }

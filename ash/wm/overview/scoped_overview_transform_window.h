@@ -178,6 +178,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   views::Widget* minimized_widget() { return minimized_widget_.get(); }
 
   // ui::ImplicitAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
   void OnImplicitAnimationsCompleted() override;
 
   gfx::Rect GetMaskBoundsForTesting() const;

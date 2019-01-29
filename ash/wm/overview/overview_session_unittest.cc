@@ -2234,8 +2234,9 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  // Drag the first window. Verify that the mask still exists for both items as
-  // we do not apply any animation to the window items at this point.
+  // Drag the first window. Verify that the mask was removed for the first
+  // window but still exists for the second window as we do not apply mask
+  // for a dragged window.
   const gfx::Point start_drag = item1->target_bounds().CenterPoint();
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(start_drag);
@@ -2243,7 +2244,7 @@ TEST_F(OverviewSessionTest, RoundedEdgeMaskVisibility) {
   EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(HasMaskForItem(item1));
+  EXPECT_FALSE(HasMaskForItem(item1));
   EXPECT_TRUE(HasMaskForItem(item2));
 
   // Drag to horizontally and then back to the start to avoid activating the
