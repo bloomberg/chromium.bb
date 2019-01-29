@@ -103,7 +103,6 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)          \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, ImportResource) \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)   \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, MainResource)   \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)       \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)          \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)          \
@@ -117,7 +116,6 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
 
 ResourceLoadPriority TypeToPriority(ResourceType type) {
   switch (type) {
-    case ResourceType::kMainResource:
     case ResourceType::kCSSStyleSheet:
     case ResourceType::kFont:
       // Also parser-blocking scripts (set explicitly in loadPriority)
@@ -335,17 +333,10 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
 
 mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
     ResourceType type,
-    IsImageSet is_image_set,
-    bool is_main_frame) {
+    IsImageSet is_image_set) {
   DCHECK((is_image_set == kImageNotImageSet) ||
          (type == ResourceType::kImage && is_image_set == kImageIsImageSet));
   switch (type) {
-    case ResourceType::kMainResource:
-      if (!is_main_frame)
-        return mojom::RequestContextType::IFRAME;
-      // FIXME: Change this to a context frame type (once we introduce them):
-      // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
-      return mojom::RequestContextType::HYPERLINK;
     case ResourceType::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
       FALLTHROUGH;
@@ -439,10 +430,6 @@ class ResourceFetcher::DetachableProperties final
   bool IsDetached() const override { return !properties_; }
   bool IsLoadComplete() const override {
     return properties_ ? properties_->IsLoadComplete() : load_complete_;
-  }
-  bool ShouldBlockLoadingMainResource() const override {
-    // Returns true when detached in order to preserve the existing behavior.
-    return properties_ ? properties_->ShouldBlockLoadingMainResource() : true;
   }
   bool ShouldBlockLoadingSubResource() const override {
     // Returns true when detached in order to preserve the existing behavior.
@@ -547,8 +534,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-        params.Options().initiator_info.name, CurrentTimeTicks(),
-        resource->GetType() == ResourceType::kMainResource);
+        params.Options().initiator_info.name, CurrentTimeTicks());
     // TODO(yoav): GetInitialUrlForResourceTiming() is only needed until
     // Out-of-Blink CORS lands: https://crbug.com/736308
     info->SetInitialURL(
@@ -776,8 +762,8 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   }
   if (resource_request.GetRequestContext() ==
       mojom::RequestContextType::UNSPECIFIED) {
-    resource_request.SetRequestContext(DetermineRequestContext(
-        resource_type, kImageNotImageSet, properties_->IsMainFrame()));
+    resource_request.SetRequestContext(
+        DetermineRequestContext(resource_type, kImageNotImageSet));
   }
   if (resource_type == ResourceType::kLinkPrefetch)
     resource_request.SetHTTPHeaderField(http_names::kPurpose, "prefetch");
@@ -813,10 +799,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       resource_request.HttpMethod() == http_names::kGET &&
       !IsRawResource(resource_type) && !params.IsStaleRevalidation());
 
-  Context().AddAdditionalRequestHeaders(
-      resource_request, (resource_type == ResourceType::kMainResource)
-                            ? kFetchMainResource
-                            : kFetchSubresource);
+  Context().AddAdditionalRequestHeaders(resource_request);
 
   network_instrumentation::ResourcePrioritySet(identifier,
                                                resource_request.Priority());
@@ -1125,11 +1108,8 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   if (fetch_initiator == fetch_initiator_type_names::kInternal)
     return;
 
-  if (resource->GetType() == ResourceType::kMainResource)
-    return;
-
-  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      fetch_initiator, CurrentTimeTicks(), false /* is_main_resource */);
+  scoped_refptr<ResourceTimingInfo> info =
+      ResourceTimingInfo::Create(fetch_initiator, CurrentTimeTicks());
 
   if (resource->IsCacheValidator()) {
     const AtomicString& timing_allow_origin =
@@ -1713,7 +1693,7 @@ void ResourceFetcher::HandleLoaderFinish(
       // original request.
       scoped_refptr<ResourceTimingInfo> preflight_info =
           ResourceTimingInfo::Create(info->InitiatorType(),
-                                     timing_info.start_time, false);
+                                     timing_info.start_time);
       preflight_info->SetInitialURL(info->InitialURL());
       preflight_info->SetLoadFinishTime(timing_info.finish_time);
       preflight_info->AddFinalTransferSize(timing_info.transfer_size);

@@ -253,7 +253,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   }
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
-      resource_type.value(), ResourceFetcher::kImageNotImageSet, false));
+      resource_type.value(), ResourceFetcher::kImageNotImageSet));
 
   resource_request.SetReferrerPolicy(params.referrer_policy);
 

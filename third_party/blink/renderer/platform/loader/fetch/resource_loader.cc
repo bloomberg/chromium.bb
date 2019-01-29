@@ -346,9 +346,9 @@ bool ResourceLoader::ShouldFetchCodeCache() {
     return false;
   if (request.DownloadToBlob())
     return false;
-  // Javascript resources have type kScript or kMainResource (for inline
-  // scripts). WebAssembly module resources have type kRaw. Note that we
-  // always perform a code fetch for all of these resources because:
+  // Javascript resources have type kScript. WebAssembly module resources
+  // have type kRaw. Note that we always perform a code fetch for all of
+  // these resources because:
   //
   // * It is not easy to distinguish WebAssembly modules from other raw
   //   resources
@@ -360,7 +360,6 @@ bool ResourceLoader::ShouldFetchCodeCache() {
   // no browser process disk IO since the cache index is in memory and the
   // resource key should not be present.
   return resource_->GetType() == ResourceType::kScript ||
-         resource_->GetType() == ResourceType::kMainResource ||
          resource_->GetType() == ResourceType::kRaw;
 }
 
@@ -378,9 +377,6 @@ void ResourceLoader::Start() {
   // stoppable. We also disable throttling and stopping for non-http[s]
   // requests.
   if (resource_->Options().synchronous_policy == kRequestSynchronously ||
-      (request.GetFrameType() ==
-           network::mojom::RequestContextFrameType::kTopLevel &&
-       resource_->GetType() == ResourceType::kMainResource) ||
       !request.Url().ProtocolIsInHTTPFamily()) {
     throttle_option =
         ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;

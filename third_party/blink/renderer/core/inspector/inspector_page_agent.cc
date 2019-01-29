@@ -203,8 +203,7 @@ static bool HasTextContent(Resource* cached_resource) {
   return type == ResourceType::kCSSStyleSheet ||
          type == ResourceType::kXSLStyleSheet ||
          type == ResourceType::kScript || type == ResourceType::kRaw ||
-         type == ResourceType::kImportResource ||
-         type == ResourceType::kMainResource;
+         type == ResourceType::kImportResource;
 }
 
 static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
@@ -430,8 +429,6 @@ InspectorPageAgent::ResourceType InspectorPageAgent::ToResourceType(
     case blink::ResourceType::kScript:
       return InspectorPageAgent::kScriptResource;
     case blink::ResourceType::kImportResource:
-    // Fall through.
-    case blink::ResourceType::kMainResource:
       return InspectorPageAgent::kDocumentResource;
     default:
       break;

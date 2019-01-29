@@ -92,41 +92,36 @@ const char* GetDestinationFromContext(mojom::RequestContextType context) {
 
 }  // namespace
 
-void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
-                                                   FetchResourceType type) {
+void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
   const FetchClientSettingsObject& fetch_client_settings_object =
       GetResourceFetcherProperties().GetFetchClientSettingsObject();
-  bool is_main_resource = type == kFetchMainResource;
-  if (!is_main_resource) {
-    // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
-    // no matter what now.
-    if (!request.DidSetHTTPReferrer()) {
-      String referrer_to_use = request.ReferrerString();
-      network::mojom::ReferrerPolicy referrer_policy_to_use =
-          request.GetReferrerPolicy();
+  // TODO(domfarolino): we can probably *just set* the HTTP `Referer` here
+  // no matter what now.
+  if (!request.DidSetHTTPReferrer()) {
+    String referrer_to_use = request.ReferrerString();
+    network::mojom::ReferrerPolicy referrer_policy_to_use =
+        request.GetReferrerPolicy();
 
-      if (referrer_to_use == Referrer::ClientReferrerString())
-        referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
+    if (referrer_to_use == Referrer::ClientReferrerString())
+      referrer_to_use = fetch_client_settings_object.GetOutgoingReferrer();
 
-      if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
-        referrer_policy_to_use =
-            fetch_client_settings_object.GetReferrerPolicy();
-      }
-
-      // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
-      // and store it elsewhere. See https://crbug.com/850813.
-      request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-          referrer_policy_to_use, request.Url(), referrer_to_use));
-      request.SetHTTPOriginIfNeeded(
-          fetch_client_settings_object.GetSecurityOrigin());
-    } else {
-      CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
-                                                request.Url(),
-                                                request.HttpReferrer())
-                   .referrer,
-               request.HttpReferrer());
-      request.SetHTTPOriginToMatchReferrerIfNeeded();
+    if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault) {
+      referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
     }
+
+    // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
+    // and store it elsewhere. See https://crbug.com/850813.
+    request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_policy_to_use, request.Url(), referrer_to_use));
+    request.SetHTTPOriginIfNeeded(
+        fetch_client_settings_object.GetSecurityOrigin());
+  } else {
+    CHECK_EQ(
+        SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
+                                         request.Url(), request.HttpReferrer())
+            .referrer,
+        request.HttpReferrer());
+    request.SetHTTPOriginToMatchReferrerIfNeeded();
   }
 
   auto address_space = GetAddressSpace();
@@ -194,9 +189,8 @@ bool BaseFetchContext::IsAdResource(
   SubresourceFilter* filter = GetSubresourceFilter();
 
   // We do not need main document tagging currently so skipping main resources.
-  if (filter && type != ResourceType::kMainResource) {
+  if (filter)
     return filter->IsAdResource(resource_url, request_context);
-  }
 
   return false;
 }
@@ -333,8 +327,7 @@ BaseFetchContext::CanRequestInternal(
 
   // SVG Images have unique security rules that prevent all subresource requests
   // except for data urls.
-  if (type != ResourceType::kMainResource && IsSVGImageChromeClient() &&
-      !url.ProtocolIsData())
+  if (IsSVGImageChromeClient() && !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
   network::mojom::RequestContextFrameType frame_type =
@@ -386,8 +379,7 @@ BaseFetchContext::CanRequestInternal(
 
   // Let the client have the final say into whether or not the load should
   // proceed.
-  if (GetSubresourceFilter() && type != ResourceType::kMainResource &&
-      type != ResourceType::kImportResource) {
+  if (GetSubresourceFilter() && type != ResourceType::kImportResource) {
     if (!GetSubresourceFilter()->AllowLoad(url, request_context,
                                            reporting_policy)) {
       return ResourceRequestBlockedReason::kSubresourceFilter;

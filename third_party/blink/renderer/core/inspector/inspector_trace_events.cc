@@ -116,6 +116,20 @@ void InspectorTraceEvents::WillSendRequest(
       inspector_send_request_event::Data(loader, identifier, frame, request));
 }
 
+void InspectorTraceEvents::WillSendNavigationRequest(
+    ExecutionContext*,
+    unsigned long identifier,
+    DocumentLoader* loader,
+    const KURL& url,
+    const AtomicString& http_method,
+    EncodedFormData*) {
+  LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
+  TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest",
+                       TRACE_EVENT_SCOPE_THREAD, "data",
+                       inspector_send_navigation_request_event::Data(
+                           loader, identifier, frame, url, http_method));
+}
+
 void InspectorTraceEvents::DidReceiveResourceResponse(
     unsigned long identifier,
     DocumentLoader* loader,
@@ -753,6 +767,25 @@ std::unique_ptr<TracedValue> inspector_send_request_event::Data(
   value->SetString("url", request.Url().GetString());
   value->SetString("requestMethod", request.HttpMethod());
   const char* priority = ResourcePriorityString(request.Priority());
+  if (priority)
+    value->SetString("priority", priority);
+  SetCallStack(value.get());
+  return value;
+}
+
+std::unique_ptr<TracedValue> inspector_send_navigation_request_event::Data(
+    DocumentLoader* loader,
+    unsigned long identifier,
+    LocalFrame* frame,
+    const KURL& url,
+    const AtomicString& http_method) {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetString("requestId", IdentifiersFactory::LoaderId(loader));
+  value->SetString("frame", IdentifiersFactory::FrameId(frame));
+  value->SetString("url", url.GetString());
+  value->SetString("requestMethod", http_method);
+  const char* priority =
+      ResourcePriorityString(ResourceLoadPriority::kVeryHigh);
   if (priority)
     value->SetString("priority", priority);
   SetCallStack(value.get());

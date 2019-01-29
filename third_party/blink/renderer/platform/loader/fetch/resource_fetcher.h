@@ -211,8 +211,9 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum IsImageSet { kImageNotImageSet, kImageIsImageSet };
 
-  WARN_UNUSED_RESULT static mojom::RequestContextType
-  DetermineRequestContext(ResourceType, IsImageSet, bool is_main_frame);
+  WARN_UNUSED_RESULT static mojom::RequestContextType DetermineRequestContext(
+      ResourceType,
+      IsImageSet);
 
   void UpdateAllImageResourcePriorities();
 

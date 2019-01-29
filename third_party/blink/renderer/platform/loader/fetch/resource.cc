@@ -1150,8 +1150,6 @@ const char* Resource::ResourceTypeToString(
     ResourceType type,
     const AtomicString& fetch_initiator_name) {
   switch (type) {
-    case ResourceType::kMainResource:
-      return "Main resource";
     case ResourceType::kImage:
       return "Image";
     case ResourceType::kCSSStyleSheet:
@@ -1191,9 +1189,8 @@ blink::mojom::CodeCacheType Resource::ResourceTypeToCodeCacheType(
   DCHECK(
       // Cacheable WebAssembly modules are fetched, so raw resource type.
       resource_type == ResourceType::kRaw ||
-      // Cacheable Javascript is a script or a document resource.
+      // Cacheable Javascript is a script resource.
       resource_type == ResourceType::kScript ||
-      resource_type == ResourceType::kMainResource ||
       // Also accept mock resources for testing.
       resource_type == ResourceType::kMock);
   return ToCodeCacheType(resource_type);
@@ -1205,7 +1202,6 @@ bool Resource::ShouldBlockLoadEvent() const {
 
 bool Resource::IsLoadEventBlockingResourceType() const {
   switch (type_) {
-    case ResourceType::kMainResource:
     case ResourceType::kImage:
     case ResourceType::kCSSStyleSheet:
     case ResourceType::kScript:

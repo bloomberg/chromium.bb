@@ -43,8 +43,8 @@ Resource* PreloadRequest::Start(Document* document) {
   if (referrer_source_ == kBaseUrlIsReferrer)
     resource_request.SetReferrerString(base_url_.StrippedForUseAsReferrer());
 
-  resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
-      resource_type_, is_image_set_, false));
+  resource_request.SetRequestContext(
+      ResourceFetcher::DetermineRequestContext(resource_type_, is_image_set_));
 
   resource_request.SetFetchImportanceMode(importance_);
 

@@ -168,14 +168,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(false);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_FALSE(main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_FALSE(sub_request.IsExternalRequest());
     }
   }
@@ -184,14 +178,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(true);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_EQ(test.is_external_expectation, main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
     }
   }
@@ -220,14 +208,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPrivateContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(false);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_FALSE(main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_FALSE(sub_request.IsExternalRequest());
     }
   }
@@ -236,14 +218,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPrivateContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(true);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_EQ(test.is_external_expectation, main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
     }
   }
@@ -271,14 +247,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
   {
     ScopedCorsRFC1918ForTest cors_rfc1918(false);
     for (const auto& test : cases) {
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_FALSE(main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_FALSE(sub_request.IsExternalRequest());
     }
   }
@@ -286,14 +256,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
   {
     ScopedCorsRFC1918ForTest cors_rfc1918(true);
     for (const auto& test : cases) {
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_EQ(test.is_external_expectation, main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
     }
   }

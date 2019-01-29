@@ -72,8 +72,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   explicit FrameFetchContext(const FrameOrImportedDocument&);
   ~FrameFetchContext() override = default;
 
-  void AddAdditionalRequestHeaders(ResourceRequest&,
-                                   FetchResourceType) override;
+  void AddAdditionalRequestHeaders(ResourceRequest&) override;
   base::Optional<ResourceRequestBlockedReason> CanRequest(
       ResourceType type,
       const ResourceRequest& resource_request,
@@ -97,7 +96,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const ResourceResponse& redirect_response,
       ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-  // Resource* can be null for navigations.
+  // Resource* is null if and only if this is a navigation response.
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceRequest&,
                                   const ResourceResponse&,

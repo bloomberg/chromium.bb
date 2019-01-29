@@ -157,7 +157,6 @@ class CORE_EXPORT DocumentLoader
     return state_ >= kCommitted && !data_received_;
   }
 
-  bool HasSubstituteData() const { return has_substitute_data_; }
   void FillNavigationParamsForErrorPage(WebNavigationParams*);
 
   // Without PlzNavigate, this is only false for a narrow window during

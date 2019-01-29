@@ -171,12 +171,6 @@ void RawResource::WillNotFollowRedirect() {
     c->RedirectBlocked();
 }
 
-SourceKeyedCachedMetadataHandler* RawResource::InlineScriptCacheHandler() {
-  DCHECK_EQ(ResourceType::kMainResource, GetType());
-  return static_cast<SourceKeyedCachedMetadataHandler*>(
-      Resource::CacheHandler());
-}
-
 SingleCachedMetadataHandler* RawResource::ScriptCacheHandler() {
   DCHECK_EQ(ResourceType::kRaw, GetType());
   return static_cast<SingleCachedMetadataHandler*>(Resource::CacheHandler());
@@ -210,12 +204,7 @@ void RawResource::ResponseReceived(
 
 CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
     std::unique_ptr<CachedMetadataSender> send_callback) {
-  if (GetType() == ResourceType::kMainResource) {
-    // This is a document resource; create a cache handler that can handle
-    // multiple inline scripts.
-    return MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
-        Encoding(), std::move(send_callback));
-  } else if (GetType() == ResourceType::kRaw) {
+  if (GetType() == ResourceType::kRaw) {
     // This is a resource of indeterminate type, e.g. a fetched WebAssembly
     // module; create a cache handler that can store a single metadata entry.
     return MakeGarbageCollected<ScriptCachedMetadataHandler>(
@@ -228,13 +217,7 @@ void RawResource::SetSerializedCachedMetadata(const uint8_t* data,
                                               size_t size) {
   Resource::SetSerializedCachedMetadata(data, size);
 
-  if (GetType() == ResourceType::kMainResource) {
-    SourceKeyedCachedMetadataHandler* cache_handler =
-        InlineScriptCacheHandler();
-    if (cache_handler) {
-      cache_handler->SetSerializedCachedMetadata(data, size);
-    }
-  } else if (GetType() == ResourceType::kRaw) {
+  if (GetType() == ResourceType::kRaw) {
     ScriptCachedMetadataHandler* cache_handler =
         static_cast<ScriptCachedMetadataHandler*>(Resource::CacheHandler());
     if (cache_handler) {

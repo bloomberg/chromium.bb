@@ -146,6 +146,7 @@
         "willLoadXHR",
         "willSendEventSourceRequest",
         "willSendRequest",
+        "willSendNavigationRequest",
         "willSendWebSocketHandshakeRequest",
       ]
     },
@@ -208,6 +209,7 @@
         "frameStartedLoading",
         "paintTiming",
         "willSendRequest",
+        "willSendNavigationRequest",
       ]
     },
     DevToolsSession: {

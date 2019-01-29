@@ -747,14 +747,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     const FetchInitiatorInfo& initiator_info,
     InspectorPageAgent::ResourceType type) {
   String loader_id = IdentifiersFactory::LoaderId(loader);
-  // DocumentLoader doesn't have main resource set at the point, so RequestId()
-  // won't properly detect main resource. Workaround this by checking the
-  // frame type and manually setting request id to loader id.
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
-  bool is_navigation =
-      request.GetFrameType() != network::mojom::RequestContextFrameType::kNone;
-  if (is_navigation)
-    request_id = loader_id;
   NetworkResourcesData::ResourceData const* data =
       resources_data_->Data(request_id);
   // Support for POST request redirect
@@ -774,9 +767,6 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   if (pending_request_)
     type = pending_request_type_;
   resources_data_->SetResourceType(request_id, type);
-
-  if (is_navigation)
-    return;
 
   String frame_id = loader && loader->GetFrame()
                         ? IdentifiersFactory::FrameId(loader->GetFrame())
@@ -827,6 +817,29 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   pending_request_ = nullptr;
 }
 
+void InspectorNetworkAgent::WillSendNavigationRequest(
+    ExecutionContext* execution_context,
+    unsigned long identifier,
+    DocumentLoader* loader,
+    const KURL& url,
+    const AtomicString& http_method,
+    EncodedFormData* http_body) {
+  String loader_id = IdentifiersFactory::LoaderId(loader);
+  String request_id = loader_id;
+  NetworkResourcesData::ResourceData const* data =
+      resources_data_->Data(request_id);
+  // Support for POST request redirect.
+  scoped_refptr<EncodedFormData> post_data;
+  if (data)
+    post_data = data->PostData();
+  else if (http_body)
+    post_data = http_body->DeepCopy();
+  resources_data_->ResourceCreated(execution_context, request_id, loader_id,
+                                   url, post_data);
+  resources_data_->SetResourceType(request_id,
+                                   InspectorPageAgent::kDocumentResource);
+}
+
 void InspectorNetworkAgent::WillSendRequest(
     ExecutionContext* execution_context,
     unsigned long identifier,
@@ -837,10 +850,6 @@ void InspectorNetworkAgent::WillSendRequest(
     ResourceType resource_type) {
   // Ignore the request initiated internally.
   if (initiator_info.name == fetch_initiator_type_names::kInternal)
-    return;
-
-  if (initiator_info.name == fetch_initiator_type_names::kDocument &&
-      loader->HasSubstituteData())
     return;
 
   if (!extra_request_headers_.IsEmpty()) {
@@ -918,9 +927,6 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
       saved_type == InspectorPageAgent::kEventSourceResource) {
     type = saved_type;
   }
-  if (type == InspectorPageAgent::kDocumentResource && loader &&
-      loader->HasSubstituteData())
-    return;
 
   // Resources are added to NetworkResourcesData as a WeakMember here and
   // removed in willDestroyResource() called in the prefinalizer of Resource.

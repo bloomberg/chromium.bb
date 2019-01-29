@@ -122,19 +122,15 @@ const base::Feature kAllowClientHintsToThirdParty{
     "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-enum class RequestMethod { kIsPost, kIsNotPost };
-enum class RequestType { kIsConditional, kIsNotConditional };
-enum class MainResourceType { kIsMainResource, kIsNotMainResource };
-
 void MaybeRecordCTPolicyComplianceUseCounter(
     LocalFrame* frame,
-    ResourceType resource_type,
+    bool is_main_resource,
     ResourceResponse::CTPolicyCompliance compliance,
     DocumentLoader* loader) {
   if (compliance != ResourceResponse::kCTPolicyDoesNotComply)
     return;
   // Exclude main-frame navigation requests; those are tracked elsewhere.
-  if (!frame->Tree().Parent() && resource_type == ResourceType::kMainResource)
+  if (!frame->Tree().Parent() && is_main_resource)
     return;
   if (loader) {
     loader->GetUseCounter().Count(
@@ -146,66 +142,21 @@ void MaybeRecordCTPolicyComplianceUseCounter(
   }
 }
 
-void RecordLegacySymantecCertUseCounter(LocalFrame* frame,
-                                        ResourceType resource_type) {
-  // Main resources are counted in DocumentLoader.
-  if (resource_type == ResourceType::kMainResource) {
-    return;
-  }
-  UseCounter::Count(frame, WebFeature::kLegacySymantecCertInSubresource);
-}
-
-// Determines FetchCacheMode for a main resource, or FetchCacheMode that is
-// corresponding to WebFrameLoadType.
-// TODO(toyoshim): Probably, we should split WebFrameLoadType to FetchCacheMode
-// conversion logic into a separate function.
-mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
-                                         RequestType request_type,
-                                         MainResourceType resource_type,
-                                         WebFrameLoadType load_type) {
-  switch (load_type) {
-    case WebFrameLoadType::kStandard:
-    case WebFrameLoadType::kReplaceCurrentItem:
-      return (request_type == RequestType::kIsConditional ||
-              method == RequestMethod::kIsPost)
-                 ? mojom::FetchCacheMode::kValidateCache
-                 : mojom::FetchCacheMode::kDefault;
-    case WebFrameLoadType::kBackForward:
-      // Mutates the policy for POST requests to avoid form resubmission.
-      return method == RequestMethod::kIsPost
-                 ? mojom::FetchCacheMode::kOnlyIfCached
-                 : mojom::FetchCacheMode::kForceCache;
-    case WebFrameLoadType::kReload:
-      return resource_type == MainResourceType::kIsMainResource
-                 ? mojom::FetchCacheMode::kValidateCache
-                 : mojom::FetchCacheMode::kDefault;
-    case WebFrameLoadType::kReloadBypassingCache:
-      return mojom::FetchCacheMode::kBypassCache;
-  }
-  NOTREACHED();
-  return mojom::FetchCacheMode::kDefault;
-}
-
 // Determines FetchCacheMode for |frame|. This FetchCacheMode should be a base
 // policy to consider one of each resource belonging to the frame, and should
 // not count resource specific conditions in.
-// TODO(toyoshim): Remove |resourceType| to realize the design described above.
-// See also comments in resourceRequestCachePolicy().
-mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
-                                              MainResourceType resource_type) {
+mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame) {
   if (!frame)
     return mojom::FetchCacheMode::kDefault;
   if (!frame->IsLocalFrame())
-    return DetermineFrameCacheMode(frame->Tree().Parent(), resource_type);
+    return DetermineFrameCacheMode(frame->Tree().Parent());
 
   // Does not propagate cache policy for subresources after the load event.
   // TODO(toyoshim): We should be able to remove following parents' policy check
   // if each frame has a relevant WebFrameLoadType for reload and history
   // navigations.
-  if (resource_type == MainResourceType::kIsNotMainResource &&
-      ToLocalFrame(frame)->GetDocument()->LoadEventFinished()) {
+  if (ToLocalFrame(frame)->GetDocument()->LoadEventFinished())
     return mojom::FetchCacheMode::kDefault;
-  }
 
   // Respects BypassingCache rather than parent's policy.
   WebFrameLoadType load_type =
@@ -215,15 +166,25 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
 
   // Respects parent's policy if it has a special one.
   mojom::FetchCacheMode parent_cache_mode =
-      DetermineFrameCacheMode(frame->Tree().Parent(), resource_type);
+      DetermineFrameCacheMode(frame->Tree().Parent());
   if (parent_cache_mode != mojom::FetchCacheMode::kDefault)
     return parent_cache_mode;
 
-  // Otherwise, follows WebFrameLoadType. Use kIsNotPost, kIsNotConditional, and
-  // kIsNotMainResource to obtain a representative policy for the frame.
-  return DetermineCacheMode(RequestMethod::kIsNotPost,
-                            RequestType::kIsNotConditional,
-                            MainResourceType::kIsNotMainResource, load_type);
+  // Otherwise, follows WebFrameLoadType.
+  switch (load_type) {
+    case WebFrameLoadType::kStandard:
+    case WebFrameLoadType::kReplaceCurrentItem:
+      return mojom::FetchCacheMode::kDefault;
+    case WebFrameLoadType::kBackForward:
+      // Mutates the policy for POST requests to avoid form resubmission.
+      return mojom::FetchCacheMode::kForceCache;
+    case WebFrameLoadType::kReload:
+      return mojom::FetchCacheMode::kDefault;
+    case WebFrameLoadType::kReloadBypassingCache:
+      return mojom::FetchCacheMode::kBypassCache;
+  }
+  NOTREACHED();
+  return mojom::FetchCacheMode::kDefault;
 }
 
 }  // namespace
@@ -371,9 +332,8 @@ LocalFrameClient* FrameFetchContext::GetLocalFrameClient() const {
   return GetFrame()->Client();
 }
 
-void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
-                                                    FetchResourceType type) {
-  BaseFetchContext::AddAdditionalRequestHeaders(request, type);
+void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
+  BaseFetchContext::AddAdditionalRequestHeaders(request);
 
   // The remaining modifications are only necessary for HTTP and HTTPS.
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
@@ -426,27 +386,7 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
     return mojom::FetchCacheMode::kDefault;
 
   DCHECK(GetFrame());
-  if (type == ResourceType::kMainResource) {
-    const auto cache_mode = DetermineCacheMode(
-        request.HttpMethod() == http_names::kPOST ? RequestMethod::kIsPost
-                                                  : RequestMethod::kIsNotPost,
-        request.IsConditional() ? RequestType::kIsConditional
-                                : RequestType::kIsNotConditional,
-        MainResourceType::kIsMainResource, MasterDocumentLoader()->LoadType());
-    // Follows the parent frame's policy.
-    // TODO(toyoshim): Probably, WebFrameLoadType for each frame should have a
-    // right type for reload or history navigations, and should not need to
-    // check parent's frame policy here. Once it has a right WebFrameLoadType,
-    // we can remove Resource::Type argument from determineFrameCacheMode.
-    // See also crbug.com/332602.
-    if (cache_mode != mojom::FetchCacheMode::kDefault)
-      return cache_mode;
-    return DetermineFrameCacheMode(GetFrame()->Tree().Parent(),
-                                   MainResourceType::kIsMainResource);
-  }
-
-  const auto cache_mode =
-      DetermineFrameCacheMode(GetFrame(), MainResourceType::kIsNotMainResource);
+  const auto cache_mode = DetermineFrameCacheMode(GetFrame());
 
   // TODO(toyoshim): Revisit to consider if this clause can be merged to
   // determineWebCachePolicy or determineFrameCacheMode.
@@ -556,16 +496,15 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   if (IsDetached())
     return;
 
-  // Note: resource can be null for navigations.
-  ResourceType resource_type =
-      resource ? resource->GetType() : ResourceType::kMainResource;
+  // Note: resource is null if and only if this is a navigation response.
+  bool is_main_resource = !resource;
 
   if (GetSubresourceFilter() && resource &&
       resource->GetResourceRequest().IsAdResource()) {
     GetSubresourceFilter()->ReportAdRequestId(response.RequestId());
   }
 
-  MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource_type,
+  MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), is_main_resource,
                                           response.GetCTPolicyCompliance(),
                                           MasterDocumentLoader());
 
@@ -594,19 +533,13 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     // haven't committed yet, and we cannot load resources, only preconnect.
     resource_loading_policy = PreloadHelper::kDoNotLoadResources;
   }
-  // Client hints preferences should be persisted only from responses that were
-  // served by the same host as the host of the document-level origin.
-  KURL frame_url = Url();
-  if (frame_url == NullURL())
-    frame_url = GetDocumentLoader()->Url();
 
   // The accept-ch-lifetime header is honored only on the navigation responses.
   // Further, the navigation response should be from a top level frame (i.e.,
   // main frame) or the origin of the response should match the origin of the
   // top level frame.
-  if (resource_type == ResourceType::kMainResource &&
-      (GetResourceFetcherProperties().IsMainFrame() ||
-       IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
+  if (is_main_resource && (GetResourceFetcherProperties().IsMainFrame() ||
+                           IsFirstPartyOrigin(response.CurrentRequestUrl()))) {
     ParseAndPersistClientHints(response);
   }
 
@@ -623,13 +556,17 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacySymantecCert()) {
-    RecordLegacySymantecCertUseCounter(GetFrame(), resource_type);
+    if (!is_main_resource) {
+      // Main resources are counted in DocumentLoader.
+      UseCounter::Count(GetFrame(),
+                        WebFeature::kLegacySymantecCertInSubresource);
+    }
     GetLocalFrameClient()->ReportLegacySymantecCert(
         response.CurrentRequestUrl(), false /* did_fail */);
   }
 
   if (response.IsLegacyTLSVersion()) {
-    if (resource_type != ResourceType::kMainResource) {
+    if (!is_main_resource) {
       // Main resources are counted in DocumentLoader.
       UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
     }
@@ -793,7 +730,6 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
     return;
 
   // Timing for main resource is handled in DocumentLoader.
-  DCHECK(!info.IsMainResource());
   // All other resources are reported to the corresponding Document.
   DOMWindowPerformance::performance(
       *frame_or_imported_document_->GetDocument()->domWindow())

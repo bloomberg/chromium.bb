@@ -67,16 +67,6 @@ bool FrameResourceFetcherProperties::IsLoadComplete() const {
   return document && document->LoadEventFinished();
 }
 
-bool FrameResourceFetcherProperties::ShouldBlockLoadingMainResource() const {
-  DocumentLoader* document_loader =
-      frame_or_imported_document_->GetDocumentLoader();
-  if (!document_loader)
-    return false;
-
-  FrameLoader& loader = frame_or_imported_document_->GetFrame().Loader();
-  return document_loader != loader.GetProvisionalDocumentLoader();
-}
-
 bool FrameResourceFetcherProperties::ShouldBlockLoadingSubResource() const {
   DocumentLoader* document_loader =
       frame_or_imported_document_->GetDocumentLoader();

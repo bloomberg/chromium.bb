@@ -81,8 +81,7 @@ void FetchContext::DispatchDidChangeResourcePriority(unsigned long,
                                                      ResourceLoadPriority,
                                                      int) {}
 
-void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&,
-                                               FetchResourceType) {}
+void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&) {}
 
 mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(
     const ResourceRequest&,
@@ -129,8 +128,6 @@ void FetchContext::DispatchDidFail(const KURL&,
                                    bool) {}
 
 bool FetchContext::ShouldLoadNewResource(ResourceType type) const {
-  if (type == ResourceType::kMainResource)
-    return !GetResourceFetcherProperties().ShouldBlockLoadingMainResource();
   return !GetResourceFetcherProperties().ShouldBlockLoadingSubResource();
 }
 

@@ -92,6 +92,7 @@ interface CoreProbes {
   void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
   void didChangeResourcePriority(LocalFrame*, DocumentLoader*, unsigned long identifier, ResourceLoadPriority loadPriority);
   void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, ResourceType);
+  void willSendNavigationRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, const KURL&, const AtomicString& http_method, EncodedFormData*);
   void markResourceAsCached(LocalFrame*, DocumentLoader*, unsigned long identifier);
   void didReceiveResourceResponse(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didReceiveData(CoreProbeSink*, unsigned long identifier, DocumentLoader*, const char* data, uint64_t dataLength);
