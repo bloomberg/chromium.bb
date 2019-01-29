@@ -15,6 +15,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/mus/cursor_manager_owner.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 
@@ -140,6 +141,7 @@ void RemoteViewProvider::OnEmbed(aura::Window* window) {
   embedding_window_observer_ = std::make_unique<EmbeddingWindowObserver>(
       window, base::BindRepeating(&RemoteViewProvider::OnEmbeddingWindowResized,
                                   base::Unretained(this)));
+  cursor_manager_owner_ = std::make_unique<CursorManagerOwner>(window);
   OnEmbeddingWindowResized(window->bounds().size());
   window->AddChild(embedded_);
 
@@ -150,6 +152,7 @@ void RemoteViewProvider::OnEmbed(aura::Window* window) {
 void RemoteViewProvider::OnUnembed() {
   screen_position_client_.reset();
   embedding_window_observer_.reset();
+  cursor_manager_owner_.reset();
   embed_root_.reset();
 
   if (on_unembed_callback_)

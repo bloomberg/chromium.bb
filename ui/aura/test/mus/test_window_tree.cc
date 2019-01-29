@@ -340,6 +340,7 @@ void TestWindowTree::SetCursor(uint32_t change_id,
                                ws::Id transport_window_id,
                                ui::Cursor cursor) {
   OnChangeReceived(change_id);
+  last_cursor_ = cursor;
 }
 
 void TestWindowTree::SetWindowTextInputState(

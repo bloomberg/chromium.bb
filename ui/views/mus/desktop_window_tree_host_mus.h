@@ -19,11 +19,9 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/widget.h"
 
-namespace wm {
-class CursorManager;
-}
-
 namespace views {
+
+class CursorManagerOwner;
 
 class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
     : public DesktopWindowTreeHost,
@@ -186,7 +184,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   bool is_active_ = false;
 
-  std::unique_ptr<wm::CursorManager> cursor_manager_;
+  std::unique_ptr<CursorManagerOwner> cursor_manager_owner_;
 
   bool auto_update_client_area_ = true;
 
