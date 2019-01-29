@@ -215,7 +215,6 @@ class DnsRequest {
 //     * Out of order completion, particularly for the platform resolver path.
 //     * Simulate network changes, including both enabling and disabling the
 //     async resolver while lookups are active as a result of the change.
-// TODO(crbug.com/846423): Add coverage of non-address queries.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   {
     base::FuzzedDataProvider data_provider(data, size);
