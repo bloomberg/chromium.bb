@@ -728,11 +728,16 @@ void AutocompleteMatch::InlineTailPrefix(const base::string16& common_prefix) {
     // Insert an ellipsis before uncommon part.
     const auto ellipsis = base::ASCIIToUTF16(kEllipsis);
     contents = ellipsis + contents;
-    // Shift existing styles.
-    for (ACMatchClassification& classification : contents_class) {
-      if (classification.offset > 0)
-        classification.offset += ellipsis.size();
+    // If the first class is not already NONE, prepend a NONE class for the new
+    // ellipsis.
+    if (contents_class[0].offset == 0 &&
+        contents_class[0].style != ACMatchClassification::NONE) {
+      contents_class.insert(contents_class.begin(),
+                            {0, ACMatchClassification::NONE});
     }
+    // Shift existing styles.
+    for (size_t i = 1; i < contents_class.size(); ++i)
+      contents_class[i].offset += ellipsis.size();
   }
 }
 
