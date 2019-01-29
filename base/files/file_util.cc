@@ -54,10 +54,15 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   // We open the file in binary format even if they are text files because
   // we are just comparing that bytes are exactly same in both files and not
   // doing anything smart with text formatting.
-  std::ifstream file1(filename1.value().c_str(),
+#if defined(OS_WIN)
+  std::ifstream file1(base::wdata(filename1.value()),
                       std::ios::in | std::ios::binary);
-  std::ifstream file2(filename2.value().c_str(),
+  std::ifstream file2(base::wdata(filename2.value()),
                       std::ios::in | std::ios::binary);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  std::ifstream file1(filename1.value(), std::ios::in | std::ios::binary);
+  std::ifstream file2(filename2.value(), std::ios::in | std::ios::binary);
+#endif  // OS_WIN
 
   // Even if both files aren't openable (and thus, in some sense, "equal"),
   // any unusable file yields a result of "false".
@@ -85,8 +90,13 @@ bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 }
 
 bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
-  std::ifstream file1(filename1.value().c_str(), std::ios::in);
-  std::ifstream file2(filename2.value().c_str(), std::ios::in);
+#if defined(OS_WIN)
+  std::ifstream file1(base::wdata(filename1.value()), std::ios::in);
+  std::ifstream file2(base::wdata(filename2.value()), std::ios::in);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  std::ifstream file1(filename1.value(), std::ios::in);
+  std::ifstream file2(filename2.value(), std::ios::in);
+#endif  // OS_WIN
 
   // Even if both files aren't openable (and thus, in some sense, "equal"),
   // any unusable file yields a result of "false".

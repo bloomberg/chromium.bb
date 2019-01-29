@@ -111,13 +111,13 @@ typedef struct _REPARSE_DATA_BUFFER {
 // Sets a reparse point. |source| will now point to |target|. Returns true if
 // the call succeeds, false otherwise.
 bool SetReparsePoint(HANDLE source, const FilePath& target_path) {
-  std::wstring kPathPrefix = L"\\??\\";
-  std::wstring target_str;
+  base::string16 kPathPrefix = FILE_PATH_LITERAL("\\??\\");
+  base::string16 target_str;
   // The juction will not work if the target path does not start with \??\ .
   if (kPathPrefix != target_path.value().substr(0, kPathPrefix.size()))
     target_str += kPathPrefix;
   target_str += target_path.value();
-  const wchar_t* target = target_str.c_str();
+  const wchar_t* target = base::wdata(target_str);
   USHORT size_target = static_cast<USHORT>(wcslen(target)) * sizeof(target[0]);
   char buffer[2000] = {0};
   DWORD returned;
@@ -159,13 +159,11 @@ class ReparsePoint {
   // Creates a reparse point from |source| (an empty directory) to |target|.
   ReparsePoint(const FilePath& source, const FilePath& target) {
     dir_.Set(
-      ::CreateFile(source.value().c_str(),
-                   GENERIC_READ | GENERIC_WRITE,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
+        ::CreateFile(base::wdata(source.value()), GENERIC_READ | GENERIC_WRITE,
+                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                     NULL, OPEN_EXISTING,
+                     FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
+                     NULL));
     created_ = dir_.IsValid() && SetReparsePoint(dir_.Get(), target);
   }
 
@@ -208,11 +206,12 @@ void ChangePosixFilePermissions(const FilePath& path,
 void SetReadOnly(const FilePath& path, bool read_only) {
 #if defined(OS_WIN)
   // On Windows, it involves setting/removing the 'readonly' bit.
-  DWORD attrs = GetFileAttributes(path.value().c_str());
+  DWORD attrs = GetFileAttributes(base::wdata(path.value()));
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
-  ASSERT_TRUE(SetFileAttributes(
-      path.value().c_str(), read_only ? (attrs | FILE_ATTRIBUTE_READONLY)
-                                      : (attrs & ~FILE_ATTRIBUTE_READONLY)));
+  ASSERT_TRUE(SetFileAttributes(base::wdata(path.value()),
+                                read_only
+                                    ? (attrs | FILE_ATTRIBUTE_READONLY)
+                                    : (attrs & ~FILE_ATTRIBUTE_READONLY)));
 
   DWORD expected =
       read_only
@@ -221,7 +220,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
           : (attrs & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_DIRECTORY));
 
   // Ignore FILE_ATTRIBUTE_NOT_CONTENT_INDEXED if present.
-  attrs = GetFileAttributes(path.value().c_str()) &
+  attrs = GetFileAttributes(base::wdata(path.value())) &
           ~FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
   ASSERT_EQ(expected, attrs);
 #else
@@ -234,7 +233,7 @@ void SetReadOnly(const FilePath& path, bool read_only) {
 
 bool IsReadOnly(const FilePath& path) {
 #if defined(OS_WIN)
-  DWORD attrs = GetFileAttributes(path.value().c_str());
+  DWORD attrs = GetFileAttributes(base::wdata(path.value()));
   EXPECT_NE(INVALID_FILE_ATTRIBUTES, attrs);
   return attrs & FILE_ATTRIBUTE_READONLY;
 #else
@@ -297,7 +296,11 @@ class FindResultCollector {
 void CreateTextFile(const FilePath& filename,
                     const std::wstring& contents) {
   std::wofstream file;
-  file.open(filename.value().c_str());
+#if defined(OS_WIN)
+  file.open(base::wdata(filename.value()));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  file.open(filename.value());
+#endif  // OS_WIN
   ASSERT_TRUE(file.is_open());
   file << contents;
   file.close();
@@ -307,7 +310,11 @@ void CreateTextFile(const FilePath& filename,
 std::wstring ReadTextFile(const FilePath& filename) {
   wchar_t contents[64];
   std::wifstream file;
-  file.open(filename.value().c_str());
+#if defined(OS_WIN)
+  file.open(base::wdata(filename.value()));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  file.open(filename.value());
+#endif  // OS_WIN
   EXPECT_TRUE(file.is_open());
   file.getline(contents, base::size(contents));
   file.close();
@@ -476,13 +483,13 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
 
     // Normalize a junction free path: base_a\sub_a\file.txt .
     ASSERT_TRUE(NormalizeFilePath(file_txt, &normalized_path));
-    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    ASSERT_EQ(file_txt.value(), normalized_path.value());
 
     // Check that the path base_b\to_sub_a\file.txt can be normalized to exclude
     // the junction to_sub_a.
     ASSERT_TRUE(NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
                                              &normalized_path));
-    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    ASSERT_EQ(file_txt.value(), normalized_path.value());
 
     // Check that the path base_b\to_base_b\to_base_b\to_sub_a\file.txt can be
     // normalized to exclude junctions to_base_b and to_sub_a .
@@ -491,7 +498,7 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
                                                    .Append(FPL("to_sub_a"))
                                                    .Append(FPL("file.txt")),
                                              &normalized_path));
-    ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
+    ASSERT_EQ(file_txt.value(), normalized_path.value());
 
     // A long enough path will cause NormalizeFilePath() to fail.  Make a long
     // path using to_base_b many times, and check that paths long enough to fail
@@ -529,9 +536,9 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   }
 
   // Get the NT style path to that drive.
-  wchar_t device_path[MAX_PATH] = {'\0'};
-  ASSERT_TRUE(
-      ::QueryDosDevice(real_drive_letter.c_str(), device_path, MAX_PATH));
+  base::char16 device_path[MAX_PATH] = {'\0'};
+  ASSERT_TRUE(::QueryDosDevice(base::wdata(real_drive_letter),
+                               base::wdata(device_path), MAX_PATH));
   FilePath actual_device_path(device_path);
   FilePath win32_path;
 
@@ -546,7 +553,9 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
   ASSERT_TRUE(DevicePathToDriveLetterPath(
       actual_device_path.Append(kRelativePath),
       &win32_path));
-  EXPECT_EQ(FilePath(real_drive_letter + L"\\").Append(kRelativePath).value(),
+  EXPECT_EQ(FilePath(real_drive_letter + FILE_PATH_LITERAL("\\"))
+                .Append(kRelativePath)
+                .value(),
             win32_path.value());
 
   // Deform the real path so that it is invalid by removing the last four
@@ -594,24 +603,24 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   // - the filesystem at |temp_dir_| supports long filenames.
   // - the account has FILE_LIST_DIRECTORY permission for all ancestor
   //   directories of |temp_dir_|.
-  const FilePath::CharType kLongDirName[] = FPL("A long path");
-  const FilePath::CharType kTestSubDirName[] = FPL("test");
+  constexpr FilePath::CharType kLongDirName[] = FPL("A long path");
+  constexpr FilePath::CharType kTestSubDirName[] = FPL("test");
   FilePath long_test_dir = temp_dir_.GetPath().Append(kLongDirName);
   ASSERT_TRUE(CreateDirectory(long_test_dir));
 
   // kLongDirName is not a 8.3 component. So GetShortName() should give us a
   // different short name.
   WCHAR path_buffer[MAX_PATH];
-  DWORD path_buffer_length = GetShortPathName(long_test_dir.value().c_str(),
-                                              path_buffer, MAX_PATH);
+  DWORD path_buffer_length = GetShortPathName(
+      base::wdata(long_test_dir.value()), path_buffer, MAX_PATH);
   ASSERT_LT(path_buffer_length, DWORD(MAX_PATH));
   ASSERT_NE(DWORD(0), path_buffer_length);
-  FilePath short_test_dir(path_buffer);
-  ASSERT_STRNE(kLongDirName, short_test_dir.BaseName().value().c_str());
+  FilePath short_test_dir(CastToStringPiece16(path_buffer));
+  ASSERT_NE(kLongDirName, short_test_dir.BaseName().value());
 
   FilePath temp_file;
   ASSERT_TRUE(CreateTemporaryFileInDir(short_test_dir, &temp_file));
-  EXPECT_STREQ(kLongDirName, temp_file.DirName().BaseName().value().c_str());
+  EXPECT_EQ(kLongDirName, temp_file.DirName().BaseName().value());
   EXPECT_TRUE(PathExists(temp_file));
 
   // Create a subdirectory of |long_test_dir| and make |long_test_dir|
@@ -633,8 +642,8 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   EXPECT_TRUE(short_test_dir.IsParent(temp_file.DirName()));
 
   // Check that the long path can't be determined for |temp_file|.
-  path_buffer_length = GetLongPathName(temp_file.value().c_str(),
-                                       path_buffer, MAX_PATH);
+  path_buffer_length =
+      GetLongPathName(base::wdata(temp_file.value()), path_buffer, MAX_PATH);
   EXPECT_EQ(DWORD(0), path_buffer_length);
 }
 
@@ -3032,8 +3041,9 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
-                              PIPE_WAIT, 1, 0, 0, 0, NULL);
+  HANDLE ph =
+      CreateNamedPipe(base::wdata(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
+                      PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
   EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
@@ -3059,8 +3069,9 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   EXPECT_TRUE(StringToUint(switch_string, &switch_uint));
   win::ScopedHandle sync_event(win::Uint32ToHandle(switch_uint));
 
-  HANDLE ph = CreateNamedPipe(pipe_path.value().c_str(), PIPE_ACCESS_OUTBOUND,
-                              PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
+  HANDLE ph =
+      CreateNamedPipe(base::wdata(pipe_path.value()), PIPE_ACCESS_OUTBOUND,
+                      PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
   EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
