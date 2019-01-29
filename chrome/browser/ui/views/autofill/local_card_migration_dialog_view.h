@@ -51,7 +51,10 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   void UpdateLayout();
 
  private:
+  friend class LocalCardMigrationBrowserTest;
+
   void ConstructView();
+
   base::string16 GetOkButtonLabel() const;
   base::string16 GetCancelButtonLabel() const;
 
@@ -62,6 +65,10 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // Pointer points to the LocalCardMigrationOfferView. Can be null when the
   // dialog is not in the 'offer' state.
   LocalCardMigrationOfferView* offer_view_ = nullptr;
+
+  // The view containing a list of cards. It is the content of the scroll bar.
+  // Owned by the LocalCardMigrationOfferView.
+  views::View* card_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogView);
 };

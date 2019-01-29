@@ -90,6 +90,15 @@ void AddTestCreditCard(Browser* browser, const CreditCard& card) {
   observer.Wait();
 }
 
+void AddTestServerCreditCard(Browser* browser, const CreditCard& card) {
+  PdmChangeWaiter observer(browser);
+  GetPersonalDataManager(browser->profile())->AddFullServerCreditCard(card);
+
+  // AddCreditCard is asynchronous. Wait for it to finish before continuing the
+  // tests.
+  observer.Wait();
+}
+
 void AddTestAutofillData(Browser* browser,
                          const AutofillProfile& profile,
                          const CreditCard& card) {

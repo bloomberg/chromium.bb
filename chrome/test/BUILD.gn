@@ -291,6 +291,8 @@ static_library("test_support") {
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]
     sources += [
+      "../browser/autofill/autofill_uitest_util.cc",
+      "../browser/autofill/autofill_uitest_util.h",
       "../browser/ui/views/media_router/app_menu_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api_views.cc",
       "views/accessibility_checker.cc",
@@ -1540,6 +1542,7 @@ test("browser_tests") {
         "../browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc",
         "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h",
+        "../browser/ui/views/autofill/local_card_migration_browsertest.cc",
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_bubble_sign_in_delegate_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_bubble_view_browsertest.cc",
@@ -4745,8 +4748,6 @@ if (!is_android) {
       "../browser/autofill/autofill_interactive_uitest.cc",
       "../browser/autofill/autofill_uitest.cc",
       "../browser/autofill/autofill_uitest.h",
-      "../browser/autofill/autofill_uitest_util.cc",
-      "../browser/autofill/autofill_uitest_util.h",
       "../browser/browser_keyevents_browsertest.cc",
       "../browser/devtools/devtools_sanity_interactive_browsertest.cc",
       "../browser/extensions/api/extension_action/browser_action_interactive_test.cc",
@@ -5720,8 +5721,6 @@ if (!is_android && !is_fuchsia) {
       "../browser/autofill/autofill_captured_sites_interactive_uitest.cc",
       "../browser/autofill/autofill_uitest.cc",
       "../browser/autofill/autofill_uitest.h",
-      "../browser/autofill/autofill_uitest_util.cc",
-      "../browser/autofill/autofill_uitest_util.h",
       "../browser/autofill/captured_sites_test_utils.cc",
       "../browser/autofill/captured_sites_test_utils.h",
       "../browser/password_manager/password_manager_captured_sites_interactive_uitest.cc",
