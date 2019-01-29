@@ -630,7 +630,7 @@ TEST_P(WidgetWithDestroyedNativeViewTest, Test) {
   InvokeWidgetMethods(&widget);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PlatformWidgetWithDestroyedNativeViewTest,
     WidgetWithDestroyedNativeViewTest,
     ::testing::Values(ViewsTestBase::NativeWidgetType::kDefault,
