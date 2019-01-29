@@ -83,7 +83,36 @@ void OobeBaseTest::SetUp() {
   // SetUpCommandLine().
   InitHttpsForwarders();
 
+  mixin_host_.SetUp();
   extensions::ExtensionApiTest::SetUp();
+}
+
+void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
+  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
+  mixin_host_.SetUpCommandLine(command_line);
+
+  if (ShouldForceWebUiLogin())
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
+  command_line->AppendSwitch(chromeos::switches::kLoginManager);
+  command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+  if (!needs_background_networking_)
+    command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
+  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+
+  GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
+  command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kOAuthAccountManagerUrl,
+                                  gaia_url.spec());
+
+  fake_gaia_->Initialize();
+  fake_gaia_->set_issue_oauth_code_cookie(true);
+}
+
+void OobeBaseTest::SetUpDefaultCommandLine(base::CommandLine* command_line) {
+  mixin_host_.SetUpDefaultCommandLine(command_line);
+  extensions::ExtensionApiTest::SetUpDefaultCommandLine(command_line);
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
@@ -92,6 +121,7 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   network_portal_detector_->SetDefaultNetworkForTesting(
       FakeShillManagerClient::kFakeEthernetNetworkGuid);
 
+  mixin_host_.SetUpInProcessBrowserTestFixture();
   extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
 
@@ -123,35 +153,25 @@ void OobeBaseTest::SetUpOnMainThread() {
     run_loop.Run();
   }
 
+  mixin_host_.SetUpOnMainThread();
   extensions::ExtensionApiTest::SetUpOnMainThread();
 }
 
 void OobeBaseTest::TearDownOnMainThread() {
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
+  mixin_host_.TearDownOnMainThread();
   extensions::ExtensionApiTest::TearDownOnMainThread();
 }
 
-void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
-  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
+void OobeBaseTest::TearDownInProcessBrowserTestFixture() {
+  mixin_host_.TearDownInProcessBrowserTestFixture();
+  extensions::ExtensionApiTest::TearDownInProcessBrowserTestFixture();
+}
 
-  if (ShouldForceWebUiLogin())
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-  command_line->AppendSwitch(chromeos::switches::kLoginManager);
-  command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-  if (!needs_background_networking_)
-    command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
-  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-
-  GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
-  command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kOAuthAccountManagerUrl,
-                                  gaia_url.spec());
-
-  fake_gaia_->Initialize();
-  fake_gaia_->set_issue_oauth_code_cookie(true);
+void OobeBaseTest::TearDown() {
+  mixin_host_.TearDown();
+  extensions::ExtensionApiTest::TearDown();
 }
 
 void OobeBaseTest::InitHttpsForwarders() {

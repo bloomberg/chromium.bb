@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/mixin_based_browser_test.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "google_apis/gaia/fake_gaia.h"
@@ -25,7 +25,7 @@ class UserContext;
 // out-of-box as completed.
 // Guarantees that WebUI has been initialized by waiting for
 // NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE notification.
-class LoginManagerTest : public MixinBasedBrowserTest {
+class LoginManagerTest : public MixinBasedInProcessBrowserTest {
  public:
   LoginManagerTest(bool should_launch_browser,
                    bool should_initialize_webui);

@@ -16,20 +16,11 @@
 
 namespace chromeos {
 
-ScreenshotTestingMixin::ScreenshotTestingMixin()
-    : enable_test_screenshots_(false) {}
+ScreenshotTestingMixin::ScreenshotTestingMixin(
+    InProcessBrowserTestMixinHost* host)
+    : InProcessBrowserTestMixin(host) {}
 
-ScreenshotTestingMixin::~ScreenshotTestingMixin() {}
-
-void ScreenshotTestingMixin::SetUpInProcessBrowserTestFixture() {
-  enable_test_screenshots_ = screenshot_tester_.TryInitialize();
-}
-
-void ScreenshotTestingMixin::SetUpCommandLine(base::CommandLine* command_line) {
-  if (enable_test_screenshots_) {
-    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-  }
-}
+ScreenshotTestingMixin::~ScreenshotTestingMixin() = default;
 
 void ScreenshotTestingMixin::RunScreenshotTesting(
     const std::string& test_name) {
@@ -41,6 +32,16 @@ void ScreenshotTestingMixin::RunScreenshotTesting(
 
 void ScreenshotTestingMixin::IgnoreArea(const SkIRect& area) {
   screenshot_tester_.IgnoreArea(area);
+}
+
+void ScreenshotTestingMixin::SetUpInProcessBrowserTestFixture() {
+  enable_test_screenshots_ = screenshot_tester_.TryInitialize();
+}
+
+void ScreenshotTestingMixin::SetUpCommandLine(base::CommandLine* command_line) {
+  if (enable_test_screenshots_) {
+    command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
+  }
 }
 
 // Current implementation is a mockup.

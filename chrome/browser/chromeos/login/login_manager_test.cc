@@ -96,11 +96,11 @@ void LoginManagerTest::SetUp() {
   ASSERT_TRUE(gaia_https_forwarder_.Initialize(
       kGAIAHost, embedded_test_server()->base_url()));
 
-  MixinBasedBrowserTest::SetUp();
+  MixinBasedInProcessBrowserTest::SetUp();
 }
 
 void LoginManagerTest::TearDownOnMainThread() {
-  MixinBasedBrowserTest::TearDownOnMainThread();
+  MixinBasedInProcessBrowserTest::TearDownOnMainThread();
 
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
@@ -117,7 +117,7 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
 
   fake_gaia_.Initialize();
 
-  MixinBasedBrowserTest::SetUpCommandLine(command_line);
+  MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
@@ -153,7 +153,7 @@ void LoginManagerTest::SetUpOnMainThread() {
       should_launch_browser_);
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
-  MixinBasedBrowserTest::SetUpOnMainThread();
+  MixinBasedInProcessBrowserTest::SetUpOnMainThread();
 }
 
 void LoginManagerTest::RegisterUser(const AccountId& account_id) {
