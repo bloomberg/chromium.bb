@@ -247,8 +247,8 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
   EXPECT_EQ("Not pressed", speech_monitor_.GetNextUtterance());
 }
 
-#if !defined(NDEBUG)
-// Flaky in debug: http://crbug.com/923090
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
+// Flaky in debug & asan: http://crbug.com/923090
 #define MAYBE_KeyboardShortcutViewer DISABLED_KeyboardShortcutViewer
 #else
 #define MAYBE_KeyboardShortcutViewer KeyboardShortcutViewer
