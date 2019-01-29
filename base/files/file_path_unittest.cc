@@ -26,33 +26,33 @@
 namespace base {
 
 struct UnaryTestData {
-  const FilePath::CharType* input;
-  const FilePath::CharType* expected;
+  FilePath::StringPieceType input;
+  FilePath::StringPieceType expected;
 };
 
 struct UnaryBooleanTestData {
-  const FilePath::CharType* input;
+  FilePath::StringPieceType input;
   bool expected;
 };
 
 struct BinaryTestData {
-  const FilePath::CharType* inputs[2];
-  const FilePath::CharType* expected;
+  FilePath::StringPieceType inputs[2];
+  FilePath::StringPieceType expected;
 };
 
 struct BinaryBooleanTestData {
-  const FilePath::CharType* inputs[2];
+  FilePath::StringPieceType inputs[2];
   bool expected;
 };
 
 struct BinaryIntTestData {
-  const FilePath::CharType* inputs[2];
+  FilePath::StringPieceType inputs[2];
   int expected;
 };
 
 struct UTF8TestData {
-  const FilePath::CharType* native;
-  const char* utf8;
+  FilePath::StringPieceType native;
+  StringPiece utf8;
 };
 
 // file_util winds up using autoreleased objects on the Mac, so this needs
@@ -320,7 +320,7 @@ TEST_F(FilePathTest, Append) {
     // TODO(erikkay): It would be nice to have a unicode test append value to
     // handle the case when AppendASCII is passed UTF8
 #if defined(OS_WIN)
-    std::string ascii = WideToUTF8(leaf);
+    std::string ascii = UTF16ToUTF8(leaf);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     std::string ascii = leaf;
 #endif
@@ -629,19 +629,19 @@ TEST_F(FilePathTest, AppendRelativePathTest) {
     {
       FilePath result;
       bool success = parent.AppendRelativePath(child, &result);
-      EXPECT_EQ(cases[i].expected[0] != '\0', success) <<
-        "i: " << i << ", parent: " << parent.value() << ", child: " <<
-        child.value();
-      EXPECT_STREQ(cases[i].expected, result.value().c_str()) <<
-        "i: " << i << ", parent: " << parent.value() << ", child: " <<
-        child.value();
+      EXPECT_EQ(!cases[i].expected.empty(), success)
+          << "i: " << i << ", parent: " << parent.value()
+          << ", child: " << child.value();
+      EXPECT_EQ(cases[i].expected, result.value())
+          << "i: " << i << ", parent: " << parent.value()
+          << ", child: " << child.value();
     }
     {
       FilePath result(base);
       bool success = parent.AppendRelativePath(child, &result);
-      EXPECT_EQ(cases[i].expected[0] != '\0', success) <<
-        "i: " << i << ", parent: " << parent.value() << ", child: " <<
-        child.value();
+      EXPECT_EQ(!cases[i].expected.empty(), success)
+          << "i: " << i << ", parent: " << parent.value()
+          << ", child: " << child.value();
       EXPECT_EQ(base.Append(cases[i].expected).value(), result.value()) <<
         "i: " << i << ", parent: " << parent.value() << ", child: " <<
         child.value();
@@ -777,15 +777,15 @@ TEST_F(FilePathTest, Extension2) {
     FilePath path(cases[i].input);
     FilePath::StringType extension = path.Extension();
     FilePath::StringType final_extension = path.FinalExtension();
-    EXPECT_STREQ(cases[i].expected, extension.c_str())
+    EXPECT_EQ(cases[i].expected, extension)
         << "i: " << i << ", path: " << path.value();
-    EXPECT_STREQ(cases[i].expected, final_extension.c_str())
+    EXPECT_EQ(cases[i].expected, final_extension)
         << "i: " << i << ", path: " << path.value();
   }
   for (unsigned int i = 0; i < base::size(double_extension_cases); ++i) {
     FilePath path(double_extension_cases[i].input);
     FilePath::StringType extension = path.Extension();
-    EXPECT_STREQ(double_extension_cases[i].expected, extension.c_str())
+    EXPECT_EQ(double_extension_cases[i].expected, extension)
         << "i: " << i << ", path: " << path.value();
   }
 }
@@ -853,8 +853,9 @@ TEST_F(FilePathTest, InsertBeforeExtension) {
   for (unsigned int i = 0; i < base::size(cases); ++i) {
     FilePath path(cases[i].inputs[0]);
     FilePath result = path.InsertBeforeExtension(cases[i].inputs[1]);
-    EXPECT_EQ(cases[i].expected, result.value()) << "i: " << i <<
-        ", path: " << path.value() << ", insert: " << cases[i].inputs[1];
+    EXPECT_EQ(cases[i].expected, result.value())
+        << "i: " << i << ", path: " << path.value()
+        << ", insert: " << cases[i].inputs[1];
   }
 }
 

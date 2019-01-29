@@ -517,6 +517,9 @@ constexpr bool operator>=(std::common_type_t<BasicStringPiece<StringT>> lhs,
 BASE_EXPORT std::ostream& operator<<(std::ostream& o,
                                      const StringPiece& piece);
 
+BASE_EXPORT std::ostream& operator<<(std::ostream& o,
+                                     const StringPiece16& piece);
+
 // Hashing ---------------------------------------------------------------------
 
 // We provide appropriate hash functions so StringPiece and StringPiece16 can

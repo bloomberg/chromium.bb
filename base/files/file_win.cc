@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/scoped_blocking_call.h"
 
 #include <windows.h>
@@ -414,7 +415,7 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
   if (flags & FLAG_SEQUENTIAL_SCAN)
     create_flags |= FILE_FLAG_SEQUENTIAL_SCAN;
 
-  file_.Set(CreateFile(path.value().c_str(), access, sharing, NULL,
+  file_.Set(CreateFile(base::wdata(path.value()), access, sharing, NULL,
                        disposition, create_flags, NULL));
 
   if (file_.IsValid()) {

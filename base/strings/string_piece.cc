@@ -11,6 +11,7 @@
 #include <ostream>
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace base {
 namespace {
@@ -43,6 +44,10 @@ template class BasicStringPiece<string16>;
 std::ostream& operator<<(std::ostream& o, const StringPiece& piece) {
   o.write(piece.data(), static_cast<std::streamsize>(piece.size()));
   return o;
+}
+
+std::ostream& operator<<(std::ostream& o, const StringPiece16& piece) {
+  return o << UTF16ToUTF8(piece);
 }
 
 namespace internal {

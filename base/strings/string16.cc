@@ -15,7 +15,7 @@
 
 #include <ostream>
 
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 
@@ -70,7 +70,7 @@ char16* c16memset(char16* s, char16 c, size_t n) {
 namespace string16_internals {
 
 std::ostream& operator<<(std::ostream& out, const string16& str) {
-  return out << UTF16ToUTF8(str);
+  return out << base::StringPiece16(str);
 }
 
 void PrintTo(const string16& str, std::ostream* out) {

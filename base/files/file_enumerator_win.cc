@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/shlwapi.h"
 
@@ -24,7 +25,7 @@ FilePath BuildSearchFilter(FileEnumerator::FolderSearchPolicy policy,
     case FileEnumerator::FolderSearchPolicy::MATCH_ONLY:
       return root_path.Append(pattern);
     case FileEnumerator::FolderSearchPolicy::ALL:
-      return root_path.Append(L"*");
+      return root_path.Append(FILE_PATH_LITERAL("*"));
   }
   NOTREACHED();
   return {};
@@ -43,7 +44,7 @@ bool FileEnumerator::FileInfo::IsDirectory() const {
 }
 
 FilePath FileEnumerator::FileInfo::GetName() const {
-  return FilePath(find_data_.cFileName);
+  return FilePath(CastToStringPiece16(find_data_.cFileName));
 }
 
 int64_t FileEnumerator::FileInfo::GetSize() const {
@@ -87,7 +88,7 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
                                FolderSearchPolicy folder_search_policy)
     : recursive_(recursive),
       file_type_(file_type),
-      pattern_(!pattern.empty() ? pattern : L"*"),
+      pattern_(!pattern.empty() ? pattern : FILE_PATH_LITERAL("*")),
       folder_search_policy_(folder_search_policy) {
   // INCLUDE_DOT_DOT must not be specified if recursive.
   DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
@@ -122,7 +123,7 @@ FilePath FileEnumerator::Next() {
       // Start a new find operation.
       const FilePath src =
           BuildSearchFilter(folder_search_policy_, root_path_, pattern_);
-      find_handle_ = FindFirstFileEx(src.value().c_str(),
+      find_handle_ = FindFirstFileEx(base::wdata(src.value()),
                                      FindExInfoBasic,  // Omit short name.
                                      &find_data_, FindExSearchNameMatch,
                                      nullptr, FIND_FIRST_EX_LARGE_FETCH);
@@ -146,13 +147,13 @@ FilePath FileEnumerator::Next() {
         // files in the root search directory, but for those directories which
         // were matched, we want to enumerate all files inside them. This will
         // happen when the handle is empty.
-        pattern_ = L"*";
+        pattern_ = FILE_PATH_LITERAL("*");
       }
 
       continue;
     }
 
-    const FilePath filename(find_data_.cFileName);
+    const FilePath filename(CastToStringPiece16(find_data_.cFileName));
     if (ShouldSkip(filename))
       continue;
 
@@ -166,7 +167,7 @@ FilePath FileEnumerator::Next() {
       // add it to pending_paths_ so we scan it after we finish scanning this
       // directory. However, don't do recursion through reparse points or we
       // may end up with an infinite cycle.
-      DWORD attributes = GetFileAttributes(abs_path.value().c_str());
+      DWORD attributes = GetFileAttributes(base::wdata(abs_path.value()));
       if (!(attributes & FILE_ATTRIBUTE_REPARSE_POINT))
         pending_paths_.push(abs_path);
     }
@@ -186,7 +187,8 @@ bool FileEnumerator::IsPatternMatched(const FilePath& src) const {
     case FolderSearchPolicy::ALL:
       // ALL policy enumerates all files, we need to check pattern match
       // manually.
-      return PathMatchSpec(src.value().c_str(), pattern_.c_str()) == TRUE;
+      return PathMatchSpec(base::wdata(src.value()), base::wdata(pattern_)) ==
+             TRUE;
   }
   NOTREACHED();
   return false;

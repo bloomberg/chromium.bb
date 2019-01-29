@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -202,11 +203,10 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
                                            HANDLE* handle) {
   ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
   *handle = FindFirstChangeNotification(
-      dir.value().c_str(),
-      recursive,
+      base::wdata(dir.value()), recursive,
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE |
-      FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_DIR_NAME |
-      FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SECURITY);
+          FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_DIR_NAME |
+          FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SECURITY);
   if (*handle != INVALID_HANDLE_VALUE) {
     // Make sure the handle we got points to an existing directory. It seems
     // that windows sometimes hands out watches to directories that are

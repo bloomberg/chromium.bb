@@ -607,7 +607,7 @@ std::string FilePath::MaybeAsASCII() const {
 }
 
 std::string FilePath::AsUTF8Unsafe() const {
-  return WideToUTF8(value());
+  return UTF16ToUTF8(value());
 }
 
 string16 FilePath::AsUTF16Unsafe() const {
@@ -616,7 +616,7 @@ string16 FilePath::AsUTF16Unsafe() const {
 
 // static
 FilePath FilePath::FromUTF8Unsafe(StringPiece utf8) {
-  return FilePath(UTF8ToWide(utf8));
+  return FilePath(UTF8ToUTF16(utf8));
 }
 
 // static
