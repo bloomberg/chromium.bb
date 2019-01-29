@@ -1261,25 +1261,6 @@
             ]
         }
     ],
-    "CommittedSSLInterstitialsEnabled": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SSLCommittedInterstitials"
-                    ]
-                }
-            ]
-        }
-    ],
     "CompositorImageAnimation": [
         {
             "platforms": [
