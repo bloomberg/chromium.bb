@@ -372,10 +372,12 @@ public class ChromeTabbedActivity
     /**
      * Return whether the passed in class name matches any of the supported tabbed mode activities.
      */
-    public static boolean isTabbedModeClassName(String className) {
-        return TextUtils.equals(className, ChromeTabbedActivity.class.getName())
-                || TextUtils.equals(className, MultiInstanceChromeTabbedActivity.class.getName())
-                || TextUtils.equals(className, ChromeTabbedActivity2.class.getName());
+    public static boolean isTabbedModeComponentName(String componentName) {
+        return TextUtils.equals(componentName, ChromeTabbedActivity.class.getName())
+                || TextUtils.equals(
+                        componentName, MultiInstanceChromeTabbedActivity.class.getName())
+                || TextUtils.equals(componentName, ChromeTabbedActivity2.class.getName())
+                || TextUtils.equals(componentName, BuildInfo.getInstance().packageName + ".Main");
     }
 
     /**
