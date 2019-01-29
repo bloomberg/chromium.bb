@@ -25,7 +25,11 @@ WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
                                          PendingAppManager* pending_app_manager)
     : profile_(profile),
       pref_service_(profile_->GetPrefs()),
-      pending_app_manager_(pending_app_manager) {
+      pending_app_manager_(pending_app_manager) {}
+
+WebAppPolicyManager::~WebAppPolicyManager() = default;
+
+void WebAppPolicyManager::Init() {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       base::CreateSingleThreadTaskRunnerWithTraits(
@@ -34,8 +38,6 @@ WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
                          InitChangeRegistrarAndRefreshPolicyInstalledApps,
                      weak_ptr_factory_.GetWeakPtr()));
 }
-
-WebAppPolicyManager::~WebAppPolicyManager() = default;
 
 // static
 void WebAppPolicyManager::RegisterProfilePrefs(
