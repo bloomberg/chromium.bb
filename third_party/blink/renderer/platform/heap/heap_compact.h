@@ -123,6 +123,9 @@ class PLATFORM_EXPORT HeapCompact final {
   // (Called by the sweep compaction pass.)
   void Relocate(Address from, Address to);
 
+  // Returns true if range has registered interiors.
+  bool RangeHasInteriors(Address, size_t);
+
   // For unit testing only: arrange for a compaction GC to be triggered
   // next time a non-conservative GC is run. Sets the compact-next flag
   // to the new value, returning old.

@@ -130,6 +130,25 @@ class HeapCompact::MovableObjectFixups final {
       fixup_callbacks_.erase(it);
   }
 
+  bool RangeHasInteriors(Address address, size_t size) {
+    if (!interiors_)
+      return false;
+
+    SparseHeapBitmap* range = interiors_->HasRange(address, size);
+    if (LIKELY(!range))
+      return false;
+
+    for (size_t offset = 0; offset < size; offset += sizeof(void*)) {
+      MovableReference* slot =
+          reinterpret_cast<MovableReference*>(address + offset);
+      if (range->IsSet(reinterpret_cast<Address>(slot)))
+        return true;
+    }
+
+    NOTREACHED();
+    return false;
+  }
+
   void RelocateInteriorFixups(Address from, Address to, size_t size) {
     SparseHeapBitmap* range = interiors_->HasRange(from, size);
     if (LIKELY(!range))
@@ -492,6 +511,10 @@ void HeapCompact::FinishedArenaCompaction(NormalPageArena* arena,
 
 void HeapCompact::Relocate(Address from, Address to) {
   Fixups().Relocate(from, to);
+}
+
+bool HeapCompact::RangeHasInteriors(Address address, size_t size) {
+  return fixups_ && fixups_->RangeHasInteriors(address, size);
 }
 
 void HeapCompact::StartThreadCompaction() {
