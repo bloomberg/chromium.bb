@@ -69,9 +69,7 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaOverlayCastOnButton:
     case kMediaOverflowButton:
     case kMediaOverflowList:
-    case kMediaScrubbingMessage:
     case kMediaDisplayCutoutFullscreenButton:
-    case kMediaAnimatedArrowContainer:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
@@ -124,8 +122,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaTimelineContainer:
     case kMediaControlsPanel:
     case kMediaOverflowList:
-    case kMediaScrubbingMessage:
-    case kMediaAnimatedArrowContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaDisplayCutoutFullscreenButton:
       return QueryString(
@@ -161,8 +157,6 @@ String AccessibilityMediaControl::Description(
     case kMediaTimelineContainer:
     case kMediaControlsPanel:
     case kMediaOverflowList:
-    case kMediaScrubbingMessage:
-    case kMediaAnimatedArrowContainer:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
@@ -201,8 +195,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
 
     case kMediaControlsPanel:
     case kMediaSliderThumb:
-    case kMediaScrubbingMessage:
-    case kMediaAnimatedArrowContainer:
       return ax::mojom::Role::kUnknown;
 
     case kMediaSlider:

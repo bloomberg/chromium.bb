@@ -72,7 +72,7 @@ void MediaControlAnimatedArrowContainerElement::AnimatedArrow::Trace(
 
 MediaControlAnimatedArrowContainerElement::
     MediaControlAnimatedArrowContainerElement(MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaAnimatedArrowContainer),
+    : MediaControlDivElement(media_controls, kMediaIgnore),
       left_jump_arrow_(nullptr),
       right_jump_arrow_(nullptr) {
   EnsureUserAgentShadowRoot();
