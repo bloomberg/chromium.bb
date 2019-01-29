@@ -1935,6 +1935,8 @@ void CrostiniManager::OnLxdContainerCreated(
       break;
     case vm_tools::cicerone::LxdContainerCreatedSignal::CREATED:
       result = CrostiniResult::SUCCESS;
+      AddNewLxdContainerToPrefs(profile_, signal.vm_name(),
+                                signal.container_name());
       break;
     case vm_tools::cicerone::LxdContainerCreatedSignal::DOWNLOAD_TIMED_OUT:
       result = CrostiniResult::CONTAINER_DOWNLOAD_TIMED_OUT;
