@@ -121,6 +121,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   void NotifyVisibilityChanged(bool visible, int64_t display_id);
   void NotifyTargetVisibilityChanged(bool visible);
+  void NotifyHomeLauncherTargetPositionChanged(bool showing,
+                                               int64_t display_id);
+  void NotifyHomeLauncherAnimationComplete(bool shown, int64_t display_id);
 
   // aura::client::FocusChangeObserver overrides:
   void OnWindowFocused(aura::Window* gained_focus,

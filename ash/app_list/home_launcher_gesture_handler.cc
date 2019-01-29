@@ -293,6 +293,11 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
   mode_ = mode;
   last_event_location_ = base::make_optional(location);
 
+  if (mode != Mode::kNone) {
+    app_list_controller_->NotifyHomeLauncherTargetPositionChanged(
+        mode == Mode::kSlideUpToShow /*showing*/, display_.id());
+  }
+
   UpdateWindows(0.0, /*animate=*/false);
   return true;
 }
@@ -434,6 +439,8 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   float app_list_opacity = 1.f;
   const bool is_final_state_show = IsFinalStateShow();
+  app_list_controller_->NotifyHomeLauncherAnimationComplete(
+      is_final_state_show /*shown*/, display_.id());
   if (Shell::Get()->overview_controller()->IsSelecting()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
@@ -502,9 +509,13 @@ void HomeLauncherGestureHandler::AnimateToFinalState() {
   UpdateWindows(is_final_state_show ? 1.0 : 0.0, /*animate=*/true);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {
+    app_list_controller_->NotifyHomeLauncherTargetPositionChanged(
+        false /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
   } else if (is_final_state_show && mode_ == Mode::kSlideUpToShow) {
+    app_list_controller_->NotifyHomeLauncherTargetPositionChanged(
+        true /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
   }

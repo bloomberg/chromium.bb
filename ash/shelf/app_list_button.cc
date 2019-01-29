@@ -35,6 +35,7 @@
 #include "components/account_id/account_id.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -62,7 +63,7 @@ bool IsTabletMode() {
 AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
     : ShelfControlButton(shelf_view), shelf_(shelf) {
   DCHECK(shelf_);
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
 
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
@@ -81,7 +82,10 @@ AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
 }
 
 AppListButton::~AppListButton() {
-  Shell::Get()->RemoveShellObserver(this);
+  // AppListController is destroyed early when Shell is being destroyed, it may
+  // not exist.
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
 }
@@ -233,12 +237,12 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   }
 }
 
-void AppListButton::OnAppListVisibilityChanged(bool shown,
-                                               aura::Window* root_window) {
-  aura::Window* window = GetWidget() ? GetWidget()->GetNativeWindow() : nullptr;
-  if (!window || window->GetRootWindow() != root_window)
+void AppListButton::OnAppListVisibilityChanged(bool shown, int64_t display_id) {
+  if (display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(GetWidget()->GetNativeWindow())
+          .id() != display_id) {
     return;
-
+  }
   if (shown)
     OnAppListShown();
   else

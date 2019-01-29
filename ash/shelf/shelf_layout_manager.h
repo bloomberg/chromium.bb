@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
@@ -49,7 +50,8 @@ class ShelfWidget;
 // closely with ShelfLayoutManager.
 // On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager
-    : public ShellObserver,
+    : public AppListControllerObserver,
+      public ShellObserver,
       public ::wm::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
@@ -153,12 +155,16 @@ class ASH_EXPORT ShelfLayoutManager
   // ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
-  void OnAppListVisibilityChanged(bool shown,
-                                  aura::Window* root_window) override;
   void OnOverviewModeStartingAnimationComplete(bool canceled) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
   void OnSplitViewModeStarted() override;
   void OnSplitViewModeEnded() override;
+
+  // AppListControllerObserver:
+  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
+  void OnHomeLauncherTargetPositionChanged(bool showing,
+                                           int64_t display_id) override;
+  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -395,6 +401,14 @@ class ASH_EXPORT ShelfLayoutManager
   // Whether the app list is visible. This is maintained by
   // OnAppListVisibilityChanged.
   bool is_app_list_visible_ = false;
+
+  // Whether the HomeLauncher is being dragged to, or animating to fullscreen.
+  // This is maintained by OnHomeLauncherTargetPositionChanged.
+  bool is_home_launcher_target_position_shown_ = false;
+
+  // Whether the HomeLauncher is shown. This is maintained by
+  // OnHomeLauncherAnimationComplete.
+  bool is_home_launcher_shown_ = false;
 
   base::OneShotTimer auto_hide_timer_;
 

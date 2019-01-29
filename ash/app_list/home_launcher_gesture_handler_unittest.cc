@@ -5,7 +5,9 @@
 #include "ash/app_list/home_launcher_gesture_handler.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -331,6 +333,60 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   EXPECT_FALSE(split_view_controller->IsSplitViewModeActive());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+}
+
+// Tests that the shelf background is transparent when the home launcher is
+// dragged, and does not shift to opaque until the home launcher is completely
+// hidden from view and the finger is released.
+TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
+  UpdateDisplay("400x456");
+
+  auto window = CreateWindowForTesting();
+  ASSERT_TRUE(window->IsVisible());
+  ASSERT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
+            AshTestBase::GetPrimaryShelf()
+                ->shelf_layout_manager()
+                ->GetShelfBackgroundType());
+
+  // Begin to show the home launcher, the shelf should become transparent.
+  DoPress(Mode::kSlideUpToShow);
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+            AshTestBase::GetPrimaryShelf()
+                ->shelf_layout_manager()
+                ->GetShelfBackgroundType());
+
+  // Fling up to complete showing the home launcher, the shelf should remain
+  // transparent.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+            AshTestBase::GetPrimaryShelf()
+                ->shelf_layout_manager()
+                ->GetShelfBackgroundType());
+
+  // Begin to hide the home launcher, the background should still be
+  // transparent.
+  DoPress(Mode::kSlideDownToHide);
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+            AshTestBase::GetPrimaryShelf()
+                ->shelf_layout_manager()
+                ->GetShelfBackgroundType());
+
+  // Fling down to hide the home launcher, the shelf should still be
+  // transparent.
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), -10.f);
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+            AshTestBase::GetPrimaryShelf()
+                ->shelf_layout_manager()
+                ->GetShelfBackgroundType());
+
+  // The shelf should transition to opauqe when the gesture sequence has
+  // completed.
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300));
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
+            AshTestBase::GetPrimaryShelf()
+                ->shelf_layout_manager()
+                ->GetShelfBackgroundType());
 }
 
 class HomeLauncherModeGestureHandlerTest

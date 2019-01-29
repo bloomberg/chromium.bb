@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 #include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -833,14 +834,43 @@ void AppListControllerImpl::GetNavigableContentsFactory(
     client_->GetNavigableContentsFactory(std::move(request));
 }
 
-void AppListControllerImpl::OnVisibilityChanged(bool visible) {
-  if (client_)
-    client_->OnAppListVisibilityChanged(visible);
+void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
-void AppListControllerImpl::OnTargetVisibilityChanged(bool visible) {
+void AppListControllerImpl::RemoveObserver(
+    AppListControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
+                                                           int64_t display_id) {
+  // Notify chrome of visibility changes.
+  if (client_)
+    client_->OnAppListVisibilityChanged(visible);
+
+  for (auto& observer : observers_)
+    observer.OnAppListVisibilityChanged(visible, display_id);
+}
+
+void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(bool visible) {
+  // Notify chrome of target visibility changes.
   if (client_)
     client_->OnAppListTargetVisibilityChanged(visible);
+}
+
+void AppListControllerImpl::NotifyHomeLauncherTargetPositionChanged(
+    bool showing,
+    int64_t display_id) {
+  for (auto& observer : observers_)
+    observer.OnHomeLauncherTargetPositionChanged(showing, display_id);
+}
+
+void AppListControllerImpl::NotifyHomeLauncherAnimationComplete(
+    bool shown,
+    int64_t display_id) {
+  for (auto& observer : observers_)
+    observer.OnHomeLauncherAnimationComplete(shown, display_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

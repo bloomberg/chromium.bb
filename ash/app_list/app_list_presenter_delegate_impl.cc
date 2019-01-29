@@ -164,18 +164,13 @@ aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(
   return ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
 }
 
-void AppListPresenterDelegateImpl::OnVisibilityChanged(
-    bool visible,
-    aura::Window* root_window) {
-  // Notify Chrome the visibility change.
-  controller_->OnVisibilityChanged(visible);
-  // Notify Ash the visibility change
-  ash::Shell::Get()->NotifyAppListVisibilityChanged(visible, root_window);
+void AppListPresenterDelegateImpl::OnVisibilityChanged(bool visible,
+                                                       int64_t display_id) {
+  controller_->NotifyAppListVisibilityChanged(visible, display_id);
 }
 
 void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(bool visible) {
-  // Notify Chrome the target visibility change.
-  controller_->OnTargetVisibilityChanged(visible);
+  controller_->NotifyAppListTargetVisibilityChanged(visible);
 }
 
 void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
