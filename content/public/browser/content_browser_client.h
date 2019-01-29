@@ -171,6 +171,7 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class ResourceContext;
+class SerialDelegate;
 class ServiceManagerConnection;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
@@ -1312,6 +1313,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void CreateWebUsbService(
       RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request);
+
+  // Allows the embedder to provide an implementation of the Serial API.
+  virtual SerialDelegate* GetSerialDelegate();
 
   // Attempt to open the Payment Handler window inside its corresponding
   // PaymentRequest UI surface. Returns true if the ContentBrowserClient

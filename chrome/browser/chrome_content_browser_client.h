@@ -74,6 +74,8 @@ namespace url {
 class Origin;
 }
 
+class ChromeSerialDelegate;
+
 // Returns the user agent of Chrome.
 std::string GetUserAgent();
 
@@ -490,6 +492,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void CreateWebUsbService(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<blink::mojom::WebUsbService> request) override;
+#if !defined(OS_ANDROID)
+  content::SerialDelegate* GetSerialDelegate() override;
+#endif
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
       const GURL& url,
@@ -641,6 +646,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       worker_interfaces_parameterized_;
 
   ChromeFeatureListCreator* chrome_feature_list_creator_;
+
+#if !defined(OS_ANDROID)
+  std::unique_ptr<ChromeSerialDelegate> serial_delegate_;
+#endif
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 

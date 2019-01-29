@@ -395,14 +395,6 @@ class CONTENT_EXPORT WebContentsDelegate {
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler);
 
-  // Shows a chooser for the user to select a serial port.  |callback| will be
-  // run when the prompt is closed. Deleting the returned object will cancel the
-  // prompt.
-  virtual std::unique_ptr<SerialChooser> RunSerialChooser(
-      RenderFrameHost* frame,
-      std::vector<blink::mojom::SerialPortFilterPtr> filters,
-      SerialChooser::Callback callback);
-
   // Returns true if the delegate will embed a WebContents-owned fullscreen
   // render widget.  In this case, the delegate may access the widget by calling
   // WebContents::GetFullscreenRenderWidgetHostView().  If false is returned,

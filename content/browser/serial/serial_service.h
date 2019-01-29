@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_SERIAL_SERIAL_SERVICE_H_
 #define CONTENT_BROWSER_SERIAL_SERIAL_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/mojom/serial.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 
 namespace content {
@@ -29,11 +32,18 @@ class SerialService : public blink::mojom::SerialService {
                    RequestPortCallback callback) override;
 
  private:
+  void FinishGetPorts(GetPortsCallback callback,
+                      std::vector<device::mojom::SerialPortInfoPtr> ports);
+  void FinishRequestPort(RequestPortCallback callback,
+                         device::mojom::SerialPortInfoPtr port);
+
   RenderFrameHost* const render_frame_host_;
   mojo::BindingSet<blink::mojom::SerialService> bindings_;
 
   // The last shown serial port chooser UI.
   std::unique_ptr<SerialChooser> chooser_;
+
+  base::WeakPtrFactory<SerialService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SerialService);
 };
