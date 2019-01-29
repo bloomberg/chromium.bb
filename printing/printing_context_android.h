@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/file_descriptor_posix.h"
 #include "base/macros.h"
 #include "printing/printing_context.h"
 
@@ -60,8 +61,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   printing::NativeDrawingContext context() const override;
 
  private:
-  // TODO(thestig): Use |base::kInvalidFd| once available.
-  bool is_file_descriptor_valid() const { return fd_ > -1; }
+  bool is_file_descriptor_valid() const { return fd_ > base::kInvalidFd; }
 
   base::android::ScopedJavaGlobalRef<jobject> j_printing_context_;
 
@@ -69,7 +69,7 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   // ready on the Java side
   PrintSettingsCallback callback_;
 
-  int fd_ = -1;
+  int fd_ = base::kInvalidFd;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContextAndroid);
 };
