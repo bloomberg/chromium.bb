@@ -95,6 +95,9 @@ Turn something like this (the parallel_emerge DepsTree format):
     # Visit the subtree recursively as well.
     FlattenDepTree(record['deps'], pkgtable=pkgtable, parentcpv=cpv,
                    get_cpe=get_cpe)
+    # Sort 'deps' & 'rev_deps' alphabetically to make them more readable.
+    pkgtable[cpv]['deps'].sort()
+    pkgtable[cpv]['rev_deps'].sort()
   return pkgtable
 
 
