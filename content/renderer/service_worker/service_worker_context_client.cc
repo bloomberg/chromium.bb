@@ -680,11 +680,11 @@ void ServiceWorkerContextClient::WorkerContextStarted(
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "START_WORKER_CONTEXT",
                                   this);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
 }
 
 void ServiceWorkerContextClient::WillEvaluateScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
   start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
 
   // Temporary CHECK for https://crbug.com/881100
