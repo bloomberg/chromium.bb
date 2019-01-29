@@ -1004,6 +1004,11 @@ void PersonalDataManager::UpdateClientValidityStates(
   bool update_validation =
       pref_service_->GetInteger(prefs::kAutofillLastVersionValidated) <
       CHROME_VERSION_MAJOR;
+
+  DVLOG(1) << "Autofill profile client validation "
+           << (update_validation ? "needs to be" : "has already been")
+           << " performed for this version";
+
   for (const auto* profile : profiles) {
     if (!profile->is_client_validity_states_updated() || update_validation) {
       profile->set_is_client_validity_states_updated(false);
@@ -2576,6 +2581,9 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
 }
 
 void PersonalDataManager::ApplyAddressFixesAndCleanups() {
+  // Validate profiles once per major.
+  UpdateClientValidityStates(GetProfiles());
+
   // One-time fix, otherwise NOP.
   RemoveOrphanAutofillTableRows();
 
