@@ -20,18 +20,36 @@ import java.util.Set;
  *
  * Usage:
  * class MyClassWithCleanup {
- *     private final mGcStateAssert = GcStateAssert.create(this);
+ *     private final mLifetimeAssert = LifetimeAssert.create(this);
  *
  *     public void destroy() {
- *         // If mGcStateAssert is GC'ed before this is called, it will throw an exception
- *         // with a stack trace showing the stack during GcStateAssert.create().
- *         GcStateAssert.setSafeToGc(mGcStateAssert, true);
+ *         // If mLifetimeAssert is GC'ed before this is called, it will throw an exception
+ *         // with a stack trace showing the stack during LifetimeAssert.create().
+ *         LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
  *     }
  * }
  */
-public class GcStateAssert {
+public class LifetimeAssert {
     interface TestHook {
         void onCleaned(WrappedReference ref, String msg);
+    }
+
+    /**
+     * Thrown for failed assertions.
+     */
+    static class LifetimeAssertException extends RuntimeException {
+        LifetimeAssertException(String msg, Throwable causedBy) {
+            super(msg, causedBy);
+        }
+    }
+
+    /**
+     * For capturing where objects were created.
+     */
+    private static class CreationException extends RuntimeException {
+        CreationException() {
+            super("vvv This is where object was created. vvv");
+        }
     }
 
     // Used only for unit test.
@@ -44,14 +62,14 @@ public class GcStateAssert {
     static class WrappedReference extends PhantomReference<Object> {
         boolean mSafeToGc;
         final Class<?> mTargetClass;
-        final Throwable mCreationException;
+        final CreationException mCreationException;
 
-        public WrappedReference(Object target, boolean safeToGc) {
+        public WrappedReference(
+                Object target, CreationException creationException, boolean safeToGc) {
             super(target, sReferenceQueue);
+            mCreationException = creationException;
             mSafeToGc = safeToGc;
             mTargetClass = target.getClass();
-            // Create an exception to capture stack trace of when object was created.
-            mCreationException = new RuntimeException();
             sActiveWrappers.add(this);
         }
 
@@ -81,7 +99,8 @@ public class GcStateAssert {
                                 if (sTestHook != null) {
                                     sTestHook.onCleaned(wrapper, msg);
                                 } else {
-                                    throw new RuntimeException(msg, wrapper.mCreationException);
+                                    throw new LifetimeAssertException(
+                                            msg, wrapper.mCreationException);
                                 }
                             } else if (sTestHook != null) {
                                 sTestHook.onCleaned(wrapper, null);
@@ -95,25 +114,45 @@ public class GcStateAssert {
         }
     }
 
-    private GcStateAssert(WrappedReference wrapper) {
+    private LifetimeAssert(WrappedReference wrapper) {
         mWrapper = wrapper;
     }
 
-    public static GcStateAssert create(Object target) {
-        return create(target, false);
-    }
-
-    public static GcStateAssert create(Object target, boolean safeToGc) {
+    public static LifetimeAssert create(Object target) {
         if (!BuildConfig.DCHECK_IS_ON) {
             return null;
         }
-        return new GcStateAssert(new WrappedReference(target, safeToGc));
+        return new LifetimeAssert(new WrappedReference(target, new CreationException(), false));
     }
 
-    public static void setSafeToGc(GcStateAssert asserter, boolean value) {
+    public static LifetimeAssert create(Object target, boolean safeToGc) {
+        if (!BuildConfig.DCHECK_IS_ON) {
+            return null;
+        }
+        return new LifetimeAssert(new WrappedReference(target, new CreationException(), safeToGc));
+    }
+
+    public static void setSafeToGc(LifetimeAssert asserter, boolean value) {
         if (BuildConfig.DCHECK_IS_ON) {
             // asserter is never null when DCHECK_IS_ON.
             asserter.mWrapper.mSafeToGc = value;
+        }
+    }
+
+    public static void assertAllInstancesDestroyedForTesting() throws LifetimeAssertException {
+        if (!BuildConfig.DCHECK_IS_ON) {
+            return;
+        }
+        synchronized (WrappedReference.sActiveWrappers) {
+            for (WrappedReference ref : WrappedReference.sActiveWrappers) {
+                if (!ref.mSafeToGc) {
+                    String msg = String.format(
+                            "Object of type %s was not destroyed after test completed. Refer to "
+                                    + "\"Caused by\" for where object was created.",
+                            ref.mTargetClass.getName());
+                    throw new LifetimeAssertException(msg, ref.mCreationException);
+                }
+            }
         }
     }
 }

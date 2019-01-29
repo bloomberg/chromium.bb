@@ -14,19 +14,19 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
- * junit tests for {@link GcStateAssert}.
+ * junit tests for {@link LifetimeAssert}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class GcStateAssertTest {
+public class LifetimeAssertTest {
     private static class TestClass {
         // Put assert inside of a test class to mirror typical api usage.
-        final GcStateAssert mGcStateAssert = GcStateAssert.create(this);
+        final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
     }
 
     private final Object mLock = new Object();
     private TestClass mTestClass;
-    private GcStateAssert.WrappedReference mTargetRef;
+    private LifetimeAssert.WrappedReference mTargetRef;
     private boolean mFound;
     private String mHookMessage;
 
@@ -36,10 +36,10 @@ public class GcStateAssertTest {
             return;
         }
         mTestClass = new TestClass();
-        mTargetRef = mTestClass.mGcStateAssert.mWrapper;
+        mTargetRef = mTestClass.mLifetimeAssert.mWrapper;
         mFound = false;
         mHookMessage = null;
-        GcStateAssert.sTestHook = (ref, msg) -> {
+        LifetimeAssert.sTestHook = (ref, msg) -> {
             if (ref == mTargetRef) {
                 synchronized (mLock) {
                     mFound = true;
@@ -55,7 +55,7 @@ public class GcStateAssertTest {
         if (!BuildConfig.DCHECK_IS_ON) {
             return;
         }
-        GcStateAssert.sTestHook = null;
+        LifetimeAssert.sTestHook = null;
     }
 
     private void runTest(boolean setSafe) {
@@ -65,7 +65,7 @@ public class GcStateAssertTest {
 
         synchronized (mLock) {
             if (setSafe) {
-                GcStateAssert.setSafeToGc(mTestClass.mGcStateAssert, true);
+                LifetimeAssert.setSafeToGc(mTestClass.mLifetimeAssert, true);
             }
             // Null out field to make reference GC'able.
             mTestClass = null;
@@ -94,5 +94,18 @@ public class GcStateAssertTest {
     @Test
     public void testUnsafeGc() {
         runTest(false);
+    }
+
+    @Test
+    public void testAssertAllInstancesDestroyedForTesting() {
+        try {
+            LifetimeAssert.assertAllInstancesDestroyedForTesting();
+            Assert.fail();
+        } catch (LifetimeAssert.LifetimeAssertException e) {
+            // Expected.
+        }
+        LifetimeAssert.setSafeToGc(mTestClass.mLifetimeAssert, true);
+        // Should no longer throw.
+        LifetimeAssert.assertAllInstancesDestroyedForTesting();
     }
 }

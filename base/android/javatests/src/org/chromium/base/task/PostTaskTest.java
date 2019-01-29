@@ -8,8 +8,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertNotNull;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Test;
@@ -17,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.task.SchedulerTestHelpers;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * TaskSchedulerTest.java
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(23)
-@TargetApi(Build.VERSION_CODES.M)
 public class PostTaskTest {
     @Test
     @SmallTest
@@ -68,6 +63,7 @@ public class PostTaskTest {
         // A SingleThreadTaskRunner with default traits will run in the native thread pool
         // and tasks posted won't run until after the native library has loaded.
         assertNotNull(taskQueue);
+        taskQueue.destroy();
     }
 
     @Test
@@ -75,10 +71,14 @@ public class PostTaskTest {
     public void testCreateSequencedTaskRunner() throws Exception {
         TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
         List<Integer> orderList = new ArrayList<>();
-        SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);
-        SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 2);
-        SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 3);
-        SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        try {
+            SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);
+            SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 2);
+            SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 3);
+            SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        } finally {
+            taskQueue.destroy();
+        }
 
         assertThat(orderList, contains(1, 2, 3));
     }

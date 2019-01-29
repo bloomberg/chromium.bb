@@ -82,26 +82,30 @@ public class ProviderBookmarksUriTest {
         values.put(BookmarkColumns.TITLE, title);
         Uri uri = mProviderTestRule.getContentResolver().insert(mBookmarksUri, values);
         Cursor cursor = mProviderTestRule.getContentResolver().query(uri, null, null, null, null);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(0, cursor.getInt(index));
-        index = cursor.getColumnIndex(BookmarkColumns.CREATED);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(createdTime, cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(lastUpdateTime, cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
-        Assert.assertTrue(-1 != index);
-        Assert.assertTrue(byteArraysEqual(FAVICON_DATA, cursor.getBlob(index)));
-        index = cursor.getColumnIndex(BookmarkColumns.URL);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(url, cursor.getString(index));
-        index = cursor.getColumnIndex(BookmarkColumns.VISITS);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(visits, cursor.getInt(index));
+        try {
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(0, cursor.getInt(index));
+            index = cursor.getColumnIndex(BookmarkColumns.CREATED);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(createdTime, cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(lastUpdateTime, cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
+            Assert.assertTrue(-1 != index);
+            Assert.assertTrue(byteArraysEqual(FAVICON_DATA, cursor.getBlob(index)));
+            index = cursor.getColumnIndex(BookmarkColumns.URL);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(url, cursor.getString(index));
+            index = cursor.getColumnIndex(BookmarkColumns.VISITS);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(visits, cursor.getInt(index));
+        } finally {
+            cursor.close();
+        }
     }
 
     @Test
@@ -132,27 +136,31 @@ public class ProviderBookmarksUriTest {
                         + BookmarkColumns.VISITS + " = ? AND " + BookmarkColumns.BOOKMARK
                         + " = ? AND " + BookmarkColumns.FAVICON + " IS NOT NULL",
                 selectionArgs, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(isBookmark[0], cursor.getInt(index));
-        index = cursor.getColumnIndex(BookmarkColumns.CREATED);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(createdTime[0], cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(lastUpdateTime[0], cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
-        Assert.assertTrue(-1 != index);
-        Assert.assertTrue(byteArraysEqual(icons[0], cursor.getBlob(index)));
-        index = cursor.getColumnIndex(BookmarkColumns.URL);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(url[0], cursor.getString(index));
-        index = cursor.getColumnIndex(BookmarkColumns.VISITS);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(visits[0], cursor.getInt(index));
+        try {
+            Assert.assertNotNull(cursor);
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(isBookmark[0], cursor.getInt(index));
+            index = cursor.getColumnIndex(BookmarkColumns.CREATED);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(createdTime[0], cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(lastUpdateTime[0], cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
+            Assert.assertTrue(-1 != index);
+            Assert.assertTrue(byteArraysEqual(icons[0], cursor.getBlob(index)));
+            index = cursor.getColumnIndex(BookmarkColumns.URL);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(url[0], cursor.getString(index));
+            index = cursor.getColumnIndex(BookmarkColumns.VISITS);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(visits[0], cursor.getInt(index));
+        } finally {
+            cursor.close();
+        }
 
         // Query the 2nd row.
         String[] selectionArgs2 = { url[1], String.valueOf(lastUpdateTime[1]),
@@ -162,27 +170,30 @@ public class ProviderBookmarksUriTest {
                         + BookmarkColumns.VISITS + " = ? AND " + BookmarkColumns.BOOKMARK
                         + " = ? AND " + BookmarkColumns.FAVICON + " IS NULL",
                 selectionArgs2, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(isBookmark[1], cursor.getInt(index));
-        index = cursor.getColumnIndex(BookmarkColumns.CREATED);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(createdTime[1], cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(lastUpdateTime[1], cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
-        Assert.assertTrue(-1 != index);
-        Assert.assertTrue(byteArraysEqual(icons[1], cursor.getBlob(index)));
-        index = cursor.getColumnIndex(BookmarkColumns.URL);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(url[1], cursor.getString(index));
-        index = cursor.getColumnIndex(BookmarkColumns.VISITS);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(visits[1], cursor.getInt(index));
+        try {
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(isBookmark[1], cursor.getInt(index));
+            index = cursor.getColumnIndex(BookmarkColumns.CREATED);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(createdTime[1], cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(lastUpdateTime[1], cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
+            Assert.assertTrue(-1 != index);
+            Assert.assertTrue(byteArraysEqual(icons[1], cursor.getBlob(index)));
+            index = cursor.getColumnIndex(BookmarkColumns.URL);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(url[1], cursor.getString(index));
+            index = cursor.getColumnIndex(BookmarkColumns.VISITS);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(visits[1], cursor.getInt(index));
+        } finally {
+            cursor.close();
+        }
     }
 
     @Test
@@ -217,26 +228,30 @@ public class ProviderBookmarksUriTest {
                         + BookmarkColumns.BOOKMARK + " = ?",
                 selectionArgs);
         Cursor cursor = mProviderTestRule.getContentResolver().query(uri, null, null, null, null);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(isBookmark[1], cursor.getInt(index));
-        index = cursor.getColumnIndex(BookmarkColumns.CREATED);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(createdTime[0], cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(lastUpdateTime[1], cursor.getLong(index));
-        index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
-        Assert.assertTrue(-1 != index);
-        Assert.assertTrue(byteArraysEqual(icons[1], cursor.getBlob(index)));
-        index = cursor.getColumnIndex(BookmarkColumns.URL);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(url[1], cursor.getString(index));
-        index = cursor.getColumnIndex(BookmarkColumns.VISITS);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(visits[1], cursor.getInt(index));
+        try {
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(BookmarkColumns.BOOKMARK);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(isBookmark[1], cursor.getInt(index));
+            index = cursor.getColumnIndex(BookmarkColumns.CREATED);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(createdTime[0], cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(lastUpdateTime[1], cursor.getLong(index));
+            index = cursor.getColumnIndex(BookmarkColumns.FAVICON);
+            Assert.assertTrue(-1 != index);
+            Assert.assertTrue(byteArraysEqual(icons[1], cursor.getBlob(index)));
+            index = cursor.getColumnIndex(BookmarkColumns.URL);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(url[1], cursor.getString(index));
+            index = cursor.getColumnIndex(BookmarkColumns.VISITS);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(visits[1], cursor.getInt(index));
+        } finally {
+            cursor.close();
+        }
     }
 
     @Test
@@ -267,11 +282,17 @@ public class ProviderBookmarksUriTest {
                 selectionArgs);
         Cursor cursor =
                 mProviderTestRule.getContentResolver().query(uris[0], null, null, null, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(0, cursor.getCount());
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
         cursor = mProviderTestRule.getContentResolver().query(uris[1], null, null, null, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(1, cursor.getCount());
+        try {
+            Assert.assertEquals(1, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
         String[] selectionArgs1 = { String.valueOf(lastUpdateTime[1]),
                 String.valueOf(isBookmark[1]) };
         mProviderTestRule.getContentResolver().delete(mBookmarksUri,
@@ -279,8 +300,11 @@ public class ProviderBookmarksUriTest {
                         + BookmarkColumns.BOOKMARK + " = ?",
                 selectionArgs1);
         cursor = mProviderTestRule.getContentResolver().query(uris[1], null, null, null, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(0, cursor.getCount());
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
     }
 
     /*
@@ -323,18 +347,21 @@ public class ProviderBookmarksUriTest {
         Cursor cursor = mProviderTestRule.getContentResolver().query(mBookmarksUri,
                 bookmarksProjection, BookmarkColumns.TITLE + " = ?",
                 new String[] {insertBookmarkTitle}, BookmarkColumns.DATE);
-        Assert.assertTrue(cursor.moveToNext());
-        Assert.assertEquals(insertBookmarkTitle, cursor.getString(titleIndex));
-        Assert.assertEquals(insertBookmarkUrl, cursor.getString(urlIndex));
-        Assert.assertEquals(0, cursor.getInt(visitsIndex));
-        Assert.assertEquals(createDate, cursor.getLong(dataIndex));
-        Assert.assertEquals(createDate, cursor.getLong(createdIndex));
-        Assert.assertEquals(0, cursor.getInt(bookmarkIndex));
-        // TODO(michaelbai): according to the test this should be null instead of an empty byte[].
-        // BUG 6288508
-        // assertTrue(cursor.isNull(FAVICON_INDEX));
-        int Id = cursor.getInt(idIndex);
-        cursor.close();
+        int id = -1;
+        try {
+            Assert.assertTrue(cursor.moveToNext());
+            Assert.assertEquals(insertBookmarkTitle, cursor.getString(titleIndex));
+            Assert.assertEquals(insertBookmarkUrl, cursor.getString(urlIndex));
+            Assert.assertEquals(0, cursor.getInt(visitsIndex));
+            Assert.assertEquals(createDate, cursor.getLong(dataIndex));
+            Assert.assertEquals(createDate, cursor.getLong(createdIndex));
+            Assert.assertEquals(0, cursor.getInt(bookmarkIndex));
+            // TODO(michaelbai): according to the test this should be null instead of an empty
+            // byte[]. BUG 6288508 assertTrue(cursor.isNull(FAVICON_INDEX));
+            id = cursor.getInt(idIndex);
+        } finally {
+            cursor.close();
+        }
 
         // Test: update.
         value.clear();
@@ -347,24 +374,31 @@ public class ProviderBookmarksUriTest {
         mProviderTestRule.getContentResolver().update(mBookmarksUri, value,
                 BookmarkColumns.TITLE + " = ?", new String[] {insertBookmarkTitle});
         cursor = mProviderTestRule.getContentResolver().query(
-                mBookmarksUri, bookmarksProjection, BookmarkColumns.ID + " = " + Id, null, null);
-        Assert.assertTrue(cursor.moveToNext());
-        Assert.assertEquals(updateBookmarkTitle, cursor.getString(titleIndex));
-        Assert.assertEquals(updateBookmarkUrl, cursor.getString(urlIndex));
-        Assert.assertEquals(1, cursor.getInt(visitsIndex));
-        Assert.assertEquals(updateDate, cursor.getLong(dataIndex));
-        Assert.assertEquals(createDate, cursor.getLong(createdIndex));
-        Assert.assertEquals(0, cursor.getInt(bookmarkIndex));
-        // TODO(michaelbai): according to the test this should be null instead of an empty byte[].
-        // BUG 6288508
-        // assertTrue(cursor.isNull(FAVICON_INDEX));
-        Assert.assertEquals(Id, cursor.getInt(idIndex));
+                mBookmarksUri, bookmarksProjection, BookmarkColumns.ID + " = " + id, null, null);
+        try {
+            Assert.assertTrue(cursor.moveToNext());
+            Assert.assertEquals(updateBookmarkTitle, cursor.getString(titleIndex));
+            Assert.assertEquals(updateBookmarkUrl, cursor.getString(urlIndex));
+            Assert.assertEquals(1, cursor.getInt(visitsIndex));
+            Assert.assertEquals(updateDate, cursor.getLong(dataIndex));
+            Assert.assertEquals(createDate, cursor.getLong(createdIndex));
+            Assert.assertEquals(0, cursor.getInt(bookmarkIndex));
+            // TODO(michaelbai): according to the test this should be null instead of an empty
+            // byte[]. BUG 6288508 assertTrue(cursor.isNull(FAVICON_INDEX));
+            Assert.assertEquals(id, cursor.getInt(idIndex));
+        } finally {
+            cursor.close();
+        }
 
         // Test: delete.
         mProviderTestRule.getContentResolver().delete(insertUri, null, null);
         cursor = mProviderTestRule.getContentResolver().query(
-                mBookmarksUri, bookmarksProjection, BookmarkColumns.ID + " = " + Id, null, null);
-        Assert.assertEquals(0, cursor.getCount());
+                mBookmarksUri, bookmarksProjection, BookmarkColumns.ID + " = " + id, null, null);
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
     }
 
     /**
