@@ -117,7 +117,7 @@ void MediaController::MediaSessionActionsChanged(
 void MediaController::SetMediaSessionControllerForTest(
     media_session::mojom::MediaControllerPtr controller) {
   media_session_controller_ptr_ = std::move(controller);
-  BindMediaSessionObserver();
+  BindMediaControllerObserver();
 }
 
 void MediaController::FlushForTesting() {
@@ -139,7 +139,7 @@ MediaController::GetMediaSessionController() {
         base::BindRepeating(&MediaController::OnMediaSessionControllerError,
                             base::Unretained(this)));
 
-    BindMediaSessionObserver();
+    BindMediaControllerObserver();
   }
 
   return media_session_controller_ptr_.get();
@@ -150,12 +150,12 @@ void MediaController::OnMediaSessionControllerError() {
   supported_media_session_action_ = false;
 }
 
-void MediaController::BindMediaSessionObserver() {
+void MediaController::BindMediaControllerObserver() {
   if (!media_session_controller_ptr_.is_bound())
     return;
 
-  media_session::mojom::MediaSessionObserverPtr observer;
-  media_session_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  media_session::mojom::MediaControllerObserverPtr observer;
+  media_controller_observer_binding_.Bind(mojo::MakeRequest(&observer));
   media_session_controller_ptr_->AddObserver(std::move(observer));
 }
 

@@ -36,4 +36,9 @@ bool MediaMetadata::operator!=(const MediaMetadata& other) const {
   return !(*this == other);
 }
 
+bool MediaMetadata::IsEmpty() const {
+  return title.empty() && artist.empty() && album.empty() &&
+         source_title.empty() && artwork.empty();
+}
+
 }  // namespace media_session

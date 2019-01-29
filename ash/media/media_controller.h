@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
-#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace service_manager {
 class Connector;
@@ -38,7 +37,7 @@ class MediaCaptureObserver {
 // been provided to us.
 class ASH_EXPORT MediaController
     : public mojom::MediaController,
-      public media_session::mojom::MediaSessionObserver {
+      public media_session::mojom::MediaControllerObserver {
  public:
   // |connector| can be null in tests.
   explicit MediaController(service_manager::Connector* connector);
@@ -66,7 +65,7 @@ class ASH_EXPORT MediaController
   void RequestCaptureState();
   void SuspendMediaSessions();
 
-  // media_session::mojom::MediaSessionObserver:
+  // media_session::mojom::MediaControllerObserver:
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override {}
   void MediaSessionMetadataChanged(
@@ -99,7 +98,7 @@ class ASH_EXPORT MediaController
 
   void OnMediaSessionControllerError();
 
-  void BindMediaSessionObserver();
+  void BindMediaControllerObserver();
 
   // Returns true if we should use the media session service for key handling.
   bool ShouldUseMediaSession();
@@ -113,8 +112,8 @@ class ASH_EXPORT MediaController
 
   service_manager::Connector* const connector_;
 
-  mojo::Binding<media_session::mojom::MediaSessionObserver>
-      media_session_observer_binding_{this};
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_{this};
 
   // Bindings for users of the mojo interface.
   mojo::BindingSet<mojom::MediaController> bindings_;

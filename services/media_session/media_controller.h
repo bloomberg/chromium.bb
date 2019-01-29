@@ -33,7 +33,7 @@ class MediaController : public mojom::MediaController,
   void Resume() override;
   void Stop() override;
   void ToggleSuspendResume() override;
-  void AddObserver(mojom::MediaSessionObserverPtr observer) override;
+  void AddObserver(mojom::MediaControllerObserverPtr observer) override;
   void PreviousTrack() override;
   void NextTrack() override;
   void Seek(base::TimeDelta seek_time) override;
@@ -70,8 +70,8 @@ class MediaController : public mojom::MediaController,
   // the underlying MediaSession.
   mojom::MediaSession* session_ = nullptr;
 
-  // Observers that are observing |session_|.
-  mojo::InterfacePtrSet<mojom::MediaSessionObserver> observers_;
+  // Observers that are observing |this|.
+  mojo::InterfacePtrSet<mojom::MediaControllerObserver> observers_;
 
   // Binding for |this| to act as an observer to |session_|.
   mojo::Binding<mojom::MediaSessionObserver> session_binding_{this};

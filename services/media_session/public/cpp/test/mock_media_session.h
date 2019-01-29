@@ -27,10 +27,7 @@ namespace test {
 class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     MockMediaSessionMojoObserver : public mojom::MediaSessionObserver {
  public:
-  // A MediaSessionObserver can observe a MediaSession directly or through a
-  // MediaController.
   explicit MockMediaSessionMojoObserver(mojom::MediaSession& media_session);
-  explicit MockMediaSessionMojoObserver(mojom::MediaControllerPtr& controller);
 
   ~MockMediaSessionMojoObserver() override;
 

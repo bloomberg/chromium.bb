@@ -80,6 +80,9 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_CPP) MediaMetadata {
   // session. This could be the name of the app or the name of the site playing
   // media.
   base::string16 source_title;
+
+  // Returns whether |this| contains no metadata.
+  bool IsEmpty() const;
 };
 
 }  // namespace media_session
