@@ -2591,7 +2591,7 @@ TEST_F(WindowTreeClientTest, PerformWindowMove) {
   WindowTreeHostMus* host_mus = static_cast<WindowTreeHostMus*>(host());
   host_mus->PerformWindowMove(
       host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
-      base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
+      HTCAPTION, base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
   EXPECT_EQ(0, call_count);
 
   window_tree()->AckAllChanges();
@@ -2600,7 +2600,7 @@ TEST_F(WindowTreeClientTest, PerformWindowMove) {
 
   host_mus->PerformWindowMove(
       host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
-      base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
+      HTCAPTION, base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::OTHER, false);
   EXPECT_EQ(2, call_count);
   EXPECT_FALSE(last_result);
@@ -2617,7 +2617,7 @@ TEST_F(WindowTreeClientTest, PerformWindowMoveDoneAfterDelete) {
 
   host_mus->PerformWindowMove(
       host_mus->window(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
-      base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
+      HTCAPTION, base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
   EXPECT_EQ(0, call_count);
 
   host_mus.reset();
@@ -2635,7 +2635,7 @@ TEST_F(WindowTreeClientTest, PerformWindowMoveTransferEvents) {
   WindowTreeHostMus* host_mus = static_cast<WindowTreeHostMus*>(host());
   window->SetCapture();
   host_mus->PerformWindowMove(
-      window, ws::mojom::MoveLoopSource::TOUCH, gfx::Point(),
+      window, ws::mojom::MoveLoopSource::TOUCH, gfx::Point(), HTCAPTION,
       base::BindOnce(&OnWindowMoveDone, &call_count, &last_result));
   EXPECT_EQ(0, call_count);
   EXPECT_EQ(WindowPortMus::Get(window)->server_id(),

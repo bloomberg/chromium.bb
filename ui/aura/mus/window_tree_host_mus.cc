@@ -219,6 +219,7 @@ void WindowTreeHostMus::PerformWindowMove(
     Window* content_window,
     ws::mojom::MoveLoopSource mus_source,
     const gfx::Point& cursor_location,
+    int hit_test,
     base::OnceCallback<void(bool)> callback) {
   DCHECK(window()->Contains(content_window));
   std::unique_ptr<ScopedTouchTransferController> scoped_controller;
@@ -228,7 +229,7 @@ void WindowTreeHostMus::PerformWindowMove(
   }
   content_window->ReleaseCapture();
   delegate_->OnWindowTreeHostPerformWindowMove(
-      this, mus_source, cursor_location,
+      this, mus_source, cursor_location, hit_test,
       base::BindOnce(&OnPerformWindowMoveDone, std::move(scoped_controller),
                      std::move(callback)));
 }

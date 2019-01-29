@@ -13,6 +13,7 @@
 #include "services/ws/common/types.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/base/hit_test.h"
 
 namespace aura {
 
@@ -144,6 +145,16 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return value;
   }
 
+  int last_move_hit_test() const { return last_move_hit_test_; }
+
+  size_t get_and_clear_window_resize_shadow_count() {
+    const size_t value = window_resize_shadow_count_;
+    window_resize_shadow_count_ = 0u;
+    return value;
+  }
+
+  int last_window_resize_shadow() const { return last_window_resize_shadow_; }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -269,11 +280,13 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void PerformWindowMove(uint32_t change_id,
                          ws::Id window_id,
                          ws::mojom::MoveLoopSource source,
-                         const gfx::Point& cursor_location) override;
+                         const gfx::Point& cursor_location,
+                         int hit_test) override;
   void CancelWindowMove(ws::Id window_id) override;
   void ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                             ws::Id window_id) override;
   void StopObservingTopmostWindow() override;
+  void SetWindowResizeShadow(ws::Id window_id, int hit_test) override;
   void CancelActiveTouchesExcept(ws::Id not_cancelled_window_id) override;
   void CancelActiveTouches(ws::Id window_id) override;
   void TransferGestureEventsTo(ws::Id current_id,
@@ -323,6 +336,11 @@ class TestWindowTree : public ws::mojom::WindowTree {
   bool last_accepts_drops_ = false;
 
   size_t accepts_drops_count_ = 0u;
+
+  int last_move_hit_test_ = HTNOWHERE;
+
+  size_t window_resize_shadow_count_ = 0u;
+  int last_window_resize_shadow_ = HTNOWHERE;
 
   // Support only one scheduled embed in test.
   base::UnguessableToken scheduled_embed_;

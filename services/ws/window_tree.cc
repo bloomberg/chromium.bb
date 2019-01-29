@@ -41,6 +41,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
@@ -2011,9 +2012,12 @@ void WindowTree::GetCursorLocationMemory(
 void WindowTree::PerformWindowMove(uint32_t change_id,
                                    Id transport_window_id,
                                    mojom::MoveLoopSource source,
-                                   const gfx::Point& cursor) {
+                                   const gfx::Point& cursor,
+                                   int hit_test) {
   DVLOG(3) << "PerformWindowMove id="
-           << MakeClientWindowId(transport_window_id).ToString();
+           << MakeClientWindowId(transport_window_id).ToString()
+           << " source=" << source << " cursor=" << cursor.ToString()
+           << " hit_test=" << hit_test;
   aura::Window* window = GetWindowByTransportId(transport_window_id);
   if (!IsClientCreatedWindow(window) || !IsTopLevel(window) ||
       !window->IsVisible() || window_moving_) {
@@ -2028,10 +2032,15 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
     window_tree_client_->OnChangeCompleted(change_id, false);
     return;
   }
+  if (!ui::CanPerformDragOrResize(hit_test)) {
+    DVLOG(1) << "PerformWindowMove failed (incorrect hit_test)";
+    window_tree_client_->OnChangeCompleted(change_id, false);
+    return;
+  }
 
   window_moving_ = window;
   window_service_->delegate()->RunWindowMoveLoop(
-      window, source, cursor,
+      window, source, cursor, hit_test,
       base::BindOnce(&WindowTree::OnPerformWindowMoveDone,
                      weak_factory_.GetWeakPtr(), change_id));
 }
@@ -2123,6 +2132,23 @@ void WindowTree::StopObservingTopmostWindow() {
     return;
   }
   topmost_window_observer_.reset();
+}
+
+void WindowTree::SetWindowResizeShadow(Id window_id, int hit_test) {
+  DVLOG(3) << "SetWindowResizeShadow id="
+           << MakeClientWindowId(window_id).ToString()
+           << " hit_test=" << hit_test;
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!IsClientCreatedWindow(window) || !IsTopLevel(window) ||
+      !window->IsVisible()) {
+    DVLOG(1) << "SetWindowResizeShadow failed (invalid window)";
+    return;
+  }
+  if (hit_test != HTNOWHERE && !ui::IsResizingComponent(hit_test)) {
+    DVLOG(1) << "SetWindowResizeShadow failed (invalid hit_test)";
+    return;
+  }
+  window_service_->delegate()->SetWindowResizeShadow(window, hit_test);
 }
 
 void WindowTree::CancelActiveTouchesExcept(Id not_cancelled_window_id) {

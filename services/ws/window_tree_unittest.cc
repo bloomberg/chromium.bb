@@ -33,6 +33,7 @@
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/mojo/event_constants.mojom.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/capture_controller.h"
@@ -1744,7 +1745,7 @@ TEST(WindowTreeTest, RunMoveLoopTouch) {
       setup.window_tree_test_helper()->TransportIdForWindow(top_level);
   setup.changes()->clear();
   setup.window_tree_test_helper()->window_tree()->PerformWindowMove(
-      12, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
+      12, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point(), HTCAPTION);
   // |top_level| isn't visible, so should fail immediately.
   EXPECT_EQ("ChangeCompleted id=12 success=false",
             SingleChangeToDescription(*setup.changes()));
@@ -1754,7 +1755,7 @@ TEST(WindowTreeTest, RunMoveLoopTouch) {
   top_level->Show();
   setup.changes()->clear();
   setup.window_tree_test_helper()->window_tree()->PerformWindowMove(
-      13, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
+      13, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point(), HTCAPTION);
   // WindowServiceDelegate should be asked to do the move.
   WindowServiceDelegate::DoneCallback move_loop_callback =
       setup.delegate()->TakeMoveLoopCallback();
@@ -1776,7 +1777,7 @@ TEST(WindowTreeTest, RunMoveLoopTouch) {
       14,
       setup.window_tree_test_helper()->TransportIdForWindow(
           non_top_level_window),
-      mojom::MoveLoopSource::TOUCH, gfx::Point());
+      mojom::MoveLoopSource::TOUCH, gfx::Point(), HTCAPTION);
   EXPECT_EQ("ChangeCompleted id=14 success=false",
             SingleChangeToDescription(*setup.changes()));
 }
@@ -1791,7 +1792,7 @@ TEST(WindowTreeTest, RunMoveLoopMouse) {
       setup.window_tree_test_helper()->TransportIdForWindow(top_level);
   setup.changes()->clear();
   setup.window_tree_test_helper()->window_tree()->PerformWindowMove(
-      12, top_level_id, mojom::MoveLoopSource::MOUSE, gfx::Point());
+      12, top_level_id, mojom::MoveLoopSource::MOUSE, gfx::Point(), HTCAPTION);
   // The mouse isn't down, so this should fail.
   EXPECT_EQ("ChangeCompleted id=12 success=false",
             SingleChangeToDescription(*setup.changes()));
@@ -1801,7 +1802,7 @@ TEST(WindowTreeTest, RunMoveLoopMouse) {
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.PressLeftButton();
   setup.window_tree_test_helper()->window_tree()->PerformWindowMove(
-      13, top_level_id, mojom::MoveLoopSource::MOUSE, gfx::Point());
+      13, top_level_id, mojom::MoveLoopSource::MOUSE, gfx::Point(), HTCAPTION);
   // WindowServiceDelegate should be asked to do the move.
   WindowServiceDelegate::DoneCallback move_loop_callback =
       setup.delegate()->TakeMoveLoopCallback();
@@ -1826,7 +1827,7 @@ TEST(WindowTreeTest, CancelMoveLoop) {
       setup.window_tree_test_helper()->TransportIdForWindow(top_level);
   setup.changes()->clear();
   setup.window_tree_test_helper()->window_tree()->PerformWindowMove(
-      12, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point());
+      12, top_level_id, mojom::MoveLoopSource::TOUCH, gfx::Point(), HTCAPTION);
 
   // WindowServiceDelegate should be asked to do the move.
   WindowServiceDelegate::DoneCallback move_loop_callback =

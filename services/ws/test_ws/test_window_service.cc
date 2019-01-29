@@ -112,6 +112,7 @@ std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
 void TestWindowService::RunWindowMoveLoop(aura::Window* window,
                                           mojom::MoveLoopSource source,
                                           const gfx::Point& cursor,
+                                          int window_component,
                                           DoneCallback callback) {
   window_move_done_callback_ = std::move(callback);
 }

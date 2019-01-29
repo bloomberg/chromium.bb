@@ -26,6 +26,7 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
   void RunWindowMoveLoop(aura::Window* window,
                          ws::mojom::MoveLoopSource source,
                          const gfx::Point& cursor,
+                         int window_component,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;
   void RunDragLoop(aura::Window* window,
@@ -35,6 +36,7 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
                    ui::DragDropTypes::DragEventSource source,
                    DragDropCompletedCallback callback) override;
   void CancelDragLoop(aura::Window* window) override;
+  void SetWindowResizeShadow(aura::Window* window, int hit_test) override;
   void UpdateTextInputState(aura::Window* window,
                             ui::mojom::TextInputStatePtr state) override;
   void UpdateImeVisibility(aura::Window* window,

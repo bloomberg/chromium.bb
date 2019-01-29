@@ -554,7 +554,7 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
       std::make_unique<GestureRecognizerImplMus>(this));
   gesture_synchronizer_ = std::make_unique<GestureSynchronizer>(tree_);
   client_side_window_move_handler_ =
-      std::make_unique<ClientSideWindowMoveHandler>(Env::GetInstance());
+      std::make_unique<ClientSideWindowMoveHandler>(Env::GetInstance(), this);
 }
 
 void WindowTreeClient::OnConnectionLost() {
@@ -1443,6 +1443,11 @@ WindowTreeClient::StartObservingTopmostWindow(ws::mojom::MoveLoopSource source,
   return topmost_window_tracker;
 }
 
+void WindowTreeClient::SetWindowResizeShadow(Window* window, int hit_test) {
+  WindowMus* window_mus = WindowMus::Get(window);
+  tree_->SetWindowResizeShadow(window_mus->server_id(), hit_test);
+}
+
 void WindowTreeClient::StopObservingTopmostWindow() {
   DCHECK(topmost_window_tracker_);
   tree_->StopObservingTopmostWindow();
@@ -1598,6 +1603,7 @@ void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
     WindowTreeHostMus* window_tree_host,
     ws::mojom::MoveLoopSource source,
     const gfx::Point& cursor_location,
+    int hit_test,
     base::OnceCallback<void(bool)> callback) {
   DCHECK(on_current_move_finished_.is_null());
   on_current_move_finished_ = std::move(callback);
@@ -1607,7 +1613,7 @@ void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
       std::make_unique<InFlightDragChange>(window_mus, ChangeType::MOVE_LOOP));
   // Tell the window manager to take over moving us.
   tree_->PerformWindowMove(current_move_loop_change_, window_mus->server_id(),
-                           source, cursor_location);
+                           source, cursor_location, hit_test);
   for (auto& observer : observers_) {
     observer.OnWindowMoveStarted(window_tree_host->window(), cursor_location,
                                  source);

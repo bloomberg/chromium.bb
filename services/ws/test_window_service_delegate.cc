@@ -50,6 +50,7 @@ void TestWindowServiceDelegate::OnUnhandledKeyEvent(
 void TestWindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
                                                   mojom::MoveLoopSource source,
                                                   const gfx::Point& cursor,
+                                                  int window_component,
                                                   DoneCallback callback) {
   move_loop_callback_ = std::move(callback);
 }

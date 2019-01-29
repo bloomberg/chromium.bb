@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -22,9 +23,21 @@ void WindowMoveEnded(Window* window, bool success) {
   window->env()->gesture_recognizer()->CancelActiveTouches(window);
 }
 
+int GetHitTestComponent(Window* window, const gfx::Point& location) {
+  if (!window->delegate())
+    return HTNOWHERE;
+  int component = window->delegate()->GetNonClientComponent(location);
+  if (!ui::IsResizingComponent(component))
+    return HTNOWHERE;
+  return component;
+}
+
 }  // namespace
 
-ClientSideWindowMoveHandler::ClientSideWindowMoveHandler(Env* env) : env_(env) {
+ClientSideWindowMoveHandler::ClientSideWindowMoveHandler(
+    Env* env,
+    WindowTreeClient* client)
+    : env_(env), client_(client) {
   env_->AddPreTargetHandler(this);
 }
 
@@ -39,13 +52,12 @@ void ClientSideWindowMoveHandler::MaybeSetupLastTarget(
   if (!window || !window->delegate())
     return;
   int component = window->delegate()->GetNonClientComponent(event->location());
-
-  // TODO(mukai): add the support of window resizing components like HTTOP.
-  if (component != HTCAPTION)
+  if (!ui::CanPerformDragOrResize(component))
     return;
 
   last_target_.Add(window);
   last_location_ = event->location();
+  last_component_ = component;
 }
 
 void ClientSideWindowMoveHandler::MaybePerformWindowMove(
@@ -56,10 +68,13 @@ void ClientSideWindowMoveHandler::MaybePerformWindowMove(
     return;
 
   gfx::Point screen_location = last_location_;
-  aura::client::GetScreenPositionClient(target->GetRootWindow())
-      ->ConvertPointToScreen(target, &screen_location);
+  auto* screen_position_client =
+      aura::client::GetScreenPositionClient(target->GetRootWindow());
+  // screen_position_client may be null.in test.
+  if (screen_position_client)
+    screen_position_client->ConvertPointToScreen(target, &screen_location);
   WindowTreeHostMus::ForWindow(target)->PerformWindowMove(
-      target, source, screen_location,
+      target, source, screen_location, last_component_,
       base::BindOnce(&WindowMoveEnded, target));
 
   // Clear |last_target_| so that event->target() won't match with
@@ -78,6 +93,31 @@ void ClientSideWindowMoveHandler::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
   switch (event->type()) {
+    case ui::ET_MOUSE_EXITED:
+      if (last_component_ != HTNOWHERE &&
+          !last_shadow_target_.windows().empty()) {
+        client_->SetWindowResizeShadow(last_shadow_target_.Pop(), HTNOWHERE);
+      }
+      last_component_ = HTNOWHERE;
+      break;
+
+    case ui::ET_MOUSE_MOVED: {
+      if (!event->target()) {
+        last_component_ = HTNOWHERE;
+        last_shadow_target_.RemoveAll();
+        return;
+      }
+      Window* window = static_cast<Window*>(event->target());
+      int component = GetHitTestComponent(window, event->location());
+      if (component == last_component_)
+        return;
+      last_component_ = component;
+      client_->SetWindowResizeShadow(window->GetRootWindow(), last_component_);
+      last_shadow_target_.RemoveAll();
+      last_shadow_target_.Add(window->GetRootWindow());
+      break;
+    }
+
     case ui::ET_MOUSE_PRESSED:
       MaybeSetupLastTarget(event);
       break;

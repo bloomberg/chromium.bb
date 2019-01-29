@@ -339,12 +339,14 @@ interface WindowTree {
   // where the location is (x << 16) | y.
   GetCursorLocationMemory() => (handle<shared_buffer> cursor_buffer);
 
-  // Tells the window manager to start moving the window. OnChangeCompleted is
-  // called on whether the move was canceled. Because there's a delay between
-  // when a client sends this message and when the window manager starts acting
-  // on it, pass the cursor location at the start of the move.
+  // Tells the window manager to start moving or resizing the window.
+  // OnChangeCompleted is called on whether the move was canceled. Because
+  // there's a delay between when a client sends this message and when the
+  // window manager starts acting on it, pass the cursor location at the start
+  // of the move. |hit_test| specifies the type of the session; kCaption for
+  // moving.
   PerformWindowMove(uint32 change_id, uint64 window_id, MoveLoopSource source,
-                    gfx.mojom.Point cursor);
+                    gfx.mojom.Point cursor, ui.mojom.HitTest hit_test);
 
   // Tells the window manager to cancel any in progress window move started with
   // StartWindowMove() and to revert the window bounds to how they were.
@@ -380,6 +382,10 @@ interface WindowTree {
   // Called by the client to request stopping the ongoing session of observing
   // the topmost window under the cursor.
   StopObservingTopmostWindow();
+
+  // Sets the resize shadow for |hit_test| to the specified window. It hides
+  // the shadow when kNowhere is set.
+  SetWindowResizeShadow(uint64 window_id, ui.mojom.HitTest hit_test);
 
   // Called by the client to cancel active touch events. not_cancelled_window_id
   // is a window ID, and that window is excluded from cancelling. When

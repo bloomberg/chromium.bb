@@ -23,28 +23,6 @@
 
 namespace views {
 
-namespace {
-
-bool CanPerformDragOrResize(int hittest) {
-  switch (hittest) {
-    case HTBOTTOM:
-    case HTBOTTOMLEFT:
-    case HTBOTTOMRIGHT:
-    case HTCAPTION:
-    case HTLEFT:
-    case HTRIGHT:
-    case HTTOP:
-    case HTTOPLEFT:
-    case HTTOPRIGHT:
-      return true;
-    default:
-      return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 WindowEventFilter::WindowEventFilter(DesktopWindowTreeHost* window_tree_host)
     : window_tree_host_(window_tree_host), click_component_(HTNOWHERE) {}
 
@@ -181,7 +159,7 @@ void WindowEventFilter::MaybeDispatchHostWindowDragMovement(
     int hittest,
     ui::MouseEvent* event) {
   if (handler_ && event->IsLeftMouseButton() &&
-      CanPerformDragOrResize(hittest)) {
+      ui::CanPerformDragOrResize(hittest)) {
     // Some platforms (eg X11) may require last pointer location not in the
     // local surface coordinates, but rather in the screen coordinates for
     // interactive move/resize.

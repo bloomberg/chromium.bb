@@ -181,6 +181,8 @@ class AURA_EXPORT WindowTreeClient
       ws::mojom::MoveLoopSource source,
       aura::Window* initial_target);
 
+  void SetWindowResizeShadow(Window* window, int hit_test);
+
   // See mojom for details.
   template <typename Interface>
   mojo::AssociatedInterfacePtr<Interface> BindWindowManagerInterface() {
@@ -493,6 +495,7 @@ class AURA_EXPORT WindowTreeClient
       WindowTreeHostMus* window_tree_host,
       ws::mojom::MoveLoopSource mus_source,
       const gfx::Point& cursor_location,
+      int hit_test,
       base::OnceCallback<void(bool)> callback) override;
   void OnWindowTreeHostCancelWindowMove(
       WindowTreeHostMus* window_tree_host) override;

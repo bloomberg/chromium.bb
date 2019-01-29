@@ -16,6 +16,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/input_method_mus_delegate.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/mojo/ui_base_types.mojom.h"
 
 namespace display {
 class Display;
@@ -73,6 +74,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   void PerformWindowMove(Window* window,
                          ws::mojom::MoveLoopSource mus_source,
                          const gfx::Point& cursor_location,
+                         int hit_test,
                          base::OnceCallback<void(bool)> callback);
 
   // Tells the window manager to abort any current move initiated by

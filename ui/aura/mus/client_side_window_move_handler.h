@@ -7,6 +7,7 @@
 
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/event_handler.h"
 
 namespace ui {
@@ -16,12 +17,13 @@ class LocatedEvent;
 namespace aura {
 
 class Env;
+class WindowTreeClient;
 
 // ClientSideWindowMoveHandler handles mouse/gesture events and performs the
 // window move session when the event is located on draggable area.
 class ClientSideWindowMoveHandler : public ui::EventHandler {
  public:
-  explicit ClientSideWindowMoveHandler(Env* env);
+  ClientSideWindowMoveHandler(Env* env, WindowTreeClient* client);
   ~ClientSideWindowMoveHandler() override;
 
  private:
@@ -38,8 +40,11 @@ class ClientSideWindowMoveHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   Env* env_;
+  WindowTreeClient* client_;
+  WindowTracker last_shadow_target_;
   WindowTracker last_target_;
   gfx::Point last_location_;
+  int last_component_ = HTNOWHERE;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideWindowMoveHandler);
 };
