@@ -63,11 +63,14 @@ def _CheckFeatureDevSuffix(input_api, output_api):
   right place to use it is SupportLibWebViewChromiumFactory.
   """
 
+  pattern = input_api.re.compile(r'\bDEV_SUFFIX\b')
+
   problems = []
   filt = lambda f: 'boundary_interfaces' in f.LocalPath()
   for f in input_api.AffectedFiles(file_filter=filt):
     for line_num, line in f.ChangedContents():
-      if 'DEV_SUFFIX' in line:
+      m = pattern.search(line)
+      if m:
         problems.append('  %s:%d\n    %s\n' % (f.LocalPath(), line_num, line))
 
   if not problems:
