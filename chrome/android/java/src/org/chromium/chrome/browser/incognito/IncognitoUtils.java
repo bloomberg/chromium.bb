@@ -53,9 +53,9 @@ public class IncognitoUtils {
         for (ActivityManager.AppTask task : manager.getAppTasks()) {
             ActivityManager.RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
-            String className = DocumentUtils.getTaskClassName(task, pm);
+            String componentName = DocumentUtils.getTaskComponentName(task, pm);
 
-            if (ChromeTabbedActivity.isTabbedModeClassName(className)) {
+            if (ChromeTabbedActivity.isTabbedModeComponentName(componentName)) {
                 tabbedModeTaskIds.add(info.id);
             }
         }

@@ -123,13 +123,13 @@ public class IncognitoNotificationService extends IntentService {
         for (AppTask task : manager.getAppTasks()) {
             RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
-            String className = DocumentUtils.getTaskClassName(task, pm);
+            String componentName = DocumentUtils.getTaskComponentName(task, pm);
 
             // It is not easily possible to distinguish between tasks sitting on top of
             // ChromeLauncherActivity, so we treat them all as likely ChromeTabbedActivities and
             // close them to be on the cautious side of things.
-            if ((ChromeTabbedActivity.isTabbedModeClassName(className)
-                    || TextUtils.equals(className, ChromeLauncherActivity.class.getName()))
+            if ((ChromeTabbedActivity.isTabbedModeComponentName(componentName)
+                        || TextUtils.equals(componentName, ChromeLauncherActivity.class.getName()))
                     && !visibleTaskIds.contains(info.id)) {
                 task.finishAndRemoveTask();
             }

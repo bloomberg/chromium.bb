@@ -100,13 +100,13 @@ public class DocumentUtils {
     }
 
     /**
-     * Given an AppTask retrieves the task class name.
+     * Given an AppTask retrieves the task component name.
      * @param task The app task to use.
      * @param pm The package manager to use for resolving intent.
-     * @return Fully qualified class name or null if we were not able to
+     * @return Fully qualified component name name or null if we were not able to
      * determine it.
      */
-    public static String getTaskClassName(AppTask task, PackageManager pm) {
+    public static String getTaskComponentName(AppTask task, PackageManager pm) {
         RecentTaskInfo info = getTaskInfoFromTask(task);
         if (info == null) return null;
 
