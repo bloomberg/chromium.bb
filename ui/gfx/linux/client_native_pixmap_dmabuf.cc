@@ -11,9 +11,13 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/memory.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -58,6 +62,24 @@ void PrimeSyncEnd(int dmabuf_fd) {
 }
 
 }  // namespace
+
+ClientNativePixmapDmaBuf::PlaneInfo::PlaneInfo() {}
+
+ClientNativePixmapDmaBuf::PlaneInfo::PlaneInfo(PlaneInfo&& info)
+    : fd(std::move(info.fd)),
+      data(info.data),
+      offset(info.offset),
+      size(info.size) {
+  // Set nullptr to info.data in order not to call munmap in |info| dtor.
+  info.data = nullptr;
+}
+
+ClientNativePixmapDmaBuf::PlaneInfo::~PlaneInfo() {
+  if (data) {
+    int ret = munmap(data, size);
+    DCHECK(!ret);
+  }
+}
 
 // static
 bool ClientNativePixmapDmaBuf::IsConfigurationSupported(
@@ -137,59 +159,74 @@ std::unique_ptr<gfx::ClientNativePixmap>
 ClientNativePixmapDmaBuf::ImportFromDmabuf(
     const gfx::NativePixmapHandle& handle,
     const gfx::Size& size) {
-  return base::WrapUnique(new ClientNativePixmapDmaBuf(handle, size));
+  std::array<PlaneInfo, kMaxPlanes> plane_info;
+  for (size_t i = 0; i < handle.fds.size(); ++i) {
+    const auto& fd = handle.fds[i];
+    DCHECK(fd.auto_close);
+    plane_info[i].fd.reset(fd.fd);
+    DCHECK(plane_info[i].fd.is_valid());
+  }
+
+  DCHECK_EQ(handle.planes.size(), handle.fds.size());
+
+  const size_t page_size = base::GetPageSize();
+  for (size_t i = 0; i < handle.fds.size(); ++i) {
+    // mmap() fails if the offset argument is not page-aligned.
+    // Since handle.planes[i].offset is possibly not page-aligned, we
+    // have to map with an additional offset to be aligned to the page.
+    const size_t extra_offset = handle.planes[i].offset % page_size;
+    size_t map_size =
+        base::checked_cast<size_t>(handle.planes[i].size + extra_offset);
+    plane_info[i].offset = extra_offset;
+    plane_info[i].size = map_size;
+
+    void* data =
+        mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
+             plane_info[i].fd.get(), handle.planes[i].offset - extra_offset);
+    if (data == MAP_FAILED) {
+      logging::SystemErrorCode mmap_error = logging::GetLastSystemErrorCode();
+      if (mmap_error == ENOMEM)
+        base::TerminateBecauseOutOfMemory(map_size);
+      LOG(ERROR) << "Failed to mmap dmabuf: "
+                 << logging::SystemErrorCodeToString(mmap_error);
+      return nullptr;
+    }
+    plane_info[i].data = data;
+  }
+
+  return base::WrapUnique(
+      new ClientNativePixmapDmaBuf(handle, size, std::move(plane_info)));
 }
 
 ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
     const gfx::NativePixmapHandle& handle,
-    const gfx::Size& size)
-    : pixmap_handle_(handle), size_(size), data_{0} {
+    const gfx::Size& size,
+    std::array<PlaneInfo, kMaxPlanes> plane_info)
+    : pixmap_handle_(handle), size_(size), plane_info_(std::move(plane_info)) {
   TRACE_EVENT0("drm", "ClientNativePixmapDmaBuf");
-  // TODO(dcastagna): support multiple fds.
-  DCHECK_EQ(1u, handle.fds.size());
-  DCHECK_GE(handle.fds.front().fd, 0);
-  dmabuf_fd_.reset(handle.fds.front().fd);
-
-  DCHECK_GE(handle.planes.back().size, 0u);
-  size_t map_size = handle.planes.back().offset + handle.planes.back().size;
-  data_ = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
-               dmabuf_fd_.get(), 0);
-  if (data_ == MAP_FAILED) {
-    logging::SystemErrorCode mmap_error = logging::GetLastSystemErrorCode();
-    if (mmap_error == ENOMEM)
-      base::TerminateBecauseOutOfMemory(map_size);
-
-    CHECK(false) << "Failed to mmap dmabuf: "
-                 << logging::SystemErrorCodeToString(mmap_error);
-  }
 }
 
 ClientNativePixmapDmaBuf::~ClientNativePixmapDmaBuf() {
   TRACE_EVENT0("drm", "~ClientNativePixmapDmaBuf");
-  size_t map_size =
-      pixmap_handle_.planes.back().offset + pixmap_handle_.planes.back().size;
-  int ret = munmap(data_, map_size);
-  DCHECK(!ret);
 }
 
 bool ClientNativePixmapDmaBuf::Map() {
   TRACE_EVENT0("drm", "DmaBuf:Map");
-  if (data_ != nullptr) {
-    PrimeSyncStart(dmabuf_fd_.get());
-    return true;
-  }
-  return false;
+  for (size_t i = 0; i < pixmap_handle_.planes.size(); ++i)
+    PrimeSyncStart(plane_info_[i].fd.get());
+  return true;
 }
 
 void ClientNativePixmapDmaBuf::Unmap() {
   TRACE_EVENT0("drm", "DmaBuf:Unmap");
-  PrimeSyncEnd(dmabuf_fd_.get());
+  for (size_t i = 0; i < pixmap_handle_.planes.size(); ++i)
+    PrimeSyncEnd(plane_info_[i].fd.get());
 }
 
 void* ClientNativePixmapDmaBuf::GetMemoryAddress(size_t plane) const {
   DCHECK_LT(plane, pixmap_handle_.planes.size());
-  uint8_t* address = reinterpret_cast<uint8_t*>(data_);
-  return address + pixmap_handle_.planes[plane].offset;
+  return static_cast<uint8_t*>(plane_info_[plane].data) +
+         plane_info_[plane].offset;
 }
 
 int ClientNativePixmapDmaBuf::GetStride(size_t plane) const {

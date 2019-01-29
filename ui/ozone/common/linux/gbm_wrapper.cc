@@ -38,7 +38,9 @@ class Buffer final : public ui::GbmBuffer {
         flags_(flags),
         fds_(std::move(fds)),
         size_(size),
-        planes_(std::move(planes)) {}
+        planes_(std::move(planes)) {
+    DCHECK_EQ(fds_.size(), planes_.size());
+  }
 
   ~Buffer() override {
     DCHECK(!mmap_data_);
@@ -93,16 +95,13 @@ class Buffer final : public ui::GbmBuffer {
     // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use
     // are supported by gbm.
     for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
-      // Some formats (e.g: YVU_420) might have less than one fd per plane.
-      if (i < fds_.size()) {
-        base::ScopedFD scoped_fd(HANDLE_EINTR(dup(GetPlaneFd(i))));
-        if (!scoped_fd.is_valid()) {
-          PLOG(ERROR) << "dup";
-          return gfx::NativePixmapHandle();
-        }
-        handle.fds.emplace_back(
-            base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
+      base::ScopedFD scoped_fd(HANDLE_EINTR(dup(GetPlaneFd(i))));
+      if (!scoped_fd.is_valid()) {
+        PLOG(ERROR) << "dup";
+        return gfx::NativePixmapHandle();
       }
+      handle.fds.emplace_back(
+          base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
       handle.planes.emplace_back(GetPlaneStride(i), GetPlaneOffset(i),
                                  GetPlaneSize(i), GetFormatModifier());
     }
@@ -161,16 +160,12 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
     // kept open for the lifetime of the buffer.
     base::ScopedFD fd(gbm_bo_get_plane_fd(bo, i));
 
-    // TODO(dcastagna): support multiple fds.
-    // crbug.com/642410
-    if (!i) {
-      if (!fd.is_valid()) {
-        PLOG(ERROR) << "Failed to export buffer to dma_buf";
-        gbm_bo_destroy(bo);
-        return nullptr;
-      }
-      fds.emplace_back(std::move(fd));
+    if (!fd.is_valid()) {
+      PLOG(ERROR) << "Failed to export buffer to dma_buf";
+      gbm_bo_destroy(bo);
+      return nullptr;
     }
+    fds.emplace_back(std::move(fd));
 
     planes.emplace_back(gbm_bo_get_plane_stride(bo, i),
                         gbm_bo_get_plane_offset(bo, i),

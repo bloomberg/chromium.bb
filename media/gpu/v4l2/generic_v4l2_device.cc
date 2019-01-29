@@ -299,8 +299,14 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
   gfx::NativePixmapHandle native_pixmap_handle;
 
   std::vector<base::ScopedFD> duped_fds;
-  for (const auto& fd : dmabuf_fds) {
-    duped_fds.emplace_back(HANDLE_EINTR(dup(fd.get())));
+  // The number of file descriptors can be less than the number of planes when
+  // v4l2 pix fmt, |fourcc|, is a single plane format. Duplicating the last
+  // file descriptor should be safely used for the later planes, because they
+  // are on the last buffer.
+  for (size_t i = 0; i < num_planes; ++i) {
+    int fd =
+        i < dmabuf_fds.size() ? dmabuf_fds[i].get() : dmabuf_fds.back().get();
+    duped_fds.emplace_back(HANDLE_EINTR(dup(fd)));
     if (!duped_fds.back().is_valid()) {
       VPLOGF(1) << "Failed duplicating a dmabuf fd";
       return nullptr;
