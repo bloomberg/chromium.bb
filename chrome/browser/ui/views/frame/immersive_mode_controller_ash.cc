@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -193,6 +194,11 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
     return;
 
   if (!TabletModeClient::Get()->tablet_mode_enabled())
+    return;
+
+  // Don't use immersive mode as long as we are in the locked fullscreen mode
+  // since immersive shows browser controls which allow exiting the mode.
+  if (ash::IsWindowTrustedPinned(widget->GetNativeWindow()))
     return;
 
   // Enable immersive mode if the widget is activated. Do not disable immersive
