@@ -1097,12 +1097,13 @@ fileOperationUtil.MoveTask.prototype.run = function(
 fileOperationUtil.MoveTask.processEntry_ = function(
     sourceEntry, destinationEntry, entryChangedCallback, successCallback,
     errorCallback) {
+  const destination =
+      /** @type{!DirectoryEntry} */ (
+          assert(util.unwrapEntry(destinationEntry)));
   fileOperationUtil.deduplicatePath(
-      destinationEntry,
-      sourceEntry.name,
-      function(destinationName) {
+      destination, sourceEntry.name, function(destinationName) {
         sourceEntry.moveTo(
-            destinationEntry, destinationName,
+            destination, destinationName,
             function(movedEntry) {
               entryChangedCallback(util.EntryChangedKind.CREATED, movedEntry);
               entryChangedCallback(util.EntryChangedKind.DELETED, sourceEntry);
@@ -1112,8 +1113,7 @@ fileOperationUtil.MoveTask.processEntry_ = function(
               errorCallback(new fileOperationUtil.Error(
                   util.FileOperationErrorType.FILESYSTEM_ERROR, error));
             });
-      },
-      errorCallback);
+      }, errorCallback);
 };
 
 /**

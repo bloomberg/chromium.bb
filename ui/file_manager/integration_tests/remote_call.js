@@ -398,13 +398,18 @@ RemoteCallFilesApp.prototype.waitForFiles =
         expected.sort();
       }
       for (var i = 0; i < Math.min(files.length, expected.length); i++) {
+        // Change the value received from the UI to match when comparing.
         if (options.ignoreFileSize) {
-          files[i][1] = '';
-          expected[i][1] = '';
+          files[i][1] = expected[i][1];
         }
         if (options.ignoreLastModifiedTime) {
-          files[i][3] = '';
-          expected[i][3] = '';
+          if (expected[i].length < 4) {
+            // expected sometimes doesn't include the modified time at all, so
+            // just remove from the data from UI.
+            files[i].splice(3, 1);
+          } else {
+            files[i][3] = expected[i][3];
+          }
         }
       }
       if (!chrome.test.checkDeepEq(expected, files)) {

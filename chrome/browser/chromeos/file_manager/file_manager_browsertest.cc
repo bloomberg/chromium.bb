@@ -583,6 +583,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestCase("transferFromDriveToDownloads").DisableDriveFs(),
         TestCase("transferFromDriveToDownloads").EnableDriveFs(),
+        TestCase("transferFromDownloadsToMyFiles").EnableMyFilesVolume(),
+        TestCase("transferFromDownloadsToMyFilesMove").EnableMyFilesVolume(),
         TestCase("transferFromDownloadsToDrive").DisableDriveFs(),
         TestCase("transferFromDownloadsToDrive").EnableDriveFs(),
         TestCase("transferFromSharedToDownloads").DisableDriveFs(),
