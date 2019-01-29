@@ -81,6 +81,11 @@ const float kNoisyMagnitudeDeviation = 1.0f;
 constexpr base::TimeDelta kRecordLidAngleInterval =
     base::TimeDelta::FromHours(1);
 
+// Time that should wait to reset |occlusion_tracker_pauser_| on
+// entering/exiting tablet mode.
+constexpr base::TimeDelta kOcclusionTrackerTimeout =
+    base::TimeDelta::FromMilliseconds(500);
+
 // The angle between AccelerometerReadings are considered stable if
 // their magnitudes do not differ greatly. This returns false if the deviation
 // between the screen and keyboard accelerometers is too high.
@@ -189,6 +194,9 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     RootWindowController::ForWindow(root_window)->HideContextMenu();
 
   if (should_enable) {
+    // Suspend occlusion tracker when entering tablet mode.
+    SuspendOcclusionTracker();
+
     tablet_mode_window_manager_.reset(new TabletModeWindowManager());
     base::RecordAction(base::UserMetricsAction("Touchview_Enabled"));
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
@@ -210,6 +218,9 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
       client_->OnTabletModeToggled(true);
     VLOG(1) << "Enter tablet mode.";
   } else {
+    // Suspend occlusion tracker when exiting tablet mode.
+    SuspendOcclusionTracker();
+
     tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnding();
@@ -673,6 +684,20 @@ void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
 bool TabletModeController::LidAngleIsInTabletModeRange() {
   return can_detect_lid_angle_ && !lid_is_closed_ &&
          lid_angle_ >= kEnterTabletModeAngle;
+}
+
+void TabletModeController::SuspendOcclusionTracker() {
+  occlusion_tracker_reset_timer_.Stop();
+  occlusion_tracker_pauser_ =
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+          Shell::Get()->aura_env());
+  occlusion_tracker_reset_timer_.Start(FROM_HERE, kOcclusionTrackerTimeout,
+                                       this,
+                                       &TabletModeController::ResetPauser);
+}
+
+void TabletModeController::ResetPauser() {
+  occlusion_tracker_pauser_.reset();
 }
 
 }  // namespace ash

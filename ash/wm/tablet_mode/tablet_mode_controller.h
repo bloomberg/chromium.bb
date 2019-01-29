@@ -25,6 +25,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -218,6 +219,13 @@ class ASH_EXPORT TabletModeController
   // angle range.
   bool LidAngleIsInTabletModeRange();
 
+  // Suspends |occlusion_tracker_pauser_| for the duration of
+  // kOcclusionTrackTimeout.
+  void SuspendOcclusionTracker();
+
+  // Resets |occlusion_tracker_pauser_|.
+  void ResetPauser();
+
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
@@ -283,6 +291,13 @@ class ASH_EXPORT TabletModeController
   base::RepeatingTimer record_lid_angle_timer_;
 
   ScopedSessionObserver scoped_session_observer_;
+
+  std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>
+      occlusion_tracker_pauser_;
+
+  // Starts when enter/exit tablet mode. Runs ResetPauser to reset the
+  // occlustion tracker.
+  base::OneShotTimer occlusion_tracker_reset_timer_;
 
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
