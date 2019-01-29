@@ -43,8 +43,11 @@ class DefaultTaskExecutor implements TaskExecutor {
             // Caching TaskRunners only for common TaskTraits.
             TaskRunner runner = mTraitsToRunnerMap.get(taskTraits);
             if (runner == null) {
-                runner = createTaskRunner(taskTraits);
-                mTraitsToRunnerMap.put(taskTraits, runner);
+                TaskRunnerImpl runnerImpl = new TaskRunnerImpl(taskTraits);
+                // Disable destroy() check since object will live forever.
+                runnerImpl.disableLifetimeCheck();
+                mTraitsToRunnerMap.put(taskTraits, runnerImpl);
+                runner = runnerImpl;
             }
             runner.postDelayedTask(task, delay);
         }

@@ -28,6 +28,10 @@ public class TaskRunnerImplTest {
         TaskRunner taskQueue = new TaskRunnerImpl(new TaskTraits());
 
         // This should not time out.
-        SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        try {
+            SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        } finally {
+            taskQueue.destroy();
+        }
     }
 }

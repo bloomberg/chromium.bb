@@ -12,6 +12,7 @@ import org.robolectric.TestLifecycle;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.LifetimeAssert;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.lang.reflect.Method;
@@ -35,6 +36,7 @@ public class BaseRobolectricTestRunner extends LocalRobolectricTestRunner {
         @Override
         public void afterTest(Method method) {
             ApplicationStatus.destroyForJUnitTests();
+            LifetimeAssert.assertAllInstancesDestroyedForTesting();
             super.afterTest(method);
         }
     }

@@ -66,15 +66,18 @@ public class ProviderSearchesUriTest {
         Cursor cursor = mProviderTestRule.getContentResolver().query(uri, null,
                 SearchColumns.SEARCH + "=? AND " + SearchColumns.DATE + " = ? ", selectionArgs,
                 null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        int index = cursor.getColumnIndex(SearchColumns.SEARCH);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(searchTerm, cursor.getString(index));
-        index = cursor.getColumnIndex(SearchColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(searchTime, cursor.getLong(index));
+        try {
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(SearchColumns.SEARCH);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(searchTerm, cursor.getString(index));
+            index = cursor.getColumnIndex(SearchColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(searchTime, cursor.getLong(index));
+        } finally {
+            cursor.close();
+        }
     }
 
     @Test
@@ -91,20 +94,26 @@ public class ProviderSearchesUriTest {
         String[] selectionArgs = { searchTerm[0] };
         Cursor cursor = mProviderTestRule.getContentResolver().query(
                 mSearchesUri, null, SearchColumns.SEARCH + "=?", selectionArgs, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(0, cursor.getCount());
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
         String[] selectionArgs1 = { searchTerm[1] };
         cursor = mProviderTestRule.getContentResolver().query(
                 mSearchesUri, null, SearchColumns.SEARCH + "=?", selectionArgs1, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        int index = cursor.getColumnIndex(SearchColumns.SEARCH);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(searchTerm[1], cursor.getString(index));
-        index = cursor.getColumnIndex(SearchColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(searchTime[1], cursor.getLong(index));
+        try {
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(SearchColumns.SEARCH);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(searchTerm[1], cursor.getString(index));
+            index = cursor.getColumnIndex(SearchColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(searchTime[1], cursor.getLong(index));
+        } finally {
+            cursor.close();
+        }
     }
 
     @Test
@@ -122,24 +131,34 @@ public class ProviderSearchesUriTest {
         String[] selectionArgs = { searchTerm[0] };
         Cursor cursor = mProviderTestRule.getContentResolver().query(
                 mSearchesUri, null, SearchColumns.SEARCH + "=?", selectionArgs, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(0, cursor.getCount());
-        String[] selectionArgs1 = { searchTerm[1] };
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
+        String[] selectionArgs1 = {searchTerm[1]};
         cursor = mProviderTestRule.getContentResolver().query(
                 mSearchesUri, null, SearchColumns.SEARCH + "=?", selectionArgs1, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(1, cursor.getCount());
-        Assert.assertTrue(cursor.moveToNext());
-        int index = cursor.getColumnIndex(SearchColumns.SEARCH);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(searchTerm[1], cursor.getString(index));
-        index = cursor.getColumnIndex(SearchColumns.DATE);
-        Assert.assertTrue(-1 != index);
-        Assert.assertEquals(searchTime[1], cursor.getLong(index));
-        mProviderTestRule.getContentResolver().delete(uri[1], null, null);
+        try {
+            Assert.assertNotNull(cursor);
+            Assert.assertEquals(1, cursor.getCount());
+            Assert.assertTrue(cursor.moveToNext());
+            int index = cursor.getColumnIndex(SearchColumns.SEARCH);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(searchTerm[1], cursor.getString(index));
+            index = cursor.getColumnIndex(SearchColumns.DATE);
+            Assert.assertTrue(-1 != index);
+            Assert.assertEquals(searchTime[1], cursor.getLong(index));
+            mProviderTestRule.getContentResolver().delete(uri[1], null, null);
+        } finally {
+            cursor.close();
+        }
         cursor = mProviderTestRule.getContentResolver().query(uri[1], null, null, null, null);
-        Assert.assertNotNull(cursor);
-        Assert.assertEquals(0, cursor.getCount());
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
     }
 
     // Copied from CTS test with minor adaptations.
@@ -162,13 +181,17 @@ public class ProviderSearchesUriTest {
         Cursor cursor = mProviderTestRule.getContentResolver().query(mSearchesUri,
                 ChromeBrowserProvider.SEARCHES_PROJECTION, SearchColumns.SEARCH + " = ?",
                 new String[] {insertSearch}, null);
-        Assert.assertTrue(cursor.moveToNext());
-        Assert.assertEquals(insertSearch,
-                cursor.getString(ChromeBrowserProvider.SEARCHES_PROJECTION_SEARCH_INDEX));
-        Assert.assertEquals(
-                createDate, cursor.getLong(ChromeBrowserProvider.SEARCHES_PROJECTION_DATE_INDEX));
-        int id = cursor.getInt(idIndex);
-        cursor.close();
+        int id;
+        try {
+            Assert.assertTrue(cursor.moveToNext());
+            Assert.assertEquals(insertSearch,
+                    cursor.getString(ChromeBrowserProvider.SEARCHES_PROJECTION_SEARCH_INDEX));
+            Assert.assertEquals(createDate,
+                    cursor.getLong(ChromeBrowserProvider.SEARCHES_PROJECTION_DATE_INDEX));
+            id = cursor.getInt(idIndex);
+        } finally {
+            cursor.close();
+        }
 
         // Test: update
         value.clear();
@@ -181,18 +204,25 @@ public class ProviderSearchesUriTest {
         cursor = mProviderTestRule.getContentResolver().query(mSearchesUri,
                 ChromeBrowserProvider.SEARCHES_PROJECTION, SearchColumns.ID + " = " + id, null,
                 null);
-        Assert.assertTrue(cursor.moveToNext());
-        Assert.assertEquals(updateSearch,
-                cursor.getString(ChromeBrowserProvider.SEARCHES_PROJECTION_SEARCH_INDEX));
-        Assert.assertEquals(
-                updateDate, cursor.getLong(ChromeBrowserProvider.SEARCHES_PROJECTION_DATE_INDEX));
-        Assert.assertEquals(id, cursor.getInt(idIndex));
-
+        try {
+            Assert.assertTrue(cursor.moveToNext());
+            Assert.assertEquals(updateSearch,
+                    cursor.getString(ChromeBrowserProvider.SEARCHES_PROJECTION_SEARCH_INDEX));
+            Assert.assertEquals(updateDate,
+                    cursor.getLong(ChromeBrowserProvider.SEARCHES_PROJECTION_DATE_INDEX));
+            Assert.assertEquals(id, cursor.getInt(idIndex));
+        } finally {
+            cursor.close();
+        }
         // Test: delete
         mProviderTestRule.getContentResolver().delete(insertUri, null, null);
         cursor = mProviderTestRule.getContentResolver().query(mSearchesUri,
                 ChromeBrowserProvider.SEARCHES_PROJECTION, SearchColumns.ID + " = " + id, null,
                 null);
-        Assert.assertEquals(0, cursor.getCount());
+        try {
+            Assert.assertEquals(0, cursor.getCount());
+        } finally {
+            cursor.close();
+        }
     }
 }

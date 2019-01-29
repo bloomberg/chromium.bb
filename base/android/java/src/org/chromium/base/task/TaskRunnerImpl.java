@@ -7,7 +7,7 @@ package org.chromium.base.task;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
-import org.chromium.base.GcStateAssert;
+import org.chromium.base.LifetimeAssert;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -29,8 +29,7 @@ public class TaskRunnerImpl implements TaskRunner {
     protected long mNativeTaskRunnerAndroid;
     protected final Runnable mRunPreNativeTaskClosure = this::runPreNativeTask;
     private boolean mIsDestroying;
-    private final GcStateAssert mGcStateAssert = GcStateAssert.create(this, true);
-
+    private final LifetimeAssert mLifetimeAssert = LifetimeAssert.create(this);
     @Nullable
     protected LinkedList<Runnable> mPreNativeTasks = new LinkedList<>();
     @Nullable
@@ -60,11 +59,18 @@ public class TaskRunnerImpl implements TaskRunner {
     @Override
     public void destroy() {
         synchronized (mLock) {
-            GcStateAssert.setSafeToGc(mGcStateAssert, true);
+            LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
             if (mNativeTaskRunnerAndroid != 0) nativeDestroy(mNativeTaskRunnerAndroid);
             mNativeTaskRunnerAndroid = 0;
             mIsDestroying = true;
         }
+    }
+
+    /**
+     * Set this for instances that are cached between tests.
+     */
+    void disableLifetimeCheck() {
+        LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
     }
 
     @Override
@@ -124,7 +130,6 @@ public class TaskRunnerImpl implements TaskRunner {
     public void initNativeTaskRunner() {
         synchronized (mLock) {
             if (mPreNativeTasks != null) {
-                GcStateAssert.setSafeToGc(mGcStateAssert, false);
                 mNativeTaskRunnerAndroid =
                         nativeInit(mTaskRunnerType, mTaskTraits.mPrioritySetExplicitly,
                                 mTaskTraits.mPriority, mTaskTraits.mMayBlock,

@@ -7,8 +7,6 @@ package org.chromium.content.browser.scheduler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
@@ -23,7 +21,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.task.SchedulerTestHelpers;
 import org.chromium.base.test.task.TaskSchedulerTestHelpers;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
@@ -38,8 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * instead.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(23)
-@TargetApi(Build.VERSION_CODES.M)
 public class NativePostTaskTest {
     @Rule
     public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
@@ -123,18 +118,22 @@ public class NativePostTaskTest {
     }
 
     private void testRunningTasksInSequence(TaskRunner taskQueue) {
-        List<Integer> orderListImmediate = new ArrayList<>();
-        List<Integer> orderListDelayed = new ArrayList<>();
+        try {
+            List<Integer> orderListImmediate = new ArrayList<>();
+            List<Integer> orderListDelayed = new ArrayList<>();
 
-        SchedulerTestHelpers.postThreeTasksInOrder(taskQueue, orderListImmediate);
-        SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+            SchedulerTestHelpers.postThreeTasksInOrder(taskQueue, orderListImmediate);
+            SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
 
-        assertThat(orderListImmediate, contains(1, 2, 3));
+            assertThat(orderListImmediate, contains(1, 2, 3));
 
-        SchedulerTestHelpers.postThreeDelayedTasksInOrder(taskQueue, orderListDelayed);
-        SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
+            SchedulerTestHelpers.postThreeDelayedTasksInOrder(taskQueue, orderListDelayed);
+            SchedulerTestHelpers.postDelayedTaskAndBlockUntilRun(taskQueue, 1);
 
-        assertThat(orderListDelayed, contains(1, 2, 3));
+            assertThat(orderListDelayed, contains(1, 2, 3));
+        } finally {
+            taskQueue.destroy();
+        }
     }
 
     @Test
@@ -184,6 +183,7 @@ public class NativePostTaskTest {
                 }
             }
         }, 1);
+        taskQueue.destroy();
 
         // We verify that the task didn't get scheduled before the native scheduler is initialised
         Assert.assertFalse(taskExecuted.get());
@@ -208,7 +208,11 @@ public class NativePostTaskTest {
         List<Integer> orderListImmediate = new ArrayList<>();
         List<Integer> orderListDelayed = new ArrayList<>();
         TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
-        performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
+        try {
+            performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
+        } finally {
+            taskQueue.destroy();
+        }
 
         assertThat(orderListImmediate, contains(1, 2, 3, 4));
         assertThat(orderListDelayed, contains(1, 2, 3));
@@ -220,7 +224,11 @@ public class NativePostTaskTest {
         List<Integer> orderListImmediate = new ArrayList<>();
         List<Integer> orderListDelayed = new ArrayList<>();
         TaskRunner taskQueue = PostTask.createSingleThreadTaskRunner(new TaskTraits());
-        performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
+        try {
+            performSequencedTestSchedulerMigration(taskQueue, orderListImmediate, orderListDelayed);
+        } finally {
+            taskQueue.destroy();
+        }
 
         assertThat(orderListImmediate, contains(1, 2, 3, 4));
         assertThat(orderListDelayed, contains(1, 2, 3));

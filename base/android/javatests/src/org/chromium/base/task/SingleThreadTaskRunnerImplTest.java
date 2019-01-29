@@ -7,8 +7,6 @@ package org.chromium.base.task;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -22,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.task.SchedulerTestHelpers;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +33,6 @@ import java.util.List;
  * TaskSchedulerTest.java
  */
 @RunWith(BaseJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(23)
-@TargetApi(Build.VERSION_CODES.M)
 public class SingleThreadTaskRunnerImplTest {
     @Before
     public void setUp() throws Exception {
@@ -47,7 +42,6 @@ public class SingleThreadTaskRunnerImplTest {
     }
 
     @After
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     public void tearDown() throws InterruptedException {
         Looper looper = mHandlerThread.getLooper();
         if (looper != null) {
@@ -67,6 +61,7 @@ public class SingleThreadTaskRunnerImplTest {
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 1);
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 2);
         SchedulerTestHelpers.postRecordOrderTask(taskQueue, orderList, 3);
+        taskQueue.destroy();
 
         SchedulerTestHelpers.preNativeRunUntilIdle(mHandlerThread);
         assertThat(orderList, contains(1, 2, 3));
@@ -78,12 +73,20 @@ public class SingleThreadTaskRunnerImplTest {
         // The handler created during test setup belongs to a different thread.
         SingleThreadTaskRunner taskQueue =
                 new SingleThreadTaskRunnerImpl(mHandler, new TaskTraits());
-        Assert.assertFalse(taskQueue.belongsToCurrentThread());
+        try {
+            Assert.assertFalse(taskQueue.belongsToCurrentThread());
+        } finally {
+            taskQueue.destroy();
+        }
 
         // We create a handler belonging to current thread.
         Looper.prepare();
         SingleThreadTaskRunner taskQueueCurrentThread =
                 new SingleThreadTaskRunnerImpl(new Handler(), new TaskTraits());
-        Assert.assertTrue(taskQueueCurrentThread.belongsToCurrentThread());
+        try {
+            Assert.assertTrue(taskQueueCurrentThread.belongsToCurrentThread());
+        } finally {
+            taskQueueCurrentThread.destroy();
+        }
     }
 }

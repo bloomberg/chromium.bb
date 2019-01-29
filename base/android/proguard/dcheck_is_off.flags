@@ -4,5 +4,5 @@
 
 # Contains flags that are applied only when ENABLE_DCHECK=false.
 
-# Ensure that GcStateAssert is fully optimized away.
--checkdiscard class org.chromium.base.GcStateAssert$WrappedReference { *; }
+# Ensure that LifetimeAssert implementation is not reachable in release.
+-checkdiscard class org.chromium.base.LifetimeAssert$WrappedReference { *; }

@@ -174,7 +174,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @CallSuper
     protected List<TestRule> getDefaultTestRules() {
-        return Collections.emptyList();
+        return Collections.singletonList(new LifetimeAssertRule());
     }
 
     /**

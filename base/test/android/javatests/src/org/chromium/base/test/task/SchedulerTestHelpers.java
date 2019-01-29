@@ -4,14 +4,11 @@
 
 package org.chromium.base.test.task;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.MessageQueue;
+import android.os.Looper;
 
 import org.chromium.base.task.TaskRunner;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,8 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Collection of helpers for testing the java PostTask.
  */
-@MinAndroidSdkLevel(23)
-@TargetApi(Build.VERSION_CODES.M)
 public class SchedulerTestHelpers {
     public static void postRecordOrderTask(
             TaskRunner taskQueue, List<Integer> orderList, int order) {
@@ -120,23 +115,19 @@ public class SchedulerTestHelpers {
      * Waits until the looper's MessageQueue becomes idle.
      */
     public static void preNativeRunUntilIdle(HandlerThread handlerThread) {
-        final MessageQueue messageQueue = handlerThread.getLooper().getQueue();
-        // This API was added in sdk level 23.
-        if (messageQueue.isIdle()) {
-            return;
-        }
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        messageQueue.addIdleHandler(new MessageQueue.IdleHandler() {
-            @Override
-            public boolean queueIdle() {
+
+        new Handler(handlerThread.getLooper()).post(() -> {
+            Looper.myQueue().addIdleHandler(() -> {
                 synchronized (lock) {
                     taskExecuted.set(true);
                     lock.notify();
                 }
                 return false;
-            }
+            });
         });
+
         synchronized (lock) {
             try {
                 while (!taskExecuted.get()) {
