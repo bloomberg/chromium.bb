@@ -6,74 +6,17 @@
 #define BASE_FUCHSIA_COMPONENT_CONTEXT_H_
 
 #include <lib/zx/channel.h>
+#include <utility>
 
-#include "base/base_export.h"
-#include "base/fuchsia/fidl_interface_request.h"
-#include "base/macros.h"
-#include "base/strings/string_piece.h"
-
-namespace fidl {
-
-template <typename Interface>
-class InterfacePtr;
-
-template <typename Interface>
-class SynchronousInterfacePtr;
-
-}  // namespace fidl
+#include "base/fuchsia/service_directory_client.h"
 
 namespace base {
 namespace fuchsia {
 
-// Provides access to the component's environment.
-class BASE_EXPORT ComponentContext {
- public:
-  explicit ComponentContext(zx::channel service_root);
-  ~ComponentContext();
-
-  // Returns default ComponentContext instance for the current process. It uses
-  // /srv namespace to connect to environment services.
-  static ComponentContext* GetDefault();
-
-  // Satisfies the interface |request| by binding the channel to a service.
-  zx_status_t ConnectToService(FidlInterfaceRequest request);
-
-  // Same as above, but returns interface pointer instead of taking a request.
-  template <typename Interface>
-  fidl::InterfacePtr<Interface> ConnectToService() {
-    fidl::InterfacePtr<Interface> result;
-    ConnectToService(FidlInterfaceRequest(&result));
-    return result;
-  }
-
-  // Connects to an environment service and returns synchronous interface
-  // implementation.
-  template <typename Interface>
-  fidl::SynchronousInterfacePtr<Interface> ConnectToServiceSync() {
-    fidl::SynchronousInterfacePtr<Interface> result;
-    ConnectToService(FidlInterfaceRequest(&result));
-    return result;
-  }
-
- private:
-  zx::channel service_root_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComponentContext);
-};
-
-// Replaces the default ComponentContext with the supplied |service_root|, and
-// restores it when going out-of-scope.
-class BASE_EXPORT ScopedDefaultComponentContext {
- public:
-  ScopedDefaultComponentContext(zx::channel service_root);
-  ~ScopedDefaultComponentContext();
-
- private:
-  ComponentContext* context_;
-  std::unique_ptr<ComponentContext> old_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDefaultComponentContext);
-};
+// TODO(https://crbug.com/920920): Remove these once all call-sites are updated.
+using ComponentContext = ServiceDirectoryClient;
+using ScopedDefaultComponentContext =
+    ScopedServiceDirectoryClientForCurrentProcessForTest;
 
 }  // namespace fuchsia
 }  // namespace base

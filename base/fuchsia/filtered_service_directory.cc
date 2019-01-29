@@ -6,6 +6,7 @@
 
 #include <lib/fdio/util.h>
 #include <lib/zx/channel.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/fuchsia/component_context.h"
@@ -15,23 +16,23 @@ namespace base {
 namespace fuchsia {
 
 FilteredServiceDirectory::FilteredServiceDirectory(
-    ComponentContext* component_context)
-    : component_context_(component_context) {
+    const ServiceDirectoryClient* directory)
+    : directory_(directory) {
   zx::channel server_channel;
   zx_status_t status =
-      zx::channel::create(0, &server_channel, &directory_client_channel_);
+      zx::channel::create(0, &server_channel, &outgoing_directory_client_);
   ZX_CHECK(status == ZX_OK, status) << "zx_channel_create()";
 
-  service_directory_ =
+  outgoing_directory_ =
       std::make_unique<ServiceDirectory>(std::move(server_channel));
 }
 
 FilteredServiceDirectory::~FilteredServiceDirectory() {
-  service_directory_->RemoveAllServices();
+  outgoing_directory_->RemoveAllServices();
 }
 
 void FilteredServiceDirectory::AddService(const char* service_name) {
-  service_directory_->AddService(
+  outgoing_directory_->AddService(
       service_name,
       base::BindRepeating(&FilteredServiceDirectory::HandleRequest,
                           base::Unretained(this), service_name));
@@ -45,7 +46,7 @@ zx::channel FilteredServiceDirectory::ConnectClient() {
 
   // ServiceDirectory puts public services under ./public . Connect to that
   // directory and return client handle for the connection,
-  status = fdio_service_connect_at(directory_client_channel_.get(), "public",
+  status = fdio_service_connect_at(outgoing_directory_client_.get(), "public",
                                    server_channel.release());
   ZX_CHECK(status == ZX_OK, status) << "fdio_service_connect_at()";
 
@@ -54,9 +55,7 @@ zx::channel FilteredServiceDirectory::ConnectClient() {
 
 void FilteredServiceDirectory::HandleRequest(const char* service_name,
                                              zx::channel channel) {
-  component_context_->ConnectToService(
-      FidlInterfaceRequest::CreateFromChannelUnsafe(service_name,
-                                                    std::move(channel)));
+  directory_->ConnectToServiceUnsafe(service_name, std::move(channel));
 }
 
 }  // namespace fuchsia
