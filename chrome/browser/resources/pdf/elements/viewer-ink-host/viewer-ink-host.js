@@ -222,7 +222,7 @@ Polymer({
     const pos = viewport.position;
     const size = viewport.size;
     const zoom = viewport.zoom;
-    const documentWidth = viewport.getDocumentDimensions(zoom).width * zoom;
+    const documentWidth = viewport.getDocumentDimensions().width * zoom;
     // Adjust for page shadows.
     const y = pos.y - Viewport.PAGE_SHADOW.top * zoom;
     let x = pos.x - Viewport.PAGE_SHADOW.left * zoom;

@@ -75,10 +75,9 @@ function doNavigationUrlTests(originalUrl, url, expectedResultUrl) {
   var mockWindow = new MockWindow(100, 100);
   var mockSizer = new MockSizer();
   var mockViewportChangedCallback = new MockViewportChangedCallback();
-  var viewport = new Viewport(mockWindow, mockSizer,
-                              mockViewportChangedCallback.callback,
-                              function() {}, function() {}, function() {},
-                              0, 1, 0);
+  var viewport = new ViewportImpl(
+      mockWindow, mockSizer, mockViewportChangedCallback.callback,
+      function() {}, function() {}, function() {}, 0, 1, 0);
 
   var paramsParser = new OpenPDFParamsParser(function(name) {
     paramsParser.onNamedDestinationReceived(-1);
@@ -108,9 +107,9 @@ var tests = [
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
     var mockCallback = new MockViewportChangedCallback();
-    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
-                                function() {}, function() {}, function() {},
-                                0, 1, 0);
+    var viewport = new ViewportImpl(
+        mockWindow, mockSizer, mockCallback.callback, function() {},
+        function() {}, function() {}, 0, 1, 0);
 
     var paramsParser = new OpenPDFParamsParser(function(message) {
       if (message.namedDestination == 'US')

@@ -175,7 +175,7 @@ function PDFViewer(browserApi) {
       this.browserApi_.getZoomBehavior() == BrowserApi.ZoomBehavior.MANAGE ?
       this.browserApi_.getDefaultZoom() :
       1.0;
-  this.viewport_ = new Viewport(
+  this.viewport_ = new ViewportImpl(
       window, this.sizer_, this.viewportChanged_.bind(this),
       () => this.currentController_.beforeZoom(),
       () => {
