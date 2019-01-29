@@ -699,11 +699,10 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
 
   // No resume delay in single display mode.
   config_waiter_.Reset();
@@ -724,11 +723,10 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
                                 config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
 
   config_waiter_.Reset();
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
@@ -938,7 +936,6 @@ TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   EXPECT_EQ(outputs_[1]->current_mode(), cached[1]->current_mode());
 }
 
-
 TEST_F(DisplayConfiguratorTest, ContentProtection) {
   Init(false);
   configurator_.ForceInitialConfigure();
@@ -1017,11 +1014,10 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
 
   // The configuration timer should not be started when the displays
   // are suspended.
@@ -1074,11 +1070,10 @@ TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                nullptr),
+            log_->GetActionsAndClear());
   EXPECT_FALSE(test_api_.TriggerConfigureTimeout());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
@@ -1424,11 +1419,10 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
       base::BindOnce(&DisplayConfiguratorTest::OnDisplayControlUpdated,
                      base::Unretained(this)));
   EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
-  EXPECT_EQ(
-      JoinActions(
-          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
-          kRelinquishDisplayControl, nullptr),
-      log_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(
+                GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+                kRelinquishDisplayControl, nullptr),
+            log_->GetActionsAndClear());
   configurator_.TakeControl(
       base::BindOnce(&DisplayConfiguratorTest::OnDisplayControlUpdated,
                      base::Unretained(this)));
@@ -1799,10 +1793,7 @@ class DisplayConfiguratorMultiMirroringTest : public DisplayConfiguratorTest {
   DisplayConfiguratorMultiMirroringTest() = default;
   ~DisplayConfiguratorMultiMirroringTest() override = default;
 
-  void SetUp() override {
-    configurator_.set_is_multi_mirroring_enabled_for_test(true);
-    DisplayConfiguratorTest::SetUp();
-  }
+  void SetUp() override { DisplayConfiguratorTest::SetUp(); }
 
   // Test that setting mirror mode with current outputs, all displays are set to
   // expected mirror mode.

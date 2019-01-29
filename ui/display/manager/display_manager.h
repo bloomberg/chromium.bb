@@ -41,7 +41,7 @@
 namespace gfx {
 class Insets;
 class Rect;
-}
+}  // namespace gfx
 
 namespace display {
 class DisplayLayoutStore;
@@ -138,10 +138,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     return touch_device_manager_.get();
   }
 #endif
-
-  bool is_multi_mirroring_enabled() const {
-    return is_multi_mirroring_enabled_;
-  }
 
   const UnifiedDesktopLayoutMatrix& current_unified_desktop_matrix() const {
     return current_unified_desktop_matrix_;
@@ -679,9 +675,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // zoom levels before making the final decision.
   base::CancelableCallback<void()> on_display_zoom_modify_timeout_;
 #endif
-
-  // Whether mirroring across multiple displays is enabled.
-  bool is_multi_mirroring_enabled_;
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
 

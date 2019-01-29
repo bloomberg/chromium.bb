@@ -158,7 +158,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       "isGuest",
 #if defined(OS_CHROMEOS)
       user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
-      user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
 #else
       profile->IsOffTheRecord());
 #endif
@@ -822,8 +822,6 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   html_source->AddBoolean("unifiedDesktopAvailable",
                           cmd.HasSwitch(::switches::kEnableUnifiedDesktop));
-  html_source->AddBoolean("multiMirroringAvailable",
-                          !cmd.HasSwitch(::switches::kDisableMultiMirroring));
 
   html_source->AddBoolean(
       "enableTouchCalibrationSetting",
@@ -1551,9 +1549,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                             sync_service->IsUsingSecondaryPassphrase());
     html_source->AddBoolean(
         "uploadToGoogleActive",
-            syncer::GetUploadToGoogleState(
-                sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-                syncer::UploadState::ACTIVE);
+        syncer::GetUploadToGoogleState(
+            sync_service, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
+            syncer::UploadState::ACTIVE);
   } else {
     html_source->AddBoolean("isUsingSecondaryPassphrase", false);
     html_source->AddBoolean("uploadToGoogleActive", false);
@@ -1856,8 +1854,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
       "syncDisconnectManagedProfileExplanation",
       l10n_util::GetStringFUTF8(
           IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION,
-          base::ASCIIToUTF16("$1"),
-          base::ASCIIToUTF16(sync_dashboard_url)));
+          base::ASCIIToUTF16("$1"), base::ASCIIToUTF16(sync_dashboard_url)));
 
   // The syncDisconnect text differs depending on Dice-enabledness.
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {

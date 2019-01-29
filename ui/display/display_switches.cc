@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "ui/display/display_switches.h"
+#include "build/build_config.h"
 
 namespace switches {
 
 // TODO(rjkroege): Some of these have an "ash" prefix. When ChromeOS startup
 // scripts have been updated, the leading "ash" prefix should be removed.
-
-// Disables mirroring across multiple displays.
-const char kDisableMultiMirroring[] = "disable-multi-mirroring";
 
 // Enables software based mirroring.
 const char kEnableSoftwareMirroring[] = "ash-enable-software-mirroring";

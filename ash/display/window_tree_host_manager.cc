@@ -782,8 +782,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
 
   // Enable cursor compositing, so that cursor could be mirrored to destination
   // displays along with other display content through reflector.
-  if (display_manager->is_multi_mirroring_enabled())
-    Shell::Get()->UpdateCursorCompositingEnabled();
+  Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
 display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {

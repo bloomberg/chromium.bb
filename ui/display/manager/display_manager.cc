@@ -320,9 +320,6 @@ DisplayManager::BeginEndNotifier::~BeginEndNotifier() {
 DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
     : screen_(std::move(screen)),
       layout_store_(new DisplayLayoutStore),
-      is_multi_mirroring_enabled_(
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ::switches::kDisableMultiMirroring)),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   configure_displays_ = chromeos::IsRunningAsSystemCompositor();
@@ -412,13 +409,6 @@ DisplayIdList DisplayManager::GetCurrentDisplayIdList() const {
   DisplayIdList display_id_list = CreateDisplayIdList(active_display_list_);
 
   if (IsInSoftwareMirrorMode()) {
-    if (!is_multi_mirroring_enabled_) {
-      CHECK_EQ(2u, num_connected_displays());
-      // This comment is to make it easy to distinguish the crash
-      // between two checks.
-      CHECK_EQ(1u, active_display_list_.size());
-    }
-
     DisplayIdList software_mirroring_display_id_list =
         CreateDisplayIdList(software_mirroring_display_list_);
     display_id_list.insert(display_id_list.end(),
@@ -983,8 +973,9 @@ void DisplayManager::UpdateDisplaysWith(
       // the layout.
       // Using display.bounds() and display.work_area() would fail most of the
       // time.
-      if (force_bounds_changed_ || (current_display_info.bounds_in_native() !=
-                                    new_display_info.bounds_in_native()) ||
+      if (force_bounds_changed_ ||
+          (current_display_info.bounds_in_native() !=
+           new_display_info.bounds_in_native()) ||
           (current_display_info.GetOverscanInsetsInPixel() !=
            new_display_info.GetOverscanInsetsInPixel()) ||
           current_display.size() != new_display.size()) {
@@ -1339,10 +1330,8 @@ bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
 void DisplayManager::SetMirrorMode(
     MirrorMode mode,
     const base::Optional<MixedMirrorModeParams>& mixed_params) {
-  if ((is_multi_mirroring_enabled_ && num_connected_displays() < 2) ||
-      (!is_multi_mirroring_enabled_ && num_connected_displays() != 2)) {
+  if (num_connected_displays() < 2)
     return;
-  }
 
   if (mode == MirrorMode::kMixed) {
     // Set mixed mirror mode parameters. This will be used to do two things:
@@ -1713,10 +1702,8 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
   // mirrored.
   switch (multi_display_mode_) {
     case MIRRORING: {
-      if ((is_multi_mirroring_enabled_ && display_info_list->size() < 2) ||
-          (!is_multi_mirroring_enabled_ && display_info_list->size() != 2)) {
+      if (display_info_list->size() < 2)
         return;
-      }
 
       std::set<int64_t> destination_ids;
       int64_t source_id = kInvalidDisplayId;

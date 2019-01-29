@@ -133,8 +133,7 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   // early outing when there isn't a PrefService yet.
   Shell* shell = Shell::Get();
   display::DisplayManager* display_manager = shell->display_manager();
-  if ((display_manager->is_multi_mirroring_enabled() &&
-       display_manager->IsInSoftwareMirrorMode()) ||
+  if ((display_manager->IsInSoftwareMirrorMode()) ||
       display_manager->IsInUnifiedMode() ||
       display_manager->screen_capture_is_active()) {
     return true;

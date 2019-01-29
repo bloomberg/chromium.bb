@@ -1268,9 +1268,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DISPLAY_FAILURE_SEND_FEEDBACK" desc="Button text below error report to allow user to send feedback report.">
         Send feedback
       </message>
-      <message name="IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED" desc="A message used to explain that mirroring with more than two displays is not supported.">
-        Mirroring with more than two displays is not supported.
-      </message>
       <message name="IDS_ASH_DISPLAY_RESOLUTION_CHANGE_ACCEPT" desc="A button label shown in the notification for the resolution change to accept the change">
         Accept
       </message>
