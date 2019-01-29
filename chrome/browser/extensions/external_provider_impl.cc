@@ -740,8 +740,8 @@ void ExternalProviderImpl::CreateExternalProviders(
         base::MakeRefCounted<chromeos::DemoExtensionsExternalLoader>(cache_dir);
     std::unique_ptr<ExternalProviderImpl> demo_apps_provider =
         std::make_unique<ExternalProviderImpl>(
-            service, loader, profile, Manifest::EXTERNAL_PREF,
-            Manifest::EXTERNAL_PREF_DOWNLOAD, Extension::NO_FLAGS);
+            service, loader, profile, Manifest::EXTERNAL_POLICY,
+            Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS);
     demo_apps_provider->set_auto_acknowledge(true);
     demo_apps_provider->set_install_immediately(true);
     chromeos::DemoSession::Get()->SetExtensionsExternalLoader(loader);
