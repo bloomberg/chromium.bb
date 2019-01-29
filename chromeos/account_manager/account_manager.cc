@@ -398,6 +398,14 @@ bool AccountManager::IsTokenAvailable(const AccountKey& account_key) const {
          it->second != kActiveDirectoryDummyToken;
 }
 
+bool AccountManager::HasDummyGaiaToken(const AccountKey& account_key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(init_state_, InitializationState::kInitialized);
+
+  auto it = tokens_.find(account_key);
+  return it != tokens_.end() && it->second == kInvalidToken;
+}
+
 void AccountManager::MaybeRevokeTokenOnServer(const AccountKey& account_key) {
   auto it = tokens_.find(account_key);
   if (it == tokens_.end()) {

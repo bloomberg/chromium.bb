@@ -174,6 +174,12 @@ class CHROMEOS_EXPORT AccountManager {
   // initialized yet.
   bool IsTokenAvailable(const AccountKey& account_key) const;
 
+  // Returns true if the token stored against |account_key| is a dummy Gaia
+  // token. This is meant to be used only by
+  // |ChromeOSOAuth2TokenServiceDelegate| to pre-emptively reject access token
+  // requests for |account_key|.
+  bool HasDummyGaiaToken(const AccountKey& account_key) const;
+
  private:
   enum InitializationState {
     kNotStarted,   // Initialize has not been called
