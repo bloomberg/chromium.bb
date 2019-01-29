@@ -3,6 +3,7 @@
 <link rel="import" href="management_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="settings-management-page">
@@ -19,6 +20,7 @@
 
       ul {
         list-style-type : none;
+        margin: 0;
         padding: 0;
         text-align: start;
       }
@@ -26,7 +28,6 @@
       #reportingInfoList div {
         align-items: center;
         display: flex;
-        margin-bottom: 2em;
       }
 
       #reportingInfoList div + div {
@@ -36,6 +37,11 @@
       #reportingInfoList iron-icon {
         margin-inline-end: 10px;
         width: 24px;
+      }
+
+      #reportingInfoList,
+      #extensionsTable {
+        margin-bottom: 2em;
       }
 
       .table-head {
@@ -70,30 +76,52 @@
         </span>
       </div>
 
-      <div class="settings-box block single-column" id="policies" hidden>
-        <h2>$i18n{managementDeviceReporting}</h2>
-        <div class="content-indented subtitle" id="deviceConfiguration">
-            $i18n{managementDeviceConfiguration}
+      <template is="dom-if" if="[[!shouldHidePolicies_(reportingDevice_,
+          reportingSecurity_, reportingUserActivity_, reportingWeb_)]]">
+        <div class="settings-box block single-column" id="policies">
+          <h2>$i18n{managementDeviceReporting}</h2>
+          <div class="content-indented subtitle" id="deviceConfiguration">
+              $i18n{managementDeviceConfiguration}
+          </div>
+          <div id="reportingInfoList">
+            <div class="content-indented"
+              hidden$="[[!reportingDevice_.length]]">
+              <iron-icon icon="settings:computer"></iron-icon>
+              <ul>
+                <template is="dom-repeat" items="[[reportingDevice_]]">
+                  <li>[[i18n(item)]]</li>
+                </template>
+              </ul>
+            </div>
+            <div class="content-indented"
+              hidden$="[[!reportingSecurity_.length]]">
+              <iron-icon icon="settings:security"></iron-icon>
+              <ul>
+                <template is="dom-repeat" items="[[reportingSecurity_]]">
+                  <li>[[i18n(item)]]</li>
+                </template>
+              </ul>
+            </div>
+            <div class="content-indented"
+              hidden$="[[!reportingUserActivity_.length]]">
+              <iron-icon icon="settings:person"></iron-icon>
+              <ul>
+                <template is="dom-repeat" items="[[reportingUserActivity_]]">
+                  <li>[[i18n(item)]]</li>
+                </template>
+              </ul>
+            </div>
+            <div class="content-indented" hidden$="[[!reportingWeb_.length]]">
+              <iron-icon icon="settings:public"></iron-icon>
+              <ul>
+                <template is="dom-repeat" items="[[reportingWeb_]]">
+                  <li>[[i18n(item)]]</li>
+                </template>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div id="reportingInfoList">
-          <div class="content-indented" id="reportingDevice" hidden>
-            <iron-icon icon="settings:computer"></iron-icon>
-            <span id="reportingDeviceText"> </span>
-          </div>
-          <div class="content-indented" id="reportingSecurity" hidden>
-            <iron-icon icon="settings:security"></iron-icon>
-            <span id="reportingSecurityText"> </span>
-          </div>
-          <div class="content-indented" id="reportingUserActivity" hidden>
-            <iron-icon icon="settings:person"></iron-icon>
-            <span id="reportingUserActivityText"> </span>
-          </div>
-          <div class="content-indented" id="reportingWeb" hidden>
-            <iron-icon icon="settings:public"></iron-icon>
-            <span id="reportingWebText"> </span>
-          </div>
-        </div>
-      </div>
+      </template>
 
       <div class="settings-box two-line single-column" id="extensions" hidden>
         <h2>$i18n{managementExtensionReporting}</h2>

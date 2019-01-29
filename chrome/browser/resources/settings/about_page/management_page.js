@@ -9,8 +9,33 @@
 Polymer({
   is: 'settings-management-page',
 
+  behaviors: [I18nBehavior],
+
+  properties: {
+    /** @private {!Array<string>} */
+    reportingDevice_: Array,
+
+    /** @private {!Array<string>} */
+    reportingSecurity_: Array,
+
+    /** @private {!Array<string>} */
+    reportingUserActivity_: Array,
+
+    /** @private {!Array<string>} */
+    reportingWeb_: Array,
+  },
+
   /** @private {?settings.ManagementBrowserProxy} */
   browserProxy_: null,
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldHidePolicies_: function() {
+    return !this.reportingDevice_.length && !this.reportingSecurity_.length &&
+        !this.reportingUserActivity_.length && !this.reportingWeb_.length;
+  },
 
   /** @private */
   getDeviceManagementStatus_: function() {
@@ -25,89 +50,6 @@ Polymer({
             // RejectJavascriptCallback is used, which throws an error. The
             // intended handling in this case is to do nothing.
             () => {});
-  },
-
-  /** @private */
-  getReportingDevice_: function() {
-    this.browserProxy_.getReportingDevice().then(reportingSources => {
-      if (reportingSources.length == 0) {
-        return;
-      }
-      let reportingInfoAdded = false;
-
-      for (const id of reportingSources) {
-        reportingInfoAdded = true;
-        this.$.reportingDeviceText.textContent +=
-            loadTimeData.getString(id) + ' ';
-      }
-
-      if (reportingInfoAdded) {
-        this.$.policies.hidden = false;
-        this.$.reportingDevice.hidden = false;
-      }
-    });
-  },
-
-  /** @private */
-  getReportingSecurity_: function() {
-    this.browserProxy_.getReportingSecurity().then(reportingSources => {
-      if (reportingSources.length == 0) {
-        return;
-      }
-      let reportingInfoAdded = false;
-
-      for (const id of reportingSources) {
-        reportingInfoAdded = true;
-        this.$.reportingSecurityText.textContent +=
-            loadTimeData.getString(id) + ' ';
-      }
-
-      if (reportingInfoAdded) {
-        this.$.policies.hidden = false;
-        this.$.reportingSecurity.hidden = false;
-      }
-    });
-  },
-
-  /** @private */
-  getReportingUserActivity_: function() {
-    this.browserProxy_.getReportingUserActivity().then(reportingSources => {
-      if (reportingSources.length == 0) {
-        return;
-      }
-      let reportingInfoAdded = false;
-
-      for (const id of reportingSources) {
-        reportingInfoAdded = true;
-        this.$.reportingUserActivityText.textContent +=
-            loadTimeData.getString(id) + ' ';
-      }
-
-      if (reportingInfoAdded) {
-        this.$.policies.hidden = false;
-        this.$.reportingUserActivity.hidden = false;
-      }
-    });
-  },
-
-  /** @private */
-  getReportingWeb_: function() {
-    this.browserProxy_.getReportingWeb().then(reportingSources => {
-      if (reportingSources.length == 0) {
-        return;
-      }
-      let reportingInfoAdded = false;
-
-      for (const id of reportingSources) {
-        reportingInfoAdded = true;
-        this.$.reportingWebText.textContent += loadTimeData.getString(id) + ' ';
-      }
-
-      if (reportingInfoAdded) {
-        this.$.policies.hidden = false;
-        this.$.reportingWeb.hidden = false;
-      }
-    });
   },
 
   /** @private */
@@ -166,13 +108,21 @@ Polymer({
 
     this.getDeviceManagementStatus_();
 
-    this.getReportingDevice_();
+    this.browserProxy_.getReportingDevice().then(reportingSources => {
+      this.reportingDevice_ = reportingSources;
+    });
 
-    this.getReportingSecurity_();
+    this.browserProxy_.getReportingSecurity().then(reportingSources => {
+      this.reportingSecurity_ = reportingSources;
+    });
 
-    this.getReportingUserActivity_();
+    this.browserProxy_.getReportingUserActivity().then(reportingSources => {
+      this.reportingUserActivity_ = reportingSources;
+    });
 
-    this.getReportingWeb_();
+    this.browserProxy_.getReportingWeb().then(reportingSources => {
+      this.reportingWeb_ = reportingSources;
+    });
 
     this.getExtensions_();
 
