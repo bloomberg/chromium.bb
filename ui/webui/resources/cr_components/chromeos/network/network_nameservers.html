@@ -88,7 +88,7 @@
         </cr-radio-button>
         <template is="dom-if" if="[[showNameservers_(nameserversType_,
             'google', nameservers_)]]">
-          <div class$="nameservers">
+          <div class="nameservers" changeable>
             [[getNameserversString_(nameservers_)]]
           </div>
         </template>
