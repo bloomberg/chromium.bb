@@ -158,6 +158,7 @@ void FCMNetworkHandler::StartTokenValidation() {
   DCHECK(IsListening());
 
   diagnostic_info_.instance_id_token_verification_requested = base::Time::Now();
+  diagnostic_info_.token_validation_requested_num++;
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope, std::map<std::string, std::string>(),
       /*is_lazy=*/true,
@@ -268,6 +269,8 @@ FCMNetworkHandlerDiagnostic::CollectDebugData() const {
   status->SetString("Verification result code",
                     RegistrationResultToString(token_verification_result));
   status->SetBoolean("Token change when verified", token_changed);
+  status->SetInteger("Token validation requests",
+                     token_validation_requested_num);
   return status;
 }
 

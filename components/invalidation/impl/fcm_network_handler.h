@@ -43,6 +43,8 @@ struct FCMNetworkHandlerDiagnostic {
   base::Time instance_id_token_was_received;
   base::Time instance_id_token_verification_requested;
   base::Time instance_id_token_verified;
+
+  int token_validation_requested_num = 0;
 };
 
 /*
