@@ -3,13 +3,36 @@
 // found in the LICENSE file.
 
 #include "ui/gl/gl_image_ahardwarebuffer.h"
+
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
-
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence_android_native_fence_sync.h"
 
 namespace gl {
 namespace {
+
+class ScopedHardwareBufferFenceSyncImpl
+    : public base::android::ScopedHardwareBufferFenceSync {
+ public:
+  ScopedHardwareBufferFenceSyncImpl(
+      base::android::ScopedHardwareBufferHandle handle,
+      base::ScopedFD fence_fd)
+      : ScopedHardwareBufferFenceSync(std::move(handle), std::move(fence_fd)) {}
+  ~ScopedHardwareBufferFenceSyncImpl() override = default;
+
+  void SetReadFence(base::ScopedFD fence_fd) override {
+    // Insert a service wait for this fence to ensure any resource reuse is
+    // after it is signaled.
+    gfx::GpuFenceHandle handle;
+    handle.type = gfx::GpuFenceHandleType::kAndroidNativeFenceSync;
+    handle.native_fd =
+        base::FileDescriptor(fence_fd.release(), /*auto_close=*/true);
+    gfx::GpuFence gpu_fence(handle);
+    auto gl_fence = GLFence::CreateFromGpuFence(gpu_fence);
+    gl_fence->ServerWait();
+  }
+};
 
 uint32_t GetBufferFormat(const AHardwareBuffer* buffer) {
   AHardwareBuffer_Desc desc = {};
@@ -86,7 +109,7 @@ void GLImageAHardwareBuffer::OnMemoryDump(
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 GLImageAHardwareBuffer::GetAHardwareBuffer() {
-  return std::make_unique<base::android::ScopedHardwareBufferFenceSync>(
+  return std::make_unique<ScopedHardwareBufferFenceSyncImpl>(
       base::android::ScopedHardwareBufferHandle::Create(handle_.get()),
       base::ScopedFD());
 }
