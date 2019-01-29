@@ -39,6 +39,8 @@ blink_platform_sources("network") {
     "http_header_map.h",
     "http_parsers.cc",
     "http_parsers.h",
+    "http_request_headers_mojom_traits.cc",
+    "http_request_headers_mojom_traits.h",
     "mime/content_type.cc",
     "mime/content_type.h",
     "mime/mime_type_from_url.cc",
