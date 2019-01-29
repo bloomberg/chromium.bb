@@ -162,33 +162,31 @@ public class PaymentRequestImpl
      * Rule 5: Frequently and recently used instruments before rarely and non-recently used
      *         instruments.
      */
-    private static final Comparator<PaymentInstrument> PAYMENT_INSTRUMENT_COMPARATOR =
-            (a, b) -> {
-                // Payment apps (not autofill) first.
-                int autofill =
-                        (a.isAutofillInstrument() ? 1 : 0) - (b.isAutofillInstrument() ? 1 : 0);
-                if (autofill != 0) return autofill;
+    private static final Comparator<PaymentInstrument> PAYMENT_INSTRUMENT_COMPARATOR = (a, b) -> {
+        // Payment apps (not autofill) first.
+        int autofill = (a.isAutofillInstrument() ? 1 : 0) - (b.isAutofillInstrument() ? 1 : 0);
+        if (autofill != 0) return autofill;
 
-                // Complete cards before cards with missing information.
-                int completeness = (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
-                if (completeness != 0) return completeness;
+        // Complete cards before cards with missing information.
+        int completeness = (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
+        if (completeness != 0) return completeness;
 
-                // Cards with matching type before unknown type cards.
-                int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
-                        - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
-                if (typeMatch != 0) return typeMatch;
+        // Cards with matching type before unknown type cards.
+        int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
+                - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
+        if (typeMatch != 0) return typeMatch;
 
-                // Preselectable instruments before non-preselectable instruments.
-                // Note that this only affects service worker payment apps' instruments for now
-                // since autofill payment instruments have already been sorted by preselect
-                // after sorting by completeness and typeMatch. And the other payment apps'
-                // instruments can always be preselected.
-                int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
-                if (canPreselect != 0) return canPreselect;
+        // Preselectable instruments before non-preselectable instruments.
+        // Note that this only affects service worker payment apps' instruments for now
+        // since autofill payment instruments have already been sorted by preselect
+        // after sorting by completeness and typeMatch. And the other payment apps'
+        // instruments can always be preselected.
+        int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
+        if (canPreselect != 0) return canPreselect;
 
-                // More frequently and recently used instruments first.
-                return compareInstrumentsByFrecency(b, a);
-            };
+        // More frequently and recently used instruments first.
+        return compareInstrumentsByFrecency(b, a);
+    };
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static boolean sIsLocalCanMakePaymentQueryQuotaEnforcedForTest;
@@ -231,6 +229,7 @@ public class PaymentRequestImpl
     private PaymentRequestClient mClient;
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
+    private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
     private final Queue<Runnable> mRetryQueue = new LinkedList<>();
 
@@ -393,7 +392,7 @@ public class PaymentRequestImpl
 
         if (!OriginSecurityChecker.isSchemeCryptographic(mWebContents.getLastCommittedUrl())
                 && !OriginSecurityChecker.isOriginLocalhostOrFile(
-                           mWebContents.getLastCommittedUrl())) {
+                        mWebContents.getLastCommittedUrl())) {
             Log.d(TAG, "Only localhost, file://, and cryptographic scheme origins allowed");
             // Don't show any UI. Resolve .canMakePayment() with "false". Reject .show() with
             // "NotSupportedError".
@@ -636,7 +635,7 @@ public class PaymentRequestImpl
             // missing.
             if (mPaymentMethodsSection.getSize() > 1 || selectedInstrument == null
                     || (selectedInstrument.isUserGestureRequiredToSkipUi()
-                               && !mIsUserGestureShow)) {
+                            && !mIsUserGestureShow)) {
                 mUI.show();
             } else {
                 mUI.dimBackground();
@@ -1608,8 +1607,10 @@ public class PaymentRequestImpl
      * Called by the merchant website to check if the user has complete payment instruments.
      */
     @Override
-    public void hasEnrolledInstrument() {
+    public void hasEnrolledInstrument(boolean perMethodQuota) {
         if (mClient == null) return;
+
+        mHasEnrolledInstrumentUsesPerMethodQuota = perMethodQuota;
 
         if (isFinishedQueryingPaymentApps()) {
             respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
@@ -1623,8 +1624,8 @@ public class PaymentRequestImpl
 
         mIsHasEnrolledInstrumentResponsePending = false;
 
-        if (CanMakePaymentQuery.canQuery(
-                    mWebContents, mTopLevelOrigin, mPaymentRequestOrigin, mMethodData)) {
+        if (CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin, mPaymentRequestOrigin,
+                    mMethodData, mHasEnrolledInstrumentUsesPerMethodQuota)) {
             mClient.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);

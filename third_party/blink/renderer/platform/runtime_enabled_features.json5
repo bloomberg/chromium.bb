@@ -1007,6 +1007,11 @@
       status: "experimental",
     },
     {
+      name: "PerMethodCanMakePaymentQuota",
+      origin_trial_feature_name: "PerMethodCanMakePaymentQuota",
+      status: "experimental",
+    },
+    {
       name: "PermissionDelegation",
       status: "test",
     },

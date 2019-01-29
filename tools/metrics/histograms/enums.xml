@@ -21469,6 +21469,7 @@ Called by update_net_error_codes.py.-->
   <int value="2770" label="NoSysexWebMIDIWithoutPermission"/>
   <int value="2771" label="NoSysexWebMIDIOnInsecureOrigin"/>
   <int value="2772" label="ApplicationCacheInstalledButNoManifest"/>
+  <int value="2773" label="PerMethodCanMakePaymentQuota"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

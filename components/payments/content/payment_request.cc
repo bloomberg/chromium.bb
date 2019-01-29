@@ -379,7 +379,7 @@ void PaymentRequest::CanMakePayment() {
   }
 }
 
-void PaymentRequest::HasEnrolledInstrument() {
+void PaymentRequest::HasEnrolledInstrument(bool per_method_quota) {
   if (!IsInitialized()) {
     log_.Error("Attempted hasEnrolledInstrument without initialization");
     OnConnectionTerminated();
@@ -393,11 +393,12 @@ void PaymentRequest::HasEnrolledInstrument() {
 
   if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
       !state_) {
-    HasEnrolledInstrumentCallback(/*has_enrolled_instrument=*/false);
+    HasEnrolledInstrumentCallback(per_method_quota,
+                                  /*has_enrolled_instrument=*/false);
   } else {
     state_->HasEnrolledInstrument(
         base::BindOnce(&PaymentRequest::HasEnrolledInstrumentCallback,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), per_method_quota));
   }
 }
 
@@ -568,11 +569,13 @@ void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
 }
 
 void PaymentRequest::HasEnrolledInstrumentCallback(
+    bool per_method_quota,
     bool has_enrolled_instrument) {
-  if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
-                    ->GetForContext(web_contents_->GetBrowserContext())
-                    ->CanQuery(top_level_origin_, frame_origin_,
-                               spec_->stringified_method_data())) {
+  if (!spec_ ||
+      CanMakePaymentQueryFactory::GetInstance()
+          ->GetForContext(web_contents_->GetBrowserContext())
+          ->CanQuery(top_level_origin_, frame_origin_,
+                     spec_->stringified_method_data(), per_method_quota)) {
     RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
                                         /*warn_localhost_or_file=*/false);
   } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {

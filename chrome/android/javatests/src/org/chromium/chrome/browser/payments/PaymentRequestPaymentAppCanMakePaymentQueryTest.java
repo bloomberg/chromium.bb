@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -29,7 +30,8 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for checking whether user can make a payment using a payment app.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=" + ChromeFeatureList.PER_METHOD_CAN_MAKE_PAYMENT_QUOTA})
 public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActivityStartCallback {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule = new PaymentRequestTestRule(
