@@ -160,7 +160,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   bool RemoveSequence(scoped_refptr<Sequence> sequence);
 
  private:
-  class SchedulerWorkerStarter;
+  class SchedulerWorkerActionExecutor;
   class SchedulerWorkerDelegateImpl;
 
   // Friend tests so that they can access |kBlockedWorkersPollPeriod| and
@@ -187,24 +187,22 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Performs the same action as WakeUpOneWorker(), except:
   // - Asserts |lock_| is acquired rather than acquires it.
-  // - Instead of starting a worker it creates, returns it and expects that the
-  //   caller will start it once |lock_| is released.
-  scoped_refptr<SchedulerWorker> WakeUpOneWorkerLockRequired()
-      EXCLUSIVE_LOCKS_REQUIRED(lock_) WARN_UNUSED_RESULT;
+  // - Uses |executor| to delay waking up and starting the worker.
+  void WakeUpOneWorkerLockRequired(SchedulerWorkerActionExecutor* executor)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Creates a worker, if needed, to maintain one idle worker, |max_tasks_|
-  // permitting. Expects the caller to start the returned worker once |lock_| is
-  // released.
-  scoped_refptr<SchedulerWorker> MaintainAtLeastOneIdleWorkerLockRequired()
-      EXCLUSIVE_LOCKS_REQUIRED(lock_) WARN_UNUSED_RESULT;
+  // Creates a worker and schedules its start, if needed, to maintain one idle
+  // worker, |max_tasks_| permitting.
+  void MaintainAtLeastOneIdleWorkerLockRequired(
+      SchedulerWorkerActionExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns true if worker cleanup is permitted.
   bool CanWorkerCleanupForTestingLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Creates a worker, adds it to the pool and returns it. Expects the caller to
-  // start the returned worker. Cannot be called before Start().
-  scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired()
-      EXCLUSIVE_LOCKS_REQUIRED(lock_) WARN_UNUSED_RESULT;
+  // Creates a worker, adds it to the pool, schedules its start and returns it.
+  // Cannot be called before Start().
+  scoped_refptr<SchedulerWorker> CreateAndRegisterWorkerLockRequired(
+      SchedulerWorkerActionExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Returns the number of workers in the pool that should not run tasks due to
   // the pool being over capacity.
