@@ -660,7 +660,7 @@ class FocusManagerArrowKeyTraversalTest
 
 // Instantiate the Boolean which is used to toggle RTL in
 // the parameterized tests.
-INSTANTIATE_TEST_CASE_P(, FocusManagerArrowKeyTraversalTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, FocusManagerArrowKeyTraversalTest, testing::Bool());
 
 }  // namespace
 

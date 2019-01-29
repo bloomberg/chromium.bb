@@ -1725,12 +1725,12 @@ TEST_F(WidgetScrollViewTest, CompositedScrollEvents) {
   EXPECT_EQ(gfx::ScrollOffset(0, 10), test_api.CurrentOffset());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        WidgetScrollViewTestRTLAndLayers,
-                        ::testing::Values(UiConfig::kLtr,
-                                          UiConfig::kRtl,
-                                          UiConfig::kLtrWithLayers,
-                                          UiConfig::kRtlWithLayers),
-                        &UiConfigToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         WidgetScrollViewTestRTLAndLayers,
+                         ::testing::Values(UiConfig::kLtr,
+                                           UiConfig::kRtl,
+                                           UiConfig::kLtrWithLayers,
+                                           UiConfig::kRtlWithLayers),
+                         &UiConfigToString);
 
 }  // namespace views
