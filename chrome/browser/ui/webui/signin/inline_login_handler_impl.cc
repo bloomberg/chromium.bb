@@ -304,16 +304,15 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       AboutSigninInternalsFactory::GetForProfile(profile_);
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
-  // Prime the account tracker with this combination of gaia id/display email.
-  // TODO(crbug.com/922026): Migrate to AccountsMutator, figuring out how to
-  // integrate with the call to AddOrUpdateAccount() below.
-  AccountTrackerService* account_tracker_service =
-      AccountTrackerServiceFactory::GetForProfile(profile_);
-  std::string account_id =
-      account_tracker_service->SeedAccountInfo(gaia_id_, email_);
-
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
+
+  // Seed the account with this combination of gaia id/display email.
+  AccountInfo account_info;
+  account_info.gaia = gaia_id_;
+  account_info.email = email_;
+  identity_manager->LegacySeedAccountInfo(account_info);
+
   std::string primary_email = identity_manager->GetPrimaryAccountInfo().email;
   if (gaia::AreEmailsSame(email_, primary_email) &&
       (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
