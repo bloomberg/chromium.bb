@@ -8,30 +8,18 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
-#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/loader/fetch/script_cached_metadata_handler.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 namespace {
-
-// Wasm only has a single metadata type, but we need to tag it.
-static const int kWasmModuleTag = 1;
 
 // The |FetchDataLoader| for streaming compilation of WebAssembly code. The
 // received bytes get forwarded to the V8 API class |WasmStreaming|.
@@ -40,11 +28,9 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderForWasmStreaming);
 
  public:
-  FetchDataLoaderForWasmStreaming(std::shared_ptr<v8::WasmStreaming> streaming,
-                                  ScriptState* script_state)
+  FetchDataLoaderForWasmStreaming(ScriptState* script_state,
+                                  std::shared_ptr<v8::WasmStreaming> streaming)
       : streaming_(std::move(streaming)), script_state_(script_state) {}
-
-  v8::WasmStreaming* streaming() const { return streaming_.get(); }
 
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
@@ -126,8 +112,7 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
       streaming_->Abort(v8::Local<v8::Value>());
     }
   }
-
-  Member<BytesConsumer> consumer_;
+  TraceWrapperMember<BytesConsumer> consumer_;
   Member<FetchDataLoader::Client> client_;
   std::shared_ptr<v8::WasmStreaming> streaming_;
   const Member<ScriptState> script_state_;
@@ -182,87 +167,8 @@ class ExceptionToAbortStreamingScope {
   ExceptionState& exception_state_;
 };
 
-SingleCachedMetadataHandler* GetCachedMetadataHandler(ScriptState* script_state,
-                                                      const KURL& url) {
-  if (!RuntimeEnabledFeatures::WasmCodeCacheEnabled())
-    return nullptr;
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  if (!execution_context)
-    return nullptr;
-  ResourceFetcher* fetcher = execution_context->Fetcher();
-  if (!fetcher)
-    return nullptr;
-  if (!url.IsValid())
-    return nullptr;
-  Resource* resource = fetcher->CachedResource(url);
-  if (!resource)
-    return nullptr;
-
-  // Wasm modules should be fetched as raw resources.
-  DCHECK_EQ(ResourceType::kRaw, resource->GetType());
-  RawResource* raw_resource = ToRawResource(resource);
-  return raw_resource->ScriptCacheHandler();
-}
-
-class WasmStreamingClient : public v8::WasmStreaming::Client {
- public:
-  WasmStreamingClient(const KURL& url,
-                      v8::Isolate* isolate,
-                      v8::Local<v8::Context> context)
-      : url_(url), isolate_(isolate), context_(isolate, context) {
-    context_.SetWeak();
-  }
-
-  void OnModuleCompiled(v8::CompiledWasmModule compiled_module) override {
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "v8.wasm.compiledModule", TRACE_EVENT_SCOPE_THREAD,
-                         "url", url_.GetString().Utf8());
-
-    // Don't cache if Context has been destroyed.
-    if (context_.IsEmpty())
-      return;
-
-    v8::HandleScope handle_scope(isolate_);
-    auto context = context_.Get(isolate_);
-    ScriptState* script_state = ScriptState::From(context);
-    SingleCachedMetadataHandler* cache_handler =
-        GetCachedMetadataHandler(script_state, url_);
-    if (!cache_handler)
-      return;
-
-    v8::MemorySpan<const uint8_t> wire_bytes =
-        compiled_module.GetWireBytesRef();
-    // Our heuristic for whether it's worthwhile to cache is that the module
-    // was fully compiled and it is "large". Wire bytes size is likely to be
-    // highly correlated with compiled module size so we use it to avoid the
-    // cost of serializing when not caching.
-    const size_t kWireBytesSizeThresholdBytes = 1UL << 17;  // 128 KB.
-    if (wire_bytes.size() < kWireBytesSizeThresholdBytes)
-      return;
-
-    v8::OwnedBuffer serialized_module = compiled_module.Serialize();
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                         "v8.wasm.cachedModule", TRACE_EVENT_SCOPE_THREAD,
-                         "producedCacheSize", serialized_module.size);
-    cache_handler->SetCachedMetadata(
-        kWasmModuleTag,
-        reinterpret_cast<const uint8_t*>(serialized_module.buffer.get()),
-        serialized_module.size);
-  }
-
- private:
-  KURL url_;
-  v8::Isolate* isolate_;
-  v8::Global<v8::Context> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(WasmStreamingClient);
-};
-
 void StreamFromResponseCallback(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "v8.wasm.streamFromResponseCallback",
-                       TRACE_EVENT_SCOPE_THREAD);
   ExceptionState exception_state(args.GetIsolate(),
                                  ExceptionState::kExecutionContext,
                                  "WebAssembly", "compile");
@@ -318,35 +224,9 @@ void StreamFromResponseCallback(
     return;
   }
 
-  KURL url(response->url());
-  SingleCachedMetadataHandler* cache_handler =
-      GetCachedMetadataHandler(script_state, url);
-  if (cache_handler) {
-    streaming->SetClient(std::make_shared<WasmStreamingClient>(
-        url, args.GetIsolate(), script_state->GetContext()));
-    scoped_refptr<CachedMetadata> cached_module =
-        cache_handler->GetCachedMetadata(kWasmModuleTag);
-    if (cached_module) {
-      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                           "v8.wasm.moduleCacheHit", TRACE_EVENT_SCOPE_THREAD,
-                           "url", url.GetString().Utf8(), "consumedCacheSize",
-                           cached_module->size());
-      bool is_valid = streaming->SetCompiledModuleBytes(
-          reinterpret_cast<const uint8_t*>(cached_module->Data()),
-          cached_module->size());
-      if (!is_valid) {
-        TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                             "v8.wasm.moduleCacheInvalid",
-                             TRACE_EVENT_SCOPE_THREAD);
-        cache_handler->ClearCachedMetadata(
-            CachedMetadataHandler::kSendToPlatform);
-      }
-    }
-  }
-
   FetchDataLoaderForWasmStreaming* loader =
-      MakeGarbageCollected<FetchDataLoaderForWasmStreaming>(streaming,
-                                                            script_state);
+      MakeGarbageCollected<FetchDataLoaderForWasmStreaming>(script_state,
+                                                            streaming);
   response->BodyBuffer()->StartLoading(
       loader, MakeGarbageCollected<WasmDataLoaderClient>(), exception_state);
 }
