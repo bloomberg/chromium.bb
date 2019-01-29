@@ -3041,6 +3041,12 @@ const char kArcFilePickerExperimentName[] =
 const char kArcFilePickerExperimentDescription[] =
     "Enables using Chrome OS file picker in ARC.";
 
+const char kArcGraphicBuffersVisualizationToolName[] =
+    "Enable ARC graphic buffers visualization tool";
+const char kArcGraphicBuffersVisualizationToolDescription[] =
+    "Enable ARC graphic buffers visualization tool "
+    "(chrome://arc-graphics-tracing).";
+
 const char kArcNativeBridgeExperimentName[] =
     "Enable native bridge experiment for ARC";
 const char kArcNativeBridgeExperimentDescription[] =
