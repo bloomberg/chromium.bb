@@ -32,6 +32,7 @@ ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type) {
     case mojom::AccessibilityEventType::VIEW_SCROLLED:
       return ax::mojom::Event::kScrollPositionChanged;
     case mojom::AccessibilityEventType::VIEW_SELECTED:
+      return ax::mojom::Event::kValueChanged;
     case mojom::AccessibilityEventType::VIEW_HOVER_EXIT:
     case mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_START:
     case mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_END:
