@@ -853,13 +853,29 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   }
 
   PrinterType type = GetPrinterTypeForUserAction(user_action);
+  base::Value job_settings;
+  switch (type) {
+    case PrinterType::kPdfPrinter:
+      // Do nothing.
+      break;
+    case PrinterType::kLocalPrinter:
+      job_settings = base::Value::FromUniquePtrValue(std::move(settings));
+      break;
+    default:
+      std::unique_ptr<base::Value> ticket_value =
+          base::JSONReader::Read(print_ticket);
+      if (!ticket_value) {
+        OnPrintResult(callback_id, base::Value("Invalid settings"));
+        return;
+      }
+      job_settings = base::Value::FromUniquePtrValue(std::move(ticket_value));
+  }
   PrinterHandler* handler = GetPrinterHandler(type);
-  handler->StartPrint(
-      destination_id, capabilities, print_preview_ui()->initiator_title(),
-      type == PrinterType::kLocalPrinter ? json_str : print_ticket,
-      gfx::Size(width, height), data,
-      base::BindOnce(&PrintPreviewHandler::OnPrintResult,
-                     weak_factory_.GetWeakPtr(), callback_id));
+  handler->StartPrint(destination_id, capabilities,
+                      print_preview_ui()->initiator_title(),
+                      std::move(job_settings), gfx::Size(width, height), data,
+                      base::BindOnce(&PrintPreviewHandler::OnPrintResult,
+                                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {

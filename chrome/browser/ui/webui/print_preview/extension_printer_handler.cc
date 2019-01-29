@@ -162,14 +162,14 @@ void ExtensionPrinterHandler::StartPrint(
     const std::string& destination_id,
     const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
+    base::Value ticket_value,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   auto print_job = std::make_unique<extensions::PrinterProviderPrintJob>();
   print_job->printer_id = destination_id;
   print_job->job_title = job_title;
-  print_job->ticket_json = ticket_json;
+  print_job->ticket = std::move(ticket_value);
 
   cloud_devices::CloudDeviceDescription printer_description;
   printer_description.InitFromString(capability);
@@ -186,8 +186,8 @@ void ExtensionPrinterHandler::StartPrint(
     return;
   }
 
-  cloud_devices::CloudDeviceDescription ticket;
-  if (!ticket.InitFromString(ticket_json)) {
+  if (!cloud_devices::CloudDeviceDescription::IsValidTicket(
+          print_job->ticket)) {
     WrapPrintCallback(std::move(callback),
                       base::Value(kInvalidTicketPrintError));
     return;
@@ -195,7 +195,7 @@ void ExtensionPrinterHandler::StartPrint(
 
   print_job->content_type = kContentTypePWGRaster;
   ConvertToPWGRaster(
-      print_data, printer_description, ticket, page_size, std::move(print_job),
+      print_data, printer_description, page_size, std::move(print_job),
       base::BindOnce(&ExtensionPrinterHandler::DispatchPrintJob,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -233,17 +233,21 @@ void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
 }
 
 void ExtensionPrinterHandler::ConvertToPWGRaster(
-    const scoped_refptr<base::RefCountedMemory>& data,
+    scoped_refptr<base::RefCountedMemory> data,
     const cloud_devices::CloudDeviceDescription& printer_description,
-    const cloud_devices::CloudDeviceDescription& ticket,
     const gfx::Size& page_size,
     std::unique_ptr<extensions::PrinterProviderPrintJob> job,
     PrintJobCallback callback) {
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
 
+  cloud_devices::CloudDeviceDescription ticket;
+  bool ok = ticket.InitFromValue(std::move(job->ticket));
+  DCHECK(ok);
   PwgRasterSettings bitmap_settings =
       PwgRasterConverter::GetBitmapSettings(printer_description, ticket);
+  job->ticket = std::move(ticket).ToValue();
+
   pwg_raster_converter_->Start(
       data.get(),
       PwgRasterConverter::GetConversionSettings(printer_description, page_size,
@@ -263,7 +267,7 @@ void ExtensionPrinterHandler::DispatchPrintJob(
   extensions::PrinterProviderAPIFactory::GetInstance()
       ->GetForBrowserContext(profile_)
       ->DispatchPrintRequested(
-          *print_job,
+          std::move(*print_job),
           base::BindOnce(&ExtensionPrinterHandler::WrapPrintCallback,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

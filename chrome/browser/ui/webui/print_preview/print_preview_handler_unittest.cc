@@ -146,9 +146,9 @@ class TestPrinterHandler : public PrinterHandler {
   void StartPrint(const std::string& destination_id,
                   const std::string& capability,
                   const base::string16& job_title,
-                  const std::string& ticket_json,
+                  base::Value ticket,
                   const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override {
     std::move(callback).Run(base::Value());
   }

@@ -22,12 +22,29 @@ CloudDeviceDescription::CloudDeviceDescription()
 CloudDeviceDescription::~CloudDeviceDescription() = default;
 
 bool CloudDeviceDescription::InitFromString(const std::string& json) {
-  auto parsed = base::DictionaryValue::From(base::JSONReader::Read(json));
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  if (!value)
+    return false;
+
+  return InitFromValue(base::Value::FromUniquePtrValue(std::move(value)));
+}
+
+bool CloudDeviceDescription::InitFromValue(base::Value ticket) {
+  auto parsed = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(ticket)));
   if (!parsed)
     return false;
 
   root_ = std::move(parsed);
-  const base::Value* version = root_->FindKey(json::kVersion);
+  return IsValidTicket(*root_);
+}
+
+// static
+bool CloudDeviceDescription::IsValidTicket(const base::Value& ticket) {
+  if (!ticket.is_dict())
+    return false;
+
+  const base::Value* version = ticket.FindKey(json::kVersion);
   return version && version->GetString() == json::kVersion10;
 }
 

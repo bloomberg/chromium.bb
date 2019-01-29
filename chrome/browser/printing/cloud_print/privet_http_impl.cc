@@ -642,9 +642,9 @@ void PrivetLocalPrintOperationImpl::SetData(
   data_ = data;
 }
 
-void PrivetLocalPrintOperationImpl::SetTicket(const std::string& ticket) {
+void PrivetLocalPrintOperationImpl::SetTicket(base::Value ticket) {
   DCHECK(!started_);
-  ticket_.InitFromString(ticket);
+  ticket_.InitFromValue(std::move(ticket));
 }
 
 void PrivetLocalPrintOperationImpl::SetCapabilities(

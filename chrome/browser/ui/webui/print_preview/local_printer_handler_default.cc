@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
@@ -123,14 +122,12 @@ void LocalPrinterHandlerDefault::StartPrint(
     const std::string& destination_id,
     const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
+    base::Value ticket,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
-  std::unique_ptr<base::Value> job_settings =
-      base::JSONReader::Read(ticket_json);
-  StartLocalPrint(base::Value::FromUniquePtrValue(std::move(job_settings)),
-                  print_data, preview_web_contents_, std::move(callback));
+  StartLocalPrint(std::move(ticket), print_data, preview_web_contents_,
+                  std::move(callback));
 }
 
 }  // namespace printing

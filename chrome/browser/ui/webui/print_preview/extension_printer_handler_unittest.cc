@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
@@ -274,6 +275,11 @@ std::string RefCountedMemoryToString(
   return std::string(memory->front_as<char>(), memory->size());
 }
 
+base::Value GetJsonAsValue(base::StringPiece json) {
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(json);
+  return base::Value::FromUniquePtrValue(std::move(value));
+}
+
 // Fake PwgRasterConverter used in the tests.
 class FakePwgRasterConverter : public PwgRasterConverter {
  public:
@@ -349,11 +355,11 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
   }
 
   void DispatchPrintRequested(
-      const PrinterProviderPrintJob& job,
+      PrinterProviderPrintJob job,
       PrinterProviderAPI::PrintCallback callback) override {
     PrintRequestInfo request_info;
     request_info.callback = std::move(callback);
-    request_info.job = job;
+    request_info.job = std::move(job);
 
     pending_print_requests_.push(std::move(request_info));
   }
@@ -664,8 +670,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, title, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      kPrinterId, kPdfSupportedPrinter, title,
+      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -678,7 +684,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
+  EXPECT_EQ(GetJsonAsValue(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -701,8 +707,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pdf_Reset) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPdfSupportedPrinter, title, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      kPrinterId, kPdfSupportedPrinter, title,
+      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -727,8 +733,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kAllContentTypesSupportedPrinter, title, kEmptyPrintTicket,
-      gfx::Size(100, 100), print_data,
+      kPrinterId, kAllContentTypesSupportedPrinter, title,
+      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -742,7 +748,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_All) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
+  EXPECT_EQ(GetJsonAsValue(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePDF, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -766,7 +772,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   extension_printer_handler_->StartPrint(
       kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      kEmptyPrintTicket, gfx::Size(100, 50), print_data,
+      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 50), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -796,7 +802,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kEmptyPrintTicket, print_job->ticket_json);
+  EXPECT_EQ(GetJsonAsValue(kEmptyPrintTicket), print_job->ticket);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -819,8 +825,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
   base::string16 title = base::ASCIIToUTF16("Title");
 
   extension_printer_handler_->StartPrint(
-      kPrinterId, kPWGRasterOnlyPrinter, title, kPrintTicketWithDuplex,
-      gfx::Size(100, 50), print_data,
+      kPrinterId, kPWGRasterOnlyPrinter, title,
+      GetJsonAsValue(kPrintTicketWithDuplex), gfx::Size(100, 50), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -850,7 +856,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_NonDefaultSettings) {
 
   EXPECT_EQ(kPrinterId, print_job->printer_id);
   EXPECT_EQ(title, print_job->job_title);
-  EXPECT_EQ(kPrintTicketWithDuplex, print_job->ticket_json);
+  EXPECT_EQ(GetJsonAsValue(kPrintTicketWithDuplex), print_job->ticket);
   EXPECT_EQ(kContentTypePWG, print_job->content_type);
   ASSERT_TRUE(print_job->document_bytes);
   EXPECT_EQ(RefCountedMemoryToString(print_data),
@@ -874,7 +880,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_Reset) {
 
   extension_printer_handler_->StartPrint(
       kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      kEmptyPrintTicket, gfx::Size(100, 50), print_data,
+      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 50), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(0u, call_count);
@@ -903,7 +909,8 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_InvalidTicket) {
 
   extension_printer_handler_->StartPrint(
       kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      "{}" /* ticket */, gfx::Size(100, 100), print_data,
+      base::Value(base::Value::Type::DICTIONARY) /* ticket */,
+      gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);
@@ -925,7 +932,7 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 
   extension_printer_handler_->StartPrint(
       kPrinterId, kPWGRasterOnlyPrinterSimpleDescription, title,
-      kEmptyPrintTicket, gfx::Size(100, 100), print_data,
+      GetJsonAsValue(kEmptyPrintTicket), gfx::Size(100, 100), print_data,
       base::Bind(&RecordPrintResult, &call_count, &success, &status));
 
   EXPECT_EQ(1u, call_count);

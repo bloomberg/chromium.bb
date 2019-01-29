@@ -765,7 +765,11 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(RefCountedBytesFromString("foobar"));
-  local_print_operation_->SetTicket(kSampleCJTDuplex);
+  std::unique_ptr<base::Value> ticket =
+      base::JSONReader::Read(kSampleCJTDuplex);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetCapabilities(
       kSampleCapabilitiesResponsePWGSettings);
   local_print_operation_->Start();
@@ -797,7 +801,10 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMono) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(RefCountedBytesFromString("foobar"));
-  local_print_operation_->SetTicket(kSampleCJTMono);
+  std::unique_ptr<base::Value> ticket = base::JSONReader::Read(kSampleCJTMono);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetCapabilities(
       kSampleCapabilitiesResponsePWGSettings);
   local_print_operation_->Start();
@@ -829,7 +836,10 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMonoToGRAY8Printer) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
   local_print_operation_->SetData(RefCountedBytesFromString("foobar"));
-  local_print_operation_->SetTicket(kSampleCJTMono);
+  std::unique_ptr<base::Value> ticket = base::JSONReader::Read(kSampleCJTMono);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetCapabilities(
       kSampleCapabilitiesResponsePWGSettingsMono);
   local_print_operation_->Start();
@@ -860,7 +870,10 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintMonoToGRAY8Printer) {
 TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket(kSampleCJT);
+  std::unique_ptr<base::Value> ticket = base::JSONReader::Read(kSampleCJT);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
@@ -891,7 +904,10 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname(
       "123456789:123456789:123456789:123456789:123456789:123456789:123456789:");
-  local_print_operation_->SetTicket(kSampleCJT);
+  std::unique_ptr<base::Value> ticket = base::JSONReader::Read(kSampleCJT);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));
@@ -914,7 +930,10 @@ TEST_P(PrivetLocalPrintTest, SuccessfulLocalPrintWithOverlongName) {
 TEST_P(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket(kSampleCJT);
+  std::unique_ptr<base::Value> ticket = base::JSONReader::Read(kSampleCJT);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->SetData(RefCountedBytesFromString("sample_data"));
   local_print_operation_->Start();
@@ -941,7 +960,10 @@ TEST_P(PrivetLocalPrintTest, PDFPrintInvalidDocumentTypeRetry) {
 TEST_P(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
   local_print_operation_->SetUsername("sample@gmail.com");
   local_print_operation_->SetJobname("Sample job name");
-  local_print_operation_->SetTicket(kSampleCJT);
+  std::unique_ptr<base::Value> ticket = base::JSONReader::Read(kSampleCJT);
+  ASSERT_TRUE(ticket);
+  local_print_operation_->SetTicket(
+      base::Value::FromUniquePtrValue(std::move(ticket)));
   local_print_operation_->SetCapabilities(kSampleCapabilitiesResponse);
   local_print_operation_->SetData(
       RefCountedBytesFromString("Sample print data"));

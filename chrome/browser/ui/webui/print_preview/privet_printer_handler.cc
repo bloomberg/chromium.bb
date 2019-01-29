@@ -79,16 +79,17 @@ void PrivetPrinterHandler::StartPrint(
     const std::string& destination_id,
     const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
+    base::Value ticket,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   DCHECK(!print_callback_);
   print_callback_ = std::move(callback);
-  CreateHTTP(destination_id,
-             base::Bind(&PrivetPrinterHandler::PrintUpdateClient,
-                        weak_ptr_factory_.GetWeakPtr(), job_title, print_data,
-                        ticket_json, capability, page_size));
+  CreateHTTP(
+      destination_id,
+      base::BindOnce(&PrivetPrinterHandler::PrintUpdateClient,
+                     weak_ptr_factory_.GetWeakPtr(), job_title, print_data,
+                     std::move(ticket), capability, page_size));
 }
 
 void PrivetPrinterHandler::LocalPrinterChanged(
@@ -196,8 +197,8 @@ void PrivetPrinterHandler::OnGotCapabilities(
 
 void PrivetPrinterHandler::PrintUpdateClient(
     const base::string16& job_title,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
-    const std::string& print_ticket,
+    scoped_refptr<base::RefCountedMemory> print_data,
+    base::Value print_ticket,
     const std::string& capabilities,
     const gfx::Size& page_size,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
@@ -206,7 +207,8 @@ void PrivetPrinterHandler::PrintUpdateClient(
     std::move(print_callback_).Run(base::Value(-1));
     return;
   }
-  StartPrint(job_title, print_data, print_ticket, capabilities, page_size);
+  StartPrint(job_title, print_data, std::move(print_ticket), capabilities,
+             page_size);
 }
 
 bool PrivetPrinterHandler::UpdateClient(
@@ -228,14 +230,14 @@ bool PrivetPrinterHandler::UpdateClient(
 
 void PrivetPrinterHandler::StartPrint(
     const base::string16& job_title,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
-    const std::string& print_ticket,
+    scoped_refptr<base::RefCountedMemory> print_data,
+    base::Value print_ticket,
     const std::string& capabilities,
     const gfx::Size& page_size) {
   privet_local_print_operation_ =
       privet_http_client_->CreateLocalPrintOperation(this);
 
-  privet_local_print_operation_->SetTicket(print_ticket);
+  privet_local_print_operation_->SetTicket(std::move(print_ticket));
   privet_local_print_operation_->SetCapabilities(capabilities);
   privet_local_print_operation_->SetJobname(base::UTF16ToUTF8(job_title));
   privet_local_print_operation_->SetPageSize(page_size);
