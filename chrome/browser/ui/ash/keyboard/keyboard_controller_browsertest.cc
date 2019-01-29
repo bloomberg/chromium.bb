@@ -423,7 +423,6 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 
   auto* controller = keyboard::KeyboardController::Get();
 
-  controller->LoadKeyboardWindowInBackground();
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
 
