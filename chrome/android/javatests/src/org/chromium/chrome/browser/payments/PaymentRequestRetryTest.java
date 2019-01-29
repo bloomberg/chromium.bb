@@ -58,7 +58,6 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     /**
      * Test for retry() with shipping address errors.
      */
-    @DisabledTest(message = "crbug.com/926252")
     @Test
     @MediumTest
     @Feature({"Payments"})
