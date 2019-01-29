@@ -13,7 +13,6 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
-#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/base/accelerators/media_keys_listener.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -25,13 +24,13 @@ namespace content {
 
 // HardwareKeyMediaController controls media sessions via hardware media keys.
 class CONTENT_EXPORT HardwareKeyMediaController
-    : public media_session::mojom::MediaSessionObserver,
+    : public media_session::mojom::MediaControllerObserver,
       public ui::MediaKeysListener::Delegate {
  public:
   explicit HardwareKeyMediaController(service_manager::Connector* connector);
   ~HardwareKeyMediaController() override;
 
-  // media_session::mojom::MediaSessionObserver:
+  // media_session::mojom::MediaControllerObserver:
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
@@ -72,9 +71,9 @@ class CONTENT_EXPORT HardwareKeyMediaController
   // Used to check which actions are currently supported.
   base::flat_set<media_session::mojom::MediaSessionAction> actions_;
 
-  // Used to receive updates to the active MediaSession.
-  mojo::Binding<media_session::mojom::MediaSessionObserver>
-      media_session_observer_binding_{this};
+  // Used to receive updates to the active media controller.
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HardwareKeyMediaController);
 };

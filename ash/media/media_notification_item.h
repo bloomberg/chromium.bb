@@ -21,14 +21,14 @@ class MediaNotificationView;
 // MediaNotificationItem manages hiding/showing a media notification and
 // updating the metadata for a single media session.
 class ASH_EXPORT MediaNotificationItem
-    : public media_session::mojom::MediaSessionObserver {
+    : public media_session::mojom::MediaControllerObserver {
  public:
   MediaNotificationItem(const std::string& id,
                         media_session::mojom::MediaControllerPtr controller,
                         media_session::mojom::MediaSessionInfoPtr session_info);
   ~MediaNotificationItem() override;
 
-  // media_session::mojom::MediaSessionObserver:
+  // media_session::mojom::MediaControllerObserver:
   void MediaSessionInfoChanged(
       media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
@@ -69,8 +69,8 @@ class ASH_EXPORT MediaNotificationItem
 
   std::set<media_session::mojom::MediaSessionAction> session_actions_;
 
-  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_{
-      this};
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      observer_binding_{this};
 
   base::WeakPtrFactory<MediaNotificationItem> weak_ptr_factory_{this};
 

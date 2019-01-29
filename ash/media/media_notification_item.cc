@@ -40,9 +40,9 @@ MediaNotificationItem::MediaNotificationItem(
       session_info_(std::move(session_info)) {
   // Bind an observer to the associated media session.
   if (media_controller_ptr_.is_bound()) {
-    media_session::mojom::MediaSessionObserverPtr media_session_observer;
-    observer_binding_.Bind(mojo::MakeRequest(&media_session_observer));
-    media_controller_ptr_->AddObserver(std::move(media_session_observer));
+    media_session::mojom::MediaControllerObserverPtr media_controller_observer;
+    observer_binding_.Bind(mojo::MakeRequest(&media_controller_observer));
+    media_controller_ptr_->AddObserver(std::move(media_controller_observer));
   }
 
   MaybeHideOrShowNotification();

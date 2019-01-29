@@ -31,12 +31,12 @@ HardwareKeyMediaController::HardwareKeyMediaController(
   controller_manager_ptr->CreateActiveMediaController(
       mojo::MakeRequest(&media_controller_ptr_));
 
-  // Observe the active media session for changes to playback state and
+  // Observe the active media controller for changes to playback state and
   // supported actions.
-  media_session::mojom::MediaSessionObserverPtr media_session_observer;
-  media_session_observer_binding_.Bind(
-      mojo::MakeRequest(&media_session_observer));
-  media_controller_ptr_->AddObserver(std::move(media_session_observer));
+  media_session::mojom::MediaControllerObserverPtr media_controller_observer;
+  media_controller_observer_binding_.Bind(
+      mojo::MakeRequest(&media_controller_observer));
+  media_controller_ptr_->AddObserver(std::move(media_controller_observer));
 }
 
 HardwareKeyMediaController::~HardwareKeyMediaController() = default;
