@@ -1,0 +1,15 @@
+Name: PFFFT: a pretty fast FFT.
+Short Name: PFFFT
+URL: https://bitbucket.org/jpommier/pffft/
+Version: 0
+Date: 2014-08-09
+Revision: 483453d8f766
+License: BSD-like
+License File: LICENSE
+Security Critical: Yes
+License Android Compatible: Yes
+
+Description:
+PFFFT does 1D Fast Fourier Transforms, of single precision real and complex vectors. It tries do it fast, it tries to be correct, and it tries to be small. Computations do take advantage of SSE1 instructions on x86 cpus, Altivec on powerpc cpus, and NEON on ARM cpus.
+
+Local Modifications:
