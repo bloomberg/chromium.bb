@@ -1075,7 +1075,7 @@ TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
   arc_session_manager()->Shutdown();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     ArcSessionManagerPolicyTest,
     // testing::Values is incompatible with move-only types, hence ints are used
@@ -1269,9 +1269,9 @@ class ArcSessionOobeOptInNegotiatorTest
   DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ArcSessionOobeOptInNegotiatorTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcSessionOobeOptInNegotiatorTest,
+                         ::testing::Values(true, false));
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
   view()->Show();
@@ -1429,9 +1429,9 @@ class ArcSessionRetryTest
   DISALLOW_COPY_AND_ASSIGN(ArcSessionRetryTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ArcSessionRetryTest,
-                        ::testing::ValuesIn(kRetryTestCases));
+INSTANTIATE_TEST_SUITE_P(,
+                         ArcSessionRetryTest,
+                         ::testing::ValuesIn(kRetryTestCases));
 
 // Verifies that Android container behaves as expected.* This checks:
 //   * Whether ARC++ container alive or not on error.

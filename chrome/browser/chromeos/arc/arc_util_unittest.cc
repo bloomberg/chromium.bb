@@ -966,7 +966,7 @@ TEST_P(ArcMigrationAskForEcryptfsArcUsersTest,
             IsArcMigrationAllowedByPolicyForProfile(profile()));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ArcMigrationTest,
     ArcMigrationAskForEcryptfsArcUsersTest,
     ::testing::Values(
