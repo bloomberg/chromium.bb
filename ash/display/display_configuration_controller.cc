@@ -130,13 +130,6 @@ void DisplayConfigurationController::SetUnifiedDesktopLayoutMatrix(
 }
 
 void DisplayConfigurationController::SetMirrorMode(bool mirror, bool throttle) {
-  if (!display_manager_->is_multi_mirroring_enabled() &&
-      display_manager_->num_connected_displays() > 2) {
-    ShowDisplayErrorNotification(
-        l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
-        false);
-    return;
-  }
   if (display_manager_->num_connected_displays() <= 1 ||
       display_manager_->IsInMirrorMode() == mirror ||
       (throttle && IsLimited())) {

@@ -298,12 +298,8 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
         return false;
       }
 
-      bool can_set_mirror_mode =
-          configurator_->is_multi_mirroring_enabled_
-              ? (states.size() > 1 &&
-                 (num_on_displays == 0 || num_on_displays > 1))
-              : (states.size() == 2 &&
-                 (num_on_displays == 0 || num_on_displays == 2));
+      const bool can_set_mirror_mode =
+          states.size() > 1 && num_on_displays != 1;
       if (!can_set_mirror_mode) {
         LOG(WARNING) << "Ignoring request to enter mirrored mode with "
                      << states.size() << " connected display(s) and "
@@ -379,9 +375,8 @@ DisplayConfigurator::DisplayLayoutManagerImpl::GetUserSelectedMode(
     const DisplaySnapshot& display) const {
   gfx::Size size;
   const DisplayMode* selected_mode = nullptr;
-  if (GetStateController() &&
-      GetStateController()->GetResolutionForDisplayId(display.display_id(),
-                                                      &size)) {
+  if (GetStateController() && GetStateController()->GetResolutionForDisplayId(
+                                  display.display_id(), &size)) {
     selected_mode = FindDisplayModeMatchingSize(display, size);
   }
 
@@ -540,9 +535,6 @@ DisplayConfigurator::DisplayConfigurator()
       display_control_changing_(false),
       displays_suspended_(false),
       layout_manager_(new DisplayLayoutManagerImpl(this)),
-      is_multi_mirroring_enabled_(
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ::switches::kDisableMultiMirroring)),
       weak_ptr_factory_(this) {}
 
 DisplayConfigurator::~DisplayConfigurator() {
@@ -1061,9 +1053,10 @@ void DisplayConfigurator::ResumeDisplays() {
     // This gives a chance to wait for all displays to be added and detected
     // before configuration is performed, so we won't immediately resize the
     // desktops and the windows on it to fit on a single display.
-    configure_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                                          kResumeConfigureMultiDisplayDelayMs),
-                           this, &DisplayConfigurator::ConfigureDisplays);
+    configure_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kResumeConfigureMultiDisplayDelayMs),
+        this, &DisplayConfigurator::ConfigureDisplays);
   }
 
   // TODO(crbug.com/794831): Solve the issue of mirror mode on display resume.

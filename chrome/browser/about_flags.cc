@@ -3431,12 +3431,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(network::switches::kLogNetLog)},
 
-#if defined(OS_CHROMEOS)
-    {"disable-multi-mirroring", flag_descriptions::kDisableMultiMirroringName,
-     flag_descriptions::kDisableMultiMirroringDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kDisableMultiMirroring)},
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_ANDROID)
     {"grant-notifications-to-dse",
      flag_descriptions::kGrantNotificationsToDSEName,

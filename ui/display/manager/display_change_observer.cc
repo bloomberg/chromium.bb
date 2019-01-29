@@ -43,11 +43,8 @@ struct DeviceScaleFactorDPIThreshold {
 // Update the list of zoom levels whenever a new device scale factor is added
 // here. See zoom level list in /ui/display/manager/display_util.cc
 const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
-    {270.0f, 2.25f},
-    {220.0f, 2.0f},
-    {180.0f, 1.6f},
-    {150.0f, 1.25f},
-    {0.0f, 1.0f},
+    {270.0f, 2.25f}, {220.0f, 2.0f}, {180.0f, 1.6f},
+    {150.0f, 1.25f}, {0.0f, 1.0f},
 };
 
 }  // namespace
@@ -137,14 +134,6 @@ MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
   UpdateInternalDisplay(display_states);
   if (display_states.size() == 1)
     return MULTIPLE_DISPLAY_STATE_SINGLE;
-  if (!display_manager_->is_multi_mirroring_enabled() &&
-      display_states.size() > 2) {
-    // TODO(weidongg/774795): Remove this condition when multi-mirroring is
-    // enabled by default.
-    // When multi-mirroring is disabled, mirroring across 3+ displays are not
-    // supported, so default to EXTENDED.
-    return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
-  }
   DisplayIdList list =
       GenerateDisplayIdList(display_states.begin(), display_states.end(),
                             [](const DisplaySnapshot* display_state) {

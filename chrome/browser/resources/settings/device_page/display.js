@@ -136,14 +136,6 @@ Polymer({
     },
 
     /** @private */
-    multiMirroringAvailable_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('multiMirroringAvailable');
-      }
-    },
-
-    /** @private */
     unifiedDesktopMode_: {
       type: Boolean,
       value: false,
@@ -576,9 +568,7 @@ Polymer({
     }
 
     return this.isMirrored_(displays) ||
-        (!unifiedDesktopMode &&
-         ((this.multiMirroringAvailable_ && displays.length > 1) ||
-          displays.length == 2));
+        (!unifiedDesktopMode && displays.length > 1);
   },
 
   /**

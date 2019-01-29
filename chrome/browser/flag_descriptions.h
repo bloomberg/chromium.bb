@@ -427,9 +427,6 @@ extern const char kEnableMediaSessionServiceDescription[];
 extern const char kEnablePolicyToolName[];
 extern const char kEnablePolicyToolDescription[];
 
-extern const char kDisableMultiMirroringName[];
-extern const char kDisableMultiMirroringDescription[];
-
 extern const char kEnableNavigationTracingName[];
 extern const char kEnableNavigationTracingDescription[];
 

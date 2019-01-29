@@ -302,16 +302,12 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // Returns the requested power state if set or the default power state.
   chromeos::DisplayPowerState GetRequestedPowerState() const;
 
-  void set_is_multi_mirroring_enabled_for_test(bool enabled) {
-    is_multi_mirroring_enabled_ = enabled;
-  }
-
   void reset_requested_power_state_for_test() {
     requested_power_state_ = base::nullopt;
   }
 
-  base::Optional<chromeos::DisplayPowerState>
-  GetRequestedPowerStateForTest() const {
+  base::Optional<chromeos::DisplayPowerState> GetRequestedPowerStateForTest()
+      const {
     return requested_power_state_;
   }
 
@@ -477,8 +473,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   std::unique_ptr<DisplayLayoutManager> layout_manager_;
 
   std::unique_ptr<UpdateDisplayConfigurationTask> configuration_task_;
-
-  bool is_multi_mirroring_enabled_;
 
   // This must be the last variable.
   base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_;

@@ -411,39 +411,9 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
 bool ScreenLayoutObserver::GetExitMirrorModeMessage(
     base::string16* out_message,
     base::string16* out_additional_message) {
-  if (GetDisplayManager()->is_multi_mirroring_enabled()) {
-    *out_message =
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
-    return true;
-  }
-  switch (current_display_mode_) {
-    case DisplayMode::EXTENDED_3_PLUS:
-      // Mirror mode was turned off due to having more than two displays.
-      // Show a message that mirror mode for 3+ displays is not supported.
-      *out_message =
-          l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED);
-      return true;
-
-    case DisplayMode::DOCKED:
-      // Handle disabling mirror mode as a result of going to docked mode
-      // when we only have a single display (this means we actually have two
-      // physical displays, one of which is the internal display, but they
-      // were in mirror mode, and hence considered as one. Closing the
-      // internal display disables mirror mode and we still have a single
-      // active display).
-      // Falls through.
-    case DisplayMode::SINGLE:
-      // We're exiting mirror mode because we removed one of the two
-      // displays.
-      *out_message =
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
-      return true;
-
-    default:
-      // Mirror mode was turned off; other messages should be shown e.g.
-      // extended mode is on, ... etc.
-      return false;
-  }
+  *out_message =
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
+  return true;
 }
 
 }  // namespace ash

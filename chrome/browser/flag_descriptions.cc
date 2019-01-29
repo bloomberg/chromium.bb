@@ -659,11 +659,6 @@ const char kEnablePolicyToolDescription[] =
     "If enabled, the chrome://policy-tool URL loads a page for managing "
     "policies.";
 
-const char kDisableMultiMirroringName[] =
-    "Display mirroring across multiple displays.";
-const char kDisableMultiMirroringDescription[] =
-    "Disable Display mirroring across multiple displays.";
-
 const char kEnableNavigationTracingName[] = "Enable navigation tracing";
 const char kEnableNavigationTracingDescription[] =
     "This is to be used in conjunction with the trace-upload-url flag. "
