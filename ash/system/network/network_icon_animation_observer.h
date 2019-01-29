@@ -13,8 +13,7 @@ namespace network_icon {
 // Observer interface class for animating network icons.
 class ASH_EXPORT AnimationObserver {
  public:
-  // Called when the image has changed due to animation. The callback should
-  // trigger a call to GetImageForNetwork() to retrieve the image.
+  // Called when the image has changed due to animation.
   virtual void NetworkIconChanged() = 0;
 
  protected:

@@ -20,6 +20,7 @@
 #include "chromeos/network/tether_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 namespace ash {
@@ -107,7 +108,8 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
   }
 
   gfx::Image ImageForNetwork(const chromeos::NetworkState* network) {
-    gfx::ImageSkia image_skia = GetImageForNetwork(network, icon_type_);
+    gfx::ImageSkia image_skia = GetImageForNonVirtualNetwork(
+        network, icon_type_, false /* show_vpn_badge */);
     return gfx::Image(image_skia);
   }
 
@@ -274,6 +276,22 @@ TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularUninitialized) {
 
   EXPECT_EQ(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR,
             GetCellularUninitializedMsg());
+
+  gfx::ImageSkia default_image;
+  base::string16 label;
+  bool animating = false;
+  ash::network_icon::GetDefaultNetworkImageAndLabel(icon_type_, &default_image,
+                                                    &label, &animating);
+  ASSERT_FALSE(default_image.isNull());
+  EXPECT_TRUE(animating);
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR),
+      label);
+  std::unique_ptr<chromeos::NetworkState> reference_network =
+      CreateStandaloneNetworkState("reference", shill::kTypeCellular,
+                                   shill::kStateAssociation, 45);
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      gfx::Image(default_image), ImageForNetwork(reference_network.get())));
 }
 
 TEST_F(NetworkIconTest, GetCellularUninitializedMsg_CellularScanning) {
@@ -302,7 +320,7 @@ TEST_F(NetworkIconTest, NetworkSignalStrength) {
       CreateStandaloneNetworkState("wifi", shill::kTypeWifi,
                                    shill::kStateOnline, 50);
 
-  // Verify non-wirless network types return SignalStrength::NOT_WIRELESS, and
+  // Verify non-wireless network types return SignalStrength::NOT_WIRELESS, and
   // wireless network types return something other than
   // SignalStrength::NOT_WIRELESS.
   EXPECT_EQ(ss::NOT_WIRELESS,
@@ -655,6 +673,77 @@ TEST_F(NetworkIconTest,
                                    shill::kStateIdle, 45);
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(default_image), ImageForNetwork(reference_network.get())));
+}
+
+// Tests VPN badging for the default network.
+TEST_F(NetworkIconTest, DefaultNetworkVpnBadge) {
+  gfx::ImageSkia default_image;
+  base::string16 label;
+  bool animating = false;
+
+  // Set up initial state with Ethernet and WiFi connected.
+  std::string ethernet_path = ConfigureService(
+      R"({"GUID": "ethernet_guid", "Type": "ethernet", "State": "online"})");
+  ASSERT_FALSE(ethernet_path.empty());
+  // Wifi1 is set up by default but not connected. Also set its strength.
+  SetServiceProperty(wifi1_path(), shill::kStateProperty,
+                     base::Value(shill::kStateOnline));
+  SetServiceProperty(wifi1_path(), shill::kSignalStrengthProperty,
+                     base::Value(45));
+
+  // With Ethernet and WiFi connected, the default icon should be empty.
+  ash::network_icon::GetDefaultNetworkImageAndLabel(icon_type_, &default_image,
+                                                    &label, &animating);
+  ASSERT_TRUE(default_image.isNull());
+  EXPECT_FALSE(animating);
+
+  // Add a connected VPN.
+  std::string vpn_path = ConfigureService(
+      R"({"GUID": "vpn_guid", "Type": "vpn", "State": "online"})");
+  ASSERT_FALSE(vpn_path.empty());
+
+  // When a VPN is connected, the default icon should be Ethernet with a badge.
+  ash::network_icon::GetDefaultNetworkImageAndLabel(icon_type_, &default_image,
+                                                    &label, &animating);
+  ASSERT_FALSE(default_image.isNull());
+  EXPECT_FALSE(animating);
+
+  std::unique_ptr<chromeos::NetworkState> reference_eth =
+      CreateStandaloneNetworkState("reference_eth", shill::kTypeEthernet,
+                                   shill::kStateOnline, 0);
+  gfx::Image reference_eth_unbadged = gfx::Image(GetImageForNonVirtualNetwork(
+      reference_eth.get(), icon_type_, false /* show_vpn_badge */));
+  gfx::Image reference_eth_badged = gfx::Image(GetImageForNonVirtualNetwork(
+      reference_eth.get(), icon_type_, true /* show_vpn_badge */));
+
+  EXPECT_FALSE(gfx::test::AreImagesEqual(gfx::Image(default_image),
+                                         reference_eth_unbadged));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(default_image),
+                                        reference_eth_badged));
+
+  // Disconnect Ethernet. The default icon should become WiFi with a badge.
+  SetServiceProperty(ethernet_path, shill::kStateProperty,
+                     base::Value(shill::kStateIdle));
+  ash::network_icon::GetDefaultNetworkImageAndLabel(icon_type_, &default_image,
+                                                    &label, &animating);
+  ASSERT_FALSE(default_image.isNull());
+  EXPECT_FALSE(animating);
+
+  std::unique_ptr<chromeos::NetworkState> reference_wifi =
+      CreateStandaloneNetworkState("reference_wifi", shill::kTypeWifi,
+                                   shill::kStateOnline, 45);
+  gfx::Image reference_wifi_badged = gfx::Image(GetImageForNonVirtualNetwork(
+      reference_wifi.get(), icon_type_, true /* show_vpn_badge */));
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gfx::Image(default_image),
+                                        reference_wifi_badged));
+
+  // Set the VPN to connecting; the default icon should be animating.
+  SetServiceProperty(vpn_path, shill::kStateProperty,
+                     base::Value(shill::kStateAssociation));
+  ash::network_icon::GetDefaultNetworkImageAndLabel(icon_type_, &default_image,
+                                                    &label, &animating);
+  ASSERT_FALSE(default_image.isNull());
+  EXPECT_TRUE(animating);
 }
 
 // Tests that wifi image is shown when connecting to wifi network with vpn.

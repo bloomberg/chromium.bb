@@ -115,9 +115,7 @@ void NetworkListView::UpdateNetworkIcons() {
   SCOPED_NET_LOG_IF_SLOW();
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
-  // First, update state for all networks.
   bool animating = false;
-
   for (auto& info : network_list_) {
     const chromeos::NetworkState* network =
         handler->GetNetworkStateFromGuid(info->guid);
@@ -126,8 +124,9 @@ void NetworkListView::UpdateNetworkIcons() {
     bool prohibited_by_policy = network->blocked_by_policy();
     info->label = network_icon::GetLabelForNetwork(
         network, network_icon::ICON_TYPE_MENU_LIST);
-    info->image =
-        network_icon::GetImageForNetwork(network, network_icon::ICON_TYPE_LIST);
+    // |network_list_| only contains non virtual networks.
+    info->image = network_icon::GetImageForNonVirtualNetwork(
+        network, network_icon::ICON_TYPE_LIST, false /* badge_vpn */);
     info->disable =
         (network->activation_state() == shill::kActivationStateActivating) ||
         prohibited_by_policy;
