@@ -531,6 +531,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
     }
 #endif  // !defined(OS_CHROMEOS)
   }
+#endif  // !defined(OS_MACOSX)
 
   // Reparent the tab into an app window immediately when opening as a window.
   if (!silent_install &&
@@ -538,7 +539,6 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
       launch_type == LAUNCH_TYPE_WINDOW && !profile_->IsOffTheRecord()) {
     ReparentWebContentsIntoAppBrowser(contents_, extension);
   }
-#endif  // !defined(OS_MACOSX)
 
   callback_.Run(extension, web_app_info_);
 }

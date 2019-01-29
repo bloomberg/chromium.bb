@@ -184,12 +184,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppHelperTest, CreateWindowedPWAIntoAppWindow) {
                                           bookmark_app_helper_->web_app_info_);
   Wait();  // Quits when the extension install completes.
 
-#if !defined(OS_MACOSX)
   // We do not reparent the tab on OS X.
   Browser* app_browser = chrome::FindBrowserWithWebContents(web_contents());
   EXPECT_TRUE(app_browser->is_app());
   EXPECT_NE(app_browser, browser());
-#endif  // defined(OS_MACOSX)
 }
 
 }  // namespace extensions
