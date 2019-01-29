@@ -4,6 +4,11 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace crostini {
@@ -19,6 +24,7 @@ const char kCrostiniSharedPaths[] = "crostini.shared_paths";
 // List of USB devices with their system guid, a name/description and their
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
+const char kCrostiniContainers[] = "crostini.containers";
 
 // A boolean preference representing a user level enterprise policy to enable
 // Crostini use.
@@ -41,6 +47,22 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kCrostiniRegistry);
   registry->RegisterListPref(kCrostiniSharedPaths);
   registry->RegisterListPref(kCrostiniSharedUsbDevices);
+
+  // Set a default value for crostini.containers to ensure that we track the
+  // default container even if its creation predates this preference. This
+  // preference should not be accessed unless crostini is installed
+  // (i.e. kCrostiniEnabled is true).
+  base::Value default_container(base::Value::Type::DICTIONARY);
+  default_container.SetKey("vm_name", base::Value(kCrostiniDefaultVmName));
+  default_container.SetKey("container_name",
+                           base::Value(kCrostiniDefaultContainerName));
+
+  auto default_containers_list =
+      std::make_unique<base::Value>(base::Value::Type::LIST);
+  default_containers_list->GetList().push_back(std::move(default_container));
+  registry->RegisterListPref(kCrostiniContainers,
+                             std::move(default_containers_list));
+
   registry->RegisterBooleanPref(crostini::prefs::kReportCrostiniUsageEnabled,
                                 false);
   registry->RegisterStringPref(kCrostiniLastLaunchVersion, std::string());
