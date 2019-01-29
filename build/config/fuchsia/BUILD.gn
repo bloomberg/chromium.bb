@@ -49,10 +49,6 @@ config("compiler") {
   # Add SDK lib dir for -lfdio above.
   lib_dirs = [ rebase_path("${fuchsia_sdk}/arch/${current_cpu}/lib") ]
 
-  # TODO(crbug.com/821951): Clang enables SafeStack by default when targeting
-  # Fuchsia, but it breaks some tests, notably in V8.
-  cflags += [ "-fno-sanitize=safe-stack" ]
-
   libs = [ "zircon" ]
 }
 
