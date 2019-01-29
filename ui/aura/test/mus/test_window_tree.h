@@ -113,6 +113,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return last_touch_hit_test_insets_;
   }
 
+  const ui::Cursor& last_cursor() const { return last_cursor_; }
+
   const base::Optional<viz::LocalSurfaceId>& last_local_surface_id() const {
     return last_local_surface_id_;
   }
@@ -294,6 +296,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   ws::mojom::WindowTreeClient* client_ = nullptr;
 
+  ui::Cursor last_cursor_ = ui::CursorType::kNull;
   base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       last_new_window_properties_;
 

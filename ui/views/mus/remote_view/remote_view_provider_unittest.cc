@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/unguessable_token.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -219,6 +220,19 @@ TEST_F(RemoteViewProviderTest, FocusChangeObserver) {
 
   embedded_->Focus();
   EXPECT_TRUE(observer.on_window_focused_called());
+}
+
+TEST_F(RemoteViewProviderTest, Cursor) {
+  aura::Window* embedder = SimulateEmbed();
+  ASSERT_TRUE(embedder);
+
+  auto* cursor_client =
+      aura::client::GetCursorClient(embedded_->GetRootWindow());
+  ASSERT_TRUE(cursor_client);
+
+  EXPECT_NE(window_tree()->last_cursor(), ui::CursorType::kHand);
+  cursor_client->SetCursor(ui::CursorType::kHand);
+  EXPECT_EQ(window_tree()->last_cursor(), ui::CursorType::kHand);
 }
 
 }  // namespace views

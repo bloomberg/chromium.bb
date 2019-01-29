@@ -19,6 +19,8 @@ jumbo_component("mus") {
     "ax_remote_host.h",
     "ax_tree_source_mus.cc",
     "ax_tree_source_mus.h",
+    "cursor_manager_owner.cc",
+    "cursor_manager_owner.h",
     "desktop_window_tree_host_mus.cc",
     "desktop_window_tree_host_mus.h",
     "mus_client.cc",
