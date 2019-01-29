@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
   using GetMetadataField = FileSystemOperation::GetMetadataField;
 
-  using OperationID = int;
+  using OperationID = uint64_t;
 
   virtual ~FileSystemOperationRunner();
 
