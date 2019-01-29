@@ -12,90 +12,6 @@
 
 namespace blink {
 
-namespace {
-
-class WaitingHandle final : public WebDataConsumerHandle {
- private:
-  class ReaderImpl final : public WebDataConsumerHandle::Reader {
-   public:
-    WebDataConsumerHandle::Result BeginRead(const void** buffer,
-                                            WebDataConsumerHandle::Flags,
-                                            size_t* available) override {
-      *available = 0;
-      *buffer = nullptr;
-      return kShouldWait;
-    }
-    WebDataConsumerHandle::Result EndRead(size_t) override {
-      return kUnexpectedError;
-    }
-  };
-  std::unique_ptr<Reader> ObtainReader(
-      Client*,
-      scoped_refptr<base::SingleThreadTaskRunner>) override {
-    return std::make_unique<ReaderImpl>();
-  }
-
-  const char* DebugName() const override { return "WaitingHandle"; }
-};
-
-}  // namespace
-
-DataConsumerHandleTestUtil::Thread::Thread(
-    const ThreadCreationParams& params,
-    InitializationPolicy initialization_policy)
-    : thread_(WebThreadSupportingGC::Create(params)),
-      initialization_policy_(initialization_policy),
-      waitable_event_(std::make_unique<WaitableEvent>()) {
-  thread_->PostTask(FROM_HERE, CrossThreadBind(&Thread::Initialize,
-                                               CrossThreadUnretained(this)));
-  waitable_event_->Wait();
-}
-
-DataConsumerHandleTestUtil::Thread::~Thread() {
-  thread_->PostTask(FROM_HERE, CrossThreadBind(&Thread::Shutdown,
-                                               CrossThreadUnretained(this)));
-  waitable_event_->Wait();
-}
-
-void DataConsumerHandleTestUtil::Thread::Initialize() {
-  DCHECK(thread_->IsCurrentThread());
-  if (initialization_policy_ >= kScriptExecution) {
-    isolate_holder_ = std::make_unique<gin::IsolateHolder>(
-        scheduler::GetSingleThreadTaskRunnerForTesting(),
-        gin::IsolateHolder::IsolateType::kTest);
-    GetIsolate()->Enter();
-  }
-  thread_->InitializeOnThread();
-  if (initialization_policy_ >= kScriptExecution) {
-    v8::HandleScope handle_scope(GetIsolate());
-    script_state_ = ScriptState::Create(
-        v8::Context::New(GetIsolate()),
-        DOMWrapperWorld::Create(GetIsolate(),
-                                DOMWrapperWorld::WorldType::kTesting));
-  }
-  if (initialization_policy_ >= kWithExecutionContext) {
-    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
-  }
-  waitable_event_->Signal();
-}
-
-void DataConsumerHandleTestUtil::Thread::Shutdown() {
-  DCHECK(thread_->IsCurrentThread());
-  execution_context_ = nullptr;
-  if (script_state_) {
-    script_state_->DisposePerContextData();
-  }
-  script_state_ = nullptr;
-  thread_->ShutdownOnThread();
-  if (isolate_holder_) {
-    GetIsolate()->Exit();
-    GetIsolate()->RequestGarbageCollectionForTesting(
-        GetIsolate()->kFullGarbageCollection);
-    isolate_holder_ = nullptr;
-  }
-  waitable_event_->Signal();
-}
-
 class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
     : public Reader {
  public:
@@ -262,11 +178,6 @@ DataConsumerHandleTestUtil::ReplayingHandle::ObtainReader(
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Add(const Command& command) {
   context_->Add(command);
-}
-
-std::unique_ptr<WebDataConsumerHandle>
-DataConsumerHandleTestUtil::CreateWaitingDataConsumerHandle() {
-  return std::make_unique<WaitingHandle>();
 }
 
 }  // namespace blink
