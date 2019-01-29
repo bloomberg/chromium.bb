@@ -3149,7 +3149,6 @@ crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.serviceworker.html [ 
 crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/webapi/origin.sub.any.serviceworker.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/webapi/rejected-arg.any.sharedworker.html [ Timeout ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/webapi/abort.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/webapi/abort.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
@@ -3376,9 +3375,6 @@ crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
 crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
 crbug.com/626703 virtual/layout_ng/external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
-crbug.com/626703 [ Mac10.10 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-16.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-83.xml [ Failure ]
@@ -5494,9 +5490,7 @@ crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Time
 # Flaky
 crbug.com/878315 [ Mac ] virtual/threaded/fast/scroll-behavior/overscroll-behavior.html [ Pass Failure ]
 
-# Sheriff 2018-08-23
-crbug.com/877183 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
-crbug.com/877183 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
+crbug.com/898186 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
 # Sheriff 2018-09-10
 crbug.com/881207 fast/js/regress/splice-to-remove.html [ Timeout Pass ]
