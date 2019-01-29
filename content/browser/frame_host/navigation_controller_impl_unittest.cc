@@ -4856,8 +4856,7 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
   NavigateAndCommit(url1);
   NavigateAndCommit(url2);
   NavigateAndCommit(url3);
-  controller.GoBack();
-  contents()->CommitPendingNavigation();
+  NavigationSimulator::GoBack(contents());
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
 
@@ -4878,10 +4877,8 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
 
   // Assume that the RenderFrame correctly cleared its history and commit the
   // navigation.
-  contents()->GetMainFrame()->SendBeforeUnloadACK(true);
-  contents()->GetPendingMainFrame()->
-      set_simulate_history_list_was_cleared(true);
-  contents()->CommitPendingNavigation();
+  navigation->set_history_list_was_cleared(true);
+  navigation->Commit();
 
   // Verify that the NavigationController's session history was correctly
   // cleared.

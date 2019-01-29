@@ -53,8 +53,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       const GURL& original_url,
       RenderFrameHost* render_frame_host);
 
-  static std::unique_ptr<NavigationSimulatorImpl>
-  CreateFromPendingBrowserInitiated(WebContents* contents);
+  static std::unique_ptr<NavigationSimulatorImpl> CreateFromPending(
+      WebContents* contents);
 
   // NavigationSimulator implementation.
   void Start() override;
@@ -91,10 +91,20 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   content::GlobalRequestID GetGlobalRequestID() const override;
 
   // Additional utilites usable only inside content/.
+
+  // Set LoadURLParams and make browser initiated navigations use
+  // LoadURLWithParams instead of LoadURL.
   void SetLoadURLParams(NavigationController::LoadURLParams* load_url_params);
   void set_should_check_main_world_csp(CSPDisposition disposition) {
     should_check_main_world_csp_ = disposition;
   }
+
+  // Set DidCommit*Params history_list_was_cleared flag to |history_cleared|.
+  void set_history_list_was_cleared(bool history_cleared);
+
+  // Manually force the value of did_create_new__entry flag in DidCommit*Params
+  // to |did_create_new_entry|.
+  void set_did_create_new_entry(bool did_create_new_entry);
 
  private:
   NavigationSimulatorImpl(const GURL& original_url,
@@ -179,6 +189,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   State state_ = INITIALIZATION;
 
   // The WebContents in which the navigation is taking place.
+  // IMPORTANT: Because NavigationSimulator is used outside content/ where we
+  // sometimes use WebContentsImpl and not TestWebContents, this cannot be
+  // assumed to cast properly to TestWebContents.
   WebContentsImpl* web_contents_;
 
   // The renderer associated with this navigation.
@@ -212,11 +225,14 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   std::string contents_mime_type_;
   CSPDisposition should_check_main_world_csp_ = CSPDisposition::CHECK;
 
+  bool auto_advance_ = true;
+
   // Generic params structure used for fully customized browser initiated
   // navigation requests. Only valid if explicitely provided.
   NavigationController::LoadURLParams* load_url_params_;
 
-  bool auto_advance_ = true;
+  bool history_list_was_cleared_ = false;
+  base::Optional<bool> did_create_new_entry_;
 
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.

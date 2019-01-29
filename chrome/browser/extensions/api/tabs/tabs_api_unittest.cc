@@ -19,6 +19,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/constants.h"
@@ -59,12 +60,8 @@ std::unique_ptr<content::WebContents> CreateWebContentsWithHistory(
       content::WebContentsTester::CreateTestWebContents(profile, nullptr);
 
   for (const auto& url : urls) {
-    web_contents->GetController().LoadURL(
-        url, content::Referrer(),
-        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK), std::string());
-
-    content::RenderFrameHostTester::CommitPendingLoad(
-        &web_contents->GetController());
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents.get(), url);
     EXPECT_EQ(url, web_contents->GetLastCommittedURL());
     EXPECT_EQ(url, web_contents->GetVisibleURL());
   }
