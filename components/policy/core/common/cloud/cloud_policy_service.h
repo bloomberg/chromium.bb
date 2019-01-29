@@ -38,6 +38,11 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
     // policy load activity has completed and the CloudPolicyClient has
     // been registered, if possible).
     virtual void OnCloudPolicyServiceInitializationCompleted() = 0;
+
+    // Called when policy refresh finshed. |success| indicates whether refresh
+    // was successful.
+    virtual void OnPolicyRefreshed(bool success) {}
+
     virtual ~Observer() {}
   };
 

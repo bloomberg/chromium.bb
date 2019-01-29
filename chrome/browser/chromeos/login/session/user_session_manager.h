@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
+#include "chrome/browser/chromeos/child_accounts/child_policy_observer.h"
 #include "chrome/browser/chromeos/eol_notification.h"
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -395,6 +396,13 @@ class UserSessionManager
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* profile);
 
+  // Launch browser or proceed to alternative login flow. Should be called after
+  // profile is ready.
+  void InitializeBrowser(Profile* profile);
+
+  // Initialize child user profile services that depend on the policy.
+  void InitializeChildUserServices(Profile* profile);
+
   // Starts out-of-box flow with the specified screen.
   void ActivateWizard(OobeScreen screen);
 
@@ -440,6 +448,12 @@ class UserSessionManager
 
   // Callback invoked when Easy unlock key operations are finished.
   void OnEasyUnlockKeyOpsFinished(const std::string& user_id, bool success);
+
+  // Callback invoked when child policy is ready and the session for child user
+  // can be started.
+  void OnChildPolicyReady(
+      Profile* profile,
+      ChildPolicyObserver::InitialPolicyRefreshResult result);
 
   // Internal implementation of DoBrowserLaunch. Initially should be called with
   // |locale_pref_checked| set to false which will result in postponing browser
@@ -592,6 +606,8 @@ class UserSessionManager
   base::RepeatingClosure attempt_restart_closure_;
 
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
+
+  std::unique_ptr<ChildPolicyObserver> child_policy_observer_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

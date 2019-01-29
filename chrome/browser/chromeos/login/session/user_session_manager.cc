@@ -20,6 +20,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/child_accounts/child_policy_observer.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -102,6 +104,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
@@ -172,6 +175,11 @@ namespace {
 // http://crbug/866790: After Supervised Users are deprecated, remove this.
 const char kUserSessionManagerNotifier[] = "chrome://settings/people";
 const char kSupervisedUserDeprecated[] = "supervised_user_deprecated";
+
+// Time to wait for child policy refresh. If that time is exceeded session
+// should start with cached policy.
+constexpr base::TimeDelta kWaitForChildPolicyTimeout =
+    base::TimeDelta::FromSeconds(10);
 
 // Milliseconds until we timeout our attempt to fetch flags from the child
 // account service.
@@ -1344,6 +1352,11 @@ void UserSessionManager::InitProfilePreferences(
           account_id, user_context.IsUnderAdvancedProtection());
     }
 
+    if (is_child &&
+        base::FeatureList::IsEnabled(::features::kDMServerOAuthForChildUser)) {
+      child_policy_observer_ = std::make_unique<ChildPolicyObserver>(profile);
+    }
+
     // Backfill GAIA ID in user prefs stored in Local State.
     std::string tmp_gaia_id;
     if (!user_manager::known_user::FindGaiaID(user_context.GetAccountId(),
@@ -1550,11 +1563,6 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     if (tether_service)
       tether_service->StartTetherIfPossible();
 
-    if (user->GetType() == user_manager::USER_TYPE_CHILD) {
-      ScreenTimeControllerFactory::GetForBrowserContext(profile);
-      ConsumerStatusReportingServiceFactory::GetForBrowserContext(profile);
-    }
-
     // PrefService is ready, check whether we need to force a VPN connection.
     always_on_vpn_manager_ =
         std::make_unique<arc::AlwaysOnVpnManager>(profile->GetPrefs());
@@ -1584,6 +1592,23 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     }
   }
 
+  if (user->GetType() == user_manager::USER_TYPE_CHILD) {
+    if (base::FeatureList::IsEnabled(::features::kDMServerOAuthForChildUser)) {
+      VLOG(1) << "Waiting for child policy refresh before showing session UI";
+      DCHECK(child_policy_observer_);
+      child_policy_observer_->NotifyWhenPolicyReady(
+          base::BindOnce(&UserSessionManager::OnChildPolicyReady,
+                         weak_factory_.GetWeakPtr()),
+          kWaitForChildPolicyTimeout);
+      return;
+    }
+    InitializeChildUserServices(profile);
+  }
+
+  InitializeBrowser(profile);
+}
+
+void UserSessionManager::InitializeBrowser(Profile* profile) {
   // Now that profile is ready, proceed to either alternative login flows or
   // launch browser.
   bool browser_launched = InitializeUserSession(profile);
@@ -1606,6 +1631,11 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // resolved.
   if (delegate_)
     delegate_->OnProfilePrepared(profile, browser_launched);
+}
+
+void UserSessionManager::InitializeChildUserServices(Profile* profile) {
+  ConsumerStatusReportingServiceFactory::GetForBrowserContext(profile);
+  ScreenTimeControllerFactory::GetForBrowserContext(profile);
 }
 
 void UserSessionManager::ActivateWizard(OobeScreen screen) {
@@ -2009,6 +2039,19 @@ void UserSessionManager::OnEasyUnlockKeyOpsFinished(const std::string& user_id,
     easy_unlock_service->CheckCryptohomeKeysAndMaybeHardlock();
 
   NotifyEasyUnlockKeyOpsFinished();
+}
+
+void UserSessionManager::OnChildPolicyReady(
+    Profile* profile,
+    ChildPolicyObserver::InitialPolicyRefreshResult result) {
+  VLOG(1) << "Child policy refresh finished with result "
+          << static_cast<int>(result) << " - showing session UI";
+  DCHECK(profile->IsChild());
+
+  child_policy_observer_.reset();
+
+  InitializeChildUserServices(profile);
+  InitializeBrowser(profile);
 }
 
 void UserSessionManager::ActiveUserChanged(
