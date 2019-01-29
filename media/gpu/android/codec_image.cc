@@ -20,14 +20,23 @@ namespace {
 // Makes |texture_owner|'s context current if it isn't already.
 std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
     TextureOwner* texture_owner) {
+  gl::GLContext* context = texture_owner->GetContext();
   // Note: this works for virtual contexts too, because IsCurrent() returns true
   // if their shared platform context is current, regardless of which virtual
   // context is current.
-  return std::unique_ptr<ui::ScopedMakeCurrent>(
-      texture_owner->GetContext()->IsCurrent(nullptr)
-          ? nullptr
-          : new ui::ScopedMakeCurrent(texture_owner->GetContext(),
-                                      texture_owner->GetSurface()));
+  if (context->IsCurrent(nullptr))
+    return nullptr;
+
+  auto scoped_current = std::make_unique<ui::ScopedMakeCurrent>(
+      context, texture_owner->GetSurface());
+  // Log an error if ScopedMakeCurrent failed for debugging
+  // https://crbug.com/878042.
+  // TODO(ericrk): Remove this once debugging is completed.
+  if (!context->IsCurrent(nullptr)) {
+    LOG(ERROR) << "Failed to make context current in CodecImage. Subsequent "
+                  "UpdateTexImage may fail.";
+  }
+  return scoped_current;
 }
 
 }  // namespace
