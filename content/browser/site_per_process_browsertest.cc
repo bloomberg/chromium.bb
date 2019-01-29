@@ -2007,15 +2007,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
 // nested <iframe>'s after the inner-most frame scrolls into view. The
 // measurements are for two identical pages where one page does not have any
 // OOPIFs while the other has some nested OOPIFs.
-#if defined(OS_LINUX)
-// crbug.com/827431
-#define MAYBE_ScrollElementIntoView DISABLED_ScrollElementIntoView
-#else
-#define MAYBE_ScrollElementIntoView ScrollElementIntoView
-#endif
-
+// TODO(crbug.com/827431): This test is flaking on all platforms.
 IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
-                       MAYBE_ScrollElementIntoView) {
+                       DISABLED_ScrollElementIntoView) {
   const GURL url_a(
       embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
   const GURL url_b(
