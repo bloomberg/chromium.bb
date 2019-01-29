@@ -103,6 +103,8 @@ const Panel = {
     const div = document.getElementById(Panel.MENU_ID);
     for (const button of div.children)
       button.hidden = !actions.includes(button.id);
+
+    Panel.setHeight(actions.length);
   },
 
   /**
@@ -118,6 +120,22 @@ const Panel = {
       htmlNode.classList.add(className);
     else
       htmlNode.classList.remove(className);
+  },
+
+  /**
+   * Sets the height of the menu (minus the body padding) based on the number of
+   * actions in the menu. This is necessary because floated elements do not
+   * contribute to their parent's height, and the elements are floated to avoid
+   * arbitrary space being added between buttons.
+   *
+   * @param {number} numActions
+   */
+  setHeight: (numActions) => {
+    // TODO(anastasi): This should be a preference that the user can change.
+    const maxCols = 3;
+    const numRows = Math.ceil(numActions / maxCols);
+    const height = 60 * numRows;
+    document.getElementById(Panel.MENU_ID).style.height = height + 'px';
   }
 };
 

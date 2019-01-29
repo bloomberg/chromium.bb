@@ -181,10 +181,12 @@ chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
  * Shows or hides the Switch Access menu. If shown, it is at the indicated
  * location.
  * @param {boolean} show If true, show the menu. If false, hide the menu.
- * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
- *     an element, in global screen coordinates, to place the menu next to.
+ * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds
+ *    Position of an element, in global screen coordinates, to place the
+ *    menu next to.
+ * @param {number} item_count The number of items to show in the menu
  */
-chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds) {};
+chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds, item_count) {};
 
 /**
  * When enabled, forwards key events to the Switch Access extension

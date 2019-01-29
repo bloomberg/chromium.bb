@@ -5,24 +5,31 @@
  */
 
 body {
-  background-color: #111;
-  border: 5px solid #333;
-  height: 180px;
+  background-color: #131313;
+  border: 1px solid #2C2C2C;
   margin: 0;
-  padding: 4px 3px 5px 3px;
+  padding: 7px;
 }
-body > div {
+div#switchaccess-menu-actions {
+  margin: auto;
   padding: 2px;
 }
 .action {
   color: white;
-  font-size: 150%;
-  margin: 8px;
-  padding: 2px;
+  float: left;
+  font-family: 'Roboto-Regular', sans-serif;
+  font-size: 12px;
+  height: 52px;
+  margin: 4px;
+  padding: 4px;
+  width: 80px;
 }
 button.action {
   background: none;
   border: none;
+}
+.action p {
+  margin: 0;
 }
 .focus {
   outline: solid thick #78e428;  /** light green from automation_manager.js */
@@ -32,9 +39,9 @@ div.focus {
 }
 img {
   display: block;
-  margin-bottom: 5px;
-  margin-left: auto;
-  margin-right: auto;
-  width: 40px;
+  height: 24px;
+  margin-bottom: 8px;
+  margin-inline-end: auto;
+  margin-inline-start: auto;
 }
 

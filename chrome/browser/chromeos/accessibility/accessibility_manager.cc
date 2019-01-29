@@ -1438,9 +1438,10 @@ void AccessibilityManager::HideSwitchAccessMenu() {
   switch_access_panel_->Hide();
 }
 
-void AccessibilityManager::ShowSwitchAccessMenu(
-    const gfx::Rect& element_bounds) {
-  switch_access_panel_->Show(element_bounds);
+void AccessibilityManager::ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
+                                                int menu_width,
+                                                int menu_height) {
+  switch_access_panel_->Show(element_bounds, menu_width, menu_height);
 }
 
 bool AccessibilityManager::ToggleDictation() {

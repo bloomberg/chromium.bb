@@ -15,7 +15,7 @@ class SwitchAccessPanelTest;
 class SwitchAccessPanel : public AccessibilityPanel {
  public:
   explicit SwitchAccessPanel(content::BrowserContext* browser_context);
-  void Show(const gfx::Rect& element_bounds);
+  void Show(const gfx::Rect& element_bounds, int width, int height);
   void Hide();
   ~SwitchAccessPanel() override = default;
 
@@ -23,7 +23,9 @@ class SwitchAccessPanel : public AccessibilityPanel {
   friend class SwitchAccessPanelTest;
 
   static const gfx::Rect CalculatePanelBounds(const gfx::Rect& element_bounds,
-                                              const gfx::Rect& screen_bounds);
+                                              const gfx::Rect& screen_bounds,
+                                              const int panel_width,
+                                              const int panel_height);
   static int GetFocusRingBuffer();
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessPanel);
