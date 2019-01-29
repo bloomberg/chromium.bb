@@ -763,11 +763,14 @@ function EntryListItem(rootType, modelItem, tree) {
   item.dirEntry_ = modelItem.entry;
   item.parentTree_ = tree;
 
+  const icon = queryRequiredElement('.icon', item);
   if (window.IN_TEST && item.entry && item.entry.volumeInfo) {
     item.setAttribute(
         'volume-type-for-testing', item.entry.volumeInfo.volumeType);
+    // TODO(crbug.com/880130) Remove volume-type-icon from here once
+    // MyFilesVolume flag is removed.
+    icon.setAttribute('volume-type-icon', rootType);
   }
-  const icon = queryRequiredElement('.icon', item);
   icon.classList.add('item-icon');
   icon.setAttribute('root-type-icon', rootType);
   return item;

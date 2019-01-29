@@ -171,7 +171,7 @@ async function transferBetweenVolumes(transferInfo) {
       'selectFile', appId, [transferInfo.fileToTransfer.nameText]));
 
   // Copy the file.
-  let transferCommand = transferInfo.isMove ? 'move' : 'copy';
+  let transferCommand = transferInfo.isMove ? 'cut' : 'copy';
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'execCommand', appId, [transferCommand]));
 
@@ -181,8 +181,8 @@ async function transferBetweenVolumes(transferInfo) {
       appId, [transferInfo.destination.volumeName]));
 
   // Wait for the expected files to appear in the file list.
-  await remoteCall.waitForFiles(appId, dstContents);
-
+  await remoteCall.waitForFiles(
+      appId, dstContents, {ignoreFileSize: true, ignoreLastModifiedTime: true});
   // Paste the file.
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
@@ -204,7 +204,8 @@ async function transferBetweenVolumes(transferInfo) {
       transferInfo.source.volumeName == 'drive_shared_with_me' ||
       transferInfo.source.volumeName == 'drive_offline' ||
       transferInfo.destination.volumeName == 'drive_shared_with_me' ||
-      transferInfo.destination.volumeName == 'drive_offline';
+      transferInfo.destination.volumeName == 'drive_offline' ||
+      transferInfo.destination.volumeName == 'my_files';
 
   // If we expected the transfer to succeed, add the pasted file to the list
   // of expected rows.
@@ -262,8 +263,37 @@ const TRANSFER_LOCATIONS = Object.freeze({
     isTeamDrive: true,
     initialEntries: TEAM_DRIVE_ENTRY_SET
   }),
-});
 
+  my_files: new TransferLocationInfo({
+    volumeName: 'my_files',
+    initialEntries: [
+      new TestEntryInfo({
+        type: EntryType.DIRECTORY,
+        targetPath: 'Play files',
+        nameText: 'Play files',
+        lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+        sizeText: '--',
+        typeText: 'Folder'
+      }),
+      new TestEntryInfo({
+        type: EntryType.DIRECTORY,
+        targetPath: 'Downloads',
+        nameText: 'Downloads',
+        lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+        sizeText: '--',
+        typeText: 'Folder'
+      }),
+      new TestEntryInfo({
+        type: EntryType.DIRECTORY,
+        targetPath: 'Linux files',
+        nameText: 'Linux files',
+        lastModifiedTime: '...',
+        sizeText: '--',
+        typeText: 'Folder'
+      }),
+    ]
+  }),
+});
 
 /**
  * Tests copying from Drive to Downloads.
@@ -273,6 +303,30 @@ testcase.transferFromDriveToDownloads = function() {
     fileToTransfer: ENTRIES.hello,
     source: TRANSFER_LOCATIONS.drive,
     destination: TRANSFER_LOCATIONS.downloads,
+  }));
+};
+
+/**
+ * Tests moving files from MyFiles/Downloads to MyFiles crbug.com/925175.
+ */
+testcase.transferFromDownloadsToMyFilesMove = function() {
+  return transferBetweenVolumes(new TransferInfo({
+    fileToTransfer: ENTRIES.hello,
+    source: TRANSFER_LOCATIONS.downloads,
+    destination: TRANSFER_LOCATIONS.my_files,
+    isMove: true,
+  }));
+};
+
+/**
+ * Tests copying files from MyFiles/Downloads to MyFiles crbug.com/925175.
+ */
+testcase.transferFromDownloadsToMyFiles = function() {
+  return transferBetweenVolumes(new TransferInfo({
+    fileToTransfer: ENTRIES.hello,
+    source: TRANSFER_LOCATIONS.downloads,
+    destination: TRANSFER_LOCATIONS.my_files,
+    isMove: false,
   }));
 };
 
