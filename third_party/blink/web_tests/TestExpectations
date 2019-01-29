@@ -5869,22 +5869,3 @@ crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Fai
 
 # Sheriff 2019-01-25
 crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
-
-# Sheriff 2019-01-28
-crbug.com/925866 [ Mac10.10 ] fast/text/atsui-spacing-features.html [ Failure ]
-crbug.com/925866 [ Mac10.10 ] fast/text/emphasis-complex.html [ Failure ]
-crbug.com/925866 [ Mac10.10 ] fast/text/international/hebrew-vowels.html [ Failure ]
-crbug.com/925866 [ Mac10.10 ] svg/text/combining-character-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.10 ] svg/text/ligature-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.11 ] fast/text/atsui-spacing-features.html [ Failure ]
-crbug.com/925866 [ Mac10.11 ] fast/text/emphasis-complex.html [ Failure ]
-crbug.com/925866 [ Mac10.11 ] fast/text/international/hebrew-vowels.html [ Failure ]
-crbug.com/925866 [ Mac10.11 ] svg/text/combining-character-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.11 ] svg/text/ligature-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.11 ] svg/text/surrogate-pair-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.12 ] fast/text/atsui-spacing-features.html [ Failure ]
-crbug.com/925866 [ Mac10.12 ] fast/text/emphasis-complex.html [ Failure ]
-crbug.com/925866 [ Mac10.12 ] fast/text/international/hebrew-vowels.html [ Failure ]
-crbug.com/925866 [ Mac10.12 ] svg/text/combining-character-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.12 ] svg/text/ligature-queries.html [ Failure ]
-crbug.com/925866 [ Mac10.12 ] svg/text/surrogate-pair-queries.html [ Failure ]
