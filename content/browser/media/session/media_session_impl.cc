@@ -187,17 +187,6 @@ void MediaSessionImpl::DidFinishNavigation(
   NotifyMediaSessionMetadataChange();
 }
 
-void MediaSessionImpl::OnWebContentsFocused(
-    RenderWidgetHost* render_widget_host) {
-#if !defined(OS_ANDROID)
-  // If we have just gained focus and we have audio focus we should re-request
-  // system audio focus. This will ensure this media session is towards the top
-  // of the stack if we have multiple sessions active at the same time.
-  if (audio_focus_state_ == State::ACTIVE)
-    RequestSystemAudioFocus(desired_audio_focus_type_);
-#endif
-}
-
 void MediaSessionImpl::AddObserver(MediaSessionObserver* observer) {
   observers_.AddObserver(observer);
   NotifyAddedObserver(observer);
