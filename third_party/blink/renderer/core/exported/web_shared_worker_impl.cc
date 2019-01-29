@@ -98,6 +98,9 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   asked_to_terminate_ = true;
   if (shadow_page_ && !shadow_page_->WasInitialized()) {
     client_->WorkerScriptLoadFailed();
+    // The worker thread hasn't been started yet. Immediately notify the client
+    // of worker termination.
+    client_->WorkerContextDestroyed();
     // |this| is deleted at this point.
     return;
   }
@@ -105,6 +108,9 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
     main_script_loader_->Cancel();
     main_script_loader_ = nullptr;
     client_->WorkerScriptLoadFailed();
+    // The worker thread hasn't been started yet. Immediately notify the client
+    // of worker termination.
+    client_->WorkerContextDestroyed();
     // |this| is deleted at this point.
     return;
   }
@@ -164,6 +170,13 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
 void WebSharedWorkerImpl::DidFetchScript() {
   DCHECK(IsMainThread());
   client_->WorkerScriptLoaded();
+}
+
+void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptLoadFailed();
+  TerminateWorkerThread();
+  // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::DidEvaluateClassicScript(bool success) {
@@ -258,7 +271,11 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     return;
   if (main_script_loader_->Failed()) {
     main_script_loader_->Cancel();
+    main_script_loader_ = nullptr;
     client_->WorkerScriptLoadFailed();
+    // The worker thread hasn't been started yet. Immediately notify the client
+    // of worker termination.
+    client_->WorkerContextDestroyed();
     // |this| is deleted at this point.
     return;
   }
