@@ -16,10 +16,12 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
@@ -181,6 +183,34 @@ chromeos::MountAccessMode GetExternalStorageAccessMode(const Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kExternalStorageReadOnly)
              ? chromeos::MOUNT_ACCESS_MODE_READ_ONLY
              : chromeos::MOUNT_ACCESS_MODE_READ_WRITE;
+}
+
+void RecordDownloadsDiskUsageStats(base::FilePath downloads_path) {
+  constexpr int64_t kOneMiB = 1024 * 1024;
+  // For now assume a maximum bucket size of 512GB, which exceeds all current
+  // chromeOS hard disk sizes.
+  constexpr int64_t k512GiBInMiB = 512 * 1024;
+
+  int64_t download_directory_size_in_bytes =
+      base::ComputeDirectorySize(downloads_path);
+
+  base::UmaHistogramCustomCounts(
+      "FileBrowser.Downloads.DirectorySizeMiB",
+      static_cast<int>(download_directory_size_in_bytes / kOneMiB), 1,
+      k512GiBInMiB, 100);
+
+  int64_t total_disk_space_in_bytes =
+      base::SysInfo::AmountOfTotalDiskSpace(downloads_path);
+
+  // total_disk_space_in_bytes can be -1 on error.
+  if (total_disk_space_in_bytes > 0) {
+    int percentage_space_used = std::lround(
+        (download_directory_size_in_bytes * 100.0) / total_disk_space_in_bytes);
+
+    base::UmaHistogramPercentage(
+        "FileBrowser.Downloads.DirectoryPercentageOfDiskUsage",
+        percentage_space_used);
+  }
 }
 
 }  // namespace
@@ -469,6 +499,13 @@ void VolumeManager::Initialize() {
 
   DoMountEvent(chromeos::MOUNT_ERROR_NONE,
                Volume::CreateForDownloads(localVolume));
+
+  // Asyncrhonously record the disk usage for the downloads path
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&RecordDownloadsDiskUsageStats, std::move(localVolume)));
 
   // Subscribe to DriveIntegrationService.
   drive_integration_service_->AddObserver(this);
