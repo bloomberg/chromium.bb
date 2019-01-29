@@ -323,7 +323,7 @@ void PointerEventFactory::SetLastPosition(int pointer_id,
 }
 
 void PointerEventFactory::RemoveLastPosition(const int pointer_id) {
-  return pointer_id_last_position_mapping_.erase(pointer_id);
+  pointer_id_last_position_mapping_.erase(pointer_id);
 }
 
 FloatPoint PointerEventFactory::GetLastPointerPosition(
