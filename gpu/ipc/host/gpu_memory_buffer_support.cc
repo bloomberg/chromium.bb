@@ -88,6 +88,8 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
 
 bool GetImageNeedsPlatformSpecificTextureTarget(gfx::BufferFormat format,
                                                 gfx::BufferUsage usage) {
+  if (!NativeBufferNeedsPlatformSpecificTextureTarget(format))
+    return false;
 #if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_ANDROID)
   GpuMemoryBufferSupport support;
