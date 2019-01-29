@@ -394,15 +394,32 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   bool show_menu = params->show;
 
+  int item_count = params->item_count;
+
+  int padding = 16;
+  int item_width = 88;
+  int item_height = 60;
+  // TODO(anastasi): This should be a preference that the user can change.
+  int max_cols = 3;
+
+  // The number of rows is the number of items divided by the max columns,
+  // rounded down.
+  int rows = 1 + (item_count - 1) / max_cols;
+  int cols = rows == 1 ? item_count : max_cols;
+  int width = padding + (item_width * cols);
+  int height = padding + (item_height * rows);
+
   extensions::api::accessibility_private::ScreenRect elem =
       std::move(params->element_bounds);
 
   gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
 
-  if (show_menu)
-    chromeos::AccessibilityManager::Get()->ShowSwitchAccessMenu(element_bounds);
-  else
+  if (show_menu) {
+    chromeos::AccessibilityManager::Get()->ShowSwitchAccessMenu(element_bounds,
+                                                                width, height);
+  } else {
     chromeos::AccessibilityManager::Get()->HideSwitchAccessMenu();
+  }
 
   return RespondNow(NoArguments());
 }

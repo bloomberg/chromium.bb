@@ -281,7 +281,9 @@ class AccessibilityManager
   void HideSwitchAccessMenu();
 
   // Shows the Switch Access menu.
-  void ShowSwitchAccessMenu(const gfx::Rect& element_bounds);
+  void ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
+                            int menu_width,
+                            int menu_height);
 
   // Starts or stops dictation (type what you speak).
   bool ToggleDictation();

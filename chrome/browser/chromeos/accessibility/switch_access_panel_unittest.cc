@@ -15,13 +15,16 @@ class SwitchAccessPanelTest : public testing::Test {
   const gfx::Rect CalculatePanelBounds(
       const gfx::Rect& element_bounds,
       const gfx::Rect& screen_bounds = gfx::Rect(0, 0, 1000, 1000)) const {
-    return SwitchAccessPanel::CalculatePanelBounds(element_bounds,
-                                                   screen_bounds);
+    return SwitchAccessPanel::CalculatePanelBounds(
+        element_bounds, screen_bounds, kMenuWidth, kMenuHeight);
   }
 
   int GetFocusRingBuffer() const {
     return SwitchAccessPanel::GetFocusRingBuffer();
   }
+
+  const int kMenuWidth = 300;
+  const int kMenuHeight = 200;
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessPanelTest);
 };

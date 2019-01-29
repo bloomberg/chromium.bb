@@ -71,7 +71,7 @@ class MenuManager {
 
     if (navNode.location)
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
-          true, navNode.location);
+          true, navNode.location, actions.length);
     else
       console.log('Unable to show Switch Access menu.');
     this.moveForward();
@@ -87,7 +87,7 @@ class MenuManager {
       this.node_ = null;
 
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false, MenuManager.EmptyLocation);
+        false, MenuManager.EmptyLocation, 0);
   }
 
   /**

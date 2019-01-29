@@ -16,8 +16,6 @@ namespace {
 
 const char kWidgetName[] = "SwitchAccessMenu";
 const int kFocusRingBuffer = 5;
-const int kPanelHeight = 200;
-const int kPanelWidth = 400;
 
 }  // namespace
 
@@ -31,12 +29,15 @@ SwitchAccessPanel::SwitchAccessPanel(content::BrowserContext* browser_context)
   Hide();
 }
 
-void SwitchAccessPanel::Show(const gfx::Rect& element_bounds) {
+void SwitchAccessPanel::Show(const gfx::Rect& element_bounds,
+                             int width,
+                             int height) {
   // TODO(crbug/893752): Support multiple displays
   gfx::Rect screen_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
-  gfx::Rect panel_bounds = CalculatePanelBounds(element_bounds, screen_bounds);
+  gfx::Rect panel_bounds =
+      CalculatePanelBounds(element_bounds, screen_bounds, width, height);
 
   GetAccessibilityController()->SetAccessibilityPanelBounds(
       panel_bounds, ash::mojom::AccessibilityPanelState::BOUNDED);
@@ -52,7 +53,9 @@ void SwitchAccessPanel::Hide() {
 
 const gfx::Rect SwitchAccessPanel::CalculatePanelBounds(
     const gfx::Rect& element_bounds,
-    const gfx::Rect& screen_bounds) {
+    const gfx::Rect& screen_bounds,
+    const int panel_width,
+    const int panel_height) {
   gfx::Rect padded_element_bounds = element_bounds;
   padded_element_bounds.Inset(-GetFocusRingBuffer(), -GetFocusRingBuffer());
 
@@ -60,24 +63,24 @@ const gfx::Rect SwitchAccessPanel::CalculatePanelBounds(
   // the left of the element, or if neither is possible, against the right edge
   // of the screen.
   int panel_x = padded_element_bounds.right();
-  if (padded_element_bounds.right() + kPanelWidth > screen_bounds.right()) {
-    if (padded_element_bounds.x() - kPanelWidth > screen_bounds.x())
-      panel_x = padded_element_bounds.x() - kPanelWidth;
+  if (padded_element_bounds.right() + panel_width > screen_bounds.right()) {
+    if (padded_element_bounds.x() - panel_width > screen_bounds.x())
+      panel_x = padded_element_bounds.x() - panel_width;
     else
-      panel_x = screen_bounds.right() - kPanelWidth;
+      panel_x = screen_bounds.right() - panel_width;
   }
 
   // Decide if the vertical position should be below the element, above the
   // element, or if neither is possible, against the bottom edge of the screen.
   int panel_y = padded_element_bounds.bottom();
-  if (padded_element_bounds.bottom() + kPanelHeight > screen_bounds.bottom()) {
-    if (padded_element_bounds.y() - kPanelHeight > screen_bounds.y())
-      panel_y = padded_element_bounds.y() - kPanelHeight;
+  if (padded_element_bounds.bottom() + panel_height > screen_bounds.bottom()) {
+    if (padded_element_bounds.y() - panel_height > screen_bounds.y())
+      panel_y = padded_element_bounds.y() - panel_height;
     else
-      panel_y = screen_bounds.bottom() - kPanelHeight;
+      panel_y = screen_bounds.bottom() - panel_height;
   }
 
-  return gfx::Rect(panel_x, panel_y, kPanelWidth, kPanelHeight);
+  return gfx::Rect(panel_x, panel_y, panel_width, panel_height);
 }
 
 int SwitchAccessPanel::GetFocusRingBuffer() {
