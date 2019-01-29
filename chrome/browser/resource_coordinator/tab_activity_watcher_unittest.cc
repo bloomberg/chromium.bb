@@ -584,7 +584,13 @@ class ForegroundedOrClosedTest : public TabActivityWatcherTest {
 };
 
 // Tests TabManager.Backgrounded.ForegroundedOrClosed UKM logging.
-TEST_F(ForegroundedOrClosedTest, SingleTab) {
+// Flaky on ChromeOS. http://crbug.com/924864
+#if defined(OS_CHROMEOS)
+#define MAYBE_SingleTab DISABLED_SingleTab
+#else
+#define MAYBE_SingleTab SingleTab
+#endif
+TEST_F(ForegroundedOrClosedTest, MAYBE_SingleTab) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(&params);
