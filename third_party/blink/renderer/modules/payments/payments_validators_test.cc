@@ -280,7 +280,6 @@ struct ValidationErrorsTestCase {
   const char* m_shipping_address_postal_code = "";
   const char* m_shipping_address_recipient = "";
   const char* m_shipping_address_region = "";
-  const char* m_shipping_address_region_code = "";
   const char* m_shipping_address_sorting_code = "";
   bool expected_valid;
 };
@@ -313,7 +312,6 @@ PaymentValidationErrors* toPaymentValidationErrors(
   shipping_address->setPostalCode(test_case.m_shipping_address_postal_code);
   shipping_address->setRecipient(test_case.m_shipping_address_recipient);
   shipping_address->setRegion(test_case.m_shipping_address_region);
-  shipping_address->setRegionCode(test_case.m_shipping_address_region_code);
   shipping_address->setSortingCode(test_case.m_shipping_address_sorting_code);
 
   errors->setPayer(payer);
@@ -362,7 +360,6 @@ INSTANTIATE_TEST_CASE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_postal_code, "test", true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_recipient, "test", true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_region, "test", true),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_region_code, "test", true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
                                     "test",
                                     true),
@@ -400,9 +397,6 @@ INSTANTIATE_TEST_CASE_P(
                                     LongString2049(),
                                     false),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_region,
-                                    LongString2049(),
-                                    false),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_region_code,
                                     LongString2049(),
                                     false),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,

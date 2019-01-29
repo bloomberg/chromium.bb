@@ -197,8 +197,6 @@ struct TypeConverter<AddressErrorsPtr, blink::AddressErrors*> {
     output->recipient =
         input->hasRecipient() ? input->recipient() : g_empty_string;
     output->region = input->hasRegion() ? input->region() : g_empty_string;
-    output->region_code =
-        input->hasRegionCode() ? input->regionCode() : g_empty_string;
     output->sorting_code =
         input->hasSortingCode() ? input->sortingCode() : g_empty_string;
     return output;

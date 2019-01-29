@@ -74,6 +74,5 @@ struct AddressErrors {
   string postal_code;
   string recipient;
   string region;
-  string region_code;
   string sorting_code;
 };

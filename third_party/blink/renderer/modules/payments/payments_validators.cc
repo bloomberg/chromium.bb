@@ -156,9 +156,6 @@ bool PaymentsValidators::IsValidAddressErrorsFormat(
           IsValidErrorMsgFormat(errors->recipient(), optional_error_message)) &&
          (!errors->hasRegion() ||
           IsValidErrorMsgFormat(errors->region(), optional_error_message)) &&
-         (!errors->hasRegionCode() ||
-          IsValidErrorMsgFormat(errors->regionCode(),
-                                optional_error_message)) &&
          (!errors->hasSortingCode() ||
           IsValidErrorMsgFormat(errors->sortingCode(), optional_error_message));
 }

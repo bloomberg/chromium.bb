@@ -1490,8 +1490,7 @@ public class PaymentRequestImpl
                 || !TextUtils.isEmpty(errors.languageCode)
                 || !TextUtils.isEmpty(errors.organization) || !TextUtils.isEmpty(errors.phone)
                 || !TextUtils.isEmpty(errors.postalCode) || !TextUtils.isEmpty(errors.recipient)
-                || !TextUtils.isEmpty(errors.region) || !TextUtils.isEmpty(errors.regionCode)
-                || !TextUtils.isEmpty(errors.sortingCode);
+                || !TextUtils.isEmpty(errors.region) || !TextUtils.isEmpty(errors.sortingCode);
     }
 
     private boolean hasPayerError(PayerErrors errors) {
