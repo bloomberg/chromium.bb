@@ -493,6 +493,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #if !defined(MEMORY_SANITIZER)
                       TestCase("openQuickViewPdf"),
 #endif
+                      TestCase("openQuickViewKeyboardUpDownChangesView"),
+                      TestCase("openQuickViewKeyboardLeftRightChangesView"),
                       TestCase("openQuickViewScrollText"),
                       TestCase("openQuickViewScrollHtml"),
                       TestCase("openQuickViewBackgroundColorText"),

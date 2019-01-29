@@ -659,6 +659,140 @@ testcase.openQuickViewVideo = async function() {
 };
 
 /**
+ * Tests opening Quick View with multiple files and using the up/down arrow
+ * keys to select and view their content.
+ */
+testcase.openQuickViewKeyboardUpDownChangesView = async function() {
+  const caller = getCaller();
+
+  /**
+   * The text <webview> resides in the #quick-view shadow DOM, as a child of
+   * the #dialog element.
+   */
+  const webView = ['#quick-view', '#dialog[open] webview.text-content'];
+
+  // Open Files app on Downloads containing two text files.
+  const files = [ENTRIES.hello, ENTRIES.tallText];
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
+
+  // Open the last file in Quick View.
+  await openQuickView(appId, ENTRIES.tallText.nameText);
+
+  // Wait for the Quick View <webview> to load and display its content.
+  function checkWebViewTextLoaded(elements) {
+    let haveElements = Array.isArray(elements) && elements.length === 1;
+    if (haveElements) {
+      haveElements = elements[0].styles.display.includes('block');
+    }
+    if (!haveElements || !elements[0].attributes.src) {
+      return pending(caller, 'Waiting for <webview> to load.');
+    }
+    return;
+  }
+  await repeatUntil(async () => {
+    return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
+        'deepQueryAllElements', appId, [webView, ['display']]));
+  });
+
+  // Press the down arrow key to select the next file.
+  const downArrow = ['#quick-view', 'ArrowDown', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
+
+  // Wait until the <webview> displays that file's content.
+  await repeatUntil(async () => {
+    const getTextContent = 'window.document.body.textContent';
+    const text = await remoteCall.callRemoteTestUtil(
+        'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+    if (!text || !text[0].includes('This is a sample file')) {
+      return pending(caller, 'Waiting for <webview> content.');
+    }
+  });
+
+  // Press the up arrow key to select the previous file.
+  const upArrow = ['#quick-view', 'ArrowUp', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, upArrow));
+
+  // Wait until the <webview> displays that file's content.
+  await repeatUntil(async () => {
+    const getTextContent = 'window.document.body.textContent';
+    const text = await remoteCall.callRemoteTestUtil(
+        'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+    if (!text || !text[0].includes('42 tall text')) {
+      return pending(caller, 'Waiting for <webview> content.');
+    }
+  });
+};
+
+/**
+ * Tests opening Quick View with multiple files and using the left/right arrow
+ * keys to select and view their content.
+ */
+testcase.openQuickViewKeyboardLeftRightChangesView = async function() {
+  const caller = getCaller();
+
+  /**
+   * The text <webview> resides in the #quick-view shadow DOM, as a child of
+   * the #dialog element.
+   */
+  const webView = ['#quick-view', '#dialog[open] webview.text-content'];
+
+  // Open Files app on Downloads containing two text files.
+  const files = [ENTRIES.hello, ENTRIES.tallText];
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
+
+  // Open the last file in Quick View.
+  await openQuickView(appId, ENTRIES.tallText.nameText);
+
+  // Wait for the Quick View <webview> to load and display its content.
+  function checkWebViewTextLoaded(elements) {
+    let haveElements = Array.isArray(elements) && elements.length === 1;
+    if (haveElements) {
+      haveElements = elements[0].styles.display.includes('block');
+    }
+    if (!haveElements || !elements[0].attributes.src) {
+      return pending(caller, 'Waiting for <webview> to load.');
+    }
+    return;
+  }
+  await repeatUntil(async () => {
+    return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
+        'deepQueryAllElements', appId, [webView, ['display']]));
+  });
+
+  // Press the right arrow key to select the next file item.
+  const rightArrow = ['#quick-view', 'ArrowRight', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, rightArrow));
+
+  // Wait until the <webview> displays that file's content.
+  await repeatUntil(async () => {
+    const getTextContent = 'window.document.body.textContent';
+    const text = await remoteCall.callRemoteTestUtil(
+        'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+    if (!text || !text[0].includes('This is a sample file')) {
+      return pending(caller, 'Waiting for <webview> content.');
+    }
+  });
+
+  // Press the left arrow key to select the previous file item.
+  const leftArrow = ['#quick-view', 'ArrowLeft', false, false, false];
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, leftArrow));
+
+  // Wait until the <webview> displays that file's content.
+  await repeatUntil(async () => {
+    const getTextContent = 'window.document.body.textContent';
+    const text = await remoteCall.callRemoteTestUtil(
+        'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+    if (!text || !text[0].includes('42 tall text')) {
+      return pending(caller, 'Waiting for <webview> content.');
+    }
+  });
+};
+
+/**
  * Tests close/open metadata info via Enter key.
  */
 testcase.pressEnterOnInfoBoxToOpenClose = async function() {
