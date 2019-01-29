@@ -61,8 +61,19 @@ class CC_EXPORT Proxy {
   virtual void NotifyInputThrottledUntilCommit() = 0;
 
   // Defers LayerTreeHost::BeginMainFrameUpdate and commits until it is
-  // reset. It is only supported when using a scheduler.
+  // reset. It is only supported when using a scheduler. This flag also
+  // forces SetDeferCommits, because there is no purpose in committing
+  // if there is no content update.
   virtual void SetDeferMainFrameUpdate(bool defer_main_frame_update) = 0;
+
+  // Defers commits until reset, but continues to update the document
+  // lifecycle in LayerTreeHost::BeginMainFrameUpdate. It is only supported
+  // when using a scheduler.
+  // TODO(schenney): For now, SetDeferMainFrameUpdate always modifies this
+  // flag when the defer_main_frame-update flag changes. This will change
+  // to a situation where commits should always be deferred when main
+  // frame updates are deferred, but not vice versa.
+  virtual void SetDeferCommits(bool defer_commits) = 0;
 
   virtual bool CommitRequested() const = 0;
 

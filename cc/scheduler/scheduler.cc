@@ -741,10 +741,10 @@ void Scheduler::DrawForced() {
       client_->CurrentFrameHadRAF(), client_->NextFrameHasPendingRAF());
 }
 
-void Scheduler::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
-  TRACE_EVENT1("cc", "Scheduler::SetDeferMainFrameUpdate",
-               "defer_main_frame_update", defer_main_frame_update);
-  state_machine_.SetDeferMainFrameUpdate(defer_main_frame_update);
+void Scheduler::SetDeferCommits(bool defer_commits) {
+  TRACE_EVENT1("cc", "Scheduler::SetDeferCommits", "defer_commits",
+               defer_commits);
+  state_machine_.SetDeferCommits(defer_commits);
   ProcessScheduledActions();
 }
 
