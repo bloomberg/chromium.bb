@@ -53,7 +53,7 @@ cr.define('app_management.util', function() {
    * @return {string}
    */
   function getAppIcon(app) {
-    return `chrome://extension-icon/${app.id}/128/1`;
+    return `chrome://app-icon/${app.id}/128`;
   }
 
   /**
