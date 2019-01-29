@@ -273,17 +273,15 @@ void TestRenderFrame::BeginNavigation(
     navigation_params->url = url;
     if (!url.IsAboutBlank() && url != content::kAboutSrcDocURL) {
       std::string mime_type, charset, data;
-      bool success = net::DataURL::Parse(url, &mime_type, &charset, &data);
-      navigation_params->data = blink::WebData(data.c_str(), data.length());
-      if (success) {
-        navigation_params->mime_type = blink::WebString::FromUTF8(mime_type);
-        navigation_params->text_encoding = blink::WebString::FromUTF8(charset);
-      } else {
+      if (!net::DataURL::Parse(url, &mime_type, &charset, &data)) {
         // This case is only here to allow cluster fuzz pass any url,
         // to unblock further fuzzing.
-        navigation_params->mime_type = blink::WebString::FromUTF8("text/html");
-        navigation_params->text_encoding = blink::WebString::FromUTF8("UTF-8");
+        mime_type = "text/html";
+        charset = "UTF-8";
       }
+      blink::WebNavigationParams::FillStaticResponse(
+          navigation_params.get(), blink::WebString::FromUTF8(mime_type),
+          blink::WebString::FromUTF8(charset), data);
     }
     frame_->CommitNavigation(std::move(navigation_params),
                              nullptr /* extra_data */);

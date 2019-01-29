@@ -3300,9 +3300,9 @@ void RenderFrameImpl::CommitNavigation(
     DecodeDataURL(common_params, commit_params, &mime_type, &charset, &data,
                   &base_url);
     navigation_params->url = base_url;
-    navigation_params->data = WebData(data.c_str(), data.length());
-    navigation_params->mime_type = WebString::FromUTF8(mime_type);
-    navigation_params->text_encoding = WebString::FromUTF8(charset);
+    WebNavigationParams::FillStaticResponse(navigation_params.get(),
+                                            WebString::FromUTF8(mime_type),
+                                            WebString::FromUTF8(charset), data);
     // Needed so that history-url-only changes don't become reloads.
     navigation_params->unreachable_url = common_params.history_url_for_data_url;
   } else {
@@ -3456,10 +3456,8 @@ void RenderFrameImpl::CommitFailedNavigation(
       BuildServiceWorkerNetworkProviderForNavigation(&commit_params, nullptr);
   FillMiscNavigationParams(common_params, commit_params,
                            navigation_params.get());
-
-  navigation_params->data = WebData(error_html.data(), error_html.length());
-  navigation_params->mime_type = "text/html";
-  navigation_params->text_encoding = "UTF-8";
+  WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",
+                                          "UTF-8", error_html);
   navigation_params->unreachable_url = error.url();
 
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
@@ -7031,9 +7029,9 @@ void RenderFrameImpl::LoadHTMLString(const std::string& html,
                                      bool replace_current_item) {
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = base_url;
-  navigation_params->data = WebData(html.data(), html.length());
-  navigation_params->mime_type = "text/html";
-  navigation_params->text_encoding = WebString::FromUTF8(text_encoding);
+  WebNavigationParams::FillStaticResponse(navigation_params.get(), "text/html",
+                                          WebString::FromUTF8(text_encoding),
+                                          html);
   navigation_params->unreachable_url = unreachable_url;
   navigation_params->frame_load_type =
       replace_current_item ? blink::WebFrameLoadType::kReplaceCurrentItem
