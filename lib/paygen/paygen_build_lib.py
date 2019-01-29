@@ -364,6 +364,7 @@ class PaygenBuild(object):
     self._archive_build_uri = None
     self._skip_duts_check = skip_duts_check
     self._payload_build = payload_build
+    self._payload_test_configs = []
 
   # Hidden class level cache value.
   _cachedPaygenJson = None
@@ -767,8 +768,16 @@ class PaygenBuild(object):
     self._version_to_full_test_payloads[(channel, version)] = full_test_payloads
     return full_test_payloads
 
-  def _EmitControlFile(self, payload_test, suite_name, control_dump_dir):
-    """Emit an Autotest control file for a given payload test."""
+  def _PaygenTestConfig(self, payload_test, suite_name):
+    """Generate paygen test config for a given payload test.
+
+    Args:
+      payload_test: A PayloadTest object.
+      suite_name: A string suite name.
+
+    Returns:
+      A test_params.TestConfig object.
+    """
     # Figure out the source version for the test.
     payload = payload_test.payload
     src_version = payload_test.src_version
@@ -807,7 +816,7 @@ class PaygenBuild(object):
       raise PayloadTestError('cannot find source stateful.tgz for testing %s' %
                              payload)
 
-    test = test_params.TestConfig(
+    return test_params.TestConfig(
         self._archive_board,
         suite_name,               # Name of the test (use the suite name).
         bool(payload.src_image),  # Whether this is a delta.
@@ -818,10 +827,21 @@ class PaygenBuild(object):
         suite_name=suite_name,
         source_archive_uri=release_archive_uri)
 
+
+  def _EmitControlFile(self, payload_test_config, control_dump_dir):
+    """Emit an Autotest control file for a given payload test config.
+
+    Args:
+      payload_test_config: A test_params.TestConfig object.
+      control_dump_dir: A string path to dump the new control file.
+
+    Returns:
+      a string control file path.
+    """
     with open(test_control.get_control_file_name()) as f:
       control_code = f.read()
     control_file = test_control.dump_autotest_control_file(
-        test, None, control_code, control_dump_dir)
+        payload_test_config, None, control_code, control_dump_dir)
     logging.info('Control file emitted at %s', control_file)
     return control_file
 
@@ -843,7 +863,9 @@ class PaygenBuild(object):
     # Emit a control file for each payload.
     logging.info('Emitting control files into %s', control_dump_dir)
     for payload_test in payload_tests:
-      self._EmitControlFile(payload_test, suite_name, control_dump_dir)
+      paygen_test_config = self._PaygenTestConfig(payload_test, suite_name)
+      self._payload_test_configs.append(paygen_test_config)
+      self._EmitControlFile(paygen_test_config, control_dump_dir)
 
     tarball_name = self.CONTROL_TARBALL_TEMPLATE % test_channel
 
@@ -993,7 +1015,8 @@ class PaygenBuild(object):
     finally:
       self._CleanupBuild()
 
-    return suite_name, self._archive_board, self._archive_build
+    return (suite_name, self._archive_board, self._archive_build,
+            self._payload_test_configs)
 
 
 def ValidateBoardConfig(board):

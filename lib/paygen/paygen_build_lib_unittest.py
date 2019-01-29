@@ -917,7 +917,7 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(
         testdata,
-        ('suite_name', 'archive_board', 'archive_build')
+        ('suite_name', 'archive_board', 'archive_build', [])
     )
 
     self.assertEqual(self.mockGenerate.call_args_list, [
@@ -959,7 +959,7 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(
         testdata,
-        ('suite_name', 'archive_board', 'archive_build')
+        ('suite_name', 'archive_board', 'archive_build', [])
     )
 
     # Note... no payloads were generated.

@@ -476,7 +476,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
         # Now, schedule the payload tests if desired.
         if not self.skip_testing:
-          suite_name, archive_board, archive_build = testdata
+          suite_name, archive_board, archive_build, _ = testdata
 
           # For unified builds, only test against the specified models.
           if self._run.config.models:
