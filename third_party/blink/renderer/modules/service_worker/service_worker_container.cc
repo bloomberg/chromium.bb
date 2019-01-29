@@ -557,6 +557,18 @@ const AtomicString& ServiceWorkerContainer::InterfaceName() const {
   return event_target_names::kServiceWorkerContainer;
 }
 
+void ServiceWorkerContainer::setOnmessage(EventListener* listener) {
+  SetAttributeEventListener(event_type_names::kMessage, listener);
+  // https://w3c.github.io/ServiceWorker/#dom-serviceworkercontainer-onmessage:
+  // "The first time the context object’s onmessage IDL attribute is set, its
+  // client message queue must be enabled."
+  EnableClientMessageQueue();
+}
+
+EventListener* ServiceWorkerContainer::onmessage() {
+  return GetAttributeEventListener(event_type_names::kMessage);
+}
+
 ServiceWorkerRegistration*
 ServiceWorkerContainer::GetOrCreateServiceWorkerRegistration(
     WebServiceWorkerRegistrationObjectInfo info) {
@@ -600,6 +612,10 @@ ServiceWorkerContainer::CreateReadyProperty() {
 
 void ServiceWorkerContainer::EnableClientMessageQueue() {
   dom_content_loaded_observer_ = nullptr;
+  if (is_client_message_queue_enabled_) {
+    DCHECK(queued_messages_.empty());
+    return;
+  }
   is_client_message_queue_enabled_ = true;
   std::vector<std::unique_ptr<MessageFromServiceWorker>> messages;
   messages.swap(queued_messages_);
