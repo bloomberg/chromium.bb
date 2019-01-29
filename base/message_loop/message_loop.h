@@ -6,31 +6,23 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
-#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump.h"
-#include "base/message_loop/pending_task_queue.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace base {
-namespace features {
-BASE_EXPORT extern const Feature kMessageLoopUsesSequenceManager;
-}  // namespace features
 
 class MessageLoopImpl;
 
@@ -294,11 +286,6 @@ class BASE_EXPORT MessageLoop {
 
   MessageLoopBase* GetMessageLoopBase();
 
-  enum class BackendType {
-    MESSAGE_LOOP_IMPL,
-    SEQUENCE_MANAGER,
-  };
-
   //----------------------------------------------------------------------------
  protected:
   using MessagePumpFactoryCallback =
@@ -317,31 +304,24 @@ class BASE_EXPORT MessageLoop {
 
   // A raw pointer to the MessagePump handed-off to |backend_|.
   // Valid for the lifetime of |backend_|.
-  MessagePump* pump_;
+  MessagePump* pump_ = nullptr;
 
-  // The actual implentation of the MessageLoop — either MessageLoopImpl or
-  // SequenceManager-based.
+  // The SequenceManager-based implementation of the MessageLoop.
+  // TODO(crbug.com/891670): MessageLoopBase is now always a
+  // SequenceManagerImpl, this can be simplified but we also shouldn't publicly
+  // expose all of SequenceManagerImpl either.
   const std::unique_ptr<MessageLoopBase> backend_;
   // SequenceManager-based backend requires an explicit initialisation of the
   // default task queue.
-  scoped_refptr<sequence_manager::TaskQueue> default_task_queue_;
+  const scoped_refptr<sequence_manager::TaskQueue> default_task_queue_;
 
  private:
-  friend class MessageLoopTaskRunnerTest;
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
   friend class sequence_manager::LazyThreadControllerForTest;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
-
-  friend class MessageLoopTaskRunnerTest;
-  FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
-
-  // Contstructor which allows to specify the backend explicitly.
-  MessageLoop(Type type,
-              MessagePumpFactoryCallback pump_factory,
-              BackendType backend_type);
 
   // Creates a MessageLoop without binding to a thread.
   // If |type| is TYPE_CUSTOM non-null |pump_factory| must be also given
@@ -358,20 +338,7 @@ class BASE_EXPORT MessageLoop {
       Type type,
       MessagePumpFactoryCallback pump_factory);
 
-  // Initializers for |backend_| and related fields.
-  std::unique_ptr<MessageLoopBase> CreateSequenceManager(Type type);
-  std::unique_ptr<MessageLoopBase> CreateMessageLoopImpl(Type type);
-
-  scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue(
-      BackendType backend_type);
-
-  // Returns |next_run_time| capped at 1 day from |recent_time_|. This is used
-  // to mitigate https://crbug.com/850450 where some platforms are unhappy with
-  // delays > 100,000,000 seconds. In practice, a diagnosis metric showed that
-  // no sleep > 1 hour ever completes (always interrupted by an earlier
-  // MessageLoop event) and 99% of completed sleeps are the ones scheduled for
-  // <= 1 second. Details @ https://crrev.com/c/1142589.
-  TimeTicks CapAtOneDay(TimeTicks next_run_time);
+  scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
   std::unique_ptr<MessagePump> CreateMessagePump();
 

@@ -445,10 +445,6 @@ jumbo_component("base") {
     "message_loop/message_loop.h",
     "message_loop/message_loop_current.cc",
     "message_loop/message_loop_current.h",
-    "message_loop/message_loop_impl.cc",
-    "message_loop/message_loop_impl.h",
-    "message_loop/message_loop_task_runner.cc",
-    "message_loop/message_loop_task_runner.h",
     "message_loop/message_pump.cc",
     "message_loop/message_pump.h",
     "message_loop/message_pump_android.cc",
@@ -465,9 +461,6 @@ jumbo_component("base") {
     "message_loop/message_pump_mac.mm",
     "message_loop/message_pump_win.cc",
     "message_loop/message_pump_win.h",
-    "message_loop/pending_task_queue.cc",
-    "message_loop/pending_task_queue.h",
-    "message_loop/sequenced_task_source.h",
     "message_loop/timer_slack.h",
     "message_loop/work_id_provider.cc",
     "message_loop/work_id_provider.h",
@@ -2074,8 +2067,6 @@ component("i18n") {
 
 test("base_perftests") {
   sources = [
-    "message_loop/message_loop_perftest.cc",
-    "message_loop/message_loop_task_runner_perftest.cc",
     "message_loop/message_pump_perftest.cc",
     "observer_list_perftest.cc",
     "strings/string_util_perftest.cc",
@@ -2392,7 +2383,6 @@ test("base_unittests") {
     "memory/shared_memory_win_unittest.cc",
     "memory/singleton_unittest.cc",
     "memory/weak_ptr_unittest.cc",
-    "message_loop/message_loop_task_runner_unittest.cc",
     "message_loop/message_loop_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
     "message_loop/message_pump_io_ios_unittest.cc",
