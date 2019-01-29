@@ -1884,7 +1884,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       CompleteRequestsWithError(ERR_ICANN_NAME_COLLISION);
     } else {
       // MDNS uses a separate cache, so skip saving result to cache.
-      // TODO(crbug.com/846423): Consider merging caches.
+      // TODO(crbug.com/926300): Consider merging caches.
       CompleteRequestsWithoutCache(results);
     }
   }
@@ -2461,7 +2461,7 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
   // Request may only be resolved once.
   DCHECK(!request->complete());
   // MDNS requests do not support skipping cache or stale lookups.
-  // TODO(crbug.com/846423): Either add support for skipping the MDNS cache, or
+  // TODO(crbug.com/926300): Either add support for skipping the MDNS cache, or
   // merge to use the normal host cache for MDNS requests.
   DCHECK(request->parameters().source != HostResolverSource::MULTICAST_DNS ||
          request->parameters().cache_usage ==

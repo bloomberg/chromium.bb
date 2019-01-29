@@ -13,8 +13,6 @@ namespace net {
 // DNS query type for HostResolver requests.
 // See:
 // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
-//
-// TODO(crbug.com/846423): Add support for non-address types.
 enum class DnsQueryType { UNSPECIFIED, A, AAAA, TXT, PTR, SRV, MAX = SRV };
 
 const DnsQueryType kDnsQueryTypes[] = {
