@@ -84,9 +84,10 @@ class BASE_EXPORT FileDescriptorWatcher {
 
   // Registers |io_thread_task_runner| to watch file descriptors for which
   // callbacks are registered from the current thread via WatchReadable() or
-  // WatchWritable(). |io_thread_task_runner| may run on another thread.
-  // |io_thread_task_runner| must post tasks to a thread which runs
-  // a MessagePumpForIO.
+  // WatchWritable(). |io_thread_task_runner| must post tasks to a thread which
+  // runs a MessagePumpForIO. If it is not the current thread, it must be highly
+  // responsive (i.e. not used to run other expensive tasks such as potentially
+  // blocking I/O) since ~Controller waits for a task posted to it.
   explicit FileDescriptorWatcher(
       scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner);
   ~FileDescriptorWatcher();
@@ -97,7 +98,8 @@ class BASE_EXPORT FileDescriptorWatcher {
   // sequence). To call these methods, a FileDescriptorWatcher must have been
   // instantiated on the current thread and SequencedTaskRunnerHandle::IsSet()
   // must return true (these conditions are met at least on all TaskScheduler
-  // threads as well as on threads backed by a MessageLoopForIO).
+  // threads as well as on threads backed by a MessageLoopForIO). |fd| must
+  // outlive the returned Controller.
   static std::unique_ptr<Controller> WatchReadable(int fd,
                                                    const Closure& callback);
   static std::unique_ptr<Controller> WatchWritable(int fd,

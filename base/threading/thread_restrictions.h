@@ -254,6 +254,7 @@ class TaskTracker;
 }
 
 class AdjustOOMScoreHelper;
+class FileDescriptorWatcher;
 class GetAppOutputScopedAllowBaseSyncPrimitives;
 class MessageLoopImpl;
 class ScopedAllowThreadRecallForStackSamplingProfiler;
@@ -419,6 +420,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
       AwFormDatabaseService;  // http://crbug.com/904431
   friend class android_webview::CookieManager;
   friend class audio::OutputDevice;
+  friend class base::FileDescriptorWatcher;
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
