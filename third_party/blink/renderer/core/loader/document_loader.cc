@@ -937,12 +937,13 @@ void DocumentLoader::StopLoading() {
 void DocumentLoader::SetDefersLoading(bool defers) {
   defers_loading_ = defers;
   Fetcher()->SetDefersLoading(defers);
-  if (body_loader_)
+  if (body_loader_) {
     body_loader_->SetDefersLoading(defers);
-  if (defers_loading_)
-    virtual_time_pauser_.UnpauseVirtualTime();
-  else
-    virtual_time_pauser_.PauseVirtualTime();
+    if (defers_loading_)
+      virtual_time_pauser_.UnpauseVirtualTime();
+    else
+      virtual_time_pauser_.PauseVirtualTime();
+  }
 }
 
 void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
