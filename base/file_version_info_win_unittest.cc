@@ -13,7 +13,6 @@
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +36,7 @@ class FileVersionInfoFactory {
   explicit FileVersionInfoFactory(const FilePath& path) : path_(path) {}
 
   std::unique_ptr<FileVersionInfo> Create() const {
-    return base::WrapUnique(FileVersionInfo::CreateFileVersionInfo(path_));
+    return FileVersionInfo::CreateFileVersionInfo(path_);
   }
 
  private:
@@ -58,8 +57,7 @@ class FileVersionInfoForModuleFactory {
   }
 
   std::unique_ptr<FileVersionInfo> Create() const {
-    return base::WrapUnique(
-        FileVersionInfo::CreateFileVersionInfoForModule(library_.get()));
+    return FileVersionInfo::CreateFileVersionInfoForModule(library_.get());
   }
 
  private:
