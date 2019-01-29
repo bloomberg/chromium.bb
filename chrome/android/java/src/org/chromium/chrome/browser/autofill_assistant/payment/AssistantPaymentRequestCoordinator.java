@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Promise;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
@@ -28,13 +28,13 @@ public class AssistantPaymentRequestCoordinator {
 
     private Promise<SelectedPaymentInformation> mCurrentPromise;
 
-    public AssistantPaymentRequestCoordinator(ChromeActivity activity, WebContents webContents) {
+    public AssistantPaymentRequestCoordinator(Context context, WebContents webContents) {
         mWebContents = webContents;
         assert webContents != null;
 
         // TODO(crbug.com/806868): Remove this.
-        mView = new LinearLayout(activity);
-        mView.addView(new View(activity));
+        mView = new LinearLayout(context);
+        mView.addView(new View(context));
 
         // Payment request is initially hidden.
         setVisible(false);
