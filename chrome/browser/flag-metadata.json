@@ -276,6 +276,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "autofill-profile-server-validation",
+    "owners": [ "parastoog" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "autofill-restrict-formless-form-extraction",
     "owners": [ "rogerm" ],
     "expiry_milestone": 76

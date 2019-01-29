@@ -253,8 +253,8 @@ const base::Feature kAutofillShowTypePredictions{
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillSuggestInvalidProfileData{
-    "AutofillSuggestInvalidProfileData", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAutofillProfileServerValidation{
+    "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
