@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import shutil
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -20,6 +21,14 @@ from chromite.lib import osutils
 DLC_META_DIR = 'opt/google/dlc/'
 DLC_IMAGE_DIR = 'build/rootfs/dlc/'
 LSB_RELEASE = 'etc/lsb-release'
+
+# This file has major and minor version numbers that the update_engine client
+# supports. These values are needed for generating a delta/full payload.
+UPDATE_ENGINE_CONF = 'etc/update_engine.conf'
+
+_EXTRA_RESOURCES = (
+    UPDATE_ENGINE_CONF,
+)
 
 DLC_ID_KEY = 'DLC_ID'
 DLC_NAME_KEY = 'DLC_NAME'
@@ -59,12 +68,13 @@ class DlcGenerator(object):
   # The DLC root path inside the DLC module.
   _DLC_ROOT_DIR = 'root'
 
-  def __init__(self, src_dir, install_root_dir, fs_type, pre_allocated_blocks,
-               version, dlc_id, name):
+  def __init__(self, src_dir, build_root_dir, install_root_dir, fs_type,
+               pre_allocated_blocks, version, dlc_id, name):
     """Object initializer.
 
     Args:
       src_dir: (str) path to the DLC source root directory.
+      build_root_dir: (str) The path to the build root directory.
       install_root_dir: (str) The path to the root installation directory.
       fs_type: (str) file system type.
       pre_allocated_blocks: (int) number of blocks pre-allocated on device.
@@ -73,6 +83,7 @@ class DlcGenerator(object):
       name: (str) DLC name.
     """
     self.src_dir = src_dir
+    self.build_root_dir = build_root_dir
     self.install_root_dir = install_root_dir
     self.fs_type = fs_type
     self.pre_allocated_blocks = pre_allocated_blocks
@@ -119,14 +130,8 @@ class DlcGenerator(object):
       # Mount the ext4 image.
       osutils.MountDir(self.dest_image, mount_point, mount_opts=('loop', 'rw'))
 
-      dlc_root_dir = os.path.join(mount_point, self._DLC_ROOT_DIR)
-      osutils.SafeMakedirs(dlc_root_dir)
       try:
-        # Copy DLC files over to the image.
-        osutils.CopyDirContents(self.src_dir, dlc_root_dir)
-        self.PrepareLsbRelease(mount_point)
-
-        self.SquashOwnerships(mount_point)
+        self.SetupDlcImageFiles(mount_point)
       finally:
         # Unmount the ext4 image.
         osutils.UmountDir(mount_point)
@@ -140,12 +145,7 @@ class DlcGenerator(object):
     """Create a squashfs image."""
     with osutils.TempDir(prefix='dlc_') as temp_dir:
       squashfs_root = os.path.join(temp_dir, 'squashfs-root')
-      dlc_root_dir = os.path.join(squashfs_root, self._DLC_ROOT_DIR)
-      osutils.SafeMakedirs(dlc_root_dir)
-      osutils.CopyDirContents(self.src_dir, dlc_root_dir)
-      self.PrepareLsbRelease(squashfs_root)
-
-      self.SquashOwnerships(squashfs_root)
+      self.SetupDlcImageFiles(squashfs_root)
 
       cros_build_lib.RunCommand(['mksquashfs', squashfs_root, self.dest_image,
                                  '-4k-align', '-noappend'],
@@ -154,6 +154,19 @@ class DlcGenerator(object):
       # We changed the ownership and permissions of the squashfs_root
       # directory. Now we need to remove it manually.
       osutils.RmDir(squashfs_root, sudo=True)
+
+  def SetupDlcImageFiles(self, dlc_dir):
+    """Prepares the directory dlc_dir with all the files a DLC needs.
+
+    Args:
+      dlc_dir: (str) The path to where to setup files inside the DLC.
+    """
+    dlc_root_dir = os.path.join(dlc_dir, self._DLC_ROOT_DIR)
+    osutils.SafeMakedirs(dlc_root_dir)
+    osutils.CopyDirContents(self.src_dir, dlc_root_dir)
+    self.PrepareLsbRelease(dlc_dir)
+    self.CollectExtraResources(dlc_dir)
+    self.SquashOwnerships(dlc_dir)
 
   def PrepareLsbRelease(self, dlc_dir):
     """Prepare the file /etc/lsb-release in the DLC module.
@@ -173,6 +186,21 @@ class DlcGenerator(object):
     }
     content = ''.join(['%s=%s\n' % (k, v) for k, v in fields.items()])
     osutils.WriteFile(lsb_release, content)
+
+  def CollectExtraResources(self, dlc_dir):
+    """Collect the extra resources needed by the DLC module.
+
+    Look at the documentation around _EXTRA_RESOURCES.
+
+    Args:
+      dlc_dir: (str) The path to root directory of the DLC. e.g. mounted point
+          when we are creating the image.
+    """
+    for r in _EXTRA_RESOURCES:
+      source_path = os.path.join(self.build_root_dir, r)
+      target_path = os.path.join(dlc_dir, r)
+      osutils.SafeMakedirs(os.path.dirname(target_path))
+      shutil.copyfile(source_path, target_path)
 
   def CreateImage(self):
     """Create the image and copy the DLC files to it."""
@@ -254,6 +282,10 @@ def GetParser():
                         required=True,
                         help='Root directory path that contains all DLC files '
                         'to be packed.')
+  required.add_argument('--build-root-dir', type='path', metavar='DIR',
+                        required=True,
+                        help="The root path to the board's build root, e.g. "
+                        "/build/eve")
   required.add_argument('--install-root-dir', type='path', metavar='DIR',
                         required=True,
                         help='The root path to install DLC images (in %s) and '
@@ -285,7 +317,12 @@ def main(argv):
     raise Exception('ext4 unsupported, see https://crbug.com/890060')
 
   # Generate final DLC files.
-  dlc_generator = DlcGenerator(opts.src_dir, opts.install_root_dir,
-                               opts.fs_type, opts.pre_allocated_blocks,
-                               opts.version, opts.id, opts.name)
+  dlc_generator = DlcGenerator(src_dir=opts.src_dir,
+                               build_root_dir=opts.build_root_dir,
+                               install_root_dir=opts.install_root_dir,
+                               fs_type=opts.fs_type,
+                               pre_allocated_blocks=opts.pre_allocated_blocks,
+                               version=opts.version,
+                               dlc_id=opts.id,
+                               name=opts.name)
   dlc_generator.GenerateDLC()

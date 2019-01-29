@@ -47,8 +47,19 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     """Factory method for a DcGenerator object"""
     src_dir = os.path.join(self.tempdir, 'src')
     osutils.SafeMakedirs(src_dir)
-    return build_dlc.DlcGenerator(src_dir, self.tempdir, fs_type,
-                                  _PRE_ALLOCATED_BLOCKS, _VERSION, _ID, _NAME)
+
+    build_root_dir = os.path.join(self.tempdir, 'build_root')
+    ue_conf = os.path.join(build_root_dir, 'etc', 'update_engine.conf')
+    osutils.WriteFile(ue_conf, 'foo-content', makedirs=True)
+
+    return build_dlc.DlcGenerator(src_dir=src_dir,
+                                  build_root_dir=build_root_dir,
+                                  install_root_dir=self.tempdir,
+                                  fs_type=fs_type,
+                                  pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
+                                  version=_VERSION,
+                                  dlc_id=_ID,
+                                  name=_NAME)
 
   def testSetInstallDir(self):
     """Tests install_root_dir is used correclty."""
@@ -100,6 +111,18 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
 
     self.assertEqual(osutils.ReadFile(os.path.join(dlc_dir, 'etc/lsb-release')),
                      'DLC_ID=%s\nDLC_NAME=%s\n' %  (_ID, _NAME))
+
+  def testCollectExtraResources(self):
+    """Tests that extra resources are collected correctly."""
+    generator = self.GetDlcGenerator()
+
+    dlc_dir = os.path.join(self.tempdir, 'dlc_dir')
+    generator.CollectExtraResources(dlc_dir)
+
+    ue_conf = 'etc/update_engine.conf'
+    self.assertEqual(
+        osutils.ReadFile(os.path.join(self.tempdir, 'build_root', ue_conf)),
+        'foo-content')
 
   def testGetImageloaderJsonContent(self):
     """Test that GetImageloaderJsonContent returns correct content."""
