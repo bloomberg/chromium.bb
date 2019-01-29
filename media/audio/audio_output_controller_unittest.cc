@@ -520,6 +520,6 @@ TEST_P(AudioOutputControllerTest, DuplicateDivertInteract) {
   Close();
 }
 
-INSTANTIATE_TEST_CASE_P(AOC, AudioOutputControllerTest, Bool());
+INSTANTIATE_TEST_SUITE_P(AOC, AudioOutputControllerTest, Bool());
 
 }  // namespace media
