@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"

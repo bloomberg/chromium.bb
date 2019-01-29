@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_PROFILE_TABLE_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_PROFILE_TABLE_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_CREDIT_CARD_TABLE_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_CREDIT_CARD_TABLE_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
+
+extern NSString* const kAutofillCreditCardTableViewId;
+extern NSString* const kAutofillCreditCardSwitchViewId;
 
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-extern NSString* const kAutofillProfileTableViewID;
-
-// The TableView for the Autofill settings.
-@interface AutofillProfileTableViewController : SettingsRootTableViewController
+// The table view for the Autofill settings.
+@interface AutofillCreditCardTableViewController
+    : SettingsRootTableViewController
 
 // The designated initializer. |browserState| must not be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
@@ -26,4 +28,4 @@ extern NSString* const kAutofillProfileTableViewID;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_PROFILE_TABLE_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_CREDIT_CARD_TABLE_VIEW_CONTROLLER_H_

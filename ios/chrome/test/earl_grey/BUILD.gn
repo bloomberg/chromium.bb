@@ -70,6 +70,7 @@ chrome_ios_eg_test("ios_chrome_bookmarks_egtests") {
 chrome_ios_eg_test("ios_chrome_settings_egtests") {
   deps = [
     "//ios/chrome/browser/ui/settings:eg_tests",
+    "//ios/chrome/browser/ui/settings/autofill:eg_tests",
     "//ios/chrome/browser/ui/settings/clear_browsing_data:eg_tests",
   ]
 }
