@@ -7254,8 +7254,8 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
   return ServiceWorkerNetworkProvider::CreateForNavigation(
-      routing_id_, commit_params, frame_,
-      std::move(controller_service_worker_info), std::move(fallback_factory));
+      this, commit_params, std::move(controller_service_worker_info),
+      std::move(fallback_factory));
 }
 
 }  // namespace content

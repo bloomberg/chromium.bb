@@ -907,11 +907,61 @@ TEST_P(ServiceWorkerProviderHostTest,
     remote_endpoint.BindWithProviderHostInfo(&info);
     GURL url = GURL("https://www.example.com/page");
     host->UpdateUrls(url, url);
+    FinishNavigation(host.get(), std::move(info));
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
-    FinishNavigation(host.get(), std::move(info));
+    base::RunLoop run_loop;
+    host->AddExecutionReadyCallback(run_loop.QuitClosure());
+    remote_endpoint.host_ptr()->get()->OnExecutionReady();
+    run_loop.Run();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
+}
+
+// Tests the client phase transitions for a navigation.
+TEST_P(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          helper_->context()->AsWeakPtr(), true,
+          base::RepeatingCallback<WebContents*(void)>());
+  EXPECT_FALSE(host->is_response_committed());
+  EXPECT_FALSE(host->is_execution_ready());
+
+  blink::mojom::ServiceWorkerProviderHostInfoPtr info =
+      CreateProviderHostInfoForWindow(host->provider_id(), 1 /* route_id */);
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  remote_endpoint.BindWithProviderHostInfo(&info);
+  GURL url = GURL("https://www.example.com/page");
+  host->UpdateUrls(url, url);
+  FinishNavigation(host.get(), std::move(info));
+  EXPECT_TRUE(host->is_response_committed());
+  EXPECT_FALSE(host->is_execution_ready());
+
+  base::RunLoop run_loop;
+  host->AddExecutionReadyCallback(run_loop.QuitClosure());
+  remote_endpoint.host_ptr()->get()->OnExecutionReady();
+  run_loop.Run();
+  EXPECT_TRUE(host->is_response_committed());
+  EXPECT_TRUE(host->is_execution_ready());
+}
+
+// Tests the client phase transitions for a shared worker.
+TEST_P(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
+  auto provider_info =
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateForSharedWorker(
+          context_->AsWeakPtr(), helper_->mock_render_process_id(),
+          &provider_info);
+  EXPECT_FALSE(host->is_response_committed());
+  EXPECT_FALSE(host->is_execution_ready());
+
+  const GURL url("https://www.example.com/shared_worker.js");
+  host->UpdateUrls(url, url);
+  host->CompleteSharedWorkerPreparation();
+
+  EXPECT_TRUE(host->is_response_committed());
+  EXPECT_TRUE(host->is_execution_ready());
 }
 
 // Tests that the service worker involved with a navigation (via

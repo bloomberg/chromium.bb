@@ -1196,6 +1196,28 @@ void ServiceWorkerVersion::PostMessageToClient(
     return;
   }
   if (!provider_host->is_execution_ready()) {
+    // It's subtle why this ReportBadMessage is correct. Consider the
+    // sequence:
+    // 1. Page does ServiceWorker.postMessage().
+    // 2. Service worker does onmessage = (evt) => {evt.source.postMessage()};.
+    //
+    // The IPC sequence is:
+    // 1. Page sends NotifyExecutionReady() to its ServiceWorkerContainerHost
+    //    once created.
+    // 2. Page sends PostMessageToServiceWorker() to the object's
+    //    ServiceWorkerObjectHost.
+    // 3. Service worker sends PostMessageToClient() to its ServiceWorkerHost.
+    //
+    // It's guaranteed that 1. arrives before 2., since the
+    // ServiceWorkerObjectHost must have been sent over
+    // ServiceWorkerContainerHost (using Register, GetRegistrationForReady), so
+    // they are associated. After that 3. occurs and we get here and are
+    // guaranteed execution ready the above ordering.
+    //
+    // The above reasoning would break if there is a way for a page to get a
+    // ServiceWorkerObjectHost not associated with its
+    // ServiceWorkerContainerHost. If that world should occur, we should queue
+    // the message instead of crashing.
     mojo::ReportBadMessage(
         "Received Client#postMessage() request for a reserved client.");
     binding_.Close();

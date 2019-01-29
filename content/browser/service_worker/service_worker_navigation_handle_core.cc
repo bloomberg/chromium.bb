@@ -45,9 +45,10 @@ ServiceWorkerNavigationHandleCore::~ServiceWorkerNavigationHandleCore() {
   // pointer tied to the lifetime of ServiceWorkerProviderHost, and send the
   // Mojo pointer to the renderer on navigation commit. If the handle core dies
   // before that, the provider host would be destroyed by Mojo connection error.
-  if (!host->is_execution_ready())
+  if (!host->is_response_committed()) {
     context->RemoveProviderHost(ChildProcessHost::kInvalidUniqueID,
                                 provider_id_);
+  }
 }
 
 void ServiceWorkerNavigationHandleCore::DidPreCreateProviderHost(

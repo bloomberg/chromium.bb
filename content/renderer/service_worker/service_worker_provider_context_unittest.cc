@@ -250,6 +250,7 @@ class FakeServiceWorkerContainerHost
   }
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
   void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
+  void OnExecutionReady() override {}
 
  private:
   mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost> bindings_;
@@ -312,6 +313,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         mock_service_worker_object_host->CreateObjectInfo();
     EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
 
+    blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
+
     // (1) In the case there is no WebSWProviderClient but SWProviderContext for
     // the provider, the passed reference should be adopted and owned by the
     // provider context.
@@ -320,7 +325,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
-        std::move(container_request), nullptr /* host_ptr_info */,
+        std::move(container_request), host_ptr.PassInterface(),
         nullptr /* controller_info */, nullptr /* loader_factory*/);
 
     auto info = blink::mojom::ControllerServiceWorkerInfo::New();
@@ -351,16 +356,16 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     // context and then be transfered ownership to the provider client, after
     // that due to limitation of the mock implementation, the reference
     // immediately gets released.
-    blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+    blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
     blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
-        mojo::MakeRequest(&host_ptr_info);
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
 
     blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
     blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
-        std::move(container_request), std::move(host_ptr_info),
+        std::move(container_request), host_ptr.PassInterface(),
         nullptr /* controller_info */, nullptr /* loader_factory*/);
     auto provider_impl =
         std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
@@ -386,16 +391,16 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   const int kProviderId = 10;
 
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
   blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
-      mojo::MakeRequest(&host_ptr_info);
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
 
   blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
-      std::move(container_request), std::move(host_ptr_info),
+      std::move(container_request), host_ptr.PassInterface(),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl =
       std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
@@ -643,16 +648,16 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
       mock_service_worker_object_host->CreateObjectInfo();
   EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
 
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
   blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
-      mojo::MakeRequest(&host_ptr_info);
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
 
   blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
-      std::move(container_request), std::move(host_ptr_info),
+      std::move(container_request), host_ptr.PassInterface(),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl =
       std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());
@@ -673,16 +678,16 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
 TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
   const int kProviderId = 10;
 
-  blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
   blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
-      mojo::MakeRequest(&host_ptr_info);
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
 
   blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
   blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
       mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
-      std::move(container_request), std::move(host_ptr_info),
+      std::move(container_request), host_ptr.PassInterface(),
       nullptr /* controller_info */, nullptr /* loader_factory*/);
   auto provider_impl =
       std::make_unique<WebServiceWorkerProviderImpl>(provider_context.get());

@@ -105,6 +105,10 @@ interface ServiceWorkerContainerHost {
   // The browser process can possibly coalesce hints for the same service
   // worker into a single update.
   HintToUpdateServiceWorker();
+
+  // Informs the host that the context is execution ready.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
+  OnExecutionReady();
 };
 
 // ServiceWorkerContainer is an interface implemented by the renderer process.

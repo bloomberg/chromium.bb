@@ -21,7 +21,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace blink {
-class WebLocalFrame;
 class WebServiceWorkerNetworkProvider;
 }  // namespace blink
 
@@ -36,6 +35,7 @@ class URLLoaderFactory;
 }
 
 struct CommitNavigationParams;
+class RenderFrameImpl;
 class ServiceWorkerProviderContext;
 
 // ServiceWorkerNetworkProvider enables the browser process to recognize
@@ -78,11 +78,15 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // the loading context, e.g. a frame, provides it.
   static std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateForNavigation(
-      int route_id,
+      RenderFrameImpl* frame,
       const CommitNavigationParams* commit_params,
-      blink::WebLocalFrame* frame,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
+
+  // Creates a "null" network provider for a frame (it has an invalid provider
+  // id). Useful when the frame should not use service worker.
+  static std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
+  CreateInvalidInstanceForNavigation();
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
   // non-document service worker client).
@@ -142,7 +146,10 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
+  // |context_| is null if |this| is an invalid instance, in which case there is
+  // no connection to the browser process.
   scoped_refptr<ServiceWorkerProviderContext> context_;
+
   blink::mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
 
   // For shared worker contexts. The URL loader factory for loading the worker's

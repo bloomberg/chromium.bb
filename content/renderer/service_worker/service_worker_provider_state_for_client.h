@@ -57,8 +57,9 @@ struct ServiceWorkerProviderStateForClient {
   // Tracks feature usage for UseCounter.
   std::set<blink::mojom::WebFeature> used_features;
 
-  // Corresponds to a ServiceWorkerContainer. We notify it when
-  // ServiceWorkerContainer#controller should be changed.
+  // Corresponds to this client's ServiceWorkerContainer. May be null when not
+  // yet created, when already destroyed, or when this client is not a Document
+  // and therefore doesn't support navigator.serviceWorker.
   base::WeakPtr<WebServiceWorkerProviderImpl> web_service_worker_provider;
 
   // Keeps ServiceWorkerWorkerClient pointers of dedicated or shared workers

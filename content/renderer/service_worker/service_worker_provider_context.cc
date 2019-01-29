@@ -228,6 +228,28 @@ void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
   container_host_->HintToUpdateServiceWorker();
 }
 
+void ServiceWorkerProviderContext::NotifyExecutionReady() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_EQ(provider_type(),
+            blink::mojom::ServiceWorkerProviderType::kForWindow)
+      << "only windows need to send this message; shared workers have "
+         "execution ready set on the browser-side when the response is "
+         "committed";
+  if (!container_host_)
+    return;
+  if (sent_execution_ready_) {
+    // Sometimes a new document can be created for a frame without a proper
+    // navigation, in cases like about:blank and javascript: URLs. In these
+    // cases the provider is not recreated and Blink can tell us that it's
+    // execution ready more than once. The browser-side host doesn't support
+    // changing the URL of the provider in these cases, so just ignore these
+    // notifications.
+    return;
+  }
+  sent_execution_ready_ = true;
+  container_host_->OnExecutionReady();
+}
+
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
     blink::mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
