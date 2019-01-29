@@ -492,6 +492,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky(
         'conformance/extensions/webgl-compressed-texture-size-limit.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Flaky('conformance/ogles/GL/exp2/exp2_001_to_008.html',
+        ['mac', ('nvidia', 0xfe9)], bug=923080)
     self.Fail('conformance/programs/' +
         'gl-bind-attrib-location-long-names-test.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
