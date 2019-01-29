@@ -77,7 +77,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterDelegate {
   virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
   // Called when the app list visibility changes.
-  virtual void OnVisibilityChanged(bool visible, aura::Window* root_window) = 0;
+  virtual void OnVisibilityChanged(bool visible, int64_t display_id) = 0;
 
   // Called when the app list target visibility changes.
   virtual void OnTargetVisibilityChanged(bool visible) = 0;

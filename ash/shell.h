@@ -645,8 +645,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Used to provide better error messages for Shell::Get() under mash.
   static void SetIsBrowserProcessWithMash();
 
-  void NotifyAppListVisibilityChanged(bool visible, aura::Window* root_window);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);

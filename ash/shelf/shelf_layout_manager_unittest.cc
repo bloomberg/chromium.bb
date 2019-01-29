@@ -867,17 +867,18 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
 
   // The home launcher gesture handler should not be handling any window
   // initially.
-  ShelfLayoutManager* manager = GetShelfLayoutManager();
   HomeLauncherGestureHandler* gesture_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
   ASSERT_TRUE(gesture_handler);
   ASSERT_FALSE(gesture_handler->GetWindow1());
 
   // Tests that after scrolling up on the shelf, the home launcher gesture
-  // handler will be acting on |window|.
+  // handler will be acting on |window|, and the shelf becomes transparent.
+  ShelfLayoutManager* manager = GetShelfLayoutManager();
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));
   EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
   if (autohide_shelf) {
     // Auto-hide shelf should keep visible after scrolling up on it.
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -889,9 +890,12 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
   EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, 1.f));
   EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
   if (autohide_shelf)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
@@ -1936,9 +1940,7 @@ TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
 TEST_F(ShelfLayoutManagerTest, SwipingOnShelfIfAppListOpened) {
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  aura::Window* root_window =
-      RootWindowController::ForTargetRootWindow()->GetRootWindow();
-  layout_manager->OnAppListVisibilityChanged(true, root_window);
+  layout_manager->OnAppListVisibilityChanged(true, GetPrimaryDisplayId());
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());

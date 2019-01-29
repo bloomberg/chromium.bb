@@ -26,6 +26,7 @@
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
+#include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -37,6 +38,7 @@ class MouseWheelEvent;
 
 namespace ash {
 
+class AppListControllerObserver;
 class HomeLauncherGestureHandler;
 
 // Ash's AppListController owns the AppListModel and implements interface
@@ -183,8 +185,17 @@ class ASH_EXPORT AppListControllerImpl
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
 
-  void OnVisibilityChanged(bool visible);
-  void OnTargetVisibilityChanged(bool visible);
+  void AddObserver(AppListControllerObserver* observer);
+  void RemoveObserver(AppListControllerObserver* obsever);
+
+  // AppList visibility announcements are for clamshell mode AppList.
+  void NotifyAppListVisibilityChanged(bool visible, int64_t display_id);
+  void NotifyAppListTargetVisibilityChanged(bool visible);
+
+  // HomeLauncher visibility announcements are for tablet mode AppList.
+  void NotifyHomeLauncherTargetPositionChanged(bool showing,
+                                               int64_t display_id);
+  void NotifyHomeLauncherAnimationComplete(bool shown, int64_t display_id);
 
   void FlushForTesting();
 
@@ -278,6 +289,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether we're currently in a window dragging process.
   bool in_window_dragging_ = false;
+
+  base::ObserverList<AppListControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };

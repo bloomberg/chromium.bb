@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
+#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -43,8 +44,9 @@ class BackdropDelegate;
 // 1) Has a aura::client::kHasBackdrop property = true.
 // 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
 // 3) Active ARC window when the spoken feedback is enabled.
-class BackdropController : public ShellObserver,
-                           public AccessibilityObserver,
+class BackdropController : public AccessibilityObserver,
+                           public AppListControllerObserver,
+                           public ShellObserver,
                            public SplitViewController::Observer,
                            public WallpaperControllerObserver {
  public:
@@ -71,10 +73,11 @@ class BackdropController : public ShellObserver,
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
-  void OnAppListVisibilityChanged(bool shown,
-                                  aura::Window* root_window) override;
   void OnSplitViewModeStarting() override;
   void OnSplitViewModeEnded() override;
+
+  // AppListControllerObserver:
+  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;

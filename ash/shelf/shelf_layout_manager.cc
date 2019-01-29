@@ -91,6 +91,11 @@ bool IsAppListWindow(const aura::Window* window) {
 }
 
 bool IsTabletModeEnabled() {
+  // Shell could be destroying. Shell destroys TabletModeController before
+  // closing all windows.
+  if (!Shell::Get()->tablet_mode_controller())
+    return false;
+
   return Shell::Get()
       ->tablet_mode_controller()
       ->IsTabletModeWindowManagerEnabled();
@@ -174,6 +179,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()->lock_state_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->locale_update_controller()->AddObserver(this);
@@ -194,6 +200,10 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   Shell::Get()->locale_update_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->lock_state_controller()->RemoveObserver(this);
+  // AppListController is destroyed early when Shell is being destroyed, it may
+  // not exist.
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
@@ -457,10 +467,16 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
-  // If the app list is active and the home launcher is not shown, hide the
-  // shelf background to prevent overlap.
-  if (is_app_list_visible_ && !IsHomeLauncherEnabledInTabletMode())
-    return SHELF_BACKGROUND_APP_LIST;
+  if (is_app_list_visible_) {
+    if (!IsHomeLauncherEnabledInTabletMode())
+      return SHELF_BACKGROUND_APP_LIST;
+
+    // In tablet mode, the app list(now referred to as Home Launcher) is always
+    // visible. If the Home Launcher is either fullscreen or being animated or
+    // dragged, show the transparent background.
+    if (is_home_launcher_shown_ || is_home_launcher_target_position_shown_)
+      return SHELF_BACKGROUND_DEFAULT;
+  }
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
@@ -528,18 +544,7 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
-                                                    aura::Window* root_window) {
-  // Shell may be under destruction.
-  if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
-    return;
 
-  if (shelf_widget_->GetNativeWindow()->GetRootWindow() != root_window)
-    return;
-
-  is_app_list_visible_ = shown;
-  MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
-}
 
 void ShelfLayoutManager::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
@@ -558,6 +563,46 @@ void ShelfLayoutManager::OnSplitViewModeStarted() {
 
 void ShelfLayoutManager::OnSplitViewModeEnded() {
   MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+}
+
+void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
+                                                    int64_t display_id) {
+  // Shell may be under destruction.
+  if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
+    return;
+
+  if (display_.id() != display_id)
+    return;
+
+  is_app_list_visible_ = shown;
+  MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+}
+
+void ShelfLayoutManager::OnHomeLauncherTargetPositionChanged(
+    bool showing,
+    int64_t display_id) {
+  // Shell may be under destruction.
+  if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
+    return;
+
+  if (display_.id() != display_id)
+    return;
+
+  is_home_launcher_target_position_shown_ = showing;
+  MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+}
+
+void ShelfLayoutManager::OnHomeLauncherAnimationComplete(bool shown,
+                                                         int64_t display_id) {
+  // Shell may be under destruction.
+  if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
+    return;
+
+  if (display_.id() != display_id)
+    return;
+
+  is_home_launcher_shown_ = shown;
+  MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,

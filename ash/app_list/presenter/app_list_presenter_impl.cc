@@ -352,8 +352,7 @@ void AppListPresenterImpl::NotifyVisibilityChanged(bool visible,
   last_display_id_ = display_id;
 
   // Notify the Shell and its observers of the app list visibility change.
-  delegate_->OnVisibilityChanged(
-      visible, delegate_->GetRootWindowForDisplayId(display_id));
+  delegate_->OnVisibilityChanged(visible, display_id);
 }
 
 void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible) {

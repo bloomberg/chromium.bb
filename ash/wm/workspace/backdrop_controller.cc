@@ -74,6 +74,7 @@ BackdropController::BackdropController(aura::Window* container)
   DCHECK(container_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
+  Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
@@ -81,6 +82,10 @@ BackdropController::~BackdropController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
+  // AppListController is destroyed early when Shell is being destroyed, it may
+  // not exist.
+  if (Shell::Get()->app_list_controller())
+    Shell::Get()->app_list_controller()->RemoveObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
   Hide();
@@ -172,17 +177,17 @@ void BackdropController::OnOverviewModeEndingAnimationComplete(bool canceled) {
     backdrop_window_->ClearProperty(aura::client::kAnimationsDisabledKey);
 }
 
-void BackdropController::OnAppListVisibilityChanged(bool shown,
-                                                    aura::Window* root_window) {
-  UpdateBackdrop();
-}
-
 void BackdropController::OnSplitViewModeStarting() {
   Shell::Get()->split_view_controller()->AddObserver(this);
 }
 
 void BackdropController::OnSplitViewModeEnded() {
   Shell::Get()->split_view_controller()->RemoveObserver(this);
+}
+
+void BackdropController::OnAppListVisibilityChanged(bool shown,
+                                                    int64_t display_id) {
+  UpdateBackdrop();
 }
 
 void BackdropController::OnAccessibilityStatusChanged() {

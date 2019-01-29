@@ -7,12 +7,12 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_control_button.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -28,7 +28,7 @@ class ShelfView;
 
 // Button used for the AppList icon on the shelf.
 class ASH_EXPORT AppListButton : public ShelfControlButton,
-                                 public ShellObserver,
+                                 public AppListControllerObserver,
                                  public SessionObserver,
                                  public DefaultVoiceInteractionObserver {
  public:
@@ -49,9 +49,8 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
-  // ShellObserver:
-  void OnAppListVisibilityChanged(bool shown,
-                                  aura::Window* root_window) override;
+  // AppListControllerObserver:
+  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
 
   // mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(

@@ -72,7 +72,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
     return container_->GetRootWindow();
   }
-  void OnVisibilityChanged(bool visible, aura::Window* root_window) override {}
+  void OnVisibilityChanged(bool visible, int64_t display_id) override {}
   void OnTargetVisibilityChanged(bool visible) override {}
 
  private:
