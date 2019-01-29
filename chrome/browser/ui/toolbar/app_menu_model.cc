@@ -75,6 +75,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
@@ -829,9 +830,10 @@ void AppMenuModel::Build() {
   if (chrome::ShouldDisplayManagedUi(browser_->profile())) {
     AddSeparator(ui::LOWER_SEPARATOR);
     const int kIconSize = 18;
-    const auto icon = gfx::CreateVectorIcon(gfx::IconDescription(
-        vector_icons::kBusinessIcon, kIconSize, gfx::kChromeIconGrey,
-        base::TimeDelta(), gfx::kNoneIcon));
+    SkColor color = ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+        ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor);
+    const auto icon =
+        gfx::CreateVectorIcon(vector_icons::kBusinessIcon, kIconSize, color);
     AddHighlightedItemWithStringIdAndIcon(IDC_MANAGED_UI_HELP,
                                           IDS_MANAGED_BY_ORG, icon);
   }
