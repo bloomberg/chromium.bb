@@ -29,7 +29,11 @@ class LocalSiteCharacteristicsDataReaderTest;
 class LocalSiteCharacteristicsDataWriterTest;
 
 FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
+                     DestroyingReaderCancelsPendingCallbacks);
+FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
                      FreeingReaderDoesntCauseWriteOperation);
+FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
+                     OnDataLoadedCallbackInvoked);
 
 namespace internal {
 
@@ -182,12 +186,18 @@ class LocalSiteCharacteristicsDataImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
+                           FlushingStateToProtoDoesntAffectData);
+  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
                            LateAsyncReadDoesntBypassClearEvent);
   FRIEND_TEST_ALL_PREFIXES(
       resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
+      DestroyingReaderCancelsPendingCallbacks);
+  FRIEND_TEST_ALL_PREFIXES(
+      resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
       FreeingReaderDoesntCauseWriteOperation);
-  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
-                           FlushingStateToProtoDoesntAffectData);
+  FRIEND_TEST_ALL_PREFIXES(
+      resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
+      OnDataLoadedCallbackInvoked);
 
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.

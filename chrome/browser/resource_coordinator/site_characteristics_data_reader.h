@@ -31,7 +31,8 @@ class SiteCharacteristicsDataReader {
 
   // Registers a callback that will be invoked when the data backing this object
   // has been loaded. Note that if "DataLoaded" is true at the time this is
-  // called it may immediately invoke the callback.
+  // called it may immediately invoke the callback. The callback will not be
+  // invoked after this object has been destroyed.
   virtual void RegisterDataLoadedCallback(base::OnceClosure&& callback) = 0;
 };
 
