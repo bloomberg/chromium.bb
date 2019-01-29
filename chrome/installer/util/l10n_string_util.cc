@@ -45,9 +45,7 @@ base::string16 GetPreferredLanguageFromGoogleUpdate() {
 
 const base::win::i18n::LanguageSelector& GetLanguageSelector() {
   static base::NoDestructor<base::win::i18n::LanguageSelector> instance(
-      GetPreferredLanguageFromGoogleUpdate(), &kLanguageOffsetPairs[0],
-      &kLanguageOffsetPairs[base::size(kLanguageOffsetPairs)]);
-
+      GetPreferredLanguageFromGoogleUpdate(), kLanguageOffsetPairs);
   return *instance;
 }
 
