@@ -82,15 +82,8 @@ TEST_F(VulkanImplementationAndroidTest, ExportImportSyncFd) {
   // signal operation pending execution before the export.
   // Semaphores can be signaled by including them in a batch as part of a queue
   // submission command, defining a queue operation to signal that semaphore.
-  unsigned int submit_count = 1;
-  VkFence fence = VK_NULL_HANDLE;
-  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
-  submit_info.signalSemaphoreCount = 1;
-  submit_info.pSignalSemaphores = &semaphore1;
-  result =
-      vkQueueSubmit(vk_context_provider_->GetDeviceQueue()->GetVulkanQueue(),
-                    submit_count, &submit_info, fence);
-  EXPECT_EQ(result, VK_SUCCESS);
+  EXPECT_TRUE(vk_implementation_->SubmitSignalSemaphore(
+      vk_context_provider_->GetDeviceQueue()->GetVulkanQueue(), semaphore1));
 
   // Export a sync fd from the semaphore.
   base::ScopedFD sync_fd;
