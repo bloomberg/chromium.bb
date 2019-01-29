@@ -43,7 +43,6 @@ enum {
   S_FORMAT_RGB_YCBCR_420V_CHROMIUM,
   S_FORMAT_RGB_YCBCR_422_CHROMIUM,
   S_FORMAT_COMPRESSED,
-  S_FORMAT_RGB10_A2,
   NUM_S_FORMAT
 };
 
@@ -186,12 +185,8 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
     case GL_ETC1_RGB8_OES:
       sourceFormatIndex = S_FORMAT_COMPRESSED;
       break;
-    case GL_RGB10_A2:
-      sourceFormatIndex = S_FORMAT_RGB10_A2;
-      break;
     default:
-      NOTREACHED() << "Invalid source format "
-                   << gl::GLEnums::GetStringEnum(source_format);
+      NOTREACHED();
       break;
   }
 
