@@ -13,6 +13,14 @@ class Rect;
 
 namespace keyboard {
 
+// TODO(shend): Move other methods into test namespace.
+namespace test {
+
+// Waits until the keyboard window finishes loading.
+bool WaitUntilLoaded();
+
+}  // namespace test
+
 // Waits until the keyboard is fully shown, with no pending animations.
 bool WaitUntilShown();
 

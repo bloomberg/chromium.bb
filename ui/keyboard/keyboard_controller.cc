@@ -274,6 +274,10 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
 
   ActivateKeyboardInContainer(
       layout_delegate_->GetContainerForDefaultDisplay());
+
+  // Start preloading the virtual keyboard UI in the background, so that it
+  // shows up faster when needed.
+  LoadKeyboardWindowInBackground();
 }
 
 void KeyboardController::DisableKeyboard() {

@@ -48,6 +48,21 @@ bool WaitVisibilityChangesTo(bool wait_until) {
 
 }  // namespace
 
+namespace test {
+
+bool WaitUntilLoaded() {
+  // In tests, the keyboard window is mocked out so it usually "loads" within a
+  // single RunUntilIdle call.
+  base::RunLoop run_loop;
+  while (KeyboardController::Get()->GetStateForTest() ==
+         KeyboardControllerState::LOADING_EXTENSION) {
+    run_loop.RunUntilIdle();
+  }
+  return true;
+}
+
+}  // namespace test
+
 bool WaitUntilShown() {
   // KeyboardController send a visibility update once the show animation
   // finishes.

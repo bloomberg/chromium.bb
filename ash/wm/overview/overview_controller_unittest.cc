@@ -378,8 +378,8 @@ class OverviewVirtualKeyboardTest : public OverviewControllerTest {
     TabletModeControllerTestApi().EnterTabletMode();
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(keyboard::IsKeyboardEnabled());
+    keyboard::test::WaitUntilLoaded();
 
-    keyboard_controller()->LoadKeyboardWindowInBackground();
     keyboard_controller()->GetKeyboardWindow()->SetBounds(
         keyboard::KeyboardBoundsFromRootBounds(
             Shell::GetPrimaryRootWindow()->bounds(), 100));

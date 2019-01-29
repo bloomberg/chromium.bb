@@ -53,10 +53,6 @@ void AshKeyboardController::EnableKeyboard() {
       keyboard_ui_factory_ ? keyboard_ui_factory_->CreateKeyboardUI()
                            : std::make_unique<AshKeyboardUI>(this),
       virtual_keyboard_controller_.get());
-
-  // Start preloading the virtual keyboard UI in the background, so that it
-  // shows up faster when needed.
-  keyboard_controller_->LoadKeyboardWindowInBackground();
 }
 
 void AshKeyboardController::DisableKeyboard() {
