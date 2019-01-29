@@ -73,16 +73,18 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
 
     switch (param.pointer_action_type()) {
       case SyntheticPointerActionParams::PointerActionType::PRESS:
-        synthetic_pointer_driver_->Press(param.position().x(),
-                                         param.position().y(),
-                                         param.pointer_id(), param.button());
+        synthetic_pointer_driver_->Press(
+            param.position().x(), param.position().y(), param.pointer_id(),
+            param.button(), param.key_modifiers());
         break;
       case SyntheticPointerActionParams::PointerActionType::MOVE:
         synthetic_pointer_driver_->Move(
-            param.position().x(), param.position().y(), param.pointer_id());
+            param.position().x(), param.position().y(), param.pointer_id(),
+            param.key_modifiers());
         break;
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
-        synthetic_pointer_driver_->Release(param.pointer_id(), param.button());
+        synthetic_pointer_driver_->Release(param.pointer_id(), param.button(),
+                                           param.key_modifiers());
         break;
       case SyntheticPointerActionParams::PointerActionType::LEAVE:
         synthetic_pointer_driver_->Leave(param.pointer_id());

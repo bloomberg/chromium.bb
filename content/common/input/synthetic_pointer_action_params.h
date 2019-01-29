@@ -66,6 +66,11 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     button_ = button;
   }
 
+  void set_key_modifiers(int key_modifiers) {
+    DCHECK_NE(PointerActionType::IDLE, pointer_action_type_);
+    key_modifiers_ = key_modifiers;
+  }
+
   PointerActionType pointer_action_type() const { return pointer_action_type_; }
 
   uint32_t pointer_id() const { return pointer_id_; }
@@ -80,6 +85,11 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     DCHECK(pointer_action_type_ == PointerActionType::PRESS ||
            pointer_action_type_ == PointerActionType::RELEASE);
     return button_;
+  }
+
+  int key_modifiers() const {
+    DCHECK_NE(PointerActionType::IDLE, pointer_action_type_);
+    return key_modifiers_;
   }
 
   static unsigned GetWebMouseEventModifier(
@@ -99,6 +109,10 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
   // The id of the pointer given by the users.
   uint32_t pointer_id_;
   Button button_;
+  // “Alt“, ”Control“, ”Meta“, ”Shift“, ”CapsLock“, ”NumLock“, ”AltGraph”
+  // buttons are supported right now. It stores a matching modifiers defined
+  // in WebInputEvent class.
+  int key_modifiers_;
 };
 
 }  // namespace content
