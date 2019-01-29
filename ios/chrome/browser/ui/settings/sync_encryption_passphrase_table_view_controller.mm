@@ -463,8 +463,9 @@ const CGFloat kSpinnerButtonPadding = 18;
   }
 
   // Checking if the operation succeeded.
-  if (!service->IsPassphraseRequired() &&
-      (service->IsUsingSecondaryPassphrase() || [self forDecryption])) {
+  if (!service->GetUserSettings()->IsPassphraseRequired() &&
+      (service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
+       [self forDecryption])) {
     syncObserver_.reset();
     [base::mac::ObjCCastStrict<SettingsNavigationController>(
         self.navigationController)
@@ -473,7 +474,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   }
 
   // Handling passphrase error case.
-  if (service->IsPassphraseRequired()) {
+  if (service->GetUserSettings()->IsPassphraseRequired()) {
     self.syncErrorMessage =
         l10n_util::GetNSString(IDS_IOS_SYNC_INCORRECT_PASSPHRASE);
   }

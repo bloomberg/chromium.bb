@@ -966,8 +966,8 @@ void ProfileSyncService::OnEngineInitialized(
 
   data_type_manager_ =
       sync_client_->GetSyncApiComponentFactory()->CreateDataTypeManager(
-          initial_types, debug_info_listener, &data_type_controllers_, this,
-          engine_.get(), this);
+          initial_types, debug_info_listener, &data_type_controllers_,
+          user_settings_.get(), engine_.get(), this);
 
   crypto_.SetSyncEngine(engine_.get());
 

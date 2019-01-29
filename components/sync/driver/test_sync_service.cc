@@ -106,7 +106,7 @@ void TestSyncService::SetDetailedSyncStatus(bool engine_available,
 }
 
 void TestSyncService::SetPassphraseRequired(bool required) {
-  passphrase_required_ = required;
+  user_settings_.SetPassphraseRequired(required);
 }
 
 void TestSyncService::SetPassphraseRequiredForDecryption(bool required) {
@@ -261,20 +261,6 @@ void TestSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
-
-bool TestSyncService::IsPassphraseRequired() const {
-  return passphrase_required_;
-}
-
-ModelTypeSet TestSyncService::GetEncryptedDataTypes() const {
-  if (!using_secondary_passphrase_) {
-    // PASSWORDS are always encrypted.
-    return ModelTypeSet(PASSWORDS);
-  }
-  // Some types can never be encrypted, e.g. DEVICE_INFO and
-  // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
-  return Intersection(GetPreferredDataTypes(), EncryptableUserTypes());
-}
 
 void TestSyncService::Shutdown() {}
 

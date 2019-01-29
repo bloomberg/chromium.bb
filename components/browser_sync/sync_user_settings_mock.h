@@ -35,6 +35,7 @@ class SyncUserSettingsMock : public syncer::SyncUserSettings {
   MOCK_CONST_METHOD0(IsEncryptEverythingEnabled, bool());
   MOCK_METHOD0(EnableEncryptEverything, void());
 
+  MOCK_CONST_METHOD0(GetEncryptedDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());

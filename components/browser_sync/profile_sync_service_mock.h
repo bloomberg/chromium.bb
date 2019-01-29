@@ -80,9 +80,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                void(const syncer::DataTypeManager::ConfigureResult&));
   MOCK_METHOD0(OnConfigureStart, void());
 
-  // DataTypeEncryptionHandler overrides.
-  bool IsPassphraseRequired() const override;
-
   // syncer::UnrecoverableErrorHandler overrides.
   MOCK_METHOD2(OnUnrecoverableError,
                void(const base::Location& location,

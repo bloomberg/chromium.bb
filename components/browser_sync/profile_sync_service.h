@@ -269,9 +269,10 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::DataTypeManager::ConfigureResult& result) override;
   void OnConfigureStart() override;
 
-  // DataTypeEncryptionHandler implementation.
-  bool IsPassphraseRequired() const override;
-  syncer::ModelTypeSet GetEncryptedDataTypes() const override;
+  // TODO(crbug.com/884159): Remove these; they should be queried via
+  // SyncUserSettings instead.
+  bool IsPassphraseRequired() const;
+  syncer::ModelTypeSet GetEncryptedDataTypes() const;
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
