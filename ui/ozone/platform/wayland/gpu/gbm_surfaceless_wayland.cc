@@ -106,12 +106,7 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
   EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
-  if (!fence) {
-    completion_callback.Run(gfx::SwapResult::SWAP_FAILED, nullptr);
-    // Notify the caller, the buffer is never presented on a screen.
-    presentation_callback.Run(gfx::PresentationFeedback::Failure());
-    return;
-  }
+  CHECK_NE(fence, EGL_NO_SYNC_KHR) << "eglCreateSyncKHR failed";
 
   base::OnceClosure fence_wait_task =
       base::BindOnce(&WaitForFence, GetDisplay(), fence);
