@@ -49,8 +49,8 @@ const base::Feature kAppNotificationStatusMessaging{
 
 #if !defined(OS_ANDROID)
 // Use the App Service. See chrome/services/app_service/README.md.
-const base::Feature kAppService{"AppService",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAppServiceAsh{"AppServiceAsh",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 // If enabled, the list of content suggestions on the New Tab page will contain

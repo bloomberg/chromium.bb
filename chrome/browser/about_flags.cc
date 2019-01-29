@@ -4275,6 +4275,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAvoidFlahsBetweenNavigationDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kAvoidFlashBetweenNavigation)},
 
+#if !defined(OS_ANDROID)
+    {"app-management", flag_descriptions::kAppManagementName,
+     flag_descriptions::kAppManagementDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kAppManagement)},
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+    {"app-service-ash", flag_descriptions::kAppServiceAshName,
+     flag_descriptions::kAppServiceAshDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAppServiceAsh)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -28,7 +28,7 @@ ArcAppsFactory* ArcAppsFactory::GetInstance() {
 
 // static
 bool ArcAppsFactory::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kAppService);
+  return AppServiceProxyFactory::IsEnabled();
 }
 
 ArcAppsFactory::ArcAppsFactory()
