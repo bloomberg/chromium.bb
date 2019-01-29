@@ -191,7 +191,9 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
-  if (ShowingAttentionIndicator() && !should_display_crashed_favicon_) {
+  // Don't paint the attention indicator during the loading animation.
+  if (!ShowingLoadingAnimation() && ShowingAttentionIndicator() &&
+      !should_display_crashed_favicon_) {
     PaintAttentionIndicatorAndIcon(canvas, GetIconToPaint(), icon_bounds);
   } else {
     MaybePaintFavicon(canvas, GetIconToPaint(), icon_bounds);
