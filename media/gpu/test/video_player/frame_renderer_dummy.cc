@@ -76,15 +76,11 @@ void FrameRendererDummy::ReleaseGLContext() {
 }
 
 gl::GLContext* FrameRendererDummy::GetGLContext() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // As no actual rendering is done we don't have a GLContext.
   return nullptr;
 }
 
-void FrameRendererDummy::RenderFrame(scoped_refptr<VideoFrame> video_frame) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+void FrameRendererDummy::RenderFrame(scoped_refptr<VideoFrame> video_frame) {}
 
 }  // namespace test
 }  // namespace media

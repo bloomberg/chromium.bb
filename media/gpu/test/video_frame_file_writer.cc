@@ -97,8 +97,6 @@ void VideoFrameFileWriter::WaitUntilDone() const {
 void VideoFrameFileWriter::ProcessVideoFrame(
     scoped_refptr<const VideoFrame> video_frame,
     size_t frame_index) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(writer_sequence_checker_);
-
   base::AutoLock auto_lock(frame_writer_lock_);
   num_frames_writing_++;
 

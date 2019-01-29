@@ -26,7 +26,7 @@ struct VideoDecoderClientConfig;
 class VideoFrameProcessor;
 
 // Default timeout used when waiting for events.
-constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(30);
 
 enum class VideoPlayerState : size_t {
   kUninitialized = 0,
