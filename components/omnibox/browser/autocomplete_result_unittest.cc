@@ -952,7 +952,7 @@ TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
           "a recording",
           "... a recording",
           {{0, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::NONE}, {4, ACMatchClassification::MATCH}},
       },
   };
   ACMatches matches;
