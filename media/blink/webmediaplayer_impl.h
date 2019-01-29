@@ -47,11 +47,6 @@
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)  // WMPI_CAST
-// Delete this file when WMPI_CAST is no longer needed.
-#include "media/blink/webmediaplayer_cast_android.h"
-#endif
-
 namespace blink {
 class WebLocalFrame;
 class WebMediaPlayerClient;
@@ -246,27 +241,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnBytesReceived(uint64_t data_length);
 
   void RequestRemotePlaybackDisabled(bool disabled) override;
-#if defined(OS_ANDROID)  // WMPI_CAST
+
+#if defined(OS_ANDROID)
   // TODO(https://crbug.com/839651): Rename Flinging[Started/Stopped] to
   // RemotePlayback[Started/Stopped] once the other RemotePlayback methods have
   // been removed
-  bool IsRemote() const override;
-  void RequestRemotePlayback() override;
-  void RequestRemotePlaybackControl() override;
-  void RequestRemotePlaybackStop() override;
   void FlingingStarted() override;
   void FlingingStopped() override;
-
-  void SetMediaPlayerManager(
-      RendererMediaPlayerManagerInterface* media_player_manager);
-  void OnRemotePlaybackEnded();
-  void OnDisconnectedFromRemoteDevice(double t);
-  void SuspendForRemote();
-  void DisplayCastFrameAfterSuspend(const scoped_refptr<VideoFrame>& new_frame,
-                                    PipelineStatus status);
-  gfx::Size GetCanvasSize() const;
-  void SetDeviceScaleFactor(float scale_factor);
-  void SetUseFallbackPath(bool use_fallback_path);
 #endif
 
   // MediaObserverClient implementation.
@@ -291,10 +272,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool IsBackgroundMediaSuspendEnabled() const {
     return is_background_suspend_enabled_;
   }
-
-  // Called from WebMediaPlayerCast.
-  // TODO(hubbe): WMPI_CAST make private.
-  void OnPipelineSeeked(bool time_updated);
 
   // Distinct states that |delegate_| can be in. (Public for testing.)
   enum class DelegateState {
@@ -337,6 +314,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnPipelineSuspended();
   void OnBeforePipelineResume();
   void OnPipelineResumed();
+  void OnPipelineSeeked(bool time_updated);
   void OnDemuxerOpened();
 
   // Pipeline::Client overrides.
@@ -424,7 +402,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //
   // This method should be called any time its dependent values change. These
   // are:
-  //   - isRemote(), is_flinging_,
+  //   - is_flinging_,
   //   - hasVideo(),
   //   - delegate_->IsHidden(),
   //   - network_state_, ready_state_,
@@ -435,8 +413,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void UpdatePlayState();
 
   // Methods internal to UpdatePlayState().
-  PlayState UpdatePlayState_ComputePlayState(bool is_remote,
-                                             bool is_flinging,
+  PlayState UpdatePlayState_ComputePlayState(bool is_flinging,
                                              bool can_auto_suspend,
                                              bool is_suspended,
                                              bool is_backgrounded);
@@ -770,10 +747,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // TODO(https://crbug.com/839651): remove or rename this flag, when removing
   // IsRemote().
   bool is_flinging_ = false;
-
-#if defined(OS_ANDROID)  // WMPI_CAST
-  WebMediaPlayerCast cast_impl_;
-#endif
 
   // The last volume received by setVolume() and the last volume multiplier from
   // OnVolumeMultiplierUpdate().  The multiplier is typical 1.0, but may be less

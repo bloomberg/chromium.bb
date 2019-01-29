@@ -401,12 +401,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
       std::move(factory_selector), url_index_.get(), std::move(vfc),
       std::move(params));
 
-#if defined(OS_ANDROID)  // WMPI_CAST
-  media_player->SetMediaPlayerManager(GetMediaPlayerManager());
-  media_player->SetDeviceScaleFactor(
-      render_frame_->render_view()->GetDeviceScaleFactor());
-#endif  // defined(OS_ANDROID)
-
   return media_player;
 }
 
