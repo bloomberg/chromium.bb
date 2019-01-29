@@ -1270,7 +1270,7 @@
     ],
 
     'codesearch_gen_chromium_fuchsia_bot': [
-      'codesearch', 'fuchsia',
+      'codesearch_release', 'fuchsia',
     ],
 
     'codesearch_gen_chromium_bot': [
@@ -1952,6 +1952,10 @@
     'codesearch': {
       'gn_args': 'clang_use_chrome_plugins=false',
       'mixins': ['goma', 'clang', 'shared', 'debug', 'minimal_symbols'],
+    },
+    'codesearch_release': {
+      'gn_args': 'clang_use_chrome_plugins=false',
+      'mixins': ['release', 'static', 'goma'],
     },
 
     'compile_only': {
