@@ -41,10 +41,6 @@
             url(chrome://resources/images/arrow_down.svg);"
         disabled$="[[disabled]]"
         value="{{selectedValue::change}}">
-      <option value="noDestinations" hidden$="[[!noDestinationsFound]]"
-          selected$="[[noDestinationsFound]]">
-        $i18n{noDestinationsMessage}
-      </option>
       <template is="dom-repeat" items="[[recentDestinationList]]">
         <option value="[[item.key]]">[[item.displayName]]</option>
       </template>
@@ -54,6 +50,10 @@
       <option value="[[getGoogleDriveDestinationKey_(activeUser)]]"
           hidden$="[[!showGoogleDrive_]]">
         $i18n{printToGoogleDrive}
+      </option>
+      <option value="noDestinations" hidden$="[[!noDestinationsFound]]"
+          selected$="[[noDestinationsFound]]">
+        $i18n{noDestinationsMessage}
       </option>
       <option value="seeMore" aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
         $i18n{seeMore}

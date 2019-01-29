@@ -48,22 +48,18 @@
     <print-preview-settings-section>
       <span slot="title">$i18n{destinationLabel}</span>
       <div slot="controls">
-        <div class="throbber-container"
-            hidden$="[[!shouldShowSpinner_(
-                loadingDestination_, noDestinationsFound)]]">
+        <div class="throbber-container" hidden$="[[!shouldShowSpinner_]]">
           <div class="throbber"></div>
           <div class="destination-throbber-name"></div>
         </div>
         <print-preview-destination-select id="destinationSelect"
-            hidden$="[[shouldShowSpinner_(
-                loadingDestination_, noDestinationsFound)]]"
+            hidden$="[[shouldShowSpinner_]]"
             active-user="[[activeUser]]"
             app-kiosk-mode="[[appKioskMode]]"
             cloud-print-state="[[cloudPrintState]]"
             destination="[[destination]]"
             disabled="[[shouldDisableDropdown_(destinationStore, disabled,
-                                               loadingDestination_, state,
-                                               noDestinationsFound)]]"
+                                               shouldShowSpinner_, state)]]"
             no-destinations-found="[[noDestinationsFound]]"
             recent-destination-list="[[recentDestinationList_]]"
             on-selected-option-change="onSelectedDestinationOptionChange_">

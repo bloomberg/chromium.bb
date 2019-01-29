@@ -19,7 +19,10 @@ Polymer({
     },
 
     /** @type {!print_preview.Destination} */
-    destination: Object,
+    destination: {
+      type: Object,
+      observer: 'updateShouldShowSpinner_',
+    },
 
     /** @type {?print_preview.DestinationStore} */
     destinationStore: {
@@ -35,6 +38,7 @@ Polymer({
     noDestinationsFound: {
       type: Boolean,
       value: false,
+      observer: 'updateShouldShowSpinner_',
     },
 
     /** @type {!Array<!print_preview.RecentDestination>} */
@@ -46,15 +50,15 @@ Polymer({
     /** @type {!Array<string>} */
     users: Array,
 
-    /** @private {boolean} */
-    loadingDestination_: {
-      type: Boolean,
-      value: true,
-      observer: 'onLoadingDestinationChange_',
-    },
-
     /** @private {!Array<!print_preview.Destination>} */
     recentDestinationList_: Array,
+
+    /** @private */
+    shouldShowSpinner_: {
+      type: Boolean,
+      value: true,
+      observer: 'onShouldShowSpinnerChange_',
+    },
 
     /** @private {string} */
     statusText_: {
@@ -126,8 +130,6 @@ Polymer({
     if (update) {
       this.recentDestinationList_ = recentDestinations;
     }
-
-    this.loadingDestination_ = !this.destination || !this.destination.id;
   },
 
   /**
@@ -136,38 +138,55 @@ Polymer({
    */
   shouldDisableDropdown_: function() {
     return !this.destinationStore || this.noDestinationsFound ||
-        this.loadingDestination_ ||
+        this.shouldShowSpinner_ ||
         (this.disabled && this.state != print_preview_new.State.NOT_READY &&
          this.state != print_preview_new.State.INVALID_PRINTER);
   },
 
   /** @private */
   onCloudPrintStateChanged_: function() {
-    if (this.cloudPrintState !== print_preview.CloudPrintState.ENABLED &&
-        this.cloudPrintState !== print_preview.CloudPrintState.SIGNED_IN) {
-      return;
-    }
-
-    this.loadDropdownCloudDestinations_();
-    if (this.cloudPrintState === print_preview.CloudPrintState.SIGNED_IN) {
-      return;
-    }
-
-    const destinationDialog = this.$$('print-preview-destination-dialog');
-    if (destinationDialog && destinationDialog.isOpen()) {
-      this.destinationStore.startLoadCloudDestinations();
-      if (this.activeUser) {
-        this.invitationStore.startLoadingInvitations(this.activeUser);
-      }
+    switch (this.cloudPrintState) {
+      case print_preview.CloudPrintState.ENABLED:
+        // Try to fetch all the destinations/invitations if the dialog is open.
+        const destinationDialog = this.$$('print-preview-destination-dialog');
+        if (destinationDialog && destinationDialog.isOpen()) {
+          this.destinationStore.startLoadCloudDestinations();
+          if (this.activeUser) {
+            this.invitationStore.startLoadingInvitations(this.activeUser);
+          }
+        } else {
+          // Only try to load the docs destination for now. If this request
+          // succeeds, it will trigger a transition to SIGNED_IN, and we can
+          // load the remaining destinations.
+          this.destinationStore.startLoadCookieDestination(
+              print_preview.Destination.GooglePromotedId.DOCS);
+        }
+        break;
+      case print_preview.CloudPrintState.SIGNED_IN:
+        // Load docs, in case sign in was triggered by something else.
+        this.destinationStore.startLoadCookieDestination(
+            print_preview.Destination.GooglePromotedId.DOCS);
+        // Load any recent cloud destinations for the dropdown.
+        this.recentDestinations.forEach(destination => {
+          if (destination.origin === print_preview.DestinationOrigin.COOKIES &&
+              (destination.account === this.activeUser ||
+               destination.account === '')) {
+            this.destinationStore.startLoadCookieDestination(destination.id);
+          }
+        });
+        break;
+      default:
+        break;
     }
   },
 
-  /**
-   * @return {boolean} Whether to show the spinner.
-   * @private
-   */
-  shouldShowSpinner_: function() {
-    return this.loadingDestination_ && !this.noDestinationsFound;
+  // TODO (rbpotter): Clean up the updateShouldShowSpinner_ observer so that it
+  // is a multiple property observer instead of registered twice once Polymer 1
+  // support in Print Preview is dropped. It is currently registered twice to
+  // allow it to be called when |destination| is undefined.
+  /** @private */
+  updateShouldShowSpinner_: function() {
+    this.shouldShowSpinner_ = !this.destination && !this.noDestinationsFound;
   },
 
   /**
@@ -183,19 +202,6 @@ Polymer({
     return this.destination.shouldShowInvalidCertificateError ?
         this.i18n('noLongerSupportedFragment') :
         this.destination.connectionStatusText;
-  },
-
-  /** @private */
-  loadDropdownCloudDestinations_: function() {
-    this.destinationStore.startLoadCookieDestination(
-        print_preview.Destination.GooglePromotedId.DOCS);
-    this.recentDestinations.forEach(destination => {
-      if (destination.origin === print_preview.DestinationOrigin.COOKIES &&
-          (destination.account === this.activeUser ||
-           destination.account === '')) {
-        this.destinationStore.startLoadCookieDestination(destination.id);
-      }
-    });
   },
 
   /**
@@ -226,8 +232,8 @@ Polymer({
   },
 
   /** @private */
-  onLoadingDestinationChange_: function() {
-    if (this.loadingDestination_) {
+  onShouldShowSpinnerChange_: function() {
+    if (this.shouldShowSpinner_ || this.noDestinationsFound) {
       return;
     }
 
