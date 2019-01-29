@@ -49,6 +49,14 @@ const int kPingChromeTimeoutSeconds = 60;
 
 }  // namespace
 
+// The NSApplication for app shims is a vanilla NSApplication, but sub-class it
+// so that we can DCHECK that we know precisely when it is initialized.
+@interface AppShimApplication : NSApplication
+@end
+
+@implementation AppShimApplication
+@end
+
 // A ReplyEventHandler is a helper class to send an Apple Event to a process
 // and call a callback when the reply returns.
 //
@@ -165,6 +173,12 @@ __attribute__((visibility("default"))) int ChromeAppModeStart_v5(
 
 }  // extern "C"
 
+void PostRepeatingDelayedTask() {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&PostRepeatingDelayedTask),
+      base::TimeDelta::FromDays(1));
+}
+
 int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
   base::CommandLine::Init(info->argc, info->argv);
 
@@ -254,10 +268,23 @@ int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
       pid = [[existing_chrome objectAtIndex:0] processIdentifier];
   }
 
+  // Initialize the NSApplication (and ensure that it was not previously
+  // initialized).
+  [AppShimApplication sharedApplication];
+  CHECK([NSApp isKindOfClass:[AppShimApplication class]]);
+
   base::MessageLoopForUI main_message_loop;
   ui::WindowResizeHelperMac::Get()->Init(main_message_loop.task_runner());
   base::PlatformThread::SetName("CrAppShimMain");
   AppShimController controller(info);
+
+  // TODO(https://crbug.com/925998): This workaround ensures that there is
+  // always delayed work enqueued. If there is ever not enqueued delayed work,
+  // then NSMenus and NSAlerts can start misbehaving (see
+  // https://crbug.com/920795 for examples). This workaround is not an
+  // appropriate solution to the problem, and should be replaced by a fix in
+  // the relevant message pump code.
+  PostRepeatingDelayedTask();
 
   // In tests, launching Chrome does nothing, and we won't get a ping response,
   // so just assume the socket exists.
