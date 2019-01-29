@@ -194,17 +194,15 @@ Version OSInfo::Kernel32Version() const {
 // kernel32 will still be the "real" version.
 base::Version OSInfo::Kernel32BaseVersion() const {
   static const base::NoDestructor<base::Version> version([] {
-    std::unique_ptr<FileVersionInfoWin> file_version_info(
-        static_cast<FileVersionInfoWin*>(
-            FileVersionInfoWin::CreateFileVersionInfo(
-                base::FilePath(FILE_PATH_LITERAL("kernel32.dll")))));
+    std::unique_ptr<FileVersionInfoWin> file_version_info =
+        FileVersionInfoWin::CreateFileVersionInfoWin(
+            base::FilePath(FILE_PATH_LITERAL("kernel32.dll")));
     if (!file_version_info) {
       // crbug.com/912061: on some systems it seems kernel32.dll might be
       // corrupted or not in a state to get version info. In this case try
       // kernelbase.dll as a fallback.
-      file_version_info.reset(static_cast<FileVersionInfoWin*>(
-          FileVersionInfoWin::CreateFileVersionInfo(
-              base::FilePath(FILE_PATH_LITERAL("kernelbase.dll")))));
+      file_version_info = FileVersionInfoWin::CreateFileVersionInfoWin(
+          base::FilePath(FILE_PATH_LITERAL("kernelbase.dll")));
     }
     CHECK(file_version_info);
     const int major =

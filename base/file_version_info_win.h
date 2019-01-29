@@ -53,6 +53,10 @@ class BASE_EXPORT FileVersionInfoWin : public FileVersionInfo {
   // Get the fixed file info if it exists. Otherwise NULL
   const VS_FIXEDFILEINFO* fixed_file_info() const { return fixed_file_info_; }
 
+  // Behaves like CreateFileVersionInfo, but returns a FileVersionInfoWin.
+  static std::unique_ptr<FileVersionInfoWin> CreateFileVersionInfoWin(
+      const base::FilePath& file_path);
+
  private:
   friend FileVersionInfo;
 

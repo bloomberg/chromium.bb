@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/resource_util.h"
@@ -49,8 +50,8 @@ VS_FIXEDFILEINFO* GetVsFixedFileInfo(const void* data) {
 FileVersionInfoWin::~FileVersionInfoWin() = default;
 
 // static
-FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForModule(
-    HMODULE module) {
+std::unique_ptr<FileVersionInfo>
+FileVersionInfo::CreateFileVersionInfoForModule(HMODULE module) {
   void* data;
   size_t version_info_length;
   const bool has_version_resource = base::win::GetResourceFromModule(
@@ -62,13 +63,19 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForModule(
   if (!translate)
     return nullptr;
 
-  return new FileVersionInfoWin(data, translate->language,
-                                translate->code_page);
+  return base::WrapUnique(
+      new FileVersionInfoWin(data, translate->language, translate->code_page));
 }
 
 // static
-FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
+std::unique_ptr<FileVersionInfo> FileVersionInfo::CreateFileVersionInfo(
     const FilePath& file_path) {
+  return FileVersionInfoWin::CreateFileVersionInfoWin(file_path);
+}
+
+// static
+std::unique_ptr<FileVersionInfoWin>
+FileVersionInfoWin::CreateFileVersionInfoWin(const FilePath& file_path) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   DWORD dummy;
@@ -86,8 +93,8 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
   if (!translate)
     return nullptr;
 
-  return new FileVersionInfoWin(std::move(data), translate->language,
-                                translate->code_page);
+  return base::WrapUnique(new FileVersionInfoWin(
+      std::move(data), translate->language, translate->code_page));
 }
 
 base::string16 FileVersionInfoWin::company_name() {

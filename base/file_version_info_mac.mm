@@ -20,16 +20,17 @@ FileVersionInfoMac::FileVersionInfoMac(NSBundle *bundle)
 FileVersionInfoMac::~FileVersionInfoMac() {}
 
 // static
-FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForCurrentModule() {
+std::unique_ptr<FileVersionInfo>
+FileVersionInfo::CreateFileVersionInfoForCurrentModule() {
   return CreateFileVersionInfo(base::mac::FrameworkBundlePath());
 }
 
 // static
-FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
+std::unique_ptr<FileVersionInfo> FileVersionInfo::CreateFileVersionInfo(
     const base::FilePath& file_path) {
   NSString* path = base::SysUTF8ToNSString(file_path.value());
   NSBundle* bundle = [NSBundle bundleWithPath:path];
-  return new FileVersionInfoMac(bundle);
+  return std::make_unique<FileVersionInfoMac>(bundle);
 }
 
 base::string16 FileVersionInfoMac::company_name() {
