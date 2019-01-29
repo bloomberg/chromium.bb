@@ -191,8 +191,8 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
 
-  // Show or hide the mask and shadow on this window item.
-  void UpdateMaskAndShadow(bool show);
+  // Updates the mask and shadow on this overview window item.
+  void UpdateMaskAndShadow();
 
   // Called when the starting animation is completed, or called immediately
   // if there was no starting animation.
@@ -335,6 +335,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // These windows should not be used in calculations for
   // OverviewGrid::PositionWindows.
   bool animating_to_close_ = false;
+
+  // True if this overview item is currently being dragged around.
+  bool is_being_dragged_ = false;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

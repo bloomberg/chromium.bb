@@ -188,6 +188,7 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
   if (null_targeter_ == window_->targeter())
     window_->SetEventTargeter(std::move(original_targeter_));
 
+  UpdateMask(/*show=*/false);
   StopObservingImplicitAnimations();
 }
 
@@ -257,11 +258,6 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
     ScopedAnimationSettings* animation_settings) {
   if (animation_type == OVERVIEW_ANIMATION_NONE)
     return;
-
-  // Remove the mask before animating because masks affect animation
-  // performance. Observe the animation and add the mask after animating if the
-  // animation type is layouting selector items during overview.
-  selector_item_->UpdateMaskAndShadow(/*show=*/false);
 
   for (auto* window : wm::GetTransientTreeIterator(GetOverviewWindow())) {
     auto settings = std::make_unique<ScopedOverviewAnimationSettings>(
@@ -512,8 +508,15 @@ void ScopedOverviewTransformWindow::UpdateMinimizedWidget() {
   minimized_widget_->SetContentsView(preview_view);
 }
 
+void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
+    ui::LayerAnimationSequence* sequence) {
+  // Remove the mask before animating because masks affect animation
+  // performance. The mask will be added back once the animation is completed.
+  selector_item_->UpdateMaskAndShadow();
+}
+
 void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
-  selector_item_->UpdateMaskAndShadow(/*show=*/true);
+  selector_item_->UpdateMaskAndShadow();
   selector_item_->OnDragAnimationCompleted();
 }
 
@@ -551,6 +554,8 @@ void ScopedOverviewTransformWindow::CreateMirrorWindowForMinimizedState() {
     bounds.Inset(0, 0, 0, inset);
   }
   minimized_widget_->SetBounds(bounds);
+  minimized_widget_->SetVisibilityAnimationTransition(
+      views::Widget::ANIMATE_NONE);
   minimized_widget_->Show();
 
   // Stack the minimized window at the bottom since it is never transformed in

@@ -566,22 +566,15 @@ void OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
     grid->UpdateYPositionAndOpacity(new_y, opacity, work_area, callback);
 }
 
-void OverviewSession::UpdateMaskAndShadow(bool show) {
-  for (auto& grid : grid_list_) {
-    // Don't apply rounded corner mask if the grid has move than 10 windows
-    // because it can push the compositor memory usage to the limit.
-    // TODO(osima): Remove this once new rounded corner impl is available.
-    // (crbug.com/903486)
-    if (show && grid->window_list().size() > 10)
-      continue;
+void OverviewSession::UpdateMaskAndShadow() {
+  for (auto& grid : grid_list_)
     for (auto& window : grid->window_list())
-      window->UpdateMaskAndShadow(show);
-  }
+      window->UpdateMaskAndShadow();
 }
 
 void OverviewSession::OnStartingAnimationComplete(bool canceled) {
   if (!canceled) {
-    UpdateMaskAndShadow(!canceled);
+    UpdateMaskAndShadow();
     if (overview_focus_widget_)
       overview_focus_widget_->Show();
     for (auto& grid : grid_list_)

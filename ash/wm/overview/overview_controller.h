@@ -61,6 +61,9 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // if device is not currently in overview mode.
   void OnOverviewButtonTrayLongPressed(const gfx::Point& event_location);
 
+  // Returns true if we're in start-overview animation.
+  bool IsInStartAnimation();
+
   // Gets the windows list that are shown in the overview windows grids if the
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTesting();
