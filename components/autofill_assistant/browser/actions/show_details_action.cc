@@ -26,9 +26,11 @@ ShowDetailsAction::~ShowDetailsAction() {}
 
 void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
                                               ProcessActionCallback callback) {
+  callback_ = std::move(callback);
+
   if (!proto_.show_details().has_details()) {
     delegate->ClearDetails();
-    OnActionProcessed(std::move(callback), ACTION_APPLIED);
+    OnActionProcessed(ACTION_APPLIED);
     return;
   }
 
@@ -38,7 +40,7 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
   delegate->SetDetails(details);
 
   if (!details.changes.user_approval_required()) {
-    OnActionProcessed(std::move(callback), ACTION_APPLIED);
+    OnActionProcessed(ACTION_APPLIED);
     return;
   }
 
@@ -56,7 +58,7 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
   chips->back().type = Chip::Type::BUTTON_FILLED_BLUE;
   chips->back().callback = base::BindOnce(
       &ShowDetailsAction::OnUserResponse, weak_ptr_factory_.GetWeakPtr(),
-      std::move(callback), base::Unretained(delegate), previous_status_message,
+      base::Unretained(delegate), previous_status_message,
       /* success= */ true);
 
   // Go back button.
@@ -66,20 +68,19 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
   chips->back().type = Chip::Type::BUTTON_TEXT;
   chips->back().callback = base::BindOnce(
       &ShowDetailsAction::OnUserResponse, weak_ptr_factory_.GetWeakPtr(),
-      std::move(callback), base::Unretained(delegate), previous_status_message,
+      base::Unretained(delegate), previous_status_message,
       /* success= */ false);
 
   delegate->Prompt(std::move(chips));
 }
 
 void ShowDetailsAction::OnUserResponse(
-    ProcessActionCallback callback,
     ActionDelegate* delegate,
     const std::string& previous_status_message,
     bool can_continue) {
   if (!can_continue) {
     delegate->Close();
-    OnActionProcessed(std::move(callback), MANUAL_FALLBACK);
+    OnActionProcessed(MANUAL_FALLBACK);
   } else {
     // Same details, without highlights.
     Details details;
@@ -87,13 +88,14 @@ void ShowDetailsAction::OnUserResponse(
     delegate->SetDetails(details);
     // Restore status message
     delegate->SetStatusMessage(previous_status_message);
-    OnActionProcessed(std::move(callback), ACTION_APPLIED);
+    OnActionProcessed(ACTION_APPLIED);
   }
 }
 
-void ShowDetailsAction::OnActionProcessed(ProcessActionCallback callback,
-                                          ProcessedActionStatusProto status) {
+void ShowDetailsAction::OnActionProcessed(ProcessedActionStatusProto status) {
+  DCHECK(callback_);
+
   UpdateProcessedAction(status);
-  std::move(callback).Run(std::move(processed_action_proto_));
+  std::move(callback_).Run(std::move(processed_action_proto_));
 }
 }  // namespace autofill_assistant

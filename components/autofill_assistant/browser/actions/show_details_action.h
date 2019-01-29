@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
@@ -22,13 +23,12 @@ class ShowDetailsAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
-  void OnUserResponse(ProcessActionCallback callback,
-                      ActionDelegate* delegate,
+  void OnUserResponse(ActionDelegate* delegate,
                       const std::string& old_status_message,
                       bool can_continue);
-  void OnActionProcessed(ProcessActionCallback callback,
-                         ProcessedActionStatusProto status);
+  void OnActionProcessed(ProcessedActionStatusProto status);
 
+  ProcessActionCallback callback_;
   base::WeakPtrFactory<ShowDetailsAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowDetailsAction);
