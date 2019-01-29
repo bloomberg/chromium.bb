@@ -20,6 +20,7 @@ source_set("infobars") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/infobars/presentation",
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/translate",
