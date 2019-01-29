@@ -101,6 +101,8 @@ void CrostiniRemover::StopConciergeFinished(bool is_successful) {
       CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
     profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
     profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
+    profile_->GetPrefs()->Set(prefs::kCrostiniContainers,
+                              base::Value(base::Value::Type::LIST));
   }
   std::move(callback_).Run(CrostiniResult::SUCCESS);
 }

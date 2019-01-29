@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -406,6 +408,19 @@ bool IsUnaffiliatedCrostiniAllowedByPolicy() {
   }
   // If device policy is not set, allow Crostini.
   return true;
+}
+
+void AddNewLxdContainerToPrefs(Profile* profile,
+                               std::string vm_name,
+                               std::string container_name) {
+  auto* pref_service = profile->GetPrefs();
+
+  base::Value new_container(base::Value::Type::DICTIONARY);
+  new_container.SetKey("vm_name", base::Value(vm_name));
+  new_container.SetKey("container_name", base::Value(container_name));
+
+  ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
+  updater->GetList().emplace_back(std::move(new_container));
 }
 
 }  // namespace crostini

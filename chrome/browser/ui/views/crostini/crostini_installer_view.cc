@@ -149,6 +149,13 @@ bool CrostiniInstallerView::Accept() {
   UpdateState(State::INSTALL_START);
   profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
 
+  // The default value of kCrostiniContainers is set to migrate existing
+  // crostini users who don't have the pref set. If crostini is being installed,
+  // then we know the user must not actually have any containers yet, so we set
+  // this pref to the empty list.
+  profile_->GetPrefs()->Set(crostini::prefs::kCrostiniContainers,
+                            base::Value(base::Value::Type::LIST));
+
   progress_bar_->SetVisible(true);
 
   // |learn_more_link_| should only be present in State::PROMPT.

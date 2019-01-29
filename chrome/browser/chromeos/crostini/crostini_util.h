@@ -139,6 +139,11 @@ constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 // policy.
 bool IsUnaffiliatedCrostiniAllowedByPolicy();
 
+// Add a newly created LXD container to the kCrostiniContainers pref
+void AddNewLxdContainerToPrefs(Profile* profile,
+                               std::string vm_name,
+                               std::string container_name);
+
 }  // namespace crostini
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
