@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -58,6 +59,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     /**
      * Test for retry() with shipping address errors.
      */
+    @DisabledTest(message = "crbug.com/926252")
     @Test
     @MediumTest
     @Feature({"Payments"})
