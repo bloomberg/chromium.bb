@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -40,9 +39,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
@@ -273,39 +272,34 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 // to |AccountManager|. The objective is to migrate the account names only. We
 // cannot migrate any credentials (cookies).
 class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
-                                     GaiaCookieManagerService::Observer {
+                                     identity::IdentityManager::Observer {
  public:
-  ContentAreaAccountsMigration(
-      AccountManager* account_manager,
-      identity::IdentityManager* identity_manager,
-      GaiaCookieManagerService* gaia_cookie_manager_service)
+  ContentAreaAccountsMigration(AccountManager* account_manager,
+                               identity::IdentityManager* identity_manager)
       : AccountMigrationBaseStep(kContentAreaAccountsMigration,
                                  account_manager,
                                  identity_manager),
-        gaia_cookie_manager_service_(gaia_cookie_manager_service) {}
+        identity_manager_(identity_manager) {}
   ~ContentAreaAccountsMigration() override {
-    gaia_cookie_manager_service_->RemoveObserver(this);
+    identity_manager_->RemoveObserver(this);
   }
 
  private:
   void StartMigration() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    std::vector<gaia::ListedAccount> signed_in_content_area_accounts;
-    std::vector<gaia::ListedAccount> signed_out_content_area_accounts;
-    gaia_cookie_manager_service_->AddObserver(this);
-    if (gaia_cookie_manager_service_->ListAccounts(
-            &signed_in_content_area_accounts,
-            &signed_out_content_area_accounts)) {
-      OnGaiaAccountsInCookieUpdated(
-          signed_in_content_area_accounts, signed_out_content_area_accounts,
+    identity_manager_->AddObserver(this);
+    identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+        identity_manager_->GetAccountsInCookieJar();
+    if (accounts_in_cookie_jar_info.accounts_are_fresh) {
+      OnAccountsInCookieUpdated(
+          accounts_in_cookie_jar_info,
           GoogleServiceAuthError(GoogleServiceAuthError::NONE));
     }
   }
 
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& signed_in_content_area_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_content_area_accounts,
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // We should not have reached here without |OnGetAccounts| having been
@@ -313,10 +307,10 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
     // Furthermore, Account Manager must have been populated with the Device
     // Account before this |Step| is run.
     DCHECK(!IsAccountManagerEmpty());
-    gaia_cookie_manager_service_->RemoveObserver(this);
+    identity_manager_->RemoveObserver(this);
 
-    MigrateAccounts(signed_in_content_area_accounts,
-                    signed_out_content_area_accounts);
+    MigrateAccounts(accounts_in_cookie_jar_info.signed_in_accounts,
+                    accounts_in_cookie_jar_info.signed_out_accounts);
 
     FinishWithSuccess();
   }
@@ -334,8 +328,8 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
     }
   }
 
-  // A non-owning pointer to |GaiaCookieManagerService|.
-  GaiaCookieManagerService* const gaia_cookie_manager_service_;
+  // A non-owning pointer to |IdentityManager|.
+  identity::IdentityManager* const identity_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -524,9 +518,7 @@ void AccountManagerMigrator::AddMigrationSteps() {
       WebDataServiceFactory::GetTokenWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS) /* token_web_data */));
   migration_runner_.AddStep(std::make_unique<ContentAreaAccountsMigration>(
-      account_manager, identity_manager,
-      GaiaCookieManagerServiceFactory::GetForProfile(
-          profile_) /* gaia_cookie_manager_service */));
+      account_manager, identity_manager));
 
   if (arc::IsArcProvisioned(profile_)) {
     // Add a migration step for ARC only if ARC has been provisioned. If ARC has
@@ -610,7 +602,7 @@ AccountManagerMigratorFactory::AccountManagerMigratorFactory()
   // be re-enabled once migration is done.
   DependsOn(AccountReconcilorFactory::GetInstance());
   // For getting Chrome content area accounts.
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 AccountManagerMigratorFactory::~AccountManagerMigratorFactory() = default;
