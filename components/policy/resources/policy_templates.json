@@ -7714,7 +7714,6 @@
       capture only be available to URLs configured in VideoCaptureAllowedUrls.
 
       This policy affects all types of video inputs and not only the built-in camera.''',
-      'arc_support': 'For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.',
     },
     {
       'name': 'VideoCaptureAllowedUrls',
