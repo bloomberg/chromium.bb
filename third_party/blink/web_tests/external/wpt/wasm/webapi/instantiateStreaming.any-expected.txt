@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Empty module without imports argument
+PASS Empty module with undefined imports argument
+PASS Empty module with empty imports argument
+PASS getter order for imports object
+PASS imports
+FAIL No imports promise_test: Unhandled rejection with value: object "TypeError: builder.setTableLength is not a function"
+FAIL exports and imports promise_test: Unhandled rejection with value: object "CompileError: AsyncCompilation: (null): Compiling wasm function "wasm-function[0]" failed: function body must end with "end" opcode @+55"
+PASS stray argument
+Harness: the test ran to completion.
+
