@@ -56,6 +56,7 @@ class ASH_EXPORT ExitWarningHandler {
 
  private:
   friend class AcceleratorControllerTest;
+  friend class OverviewSessionTest;
 
   enum State { IDLE, WAIT_FOR_DOUBLE_PRESS, EXITING };
 
