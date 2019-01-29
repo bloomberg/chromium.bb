@@ -44,6 +44,12 @@ class TextInputClientImpl : public ws::mojom::TextInputClient {
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventPostIMECallback callback) override;
   void EnsureCaretNotInRect(const gfx::Rect& rect) override;
+  void SetEditableSelectionRange(const gfx::Range& range) override;
+  void DeleteRange(const gfx::Range& range) override;
+  void OnInputMethodChanged() override;
+  void ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) override;
+  void ExtendSelectionAndDelete(uint32_t before, uint32_t after) override;
 
   ui::TextInputClient* text_input_client_;
   mojo::Binding<ws::mojom::TextInputClient> binding_;

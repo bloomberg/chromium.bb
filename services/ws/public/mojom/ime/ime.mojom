@@ -237,6 +237,26 @@ interface TextInputClient {
   // and may extend beyond the bounds of this TextInputClient.
   EnsureCaretNotInRect(gfx.mojom.Rect rect);
 
+  // Selects the given UTF-16 based character range. Current composition text
+  // will be confirmed before selecting the range.
+  SetEditableSelectionRange(gfx.mojom.Range range);
+
+  // Deletes contents in the given UTF-16 based character range. Current
+  // composition text will be confirmed before deleting the range.
+  DeleteRange(gfx.mojom.Range range);
+
+  // Called whenever current keyboard layout or input method is changed.
+  OnInputMethodChanged();
+
+  // Called whenever the user requests to change the text direction and layout
+  // alignment of the current text box.
+  ChangeTextDirectionAndLayoutAlignment(
+      mojo_base.mojom.TextDirection direction);
+
+  // Deletes the current selection plus the specified number of characters
+  // before and after the selection or caret.
+  ExtendSelectionAndDelete(uint32 before, uint32 after);
+
   // TODO(moshayedi): Add functions corresponding to ui::TextInputClient for:
   // - Input context information
   // - Document content operations

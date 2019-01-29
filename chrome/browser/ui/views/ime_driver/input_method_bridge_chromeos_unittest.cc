@@ -92,6 +92,12 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
     std::move(callback).Run(false);
   }
   void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
+  void SetEditableSelectionRange(const gfx::Range& range) override {}
+  void DeleteRange(const gfx::Range& range) override {}
+  void OnInputMethodChanged() override {}
+  void ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) override {}
+  void ExtendSelectionAndDelete(uint32_t before, uint32_t after) override {}
 
   mojo::Binding<ws::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;

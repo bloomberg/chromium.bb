@@ -125,15 +125,15 @@ bool RemoteTextInputClient::GetEditableSelectionRange(gfx::Range* range) const {
 }
 
 bool RemoteTextInputClient::SetEditableSelectionRange(const gfx::Range& range) {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  remote_client_->SetEditableSelectionRange(range);
+  // Note that we assume the client side always succeeds.
+  return true;
 }
 
 bool RemoteTextInputClient::DeleteRange(const gfx::Range& range) {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  remote_client_->DeleteRange(range);
+  // Note that we assume the client side always succeeds.
+  return true;
 }
 
 bool RemoteTextInputClient::GetTextFromRange(const gfx::Range& range,
@@ -148,21 +148,19 @@ bool RemoteTextInputClient::GetTextFromRange(const gfx::Range& range,
 }
 
 void RemoteTextInputClient::OnInputMethodChanged() {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
+  remote_client_->OnInputMethodChanged();
 }
 
 bool RemoteTextInputClient::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction) {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  remote_client_->ChangeTextDirectionAndLayoutAlignment(direction);
+  // Note that we assume the client side always succeeds.
+  return true;
 }
 
 void RemoteTextInputClient::ExtendSelectionAndDelete(size_t before,
                                                      size_t after) {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
+  remote_client_->ExtendSelectionAndDelete(before, after);
 }
 
 void RemoteTextInputClient::EnsureCaretNotInRect(const gfx::Rect& rect) {
