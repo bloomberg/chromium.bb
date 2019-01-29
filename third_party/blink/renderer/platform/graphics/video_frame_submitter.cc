@@ -174,8 +174,10 @@ void VideoFrameSubmitter::OnBeginFrame(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
 
+  // Don't call UpdateCurrentFrame() for MISSED BeginFrames. Also don't call it
+  // after StopRendering() has been called (forbidden by API contract).
   viz::BeginFrameAck current_begin_frame_ack(args, false);
-  if (args.type == viz::BeginFrameArgs::MISSED) {
+  if (args.type == viz::BeginFrameArgs::MISSED || !is_rendering_) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;
   }
@@ -199,10 +201,7 @@ void VideoFrameSubmitter::OnBeginFrame(
   //
   // Not submitting a frame when waiting for a previous ack saves memory by
   // not building up unused remote side resources. See https://crbug.com/830828.
-  //
-  // TODO(dalecurtis): Can |is_rendering_| ever be false here? Presumably if
-  // StopRendering() is called above we will not have gotten a BeginFrame.
-  if (!is_rendering_ || waiting_for_compositor_ack_ ||
+  if (waiting_for_compositor_ack_ ||
       !SubmitFrame(current_begin_frame_ack, std::move(video_frame))) {
     compositor_frame_sink_->DidNotProduceFrame(current_begin_frame_ack);
     return;

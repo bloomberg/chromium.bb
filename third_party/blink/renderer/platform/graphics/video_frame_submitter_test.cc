@@ -233,6 +233,56 @@ TEST_F(VideoFrameSubmitterTest, StatRenderingFlipsBits) {
   EXPECT_TRUE(IsRendering());
 }
 
+TEST_F(VideoFrameSubmitterTest, StopRenderingSkipsUpdateCurrentFrame) {
+  EXPECT_FALSE(IsRendering());
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+
+  submitter_->StartRendering();
+
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(IsRendering());
+
+  // OnBeginFrame() submits one frame.
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+      BEGINFRAME_FROM_HERE, now_src_.get());
+  submitter_->OnBeginFrame(args, {});
+  scoped_task_environment_.RunUntilIdle();
+
+  // StopRendering submits one more frame.
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _, _));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+  submitter_->StopRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  // No frames should be produced after StopRendering().
+  EXPECT_CALL(*sink_, DidNotProduceFrame(_));
+  begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
+                                            now_src_.get());
+  submitter_->OnBeginFrame(args, {});
+  scoped_task_environment_.RunUntilIdle();
+}
+
 TEST_F(VideoFrameSubmitterTest, StopUsingProviderNullsProvider) {
   EXPECT_FALSE(IsRendering());
   EXPECT_EQ(video_frame_provider_.get(), GetProvider());
