@@ -1264,14 +1264,108 @@ fileOperationUtil.Error = function(code, data) {
  * "copy-operation-completed" and "delete".
  *
  * TODO(hidehiko): Reorganize the event dispatching mechanism.
- * @constructor
- * @extends {cr.EventTarget}
  */
-fileOperationUtil.EventRouter = function() {
-  this.pendingDeletedEntries_ = {};
-  this.pendingCreatedEntries_ = {};
-  this.entryChangedEventRateLimiter_ = new AsyncUtil.RateLimiter(
-      this.dispatchEntryChangedEvent_.bind(this), 500);
+fileOperationUtil.EventRouter = class extends cr.EventTarget {
+  constructor() {
+    super();
+    this.pendingDeletedEntries_ = {};
+    this.pendingCreatedEntries_ = {};
+    this.entryChangedEventRateLimiter_ = new AsyncUtil.RateLimiter(
+        this.dispatchEntryChangedEvent_.bind(this), 500);
+  }
+
+  /**
+   * Dispatches a simple "copy-progress" event with reason and current
+   * FileOperationManager status. If it is an ERROR event, error should be set.
+   *
+   * @param {fileOperationUtil.EventRouter.EventType} type Event type.
+   * @param {Object} status Current FileOperationManager's status. See also
+   *     FileOperationManager.Task.getStatus().
+   * @param {string} taskId ID of task related with the event.
+   * @param {fileOperationUtil.Error=} opt_error The info for the error. This
+   *     should be set iff the reason is "ERROR".
+   */
+  sendProgressEvent(type, status, taskId, opt_error) {
+    var EventType = fileOperationUtil.EventRouter.EventType;
+    // Before finishing operation, dispatch pending entries-changed events.
+    if (type === EventType.SUCCESS || type === EventType.CANCELED) {
+      this.entryChangedEventRateLimiter_.runImmediately();
+    }
+
+    var event = /** @type {FileOperationProgressEvent} */
+        (new Event('copy-progress'));
+    event.reason = type;
+    event.status = status;
+    event.taskId = taskId;
+    if (opt_error) {
+      event.error = opt_error;
+    }
+    this.dispatchEvent(event);
+  }
+
+  /**
+   * Stores changed (created or deleted) entry temporarily, and maybe dispatch
+   * entries-changed event with stored entries.
+   * @param {util.EntryChangedKind} kind The enum to represent if the entry is
+   *     created or deleted.
+   * @param {Entry} entry The changed entry.
+   */
+  sendEntryChangedEvent(kind, entry) {
+    if (kind === util.EntryChangedKind.DELETED) {
+      this.pendingDeletedEntries_[entry.toURL()] = entry;
+    }
+    if (kind === util.EntryChangedKind.CREATED) {
+      this.pendingCreatedEntries_[entry.toURL()] = entry;
+    }
+
+    this.entryChangedEventRateLimiter_.run();
+  }
+
+  /**
+   * Dispatches an event to notify that entries are changed (created or
+   * deleted).
+   * @private
+   */
+  dispatchEntryChangedEvent_() {
+    var deletedEntries = [];
+    var createdEntries = [];
+    for (var url in this.pendingDeletedEntries_) {
+      deletedEntries.push(this.pendingDeletedEntries_[url]);
+    }
+    for (var url in this.pendingCreatedEntries_) {
+      createdEntries.push(this.pendingCreatedEntries_[url]);
+    }
+    if (deletedEntries.length > 0) {
+      var event = new Event('entries-changed');
+      event.kind = util.EntryChangedKind.DELETED;
+      event.entries = deletedEntries;
+      this.dispatchEvent(event);
+      this.pendingDeletedEntries_ = {};
+    }
+    if (createdEntries.length > 0) {
+      var event = new Event('entries-changed');
+      event.kind = util.EntryChangedKind.CREATED;
+      event.entries = createdEntries;
+      this.dispatchEvent(event);
+      this.pendingCreatedEntries_ = {};
+    }
+  }
+
+  /**
+   * Dispatches an event to notify entries are changed for delete task.
+   *
+   * @param {fileOperationUtil.EventRouter.EventType} reason Event type.
+   * @param {!Object} task Delete task related with the event.
+   */
+  sendDeleteEvent(reason, task) {
+    var event = /** @type {FileOperationProgressEvent} */ (new Event('delete'));
+    event.reason = reason;
+    event.taskId = task.taskId;
+    event.entries = task.entries;
+    event.totalBytes = task.totalBytes;
+    event.processedBytes = task.processedBytes;
+    this.dispatchEvent(event);
+  }
 };
 
 /**
@@ -1284,105 +1378,4 @@ fileOperationUtil.EventRouter.EventType = {
   ERROR: 'ERROR',
   PROGRESS: 'PROGRESS',
   SUCCESS: 'SUCCESS'
-};
-
-/**
- * Extends cr.EventTarget.
- */
-fileOperationUtil.EventRouter.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
- * Dispatches a simple "copy-progress" event with reason and current
- * FileOperationManager status. If it is an ERROR event, error should be set.
- *
- * @param {fileOperationUtil.EventRouter.EventType} type Event type.
- * @param {Object} status Current FileOperationManager's status. See also
- *     FileOperationManager.Task.getStatus().
- * @param {string} taskId ID of task related with the event.
- * @param {fileOperationUtil.Error=} opt_error The info for the error. This
- *     should be set iff the reason is "ERROR".
- */
-fileOperationUtil.EventRouter.prototype.sendProgressEvent = function(
-    type, status, taskId, opt_error) {
-  var EventType = fileOperationUtil.EventRouter.EventType;
-  // Before finishing operation, dispatch pending entries-changed events.
-  if (type === EventType.SUCCESS || type === EventType.CANCELED) {
-    this.entryChangedEventRateLimiter_.runImmediately();
-  }
-
-  var event = /** @type {FileOperationProgressEvent} */
-      (new Event('copy-progress'));
-  event.reason = type;
-  event.status = status;
-  event.taskId = taskId;
-  if (opt_error) {
-    event.error = opt_error;
-  }
-  this.dispatchEvent(event);
-};
-
-/**
- * Stores changed (created or deleted) entry temporarily, and maybe dispatch
- * entries-changed event with stored entries.
- * @param {util.EntryChangedKind} kind The enum to represent if the entry is
- *     created or deleted.
- * @param {Entry} entry The changed entry.
- */
-fileOperationUtil.EventRouter.prototype.sendEntryChangedEvent = function(
-    kind, entry) {
-  if (kind === util.EntryChangedKind.DELETED) {
-    this.pendingDeletedEntries_[entry.toURL()] = entry;
-  }
-  if (kind === util.EntryChangedKind.CREATED) {
-    this.pendingCreatedEntries_[entry.toURL()] = entry;
-  }
-
-  this.entryChangedEventRateLimiter_.run();
-};
-
-/**
- * Dispatches an event to notify that entries are changed (created or deleted).
- * @private
- */
-fileOperationUtil.EventRouter.prototype.dispatchEntryChangedEvent_ =
-    function() {
-  var deletedEntries = [];
-  var createdEntries = [];
-  for (var url in this.pendingDeletedEntries_) {
-    deletedEntries.push(this.pendingDeletedEntries_[url]);
-  }
-  for (var url in this.pendingCreatedEntries_) {
-    createdEntries.push(this.pendingCreatedEntries_[url]);
-  }
-  if (deletedEntries.length > 0) {
-    var event = new Event('entries-changed');
-    event.kind = util.EntryChangedKind.DELETED;
-    event.entries = deletedEntries;
-    this.dispatchEvent(event);
-    this.pendingDeletedEntries_ = {};
-  }
-  if (createdEntries.length > 0) {
-    var event = new Event('entries-changed');
-    event.kind = util.EntryChangedKind.CREATED;
-    event.entries = createdEntries;
-    this.dispatchEvent(event);
-    this.pendingCreatedEntries_ = {};
-  }
-};
-
-/**
- * Dispatches an event to notify entries are changed for delete task.
- *
- * @param {fileOperationUtil.EventRouter.EventType} reason Event type.
- * @param {!Object} task Delete task related with the event.
- */
-fileOperationUtil.EventRouter.prototype.sendDeleteEvent = function(
-    reason, task) {
-  var event = /** @type {FileOperationProgressEvent} */ (new Event('delete'));
-  event.reason = reason;
-  event.taskId = task.taskId;
-  event.entries = task.entries;
-  event.totalBytes = task.totalBytes;
-  event.processedBytes = task.processedBytes;
-  this.dispatchEvent(event);
 };
