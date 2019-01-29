@@ -2544,9 +2544,10 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   if (rd_stats->invalid_rate) return;
   if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
 
-#if 0  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
   if (cpi->sf.inter_mode_rd_model_estimation == 1 &&
-      !tile_data->inter_mode_rd_models[plane_bsize].ready)
+      (tile_data == NULL ||
+       !tile_data->inter_mode_rd_models[plane_bsize].ready))
     return;
 #endif
   (void)tile_data;
@@ -2626,7 +2627,7 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   fprintf(fout, " %g %g %g", model_rate_norm, model_dist_norm,
           model_rdcost_norm);
 
-#if 0  // CONFIG_COLLECT_INTER_MODE_RD_STATS
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
   if (cpi->sf.inter_mode_rd_model_estimation == 1) {
     assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
     const int64_t overall_sse = get_sse(cpi, x);
