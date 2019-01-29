@@ -159,7 +159,7 @@ class DemoSessionMetricsRecorderTest : public AshTestBase {
 
 // Verify samples are correct when one app window is active.
 TEST_F(DemoSessionMetricsRecorderTest, ActiveApp) {
-  auto chrome_app_window =
+  std::unique_ptr<aura::Window> chrome_app_window =
       CreateChromeAppWindow(extension_misc::kHighlightsAppId);
 
   wm::ActivateWindow(chrome_app_window.get());
@@ -175,8 +175,8 @@ TEST_F(DemoSessionMetricsRecorderTest, ActiveApp) {
 
 // Verify samples are correct when multiple browser windows become active.
 TEST_F(DemoSessionMetricsRecorderTest, BrowserWindows) {
-  auto browser_window = CreateBrowserWindow();
-  auto browser_window2 = CreateBrowserWindow();
+  std::unique_ptr<aura::Window> browser_window = CreateBrowserWindow();
+  std::unique_ptr<aura::Window> browser_window2 = CreateBrowserWindow();
 
   // Browser windows should all be treated as the same type.
   wm::ActivateWindow(browser_window.get());
@@ -194,11 +194,13 @@ TEST_F(DemoSessionMetricsRecorderTest, BrowserWindows) {
 
 // Verify samples are correct when multiple windows types become active.
 TEST_F(DemoSessionMetricsRecorderTest, AppTypes) {
-  auto browser_window = CreateBrowserWindow();
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
-  auto hosted_app_browser_window =
+  std::unique_ptr<aura::Window> browser_window = CreateBrowserWindow();
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> hosted_app_browser_window =
       CreateHostedAppBrowserWindow(extension_misc::kYoutubeAppId);
-  auto arc_window = CreateArcWindow("com.google.Photos");
+  std::unique_ptr<aura::Window> arc_window =
+      CreateArcWindow("com.google.Photos");
 
   wm::ActivateWindow(browser_window.get());
   FireTimer();
@@ -239,8 +241,9 @@ TEST_F(DemoSessionMetricsRecorderTest, AppTypes) {
 
 // Verify popup windows are categorized as kOtherWindow.
 TEST_F(DemoSessionMetricsRecorderTest, PopupWindows) {
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
-  auto popup_window = CreatePopupWindow();
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> popup_window = CreatePopupWindow();
 
   wm::ActivateWindow(chrome_app_window.get());
   for (int i = 0; i < 5; i++)
@@ -263,9 +266,9 @@ TEST_F(DemoSessionMetricsRecorderTest, PopupWindows) {
 
 // Verify unknown apps are categorized as "other" Chrome/ARC apps.
 TEST_F(DemoSessionMetricsRecorderTest, OtherApps) {
-  auto chrome_app_window =
+  std::unique_ptr<aura::Window> chrome_app_window =
       CreateChromeAppWindow("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  auto arc_window = CreateArcWindow("com.foo.bar");
+  std::unique_ptr<aura::Window> arc_window = CreateArcWindow("com.foo.bar");
 
   wm::ActivateWindow(chrome_app_window.get());
   FireTimer();
@@ -287,8 +290,10 @@ TEST_F(DemoSessionMetricsRecorderTest, OtherApps) {
 
 // Verify samples are discarded after no user activity.
 TEST_F(DemoSessionMetricsRecorderTest, DiscardAfterInactivity) {
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
-  auto arc_window = CreateChromeAppWindow("com.google.Photos");
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> arc_window =
+      CreateChromeAppWindow("com.google.Photos");
 
   wm::ActivateWindow(chrome_app_window.get());
   for (int i = 0; i < 5; i++)
@@ -312,7 +317,8 @@ TEST_F(DemoSessionMetricsRecorderTest, DiscardAfterInactivity) {
 
 // Verify sample collection resumes after user activity.
 TEST_F(DemoSessionMetricsRecorderTest, ResumeAfterActivity) {
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
 
   wm::ActivateWindow(chrome_app_window.get());
 
@@ -335,8 +341,9 @@ TEST_F(DemoSessionMetricsRecorderTest, ResumeAfterActivity) {
 
 // Verify window activation during idle time doesn't trigger reporting.
 TEST_F(DemoSessionMetricsRecorderTest, ActivateWindowWhenIdle) {
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
-  auto chrome_app_window2 =
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> chrome_app_window2 =
       CreateChromeAppWindow(extension_misc::kGoogleKeepAppId);
 
   wm::ActivateWindow(chrome_app_window.get());
@@ -354,8 +361,10 @@ TEST_F(DemoSessionMetricsRecorderTest, ActivateWindowWhenIdle) {
 }
 
 TEST_F(DemoSessionMetricsRecorderTest, RepeatedUserActivity) {
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
-  auto arc_window = CreateArcWindow("com.google.Photos");
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> arc_window =
+      CreateArcWindow("com.google.Photos");
 
   wm::ActivateWindow(chrome_app_window.get());
 
@@ -385,9 +394,10 @@ TEST_F(DemoSessionMetricsRecorderTest, RepeatedUserActivity) {
 
 // Verify remaining samples are recorded on exit.
 TEST_F(DemoSessionMetricsRecorderTest, RecordOnExit) {
-  auto chrome_app_window =
+  std::unique_ptr<aura::Window> chrome_app_window =
       CreateChromeAppWindow(extension_misc::kGoogleKeepAppId);
-  auto arc_window = CreateArcWindow("com.google.Photos");
+  std::unique_ptr<aura::Window> arc_window =
+      CreateArcWindow("com.google.Photos");
 
   wm::ActivateWindow(chrome_app_window.get());
   for (int i = 0; i < 2; i++)
@@ -410,7 +420,7 @@ TEST_F(DemoSessionMetricsRecorderTest, RecordOnExit) {
 // Verify remaining samples are not recorded on exit because the user became
 // idle.
 TEST_F(DemoSessionMetricsRecorderTest, IgnoreOnIdleExit) {
-  auto chrome_app_window =
+  std::unique_ptr<aura::Window> chrome_app_window =
       CreateChromeAppWindow(extension_misc::kFilesManagerAppId);
 
   wm::ActivateWindow(chrome_app_window.get());
@@ -434,7 +444,7 @@ TEST_F(DemoSessionMetricsRecorderTest, IgnoreOnIdleExit) {
 // Verify remaining samples are not recorded on exit when the user was idle the
 // whole time.
 TEST_F(DemoSessionMetricsRecorderTest, IgnoreOnIdleSession) {
-  auto chrome_app_window =
+  std::unique_ptr<aura::Window> chrome_app_window =
       CreateChromeAppWindow(extension_misc::kHighlightsAppId);
 
   wm::ActivateWindow(chrome_app_window.get());
@@ -449,29 +459,32 @@ TEST_F(DemoSessionMetricsRecorderTest, IgnoreOnIdleSession) {
 TEST_F(DemoSessionMetricsRecorderTest, UniqueAppsLaunchedOnDeletion) {
   // Activate each window twice.  Despite activating each twice,
   // the count should only be incremented once per unique app.
-  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
+  std::unique_ptr<aura::Window> chrome_app_window =
+      CreateChromeAppWindow(extension_misc::kCameraAppId);
   wm::ActivateWindow(chrome_app_window.get());
   wm::DeactivateWindow(chrome_app_window.get());
   wm::ActivateWindow(chrome_app_window.get());
 
-  auto chrome_browser_window =
+  std::unique_ptr<aura::Window> chrome_browser_window =
       CreateChromeAppWindow(extension_misc::kChromeAppId);
   wm::ActivateWindow(chrome_browser_window.get());
   wm::DeactivateWindow(chrome_browser_window.get());
   wm::ActivateWindow(chrome_browser_window.get());
 
-  auto arc_window_1 = CreateArcWindow("com.google.Photos");
+  std::unique_ptr<aura::Window> arc_window_1 =
+      CreateArcWindow("com.google.Photos");
   wm::ActivateWindow(arc_window_1.get());
   wm::DeactivateWindow(arc_window_1.get());
   wm::ActivateWindow(arc_window_1.get());
 
-  auto arc_window_2 = CreateArcWindow("com.google.Maps");
+  std::unique_ptr<aura::Window> arc_window_2 =
+      CreateArcWindow("com.google.Maps");
   wm::ActivateWindow(arc_window_2.get());
   wm::DeactivateWindow(arc_window_2.get());
   wm::ActivateWindow(arc_window_2.get());
 
   // Popup windows shouldn't be counted at all.
-  auto popup_window = CreatePopupWindow();
+  std::unique_ptr<aura::Window> popup_window = CreatePopupWindow();
   wm::ActivateWindow(popup_window.get());
   wm::DeactivateWindow(popup_window.get());
   wm::ActivateWindow(popup_window.get());
@@ -484,7 +497,7 @@ TEST_F(DemoSessionMetricsRecorderTest, UniqueAppsLaunchedOnDeletion) {
 TEST_F(DemoSessionMetricsRecorderTest,
        NoUniqueAppsLaunchedOnMissingArcPackageName) {
   // Create an ARC window with no package name set yet
-  auto arc_window_1 = CreateArcWindow("");
+  std::unique_ptr<aura::Window> arc_window_1 = CreateArcWindow("");
   wm::ActivateWindow(arc_window_1.get());
 
   DeleteMetricsRecorder();
@@ -496,14 +509,15 @@ TEST_F(DemoSessionMetricsRecorderTest,
 TEST_F(DemoSessionMetricsRecorderTest,
        UniqueAppsLaunchedOnDelayedArcPackageName) {
   // Create an ARC window with no package name set yet.
-  auto arc_window_1 = CreateArcWindow("");
+  std::unique_ptr<aura::Window> arc_window_1 = CreateArcWindow("");
   wm::ActivateWindow(arc_window_1.get());
 
   // Set the package name after window creation/activation.
   arc_window_1->SetProperty(kArcPackageNameKey,
                             new std::string("com.google.Photos"));
 
-  auto arc_window_2 = CreateArcWindow("com.google.Maps");
+  std::unique_ptr<aura::Window> arc_window_2 =
+      CreateArcWindow("com.google.Maps");
   wm::ActivateWindow(arc_window_2.get());
 
   DeleteMetricsRecorder();
