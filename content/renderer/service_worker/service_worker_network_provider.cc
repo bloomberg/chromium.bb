@@ -73,8 +73,10 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     should_create_provider = commit_params->should_create_service_worker;
     provider_id = commit_params->service_worker_provider_id;
   } else {
-    // TODO(falken): Investigate if this can just check
-    // WebSecurityOrigin::IsOpaque().
+    // It'd be convenient to check web_frame->GetSecurityOrigin().IsOpaque()
+    // here instead of just looking at the sandbox flags, but
+    // GetSecurityOrigin() crashes because the frame does not yet have a
+    // security context.
     should_create_provider =
         ((web_frame->EffectiveSandboxFlags() &
           blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin);

@@ -26,17 +26,20 @@ class WebServiceWorkerNetworkProviderImplForFrame::NewDocumentObserver
       : RenderFrameObserver(frame), owner_(owner) {}
 
   void DidCreateNewDocument() override {
-#if DCHECK_IS_ON()
+    blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
     blink::WebDocumentLoader* web_loader =
         render_frame()->GetWebFrame()->GetDocumentLoader();
-    WebServiceWorkerNetworkProvider* provider =
-        web_loader->GetServiceWorkerNetworkProvider();
-    DCHECK_EQ(owner_, provider);
-#endif  // DCHECK_IS_ON()
+    DCHECK_EQ(owner_, web_loader->GetServiceWorkerNetworkProvider());
 
-    // TODO(falken): Destroy the ServiceWorkerNetworkProvider if this is an
-    // opaque origin, which can happen if the document was sandboxed by CSP
-    // HTTP response header.
+    if (web_frame->GetSecurityOrigin().IsOpaque()) {
+      // At navigation commit we thought the document was eligible to use
+      // service workers so created the network provider, but it turns out it is
+      // not eligible because it is CSP sandboxed.
+      web_loader->SetServiceWorkerNetworkProvider(
+          ServiceWorkerNetworkProvider::CreateInvalidInstanceForNavigation());
+      // |this| and its owner are destroyed.
+      return;
+    }
 
     owner_->NotifyExecutionReady();
   }
@@ -146,4 +149,5 @@ void WebServiceWorkerNetworkProviderImplForFrame::NotifyExecutionReady() {
   if (provider()->context())
     provider()->context()->NotifyExecutionReady();
 }
+
 }  // namespace content
