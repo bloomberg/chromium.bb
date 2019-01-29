@@ -112,8 +112,6 @@ class CORE_EXPORT EventHandler final
     return mouse_event_manager_->IsMousePositionUnknown();
   }
   void ClearMouseEventManager() const { mouse_event_manager_->Clear(); }
-  void SetCapturingMouseEventsElement(
-      Element*);  // A caller is responsible for resetting capturing node to 0.
 
   WebInputEventResult UpdateDragAndDrop(const WebMouseEvent&, DataTransfer*);
   void CancelDragAndDrop(const WebMouseEvent&, DataTransfer*);
@@ -414,7 +412,6 @@ class CORE_EXPORT EventHandler final
   TaskRunnerTimer<EventHandler> cursor_update_timer_;
 
   Member<Element> capturing_mouse_events_element_;
-  bool event_handler_will_reset_capturing_mouse_events_node_;
 
   // Indicates whether the current widget is capturing mouse input.
   // Only used for local frame root EventHandlers.
