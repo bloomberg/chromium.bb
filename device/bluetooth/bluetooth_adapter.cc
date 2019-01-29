@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"

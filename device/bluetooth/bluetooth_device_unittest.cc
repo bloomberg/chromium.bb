@@ -588,7 +588,7 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // TODO(dougt) As I turn on new platforms for WebBluetooth Scanning,
 // I will relax this #ifdef
 TEST_F(BluetoothTest, DeviceAdvertisementReceived) {

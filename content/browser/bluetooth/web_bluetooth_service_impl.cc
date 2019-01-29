@@ -585,9 +585,8 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
     return;
   }
 
-  if (services_uuid &&
-      !allowed_devices().IsAllowedToAccessService(device_id,
-                                                  services_uuid.value())) {
+  if (services_uuid && !allowed_devices().IsAllowedToAccessService(
+                           device_id, services_uuid.value())) {
     std::move(callback).Run(
         blink::mojom::WebBluetoothResult::NOT_ALLOWED_TO_ACCESS_SERVICE,
         base::nullopt /* service */);
