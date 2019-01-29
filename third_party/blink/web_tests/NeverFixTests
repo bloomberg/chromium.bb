@@ -350,7 +350,9 @@ crbug.com/763610 external/wpt/css/CSS2/cascade [ WontFix ]
 external/wpt/css/css-cascade/revert-val-001.html [ WontFix ]
 
 # These tests require a DRM system that is not available with content_shell.
+external/wpt/encrypted-media/drm-check-encryption-scheme.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-check-initdata-type.https.html [ WontFix ]
+external/wpt/encrypted-media/drm-check-status-for-hdcp.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-events.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-events-session-closed-event.https.html [ WontFix ]
 external/wpt/encrypted-media/drm-expiration.https.html [ WontFix ]
