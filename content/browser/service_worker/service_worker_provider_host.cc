@@ -283,9 +283,14 @@ std::unique_ptr<ServiceWorkerProviderHost> ServiceWorkerProviderHost::Create(
     int process_id,
     blink::mojom::ServiceWorkerProviderHostInfoPtr info,
     base::WeakPtr<ServiceWorkerContextCore> context) {
+  // This function seems to be for legacy purposes. It is a renderer-side
+  // created provider, that will probably never be used and never have a valid
+  // URL.
+  // TODO(falken): Try to remove this code path.
   auto host = base::WrapUnique(
       new ServiceWorkerProviderHost(process_id, std::move(info), context));
-  host->is_execution_ready_ = true;
+  host->TransitionToClientPhase(ClientPhase::kResponseCommitted);
+  host->TransitionToClientPhase(ClientPhase::kExecutionReady);
   return host;
 }
 
@@ -535,28 +540,8 @@ void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
   // SetController message should be sent only for clients.
   DCHECK(IsProviderForClient());
 
-  // The final response hasn't been committed yet, so there's no reason to send
-  // the controller since it can be changed again before the final response.
-  if (!is_execution_ready_) {
-    if (client_type() == blink::mojom::ServiceWorkerClientType::kWindow) {
-      // |this| is hosting a reserved client undergoing navigation. The
-      // controller will be sent on navigation commit. See CommitNavigation in
-      // frame.mojom.
-      DCHECK(!container_.is_bound());
-      return;
-    }
-    DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kSharedWorker,
-              client_type());
-
-    // NetworkService (PlzWorker):
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // When PlzWorker is enabled, the controller will be sent when the
-      // response is committed to the renderer at SharedWorkerHost::Start().
-      return;
-    }
-    // When NetworkService is disabled and the client is for a shared worker,
-    // the controller won't be sent on response commit, so send it here.
-  }
+  if (!IsControllerDecided())
+    return;
 
   SendSetControllerServiceWorker(notify_controllerchange);
 }
@@ -761,32 +746,13 @@ void ServiceWorkerProviderHost::PostMessageToClient(
 }
 
 void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
-  // CountFeature message should be sent only for clients.
+  // CountFeature is a message about the client's controller. It should be sent
+  // only for clients.
   DCHECK(IsProviderForClient());
 
-  // The final response hasn't been committed yet, so there's no reason to send
-  // the use counter since it can be changed again before the final response.
-  if (!is_execution_ready_) {
-    if (client_type() == blink::mojom::ServiceWorkerClientType::kWindow) {
-      // |this| is hosting a reserved client undergoing navigation. The use
-      // counter will be sent correctly in CompleteNavigationInitialized()
-      // later.
-      DCHECK(!container_.is_bound());
-      return;
-    }
-    DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kSharedWorker,
-              client_type());
-
-    // NetworkService (PlzWorker):
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // When PlzWorker is enabled, the use counter will be sent when the
-      // response is committed to the renderer at SharedWorkerHost::Start().
-      // TODO(nhiroki): Send the use counter on starting the shared worker.
-      return;
-    }
-    // When NetworkService is disabled and the client is for a shared worker,
-    // the use counter won't be sent on response commit, so send it here.
-  }
+  // And only when loading finished so the controller is really settled.
+  if (!IsControllerDecided())
+    return;
 
   container_->CountFeature(feature);
 }
@@ -819,7 +785,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   DCHECK_EQ(info_->provider_id, info->provider_id);
   DCHECK_NE(MSG_ROUTING_NONE, info->route_id);
 
-  SetExecutionReady();
+  TransitionToClientPhase(ClientPhase::kResponseCommitted);
 
   // Connect with the blink::mojom::ServiceWorkerContainer on the renderer.
   DCHECK(!container_.is_bound());
@@ -879,6 +845,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
 void ServiceWorkerProviderHost::CompleteSharedWorkerPreparation() {
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
             provider_type());
+  TransitionToClientPhase(ClientPhase::kResponseCommitted);
   SetExecutionReady();
 }
 
@@ -987,6 +954,39 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   container_->SetController(std::move(controller_info), used_features,
                             notify_controllerchange);
+}
+
+bool ServiceWorkerProviderHost::IsControllerDecided() const {
+  DCHECK(IsProviderForClient());
+
+  if (is_response_committed())
+    return true;
+
+  // TODO(falken): This function just becomes |is_response_committed()|
+  // when NetworkService is enabled, so remove/simplify it when
+  // non-NetworkService code is removed.
+
+  switch (client_type()) {
+    case blink::mojom::ServiceWorkerClientType::kWindow:
+      // |this| is hosting a reserved client undergoing navigation. Don't send
+      // the controller since it can be changed again before the final
+      // response. The controller will be sent on navigation commit. See
+      // CommitNavigation in frame.mojom.
+      return false;
+    case blink::mojom::ServiceWorkerClientType::kSharedWorker:
+      // NetworkService (PlzWorker):
+      if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+        // When PlzWorker is enabled, the controller will be sent when the
+        // response is committed to the renderer at SharedWorkerHost::Start().
+        return false;
+      }
+      return true;
+    case blink::mojom::ServiceWorkerClientType::kAll:
+      NOTREACHED();
+  }
+
+  NOTREACHED();
+  return true;
 }
 
 #if DCHECK_IS_ON()
@@ -1293,6 +1293,25 @@ void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
   versions_to_update_.clear();
 }
 
+void ServiceWorkerProviderHost::OnExecutionReady() {
+  if (!IsProviderForClient()) {
+    mojo::ReportBadMessage("SWPH_OER_NOT_CLIENT");
+    return;
+  }
+
+  if (is_execution_ready()) {
+    // We can get here for providers that were created via Create() instead of
+    // being precreated, i.e., shared workers in the non-S13nServiceWorker path
+    // and for renderer-initiated navigations. Just ignore if this is already
+    // execution ready.
+    // TODO(falken): See if this can turn into a ReportBadMessage after the
+    // non-S13nServiceWorker path or Create() is removed.
+    return;
+  }
+
+  SetExecutionReady();
+}
+
 bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
     const GURL& client_url,
     std::string* out_error) const {
@@ -1410,13 +1429,31 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
 
 void ServiceWorkerProviderHost::AddExecutionReadyCallback(
     ExecutionReadyCallback callback) {
-  DCHECK(!is_execution_ready_);
+  DCHECK(!is_execution_ready());
   execution_ready_callbacks_.push_back(std::move(callback));
 }
 
+bool ServiceWorkerProviderHost::is_response_committed() const {
+  DCHECK(IsProviderForClient());
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      return false;
+    case ClientPhase::kResponseCommitted:
+    case ClientPhase::kExecutionReady:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool ServiceWorkerProviderHost::is_execution_ready() const {
+  DCHECK(IsProviderForClient());
+  return client_phase_ == ClientPhase::kExecutionReady;
+}
+
 void ServiceWorkerProviderHost::SetExecutionReady() {
-  DCHECK(!is_execution_ready_);
-  is_execution_ready_ = true;
+  DCHECK(!is_execution_ready());
+  TransitionToClientPhase(ClientPhase::kExecutionReady);
   RunExecutionReadyCallbacks();
 }
 
@@ -1425,6 +1462,23 @@ void ServiceWorkerProviderHost::RunExecutionReadyCallbacks() {
   execution_ready_callbacks_.swap(callbacks);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&RunCallbacks, std::move(callbacks)));
+}
+
+void ServiceWorkerProviderHost::TransitionToClientPhase(ClientPhase new_phase) {
+  if (client_phase_ == new_phase)
+    return;
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      DCHECK_EQ(new_phase, ClientPhase::kResponseCommitted);
+      break;
+    case ClientPhase::kResponseCommitted:
+      DCHECK_EQ(new_phase, ClientPhase::kExecutionReady);
+      break;
+    case ClientPhase::kExecutionReady:
+      NOTREACHED();
+      break;
+  }
+  client_phase_ = new_phase;
 }
 
 }  // namespace content

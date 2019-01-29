@@ -162,6 +162,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // hint to start the service worker update check.
   void DispatchNetworkQuiet();
 
+  // Tells the container host that this context is execution ready:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
+  void NotifyExecutionReady();
+
  private:
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;
   friend class base::RefCountedThreadSafe<ServiceWorkerProviderContext,
@@ -216,6 +220,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // TODO(leonhsl): Integrate ServiceWorkerProviderStateForClient back as this
   // class is only for service worker clients now.
   std::unique_ptr<ServiceWorkerProviderStateForClient> state_for_client_;
+
+  bool sent_execution_ready_ = false;
 
   // NOTE: Add new members to |state_for_client_| if they are relevant only for
   // service worker clients. Not here!

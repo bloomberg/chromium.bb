@@ -4,19 +4,63 @@
 
 #include "content/renderer/service_worker/web_service_worker_network_provider_impl_for_frame.h"
 
+#include <utility>
+
 #include "content/public/common/origin_util.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 
+class WebServiceWorkerNetworkProviderImplForFrame::NewDocumentObserver
+    : public RenderFrameObserver {
+ public:
+  NewDocumentObserver(WebServiceWorkerNetworkProviderImplForFrame* owner,
+                      RenderFrameImpl* frame)
+      : RenderFrameObserver(frame), owner_(owner) {}
+
+  void DidCreateNewDocument() override {
+#if DCHECK_IS_ON()
+    blink::WebDocumentLoader* web_loader =
+        render_frame()->GetWebFrame()->GetDocumentLoader();
+    WebServiceWorkerNetworkProvider* provider =
+        web_loader->GetServiceWorkerNetworkProvider();
+    DCHECK_EQ(owner_, provider);
+#endif  // DCHECK_IS_ON()
+
+    // TODO(falken): Destroy the ServiceWorkerNetworkProvider if this is an
+    // opaque origin, which can happen if the document was sandboxed by CSP
+    // HTTP response header.
+
+    owner_->NotifyExecutionReady();
+  }
+
+  void OnDestruct() override {
+    // Deletes |this|.
+    owner_->observer_.reset();
+  }
+
+ private:
+  WebServiceWorkerNetworkProviderImplForFrame* owner_;
+};
+
 WebServiceWorkerNetworkProviderImplForFrame::
     WebServiceWorkerNetworkProviderImplForFrame(
-        std::unique_ptr<ServiceWorkerNetworkProvider> provider)
-    : WebServiceWorkerNetworkProviderBaseImpl(std::move(provider)) {}
+        std::unique_ptr<ServiceWorkerNetworkProvider> provider,
+        RenderFrameImpl* frame)
+    : WebServiceWorkerNetworkProviderBaseImpl(std::move(provider)) {
+  if (frame)
+    observer_ = std::make_unique<NewDocumentObserver>(this, frame);
+}
+
+WebServiceWorkerNetworkProviderImplForFrame::
+    ~WebServiceWorkerNetworkProviderImplForFrame() = default;
 
 void WebServiceWorkerNetworkProviderImplForFrame::WillSendRequest(
     blink::WebURLRequest& request) {
@@ -98,4 +142,8 @@ void WebServiceWorkerNetworkProviderImplForFrame::DispatchNetworkQuiet() {
   provider()->DispatchNetworkQuiet();
 }
 
+void WebServiceWorkerNetworkProviderImplForFrame::NotifyExecutionReady() {
+  if (provider()->context())
+    provider()->context()->NotifyExecutionReady();
+}
 }  // namespace content

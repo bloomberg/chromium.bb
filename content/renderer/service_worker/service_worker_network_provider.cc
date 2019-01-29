@@ -8,6 +8,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/web_service_worker_network_provider_base_impl.h"
 #include "content/renderer/service_worker/web_service_worker_network_provider_impl_for_frame.h"
@@ -48,14 +49,20 @@ bool IsFrameSecure(blink::WebFrame* frame) {
 
 }  // namespace
 
+std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
+ServiceWorkerNetworkProvider::CreateInvalidInstanceForNavigation() {
+  return std::make_unique<WebServiceWorkerNetworkProviderImplForFrame>(
+      base::WrapUnique(new ServiceWorkerNetworkProvider()), nullptr);
+}
+
 // static
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForNavigation(
-    int route_id,
+    RenderFrameImpl* frame,
     const CommitNavigationParams* commit_params,
-    blink::WebLocalFrame* frame,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
+  blink::WebLocalFrame* web_frame = frame->GetWebFrame();
   // Determine if a ServiceWorkerNetworkProvider should be created and properly
   // initialized for the navigation. A default ServiceWorkerNetworkProvider
   // will always be created since it is expected in a certain number of places,
@@ -66,16 +73,17 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     should_create_provider = commit_params->should_create_service_worker;
     provider_id = commit_params->service_worker_provider_id;
   } else {
+    // TODO(falken): Investigate if this can just check
+    // WebSecurityOrigin::IsOpaque().
     should_create_provider =
-        ((frame->EffectiveSandboxFlags() & blink::WebSandboxFlags::kOrigin) !=
-         blink::WebSandboxFlags::kOrigin);
+        ((web_frame->EffectiveSandboxFlags() &
+          blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin);
   }
 
   // If we shouldn't create a real ServiceWorkerNetworkProvider, return one with
   // an invalid id.
   if (!should_create_provider) {
-    return std::make_unique<WebServiceWorkerNetworkProviderImplForFrame>(
-        base::WrapUnique(new ServiceWorkerNetworkProvider()));
+    return CreateInvalidInstanceForNavigation();
   }
 
   // Otherwise, create the ServiceWorkerNetworkProvider.
@@ -85,7 +93,7 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
   // is_parent_frame_secure to the browser process, so it can determine the
   // context security when deciding whether to allow a service worker to control
   // the document.
-  const bool is_parent_frame_secure = IsFrameSecure(frame->Parent());
+  const bool is_parent_frame_secure = IsFrameSecure(web_frame->Parent());
 
   // If the browser process did not assign a provider id already, assign one
   // now (see class comments for content::ServiceWorkerProviderHost).
@@ -95,11 +103,12 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     provider_id = GetNextProviderId();
 
   auto provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
-      route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
-      provider_id, is_parent_frame_secure, std::move(controller_info),
+      frame->GetRoutingID(),
+      blink::mojom::ServiceWorkerProviderType::kForWindow, provider_id,
+      is_parent_frame_secure, std::move(controller_info),
       std::move(fallback_loader_factory)));
   return std::make_unique<WebServiceWorkerNetworkProviderImplForFrame>(
-      std::move(provider));
+      std::move(provider), frame);
 }
 
 // static
@@ -195,11 +204,20 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       std::move(host_ptr_info), std::move(controller_info),
       std::move(fallback_loader_factory));
 
-  // current() may be null in tests.
   if (ChildThreadImpl::current()) {
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
         &dispatcher_host_);
     dispatcher_host_->OnProviderCreated(std::move(host_info));
+  } else {
+    // current() may be null in tests. Silently drop messages sent over
+    // ServiceWorkerContainerHost since we couldn't set it up correctly due to
+    // this test limitation. This way we don't crash when the associated
+    // interface ptr is used.
+    //
+    // TODO(falken): Just give SWPC a null interface ptr and make the callsites
+    // deal with it. They are supposed to anyway because
+    // OnNetworkProviderDestroyed() can reset the ptr to null at any time.
+    mojo::AssociateWithDisconnectedPipe(host_info->host_request.PassHandle());
   }
 }
 
