@@ -12,6 +12,7 @@
 #include "ash/accelerometer/accelerometer_types.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
@@ -27,6 +28,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -1136,6 +1138,47 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
   EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is an ARC window snapped
+// on the left and the previous window is snapped on the right, then split view
+// is not activated.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveArcLeftSnapPreviousRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  left_window->SetProperty(aura::client::kAppType,
+                           static_cast<int>(AppType::ARC_APP));
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the left,
+// the previous window is an ARC window snapped on the right, and the third
+// window is snapped on the right (just to test that it is ignored after the ARC
+// window), then split view is activated with the active window on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveLeftSnapPreviousArcRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  right_window->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::ARC_APP));
+  std::unique_ptr<aura::Window> extra_right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(right_window.get());
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
 }
 
 // Test that if overview is triggered on entering tablet mode, then the app list

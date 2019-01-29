@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -307,9 +308,11 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   const mojom::WindowStateType active_window_state_type =
       wm::GetWindowState(windows[0])->GetStateType();
 
-  // If the active window is not snapped, then just maximize all windows.
-  if (active_window_state_type != mojom::WindowStateType::LEFT_SNAPPED &&
-      active_window_state_type != mojom::WindowStateType::RIGHT_SNAPPED) {
+  // If the active window is ARC or not snapped, then just maximize all windows.
+  if (static_cast<ash::AppType>(windows[0]->GetProperty(
+          aura::client::kAppType)) == AppType::ARC_APP ||
+      (active_window_state_type != mojom::WindowStateType::LEFT_SNAPPED &&
+       active_window_state_type != mojom::WindowStateType::RIGHT_SNAPPED)) {
     for (auto* window : windows)
       MaximizeAndTrackWindow(window);
     return;
@@ -318,6 +321,9 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
   // The snapped active window will be represented by split view, which will be
   // activated after maximizing all windows. The split view layout is decided
   // here by examining window states before all those states become maximized.
+  const bool prev_win_not_arc =
+      windows.size() > 1u && static_cast<ash::AppType>(windows[1]->GetProperty(
+                                 aura::client::kAppType)) != AppType::ARC_APP;
   SplitViewController::SnapPosition curr_win_snap_pos =
       SplitViewController::NONE;
   SplitViewController::SnapPosition prev_win_snap_pos =
@@ -326,8 +332,8 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
     // The active window snapped on the left shall go there in split view.
     curr_win_snap_pos = SplitViewController::LEFT;
 
-    if (windows.size() > 1u && wm::GetWindowState(windows[1])->GetStateType() ==
-                                   mojom::WindowStateType::RIGHT_SNAPPED) {
+    if (prev_win_not_arc && wm::GetWindowState(windows[1])->GetStateType() ==
+                                mojom::WindowStateType::RIGHT_SNAPPED) {
       // The previous window snapped on the right shall go there in split view.
       prev_win_snap_pos = SplitViewController::RIGHT;
     }
@@ -337,8 +343,8 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
     // The active window snapped on the right shall go there in split view.
     curr_win_snap_pos = SplitViewController::RIGHT;
 
-    if (windows.size() > 1u && wm::GetWindowState(windows[1])->GetStateType() ==
-                                   mojom::WindowStateType::LEFT_SNAPPED) {
+    if (prev_win_not_arc && wm::GetWindowState(windows[1])->GetStateType() ==
+                                mojom::WindowStateType::LEFT_SNAPPED) {
       // The previous window snapped on the left shall go there in split view.
       prev_win_snap_pos = SplitViewController::LEFT;
     }
