@@ -7,14 +7,55 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif  // OS_CHROMEOS
+
 namespace web_app {
 
 constexpr base::FilePath::CharType kWebAppsDirectoryName[] =
     FILE_PATH_LITERAL("WebApps");
 
-bool AllowWebAppInstallation(Profile* profile) {
-  return !profile->IsGuestSession() && !profile->IsOffTheRecord() &&
-         !profile->IsSystemProfile();
+bool AreWebAppsEnabled(Profile* profile) {
+  if (!profile)
+    return false;
+
+  Profile* original_profile = profile->GetOriginalProfile();
+  DCHECK(!original_profile->IsOffTheRecord());
+
+  if (original_profile->IsSystemProfile())
+    return false;
+
+#if defined(OS_CHROMEOS)
+  // Web Apps should not be installed to the ChromeOS system profiles.
+  if (chromeos::ProfileHelper::IsSigninProfile(original_profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(original_profile)) {
+    return false;
+  }
+#endif
+  return true;
+}
+
+bool AreWebAppsUserInstallable(Profile* profile) {
+  return AreWebAppsEnabled(profile) && !profile->IsGuestSession();
+}
+
+content::BrowserContext* GetBrowserContextForWebApps(
+    content::BrowserContext* context) {
+  // Use original profile to create only one KeyedService instance.
+  Profile* original_profile =
+      Profile::FromBrowserContext(context)->GetOriginalProfile();
+  return AreWebAppsEnabled(original_profile) ? original_profile : nullptr;
+}
+
+content::BrowserContext* GetBrowserContextForWebAppMetrics(
+    content::BrowserContext* context) {
+  // Use original profile to create only one KeyedService instance.
+  Profile* original_profile =
+      Profile::FromBrowserContext(context)->GetOriginalProfile();
+  const bool is_web_app_metrics_enabled = AreWebAppsEnabled(original_profile) &&
+                                          !original_profile->IsGuestSession();
+  return is_web_app_metrics_enabled ? original_profile : nullptr;
 }
 
 base::FilePath GetWebAppsDirectory(Profile* profile) {

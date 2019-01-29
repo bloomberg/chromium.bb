@@ -9,8 +9,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -23,10 +25,29 @@ namespace android_sms {
 
 namespace {
 
-bool IsFeatureAllowed(content::BrowserContext* context) {
-  return multidevice_setup::IsFeatureAllowed(
-      multidevice_setup::mojom::Feature::kMessages,
-      Profile::FromBrowserContext(context)->GetPrefs());
+bool ShouldStartAndroidSmsService(Profile* profile) {
+  const bool multidevice_feature_allowed = multidevice_setup::IsFeatureAllowed(
+      multidevice_setup::mojom::Feature::kMessages, profile->GetPrefs());
+
+  const bool android_messages_integration_enabled =
+      base::FeatureList::IsEnabled(
+          chromeos::features::kAndroidMessagesIntegration);
+
+  const bool has_user_for_profile =
+      !!ProfileHelper::Get()->GetUserByProfile(profile);
+
+  return web_app::AreWebAppsEnabled(profile) && !profile->IsGuestSession() &&
+         multidevice_feature_allowed && android_messages_integration_enabled &&
+         has_user_for_profile;
+}
+
+content::BrowserContext* GetBrowserContextForAndroidSms(
+    content::BrowserContext* context) {
+  // Use original profile to create only one KeyedService instance.
+  Profile* original_profile =
+      Profile::FromBrowserContext(context)->GetOriginalProfile();
+  return ShouldStartAndroidSmsService(original_profile) ? original_profile
+                                                        : nullptr;
 }
 
 }  // namespace
@@ -61,15 +82,7 @@ AndroidSmsServiceFactory::~AndroidSmsServiceFactory() = default;
 
 KeyedService* AndroidSmsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!IsFeatureAllowed(context) ||
-      !base::FeatureList::IsEnabled(
-          chromeos::features::kAndroidMessagesIntegration)) {
-    return nullptr;
-  }
-
   Profile* profile = Profile::FromBrowserContext(context);
-  if (ProfileHelper::Get()->GetUserByProfile(profile) == nullptr)
-    return nullptr;
 
   return new AndroidSmsService(
       profile, HostContentSettingsMapFactory::GetForProfile(profile),
@@ -77,6 +90,11 @@ KeyedService* AndroidSmsServiceFactory::BuildServiceInstanceFor(
           profile),
       web_app::WebAppProviderFactory::GetForProfile(profile),
       app_list::AppListSyncableServiceFactory::GetForProfile(profile));
+}
+
+content::BrowserContext* AndroidSmsServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return GetBrowserContextForAndroidSms(context);
 }
 
 bool AndroidSmsServiceFactory::ServiceIsCreatedWithBrowserContext() const {

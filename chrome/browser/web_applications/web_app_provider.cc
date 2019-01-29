@@ -55,7 +55,12 @@ WebAppProvider* WebAppProvider::GetForWebContents(
   return WebAppProvider::Get(profile);
 }
 
-WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {}
+WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
+  DCHECK(AreWebAppsEnabled(profile_));
+  // WebApp System must have only one instance in original profile.
+  // Exclude secondary off-the-record profiles.
+  DCHECK(!profile_->IsOffTheRecord());
+}
 
 WebAppProvider::~WebAppProvider() = default;
 
@@ -73,10 +78,8 @@ void WebAppProvider::Init() {
                               content::Source<Profile>(profile_));
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    if (AllowWebAppInstallation(profile_)) {
-      registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
-                                      weak_ptr_factory_.GetWeakPtr()));
-    }
+    registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
+                                    weak_ptr_factory_.GetWeakPtr()));
   } else {
     system_web_app_manager_->Init();
 
@@ -91,9 +94,6 @@ void WebAppProvider::Init() {
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
-  if (!AllowWebAppInstallation(profile))
-    return;
-
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
   registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
@@ -112,10 +112,8 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(profile);
 
-  if (WebAppPolicyManager::ShouldEnableForProfile(profile)) {
-    web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
-        profile, pending_app_manager_.get());
-  }
+  web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
+      profile, pending_app_manager_.get());
 
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(
       profile, pending_app_manager_.get());

@@ -74,6 +74,7 @@ class WebAppInstallManager final : public InstallManager,
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
+  Profile* profile_;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 

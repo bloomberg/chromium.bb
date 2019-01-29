@@ -173,7 +173,7 @@ class WebAppInstallManagerTest : public WebAppTest {
 };
 
 TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
-  EXPECT_EQ(true, AllowWebAppInstallation(profile()));
+  EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
 
   const GURL url = GURL("https://example.com/path");
   const std::string name = "Name";

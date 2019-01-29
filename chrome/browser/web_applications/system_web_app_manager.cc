@@ -12,14 +12,11 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#endif  // OS_CHROMEOS
 
 namespace web_app {
 
@@ -55,12 +52,8 @@ void SystemWebAppManager::Init() {
 
 // static
 bool SystemWebAppManager::ShouldEnableForProfile(Profile* profile) {
-  bool is_enabled = base::FeatureList::IsEnabled(features::kSystemWebApps);
-#if defined(OS_CHROMEOS)
-  // System Apps should not be installed to the signin profile.
-  is_enabled = is_enabled && !chromeos::ProfileHelper::IsSigninProfile(profile);
-#endif
-  return is_enabled;
+  return AreWebAppsEnabled(profile) &&
+         base::FeatureList::IsEnabled(features::kSystemWebApps);
 }
 
 void SystemWebAppManager::StartAppInstallation() {
