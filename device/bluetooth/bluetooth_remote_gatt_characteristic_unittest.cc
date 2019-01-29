@@ -3743,17 +3743,17 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothRemoteGattCharacteristicTestWinrt,
     ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothRemoteGattCharacteristicTestWin32Only,
     ::testing::Values(false));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BluetoothRemoteGattCharacteristicTestWinrtOnly,
     ::testing::Values(true));
