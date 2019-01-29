@@ -2156,13 +2156,16 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
 }
 
 TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
+  // Service workers require https.
+  GURL example_url("https://example.com");
+
   blink::WebServiceWorkerNetworkProvider* webprovider = nullptr;
   ServiceWorkerNetworkProvider* provider = nullptr;
   RequestExtraData* extra_data = nullptr;
 
   // Make sure each new document has a new provider and
   // that the main request is tagged with the provider's id.
-  LoadHTML("<b>A Document</b>");
+  LoadHTMLWithUrlOverride("<b>A Document</b>", example_url.spec().c_str());
   ASSERT_TRUE(GetMainFrame()->GetDocumentLoader());
   webprovider =
       GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
@@ -2172,7 +2175,8 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   ASSERT_TRUE(provider);
   int provider1_id = provider->provider_id();
 
-  LoadHTML("<b>New Document B Goes Here</b>");
+  LoadHTMLWithUrlOverride("<b>New Document B Goes Here</b>",
+                          example_url.spec().c_str());
   ASSERT_TRUE(GetMainFrame()->GetDocumentLoader());
   webprovider =
       GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider();

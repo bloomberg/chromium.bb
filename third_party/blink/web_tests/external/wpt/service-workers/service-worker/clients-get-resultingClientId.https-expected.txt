@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS global setup
-PASS get(resultingClientId) for same-origin document
-PASS get(resultingClientId) on cross-origin redirect
-FAIL get(resultingClientId) for document sandboxed by CSP header assert_equals: promiseValue expected "undefinedValue" but got "client"
-PASS get(resultingClientId) for document sandboxed by CSP header with allow-same-origin
-PASS global cleanup
-Harness: the test ran to completion.
-
