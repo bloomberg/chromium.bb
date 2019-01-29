@@ -64,14 +64,9 @@ public class NativeUiUtils {
     // scroll actions have been processed. The +2 comes from scrolls always having a touch down and
     // up action with NUM_STEPS_*_SCROLL additional actions in between.
     public static final int NUM_FRAMES_NON_FLING_SCROLL = NUM_STEPS_NON_FLING_SCROLL + 2;
-    // The number of frames after queueing a fling scroll before we can be sure that all the scroll
-    // actions have been processed AND we should still be scrolling due to the fling. The 10 is
-    // arbitrary, but 1/6 of a second is a reasonable amount of time to wait and still expect to be
-    // flinging, and is stable.
-    public static final int NUM_FRAMES_FLING_SCROLL = NUM_STEPS_FLING_SCROLL + 2 + 10;
     // Arbitrary number of frames to wait before sending a touch up event in order to ensure that a
     // fast scroll does not become a fling scroll.
-    public static final int NUM_FRAMES_DELAY_TO_PREVENT_FLING = 60;
+    public static final int NUM_FRAMES_DELAY_TO_PREVENT_FLING = 30;
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY = "_WebXrOverlay";
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
