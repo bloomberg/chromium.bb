@@ -568,6 +568,9 @@ void Element::ScrollIntoViewNoVisualUpdate(
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
+  if (DisplayLockPreventsActivation())
+    return;
+
   ScrollBehavior behavior = (options->behavior() == "smooth")
                                 ? kScrollBehaviorSmooth
                                 : kScrollBehaviorAuto;
@@ -3335,7 +3338,7 @@ bool Element::IsKeyboardFocusable() const {
          ((SupportsFocus() && tabIndex() >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
            IsScrollableNode(this))) &&
-         !IsDisplayLockedForFocus();
+         !DisplayLockPreventsActivation();
 }
 
 bool Element::IsMouseFocusable() const {
@@ -3344,10 +3347,10 @@ bool Element::IsMouseFocusable() const {
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
-         !IsDisplayLockedForFocus();
+         !DisplayLockPreventsActivation();
 }
 
-bool Element::IsDisplayLockedForFocus() const {
+bool Element::DisplayLockPreventsActivation() const {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
     return false;
   // TODO(vmpstr): Similar to Document::EnsurePaintLocationDataValidForNode(),
