@@ -1394,6 +1394,11 @@
         ],
       },
       # chromium.fyi
+      'fuchsia-fyi-x64-rel': {
+        'args': [
+          '--platform=fuchsia',
+        ],
+      },
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
