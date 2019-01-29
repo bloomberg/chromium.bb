@@ -17,6 +17,9 @@ REM Use call to invoke python script here, because we use python via python.bat.
 
 exit /b
 :buildfailure
+
+@call python.bat %~dp0ninjalog_uploader_wrapper.py --cmdline %*
+
 REM Return an error code of 1 so that if a developer types:
 REM "autoninja chrome && chrome" then chrome won't run if the build fails.
 cmd /c exit 1
