@@ -2578,7 +2578,6 @@ void LocalFrameView::PaintTree() {
 
       frame_->GetPage()->GetValidationMessageClient().PaintOverlay(
           graphics_context);
-      frame_->PaintFrameColorOverlay(graphics_context);
       ForAllNonThrottledLocalFrameViews(
           [&graphics_context](LocalFrameView& view) {
             view.frame_->PaintFrameColorOverlay(graphics_context);
@@ -2627,7 +2626,6 @@ void LocalFrameView::PaintTree() {
     frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
 
     frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
-    frame_->PaintFrameColorOverlay();
     ForAllNonThrottledLocalFrameViews(
         [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
 
