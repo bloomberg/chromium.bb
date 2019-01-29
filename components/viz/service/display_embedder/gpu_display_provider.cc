@@ -150,7 +150,14 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
       if (IsFatalOrSurfaceFailure(context_result)) {
 #if defined(OS_ANDROID)
-        display_client->OnFatalOrSurfaceContextCreationFailure(context_result);
+        // Ignore context creation failures if exiting for lost context. We are
+        // about to lose the GPU process and Viz will re-create the context at
+        // that point.
+        if (!gpu_service_impl_->gpu_channel_manager()
+                 ->is_exiting_for_lost_context()) {
+          display_client->OnFatalOrSurfaceContextCreationFailure(
+              context_result);
+        }
 #endif
         gpu_service_impl_->DisableGpuCompositing();
         return nullptr;
