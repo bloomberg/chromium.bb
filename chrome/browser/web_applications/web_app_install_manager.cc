@@ -25,21 +25,22 @@ WebAppInstallManager::WebAppInstallManager(
     Profile* profile,
     std::unique_ptr<InstallFinalizer> install_finalizer)
     : data_retriever_(std::make_unique<WebAppDataRetriever>()),
-      install_finalizer_(std::move(install_finalizer)) {
-  DCHECK(AllowWebAppInstallation(profile));
-}
+      install_finalizer_(std::move(install_finalizer)),
+      profile_(profile) {}
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
 bool WebAppInstallManager::CanInstallWebApp(
     content::WebContents* web_contents) {
-  return IsValidWebAppUrl(web_contents->GetURL());
+  return AreWebAppsUserInstallable(profile_) &&
+         IsValidWebAppUrl(web_contents->GetLastCommittedURL());
 }
 
 void WebAppInstallManager::InstallWebApp(content::WebContents* contents,
                                          bool force_shortcut_app,
                                          OnceInstallCallback install_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(AreWebAppsUserInstallable(profile_));
 
   // Concurrent calls are not allowed.
   DCHECK(!web_contents());

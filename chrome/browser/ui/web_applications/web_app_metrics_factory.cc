@@ -47,8 +47,7 @@ bool WebAppMetricsFactory::ServiceIsCreatedWithBrowserContext() const {
 
 content::BrowserContext* WebAppMetricsFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return AllowWebAppInstallation(profile) ? context : nullptr;
+  return GetBrowserContextForWebAppMetrics(context);
 }
 
 }  //  namespace web_app
