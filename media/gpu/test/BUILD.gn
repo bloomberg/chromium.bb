@@ -161,11 +161,13 @@ if (is_chromeos) {
 static_library("image_processor") {
   testonly = true
   sources = [
+    "image.cc",
+    "image.h",
     "image_processor/image_processor_client.cc",
     "image_processor/image_processor_client.h",
-    "video_image_info.h",
   ]
   deps = [
+    ":render_helpers",
     "//media:test_support",
     "//media/gpu",
     "//testing/gtest",

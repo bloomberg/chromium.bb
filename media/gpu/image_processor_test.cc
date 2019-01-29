@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <tuple>
 
@@ -11,10 +12,12 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/image_processor.h"
+#include "media/gpu/test/image.h"
 #include "media/gpu/test/image_processor/image_processor_client.h"
-#include "media/gpu/test/video_image_info.h"
+#include "media/gpu/test/video_frame_helpers.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -22,44 +25,35 @@
 namespace media {
 namespace {
 
-// I420 formatted 320x192 video frame. (bear)
-// TODO(crbug.com/917951): Dynamically load this info from json file.
-constexpr test::VideoImageInfo kI420Image(
-    FILE_PATH_LITERAL("bear_320x192.i420.yuv"),
-    "962820755c74b28f9385fd67219cc04a",
-    PIXEL_FORMAT_I420,
-    gfx::Size(320, 192));
-
-// NV12 formatted 320x192 video frame. (bear)
-// TODO(crbug.com/917951): Dynamically load this info from json file.
-constexpr test::VideoImageInfo kNV12Image(
-    FILE_PATH_LITERAL("bear_320x192.i420.nv12.yuv"),
-    "ce21986434743d3671056719136d46ff",
-    PIXEL_FORMAT_NV12,
-    gfx::Size(320, 192));
+constexpr const base::FilePath::CharType* kI420Image =
+    FILE_PATH_LITERAL("bear_320x192.i420.yuv");
+constexpr const base::FilePath::CharType* kNV12Image =
+    FILE_PATH_LITERAL("bear_320x192.nv12.yuv");
 
 class ImageProcessorSimpleParamTest
     : public ::testing::Test,
       public ::testing::WithParamInterface<
-          std::tuple<test::VideoImageInfo, test::VideoImageInfo>> {
+          std::tuple<base::FilePath, base::FilePath>> {
  public:
   // TODO(crbug.com/917951): Initialize Ozone once.
   void SetUp() override {}
   void TearDown() override {}
 
   std::unique_ptr<test::ImageProcessorClient> CreateImageProcessorClient(
-      const test::VideoImageInfo& input_image_info,
-      const test::VideoImageInfo& output_image_info) {
+      const test::Image& input_image,
+      const test::Image& output_image) {
     // TODO(crbug.com/917951): Pass VideoFrameProcessor.
-    auto input_config_layout = input_image_info.VideoFrameLayout();
-    auto output_config_layout = output_image_info.VideoFrameLayout();
+    auto input_config_layout = test::CreateVideoFrameLayout(
+        input_image.PixelFormat(), input_image.Size());
+    auto output_config_layout = test::CreateVideoFrameLayout(
+        output_image.PixelFormat(), output_image.Size());
     LOG_ASSERT(input_config_layout);
     LOG_ASSERT(output_config_layout);
     ImageProcessor::PortConfig input_config(*input_config_layout,
-                                            input_image_info.visible_size,
+                                            input_image.Size(),
                                             {VideoFrame::STORAGE_OWNED_MEMORY});
     ImageProcessor::PortConfig output_config(
-        *output_config_layout, output_image_info.visible_size,
+        *output_config_layout, output_image.Size(),
         {VideoFrame::STORAGE_OWNED_MEMORY});
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
@@ -71,12 +65,15 @@ class ImageProcessorSimpleParamTest
 };
 
 TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
-  test::VideoImageInfo input_image_info = std::get<0>(GetParam());
-  test::VideoImageInfo output_image_info = std::get<1>(GetParam());
-  auto ip_client =
-      CreateImageProcessorClient(input_image_info, output_image_info);
+  // Load the test input image. We only need the output image's metadata so we
+  // can compare checksums.
+  test::Image input_image(std::get<0>(GetParam()));
+  test::Image output_image(std::get<1>(GetParam()));
+  ASSERT_TRUE(input_image.Load());
+  ASSERT_TRUE(output_image.LoadMetadata());
 
-  ip_client->Process(input_image_info, output_image_info);
+  auto ip_client = CreateImageProcessorClient(input_image, output_image);
+  ip_client->Process(input_image, output_image);
   EXPECT_TRUE(ip_client->WaitUntilNumImageProcessed(1u));
   EXPECT_EQ(ip_client->GetErrorCount(), 0u);
   EXPECT_EQ(ip_client->GetNumOfProcessedImages(), 1u);
@@ -93,7 +90,7 @@ TEST_P(ImageProcessorSimpleParamTest, ConvertOneTimeFromMemToMem) {
   VideoFrame::HashFrameForTesting(&context, processed_frame);
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
-  std::string expected_md5 = output_image_info.md5sum;
+  std::string expected_md5 = output_image.Checksum();
   std::string computed_md5 = MD5DigestToBase16(digest);
   EXPECT_EQ(expected_md5, computed_md5);
 };

@@ -660,6 +660,7 @@ test("image_processor_test") {
     ":buildflags",
     ":gpu",
     "test:image_processor",
+    "test:render_helpers",
     "//base/test:test_support",
     "//media:test_support",
     "//mojo/core/embedder",
