@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -137,9 +137,9 @@ void ShowUpdateChromeDialogViews(gfx::NativeWindow parent);
 #if defined(TOOLKIT_VIEWS)
 
 // Creates a toolkit-views based LoginHandler (e.g. HTTP-Auth dialog).
-scoped_refptr<LoginHandler> CreateLoginHandlerViews(
+std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback);
 
 // Shows the toolkit-views based BookmarkEditor.

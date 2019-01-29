@@ -17,11 +17,11 @@
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms.
 // static
-scoped_refptr<LoginHandler> LoginHandler::Create(
+std::unique_ptr<LoginHandler> LoginHandler::Create(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback) {
-  return chrome::CreateLoginHandlerViews(auth_info, web_contents_getter,
+  return chrome::CreateLoginHandlerViews(auth_info, web_contents,
                                          std::move(auth_required_callback));
 }
 

@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/login_view.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -28,16 +29,23 @@ namespace {
 // have been called.
 class LoginHandlerViews : public LoginHandler {
  public:
-  LoginHandlerViews(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      LoginAuthRequiredCallback auth_required_callback)
+  LoginHandlerViews(net::AuthChallengeInfo* auth_info,
+                    content::WebContents* web_contents,
+                    LoginAuthRequiredCallback auth_required_callback)
       : LoginHandler(auth_info,
-                     web_contents_getter,
-                     std::move(auth_required_callback)) {
+                     web_contents,
+                     std::move(auth_required_callback)),
+        popunder_preventer_(std::make_unique<PopunderPreventer>(web_contents)) {
     RecordDialogCreation(DialogIdentifier::LOGIN_HANDLER);
   }
 
+  ~LoginHandlerViews() override {
+    // LoginHandler cannot call CloseDialog because the subclass will already
+    // have been destructed.
+    CloseDialog();
+  }
+
+ protected:
   // LoginHandler:
   void BuildViewImpl(const base::string16& authority,
                      const base::string16& explanation,
@@ -45,7 +53,7 @@ class LoginHandlerViews : public LoginHandler {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!dialog_);
 
-    dialog_ = new Dialog(this, GetWebContentsForLogin(), authority, explanation,
+    dialog_ = new Dialog(this, web_contents(), authority, explanation,
                          login_model_data);
   }
 
@@ -55,13 +63,10 @@ class LoginHandlerViews : public LoginHandler {
       dialog_->CloseDialog();
       dialog_ = nullptr;
     }
+    popunder_preventer_ = nullptr;
   }
 
  private:
-  friend class base::RefCountedThreadSafe<LoginHandlerViews>;
-
-  ~LoginHandlerViews() override = default;
-
   void OnDialogDestroyed() { dialog_ = nullptr; }
 
   // The DialogDelegate is a separate object from LoginHandlerViews so it can be
@@ -165,18 +170,19 @@ class LoginHandlerViews : public LoginHandler {
   };
 
   Dialog* dialog_ = nullptr;
+  std::unique_ptr<PopunderPreventer> popunder_preventer_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginHandlerViews);
 };
 
 }  // namespace
 
-scoped_refptr<LoginHandler> CreateLoginHandlerViews(
+std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback) {
-  return base::MakeRefCounted<LoginHandlerViews>(
-      auth_info, web_contents_getter, std::move(auth_required_callback));
+  return std::make_unique<LoginHandlerViews>(auth_info, web_contents,
+                                             std::move(auth_required_callback));
 }
 
 }  // namespace chrome

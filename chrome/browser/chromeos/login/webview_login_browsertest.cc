@@ -955,7 +955,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
         signin::GetAuthFrameWebContents(main_web_contents, gaia_frame_parent_);
     LoginHandler* login_handler =
         content::Details<LoginNotificationDetails>(details)->handler();
-    if (login_handler->GetWebContentsForLogin() != gaia_frame_web_contents)
+    if (login_handler->web_contents() != gaia_frame_web_contents)
       return false;
 
     gaia_frame_login_handler_ = login_handler;

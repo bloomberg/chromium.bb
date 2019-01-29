@@ -20,14 +20,14 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 class LoginInterstitialDelegate;
-class PopunderPreventer;
 
 namespace content {
-class NotificationRegistrar;
 class WebContents;
 }  // namespace content
 
@@ -35,11 +35,10 @@ namespace net {
 class AuthChallengeInfo;
 }  // namespace net
 
-// This is the base implementation for the OS-specific classes that route
-// authentication info to the net::URLRequest that needs it. These functions
-// must be implemented in a thread safe manner.
-class LoginHandler : public content::LoginDelegate,
-                     public content::NotificationObserver {
+// This is the base implementation for the OS-specific classes that prompt for
+// authentication information.
+class LoginHandler : public content::NotificationObserver,
+                     public content::WebContentsObserver {
  public:
   // The purpose of this struct is to enforce that BuildViewImpl receives either
   // both the login model and the observed form, or none. That is a bit spoiled
@@ -56,23 +55,25 @@ class LoginHandler : public content::LoginDelegate,
     const autofill::PasswordForm& form;
   };
 
-  LoginHandler(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      LoginAuthRequiredCallback auth_required_callback);
+  LoginHandler(net::AuthChallengeInfo* auth_info,
+               content::WebContents* web_contents,
+               LoginAuthRequiredCallback auth_required_callback);
+  ~LoginHandler() override;
 
   // Builds the platform specific LoginHandler. Used from within
-  // CreateLoginPrompt() which creates tasks.
-  static scoped_refptr<LoginHandler> Create(
+  // CreateLoginPrompt() which creates tasks. The resulting handler calls
+  // auth_required_callback when credentials are available. If destroyed before
+  // them, the login request is aborted and the callback will not be called. The
+  // callback must remain valid until one of those two events occurs.
+  static std::unique_ptr<LoginHandler> Create(
       net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      content::WebContents* web_contents,
       LoginAuthRequiredCallback auth_required_callback);
 
-  // LoginDelegate implementation:
-  void OnRequestCancelled() override;
-
-  // Returns the WebContents that needs authentication.
-  content::WebContents* GetWebContentsForLogin() const;
+  void Start(const content::GlobalRequestID& request_id,
+             bool is_main_frame,
+             const GURL& request_url,
+             scoped_refptr<net::HttpResponseHeaders> response_headers);
 
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
@@ -94,8 +95,6 @@ class LoginHandler : public content::LoginDelegate,
   const net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
 
  protected:
-  ~LoginHandler() override;
-
   // Implement this to initialize the underlying platform specific view. If
   // |login_model_data| is not null, the contained LoginModel and PasswordForm
   // should be used to register the view with the password manager.
@@ -103,28 +102,11 @@ class LoginHandler : public content::LoginDelegate,
                              const base::string16& explanation,
                              LoginModelData* login_model_data) = 0;
 
-  // Performs necessary cleanup before deletion.
-  void ReleaseSoon();
-
   // Closes the native dialog.
   virtual void CloseDialog() = 0;
 
  private:
-  friend scoped_refptr<LoginHandler> CreateLoginPrompt(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const content::GlobalRequestID& request_id,
-      bool is_request_for_main_frame,
-      const GURL& url,
-      scoped_refptr<net::HttpResponseHeaders> response_headers,
-      LoginAuthRequiredCallback auth_required_callback);
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
-
-  // Starts observing notifications from other LoginHandlers.
-  void AddObservers();
-
-  // Stops observing notifications from other LoginHandlers.
-  void RemoveObservers();
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
@@ -134,7 +116,7 @@ class LoginHandler : public content::LoginDelegate,
                           const base::string16& password);
 
   // Notify observers that authentication is cancelled.
-  void NotifyAuthCancelled(bool cancel_navigation);
+  void NotifyAuthCancelled();
 
   // Returns the PasswordManager for the web contents that needs login.
   password_manager::PasswordManager* GetPasswordManagerForLogin();
@@ -142,23 +124,8 @@ class LoginHandler : public content::LoginDelegate,
   // Returns whether authentication had been handled (SetAuth or CancelAuth).
   bool WasAuthHandled() const;
 
-  // Marks authentication as handled and returns the previous handled
-  // state.
-  bool TestAndSetAuthHandled();
-
-  // Calls SetAuth from the IO loop.
-  void SetAuthDeferred(const base::string16& username,
-                       const base::string16& password);
-
-  // Cancels the auth. If |cancel_navigation| is true, the existing login
-  // interstitial (if any) is closed and the pending navigation is cancelled.
-  void DoCancelAuth(bool cancel_navigation);
-
-  // Calls CancelAuth from the IO loop.
-  void CancelAuthDeferred();
-
   // Closes the view_contents from the UI loop.
-  void CloseContentsDeferred();
+  void CloseContents();
 
   // Get the signon_realm under which this auth info should be stored.
   //
@@ -183,50 +150,22 @@ class LoginHandler : public content::LoginDelegate,
                                base::string16* authority,
                                base::string16* explanation);
 
-  // This callback is run on the UI thread and creates a constrained window with
-  // a LoginView to prompt the user. If the prompt is triggered because of a
-  // cross origin navigation in the main frame, a blank interstitial is first
-  // created which in turn creates the LoginView. Otherwise, a LoginView is
-  // created directly in this callback. In both cases, the response will be sent
-  // to LoginHandler, which then routes it to the net::URLRequest on the I/O
-  // thread.
-  void LoginDialogCallback(
-      const GURL& request_url,
-      const content::GlobalRequestID& request_id,
-      net::AuthChallengeInfo* auth_info,
-      scoped_refptr<net::HttpResponseHeaders> response_headers,
-      bool is_main_frame);
-
-  // Continuation from |LoginDialogCallback()| after any potential interception
-  // from the extensions WebRequest API. If |should_cancel| is |true| the
-  // request is cancelled. Otherwise |credentials| are used if supplied. Finally
-  // if the request is NOT cancelled AND |credentials| is empty, then we'll
-  // actually show a login prompt.
+  // Continuation from |Start| after any potential interception from the
+  // extensions WebRequest API. If |should_cancel| is |true| the request is
+  // cancelled. Otherwise |credentials| are used if supplied. Finally if the
+  // request is NOT cancelled AND |credentials| is empty, then we'll actually
+  // show a login prompt.
   void MaybeSetUpLoginPrompt(
       const GURL& request_url,
-      net::AuthChallengeInfo* auth_info,
       bool is_main_frame,
       const base::Optional<net::AuthCredentials>& credentials,
       bool should_cancel);
 
-  void ShowLoginPrompt(const GURL& request_url,
-                       net::AuthChallengeInfo* auth_info);
+  void ShowLoginPrompt(const GURL& request_url);
 
-  // Use this to build a view with password manager support. |password_manager|
-  // must not be null.
-  void BuildViewWithPasswordManager(
-      const base::string16& authority,
-      const base::string16& explanation,
-      password_manager::PasswordManager* password_manager,
-      const autofill::PasswordForm& observed_form);
-
-  // Use this to build a view without password manager support.
-  void BuildViewWithoutPasswordManager(const base::string16& authority,
-                                       const base::string16& explanation);
-
-  // True if we've handled auth (SetAuth or CancelAuth has been called).
-  bool handled_auth_;
-  mutable base::Lock handled_auth_lock_;
+  void BuildViewAndNotify(const base::string16& authority,
+                          const base::string16& explanation,
+                          LoginModelData* login_model_data);
 
   // Who/where/what asked for the authentication.
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
@@ -236,27 +175,13 @@ class LoginHandler : public content::LoginDelegate,
   // or rejected.  This should only be accessed on the UI loop.
   autofill::PasswordForm password_form_;
 
-  // Cached from the net::URLRequest, in case it goes NULL on us.
-  content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
-
   // Observes other login handlers so this login handler can respond.
-  // This is only accessed on the UI thread.
-  std::unique_ptr<content::NotificationRegistrar> registrar_;
+  content::NotificationRegistrar registrar_;
 
   LoginAuthRequiredCallback auth_required_callback_;
 
   base::WeakPtr<LoginInterstitialDelegate> interstitial_delegate_;
-
-  // Default to |false|. Must be set to |true| anytime the login handler is
-  // shown.
-  bool has_shown_login_handler_;
-
-  // ReleaseSoon() should be called exactly once to destroy the object.
-  bool release_soon_has_been_called_;
-
-#if !defined(OS_ANDROID)
-  std::unique_ptr<PopunderPreventer> popunder_preventer_;
-#endif
+  base::WeakPtrFactory<LoginHandler> weak_factory_;
 };
 
 // Details to provide the content::NotificationObserver.  Used by the automation
@@ -304,11 +229,11 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 // net::URLRequest::Delegate::OnAuthRequired.  The prompt will be created
 // on the main UI thread via a call to UI loop's InvokeLater, and will send the
 // credentials back to the net::URLRequest on the calling thread.
-// A LoginHandler object (which lives on the calling thread) is returned,
+// A LoginDelegate object (which lives on the calling thread) is returned,
 // which can be used to set or cancel authentication programmatically.  The
-// caller must invoke OnRequestCancelled() on this LoginHandler before
+// caller must invoke OnRequestCancelled() on this LoginDelegate before
 // destroying the net::URLRequest.
-scoped_refptr<LoginHandler> CreateLoginPrompt(
+scoped_refptr<content::LoginDelegate> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     const content::GlobalRequestID& request_id,
