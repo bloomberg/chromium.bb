@@ -46,6 +46,34 @@ class DOMRectReadOnly {
 }
 
 /**
+ * TODO(dstockwell): Remove this once it is added to Closure Compiler itself.
+ * @see https://drafts.fxtf.org/geometry/#DOMMatrix
+ */
+class DOMMatrix {
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  translateSelf(x, y) {}
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {number} z
+   */
+  rotateSelf(x, y, z) {}
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  scaleSelf(x, y) {}
+  /**
+   * @param {{x: number, y: number}} point
+   * @return {{x: number, y: number}}
+   */
+  transformPoint(point) {}
+}
+
+/**
  * @see https://wicg.github.io/ResizeObserver/#resizeobserverentry
  * @typedef {{contentRect: DOMRectReadOnly,
  *            target: Element}}
