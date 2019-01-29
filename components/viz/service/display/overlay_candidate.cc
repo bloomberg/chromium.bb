@@ -78,102 +78,6 @@ gfx::OverlayTransform GetOverlayTransform(const gfx::Transform& quad_transform,
     return gfx::OVERLAY_TRANSFORM_INVALID;
 }
 
-// Apply transform |delta| to |in| and return the resulting transform,
-// or OVERLAY_TRANSFORM_INVALID.
-gfx::OverlayTransform ComposeTransforms(gfx::OverlayTransform delta,
-                                        gfx::OverlayTransform in) {
-  // There are 8 different possible transforms. We can characterize these
-  // by looking at where the origin moves and the direction the horizontal goes.
-  // (TL=top-left, BR=bottom-right, H=horizontal, V=vertical).
-  // NONE: TL, H
-  // FLIP_VERTICAL: BL, H
-  // FLIP_HORIZONTAL: TR, H
-  // ROTATE_90: TR, V
-  // ROTATE_180: BR, H
-  // ROTATE_270: BL, V
-  // Missing transforms: TL, V & BR, V
-  // Basic combinations:
-  // Flip X & Y -> Rotate 180 (TL,H -> TR,H -> BR,H or TL,H -> BL,H -> BR,H)
-  // Flip X or Y + Rotate 180 -> other flip (eg, TL,H -> TR,H -> BL,H)
-  // Rotate + Rotate simply adds values.
-  // Rotate 90/270 + flip is invalid because we can only have verticals with
-  // the origin in TR or BL.
-  if (delta == gfx::OVERLAY_TRANSFORM_NONE)
-    return in;
-  switch (in) {
-    case gfx::OVERLAY_TRANSFORM_NONE:
-      return delta;
-    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
-      switch (delta) {
-        case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
-          return gfx::OVERLAY_TRANSFORM_NONE;
-        case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-          return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
-        default:
-          return gfx::OVERLAY_TRANSFORM_INVALID;
-      }
-      break;
-    case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
-      switch (delta) {
-        case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
-          return gfx::OVERLAY_TRANSFORM_NONE;
-        case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-          return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-        default:
-          return gfx::OVERLAY_TRANSFORM_INVALID;
-      }
-      break;
-    case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-      switch (delta) {
-        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_270;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-          return gfx::OVERLAY_TRANSFORM_NONE;
-        default:
-          return gfx::OVERLAY_TRANSFORM_INVALID;
-      }
-      break;
-    case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-      switch (delta) {
-        case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
-          return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
-        case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
-          return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_270;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-          return gfx::OVERLAY_TRANSFORM_NONE;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_90;
-        default:
-          return gfx::OVERLAY_TRANSFORM_INVALID;
-      }
-      break;
-    case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-      switch (delta) {
-        case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-          return gfx::OVERLAY_TRANSFORM_NONE;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_90;
-        case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-          return gfx::OVERLAY_TRANSFORM_ROTATE_180;
-        default:
-          return gfx::OVERLAY_TRANSFORM_INVALID;
-      }
-      break;
-    default:
-      return gfx::OVERLAY_TRANSFORM_INVALID;
-  }
-}
-
 }  // namespace
 
 OverlayCandidate::OverlayCandidate()
@@ -377,42 +281,14 @@ bool OverlayCandidate::FromStreamVideoQuad(
                             candidate)) {
     return false;
   }
-  if (!quad->matrix.IsScaleOrTranslation()) {
-    // We cannot handle anything other than scaling & translation for texture
-    // coordinates yet.
-    return false;
-  }
+
   candidate->resource_id = quad->resource_id();
   candidate->resource_size_in_pixels = quad->resource_size_in_pixels();
+  candidate->uv_rect = BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
 #if defined(OS_ANDROID)
   candidate->is_backed_by_surface_texture =
       resource_provider->IsBackedBySurfaceTexture(quad->resource_id());
 #endif
-
-  gfx::Point3F uv0 = gfx::Point3F(0, 0, 0);
-  gfx::Point3F uv1 = gfx::Point3F(1, 1, 0);
-  quad->matrix.TransformPoint(&uv0);
-  quad->matrix.TransformPoint(&uv1);
-  gfx::Vector3dF delta = uv1 - uv0;
-  if (delta.x() < 0) {
-    candidate->transform = ComposeTransforms(
-        gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL, candidate->transform);
-    float x0 = uv0.x();
-    uv0.set_x(uv1.x());
-    uv1.set_x(x0);
-    delta.set_x(-delta.x());
-  }
-
-  if (delta.y() < 0) {
-    // In this situation, uv0y < uv1y. Since we overlay inverted, a request
-    // to invert the source texture means we can just output the texture
-    // normally and it will be correct.
-    candidate->uv_rect = gfx::RectF(uv0.x(), uv1.y(), delta.x(), -delta.y());
-  } else {
-    candidate->transform = ComposeTransforms(
-        gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL, candidate->transform);
-    candidate->uv_rect = gfx::RectF(uv0.x(), uv0.y(), delta.x(), delta.y());
-  }
   return true;
 }
 

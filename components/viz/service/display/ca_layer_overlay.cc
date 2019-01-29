@@ -33,7 +33,7 @@ enum CALayerResult {
   CA_LAYER_FAILED_UNKNOWN,
   CA_LAYER_FAILED_IO_SURFACE_NOT_CANDIDATE,
   CA_LAYER_FAILED_STREAM_VIDEO_NOT_CANDIDATE,
-  CA_LAYER_FAILED_STREAM_VIDEO_TRANSFORM,
+  CA_LAYER_FAILED_STREAM_VIDEO_TRANSFORM_DEPRECATED,
   CA_LAYER_FAILED_TEXTURE_NOT_CANDIDATE,
   CA_LAYER_FAILED_TEXTURE_Y_FLIPPED,
   CA_LAYER_FAILED_TILE_NOT_CANDIDATE,
@@ -111,11 +111,8 @@ CALayerResult FromStreamVideoQuad(DisplayResourceProvider* resource_provider,
   if (!resource_provider->IsOverlayCandidate(resource_id))
     return CA_LAYER_FAILED_STREAM_VIDEO_NOT_CANDIDATE;
   ca_layer_overlay->contents_resource_id = resource_id;
-  // TODO(ccameron): Support merging at least some basic transforms into the
-  // layer transform.
-  if (!quad->matrix.IsIdentity())
-    return CA_LAYER_FAILED_STREAM_VIDEO_TRANSFORM;
-  ca_layer_overlay->contents_rect = gfx::RectF(0, 0, 1, 1);
+  ca_layer_overlay->contents_rect =
+      BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
   return CA_LAYER_SUCCESS;
 }
 

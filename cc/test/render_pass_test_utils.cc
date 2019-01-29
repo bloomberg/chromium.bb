@@ -195,7 +195,8 @@ std::vector<viz::ResourceId> AddOneOfEveryQuadType(
   auto* stream_video_quad =
       to_pass->CreateAndAppendDrawQuad<viz::StreamVideoDrawQuad>();
   stream_video_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
-                            resource6, gfx::Size(), gfx::Transform());
+                            resource6, gfx::Size(), gfx::PointF(),
+                            gfx::PointF(1.f, 1.f));
 
   auto* texture_quad = to_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   texture_quad->SetNew(
@@ -371,7 +372,8 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::StreamVideoDrawQuad* stream_video_quad =
       to_pass->CreateAndAppendDrawQuad<viz::StreamVideoDrawQuad>();
   stream_video_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
-                            mapped_resource6, gfx::Size(), gfx::Transform());
+                            mapped_resource6, gfx::Size(), gfx::PointF(),
+                            gfx::PointF(1.f, 1.f));
 
   viz::TextureDrawQuad* texture_quad =
       to_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();

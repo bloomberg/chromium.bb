@@ -483,6 +483,9 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
   const float tex_height_scale =
       static_cast<float>(visible_rect.height()) / coded_size.height();
 
+  const gfx::PointF uv_top_left(0.f, 0.f);
+  const gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+
   switch (frame_resource_type_) {
     case VideoFrameResourceType::YUV: {
       const gfx::Size ya_tex_size = coded_size;
@@ -556,8 +559,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
         break;
       bool premultiplied_alpha =
           frame_resource_type_ == VideoFrameResourceType::RGBA_PREMULTIPLIED;
-      gfx::PointF uv_top_left(0.f, 0.f);
-      gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
@@ -587,13 +589,12 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
-      gfx::Transform scale;
-      scale.Scale(tex_width_scale, tex_height_scale);
       auto* stream_video_quad =
           render_pass->CreateAndAppendDrawQuad<viz::StreamVideoDrawQuad>();
       stream_video_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                                 needs_blending, frame_resources_[0].id,
-                                frame_resources_[0].size_in_pixels, scale);
+                                frame_resources_[0].size_in_pixels, uv_top_left,
+                                uv_bottom_right);
       for (viz::ResourceId resource_id : stream_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }
