@@ -64,6 +64,6 @@ class PLATFORM_EXPORT OffscreenCanvasPlaceholder {
   AnimationState animation_state_ = kActiveAnimation;
 };
 
-}  // blink
+}  // namespace blink
 
 #endif

@@ -46,8 +46,7 @@ struct DeferredFrameData {
 
  public:
   DeferredFrameData()
-      : orientation_(kDefaultImageOrientation),
-        is_received_(false) {}
+      : orientation_(kDefaultImageOrientation), is_received_(false) {}
 
   ImageOrientation orientation_;
   TimeDelta duration_;
@@ -340,4 +339,4 @@ struct VectorTraits<blink::DeferredFrameData>
   static const bool kCanInitializeWithMemset =
       false;  // Not all DeferredFrameData members initialize to 0.
 };
-}
+}  // namespace WTF

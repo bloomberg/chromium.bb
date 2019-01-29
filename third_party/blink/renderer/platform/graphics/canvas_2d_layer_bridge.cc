@@ -495,7 +495,6 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
 }
 
 void Canvas2DLayerBridge::FlushRecording() {
-
   if (have_recorded_draw_commands_ && GetOrCreateResourceProvider()) {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
 
@@ -580,7 +579,6 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
-
   DCHECK(layer_);  // This explodes if FinalizeFrame() was not called.
 
   frames_since_last_commit_ = 0;

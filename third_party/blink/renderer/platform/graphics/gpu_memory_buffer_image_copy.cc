@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/platform/graphics/gpu_memory_buffer_image_copy.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/platform/graphics/gpu_memory_buffer_image_copy.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -16,11 +16,9 @@ namespace blink {
 
 GpuMemoryBufferImageCopy::GpuMemoryBufferImageCopy(
     gpu::gles2::GLES2Interface* gl)
-    : gl_(gl) {
-}
+    : gl_(gl) {}
 
-GpuMemoryBufferImageCopy::~GpuMemoryBufferImageCopy() {
-}
+GpuMemoryBufferImageCopy::~GpuMemoryBufferImageCopy() {}
 
 bool GpuMemoryBufferImageCopy::EnsureMemoryBuffer(int width, int height) {
   // Create a new memorybuffer if the size has changed, or we don't have one.

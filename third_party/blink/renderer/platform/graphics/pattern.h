@@ -43,7 +43,6 @@ class SkMatrix;
 namespace blink {
 
 class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
-
  public:
   enum RepeatMode {
     kRepeatModeX = 1 << 0,

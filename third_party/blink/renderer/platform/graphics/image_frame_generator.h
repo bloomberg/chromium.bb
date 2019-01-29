@@ -62,7 +62,6 @@ class PLATFORM_EXPORT ImageDecoderFactory {
 
 class PLATFORM_EXPORT ImageFrameGenerator final
     : public ThreadSafeRefCounted<ImageFrameGenerator> {
-
  public:
   static scoped_refptr<ImageFrameGenerator> Create(
       const SkISize& full_size,

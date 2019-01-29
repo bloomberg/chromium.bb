@@ -73,8 +73,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
 
 INSTANTIATE_TEST_CASE_P(All,
                         GraphicsLayerTest,
-                        testing::Values(0,
-                                        kBlinkGenPropertyTrees));
+                        testing::Values(0, kBlinkGenPropertyTrees));
 
 TEST_P(GraphicsLayerTest, Paint) {
   IntRect interest_rect(1, 2, 3, 4);
@@ -108,25 +107,24 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   auto transform2 =
       CreateTransform(*transform1, TransformationMatrix().Scale(2));
 
-  layers_.graphics_layer_client().SetPainter([&](const GraphicsLayer* layer,
-                                                 GraphicsContext& context,
-                                                 GraphicsLayerPaintingPhase,
-                                                 const IntRect&) {
-    {
-      ScopedPaintChunkProperties properties(context.GetPaintController(),
-                                            transform1.get(), *layer,
-                                            kBackgroundType);
-      PaintControllerTestBase::DrawRect(context, *layer, kBackgroundType,
-                                        interest_rect);
-    }
-    {
-      ScopedPaintChunkProperties properties(context.GetPaintController(),
-                                            transform2.get(), *layer,
-                                            kForegroundType);
-      PaintControllerTestBase::DrawRect(context, *layer, kForegroundType,
-                                        interest_rect);
-    }
-  });
+  layers_.graphics_layer_client().SetPainter(
+      [&](const GraphicsLayer* layer, GraphicsContext& context,
+          GraphicsLayerPaintingPhase, const IntRect&) {
+        {
+          ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                                transform1.get(), *layer,
+                                                kBackgroundType);
+          PaintControllerTestBase::DrawRect(context, *layer, kBackgroundType,
+                                            interest_rect);
+        }
+        {
+          ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                                transform2.get(), *layer,
+                                                kForegroundType);
+          PaintControllerTestBase::DrawRect(context, *layer, kForegroundType,
+                                            interest_rect);
+        }
+      });
 
   transform1->Update(transform_root,
                      TransformPaintPropertyNode::State{

@@ -337,7 +337,7 @@ class ConicGradient final : public Gradient {
   const float end_angle_;      // angle (deg) corresponding to color position 1
 };
 
-}  // anonymous ns
+}  // namespace
 
 scoped_refptr<Gradient> Gradient::CreateLinear(
     const FloatPoint& p0,
