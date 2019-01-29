@@ -31,6 +31,9 @@ enum ChromeTextContext {
   // "Body 2". Usually 12pt.
   CONTEXT_BODY_TEXT_SMALL,
 
+  // Text of the page title in the tab hover card.
+  CONTEXT_TAB_HOVER_CARD_TITLE,
+
   // Text in the location bar entry, and primary text in the omnibox dropdown.
   CONTEXT_OMNIBOX_PRIMARY,
 

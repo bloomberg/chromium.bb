@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/views/controls/label.h"
@@ -22,18 +23,17 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(views::View* anchor_view,
   // hide the hovercard on press, touch, and keyboard events.
   set_can_activate(false);
 
-  title_label_ = new views::Label();
-  domain_label_ = new views::Label();
+  title_label_ =
+      new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
+                       views::style::STYLE_PRIMARY);
+  domain_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
+                                   ChromeTextStyle::STYLE_SECONDARY);
   UpdateCardContent(data);
 
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(false);
-  title_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
-      1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM));
-  title_label_->SetEnabledColor(gfx::kGoogleGrey800);
   domain_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   domain_label_->SetMultiLine(false);
-  domain_label_->SetEnabledColor(gfx::kGoogleGrey500);
 
   AddChildView(title_label_);
   AddChildView(domain_label_);
