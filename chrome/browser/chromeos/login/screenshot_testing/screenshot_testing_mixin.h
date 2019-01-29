@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/login/mixin_based_browser_test.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/screenshot_testing/screenshot_tester.h"
 #include "content/public/test/browser_test_base.h"
 
@@ -19,22 +19,17 @@ namespace chromeos {
 // Sets up everything required for taking screenshots.
 // Provides functionality to deal with animation load: screenshots
 // should be taken only when all the animation is loaded.
-class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
+class ScreenshotTestingMixin : public InProcessBrowserTestMixin {
  public:
-  ScreenshotTestingMixin();
+  explicit ScreenshotTestingMixin(InProcessBrowserTestMixinHost* host);
   ~ScreenshotTestingMixin() override;
 
-  // Override from BrowsertestBase::Mixin.
-  void SetUpInProcessBrowserTestFixture() override;
-
-  // Override from BrowsertestBase::Mixin.
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-
-  // Runs screenshot testing if it is turned on by command line switches.
   void RunScreenshotTesting(const std::string& test_name);
-
-  // Remembers that area |area| should be ignored during comparison.
   void IgnoreArea(const SkIRect& area);
+
+  // InProcessBrowserTestMixin:
+  void SetUpInProcessBrowserTestFixture() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   // It turns out that it takes some more time for the animation
@@ -54,11 +49,13 @@ class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
   base::Closure animation_waiter_quitter_;
 
   // Is true if testing with screenshots is turned on with all proper switches.
-  bool enable_test_screenshots_;
+  bool enable_test_screenshots_ = false;
 
   // |screenshot_tester_ | does everything connected with taking, loading and
   // comparing screenshots
   ScreenshotTester screenshot_tester_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotTestingMixin);
 };
 
 }  // namespace chromeos

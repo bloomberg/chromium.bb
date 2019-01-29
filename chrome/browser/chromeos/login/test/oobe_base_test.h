@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -49,12 +50,15 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   virtual void RegisterAdditionalRequestHandlers();
 
  protected:
-  // InProcessBrowserTest overrides.
+  // InProcessBrowserTest:
   void SetUp() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void TearDownInProcessBrowserTestFixture() override;
+  void TearDown() override;
 
   virtual void InitHttpsForwarders();
 
@@ -101,6 +105,8 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   void SetupFakeGaiaForLogin(const std::string& user_email,
                              const std::string& gaia_id,
                              const std::string& refresh_token);
+
+  InProcessBrowserTestMixinHost mixin_host_;
 
   std::unique_ptr<FakeGaia> fake_gaia_;
   NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
