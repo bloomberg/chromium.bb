@@ -271,9 +271,9 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_CASE_P(,
-                        TabCapturePerformanceTest,
-                        testing::Values(0,
-                                        kUseGpu,
-                                        kTestThroughWebRTC,
-                                        kTestThroughWebRTC | kUseGpu));
+INSTANTIATE_TEST_SUITE_P(,
+                         TabCapturePerformanceTest,
+                         testing::Values(0,
+                                         kUseGpu,
+                                         kTestThroughWebRTC,
+                                         kTestThroughWebRTC | kUseGpu));
