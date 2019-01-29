@@ -11,10 +11,7 @@ group("closure_compile") {
 }
 
 js_library("ink_api") {
-  externs_list = [
-    "externs.js",
-    "../../../../../third_party/ink/build/ink_lib_externs.js",
-  ]
+  externs_list = [ "//third_party/ink/build/ink_lib_externs.js" ]
 }
 
 js_type_check("ink") {
