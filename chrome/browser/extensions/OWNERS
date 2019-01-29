@@ -4,6 +4,7 @@ per-file *networking*=stevenjb@chromium.org
 per-file *networking*=tbarzic@chromium.org
 
 per-file bookmark_app_*=calamity@chromium.org
+per-file bookmark_app_*=dominickn@chromium.org
 per-file bookmark_app_*=mgiuca@chromium.org
 per-file bookmark_app_*=ortuno@chromium.org
 
