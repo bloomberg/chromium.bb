@@ -149,8 +149,8 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(
     return nullptr;
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);
-  // Create all real subsystems:
-  provider->CreateSubsystems();
+  // Create all real subsystems but do not start them:
+  provider->Init();
 
   // But override SystemWebAppManager with TestSystemWebAppManager:
   DCHECK(!test_system_web_app_manager_);
@@ -163,8 +163,8 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(
   system_apps.emplace_back(GURL("chrome://test-system-app/pwa.html"));
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
-  // Initialize all subsystems:
-  provider->Init();
+  // Start all subsystems:
+  provider->Start();
 
   return provider;
 }

@@ -25,7 +25,7 @@ class SystemWebAppManager {
   SystemWebAppManager(Profile* profile, PendingAppManager* pending_app_manager);
   virtual ~SystemWebAppManager();
 
-  void Init();
+  void Start();
 
   static bool ShouldEnableForProfile(Profile* profile);
 

@@ -99,7 +99,7 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   TestSystemWebAppManager system_web_app_manager(profile(),
                                                  pending_app_manager.get());
   system_web_app_manager.SetSystemApps(std::move(system_apps));
-  system_web_app_manager.Init();
+  system_web_app_manager.Start();
 
   base::RunLoop().RunUntilIdle();
 
@@ -122,7 +122,7 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
   TestSystemWebAppManager system_web_app_manager(profile(),
                                                  pending_app_manager.get());
   system_web_app_manager.SetSystemApps(std::move(system_apps));
-  system_web_app_manager.Init();
+  system_web_app_manager.Start();
 
   base::RunLoop().RunUntilIdle();
 
@@ -148,7 +148,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   TestSystemWebAppManager system_web_app_manager(profile(),
                                                  pending_app_manager.get());
   system_web_app_manager.SetSystemApps(std::move(system_apps));
-  system_web_app_manager.Init();
+  system_web_app_manager.Start();
 
   base::RunLoop().RunUntilIdle();
 

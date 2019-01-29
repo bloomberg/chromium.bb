@@ -57,10 +57,10 @@ class WebAppProvider : public KeyedService,
   explicit WebAppProvider(Profile* profile);
   ~WebAppProvider() override;
 
-  // 1st pass: Just create subsystems.
-  void CreateSubsystems();
-  // 2nd pass: Initialize subsystems.
+  // Create subsystems but do not start them (yet).
   void Init();
+  // Start all subsystems.
+  void Start();
 
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
