@@ -4365,6 +4365,24 @@
             ]
         }
     ],
+    "ShowManagedUi": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ShowManagedUi"
+                    ]
+                }
+            ]
+        }
+    ],
     "SignInPasswordPromo": [
         {
             "platforms": [
