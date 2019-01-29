@@ -13,64 +13,6 @@ import sys
 import tempfile
 
 
-def ReadDynamicLibDeps(paths):
-  """Returns a list of NEEDED libraries read from a binary's ELF header."""
-
-  LIBRARY_RE = re.compile(r'.*\(NEEDED\)\s+Shared library: \[(?P<lib>.*)\]')
-  elfinfo = subprocess.check_output(['readelf', '-d'] + paths,
-                                    stderr=open(os.devnull, 'w'))
-  libs = []
-  for line in elfinfo.split('\n'):
-    match = LIBRARY_RE.match(line.rstrip())
-    if match:
-      lib = match.group('lib')
-
-      # libc.so is an alias for ld.so.1 .
-      if lib == 'libc.so':
-        lib = 'ld.so.1'
-
-      # Skip libzircon.so, as it is supplied by the OS loader.
-      if lib != 'libzircon.so':
-        libs.append(lib)
-
-  return libs
-
-
-def ComputeTransitiveLibDeps(executable_path, available_libs):
-  """Returns a set representing the library dependencies of |executable_path|,
-  the dependencies of its dependencies, and so on.
-
-  A list of candidate library filesystem paths is passed using |available_libs|
-  to help with resolving full paths from the short ELF header filenames."""
-
-  # Stack of binaries (libraries, executables) awaiting traversal.
-  to_visit = [executable_path]
-
-  # The computed set of visited transitive dependencies.
-  deps = set()
-
-  while to_visit:
-    deps = deps.union(to_visit)
-
-    # Resolve the full paths for all of |cur_path|'s NEEDED libraries.
-    dep_paths = {available_libs[dep]
-                 for dep in ReadDynamicLibDeps(list(to_visit))}
-
-    # Add newly discovered dependencies to the pending traversal stack.
-    to_visit = dep_paths.difference(deps)
-
-  return deps
-
-
-def EnumerateDirectoryFiles(path):
-  """Returns a flattened list of all files contained under |path|."""
-
-  output = set()
-  for dirname, _, files in os.walk(path):
-    output = output.union({os.path.join(dirname, f) for f in files})
-  return output
-
-
 def MakePackagePath(file_path, roots):
   """Computes a path for |file_path| that is relative to one of the directory
   paths in |roots|.
@@ -159,22 +101,6 @@ def BuildManifest(args):
       else:
         expanded_files.add(os.path.abspath(next_path))
 
-    # Get set of dist libraries available for dynamic linking.
-    dist_libs = set()
-    for next_dir in args.dynlib_path:
-      dist_libs = dist_libs.union(EnumerateDirectoryFiles(next_dir))
-
-    # Compute the set of dynamic libraries used by the application or its
-    # transitive dependencies (dist libs and components), and merge the result
-    # with |expanded_files| so that they are included in the manifest.
-    #
-    # TODO(crbug.com/861931): Make sure that deps of the files in data_deps
-    # (binaries and libraries) are included as well.
-    expanded_files = expanded_files.union(
-       ComputeTransitiveLibDeps(
-           args.app_filename,
-           {os.path.basename(f): f for f in expanded_files.union(dist_libs)}))
-
     # Format and write out the manifest contents.
     gen_dir = os.path.join(args.out_dir, "gen")
     app_found = False
@@ -249,8 +175,6 @@ def main():
       help='Path to write GN deps file.')
   parser.add_argument('--exclude-file', action='append', default=[],
       help='Package-relative file path to exclude from the package.')
-  parser.add_argument('--dynlib-path', action='append', default=[],
-      help='Paths for the dynamic libraries relative to the output dir.')
   parser.add_argument('--output-path', required=True, help='Output file path.')
 
   args = parser.parse_args()

@@ -98,10 +98,6 @@ template("fuchsia_package") {
       rebase_path(_runtime_deps_file),
       "--depfile-path",
       rebase_path(_depfile),
-      "--dynlib-path",
-      rebase_path(dist_libroot),
-      "--dynlib-path",
-      rebase_path("${sysroot}/dist"),
       "--output-path",
       rebase_path(_archive_manifest),
     ]

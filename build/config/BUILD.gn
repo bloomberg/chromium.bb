@@ -293,6 +293,10 @@ group("common_deps") {
   if (is_win && generate_order_files && !is_nacl) {
     public_deps += [ "//tools/cygprofile_win" ]
   }
+
+  if (is_fuchsia) {
+    public_deps += [ "//third_party/fuchsia-sdk:runtime_library" ]
+  }
 }
 
 group("executable_deps") {
