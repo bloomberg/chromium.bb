@@ -64,7 +64,7 @@ WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
 
 WebAppProvider::~WebAppProvider() = default;
 
-void WebAppProvider::CreateSubsystems() {
+void WebAppProvider::Init() {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
@@ -73,7 +73,7 @@ void WebAppProvider::CreateSubsystems() {
     CreateBookmarkAppsSubsystems(profile_);
 }
 
-void WebAppProvider::Init() {
+void WebAppProvider::Start() {
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
 
@@ -81,10 +81,11 @@ void WebAppProvider::Init() {
     registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
                                     weak_ptr_factory_.GetWeakPtr()));
   } else {
-    web_app_policy_manager_->Init();
-    system_web_app_manager_->Init();
+    web_app_policy_manager_->Start();
+    system_web_app_manager_->Start();
 
-    web_app::ScanForExternalWebApps(
+    // Start ExternalWebApps subsystem:
+    ScanForExternalWebApps(
         profile_, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
                                  weak_ptr_factory_.GetWeakPtr()));
 

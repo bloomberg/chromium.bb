@@ -41,7 +41,7 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile,
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
-void SystemWebAppManager::Init() {
+void SystemWebAppManager::Start() {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       base::CreateSingleThreadTaskRunnerWithTraits(

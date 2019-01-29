@@ -29,7 +29,7 @@ WebAppPolicyManager::WebAppPolicyManager(Profile* profile,
 
 WebAppPolicyManager::~WebAppPolicyManager() = default;
 
-void WebAppPolicyManager::Init() {
+void WebAppPolicyManager::Start() {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       base::CreateSingleThreadTaskRunnerWithTraits(

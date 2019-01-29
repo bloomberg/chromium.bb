@@ -33,7 +33,7 @@ class WebAppPolicyManager {
   WebAppPolicyManager(Profile* profile, PendingAppManager* pending_app_manager);
   ~WebAppPolicyManager();
 
-  void Init();
+  void Start();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
