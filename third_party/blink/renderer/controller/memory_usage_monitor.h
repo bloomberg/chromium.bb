@@ -36,12 +36,13 @@ class CONTROLLER_EXPORT MemoryUsageMonitor {
   virtual ~MemoryUsageMonitor() = default;
 
   // Returns the current memory usage.
-  MemoryUsage GetCurrentMemoryUsage();
+  virtual MemoryUsage GetCurrentMemoryUsage();
 
   // Ensures that an observer is only added once.
   void AddObserver(Observer*);
   // Observers must be removed before they are destroyed.
   void RemoveObserver(Observer*);
+  bool HasObserver(Observer*);
 
   bool TimerIsActive() const { return timer_.IsActive(); }
 

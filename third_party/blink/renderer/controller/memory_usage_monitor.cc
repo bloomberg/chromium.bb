@@ -28,6 +28,10 @@ void MemoryUsageMonitor::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool MemoryUsageMonitor::HasObserver(Observer* observer) {
+  return observers_.HasObserver(observer);
+}
+
 void MemoryUsageMonitor::StartMonitoringIfNeeded() {
   if (timer_.IsActive())
     return;
