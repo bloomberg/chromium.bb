@@ -13,6 +13,7 @@
 #include "base/token.h"
 #include "build/build_config.h"
 #include "content/public/child/child_thread.h"
+#include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -80,10 +81,14 @@ void ChromeContentGpuClient::GpuServiceInitialized(
                      base::Unretained(protected_buffer_manager_.get())));
 #endif
 
-  main_thread_profiler_->SetMainThreadTaskRunner(
-      base::ThreadTaskRunnerHandle::Get());
-  ThreadProfiler::SetServiceManagerConnectorForChildProcess(
-      content::ChildThread::Get()->GetConnector());
+  // This doesn't work in single-process mode.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
+    main_thread_profiler_->SetMainThreadTaskRunner(
+        base::ThreadTaskRunnerHandle::Get());
+    ThreadProfiler::SetServiceManagerConnectorForChildProcess(
+        content::ChildThread::Get()->GetConnector());
+  }
 }
 
 void ChromeContentGpuClient::PostIOThreadCreated(
