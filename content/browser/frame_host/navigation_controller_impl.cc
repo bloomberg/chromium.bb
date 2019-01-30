@@ -1026,6 +1026,16 @@ bool NavigationControllerImpl::RendererDidNavigate(
     }
   }
 
+  // Make sure we do not discard the pending entry for a different ongoing
+  // navigation when a same document commit comes in unexpectedly from the
+  // renderer.  Limit this to a very narrow set of conditions to avoid risks to
+  // other navigation types. See https://crbug.com/900036.
+  // TODO(crbug.com/926009): Handle history.pushState() as well.
+  bool keep_pending_entry = is_same_document_navigation &&
+                            details->type == NAVIGATION_TYPE_EXISTING_PAGE &&
+                            pending_entry_ &&
+                            !PendingEntryMatchesHandle(navigation_handle);
+
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
       RendererDidNavigateToNewPage(
@@ -1034,7 +1044,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       RendererDidNavigateToExistingPage(rfh, params, details->is_same_document,
-                                        was_restored, navigation_handle);
+                                        was_restored, navigation_handle,
+                                        keep_pending_entry);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
       RendererDidNavigateToSamePage(rfh, params, details->is_same_document,
@@ -1077,9 +1088,12 @@ bool NavigationControllerImpl::RendererDidNavigate(
   DVLOG(1) << "Navigation finished at (smoothed) timestamp "
            << timestamp.ToInternalValue();
 
-  // We should not have a pending entry anymore.  Clear it again in case any
-  // error cases above forgot to do so.
-  DiscardNonCommittedEntriesInternal();
+  // If we aren't keeping the pending entry, there shouldn't be one at this
+  // point. Clear it again in case any error cases above forgot to do so.
+  // TODO(pbos): Consider a CHECK here that verifies that the pending entry has
+  // been cleared instead of protecting against it.
+  if (!keep_pending_entry)
+    DiscardNonCommittedEntriesInternal();
 
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
@@ -1464,7 +1478,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document,
     bool was_restored,
-    NavigationHandleImpl* handle) {
+    NavigationHandleImpl* handle,
+    bool keep_pending_entry) {
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
 
@@ -1614,16 +1629,16 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   if (ui::PageTransitionIsRedirect(params.transition) && !is_same_document)
     entry->GetFavicon() = FaviconStatus();
 
-  // The entry we found in the list might be pending if the user hit
-  // back/forward/reload. This load should commit it (since it's already in the
-  // list, we can just discard the pending pointer).  We should also discard the
-  // pending entry if it corresponds to a different navigation, since that one
-  // is now likely canceled.  If it is not canceled, we will treat it as a new
-  // navigation when it arrives, which is also ok.
+  // We should also usually discard the pending entry if it corresponds to a
+  // different navigation, since that one is now likely canceled.  In rare
+  // cases, we leave the pending entry for another navigation in place when we
+  // know it is still ongoing, to avoid a flicker in the omnibox (see
+  // https://crbug.com/900036).
   //
   // Note that we need to use the "internal" version since we don't want to
   // actually change any other state, just kill the pointer.
-  DiscardNonCommittedEntriesInternal();
+  if (!keep_pending_entry)
+    DiscardNonCommittedEntriesInternal();
 
   // If a transient entry was removed, the indices might have changed, so we
   // have to query the entry index again.
