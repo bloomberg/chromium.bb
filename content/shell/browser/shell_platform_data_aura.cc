@@ -23,10 +23,7 @@
 #include "ui/wm/core/default_activation_client.h"
 
 #if defined(OS_FUCHSIA)
-#include <fuchsia/ui/policy/cpp/fidl.h>
-#include <lib/zx/eventpair.h>
-#include "base/fuchsia/component_context.h"
-#include "base/fuchsia/fuchsia_logging.h"
+#include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -115,17 +112,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   if (ui::OzonePlatform::GetInstance()
           ->GetPlatformProperties()
           .needs_view_token) {
-    // Create view_token and view_holder_token.
-    zx::eventpair view_holder_token;
-    zx_status_t status = zx::eventpair::create(
-        /*options=*/0, &properties.view_token, &view_holder_token);
-    ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create";
-
-    // Request Presenter to show the view full-screen.
-    auto presenter = base::fuchsia::ComponentContext::GetDefault()
-                         ->ConnectToService<fuchsia::ui::policy::Presenter>();
-
-    presenter->Present2(std::move(view_holder_token), nullptr);
+    ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
   }
 #endif
 
