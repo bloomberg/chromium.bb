@@ -23,7 +23,6 @@ class NGLayoutResult;
 class NGPaintFragment;
 class NGPhysicalFragment;
 struct NGInlineNodeData;
-struct NGPhysicalOffset;
 
 // This mixin holds code shared between LayoutNG subclasses of
 // LayoutBlockFlow.
@@ -76,12 +75,7 @@ class LayoutNGMixin : public Base {
 
   NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
   void SetPaintFragment(const NGBlockBreakToken*,
-                        scoped_refptr<const NGPhysicalFragment>,
-                        NGPhysicalOffset) final;
-  void UpdatePaintFragmentFromCachedLayoutResult(
-      const NGBlockBreakToken*,
-      scoped_refptr<const NGPhysicalFragment>,
-      NGPhysicalOffset) final;
+                        scoped_refptr<const NGPhysicalFragment>) final;
 
  protected:
   bool IsOfType(LayoutObject::LayoutObjectType) const override;

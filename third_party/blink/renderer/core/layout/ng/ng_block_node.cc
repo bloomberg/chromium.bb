@@ -241,12 +241,6 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // don't re-set the result here.
       block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                         *layout_result);
-      if (!constraint_space.IsIntermediateLayout() && first_child &&
-          first_child.IsInline()) {
-        block_flow->UpdatePaintFragmentFromCachedLayoutResult(
-            ToNGBlockBreakToken(break_token), layout_result->PhysicalFragment(),
-            layout_result->Offset());
-      }
       return layout_result;
     }
   }
@@ -351,13 +345,11 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
       }
 
       block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token),
-                                   layout_result->PhysicalFragment(),
-                                   layout_result->Offset());
+                                   layout_result->PhysicalFragment());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
-      block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token), nullptr,
-                                   NGPhysicalOffset());
+      block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token), nullptr);
     }
   }
 

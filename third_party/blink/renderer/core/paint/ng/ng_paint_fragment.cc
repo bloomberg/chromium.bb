@@ -288,7 +288,6 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
 
 scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
     scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset,
     const NGBlockBreakToken* block_break_token,
     scoped_refptr<NGPaintFragment> previous_instance) {
   DCHECK(fragment);
@@ -296,7 +295,7 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
   bool populate_children = fragment->IsContainer();
   bool has_previous_instance = previous_instance.get();
   scoped_refptr<NGPaintFragment> paint_fragment =
-      CreateOrReuse(std::move(fragment), offset, nullptr,
+      CreateOrReuse(std::move(fragment), NGPhysicalOffset(), nullptr,
                     std::move(previous_instance), &populate_children);
 
   if (populate_children) {
@@ -315,33 +314,6 @@ NGPaintFragment::RareData& NGPaintFragment::EnsureRareData() {
   if (!rare_data_)
     rare_data_ = std::make_unique<RareData>();
   return *rare_data_;
-}
-
-void NGPaintFragment::UpdateFromCachedLayoutResult(
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset) {
-  // TODO(crbug.com/924449): Once we get the caller passes null physical
-  // fragment, we'll change to DCHECK().
-  CHECK(fragment);
-
-#if DCHECK_IS_ON()
-  // When updating to a cached layout result, only offset can change. Check
-  // children do not change.
-  const NGPhysicalContainerFragment& container_fragment =
-      ToNGPhysicalContainerFragment(*fragment);
-  NGPaintFragment* child = FirstChild();
-  for (unsigned i = 0; i < container_fragment.Children().size();
-       i++, child = child->NextSibling()) {
-    DCHECK(child);
-    DCHECK_EQ(child->physical_fragment_.get(),
-              container_fragment.Children()[i].get());
-  }
-  DCHECK(!child);
-#endif
-
-  DCHECK_EQ(physical_fragment_.get(), fragment.get());
-  physical_fragment_ = std::move(fragment);
-  offset_ = offset;
 }
 
 const NGPaintFragment* NGPaintFragment::Next() const {
