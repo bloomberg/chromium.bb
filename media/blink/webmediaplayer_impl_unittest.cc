@@ -64,10 +64,6 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "media/blink/renderer_media_player_interface.h"
-#endif
-
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Eq;

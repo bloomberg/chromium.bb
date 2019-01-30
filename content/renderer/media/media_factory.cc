@@ -54,7 +54,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/renderer/media/android/media_player_renderer_client_factory.h"
-#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/media.h"
@@ -621,14 +620,6 @@ media::DecoderFactory* MediaFactory::GetDecoderFactory() {
 
   return decoder_factory_.get();
 }
-
-#if defined(OS_ANDROID)
-RendererMediaPlayerManager* MediaFactory::GetMediaPlayerManager() {
-  if (!media_player_manager_)
-    media_player_manager_ = new RendererMediaPlayerManager(render_frame_);
-  return media_player_manager_;
-}
-#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
 media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {

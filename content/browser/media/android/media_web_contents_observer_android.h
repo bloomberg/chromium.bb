@@ -20,8 +20,6 @@ enum class MediaContentType;
 
 namespace content {
 
-class BrowserMediaPlayerManager;
-
 // This class adds Android specific extensions to the MediaWebContentsObserver.
 class CONTENT_EXPORT MediaWebContentsObserverAndroid
     : public MediaWebContentsObserver {
@@ -33,48 +31,12 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   static MediaWebContentsObserverAndroid* FromWebContents(
       WebContents* web_contents);
 
-  // Gets one of the managers associated with the given |render_frame_host|.
-  // Creates a new one if it doesn't exist. The caller doesn't own the
-  // returned pointer.
-  BrowserMediaPlayerManager* GetMediaPlayerManager(
-      RenderFrameHost* render_frame_host);
-
   // Called by the WebContents when a tab has been closed but may still be
   // available for "undo" -- indicates that all media players (even audio only
   // players typically allowed background audio) bound to this WebContents must
   // be suspended.
   void SuspendAllMediaPlayers();
-
-  // Initiates a synchronous MediaSession request for browser side players.
-  //
-  // TODO(dalecurtis): Delete this method once we're no longer using WMPA and
-  // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
-  bool RequestPlay(RenderFrameHost* render_frame_host,
-                   int delegate_id,
-                   bool has_audio,
-                   bool is_remote,
-                   media::MediaContentType media_content_type);
-
-  void DisconnectMediaSession(RenderFrameHost* render_frame_host,
-                              int delegate_id);
-
-  // MediaWebContentsObserver overrides.
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
-
  private:
-  // Helper functions to handle media player IPC messages. Returns whether the
-  // |message| is handled in the function.
-  bool OnMediaPlayerMessageReceived(const IPC::Message& message,
-                                    RenderFrameHost* render_frame_host);
-
-  // Map from RenderFrameHost* to BrowserMediaPlayerManager.
-  using MediaPlayerManagerMap =
-      std::unordered_map<RenderFrameHost*,
-                         std::unique_ptr<BrowserMediaPlayerManager>>;
-  MediaPlayerManagerMap media_player_managers_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaWebContentsObserverAndroid);
 };
 
