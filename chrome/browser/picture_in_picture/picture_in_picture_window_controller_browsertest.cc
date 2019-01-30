@@ -1783,7 +1783,11 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 // and even occluded.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PageVisibilityEventsFired) {
-  LoadTabAndEnterPictureInPicture(browser());
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1815,7 +1819,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 // Check that page visibility API events are fired even when video is in
-// Picture-in-Picture.
+// Picture-in-Picture and video playback is not disrupted.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                        PageVisibilityEventsFiredWhenPictureInPicture) {
   LoadTabAndEnterPictureInPicture(browser());
@@ -1824,11 +1828,12 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NE(nullptr, active_web_contents);
 
-  // Enter Picture-in-Picture manually.
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "enterPictureInPicture();", &result));
-  EXPECT_TRUE(result);
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+
+  bool is_paused = true;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
 
   ASSERT_TRUE(content::ExecuteScript(active_web_contents,
                                      "addVisibilityChangeEventListener();"));
@@ -1840,11 +1845,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  // Check that the video is still in Picture-in-Picture.
+  // Check that the video is still in Picture-in-Picture and playing.
   bool in_picture_in_picture = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
 
   // Show page and check that the document visibility is visible.
   active_web_contents->WasShown();
@@ -1853,10 +1861,13 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  // Check that the video is still in Picture-in-Picture.
+  // Check that the video is still in Picture-in-Picture and playing.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
 
   // Occlude page and check that the document visibility is hidden.
   active_web_contents->WasOccluded();
@@ -1865,10 +1876,13 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
 
-  // Check that the video is still in Picture-in-Picture.
+  // Check that the video is still in Picture-in-Picture and playing.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
+                                          &is_paused));
+  EXPECT_FALSE(is_paused);
 }
 
 class MediaSessionPictureInPictureWindowControllerBrowserTest
