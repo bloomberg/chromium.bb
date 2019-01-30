@@ -2208,9 +2208,9 @@ void InitialBytesBoost(const uint8* src,
                        DetectEncodingState* destatep) {
   if (text_length < 4) {return;}
 
-  uint pair01 = (src[0] << 8) | src[1];
-  uint pair23 = (src[2] << 8) | src[3];
-  uint quad0123 = (pair01 << 16) | pair23;
+  uint32 pair01 = (src[0] << 8) | src[1];
+  uint32 pair23 = (src[2] << 8) | src[3];
+  uint32 quad0123 = (pair01 << 16) | pair23;
 
   bool utf_16_indication = false;
   bool utf_32_indication = false;
