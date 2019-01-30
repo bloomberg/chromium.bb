@@ -18,8 +18,8 @@
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -94,10 +94,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     sync_confirmation_ui_.reset(new SyncConfirmationUI(web_ui()));
     web_ui()->AddMessageHandler(std::move(handler));
 
-    IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
-        profile());
-    account_info_ = identity_test_env_profile_adaptor.identity_test_env()
-                        ->MakePrimaryAccountAvailable("foo@example.com");
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
+    account_info_ =
+        identity_test_env()->MakePrimaryAccountAvailable("foo@example.com");
     login_ui_service_observer_.Add(
         LoginUIServiceFactory::GetForProfile(profile()));
   }
@@ -106,6 +106,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     login_ui_service_observer_.RemoveAll();
     sync_confirmation_ui_.reset();
     web_ui_.reset();
+    identity_test_env_adaptor_.reset();
     BrowserWithTestWindowTest::TearDown();
     profile_.reset();
 
@@ -131,6 +132,10 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   consent_auditor::FakeConsentAuditor* consent_auditor() {
     return static_cast<consent_auditor::FakeConsentAuditor*>(
         ConsentAuditorFactory::GetForProfile(profile()));
+  }
+
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_adaptor_->identity_test_env();
   }
 
   // BrowserWithTestWindowTest:
@@ -188,6 +193,8 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
       login_ui_service_observer_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
@@ -222,8 +229,8 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
             web_ui()->call_data()[1]->function_name());
 
   std::string original_picture_url =
-      AccountTrackerServiceFactory::GetForProfile(profile())
-          ->GetAccountInfo(account_info_.account_id)
+      IdentityManagerFactory::GetForProfile(profile())
+          ->GetPrimaryAccountInfo()
           .picture_url;
   GURL picture_url_with_size = signin::GetAvatarImageURLWithOptions(
       GURL(original_picture_url), kExpectedProfileImageSize,
@@ -266,8 +273,8 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
       web_ui()->call_data()[2]->arg1()->GetAsString(&passed_picture_url));
 
   std::string original_picture_url =
-      AccountTrackerServiceFactory::GetForProfile(profile())
-          ->GetAccountInfo(account_info_.account_id)
+      IdentityManagerFactory::GetForProfile(profile())
+          ->GetPrimaryAccountInfo()
           .picture_url;
   GURL picture_url_with_size = signin::GetAvatarImageURLWithOptions(
       GURL(original_picture_url), kExpectedProfileImageSize,
@@ -282,11 +289,11 @@ TEST_F(SyncConfirmationHandlerTest,
   handler()->HandleInitializedWithSize(&args);
   EXPECT_EQ(2U, web_ui()->call_data().size());
 
-  AccountTrackerServiceFactory::GetForProfile(profile())->SeedAccountInfo(
-      "bar_gaia", "bar@example.com");
+  AccountInfo account_info =
+      identity_test_env()->MakeAccountAvailable("bar@example.com");
   account_fetcher_service()->FakeUserInfoFetchSuccess(
-      "bar_gaia", "bar@example.com", "bar_gaia", "", "bar_full_name",
-      "bar_given_name", "bar_locale",
+      account_info.account_id, account_info.email, account_info.gaia, "",
+      "bar_full_name", "bar_given_name", "bar_locale",
       "http://picture.example.com/bar_picture.jpg");
 
   // Updating the account info of a secondary account should not update the
