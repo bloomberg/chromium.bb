@@ -9,14 +9,13 @@
 #include "components/sessions/core/tab_restore_service_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
-#import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -94,6 +93,7 @@ void RestoreTab(const SessionID session_id,
   restoreService->RestoreEntryById(delegate, session_id, disposition);
 }
 
+// TODO(crbug.com/907527): make this into a url loading service in this folder.
 URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
                       ios::ChromeBrowserState* browser_state,
                       WebStateList* web_state_list,
@@ -103,16 +103,10 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
     return URLLoadResult::SWITCH_TO_TAB;
   }
 
-  web::WebState* current_web_state = web_state_list->GetActiveWebState();
-  DCHECK(current_web_state);
-  if (params.transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
-    bool isExpectingVoiceSearch =
-        VoiceSearchNavigationTabHelper::FromWebState(current_web_state)
-            ->IsExpectingVoiceSearch();
-    new_tab_page_uma::RecordActionFromOmnibox(browser_state, params.url,
-                                              params.transition_type,
-                                              isExpectingVoiceSearch);
-  }
+  UrlLoadingNotifier* urlLoadingNotifier =
+      ios::UrlLoadingNotifierFactory::GetForBrowserState(browser_state);
+
+  urlLoadingNotifier->TabWillOpenUrl(params.url, params.transition_type);
 
   // NOTE: This check for the Crash Host URL is here to avoid the URL from
   // ending up in the history causing the app to crash at every subsequent
@@ -121,6 +115,7 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
     InduceBrowserCrash(params.url);
     // Under a debugger, the app can continue working even after the CHECK.
     // Adding a return avoids adding the crash url to history.
+    urlLoadingNotifier->TabFailedToOpenUrl(params.url, params.transition_type);
     return URLLoadResult::INDUCED_CRASH;
   }
 
@@ -131,14 +126,19 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
   if (prerenderService &&
       prerenderService->MaybeLoadPrerenderedURL(
           params.url, params.transition_type, web_state_list, restorer)) {
+    urlLoadingNotifier->TabDidPrerenderUrl(params.url, params.transition_type);
     return URLLoadResult::LOADED_PRERENDER;
   }
 
   // Some URLs are not allowed while in incognito.  If we are in incognito and
   // load a disallowed URL, instead create a new tab not in the incognito state.
   if (browser_state->IsOffTheRecord() && !IsURLAllowedInIncognito(params.url)) {
+    urlLoadingNotifier->TabFailedToOpenUrl(params.url, params.transition_type);
     return URLLoadResult::DISALLOWED_IN_INCOGNITO;
   }
+
+  web::WebState* current_web_state = web_state_list->GetActiveWebState();
+  DCHECK(current_web_state);
 
   BOOL typedOrGeneratedTransition =
       PageTransitionCoreTypeIs(params.transition_type,
@@ -156,22 +156,13 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
                                ui::PAGE_TRANSITION_RELOAD)) {
     current_web_state->GetNavigationManager()->Reload(
         web::ReloadType::NORMAL, true /* check_for_repost */);
+    urlLoadingNotifier->TabDidReloadUrl(params.url, params.transition_type);
     return URLLoadResult::RELOADED;
   }
 
   current_web_state->GetNavigationManager()->LoadURLWithParams(params);
 
-  // Deactivate the NTP immediately on a load to hide the NTP quickly, but after
-  // calling -LoadURLWithParams. Otherwise, if the webState has never been
-  // visible (such as during startup with an NTP), it's possible the webView can
-  // trigger a unnecessary load for chrome://newtab.
-  if (params.url.GetOrigin() != kChromeUINewTabURL) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(current_web_state);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      NTPHelper->Deactivate();
-    }
-  }
+  urlLoadingNotifier->TabDidOpenUrl(params.url, params.transition_type);
 
   return URLLoadResult::NORMAL_LOAD;
 }
