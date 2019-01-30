@@ -36,7 +36,10 @@ class SimRequestBase {
   void Complete(const Vector<char>& data);
 
  protected:
-  SimRequestBase(String url, String mime_type, bool start_immediately);
+  SimRequestBase(String url,
+                 String redirect_url,
+                 String mime_type,
+                 bool start_immediately);
   ~SimRequestBase();
 
   void StartInternal();
@@ -53,6 +56,7 @@ class SimRequestBase {
   void UsedForNavigation(StaticDataNavigationBodyLoader*);
 
   KURL url_;
+  String redirect_url_;
   String mime_type_;
   bool start_immediately_;
   bool started_;
@@ -78,6 +82,11 @@ class SimRequest final : public SimRequestBase {
 class SimSubresourceRequest final : public SimRequestBase {
  public:
   SimSubresourceRequest(String url, String mime_type);
+
+  // Creates a request that redirects to |redirect_url|. Don't call Start() or
+  // Complete() on these requests.
+  SimSubresourceRequest(String url, String redirect_url, String mime_type);
+
   ~SimSubresourceRequest();
 
   // Starts the response from the server, this is as if the headers and 200 OK

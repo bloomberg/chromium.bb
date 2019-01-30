@@ -271,6 +271,26 @@ TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
   EXPECT_TRUE(ad_tracker_->IsAdScriptInStack());
 }
 
+TEST_F(AdTrackerSimTest, RedirectToAdUrl) {
+  SimSubresourceRequest redirect_script(
+      "https://example.com/redirect_script.js",
+      "https://example.com/ad_script.js", "text/javascript");
+  SimSubresourceRequest ad_script("https://example.com/ad_script.js",
+                                  "text/javascript");
+
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete(
+      "<body><script src='redirect_script.js'></script></body>");
+
+  ad_script.Complete("");
+
+  EXPECT_FALSE(ad_tracker_->RequestWithUrlTaggedAsAd(
+      "https://example.com/redirect_script.js"));
+  EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(
+      "https://example.com/ad_script.js"));
+}
+
 TEST_F(AdTrackerSimTest, AdResourceDetectedByContext) {
   SimSubresourceRequest ad_script("https://example.com/ad_script.js",
                                   "text/javascript");

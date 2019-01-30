@@ -13,9 +13,11 @@
 namespace blink {
 
 SimRequestBase::SimRequestBase(String url,
+                               String redirect_url,
                                String mime_type,
                                bool start_immediately)
     : url_(url),
+      redirect_url_(redirect_url),
       mime_type_(mime_type),
       start_immediately_(start_immediately),
       started_(false),
@@ -54,6 +56,7 @@ void SimRequestBase::UsedForNavigation(
 
 void SimRequestBase::StartInternal() {
   DCHECK(!started_);
+  DCHECK(redirect_url_.IsEmpty());  // client_ is nullptr on redirects
   started_ = true;
   client_->DidReceiveResponse(response_);
 }
@@ -136,12 +139,20 @@ void SimRequestBase::ServePending() {
 }
 
 SimRequest::SimRequest(String url, String mime_type)
-    : SimRequestBase(url, mime_type, true /* start_immediately */) {}
+    : SimRequestBase(url, "", mime_type, true /* start_immediately */) {}
 
 SimRequest::~SimRequest() = default;
 
 SimSubresourceRequest::SimSubresourceRequest(String url, String mime_type)
-    : SimRequestBase(url, mime_type, false /* start_immediately */) {}
+    : SimRequestBase(url, "", mime_type, false /* start_immediately */) {}
+
+SimSubresourceRequest::SimSubresourceRequest(String url,
+                                             String redirect_url,
+                                             String mime_type)
+    : SimRequestBase(url,
+                     redirect_url,
+                     mime_type,
+                     false /* start_immediately */) {}
 
 SimSubresourceRequest::~SimSubresourceRequest() = default;
 
