@@ -91,7 +91,6 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // should be rendered with a placeholder image.
   // https://github.com/WICG/feature-policy/blob/master/policies/optimized-images.md
   bool IsImagePolicyViolated() const;
-  void ReportImagePolicyViolation() const;
 
   void UpdateAfterLayout() override;
 
@@ -165,8 +164,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // These flags indicate if the image violates one or more optimized image
   // policies. When any policy is violated, the image should be rendered as a
   // placeholder image.
-  bool is_legacy_format_;
-  bool is_unoptimized_image_;
+  bool is_legacy_format_or_unoptimized_image_;
   bool is_oversized_image_;
 };
 
