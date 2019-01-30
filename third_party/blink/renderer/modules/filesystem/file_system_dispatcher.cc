@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -94,8 +95,10 @@ FileSystemDispatcher::~FileSystemDispatcher() = default;
 
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
   if (!file_system_manager_ptr_) {
-    mojom::blink::FileSystemManagerRequest request =
-        mojo::MakeRequest(&file_system_manager_ptr_);
+    // See https://bit.ly/2S0zRAS for task types
+    mojom::blink::FileSystemManagerRequest request = mojo::MakeRequest(
+        &file_system_manager_ptr_,
+        GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
     // Document::GetInterfaceProvider() can return null if the frame is
     // detached.
     if (GetSupplementable()->GetInterfaceProvider()) {
@@ -290,8 +293,10 @@ void FileSystemDispatcher::ReadDirectory(
     const KURL& path,
     std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   mojom::blink::FileSystemOperationListenerPtr ptr;
-  mojom::blink::FileSystemOperationListenerRequest request =
-      mojo::MakeRequest(&ptr);
+  // See https://bit.ly/2S0zRAS for task types
+  mojom::blink::FileSystemOperationListenerRequest request = mojo::MakeRequest(
+      &ptr,
+      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
   op_listeners_.AddBinding(
       std::make_unique<ReadDirectoryListener>(std::move(callbacks)),
       std::move(request));
@@ -333,8 +338,10 @@ void FileSystemDispatcher::Truncate(const KURL& path,
                                     int* request_id_out,
                                     StatusCallback callback) {
   mojom::blink::FileSystemCancellableOperationPtr op_ptr;
+  // See https://bit.ly/2S0zRAS for task types
   mojom::blink::FileSystemCancellableOperationRequest op_request =
-      mojo::MakeRequest(&op_ptr);
+      mojo::MakeRequest(&op_ptr, GetSupplementable()->GetTaskRunner(
+                                     blink::TaskType::kMiscPlatformAPI));
   int operation_id = next_operation_id_++;
   op_ptr.set_connection_error_handler(
       WTF::Bind(&FileSystemDispatcher::RemoveOperationPtr,
@@ -364,8 +371,10 @@ void FileSystemDispatcher::Write(const KURL& path,
                                  const WriteCallback& success_callback,
                                  StatusCallback error_callback) {
   mojom::blink::FileSystemCancellableOperationPtr op_ptr;
+  // See https://bit.ly/2S0zRAS for task types
   mojom::blink::FileSystemCancellableOperationRequest op_request =
-      mojo::MakeRequest(&op_ptr);
+      mojo::MakeRequest(&op_ptr, GetSupplementable()->GetTaskRunner(
+                                     blink::TaskType::kMiscPlatformAPI));
   int operation_id = next_operation_id_++;
   op_ptr.set_connection_error_handler(
       WTF::Bind(&FileSystemDispatcher::RemoveOperationPtr,
@@ -373,8 +382,10 @@ void FileSystemDispatcher::Write(const KURL& path,
   cancellable_operations_.insert(operation_id, std::move(op_ptr));
 
   mojom::blink::FileSystemOperationListenerPtr listener_ptr;
-  mojom::blink::FileSystemOperationListenerRequest request =
-      mojo::MakeRequest(&listener_ptr);
+  // See https://bit.ly/2S0zRAS for task types
+  mojom::blink::FileSystemOperationListenerRequest request = mojo::MakeRequest(
+      &listener_ptr,
+      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
   op_listeners_.AddBinding(
       std::make_unique<WriteListener>(
           WTF::BindRepeating(&FileSystemDispatcher::DidWrite,
