@@ -684,6 +684,17 @@ const base::Feature kWebUIPolymer2 {
 };
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+// If this flag is enabled, Web UI pages can call DisablePolymer2() on the
+// shared resource during setup in order to use Polymer 1, regardless of the
+// state of the WebUIPolymer2 flag. Note: Currently, this only supports one Web
+// UI page disabling Polymer 2.
+// TODO(dpapad): Remove this once Polymer 2 migration is done,
+// https://crbug.com/738611.
+const base::Feature kWebUIPolymer2Exceptions{"WebUIPolymer2Exceptions",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_MACOSX)
 // Enables caching of media devices for the purpose of enumerating them.
 const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",

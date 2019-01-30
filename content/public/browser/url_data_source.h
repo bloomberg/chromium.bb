@@ -35,6 +35,14 @@ class CONTENT_EXPORT URLDataSource {
   static void Add(BrowserContext* browser_context,
                   std::unique_ptr<URLDataSource> source);
 
+  // Gets a reference to the URL data source for |url| and runs |callback| with
+  // it as an argument.
+  // TODO (rbpotter): Remove this function when the OOBE page Polymer 2
+  // migration is complete.
+  static void GetSourceForURL(BrowserContext* browser_context,
+                              const GURL& url,
+                              base::OnceCallback<void(URLDataSource*)>);
+
   virtual ~URLDataSource() {}
 
   // The name of this source.
@@ -153,6 +161,13 @@ class CONTENT_EXPORT URLDataSource {
 
   // Whether |path| is gzipped (and should be transmitted gzipped).
   virtual bool IsGzipped(const std::string& path) const;
+
+  // Called on the UI thread. For the shared resource, disables using Polymer 2
+  // for requests from |host|, even if WebUIPolymer2 is enabled. Assumes this
+  // method is only called from one host.
+  // TODO (rbpotter): Remove this function when the OOBE page Polymer 2
+  // migration is complete.
+  virtual void DisablePolymer2ForHost(const std::string& host);
 };
 
 }  // namespace content

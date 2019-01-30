@@ -90,6 +90,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -352,6 +353,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -762,6 +764,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -1270,6 +1273,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -1936,6 +1940,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -2444,6 +2449,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -3098,6 +3104,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -3606,6 +3613,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -9464,6 +9472,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -9708,6 +9717,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -10104,6 +10114,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -10430,6 +10441,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -10904,6 +10916,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -11148,6 +11161,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -11472,6 +11486,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -11694,6 +11709,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -12041,6 +12057,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -12285,6 +12302,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -12633,6 +12651,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -12877,6 +12896,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -13220,6 +13240,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -13458,6 +13479,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -13906,6 +13928,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -14186,6 +14209,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -14592,6 +14616,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -14889,6 +14914,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -15262,6 +15288,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -15559,6 +15586,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -15932,6 +15960,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -16229,6 +16258,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -16602,6 +16632,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -16899,6 +16930,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -17272,6 +17304,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -17569,6 +17602,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -17942,6 +17976,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -18239,6 +18274,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -18612,6 +18648,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -18909,6 +18946,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -19282,6 +19320,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -19579,6 +19618,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -19952,6 +19992,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -20249,6 +20290,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -20622,6 +20664,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -20919,6 +20962,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -21292,6 +21336,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -21536,6 +21581,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",
@@ -21934,6 +21980,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter"
         ],
         "name": "webui_polymer2_browser_tests",
@@ -22431,6 +22478,7 @@
       {
         "args": [
           "--enable-features=WebUIPolymer2",
+          "--disable-features=WebUIPolymer2Exceptions",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
         "name": "webui_polymer2_interactive_ui_tests",

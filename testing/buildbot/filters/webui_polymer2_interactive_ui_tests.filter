@@ -7,8 +7,9 @@
 # be fixed and moved to the "Passing tests" section further down in this file.
 #
 # NOTE: Please do not add new exclusions to this file. Instead fix the test in
-# question such that it passes with --enable-features=WebUIPolymer2 (and with
-# GN optimize_webui=true and false).
+# question such that it passes with --enable-features=WebUIPolymer2 and, on
+# Chrome OS, --disable-features=WebUIPolymer2Exceptions (and with GN
+# optimize_webui=true and false).
 
 # Failing on Chrome OS only:
 -LoginUITest.OobeCatchException

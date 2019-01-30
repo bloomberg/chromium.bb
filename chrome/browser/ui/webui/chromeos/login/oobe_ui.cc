@@ -97,6 +97,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -309,6 +310,11 @@ bool IsRemoraRequisitioned() {
   return policy_manager && policy_manager->IsRemoraRequisition();
 }
 
+void DisablePolymer2(content::URLDataSource* shared_source) {
+  if (shared_source)
+    shared_source->DisablePolymer2ForHost(chrome::kChromeUIOobeHost);
+}
+
 }  // namespace
 
 // static
@@ -500,6 +506,17 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       CreateOobeUIDataSource(localized_strings, display_type_);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+
+  // If allowed, request that the shared resources send this page Polymer 1
+  // resources instead of Polymer 2.
+  // TODO (https://crbug.com/739611): Remove this exception by migrating to
+  // Polymer 2.
+  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
+    content::URLDataSource::GetSourceForURL(
+        Profile::FromWebUI(web_ui),
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
+        base::BindOnce(DisablePolymer2));
+  }
 
   AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindMultiDeviceSetup,
                                            base::Unretained(this)));
