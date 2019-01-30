@@ -107,7 +107,7 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
       special_storage_policy, base_path_, env_override,
       base::BindRepeating(&FileSystemIDToPluginMap::GetPluginIDForURL,
                           base::Owned(plugin_map_)),
-      std::set<std::string>(), nullptr));
+      std::set<std::string>(), nullptr, file_system_options.is_incognito()));
 }
 
 PluginPrivateFileSystemBackend::~PluginPrivateFileSystemBackend() {

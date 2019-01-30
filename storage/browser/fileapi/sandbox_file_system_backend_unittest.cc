@@ -23,6 +23,7 @@
 #include "storage/browser/test/test_file_system_options.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
 
 using storage::FileSystemURL;
@@ -80,11 +81,12 @@ class SandboxFileSystemBackendTest : public testing::Test {
   }
 
   void SetUpNewDelegate(const storage::FileSystemOptions& options) {
+    incognito_env_override_ = leveldb_chrome::NewMemEnv("FileSystem");
     delegate_.reset(new SandboxFileSystemBackendDelegate(
         nullptr /* quota_manager_proxy */,
         base::ThreadTaskRunnerHandle::Get().get(), data_dir_.GetPath(),
         nullptr /* special_storage_policy */, options,
-        nullptr /* env_override */));
+        options.is_in_memory() ? incognito_env_override_.get() : nullptr));
   }
 
   void SetUpNewBackend(const storage::FileSystemOptions& options) {
@@ -129,6 +131,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
         SandboxFileSystemBackendDelegate::kFileSystemDirectory);
   }
 
+  std::unique_ptr<leveldb::Env> incognito_env_override_;
   base::ScopedTempDir data_dir_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;

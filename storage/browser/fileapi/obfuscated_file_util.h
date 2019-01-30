@@ -102,7 +102,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
                      leveldb::Env* env_override,
                      GetTypeStringForURLCallback get_type_string_for_url,
                      const std::set<std::string>& known_type_strings,
-                     SandboxFileSystemBackendDelegate* sandbox_delegate);
+                     SandboxFileSystemBackendDelegate* sandbox_delegate,
+                     bool is_incognito);
   ~ObfuscatedFileUtil() override;
 
   // FileSystemFileUtil overrides.
@@ -225,7 +226,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   static ObfuscatedFileUtil* CreateForTesting(
       storage::SpecialStoragePolicy* special_storage_policy,
       const base::FilePath& file_system_directory,
-      leveldb::Env* env_override);
+      leveldb::Env* env_override,
+      bool is_incognito);
 
   base::FilePath GetDirectoryForURL(
       const FileSystemURL& url,

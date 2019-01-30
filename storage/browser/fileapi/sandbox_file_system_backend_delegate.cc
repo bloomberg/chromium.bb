@@ -190,7 +190,8 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
                                  env_override,
                                  base::BindRepeating(&GetTypeStringForURL),
                                  GetKnownTypeStrings(),
-                                 this))),
+                                 this,
+                                 file_system_options.is_incognito()))),
       file_system_usage_cache_(std::make_unique<FileSystemUsageCache>()),
       quota_observer_(new SandboxQuotaObserver(quota_manager_proxy,
                                                file_task_runner,
@@ -710,11 +711,12 @@ ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
 ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
     storage::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
-    leveldb::Env* env_override) {
+    leveldb::Env* env_override,
+    bool is_incognito) {
   return new ObfuscatedFileUtil(special_storage_policy, file_system_directory,
                                 env_override,
                                 base::BindRepeating(&GetTypeStringForURL),
-                                GetKnownTypeStrings(), nullptr);
+                                GetKnownTypeStrings(), nullptr, is_incognito);
 }
 
 }  // namespace storage
