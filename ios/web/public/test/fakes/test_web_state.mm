@@ -279,20 +279,6 @@ void TestWebState::OnVisibleSecurityStateChanged() {
   }
 }
 
-void TestWebState::ShowTransientContentView(CRWContentView* content_view) {
-  if (content_view) {
-    transient_content_view_ = content_view;
-  }
-}
-
-void TestWebState::ClearTransientContentView() {
-  transient_content_view_ = nil;
-}
-
-CRWContentView* TestWebState::GetTransientContentView() {
-  return transient_content_view_;
-}
-
 bool TestWebState::ShouldAllowRequest(
     NSURLRequest* request,
     const WebStatePolicyDecider::RequestInfo& request_info) {

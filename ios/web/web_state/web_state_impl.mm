@@ -331,13 +331,6 @@ const base::string16& WebStateImpl::GetTitle() const {
   return item ? item->GetTitleForDisplay() : empty_string16_;
 }
 
-void WebStateImpl::ShowTransientContentView(CRWContentView* content_view) {
-  DCHECK(Configured());
-  DCHECK(content_view);
-  DCHECK(content_view.scrollView);
-  [web_controller_ showTransientContentView:content_view];
-}
-
 bool WebStateImpl::IsShowingWebInterstitial() const {
   // Technically we could have |interstitial_| set but its view isn't
   // being displayed, but there's no code path where that could occur.
@@ -386,9 +379,11 @@ void WebStateImpl::UpdateHttpResponseHeaders(const GURL& url) {
 
 void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
   DCHECK(Configured());
-  DCHECK(interstitial);
   interstitial_ = interstitial;
-  ShowTransientContentView(interstitial_->GetContentView());
+
+  DCHECK(interstitial_->GetContentView());
+  DCHECK(interstitial_->GetContentView().scrollView);
+  [web_controller_ showTransientContentView:interstitial_->GetContentView()];
 }
 
 void WebStateImpl::SendChangeLoadProgress(double progress) {

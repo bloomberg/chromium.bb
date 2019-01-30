@@ -214,7 +214,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
-  void ShowTransientContentView(CRWContentView* content_view) override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,

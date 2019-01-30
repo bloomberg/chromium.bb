@@ -64,8 +64,6 @@ class TestWebState : public WebState {
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
-  void ShowTransientContentView(CRWContentView* content_view) override;
-  void ClearTransientContentView();
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,
                                 const std::string& command_prefix) override {}
   void RemoveScriptCommandCallback(const std::string& command_prefix) override {
@@ -107,7 +105,6 @@ class TestWebState : public WebState {
   void RemoveWebFrame(std::string frame_id);
 
   // Getters for test data.
-  CRWContentView* GetTransientContentView();
   // Uses |policy_deciders| to return whether the navigation corresponding to
   // |request| should be allowed. Defaults to true.
   bool ShouldAllowRequest(
@@ -135,7 +132,6 @@ class TestWebState : public WebState {
   bool is_crashed_;
   bool is_evicted_;
   bool has_opener_;
-  CRWContentView* transient_content_view_;
   GURL url_;
   base::string16 title_;
   base::string16 last_executed_javascript_;
