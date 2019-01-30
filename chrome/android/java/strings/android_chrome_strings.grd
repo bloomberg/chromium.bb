@@ -4031,7 +4031,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         I accept
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
-        The Google Assistant saves you time by speeding you through the website's checkout.
+        Google Assistant saves you time by helping you check out on the web
       </message>
       <!-- Autofill Assistant preferences -->
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_TITLE" desc="Title for the Autofill Assistant preferences screen. [CHAR-LIMIT=32]">
@@ -4041,7 +4041,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Assistant Triggered Checkout
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Google Assistant in Chrome.">
-        By continuing, you agree that Chrome will send data from Chrome Autofill, the site’s URL and its content to Google to provide this service. \n\nYou also agree that Chrome will send personal data you selected to the website via Chrome Autofill. Visit Chrome settings to turn off Google Assistant in Chrome and Chrome Autofill.  <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
+        By continuing, you agree that Chrome will send data from Chrome Autofill, the site’s URL and its content to Google to provide this service. You also agree that Chrome will send personal data you selected to the website via Chrome Autofill. \n\nVisit Chrome settings to turn off Google Assistant in Chrome and Chrome Autofill.  <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
         http://support.google.com/assistant?p=fast_checkout
