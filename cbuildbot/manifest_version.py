@@ -657,7 +657,8 @@ class BuildSpecsManager(object):
     self.master = False if config is None else config.master
     self.metadata = metadata
     self.buildstore = buildstore
-    self.db = buildstore.GetCIDBHandle()
+    self.db = (buildstore.GetCIDBHandle() if buildstore.AreClientsReady()
+               else None)
     self.buildbucket_client = buildbucket_client
 
     # Directories and specifications are set once we load the specs.
