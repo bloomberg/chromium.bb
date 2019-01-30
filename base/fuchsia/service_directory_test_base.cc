@@ -5,44 +5,37 @@
 #include "base/fuchsia/service_directory_test_base.h"
 
 #include <lib/fdio/util.h>
+#include <utility>
 
 namespace base {
 namespace fuchsia {
 
 ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
-  zx::channel service_directory_channel;
-  EXPECT_EQ(zx::channel::create(0, &service_directory_channel,
-                                &service_directory_client_channel_),
-            ZX_OK);
+  // TODO(https://crbug.com/920920): Remove the ServiceDirectory's implicit
+  // "public" sub-directory and update this setup logic.
 
   // Mount service dir and publish the service.
+  fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
   service_directory_ =
-      std::make_unique<ServiceDirectory>(std::move(service_directory_channel));
+      std::make_unique<ServiceDirectory>(directory.NewRequest());
   service_binding_ =
       std::make_unique<ScopedServiceBinding<testfidl::TestInterface>>(
           service_directory_.get(), &test_service_);
 
-  ConnectClientContextToDirectory("public");
+  // Create the ServiceDirectoryClient, connected to the "public" sub-directory.
+  fidl::InterfaceHandle<::fuchsia::io::Directory> public_directory;
+  CHECK_EQ(fdio_open_at(directory.channel().get(), "public", 0,
+                        public_directory.NewRequest().TakeChannel().release()),
+           ZX_OK);
+  public_service_directory_client_ =
+      std::make_unique<ServiceDirectoryClient>(std::move(public_directory));
+
+  // Create a ServiceDirectoryClient for the "private" part of the directory.
+  root_service_directory_client_ =
+      std::make_unique<ServiceDirectoryClient>(std::move(directory));
 }
 
 ServiceDirectoryTestBase::~ServiceDirectoryTestBase() = default;
-
-void ServiceDirectoryTestBase::ConnectClientContextToDirectory(
-    const char* path) {
-  // Open directory |path| from the service directory.
-  zx::channel public_directory_channel;
-  zx::channel public_directory_client_channel;
-  EXPECT_EQ(zx::channel::create(0, &public_directory_channel,
-                                &public_directory_client_channel),
-            ZX_OK);
-  EXPECT_EQ(fdio_open_at(service_directory_client_channel_.get(), path, 0,
-                         public_directory_channel.release()),
-            ZX_OK);
-
-  // Create ComponentContext and connect to the test service.
-  client_context_ = std::make_unique<ComponentContext>(
-      std::move(public_directory_client_channel));
-}
 
 void ServiceDirectoryTestBase::VerifyTestInterface(
     fidl::InterfacePtr<testfidl::TestInterface>* stub,
