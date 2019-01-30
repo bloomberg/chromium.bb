@@ -8,6 +8,7 @@
 #include "components/exo/input_method_surface_manager.h"
 #include "components/exo/wm_helper.h"
 #include "ui/base/class_property.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
@@ -30,7 +31,7 @@ InputMethodSurface::InputMethodSurface(InputMethodSurfaceManager* manager,
           ash::kShellWindowId_ArcVirtualKeyboardContainer),
       manager_(manager),
       input_method_bounds_(),
-      default_device_scale_factore_(default_device_scale_factor) {
+      default_device_scale_factor_(default_device_scale_factor) {
   SetScale(default_device_scale_factor);
   host_window()->SetName("ExoInputMethodSurface");
   host_window()->SetProperty(kInputMethodSurface, this);
@@ -74,17 +75,15 @@ void InputMethodSurface::OnSurfaceCommit() {
 
   gfx::Rect new_bounds = root_surface()->hit_test_region().bounds();
   if (input_method_bounds_ != new_bounds) {
-    input_method_bounds_ = new_bounds;
+    input_method_bounds_ =
+        gfx::ConvertRectToDIP(default_device_scale_factor_, new_bounds);
     manager_->OnTouchableBoundsChanged(this);
 
-    gfx::RectF bounds(input_method_bounds_);
-    bounds.Scale(1.0 / default_device_scale_factore_);
-    GetViewAccessibility().OverrideBounds(bounds);
+    GetViewAccessibility().OverrideBounds(gfx::RectF(input_method_bounds_));
   }
 }
 
 gfx::Rect InputMethodSurface::GetBounds() const {
-  // TODO(crbug.com/912449): This should return bounds in DIP.
   return input_method_bounds_;
 }
 

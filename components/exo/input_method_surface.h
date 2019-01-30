@@ -32,8 +32,9 @@ class InputMethodSurface : public ClientControlledShellSurface {
  private:
   InputMethodSurfaceManager* const manager_;
   bool added_to_manager_ = false;
+  // The bounds of this surface in DIP.
   gfx::Rect input_method_bounds_;
-  double default_device_scale_factore_;
+  double default_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodSurface);
 };
