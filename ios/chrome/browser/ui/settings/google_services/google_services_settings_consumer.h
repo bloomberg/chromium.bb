@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 // Consumer protocol for Google services settings.
-@protocol GoogleServicesSettingsConsumer<NSObject>
+@protocol GoogleServicesSettingsConsumer <NSObject>
 
 // Returns the table view model.
 @property(nonatomic, strong, readonly)
@@ -33,4 +33,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_

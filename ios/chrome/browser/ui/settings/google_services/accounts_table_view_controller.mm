@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"

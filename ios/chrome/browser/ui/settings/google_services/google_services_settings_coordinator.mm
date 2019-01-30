@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -14,11 +14,11 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/settings/accounts_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/google_services_settings_command_handler.h"
-#import "ios/chrome/browser/ui/settings/google_services_settings_mediator.h"
-#import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
-#import "ios/chrome/browser/ui/settings/manage_sync_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mediator.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 

@@ -72,6 +72,7 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
     "//ios/chrome/browser/ui/settings:eg_tests",
     "//ios/chrome/browser/ui/settings/autofill:eg_tests",
     "//ios/chrome/browser/ui/settings/clear_browsing_data:eg_tests",
+    "//ios/chrome/browser/ui/settings/google_services:eg_tests",
     "//ios/chrome/browser/ui/settings/password:eg_tests",
   ]
 }
@@ -202,7 +203,7 @@ chrome_ios_eg_test("ios_chrome_external_url_egtests") {
 
 chrome_ios_eg_test("ios_chrome_unified_consent_egtests") {
   deps = [
-    "//ios/chrome/browser/ui/settings:unified_consent_eg_tests",
+    "//ios/chrome/browser/ui/settings/google_services:unified_consent_eg_tests",
   ]
 }
 
@@ -246,6 +247,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/settings:settings",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
+    "//ios/chrome/browser/ui/settings/google_services",
     "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/static_content",
     "//ios/chrome/browser/ui/table_view/cells",

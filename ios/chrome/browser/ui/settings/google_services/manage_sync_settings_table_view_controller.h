@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_MANAGE_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_MANAGE_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_MANAGE_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_MANAGE_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-#import "ios/chrome/browser/ui/settings/manage_sync_settings_consumer.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
 
 @class ManageSyncSettingsTableViewController;
 @protocol ManageSyncSettingsTableViewControllerModelDelegate;
@@ -36,4 +36,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_MANAGE_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_MANAGE_SYNC_SETTINGS_TABLE_VIEW_CONTROLLER_H_

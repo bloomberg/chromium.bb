@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
 
 @class SyncSwitchItem;
 @class TableViewItem;
 
 // Protocol to handle user actions from the Google services settings view.
-@protocol GoogleServicesSettingsServiceDelegate<NSObject>
+@protocol GoogleServicesSettingsServiceDelegate <NSObject>
 
 // Called when the UISwitch from the SyncSwitchItem is toggled.
 - (void)toggleSwitchItem:(SyncSwitchItem*)switchItem withValue:(BOOL)value;
@@ -19,4 +19,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_SERVICE_DELEGATE_H_

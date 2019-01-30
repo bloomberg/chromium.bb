@@ -111,8 +111,8 @@ using chrome_test_util::SettingsDoneButton;
 // exist in the cell.
 - (GREYElementInteraction*)cellElementInteractionWithTitleID:(int)titleID
                                                 detailTextID:(int)detailTextID {
-  id<GREYMatcher> cellMatcher =
-      [self cellMatcherWithTitleID:titleID detailTextID:detailTextID];
+  id<GREYMatcher> cellMatcher = [self cellMatcherWithTitleID:titleID
+                                                detailTextID:detailTextID];
   return [self elementInteractionWithGreyMatcher:cellMatcher];
 }
 
