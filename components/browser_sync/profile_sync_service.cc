@@ -1342,9 +1342,7 @@ base::Time ProfileSyncService::GetLastSyncedTime() const {
   return sync_prefs_.GetLastSyncedTime();
 }
 
-void ProfileSyncService::OnPreferredDataTypesPrefChange(
-    bool sync_everything,
-    syncer::ModelTypeSet preferred_types) {
+void ProfileSyncService::OnPreferredDataTypesPrefChange() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!engine_ && !HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {

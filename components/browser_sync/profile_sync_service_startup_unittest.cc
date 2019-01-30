@@ -559,8 +559,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, DisableSync) {
 TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
   pref_service()->ClearPref(syncer::prefs::kSyncKeepEverythingSynced);
-  syncer::ModelTypeSet user_types = syncer::UserTypes();
-  for (syncer::ModelType type : user_types) {
+  for (syncer::ModelType type : syncer::UserSelectableTypes()) {
     pref_service()->ClearPref(syncer::SyncPrefs::GetPrefNameForDataType(type));
   }
 
