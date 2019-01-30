@@ -140,7 +140,8 @@ Display::~Display() {
 }
 
 void Display::Initialize(DisplayClient* client,
-                         SurfaceManager* surface_manager) {
+                         SurfaceManager* surface_manager,
+                         bool enable_shared_images) {
   DCHECK(client);
   DCHECK(surface_manager);
   client_ = client;
@@ -152,7 +153,7 @@ void Display::Initialize(DisplayClient* client,
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
 
-  InitializeRenderer();
+  InitializeRenderer(enable_shared_images);
 
   // This depends on assumptions that Display::Initialize will happen on the
   // same callstack as the ContextProvider being created/initialized or else
@@ -264,12 +265,13 @@ void Display::SetOutputIsSecure(bool secure) {
   }
 }
 
-void Display::InitializeRenderer() {
+void Display::InitializeRenderer(bool enable_shared_images) {
   auto mode = output_surface_->context_provider() || skia_output_surface_
                   ? DisplayResourceProvider::kGpu
                   : DisplayResourceProvider::kSoftware;
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
-      mode, output_surface_->context_provider(), bitmap_manager_);
+      mode, output_surface_->context_provider(), bitmap_manager_,
+      enable_shared_images);
 
   if (settings_.use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
     // Default to use DDL if skia_output_surface is not null.
