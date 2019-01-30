@@ -17567,6 +17567,38 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signin_CancelAdvancedSyncSettings">
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user clicks the 'Cancel' button during the advanced sync
+    opt-in flow.
+  </description>
+</action>
+
+<action name="Signin_Signin_CancelCancelAdvancedSyncSettings">
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user clicks the 'Back' button on the 'Cancel sync?' dialog
+    during the advanced sync opt-in flow.
+  </description>
+</action>
+
+<action name="Signin_Signin_ConfirmAdvancedSyncSettings">
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user clicks the 'Confirm' button during the advanced sync
+    opt-in flow.
+  </description>
+</action>
+
+<action name="Signin_Signin_ConfirmCancelAdvancedSyncSettings">
+  <owner>tangltom@chromium.org</owner>
+  <description>
+    Recorded when the user clicks the 'Cancel sync' button on the 'Cancel sync?'
+    dialog during the advanced sync opt-in flow.
+  </description>
+</action>
+
 <action name="Signin_Signin_FromAppsPageLink">
   <owner>gogerald@chromium.org</owner>
   <description>

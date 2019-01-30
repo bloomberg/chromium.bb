@@ -244,6 +244,8 @@ Polymer({
   /** @private */
   onSetupCancelDialogBack_: function() {
     this.$$('#setupCancelDialog').cancel();
+    chrome.metricsPrivate.recordUserAction(
+        'Signin_Signin_CancelCancelAdvancedSyncSettings');
   },
 
   /** @private */
@@ -251,6 +253,8 @@ Polymer({
     this.setupCancelDialogConfirmed_ = true;
     this.$$('#setupCancelDialog').close();
     settings.navigateTo(settings.routes.BASIC);
+    chrome.metricsPrivate.recordUserAction(
+        'Signin_Signin_ConfirmCancelAdvancedSyncSettings');
   },
 
   /** @private */
@@ -604,6 +608,11 @@ Polymer({
   onSyncSetupDone_: function(e) {
     if (e.detail) {
       this.didAbort_ = false;
+      chrome.metricsPrivate.recordUserAction(
+          'Signin_Signin_ConfirmAdvancedSyncSettings');
+    } else {
+      chrome.metricsPrivate.recordUserAction(
+          'Signin_Signin_CancelAdvancedSyncSettings');
     }
     settings.navigateTo(settings.routes.BASIC);
   },
