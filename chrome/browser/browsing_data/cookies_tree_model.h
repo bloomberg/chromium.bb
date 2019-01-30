@@ -158,6 +158,10 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
   // size data.
   virtual int64_t InclusiveSize() const;
 
+  // Recursively traverse the child nodes and calculate the number of nodes of
+  // type CookieTreeCookieNode.
+  virtual int NumberOfCookies() const;
+
   // Delete backend storage for this node, and any children nodes. (E.g. delete
   // the cookie from CookieMonster, clear the database, and so forth.)
   virtual void DeleteStoredObjects();

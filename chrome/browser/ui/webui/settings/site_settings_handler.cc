@@ -75,6 +75,9 @@ constexpr char kOriginList[] = "origins";
 constexpr char kNumCookies[] = "numCookies";
 constexpr char kHasPermissionSettings[] = "hasPermissionSettings";
 constexpr char kZoom[] = "zoom";
+// Placeholder value for ETLD+1 until a valid origin is added. If an ETLD+1
+// only has placeholder, then create an ETLD+1 origin.
+constexpr char kPlaceholder[] = "placeholder";
 
 // Return an appropriate API Permission ID for the given string name.
 extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
@@ -142,19 +145,43 @@ bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
 
 // Groups |url| into sets of eTLD+1s in |site_group_map|, assuming |url| is an
 // origin.
-void CreateOrAppendSiteGroupEntryForUrl(
+// There are three cases:
+// 1. The ETLD+1 of |url| is not yet in |site_group_map|. We add the ETLD+1
+//    to |site_group_map|. If the |url| is an ETLD+1 cookie origin, put a
+//    placeholder origin for the ETLD+1.
+// 2. The ETLD+1 of |url| is in |site_group_map|, and is equal to host of
+//    |url|. This means case 1 has already happened and nothing more needs to
+//    be done.
+// 3. The ETLD+1 of |url| is in |site_group_map| and is different to host of
+//    |url|.
+// In case 3, we try to add |url| to the set of origins for the ETLD+1. If an
+// existing origin is a placeholder, delete it, because the placeholder is no
+// longer needed.
+void CreateOrAppendSiteGroupEntry(
     std::map<std::string, std::set<std::string>>* site_group_map,
-    const GURL& url) {
+    const GURL& url,
+    bool url_is_origin_with_cookies = false) {
   std::string etld_plus1_string =
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   auto entry = site_group_map->find(etld_plus1_string);
+  bool etld_plus1_cookie_url =
+      url_is_origin_with_cookies && url.host() == etld_plus1_string;
+
   if (entry == site_group_map->end()) {
-    site_group_map->emplace(etld_plus1_string,
-                            std::set<std::string>({url.spec()}));
+    // Case 1:
+    std::string origin = etld_plus1_cookie_url ? kPlaceholder : url.spec();
+    site_group_map->emplace(etld_plus1_string, std::set<std::string>({origin}));
     return;
   }
+  // Case 2:
+  if (etld_plus1_cookie_url)
+    return;
+  // Case 3:
   entry->second.insert(url.spec());
+  auto placeholder = entry->second.find(kPlaceholder);
+  if (placeholder != entry->second.end())
+    entry->second.erase(placeholder);
 }
 
 // Update the storage data in |origin_size_map|.
@@ -163,54 +190,6 @@ void UpdateDataForOrigin(const GURL& url,
                          std::map<std::string, int>* origin_size_map) {
   if (size > 0)
     (*origin_size_map)[url.spec()] += size;
-}
-
-// Groups |host| into sets of eTLD+1s in |site_group_map|, |host| can either
-// be an eTLD+1 or an origin.
-// There are three cases:
-// 1. The ETLD+1 of |host| is not yet in |site_group_map|. We add the ETLD+1
-//    to |site_group_map|
-// 2. The ETLD+1 of |host| is in |site_group_map|, and is equal to |host|.
-//    This means case 1 has already happened and nothing more needs to be
-//    done.
-// 3. The ETLD+1 of |host| is in |site_group_map| and is different to |host|.
-// In case 3, we try to add |host| to the set of origins for the ETLD+1.
-// This requires adding a scheme. We initially check if a HTTPS scheme has
-// been added for the host, and fall back to HTTP if not.
-void CreateOrAppendSiteGroupEntryForCookieHost(
-    const std::string& host,
-    std::map<std::string, std::set<std::string>>* site_group_map) {
-  std::string etld_plus1_string =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  auto entry = site_group_map->find(etld_plus1_string);
-  if (entry == site_group_map->end()) {
-    site_group_map->emplace(
-        etld_plus1_string,
-        // Add etld+1 origin as place holder.
-        std::set<std::string>({std::string(url::kHttpScheme) +
-                               url::kStandardSchemeSeparator + host + "/"}));
-    return;
-  }
-  // If |host| equals to etld_plus1_string that is already exists in
-  // |site_group_map|, nothing need to be done.
-  if (host == etld_plus1_string)
-    return;
-  // Cookies ignore schemes, so try and see if a https schemed version
-  // already exists in the origin list, if not, then add the http schemed
-  // version into the map.
-  std::string https_url = std::string(url::kHttpsScheme) +
-                          url::kStandardSchemeSeparator + host + "/";
-  if (entry->second.find(https_url) != entry->second.end())
-    return;
-  entry->second.insert(std::string(url::kHttpScheme) +
-                       url::kStandardSchemeSeparator + host + "/");
-  // Check if we have an etld_plus1 url place holder, if there is, delete
-  // that entry.
-  std::string etld_plus1_url = std::string(url::kHttpScheme) +
-                               url::kStandardSchemeSeparator +
-                               etld_plus1_string + "/";
-  entry->second.erase(etld_plus1_url);
 }
 
 // Converts a given |site_group_map| to a list of base::DictionaryValues, adding
@@ -232,7 +211,15 @@ void ConvertSiteGroupMapToListValue(
     base::Value origin_list(base::Value::Type::LIST);
     for (const std::string& origin : entry.second) {
       base::Value origin_object(base::Value::Type::DICTIONARY);
-      origin_object.SetKey("origin", base::Value(origin));
+      // If origin is placeholder, create a http ETLD+1 origin for it.
+      if (origin == kPlaceholder) {
+        origin_object.SetKey(
+            "origin",
+            base::Value(std::string(url::kHttpScheme) +
+                        url::kStandardSchemeSeparator + entry.first + "/"));
+      } else {
+        origin_object.SetKey("origin", base::Value(origin));
+      }
       origin_object.SetKey(
           "engagement",
           base::Value(engagement_service->GetScore(GURL(origin))));
@@ -289,7 +276,7 @@ void UpdateDataFromCookiesTree(
     const GURL& origin,
     int64_t size) {
   UpdateDataForOrigin(origin, size, origin_size_map);
-  CreateOrAppendSiteGroupEntryForUrl(all_sites_map, origin);
+  CreateOrAppendSiteGroupEntry(all_sites_map, origin);
 }
 
 }  // namespace
@@ -699,7 +686,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
             permission_manager->GetPermissionStatus(content_type, url, url);
         if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
             result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
-          CreateOrAppendSiteGroupEntryForUrl(&all_sites_map_, url);
+          CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
           origin_permission_set_.insert(url.spec());
           break;
         }
@@ -713,8 +700,8 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
     map->GetSettingsForOneType(content_type, std::string(), &entries);
     for (const ContentSettingPatternSource& e : entries) {
       if (PatternAppliesToSingleOrigin(e)) {
-        CreateOrAppendSiteGroupEntryForUrl(&all_sites_map_,
-                                           GURL(e.primary_pattern.ToString()));
+        CreateOrAppendSiteGroupEntry(&all_sites_map_,
+                                     GURL(e.primary_pattern.ToString()));
         origin_permission_set_.insert(
             GURL(e.primary_pattern.ToString()).spec());
       }
@@ -754,7 +741,6 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
   for (base::Value& site_group : list_value.GetList()) {
     base::Value* origin_list = site_group.FindKey(kOriginList);
     int cookie_num = 0;
-
     const std::string& etld_plus1 =
         site_group.FindKey(kEffectiveTopLevelDomainPlus1Name)->GetString();
     const auto& etld_plus1_cookie_num_it = origin_cookie_map.find(etld_plus1);
@@ -1411,21 +1397,10 @@ void SiteSettingsHandler::GetOriginCookies(
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();
   for (int i = 0; i < root->child_count(); ++i) {
     const CookieTreeNode* site = root->GetChild(i);
-    std::string title = base::UTF16ToUTF8(site->GetTitle());
-    for (int j = 0; j < site->child_count(); ++j) {
-      const CookieTreeNode* category = site->GetChild(j);
-      if (category->GetDetailedInfo().node_type !=
-          CookieTreeNode::DetailedInfo::TYPE_COOKIES)
-        continue;
-      for (int k = 0; k < category->child_count(); ++k) {
-        const CookieTreeNode::DetailedInfo& detailedInfo =
-            category->GetChild(k)->GetDetailedInfo();
-        if (detailedInfo.node_type != CookieTreeNode::DetailedInfo::TYPE_COOKIE)
-          continue;
-        (*origin_cookie_map)[title] += 1;
-        CreateOrAppendSiteGroupEntryForCookieHost(title, all_sites_map);
-      }
-    }
+    GURL url = site->GetDetailedInfo().origin.GetURL();
+    (*origin_cookie_map)[url.host()] = site->NumberOfCookies();
+    CreateOrAppendSiteGroupEntry(all_sites_map, url,
+                                 /*url_is_origin_with_cookies = */ true);
   }
 }
 
