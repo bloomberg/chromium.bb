@@ -205,9 +205,14 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentSeparatorView() {
 
 std::unique_ptr<views::Background>
 PaymentHandlerWebFlowViewController::GetHeaderBackground() {
-  if (!web_contents())
-    return PaymentRequestSheetController::GetHeaderBackground();
-  return views::CreateSolidBackground(web_contents()->GetThemeColor());
+  auto default_header_background =
+      PaymentRequestSheetController::GetHeaderBackground();
+  if (web_contents()) {
+    return views::CreateSolidBackground(color_utils::GetResultingPaintColor(
+        web_contents()->GetThemeColor(),
+        default_header_background->get_color()));
+  }
+  return default_header_background;
 }
 
 bool PaymentHandlerWebFlowViewController::GetSheetId(DialogViewID* sheet_id) {
