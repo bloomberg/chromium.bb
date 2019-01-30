@@ -174,7 +174,9 @@ NGPaintFragment::NGPaintFragment(
       offset_(offset),
       parent_(parent),
       is_dirty_inline_(false) {
-  DCHECK(physical_fragment_);
+  // TODO(crbug.com/924449): Once we get the caller passes null physical
+  // fragment, we'll change to DCHECK().
+  CHECK(physical_fragment_);
 }
 
 NGPaintFragment::~NGPaintFragment() {
@@ -318,7 +320,9 @@ NGPaintFragment::RareData& NGPaintFragment::EnsureRareData() {
 void NGPaintFragment::UpdateFromCachedLayoutResult(
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset offset) {
-  DCHECK(fragment);
+  // TODO(crbug.com/924449): Once we get the caller passes null physical
+  // fragment, we'll change to DCHECK().
+  CHECK(fragment);
 
 #if DCHECK_IS_ON()
   // When updating to a cached layout result, only offset can change. Check
