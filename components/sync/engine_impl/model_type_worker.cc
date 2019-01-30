@@ -331,15 +331,15 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     // TODO(crbug.com/902349): Once passwords are fully migrated to USS and this
     // feature toggle isn't needed anymore, make sure to remove the
     // "+components/sync/driver", from "components/sync/engine_impl/DEPS"
-    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSPasswords)) {
+      data.specifics = specifics;
+    } else {
       // Full-blown USS implementation requires the password to be decrypted at
       // the worker.
       if (!DecryptPasswordSpecifics(*cryptographer, specifics,
                                     &data.specifics)) {
         return FAILED_TO_DECRYPT;
       }
-    } else {
-      data.specifics = specifics;
     }
     response_data->entity = data.PassToPtr();
     return SUCCESS;
@@ -586,7 +586,9 @@ void ModelTypeWorker::DecryptStoredEntities() {
         ++it;
         continue;
       }
-      if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSPasswords)) {
+        specifics = data->specifics;
+      } else {
         // Full-blown USS implementation requires the password to be decrypted
         // at the worker.
         if (!DecryptPasswordSpecifics(*cryptographer_, data->specifics,
@@ -594,8 +596,6 @@ void ModelTypeWorker::DecryptStoredEntities() {
           ++it;
           continue;
         }
-      } else {
-        specifics = data->specifics;
       }
     } else {
       DCHECK(data->specifics.has_encrypted());
