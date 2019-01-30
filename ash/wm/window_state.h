@@ -26,7 +26,6 @@ class Rect;
 }
 
 namespace ash {
-class ImmersiveGestureDragHandler;
 class LockWindowState;
 class TabletModeWindowState;
 
@@ -467,10 +466,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignore_property_change_;
 
   std::unique_ptr<State> current_state_;
-
-  // An object that assists with dragging immersive mode windows in tablet mode.
-  // Only non-null when immersive mode is active.
-  std::unique_ptr<ImmersiveGestureDragHandler> immersive_gesture_drag_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

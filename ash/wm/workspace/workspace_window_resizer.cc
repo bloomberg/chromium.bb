@@ -17,9 +17,12 @@
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/pip/pip_window_resizer.h"
-#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -41,24 +44,67 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 
+namespace ash {
+
 namespace {
 
 constexpr double kMinHorizVelocityForWindowSwipe = 1100;
 constexpr double kMinVertVelocityForWindowMinimize = 1000;
 
+// The drag delegate for app windows. It not only includes the logic in
+// TabletModeWindowDragDelegate, but also has special logic for app windows.
+class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
+ public:
+  TabletModeAppWindowDragDelegate() = default;
+  ~TabletModeAppWindowDragDelegate() override = default;
+
+ private:
+  // TabletModeWindowDragDelegate:
+  void PrepareWindowDrag(const gfx::Point& location_in_screen) override {}
+  void UpdateWindowDrag(const gfx::Point& location_in_screen) override {}
+  void EndingWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
+                        const gfx::Point& location_in_screen) override {}
+  void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
+  void StartFling(const ui::GestureEvent* event) override {
+    if (ShouldFlingIntoOverview(event)) {
+      DCHECK(Shell::Get()->overview_controller()->IsSelecting());
+      Shell::Get()->overview_controller()->overview_session()->AddItem(
+          dragged_window_, /*reposition=*/true, /*animate=*/false);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragDelegate);
+};
+
 // Returns true if |window| can be dragged from the top of the screen in tablet
 // mode.
-bool CanDragInTabletMode(aura::Window* window, int window_component) {
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-  // Pip window can't be dragged.
-  if (window_state->IsPip())
-    return false;
-
+std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
+    aura::Window* window,
+    const gfx::Point& point_in_parent,
+    int window_component,
+    ::wm::WindowMoveSource source) {
+  wm::WindowState* window_state = wm::GetWindowState(window);
   // Only maximized/fullscreen/snapped window can be dragged from the top of
   // the screen.
   if (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
       !window_state->IsSnapped()) {
-    return false;
+    return nullptr;
+  }
+
+  AppType app_type =
+      static_cast<AppType>(window->GetProperty(aura::client::kAppType));
+  // App windows can be dragged from the client area (see
+  // WmToplevelWindowEventHandler).
+  if (app_type != AppType::BROWSER && window_component == HTCLIENT) {
+    DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    window_state->CreateDragDetails(point_in_parent, HTCLIENT,
+                                    ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    std::unique_ptr<WindowResizer> window_resizer =
+        std::make_unique<TabletModeWindowDragController>(
+            window_state, std::make_unique<TabletModeAppWindowDragDelegate>());
+    window_resizer = std::make_unique<DragWindowResizer>(
+        std::move(window_resizer), window_state);
+    return window_resizer;
   }
 
   // Only allow drag that happens on caption or top area. Note: for a maxmized
@@ -66,7 +112,7 @@ bool CanDragInTabletMode(aura::Window* window, int window_component) {
   // for a snapped window, the window component here can either be HTCAPTION or
   // HTTOP.
   if (window_component != HTCAPTION && window_component != HTTOP)
-    return false;
+    return nullptr;
 
   // Note: only browser windows and chrome app windows are included here.
   // For browser windows, this piece of codes will be called no matter the
@@ -74,24 +120,22 @@ bool CanDragInTabletMode(aura::Window* window, int window_component) {
   // But for app window, this piece of codes will only be called if the chrome
   // app window has its customized caption area and can't be hidden in tablet
   // mode (and thus the drag for this type of chrome app window always happens
-  // on caption or top area). If the caption area of the chrome app window can
-  // be hidden, ImmersiveGestureHandlerClassic will handle the window drag
-  // through TabletModeAppWindowDragController.
-  // TODO(xdai, minch): Merge the logic in ImmersiveGestureHandlerClassic into
-  // CreateWindowResizer() in future.
-  ash::AppType app_type =
-      static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType));
-  if (app_type != ash::AppType::BROWSER &&
-      app_type != ash::AppType::CHROME_APP) {
-    return false;
-  }
+  // on caption or top area). The case where the caption area of the chrome app
+  // window can be hidden is handled above.
+  if (app_type != AppType::BROWSER && app_type != AppType::CHROME_APP)
+    return nullptr;
 
-  return true;
+  window_state->CreateDragDetails(point_in_parent, window_component, source);
+  std::unique_ptr<WindowResizer> window_resizer =
+      std::make_unique<TabletModeWindowDragController>(
+          window_state,
+          std::make_unique<TabletModeBrowserWindowDragDelegate>());
+  window_resizer = std::make_unique<DragWindowResizer>(
+      std::move(window_resizer), window_state);
+  return window_resizer;
 }
 
 }  // namespace
-
-namespace ash {
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
@@ -99,6 +143,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     int window_component,
     ::wm::WindowMoveSource source) {
   DCHECK(window);
+
   wm::WindowState* window_state = wm::GetWindowState(window);
   // No need to return a resizer when the window cannot get resized or when a
   // resizer already exists for this window.
@@ -127,15 +172,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (Shell::Get()
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
-    if (!CanDragInTabletMode(window, window_component))
-      return nullptr;
-
-    window_state->CreateDragDetails(point_in_parent, window_component, source);
-    window_resizer =
-        std::make_unique<TabletModeBrowserWindowDragController>(window_state);
-    window_resizer = std::make_unique<DragWindowResizer>(
-        std::move(window_resizer), window_state);
-    return window_resizer;
+    return CreateWindowResizerForTabletMode(window, point_in_parent,
+                                            window_component, source);
   }
 
   if (!window_state->IsNormalOrSnapped())

@@ -17,7 +17,6 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/default_state.h"
-#include "ash/wm/immersive_gesture_drag_handler.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
@@ -786,16 +785,6 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
       // on our changed state.
       ash::Shell::Get()->UpdateShelfVisibility();
     }
-    if (key == kImmersiveIsActive) {
-      if (IsInImmersiveFullscreen()) {
-        if (!immersive_gesture_drag_handler_) {
-          immersive_gesture_drag_handler_ =
-              std::make_unique<ImmersiveGestureDragHandler>(window);
-        }
-      } else {
-        immersive_gesture_drag_handler_.reset();
-      }
-    }
     return;
   }
 }
@@ -813,7 +802,6 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
   if (widget)
     Shell::Get()->focus_cycler()->RemoveWidget(widget);
 
-  immersive_gesture_drag_handler_.reset();
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
 }

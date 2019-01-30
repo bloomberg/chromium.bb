@@ -17,7 +17,6 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_constants.h"
-#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
