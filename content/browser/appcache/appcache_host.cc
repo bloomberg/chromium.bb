@@ -425,7 +425,7 @@ void AppCacheHost::FinishCacheSelection(
     const char* kFormatString =
         "Document was loaded from Application Cache with manifest %s";
     frontend_->OnLogMessage(
-        host_id_, APPCACHE_LOG_INFO,
+        host_id_, blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(kFormatString,
                            owning_group->manifest_url().spec().c_str()));
     AssociateCompleteCache(cache);
@@ -446,7 +446,7 @@ void AppCacheHost::FinishCacheSelection(
         "Adding master entry to Application Cache with manifest %s" :
         "Creating Application Cache with manifest %s";
     frontend_->OnLogMessage(
-        host_id_, APPCACHE_LOG_INFO,
+        host_id_, blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(kFormatString,
                            group->manifest_url().spec().c_str()));
     // The UpdateJob may produce one for us later.

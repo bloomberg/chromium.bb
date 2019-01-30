@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "content/public/common/child_process_host.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace {
 
@@ -121,9 +123,10 @@ void AppCacheNavigationHandleCore::OnErrorEventRaised(
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnLogMessage(int host_id,
-                                                AppCacheLogLevel log_level,
-                                                const std::string& message) {
+void AppCacheNavigationHandleCore::OnLogMessage(
+    int host_id,
+    blink::mojom::ConsoleMessageLevel log_level,
+    const std::string& message) {
   // Should never be called.
   DCHECK(false);
 }

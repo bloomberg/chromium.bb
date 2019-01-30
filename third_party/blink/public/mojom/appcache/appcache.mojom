@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "third_party/blink/public/mojom/appcache/appcache_info.mojom";
+import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "url/mojom/url.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 
@@ -128,7 +129,7 @@ interface AppCacheFrontend {
   ErrorEventRaised(array<int32> host_ids, AppCacheErrorDetails error_details);
 
   // Notifies the renderer of an AppCache logging message.
-  LogMessage(int32 host_id, int32 log_level, string message);
+  LogMessage(int32 host_id, ConsoleMessageLevel log_level, string message);
 
   // Notifies the renderer of the fact that AppCache access was blocked.
   ContentBlocked(int32 host_id, url.mojom.Url manifest_url);

@@ -34,7 +34,6 @@
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/common/appcache_interfaces.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -48,6 +47,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -1640,7 +1640,7 @@ class AppCacheStorageImplTest : public testing::Test {
       error_event_was_raised_ = true;
     }
     void OnLogMessage(int host_id,
-                      AppCacheLogLevel log_level,
+                      blink::mojom::ConsoleMessageLevel log_level,
                       const std::string& message) override {}
     void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
     void OnSetSubresourceFactory(

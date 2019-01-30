@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "content/browser/appcache/appcache_frontend.h"
-#include "content/common/appcache_interfaces.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -36,7 +36,7 @@ class AppCacheFrontendProxy : public AppCacheFrontend {
       const std::vector<int>& host_ids,
       const blink::mojom::AppCacheErrorDetails& details) override;
   void OnLogMessage(int host_id,
-                    AppCacheLogLevel log_level,
+                    blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override;
   void OnContentBlocked(int host_id, const GURL& manifest_url) override;
   void OnSetSubresourceFactory(

@@ -30,6 +30,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -170,8 +171,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
 
 void AppCacheURLRequestJob::BeginErrorDelivery(const char* message) {
   if (host_)
-    host_->frontend()->OnLogMessage(host_->host_id(), APPCACHE_LOG_ERROR,
-                                    message);
+    host_->frontend()->OnLogMessage(
+        host_->host_id(), blink::mojom::ConsoleMessageLevel::kError, message);
   delivery_type_ = DeliveryType::kError;
   storage_ = nullptr;
   BeginDelivery();

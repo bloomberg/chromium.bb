@@ -9,6 +9,7 @@
 
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 class RenderViewImpl;
@@ -23,7 +24,7 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
       int frame_routing_id);
 
   // WebApplicationCacheHostImpl:
-  void OnLogMessage(AppCacheLogLevel log_level,
+  void OnLogMessage(blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override;
   void OnContentBlocked(const GURL& manifest_url) override;
   void OnCacheSelected(const blink::mojom::AppCacheInfo& info) override;

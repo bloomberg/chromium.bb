@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -41,7 +42,7 @@ class AppCacheFrontendImpl : public blink::mojom::AppCacheFrontend {
   void ErrorEventRaised(const std::vector<int32_t>& host_ids,
                         blink::mojom::AppCacheErrorDetailsPtr details) override;
   void LogMessage(int32_t host_id,
-                  int32_t log_level,
+                  blink::mojom::ConsoleMessageLevel log_level,
                   const std::string& message) override;
   void ContentBlocked(int32_t host_id, const GURL& manifest_url) override;
   void SetSubresourceFactory(
