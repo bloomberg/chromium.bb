@@ -4,7 +4,7 @@
 
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
-source_set("sync_utils") {
+source_set("utils") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "sync_error_infobar_delegate.h",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
@@ -42,4 +42,4 @@ extern NSString* const kSwitchAccountDidFinishNotification;
 - (BOOL)shouldDisplayEncryptionError;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_SYNC_SETTINGS_COLLECTION_VIEW_CONTROLLER_H_
