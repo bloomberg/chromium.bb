@@ -4,8 +4,6 @@
 
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
 
-#include <utility>
-
 #include "base/allocator/buildflags.h"
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -426,12 +424,8 @@ void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
     *context = allocation_context.type_name;
 }
 
-// Captures up to |max_entries| stack frames using the buffer pointed by
-// |frames|. Puts the number of captured frames into the |count| output
-// parameters. Returns the pointer to the topmost frame.
-const void** CaptureStackTrace(const void** frames,
-                               size_t max_entries,
-                               size_t* count) {
+void SerializeFramesFromBacktrace(FrameSerializer* serializer,
+                                  const char** context) {
   // Skip 3 top frames related to the profiler itself, e.g.:
   //   base::debug::StackTrace::StackTrace
   //   heap_profiling::RecordAndSendAlloc
@@ -439,33 +433,26 @@ const void** CaptureStackTrace(const void** frames,
   size_t skip_frames = 3;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
+  const void* frames[kMaxStackEntries - 1];
   size_t frame_count =
       base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
-          frames, max_entries);
+          frames, kMaxStackEntries - 1);
 #elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
-  size_t frame_count =
-      base::debug::TraceStackFramePointers(frames, max_entries, skip_frames);
+  const void* frames[kMaxStackEntries - 1];
+  size_t frame_count = base::debug::TraceStackFramePointers(
+      frames, kMaxStackEntries - 1, skip_frames);
   skip_frames = 0;
 #else
-  // Fall-back to capturing the stack with base::debug::CollectStackTrace,
+  // Fall-back to capturing the stack with base::debug::StackTrace,
   // which is likely slower, but more reliable.
-  // TODO(alph): Make CollectStackTrace accept const void** pointer.
-  size_t frame_count =
-      base::debug::CollectStackTrace(const_cast<void**>(frames), max_entries);
+  base::debug::StackTrace stack_trace(kMaxStackEntries - 1);
+  size_t frame_count = 0u;
+  const void* const* frames = stack_trace.Addresses(&frame_count);
 #endif
 
   skip_frames = std::min(skip_frames, frame_count);
-  *count = frame_count - skip_frames;
-  return frames + skip_frames;
-}
-
-void SerializeFramesFromBacktrace(FrameSerializer* serializer,
-                                  const char** context) {
-  const void* frames[kMaxStackEntries];
-  size_t frames_count;
-  const void** first_frame =
-      CaptureStackTrace(frames, kMaxStackEntries - 1, &frames_count);
-  serializer->AddAllInstructionPointers(frames_count, first_frame);
+  serializer->AddAllInstructionPointers(frame_count - skip_frames,
+                                        frames + skip_frames);
 
   // Both thread name and task context require access to TLS.
   if (ScopedAllowAlloc::HasTLSBeenDestroyed())
@@ -618,14 +605,9 @@ SamplingProfilerWrapper::~SamplingProfilerWrapper() {
   base::PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
 }
 
-SamplingProfilerWrapper::Sample::Sample() = default;
-SamplingProfilerWrapper::Sample::Sample(Sample&&) = default;
-SamplingProfilerWrapper::Sample::~Sample() = default;
-
 void SamplingProfilerWrapper::StartProfiling(SenderPipe* sender_pipe,
                                              mojom::ProfilingParamsPtr params) {
   size_t sampling_rate = params->sampling_rate;
-  stream_samples_ = params->stream_samples;
   InitAllocationRecorder(sender_pipe, std::move(params));
   auto* sampler = base::PoissonAllocationSampler::Get();
   sampler->SetSamplingInterval(sampling_rate);
@@ -637,128 +619,17 @@ void SamplingProfilerWrapper::StopProfiling() {
   base::PoissonAllocationSampler::Get()->Stop();
 }
 
-mojom::HeapProfilePtr SamplingProfilerWrapper::RetrieveHeapProfile() {
-  base::PoissonAllocationSampler::ScopedMuteThreadSamples no_samples_scope;
-  base::AutoLock lock(mutex_);
-  mojom::HeapProfilePtr profile = mojom::HeapProfile::New();
-  profile->samples.reserve(samples_.size());
-  for (const auto& pair : samples_) {
-    auto mojo_sample = mojom::HeapProfileSample::New();
-    mojo_sample->allocator = static_cast<uint32_t>(pair.second.allocator);
-    mojo_sample->size = pair.second.size;
-    mojo_sample->context_id = reinterpret_cast<uintptr_t>(pair.second.context);
-    mojo_sample->stack = pair.second.stack;
-    profile->samples.push_back(std::move(mojo_sample));
-  }
-  profile->strings.reserve(strings_.size());
-  for (const char* string : strings_)
-    profile->strings.emplace(reinterpret_cast<uintptr_t>(string), string);
-  return profile;
-}
-
-// The PoissonAllocationSampler that invokes this method guarantees
-// non-reentrancy, i.e. no allocations made within the scope of SampleAdded
-// will produce a sample.
 void SamplingProfilerWrapper::SampleAdded(
     void* address,
     size_t size,
     size_t total,
     base::PoissonAllocationSampler::AllocatorType type,
     const char* context) {
-  DCHECK(base::PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
-  if (stream_samples_) {
-    RecordAndSendAlloc(ConvertType(type), address, size, context);
-    return;
-  }
-  base::AutoLock lock(mutex_);
-  Sample sample;
-  sample.allocator = ConvertType(type);
-  sample.size = size;
-  CaptureMode capture_mode = AllocationContextTracker::capture_mode();
-  if (capture_mode == CaptureMode::PSEUDO_STACK ||
-      capture_mode == CaptureMode::MIXED_STACK) {
-    CaptureMixedStack(context, &sample);
-  } else {
-    CaptureNativeStack(context, &sample);
-  }
-  samples_.emplace(address, std::move(sample));
-}
-
-void SamplingProfilerWrapper::CaptureMixedStack(const char* context,
-                                                Sample* sample) {
-  // Allocation context is tracked in TLS. Return nothing if TLS was destroyed.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
-  auto* tracker = AllocationContextTracker::GetInstanceForCurrentThread();
-  if (!tracker)
-    return;
-
-  AllocationContext allocation_context;
-  if (!tracker->GetContextSnapshot(&allocation_context))
-    return;
-
-  const base::trace_event::Backtrace& backtrace = allocation_context.backtrace;
-  CHECK_LE(backtrace.frame_count, kMaxStackEntries);
-  std::vector<uint64_t> stack;
-  stack.reserve(backtrace.frame_count);
-  for (int i = base::checked_cast<int>(backtrace.frame_count) - 1; i >= 0;
-       --i) {
-    const base::trace_event::StackFrame& frame = backtrace.frames[i];
-    if (frame.type != base::trace_event::StackFrame::Type::PROGRAM_COUNTER) {
-      const char* name = static_cast<const char*>(frame.value);
-      if (strings_.find(name) == strings_.end())
-        strings_.emplace(name);
-    }
-    stack.push_back(reinterpret_cast<uintptr_t>(frame.value));
-  }
-  sample->stack = std::move(stack);
-  if (!context)
-    context = allocation_context.type_name;
-  sample->context = RecordString(context);
-}
-
-void SamplingProfilerWrapper::CaptureNativeStack(const char* context,
-                                                 Sample* sample) {
-  const void* stack[kMaxStackEntries];
-  size_t frame_count;
-  // One frame is reserved for the thread name.
-  const void** first_frame =
-      CaptureStackTrace(stack, kMaxStackEntries - 1, &frame_count);
-  DCHECK_LT(frame_count, kMaxStackEntries);
-  sample->stack.reserve(frame_count + (g_include_thread_names ? 1 : 0));
-  sample->stack.insert(sample->stack.end(),
-                       reinterpret_cast<uint64_t*>(first_frame),
-                       reinterpret_cast<uint64_t*>(first_frame + frame_count));
-
-  // Both thread name and task context require access to TLS.
-  if (ScopedAllowAlloc::HasTLSBeenDestroyed())
-    return;
-
-  if (g_include_thread_names) {
-    sample->stack.push_back(
-        reinterpret_cast<uintptr_t>(RecordString(GetOrSetThreadName())));
-  }
-  if (!context) {
-    const auto* tracker =
-        AllocationContextTracker::GetInstanceForCurrentThread();
-    if (tracker)
-      context = tracker->TaskContext();
-  }
-  sample->context = RecordString(context);
-}
-
-const char* SamplingProfilerWrapper::RecordString(const char* string) {
-  return string ? *strings_.insert(string).first : nullptr;
+  RecordAndSendAlloc(ConvertType(type), address, size, context);
 }
 
 void SamplingProfilerWrapper::SampleRemoved(void* address) {
-  DCHECK(base::PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
-  if (stream_samples_) {
-    RecordAndSendFree(address);
-    return;
-  }
-  base::AutoLock lock(mutex_);
-  samples_.erase(address);
+  RecordAndSendFree(address);
 }
 
 }  // namespace heap_profiling
