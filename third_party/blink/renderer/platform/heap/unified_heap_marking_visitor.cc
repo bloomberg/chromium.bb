@@ -25,7 +25,11 @@ std::unique_ptr<UnifiedHeapMarkingVisitor> UnifiedHeapMarkingVisitor::Create(
 UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,
                                                      MarkingMode mode,
                                                      v8::Isolate* isolate)
-    : MarkingVisitor(thread_state, mode), isolate_(isolate) {}
+    : MarkingVisitor(thread_state, mode),
+      isolate_(isolate),
+      controller_(V8PerIsolateData::From(isolate)->GetUnifiedHeapController()) {
+  DCHECK(controller_);
+}
 
 void UnifiedHeapMarkingVisitor::WriteBarrier(
     v8::Isolate* isolate,
@@ -75,7 +79,7 @@ void UnifiedHeapMarkingVisitor::Visit(
   if (v8_reference.Get().IsEmpty())
     return;
   DCHECK(isolate_);
-  v8_reference.Get().RegisterExternalReference(isolate_);
+  controller_->RegisterEmbedderReference(v8_reference.Get());
 }
 
 void UnifiedHeapMarkingVisitor::Visit(

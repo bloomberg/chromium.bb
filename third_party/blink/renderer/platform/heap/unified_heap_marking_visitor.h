@@ -38,6 +38,7 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitor final : public MarkingVisitor {
   UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
 
   v8::Isolate* const isolate_;
+  v8::EmbedderHeapTracer* const controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedHeapMarkingVisitor);
 };

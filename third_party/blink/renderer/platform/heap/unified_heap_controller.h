@@ -33,6 +33,11 @@ class PLATFORM_EXPORT UnifiedHeapController final
   DISALLOW_IMPLICIT_CONSTRUCTORS(UnifiedHeapController);
 
  public:
+  // Temporarily expose that logic to allow reuse by
+  // ScriptWrappableMarkingVisitor.
+  static bool IsRootForNonTracingGCInternal(
+      const v8::TracedGlobal<v8::Value>& handle);
+
   explicit UnifiedHeapController(ThreadState*);
 
   // v8::EmbedderHeapTracer implementation.
@@ -42,6 +47,7 @@ class PLATFORM_EXPORT UnifiedHeapController final
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&) final;
   bool AdvanceTracing(double) final;
   bool IsTracingDone() final;
+  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>&) final;
 
   ThreadState* thread_state() const { return thread_state_; }
 

@@ -577,6 +577,9 @@
       status: "stable",
     },
     {
+      name: "HeapCollectLiveNonNodeWrappers",
+    },
+    {
       name: "HeapCompaction",
       status: "stable",
     },

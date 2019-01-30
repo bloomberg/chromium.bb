@@ -78,6 +78,11 @@ bool ScriptWrappableMarkingVisitor::IsTracingDone() {
   return marking_deque_.empty();
 }
 
+bool ScriptWrappableMarkingVisitor::IsRootForNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  return UnifiedHeapController::IsRootForNonTracingGCInternal(handle);
+}
+
 void ScriptWrappableMarkingVisitor::PerformCleanup() {
   if (!should_cleanup_)
     return;
@@ -250,7 +255,8 @@ void ScriptWrappableMarkingVisitor::Visit(
   // requires us to bail out here when tracing is not in progress.
   if (!tracing_in_progress_ || traced_wrapper.Get().IsEmpty())
     return;
-  traced_wrapper.Get().RegisterExternalReference(isolate());
+
+  RegisterEmbedderReference(traced_wrapper.Get());
 }
 
 void ScriptWrappableMarkingVisitor::VisitWithWrappers(
