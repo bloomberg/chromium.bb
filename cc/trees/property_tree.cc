@@ -835,6 +835,11 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
     parent_node->has_masking_child = true;
 }
 
+void EffectTree::UpdateIsMasked(EffectNode* node, EffectNode* parent_node) {
+  node->is_masked = (parent_node && parent_node->is_masked) ||
+                    node->mask_layer_id != Layer::INVALID_ID;
+}
+
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   if (!effect_node->has_render_surface) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
@@ -911,6 +916,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
+  UpdateIsMasked(node, parent_node);
   UpdateSurfaceContentsScale(node);
 }
 
@@ -1184,8 +1190,6 @@ bool EffectTree::ClippedHitTestRegionIsRectangle(int effect_id) const {
     if (!property_trees()->GetToTarget(effect_node->transform_id,
                                        effect_node->target_id, &to_target) ||
         !to_target.Preserves2dAxisAlignment())
-      return false;
-    if (effect_node->mask_layer_id != Layer::INVALID_ID)
       return false;
   }
   return true;

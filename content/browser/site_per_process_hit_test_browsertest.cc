@@ -5707,10 +5707,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   // +-----------------------------------+
   gfx::Transform expected_transform;
   expected_transform.RotateAboutZAxis(-45);
-  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+  gfx::Rect expected_region1 = gfx::ScaleToEnclosingRect(
       gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
-  if (!features::IsVizHitTestingDrawQuadEnabled()) {
-    expected_region =
+  gfx::Rect expected_region2;
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    // The clip tree built by BlinkGenPropertyTrees is different from that build
+    // by cc. While it does not affect correctness of hit testing, the hit test
+    // region with kHitTestAsk will have a different size due to the change of
+    // accumulated clips.
+    expected_region1 = gfx::ScaleToEnclosingRect(
+        gfx::Rect(200, 100 / 1.414f), device_scale_factor, device_scale_factor);
+    expected_region2 =
         gfx::ScaleToEnclosingRect(gfx::Rect(100 + 100 / 1.414f, 100 / 1.414f),
                                   device_scale_factor, device_scale_factor);
   }
@@ -5718,8 +5725,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   // Since iframe is clipped into an octagon, we expect to do slow path hit
   // test on the iframe.
   DCHECK(hit_test_data.size() >= 3);
-  EXPECT_TRUE(expected_region.ApproximatelyEqual(hit_test_data[2].rect,
-                                                 1 + device_scale_factor));
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
+    EXPECT_TRUE(expected_region1.ApproximatelyEqual(hit_test_data[2].rect,
+                                                    1 + device_scale_factor));
+  } else {
+    EXPECT_TRUE(expected_region1.ApproximatelyEqual(hit_test_data[2].rect,
+                                                    1 + device_scale_factor) ||
+                expected_region2.ApproximatelyEqual(hit_test_data[2].rect,
+                                                    1 + device_scale_factor));
+  }
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
@@ -5733,18 +5747,28 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
       SetupAndGetHitTestData("/frame_tree/page_with_clip_path_iframe.html");
   float device_scale_factor = current_device_scale_factor();
   gfx::Transform expected_transform;
-  gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
+  gfx::Rect expected_region1 = gfx::ScaleToEnclosingRect(
       gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
-  if (!features::IsVizHitTestingDrawQuadEnabled()) {
-    expected_region = gfx::ScaleToEnclosingRect(
-        gfx::Rect(80, 80), device_scale_factor, device_scale_factor);
-  }
+  gfx::Rect expected_region2 = gfx::ScaleToEnclosingRect(
+      gfx::Rect(80, 80), device_scale_factor, device_scale_factor);
 
-  // Since iframe is clipped into an octagon, we expect to do slow path hit
-  // test on the iframe.
+  // Since iframe is clipped into an irregular quadrilateral, we expect to do
+  // slow path hit test on the iframe.
   DCHECK(hit_test_data.size() >= 3);
-  EXPECT_TRUE(expected_region.ApproximatelyEqual(hit_test_data[2].rect,
-                                                 1 + device_scale_factor));
+  // When BlinkGenPropertyTrees is enabled, the visible rect calculated for the
+  // OOPIF is different to that when BlinkGenPropertyTrees is disabled. So the
+  // test is considered passed if either of the regions equals to hit test
+  // region.
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    EXPECT_TRUE(expected_region1.ApproximatelyEqual(hit_test_data[2].rect,
+                                                    1 + device_scale_factor) ||
+                expected_region2.ApproximatelyEqual(hit_test_data[2].rect,
+                                                    1 + device_scale_factor));
+
+  } else {
+    EXPECT_TRUE(expected_region1.ApproximatelyEqual(hit_test_data[2].rect,
+                                                    1 + device_scale_factor));
+  }
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
@@ -5790,6 +5814,32 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   gfx::Transform expected_transform;
   gfx::Rect expected_region = gfx::ScaleToEnclosingRect(
       gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
+
+  // Since iframe clipped by clip-path and has a mask layer, we expect to do
+  // slow path hit testing.
+  DCHECK(hit_test_data.size() >= 3);
+  EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
+  EXPECT_TRUE(
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+  EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
+                       AncestorMaskedOOPIF) {
+  if (!features::IsVizHitTestingEnabled())
+    return;
+  auto hit_test_data = SetupAndGetHitTestData(
+      "/frame_tree/page_with_ancestor_masked_iframe.html");
+  float device_scale_factor = current_device_scale_factor();
+  gfx::Transform expected_transform;
+  gfx::Rect expected_region;
+  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
+    expected_region = gfx::ScaleToEnclosingRect(
+        gfx::Rect(100, 100), device_scale_factor, device_scale_factor);
+  } else {
+    expected_region = gfx::ScaleToEnclosingRect(
+        gfx::Rect(200, 200), device_scale_factor, device_scale_factor);
+  }
 
   // Since iframe clipped by clip-path and has a mask layer, we expect to do
   // slow path hit testing.
