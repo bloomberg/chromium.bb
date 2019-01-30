@@ -38,7 +38,8 @@ enum MediaStreamRequestResult {
   TRACK_START_FAILURE_VIDEO,
   NOT_SUPPORTED,
   FAILED_DUE_TO_SHUTDOWN,
-  KILL_SWITCH_ON
+  KILL_SWITCH_ON,
+  SYSTEM_PERMISSION_DENIED
 };
 
 // See public/common/media_stream_request.h.
