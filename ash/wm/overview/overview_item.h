@@ -248,6 +248,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
  private:
   friend class OverviewSessionTest;
+  class WindowSurfaceCacheObserver;
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
@@ -343,6 +344,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<ui::Shadow> shadow_;
+
+  // The observer to observe the window that has cached its render surface.
+  std::unique_ptr<WindowSurfaceCacheObserver> window_surface_cache_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewItem);
 };

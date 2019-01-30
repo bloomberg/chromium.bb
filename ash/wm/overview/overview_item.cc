@@ -76,6 +76,42 @@ std::unique_ptr<views::Widget> CreateBackdropWidget(aura::Window* parent) {
 
 }  // namespace
 
+// The class to cache render surface to the specified window's layer.
+class OverviewItem::WindowSurfaceCacheObserver : public aura::WindowObserver {
+ public:
+  explicit WindowSurfaceCacheObserver(aura::Window* window) {
+    StartObserving(window);
+  }
+
+  ~WindowSurfaceCacheObserver() override { StopObserving(); }
+
+  void StartObserving(aura::Window* window) {
+    // If we're already observing a window, stop observing it first.
+    StopObserving();
+
+    window_ = window;
+    window_->AddObserver(this);
+    for (auto* window : wm::GetTransientTreeIterator(window_))
+      window->layer()->AddCacheRenderSurfaceRequest();
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override { StopObserving(); }
+
+ private:
+  void StopObserving() {
+    if (window_) {
+      for (auto* window : wm::GetTransientTreeIterator(window_))
+        window->layer()->RemoveCacheRenderSurfaceRequest();
+      window_->RemoveObserver(this);
+      window_ = nullptr;
+    }
+  }
+
+  aura::Window* window_ = nullptr;
+  DISALLOW_COPY_AND_ASSIGN(WindowSurfaceCacheObserver);
+};
+
 OverviewItem::OverviewItem(aura::Window* window,
                            OverviewSession* overview_session,
                            OverviewGrid* overview_grid)
@@ -325,6 +361,8 @@ void OverviewItem::CloseWindow() {
 
 void OverviewItem::OnMinimizedStateChanged() {
   transform_window_.UpdateMirrorWindowForMinimizedState();
+  if (window_surface_cache_observers_)
+    window_surface_cache_observers_->StartObserving(GetWindowForStacking());
 }
 
 void OverviewItem::UpdateCannotSnapWarningVisibility() {
@@ -345,18 +383,32 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
+  // Disable mask and shadow for the dragged overview item during dragging.
+  if (is_being_dragged_)
+    UpdateMaskAndShadow();
+
   caption_container_view_->SetHeaderVisibility(
       is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
           : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
-  UpdateMaskAndShadow();
+
+  // Start caching render surface during overview window dragging.
+  window_surface_cache_observers_ =
+      std::make_unique<WindowSurfaceCacheObserver>(GetWindowForStacking());
 }
 
 void OverviewItem::OnSelectorItemDragEnded() {
-  is_being_dragged_ = false;
+  // Re-show mask and shadow for the dragged overview item after drag ends.
+  if (is_being_dragged_) {
+    is_being_dragged_ = false;
+    UpdateMaskAndShadow();
+  }
+
   caption_container_view_->SetHeaderVisibility(
       CaptionContainerView::HeaderVisibility::kVisible);
-  UpdateMaskAndShadow();
+
+  // Stop caching render surface after overview window dragging.
+  window_surface_cache_observers_.reset();
 }
 
 ScopedOverviewTransformWindow::GridWindowFillMode
