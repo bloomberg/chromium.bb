@@ -589,6 +589,17 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  'src/third_party/androidx': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/androidx',
+              'version': 'Z2TKYlinmuC0HUW4ulv89ataKxbXJDsnPYgylLVzuBEC',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
   'src/third_party/angle':
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 

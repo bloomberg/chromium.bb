@@ -1,0 +1,26 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+android_aar_prebuilt("androidx_core_java") {
+  # If this is not test only, there are security implecations.
+  # Any changes from test only will need a review from security@chromium.org.
+  testonly = true
+  aar_path = "lib/core-1.0.0.aar"
+}
+
+android_aar_prebuilt("androidx_junit_java") {
+  # If this is not test only, there are security implecations.
+  # Any changes from test only will need a review from security@chromium.org.
+  testonly = true
+  aar_path = "lib/junit-1.0.0.aar"
+}
+
+android_aar_prebuilt("androidx_monitor_java") {
+  # If this is not test only, there are security implecations.
+  # Any changes from test only will need a review from security@chromium.org.
+  testonly = true
+  aar_path = "lib/monitor-1.1.0.aar"
+}

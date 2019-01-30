@@ -1,0 +1,21 @@
+name: "androidx"
+description:
+    "AndroidX is the open-source project that the Android team uses to develop, "
+    "test, package, version and release libraries within Jetpack."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://developer.android.com/jetpack/androidx/"
+  }
+  url {
+    type: ARCHIVE
+    value: "https://mvnrepository.com/artifact/androidx.test"
+  }
+  url {
+    type: GIT
+    value: "https://android.googlesource.com/platform/frameworks/support/+/androidx-1.0-dev"
+  }
+  version: "1.0.0"
+  last_upgrade_date { year: 2019 month: 1 day: 23 }
+}
