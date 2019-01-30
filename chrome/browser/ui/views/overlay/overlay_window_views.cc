@@ -297,9 +297,13 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
     }
 
     // Update the window size to adhere to the aspect ratio.
+    gfx::Size min_size = min_size_;
+    gfx::Size max_size = max_size_;
+    views::WindowResizeUtils::SizeMinMaxToAspectRatio(aspect_ratio, &min_size,
+                                                      &max_size);
     gfx::Rect window_rect(GetBounds().origin(), window_size);
     views::WindowResizeUtils::SizeRectToAspectRatio(
-        hit_test, aspect_ratio, min_size_, max_size_, &window_rect);
+        hit_test, aspect_ratio, min_size, max_size, &window_rect);
     window_size.SetSize(window_rect.width(), window_rect.height());
 
     UpdateLayerBoundsWithLetterboxing(window_size);
