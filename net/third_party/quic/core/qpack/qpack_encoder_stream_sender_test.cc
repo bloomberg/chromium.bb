@@ -20,7 +20,7 @@ class MockSenderDelegate : public QpackEncoderStreamSender::Delegate {
  public:
   ~MockSenderDelegate() override = default;
 
-  MOCK_METHOD1(Write, void(QuicStringPiece data));
+  MOCK_METHOD1(WriteEncoderStreamData, void(QuicStringPiece data));
 };
 
 class QpackEncoderStreamSenderTest : public QuicTest {
@@ -34,22 +34,25 @@ class QpackEncoderStreamSenderTest : public QuicTest {
 
 TEST_F(QpackEncoderStreamSenderTest, InsertWithNameReference) {
   // Static, index fits in prefix, empty value.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("c500"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("c500"))));
   stream_.SendInsertWithNameReference(true, 5, "");
 
   // Static, index fits in prefix, Huffman encoded value.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("c28294e7"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("c28294e7"))));
   stream_.SendInsertWithNameReference(true, 2, "foo");
 
   // Not static, index does not fit in prefix, not Huffman encoded value.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("bf4a03626172"))));
+  EXPECT_CALL(delegate_, WriteEncoderStreamData(
+                             Eq(QuicTextUtils::HexDecode("bf4a03626172"))));
   stream_.SendInsertWithNameReference(false, 137, "bar");
 
   // Value length does not fit in prefix.
   // 'Z' would be Huffman encoded to 8 bits, so no Huffman encoding is used.
   EXPECT_CALL(
       delegate_,
-      Write(Eq(QuicTextUtils::HexDecode(
+      WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode(
           "aa7f005a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"
           "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"
           "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"
@@ -59,23 +62,25 @@ TEST_F(QpackEncoderStreamSenderTest, InsertWithNameReference) {
 
 TEST_F(QpackEncoderStreamSenderTest, InsertWithoutNameReference) {
   // Empty name and value.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("4000"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("4000"))));
   stream_.SendInsertWithoutNameReference("", "");
 
   // Huffman encoded short strings.
-  EXPECT_CALL(delegate_,
-              Write(Eq(QuicTextUtils::HexDecode("4362617203626172"))));
+  EXPECT_CALL(delegate_, WriteEncoderStreamData(
+                             Eq(QuicTextUtils::HexDecode("4362617203626172"))));
   stream_.SendInsertWithoutNameReference("bar", "bar");
 
   // Not Huffman encoded short strings.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("6294e78294e7"))));
+  EXPECT_CALL(delegate_, WriteEncoderStreamData(
+                             Eq(QuicTextUtils::HexDecode("6294e78294e7"))));
   stream_.SendInsertWithoutNameReference("foo", "foo");
 
   // Not Huffman encoded long strings; length does not fit on prefix.
   // 'Z' would be Huffman encoded to 8 bits, so no Huffman encoding is used.
   EXPECT_CALL(
       delegate_,
-      Write(Eq(QuicTextUtils::HexDecode(
+      WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode(
           "5f005a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a7f"
           "005a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"
           "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a"
@@ -87,21 +92,25 @@ TEST_F(QpackEncoderStreamSenderTest, InsertWithoutNameReference) {
 
 TEST_F(QpackEncoderStreamSenderTest, Duplicate) {
   // Small index fits in prefix.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("11"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("11"))));
   stream_.SendDuplicate(17);
 
   // Large index requires two extension bytes.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("1fd503"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("1fd503"))));
   stream_.SendDuplicate(500);
 }
 
 TEST_F(QpackEncoderStreamSenderTest, SetDynamicTableCapacity) {
   // Small capacity fits in prefix.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("31"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("31"))));
   stream_.SendSetDynamicTableCapacity(17);
 
   // Large capacity requires two extension bytes.
-  EXPECT_CALL(delegate_, Write(Eq(QuicTextUtils::HexDecode("3fd503"))));
+  EXPECT_CALL(delegate_,
+              WriteEncoderStreamData(Eq(QuicTextUtils::HexDecode("3fd503"))));
   stream_.SendSetDynamicTableCapacity(500);
 }
 

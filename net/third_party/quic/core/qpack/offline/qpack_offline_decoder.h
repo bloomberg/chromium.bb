@@ -32,7 +32,7 @@ class QpackOfflineDecoder : public QpackDecoder::EncoderStreamErrorDelegate {
                                   QuicStringPiece expected_headers_filename);
 
   // QpackDecoder::EncoderStreamErrorDelegate implementation:
-  void OnError(QuicStringPiece error_message) override;
+  void OnEncoderStreamError(QuicStringPiece error_message) override;
 
  private:
   // Parse decoder parameters from |input_filename| and set up |decoder_|

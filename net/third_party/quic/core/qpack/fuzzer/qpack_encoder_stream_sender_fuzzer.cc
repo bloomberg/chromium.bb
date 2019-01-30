@@ -22,7 +22,7 @@ class NoOpDelegate : public QpackEncoderStreamSender::Delegate {
   NoOpDelegate() = default;
   ~NoOpDelegate() override = default;
 
-  void Write(QuicStringPiece data) override {}
+  void WriteEncoderStreamData(QuicStringPiece data) override {}
 };
 
 // This fuzzer exercises QpackEncoderStreamSender.

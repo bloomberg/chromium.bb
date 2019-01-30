@@ -48,7 +48,7 @@ void QpackEncoder::OnStreamCancellation(QuicStreamId stream_id) {
 }
 
 void QpackEncoder::OnErrorDetected(QuicStringPiece error_message) {
-  decoder_stream_error_delegate_->OnError(error_message);
+  decoder_stream_error_delegate_->OnDecoderStreamError(error_message);
 }
 
 }  // namespace quic

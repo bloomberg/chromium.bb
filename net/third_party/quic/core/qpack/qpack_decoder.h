@@ -31,7 +31,7 @@ class QUIC_EXPORT_PRIVATE QpackDecoder
    public:
     virtual ~EncoderStreamErrorDelegate() {}
 
-    virtual void OnError(QuicStringPiece error_message) = 0;
+    virtual void OnEncoderStreamError(QuicStringPiece error_message) = 0;
   };
 
   QpackDecoder(

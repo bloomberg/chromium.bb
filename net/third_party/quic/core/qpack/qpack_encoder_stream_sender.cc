@@ -33,7 +33,7 @@ void QpackEncoderStreamSender::SendInsertWithNameReference(
   instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
   DCHECK(!instruction_encoder_.HasNext());
 
-  delegate_->Write(output);
+  delegate_->WriteEncoderStreamData(output);
 }
 
 void QpackEncoderStreamSender::SendInsertWithoutNameReference(
@@ -49,7 +49,7 @@ void QpackEncoderStreamSender::SendInsertWithoutNameReference(
   instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
   DCHECK(!instruction_encoder_.HasNext());
 
-  delegate_->Write(output);
+  delegate_->WriteEncoderStreamData(output);
 }
 
 void QpackEncoderStreamSender::SendDuplicate(uint64_t index) {
@@ -62,7 +62,7 @@ void QpackEncoderStreamSender::SendDuplicate(uint64_t index) {
   instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
   DCHECK(!instruction_encoder_.HasNext());
 
-  delegate_->Write(output);
+  delegate_->WriteEncoderStreamData(output);
 }
 
 void QpackEncoderStreamSender::SendSetDynamicTableCapacity(uint64_t capacity) {
@@ -75,7 +75,7 @@ void QpackEncoderStreamSender::SendSetDynamicTableCapacity(uint64_t capacity) {
   instruction_encoder_.Next(std::numeric_limits<size_t>::max(), &output);
   DCHECK(!instruction_encoder_.HasNext());
 
-  delegate_->Write(output);
+  delegate_->WriteEncoderStreamData(output);
 }
 
 }  // namespace quic
