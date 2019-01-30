@@ -22,12 +22,14 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
@@ -303,7 +305,6 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
   identity_manager_->AddObserver(this);
   identity_manager_->AddDiagnosticsObserver(this);
   token_service_->AddDiagnosticsObserver(this);
-  cookie_manager_service_->AddObserver(this);
 }
 
 void AboutSigninInternals::Shutdown() {
@@ -311,7 +312,6 @@ void AboutSigninInternals::Shutdown() {
   identity_manager_->RemoveObserver(this);
   identity_manager_->RemoveDiagnosticsObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
-  cookie_manager_service_->RemoveObserver(this);
 }
 
 void AboutSigninInternals::NotifyObservers() {
@@ -445,22 +445,22 @@ void AboutSigninInternals::OnPrimaryAccountCleared(
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_account,
+void AboutSigninInternals::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   if (error.state() != GoogleServiceAuthError::NONE)
     return;
 
   auto cookie_info = std::make_unique<base::ListValue>();
 
-  for (size_t i = 0; i < gaia_accounts.size(); ++i) {
-    AddCookieEntry(cookie_info.get(), gaia_accounts[i].raw_email,
-                   gaia_accounts[i].gaia_id,
-                   gaia_accounts[i].valid ? "Valid" : "Invalid");
+  for (const auto& signed_in_account :
+       accounts_in_cookie_jar_info.signed_in_accounts) {
+    AddCookieEntry(cookie_info.get(), signed_in_account.raw_email,
+                   signed_in_account.gaia_id,
+                   signed_in_account.valid ? "Valid" : "Invalid");
   }
 
-  if (gaia_accounts.size() == 0) {
+  if (accounts_in_cookie_jar_info.signed_in_accounts.size() == 0) {
     AddCookieEntry(cookie_info.get(), "No Accounts Present.", std::string(),
                    std::string());
   }

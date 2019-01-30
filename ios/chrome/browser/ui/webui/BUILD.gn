@@ -100,6 +100,7 @@ source_set("webui_internal") {
     "//ios/chrome/browser/ui/webui/net_export",
     "//ios/chrome/browser/ui/webui/sync_internals",
     "//ios/web",
+    "//services/identity/public/cpp",
     "//url",
   ]
 }
