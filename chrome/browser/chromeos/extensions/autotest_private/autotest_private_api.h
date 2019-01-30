@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "services/ws/public/mojom/window_server_test.mojom.h"
 #include "ui/message_center/public/cpp/notification_types.h"
