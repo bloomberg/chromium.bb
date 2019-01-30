@@ -17,6 +17,7 @@ class LocatedEvent;
 namespace aura {
 
 class Env;
+class Window;
 class WindowTreeClient;
 
 // ClientSideWindowMoveHandler handles mouse/gesture events and performs the
@@ -30,6 +31,9 @@ class ClientSideWindowMoveHandler : public ui::EventHandler {
   // Setup |last_target_| and |last_location_| for |event|, or clear them when
   // the event will not involve window move.
   void MaybeSetupLastTarget(ui::LocatedEvent* event);
+
+  // Updates the resize shadow for |window| to |component| in the window server.
+  void UpdateWindowResizeShadow(Window* window, int component);
 
   // Conduct the window move.
   void MaybePerformWindowMove(ui::LocatedEvent* event,

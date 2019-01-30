@@ -58,6 +58,15 @@ void ClientSideWindowMoveHandler::MaybeSetupLastTarget(
   last_target_.Add(window);
   last_location_ = event->location();
   last_component_ = component;
+  UpdateWindowResizeShadow(
+      window, ui::IsResizingComponent(component) ? component : HTNOWHERE);
+}
+
+void ClientSideWindowMoveHandler::UpdateWindowResizeShadow(Window* window,
+                                                           int component) {
+  client_->SetWindowResizeShadow(window->GetRootWindow(), component);
+  last_shadow_target_.RemoveAll();
+  last_shadow_target_.Add(window);
 }
 
 void ClientSideWindowMoveHandler::MaybePerformWindowMove(
@@ -116,9 +125,7 @@ void ClientSideWindowMoveHandler::OnMouseEvent(ui::MouseEvent* event) {
       if (component == last_component_)
         return;
       last_component_ = component;
-      client_->SetWindowResizeShadow(window->GetRootWindow(), last_component_);
-      last_shadow_target_.RemoveAll();
-      last_shadow_target_.Add(window);
+      UpdateWindowResizeShadow(window, last_component_);
       break;
     }
 
