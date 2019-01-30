@@ -180,6 +180,7 @@ group("gn_all") {
     deps += [
       "//components/cronet:cronet_tests",
       "//components/cronet:cronet_unittests",
+      "//components/viz/demo:viz_demo",
     ]
   }
 
