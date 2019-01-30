@@ -351,57 +351,6 @@ IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path) {
 // Allow us to only run the trial in the first renderer.
 bool has_done_stun_trials = false;
 
-// Globally tracks all existing RenderProcessHostImpl instances.
-//
-// TODO(https://crbug.com/813045): Remove this.
-class RenderProcessMemoryDumpProvider
-    : public base::trace_event::MemoryDumpProvider {
- public:
-  RenderProcessMemoryDumpProvider() {
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "RenderProcessHost", base::ThreadTaskRunnerHandle::Get());
-  }
-
-  ~RenderProcessMemoryDumpProvider() override {
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        this);
-  }
-
-  void AddHost(RenderProcessHostImpl* host) {
-    hosts_.emplace(host, base::Time::Now());
-  }
-
-  void RemoveHost(RenderProcessHostImpl* host) { hosts_.erase(host); }
-
- private:
-  // base::trace_event::MemoryDumpProvider:
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override {
-    for (auto& iter : hosts_) {
-      auto* host = iter.first;
-      base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
-          base::StringPrintf("mojo/render_process_host/0x%" PRIxPTR,
-                             reinterpret_cast<uintptr_t>(host)));
-      dump->AddScalar("is_initialized",
-                      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                      host->is_initialized() ? 1 : 0);
-      dump->AddScalar("age",
-                      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                      (base::Time::Now() - iter.second).InSeconds());
-    }
-    return true;
-  }
-
-  std::map<RenderProcessHostImpl*, base::Time> hosts_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderProcessMemoryDumpProvider);
-};
-
-RenderProcessMemoryDumpProvider& GetMemoryDumpProvider() {
-  static base::NoDestructor<RenderProcessMemoryDumpProvider> tracker;
-  return *tracker;
-}
-
 // the global list of all renderer processes
 base::LazyInstance<base::IDMap<RenderProcessHost*>>::Leaky g_all_hosts =
     LAZY_INSTANCE_INITIALIZER;
@@ -416,7 +365,7 @@ class SiteProcessMap : public base::SupportsUserData::Data {
   void RegisterProcess(const std::string& site, RenderProcessHost* process) {
     // There could already exist a site to process mapping due to races between
     // two WebContents with blank SiteInstances. If that occurs, keeping the
-    // exising entry and not overwriting it is a predictable behavior that is
+    // existing entry and not overwriting it is a predictable behavior that is
     // safe.
     auto i = map_.find(site);
     if (i == map_.end())
@@ -1649,8 +1598,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
         std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
   }
-
-  GetMemoryDumpProvider().AddHost(this);
 }
 
 // static
@@ -1722,8 +1669,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                              base::BindOnce(&RemoveShaderInfo, GetID()));
   }
-
-  GetMemoryDumpProvider().RemoveHost(this);
 
   if (cleanup_corb_exception_for_plugin_upon_destruction_)
     RemoveCorbExceptionForPluginOnUIThread(GetID());
