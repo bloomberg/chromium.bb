@@ -324,14 +324,14 @@ std::ostream& operator<<(std::ostream& os, const StrictNumeric<T>& value) {
                        typename UnderlyingType<R>::type>(lhs, rhs);     \
   }
 
-BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsLess, <);
-BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsLessOrEqual, <=);
-BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsGreater, >);
-BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsGreaterOrEqual, >=);
-BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsEqual, ==);
-BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsNotEqual, !=);
+BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsLess, <)
+BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsLessOrEqual, <=)
+BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsGreater, >)
+BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsGreaterOrEqual, >=)
+BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsEqual, ==)
+BASE_NUMERIC_COMPARISON_OPERATORS(Strict, IsNotEqual, !=)
 
-};  // namespace internal
+}  // namespace internal
 
 using internal::as_signed;
 using internal::as_unsigned;

@@ -166,6 +166,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE)
   DLOG_IF(FATAL, (condition) && !ReportSerializationWarning(error))   \
       << "The outgoing message will trigger "                         \
       << ValidationErrorToString(error) << " at the receiving side (" \
-      << description << ").";
+      << description << ")."
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_VALIDATION_ERRORS_H_
