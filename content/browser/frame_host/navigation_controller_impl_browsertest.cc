@@ -2065,6 +2065,99 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(foo_url, root->child_at(0)->child_at(0)->current_url());
 }
 
+// Verify that history.pushState() does not replace the pending entry.
+// https://crbug.com/900036.
+// TODO(crbug.com/926009): Fix and re-enable this test.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       DISABLED_PushStatePreservesPendingEntry) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Start loading an URL that doesn't commit.
+  GURL stalled_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  // Have the user decide to go to a different page which is very slow.
+  TestNavigationManager stalled_navigation(shell()->web_contents(),
+                                           stalled_url);
+  controller.LoadURL(stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK,
+                     std::string());
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
+
+  // That should be the pending entry.
+  NavigationEntryImpl* entry = controller.GetPendingEntry();
+  ASSERT_NE(nullptr, entry);
+  EXPECT_EQ(stalled_url, entry->GetURL());
+
+  {
+    // Now the existing page uses history.pushState() while the pending entry
+    // for the other navigation still exists.
+    FrameNavigateParamsCapturer capturer(root);
+    capturer.set_wait_for_load(false);
+    std::string script = "history.pushState({}, '', 'pushed')";
+    EXPECT_TRUE(ExecJs(root, script));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
+    EXPECT_TRUE(capturer.is_same_document());
+  }
+
+  // This should not replace the pending entry.
+  entry = controller.GetPendingEntry();
+  ASSERT_NE(nullptr, entry);
+  EXPECT_EQ(stalled_url, entry->GetURL());
+}
+
+// Verify that history.replaceState() does not replace the pending entry.
+// https://crbug.com/900036.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ReplaceStatePreservesPendingEntry) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Start loading an URL that doesn't commit.
+  GURL stalled_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  // Have the user decide to go to a different page which is very slow.
+  TestNavigationManager stalled_navigation(shell()->web_contents(),
+                                           stalled_url);
+  controller.LoadURL(stalled_url, Referrer(), ui::PAGE_TRANSITION_LINK,
+                     std::string());
+  EXPECT_TRUE(stalled_navigation.WaitForRequestStart());
+
+  // That should be the pending entry.
+  NavigationEntryImpl* entry = controller.GetPendingEntry();
+  ASSERT_NE(nullptr, entry);
+  EXPECT_EQ(stalled_url, entry->GetURL());
+
+  {
+    // Now the existing page uses history.replaceState() while the pending entry
+    // for the other navigation still exists.
+    FrameNavigateParamsCapturer capturer(root);
+    capturer.set_wait_for_load(false);
+    std::string script = "history.replaceState({}, '', 'replaced')";
+    EXPECT_TRUE(ExecJs(root, script));
+    capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
+    EXPECT_TRUE(capturer.is_same_document());
+  }
+
+  // This should not replace the pending entry.
+  entry = controller.GetPendingEntry();
+  ASSERT_NE(nullptr, entry);
+  EXPECT_EQ(stalled_url, entry->GetURL());
+}
+
 // Verify the tree of FrameNavigationEntries when a nested iframe commits inside
 // the initial blank page of an iframe with no committed entry.  Prevents
 // regression of https://crbug.com/600743.
