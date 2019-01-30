@@ -4,19 +4,31 @@
 
 #include "media/capabilities/learning_helper.h"
 
+#include "base/task/post_task.h"
 #include "media/learning/common/learning_task.h"
 
 namespace media {
 
 using learning::FeatureValue;
 using learning::LabelledExample;
+using learning::LearningSessionImpl;
 using learning::LearningTask;
 using learning::TargetValue;
 
-const char* kDroppedFrameRatioTreeTaskName = "DroppedFrameRatioTreeTask";
-const char* kDroppedFrameRatioTableTaskName = "DroppedFrameRatioTableTask";
+const char* const kDroppedFrameRatioTreeTaskName = "DroppedFrameRatioTreeTask";
+const char* const kDroppedFrameRatioTableTaskName =
+    "DroppedFrameRatioTableTask";
 
 LearningHelper::LearningHelper() {
+  // Create the LearningSession on a background task runner.  In the future,
+  // it's likely that the session will live on the main thread, and handle
+  // delegation of LearningTaskControllers to other threads.  However, for now,
+  // do it here.
+  learning_session_ = base::SequenceBound<LearningSessionImpl>(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+
   // Register a few learning tasks.
   //
   // We only do this here since we own the session.  Normally, whatever creates
@@ -32,17 +44,20 @@ LearningHelper::LearningHelper() {
       },
       LearningTask::ValueDescription(
           {"dropped_ratio", LearningTask::Ordering::kNumeric}));
+
   // Enable hacky reporting of accuracy.
   dropped_frame_task.uma_hacky_confusion_matrix =
       "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTree";
-  learning_session_.RegisterTask(dropped_frame_task);
+  learning_session_.Post(FROM_HERE, &LearningSessionImpl::RegisterTask,
+                         dropped_frame_task);
 
   // Modify the task to use a table-based learner.
   dropped_frame_task.name = kDroppedFrameRatioTableTaskName;
   dropped_frame_task.model = LearningTask::Model::kLookupTable;
   dropped_frame_task.uma_hacky_confusion_matrix =
       "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTable";
-  learning_session_.RegisterTask(dropped_frame_task);
+  learning_session_.Post(FROM_HERE, &LearningSessionImpl::RegisterTask,
+                         dropped_frame_task);
 }
 
 LearningHelper::~LearningHelper() = default;
@@ -82,8 +97,10 @@ void LearningHelper::AppendStats(
   example.weight = new_stats.frames_decoded;
 
   // Add this example to both tasks.
-  learning_session_.AddExample(kDroppedFrameRatioTreeTaskName, example);
-  learning_session_.AddExample(kDroppedFrameRatioTableTaskName, example);
+  learning_session_.Post(FROM_HERE, &LearningSessionImpl::AddExample,
+                         kDroppedFrameRatioTreeTaskName, example);
+  learning_session_.Post(FROM_HERE, &LearningSessionImpl::AddExample,
+                         kDroppedFrameRatioTableTaskName, example);
 }
 
 }  // namespace media
