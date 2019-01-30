@@ -71,9 +71,11 @@ PRINTING_EXPORT extern const char kSettingPrinterOptions[];
 PRINTING_EXPORT extern const char kSettingRasterizePdf[];
 PRINTING_EXPORT extern const char kSettingScaleFactor[];
 PRINTING_EXPORT extern const char kSettingTicket[];
+PRINTING_EXPORT extern const char kSettingSendUserInfo[];
 PRINTING_EXPORT extern const char kSettingShouldPrintBackgrounds[];
 PRINTING_EXPORT extern const char kSettingShouldPrintSelectionOnly[];
 PRINTING_EXPORT extern const char kSettingShowSystemDialog[];
+PRINTING_EXPORT extern const char kSettingUsername[];
 
 PRINTING_EXPORT extern const int FIRST_PAGE_INDEX;
 PRINTING_EXPORT extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;

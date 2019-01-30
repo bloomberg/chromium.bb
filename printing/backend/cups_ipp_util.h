@@ -21,6 +21,8 @@ extern const char kIppCopies[];
 extern const char kIppColor[];
 extern const char kIppMedia[];
 extern const char kIppDuplex[];
+extern const char kIppDocumentName[];
+extern const char kIppRequestingUserName[];
 
 extern const char kCollated[];
 extern const char kUncollated[];

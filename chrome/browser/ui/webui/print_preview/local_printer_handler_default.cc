@@ -126,8 +126,8 @@ void LocalPrinterHandlerDefault::StartPrint(
     const gfx::Size& page_size,
     scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
-  StartLocalPrint(std::move(ticket), print_data, preview_web_contents_,
-                  std::move(callback));
+  StartLocalPrint(std::move(ticket), std::move(print_data),
+                  preview_web_contents_, std::move(callback));
 }
 
 }  // namespace printing

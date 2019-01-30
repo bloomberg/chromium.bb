@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "chrome/common/pref_names.h"
@@ -240,8 +241,15 @@ void LocalPrinterHandlerChromeos::StartPrint(
     PrintCallback callback) {
   size_t size_in_kb = print_data->size() / 1024;
   UMA_HISTOGRAM_MEMORY_KB("Printing.CUPS.PrintDocumentSize", size_in_kb);
-  StartLocalPrint(std::move(ticket), print_data, preview_web_contents_,
-                  std::move(callback));
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
+    ticket.SetKey(kSettingUsername, base::Value(chromeos::ProfileHelper::Get()
+                                                    ->GetUserByProfile(profile_)
+                                                    ->display_email()));
+    ticket.SetKey(kSettingSendUserInfo, base::Value(true));
+  }
+  StartLocalPrint(std::move(ticket), std::move(print_data),
+                  preview_web_contents_, std::move(callback));
 }
 
 }  // namespace printing
