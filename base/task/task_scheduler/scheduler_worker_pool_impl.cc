@@ -185,6 +185,11 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   void MayBlockEntered();
   void WillBlockEntered();
 
+  // Returns true iff the worker can get work. Cleans up the worker or puts it
+  // on the idle stack if it can't get work.
+  bool CanGetWorkLockRequired(SchedulerWorker* worker)
+      EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
+
   // Returns true iff this worker has been within a MAY_BLOCK ScopedBlockingCall
   // for more than |outer_->MayBlockThreshold()|. The max tasks must be
   // incremented if this returns true.
@@ -624,39 +629,17 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
 
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
-
     DCHECK(ContainsWorker(outer_->workers_, worker));
 
-    // Calling GetWork() while on the idle worker stack indicates that we
-    // must've reached GetWork() because of the WaitableEvent timing out. In
-    // which case, we return no work and possibly cleanup the worker. To avoid
-    // searching through the idle stack : use GetLastUsedTime() not being null
-    // (or being directly on top of the idle stack) as a proxy for being on the
-    // idle stack.
-    const bool is_on_idle_workers_stack =
-        outer_->idle_workers_stack_.Peek() == worker ||
-        !worker->GetLastUsedTime().is_null();
-    DCHECK_EQ(is_on_idle_workers_stack,
-              outer_->idle_workers_stack_.Contains(worker));
-    if (is_on_idle_workers_stack) {
-      if (CanCleanupLockRequired(worker))
-        CleanupLockRequired(worker);
+    if (!CanGetWorkLockRequired(worker))
       return nullptr;
-    }
 
     // Replace this worker if it was the last one, capacity permitting.
+    // TODO(etiennep): An idle worker should be created only if this worker
+    // isn't added to the idle stack below.
     outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
-
-    // Excess workers should not get work, until they are no longer excess (i.e.
-    // max tasks increases or another worker cleans up). This ensures that if we
-    // have excess workers in the pool, they get a chance to no longer be excess
-    // before being cleaned up.
-    if (outer_->NumberOfExcessWorkersLockRequired() >
-        outer_->idle_workers_stack_.Size()) {
-      OnWorkerBecomesIdleLockRequired(worker);
-      return nullptr;
-    }
   }
+
   scoped_refptr<Sequence> sequence;
   {
     auto transaction = outer_->priority_queue_.BeginTransaction();
@@ -975,6 +958,36 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   // codepath. We really only should do this if there are tasks pending.
   if (must_schedule_adjust_max_tasks)
     outer_->ScheduleAdjustMaxTasks();
+}
+
+bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
+    CanGetWorkLockRequired(SchedulerWorker* worker) {
+  // To avoid searching through the idle stack : use GetLastUsedTime() not being
+  // null (or being directly on top of the idle stack) as a proxy for being on
+  // the idle stack.
+  const bool is_on_idle_workers_stack =
+      outer_->idle_workers_stack_.Peek() == worker ||
+      !worker->GetLastUsedTime().is_null();
+  DCHECK_EQ(is_on_idle_workers_stack,
+            outer_->idle_workers_stack_.Contains(worker));
+
+  if (is_on_idle_workers_stack) {
+    if (CanCleanupLockRequired(worker))
+      CleanupLockRequired(worker);
+    return false;
+  }
+
+  // Excess workers should not get work, until they are no longer excess (i.e.
+  // max tasks increases or another worker cleans up). This ensures that if we
+  // have excess workers in the pool, they get a chance to no longer be excess
+  // before being cleaned up.
+  if (outer_->NumberOfExcessWorkersLockRequired() >
+      outer_->idle_workers_stack_.Size()) {
+    OnWorkerBecomesIdleLockRequired(worker);
+    return false;
+  }
+
+  return true;
 }
 
 bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
