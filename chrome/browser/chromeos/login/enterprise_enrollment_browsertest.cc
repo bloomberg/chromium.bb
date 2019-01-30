@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/hid_controller_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -37,12 +38,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "services/device/public/cpp/hid/fake_input_service_linux.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/device/public/mojom/input_service.mojom.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
@@ -712,47 +707,14 @@ class EnterpriseEnrollmentConfigurationTest
 class EnterpriseEnrollmentConfigurationTestNoHID
     : public EnterpriseEnrollmentConfigurationTest {
  public:
-  using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
+  EnterpriseEnrollmentConfigurationTestNoHID() = default;
 
-  EnterpriseEnrollmentConfigurationTestNoHID() {
-    fake_input_service_manager_ =
-        std::make_unique<device::FakeInputServiceLinux>();
+  ~EnterpriseEnrollmentConfigurationTestNoHID() override = default;
 
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
-        base::BindRepeating(
-            &device::FakeInputServiceLinux::Bind,
-            base::Unretained(fake_input_service_manager_.get())));
-  }
-
-  ~EnterpriseEnrollmentConfigurationTestNoHID() override {
-    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::InputDeviceManager>(device::mojom::kServiceName);
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    EnterpriseEnrollmentConfigurationTest::SetUpInProcessBrowserTestFixture();
-
-    mock_adapter_ = new testing::NiceMock<device::MockBluetoothAdapter>();
-
-    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
-    EXPECT_CALL(*mock_adapter_, IsPresent())
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_adapter_, IsPowered())
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_adapter_, GetDevices())
-        .WillRepeatedly(
-            testing::Return(device::BluetoothAdapter::ConstDeviceList()));
-
-    // Note: The SecureChannel service, which is never destroyed until the
-    // browser process is killed, utilizes |mock_adapter_|.
-    testing::Mock::AllowLeak(mock_adapter_.get());
-  }
+ protected:
+  test::HIDControllerMixin hid_controller_{&mixin_host_};
 
  private:
-  std::unique_ptr<device::FakeInputServiceLinux> fake_input_service_manager_;
-  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
-
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTestNoHID);
 };
 
