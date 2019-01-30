@@ -7,13 +7,14 @@
 #include "base/hash.h"
 #include "components/grit/components_resources.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
 
@@ -75,15 +76,13 @@ bool SignInInternalsUIIOS::OverrideHandleWebUIIOSMessage(
       std::vector<const base::Value*> args{&status};
       web_ui()->CallJavascriptFunction(
           "chrome.signin.getSigninInfo.handleReply", args);
-      std::vector<gaia::ListedAccount> cookie_accounts;
-      GaiaCookieManagerService* cookie_manager_service =
-          ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
-              browser_state);
-      std::vector<gaia::ListedAccount> signed_out_accounts;
-      if (cookie_manager_service->ListAccounts(&cookie_accounts,
-                                               &signed_out_accounts)) {
-        about_signin_internals->OnGaiaAccountsInCookieUpdated(
-            cookie_accounts, signed_out_accounts,
+      identity::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForBrowserState(browser_state);
+      identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+          identity_manager->GetAccountsInCookieJar();
+      if (accounts_in_cookie_jar.accounts_are_fresh) {
+        about_signin_internals->OnAccountsInCookieUpdated(
+            accounts_in_cookie_jar,
             GoogleServiceAuthError(GoogleServiceAuthError::NONE));
       }
 

@@ -11,13 +11,13 @@
 #include "base/hash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
 
@@ -79,15 +79,13 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
           "chrome.signin.getSigninInfo.handleReply",
           *about_signin_internals->GetSigninStatus());
 
-      std::vector<gaia::ListedAccount> cookie_accounts;
-      std::vector<gaia::ListedAccount> signed_out_accounts;
-      GaiaCookieManagerService* cookie_manager_service =
-          GaiaCookieManagerServiceFactory::GetForProfile(profile);
-      if (cookie_manager_service->ListAccounts(&cookie_accounts,
-                                               &signed_out_accounts)) {
-        about_signin_internals->OnGaiaAccountsInCookieUpdated(
-            cookie_accounts,
-            signed_out_accounts,
+      identity::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(profile);
+      identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+          identity_manager->GetAccountsInCookieJar();
+      if (accounts_in_cookie_jar.accounts_are_fresh) {
+        about_signin_internals->OnAccountsInCookieUpdated(
+            accounts_in_cookie_jar,
             GoogleServiceAuthError(GoogleServiceAuthError::NONE));
       }
 
