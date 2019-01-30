@@ -14609,7 +14609,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "8086:5912",
+              "gpu": "8086:5912-17.1.4",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
