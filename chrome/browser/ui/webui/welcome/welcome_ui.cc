@@ -72,6 +72,10 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"googleAppsDescription",
        IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_DESCRIPTION},
 
+      // New Tab Page background module strings.
+      {"ntpBackgroundDescription",
+       IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DESCRIPTION},
+
       // Set as default module strings.
       {"setDefaultHeader", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER},
       {"setDefaultSubHeader",

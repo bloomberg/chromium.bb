@@ -51,6 +51,11 @@
     YouTube
   </message>
 
+  <!-- NUX NTP background selection module -->
+  <message name="IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DESCRIPTION" desc="Description of what this section in the onboarding workflow does.">
+    Pick a wallpaper for your start page
+  </message>
+
   <!-- NUX set default module -->
   <message name="IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER" desc="Header for the page that prompts user to set Chrome as their default browser.">
     Set Chrome as your default browser

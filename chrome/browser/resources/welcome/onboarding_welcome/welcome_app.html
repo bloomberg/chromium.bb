@@ -8,6 +8,7 @@
 <link rel="import" href="email/nux_email.html">
 <link rel="import" href="landing_view.html">
 <link rel="import" href="navigation_behavior.html">
+<link rel="import" href="ntp_background/nux_ntp_background.html">
 <link rel="import" href="set_as_default/nux_set_as_default.html">
 <link rel="import" href="set_as_default/nux_set_as_default_proxy.html">
 <link rel="import" href="shared/bookmark_proxy.html">
@@ -28,7 +29,7 @@
       }
 
       #viewManager :-webkit-any(nux-email,
-          nux-google-apps, nux-set-as-default) {
+          nux-google-apps, nux-ntp-background, nux-set-as-default) {
         /* Override cr-view-manager's default styling for view. */
         bottom: initial;
         left: initial;

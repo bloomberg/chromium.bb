@@ -73,25 +73,27 @@ cr.define('onboarding_welcome_app_test', function() {
       welcome.navigateTo(welcome.Routes.NEW_USER, 1);
       return test_util.waitForRender(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
-        assertEquals(views.length, 5);
+        assertEquals(views.length, 6);
         assertEquals(views[0].tagName, 'LANDING-VIEW');
         assertEquals(views[1].tagName, 'NUX-EMAIL');
         assertEquals(views[2].tagName, 'NUX-GOOGLE-APPS');
-        assertEquals(views[3].tagName, 'NUX-SET-AS-DEFAULT');
-        assertEquals(views[4].tagName, 'SIGNIN-VIEW');
+        assertEquals(views[3].tagName, 'NUX-NTP-BACKGROUND');
+        assertEquals(views[4].tagName, 'NUX-SET-AS-DEFAULT');
+        assertEquals(views[5].tagName, 'SIGNIN-VIEW');
       });
     });
 
-    test('new user route (canot set default)', function() {
+    test('new user route (cannot set default)', function() {
       simulateCannotSetDefault();
       welcome.navigateTo(welcome.Routes.NEW_USER, 1);
       return test_util.waitForRender(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
-        assertEquals(views.length, 4);
+        assertEquals(views.length, 5);
         assertEquals(views[0].tagName, 'LANDING-VIEW');
         assertEquals(views[1].tagName, 'NUX-EMAIL');
         assertEquals(views[2].tagName, 'NUX-GOOGLE-APPS');
-        assertEquals(views[3].tagName, 'SIGNIN-VIEW');
+        assertEquals(views[3].tagName, 'NUX-NTP-BACKGROUND');
+        assertEquals(views[4].tagName, 'SIGNIN-VIEW');
       });
     });
 
