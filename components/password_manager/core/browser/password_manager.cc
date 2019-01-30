@@ -555,6 +555,7 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
 
   form_managers_.clear();
   predictions_.clear();
+  store_password_called_ = false;
 }
 
 void PasswordManager::UpdateFormManagers() {
@@ -914,7 +915,7 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
   if (client_ && client_->GetMetricsRecorder())
     client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
 
-  if (!matching_form_manager) {
+  if (!matching_form_manager && !store_password_called_) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.origin,
         logger.get());
@@ -949,6 +950,11 @@ void PasswordManager::LogFirstFillingResult(PasswordManagerDriver* driver,
   if (!matching_manager)
     return;
   matching_manager->GetMetricsRecorder()->RecordFirstFillingResult(result);
+}
+
+void PasswordManager::NotifyStorePasswordCalled() {
+  store_password_called_ = true;
+  DropFormManagers();
 }
 
 void PasswordManager::ProvisionallySaveManager(

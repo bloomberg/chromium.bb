@@ -73,10 +73,23 @@
 #include "ui/gfx/geometry/point.h"
 
 using base::ASCIIToUTF16;
+using base::Feature;
 using testing::_;
 using testing::ElementsAre;
 
+namespace password_manager {
 namespace {
+
+void SetNewParsingForSaving(base::test::ScopedFeatureList* scoped_feature_list,
+                            bool enabled) {
+  std::vector<Feature> features = {features::kNewPasswordFormParsing,
+                                   features::kNewPasswordFormParsingForSaving};
+
+  std::vector<Feature> enabled_features;
+  std::vector<Feature> disabled_features;
+  (enabled ? enabled_features : disabled_features) = std::move(features);
+  scoped_feature_list->InitWithFeatures(enabled_features, disabled_features);
+}
 
 class PasswordManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
@@ -87,6 +100,7 @@ class PasswordManagerBrowserTest : public PasswordManagerBrowserTestBase {
     password_manager::NewPasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
   }
+
   ~PasswordManagerBrowserTest() override = default;
 };
 
@@ -226,10 +240,6 @@ void SubmitInjectedPasswordForm(content::WebContents* web_contents,
   observer.Wait();
 }
 
-}  // namespace
-
-namespace password_manager {
-
 // Actual tests ---------------------------------------------------------------
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForNormalSubmit) {
@@ -272,25 +282,32 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       NoPromptIfPasswordFormManagerDestroyed) {
-  NavigateToFile("/password/password_form.html");
-  // Simulate the Credential Manager API essentially destroying all the
-  // PasswordFormManager instances.
-  ChromePasswordManagerClient::FromWebContents(WebContents())
-      ->NotifyStorePasswordCalled();
+                       NoPromptAfterCredentialsAPIPasswordStore) {
+  for (bool use_new_parsing_for_saving : {false, true}) {
+    SCOPED_TRACE(testing::Message() << "use_new_parsing_for_saving = "
+                                    << use_new_parsing_for_saving);
+    base::test::ScopedFeatureList scoped_feature_list;
+    SetNewParsingForSaving(&scoped_feature_list, use_new_parsing_for_saving);
+    NavigateToFile("/password/password_form.html");
+    // Simulate the Credential Manager API function store() is called and
+    // PasswordManager instance is notified about that.
+    ChromePasswordManagerClient::FromWebContents(WebContents())
+        ->NotifyStorePasswordCalled();
 
-  // Fill a form and submit through a <input type="submit"> button. The renderer
-  // should not send "PasswordFormsParsed" messages after the page was loaded.
-  NavigationObserver observer(WebContents());
-  std::string fill_and_submit =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random';"
-      "document.getElementById('input_submit_button').click()";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
-  observer.Wait();
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
+    // Fill a form and submit through a <input type="submit"> button. The
+    // renderer should not send "PasswordFormsParsed" messages after the page
+    // was loaded.
+    NavigationObserver observer(WebContents());
+    std::string fill_and_submit =
+        "document.getElementById('username_field').value = 'temp';"
+        "document.getElementById('password_field').value = 'random';"
+        "document.getElementById('input_submit_button').click()";
+    ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
+    observer.Wait();
+    std::unique_ptr<BubbleObserver> prompt_observer(
+        new BubbleObserver(WebContents()));
+    EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -3992,4 +4009,5 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, FormDynamicallyChanged) {
   WaitForElementValue("password_field", "pw");
 }
 
+}  // namespace
 }  // namespace password_manager
