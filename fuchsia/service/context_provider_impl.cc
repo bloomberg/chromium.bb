@@ -96,7 +96,9 @@ void ContextProviderImpl::Create(
 
   service_manager::SandboxPolicyFuchsia sandbox_policy;
   sandbox_policy.Initialize(service_manager::SANDBOX_TYPE_WEB_CONTEXT);
-  sandbox_policy.SetServiceDirectory(std::move(params.service_directory));
+  sandbox_policy.SetServiceDirectory(
+      fidl::InterfaceHandle<::fuchsia::io::Directory>(
+          std::move(params.service_directory)));
   sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
   if (use_shared_tmp_)

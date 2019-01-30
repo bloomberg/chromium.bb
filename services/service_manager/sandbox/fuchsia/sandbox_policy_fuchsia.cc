@@ -18,8 +18,8 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/filtered_service_directory.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -121,24 +121,23 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ =
         std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-            base::fuchsia::ComponentContext::GetDefault());
+            base::fuchsia::ServiceDirectoryClient::ForCurrentProcess());
     for (const char* service_name : config.services)
       service_directory_->AddService(service_name);
 
     // Bind the service directory and store the client channel for
     // UpdateLaunchOptionsForSandbox()'s use.
-    service_directory_client_channel_ = service_directory_->ConnectClient();
-    CHECK(service_directory_client_channel_);
+    service_directory_client_ = service_directory_->ConnectClient();
+    CHECK(service_directory_client_);
   }
 }
 
 void SandboxPolicyFuchsia::SetServiceDirectory(
-    zx::channel service_directory_client_channel) {
+    fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client) {
   DCHECK_EQ(type_, SANDBOX_TYPE_WEB_CONTEXT);
-  DCHECK(!service_directory_client_channel_);
+  DCHECK(!service_directory_client_);
 
-  service_directory_client_channel_ =
-      std::move(service_directory_client_channel);
+  service_directory_client_ = std::move(service_directory_client);
 }
 
 void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
@@ -185,10 +184,12 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
       options->paths_to_clone.push_back(vulkan_icd_path);
   }
 
-  if (service_directory_client_channel_) {
-    // Provide the child process with a restricted set of services.
+  // If the process needs access to any services then transfer the
+  // |service_directory_client_| handle for it to mount at "/svc".
+  if (service_directory_client_) {
     options->paths_to_transfer.push_back(base::PathToTransfer{
-        base::FilePath("/svc"), service_directory_client_channel_.release()});
+        base::FilePath("/svc"),
+        service_directory_client_.TakeChannel().release()});
   }
 }
 

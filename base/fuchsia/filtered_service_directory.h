@@ -7,6 +7,8 @@
 
 #include "base/fuchsia/service_directory.h"
 
+#include <fuchsia/io/cpp/fidl.h>
+#include <lib/fidl/cpp/interface_handle.h>
 #include <lib/zx/channel.h>
 #include <memory>
 
@@ -31,7 +33,7 @@ class BASE_EXPORT FilteredServiceDirectory {
 
   // Returns a client channel connected to the directory. The returned channel
   // can be passed to a sandboxed process to be used for /svc namespace.
-  zx::channel ConnectClient();
+  fidl::InterfaceHandle<::fuchsia::io::Directory> ConnectClient();
 
  private:
   void HandleRequest(const char* service_name, zx::channel channel);
@@ -40,7 +42,7 @@ class BASE_EXPORT FilteredServiceDirectory {
   std::unique_ptr<ServiceDirectory> outgoing_directory_;
 
   // Client side of the channel used by |outgoing_directory_|.
-  zx::channel outgoing_directory_client_;
+  fidl::InterfaceHandle<::fuchsia::io::Directory> outgoing_directory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredServiceDirectory);
 };
