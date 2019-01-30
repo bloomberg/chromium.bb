@@ -16,6 +16,9 @@ const base::Feature kDockedMagnifier{"DockedMagnifier",
 const base::Feature kDragTabsInTabletMode{"DragTabsInTabletMode",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableOverviewRoundedCorners{
+    "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 

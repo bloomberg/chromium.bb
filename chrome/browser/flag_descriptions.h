@@ -1838,6 +1838,9 @@ extern const char kArcVpnDescription[];
 extern const char kAshEnableDisplayMoveWindowAccelsName[];
 extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
 
+extern const char kAshEnableOverviewRoundedCornersName[];
+extern const char kAshEnableOverviewRoundedCornersDescription[];
+
 extern const char kAshEnablePersistentWindowBoundsName[];
 extern const char kAshEnablePersistentWindowBoundsDescription[];
 

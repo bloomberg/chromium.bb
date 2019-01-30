@@ -21,6 +21,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 // https://crbug.com/823769.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
 
+// Enables rounded corners in overview mode for testing.
+// TODO(crbug.com/903486): Remove this when new rounded corners implementation
+// has landed.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableOverviewRoundedCorners;
+
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
