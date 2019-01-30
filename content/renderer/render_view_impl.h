@@ -252,8 +252,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   int HistoryForwardListCount() override;
   void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
   void PageScaleFactorChanged() override;
-  virtual double zoomLevelToZoomFactor(double zoom_level) const;
-  virtual double zoomFactorToZoomLevel(double factor) const;
   void PageImportanceSignalsChanged() override;
   void DidAutoResize(const blink::WebSize& newSize) override;
   blink::WebRect RootWindowRect() override;

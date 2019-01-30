@@ -342,8 +342,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ExitFullscreen(LocalFrame&);
   void FullscreenElementChanged(Element* old_element, Element* new_element);
 
-  // Exposed for the purpose of overriding device metrics.
-  void SendResizeEventAndRepaint();
+  // Sends a request to the main frame's view to resize, and updates the page
+  // scale limits if needed.
+  void SendResizeEventForMainFrame();
 
   // Exposed for testing purposes.
   bool HasHorizontalScrollbar();
@@ -497,7 +498,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetIsAcceleratedCompositingActive(bool);
   void DoComposite();
   void ReallocateRenderer();
-  void UpdateLayerTreeViewport();
+  void UpdateLayerTreeViewPageScale();
   void UpdateLayerTreeBackgroundColor();
   void UpdateDeviceEmulationTransform();
 

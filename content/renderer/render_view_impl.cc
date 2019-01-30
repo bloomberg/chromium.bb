@@ -2029,14 +2029,6 @@ void RenderViewImpl::PageScaleFactorChanged() {
   GetWidget()->PageScaleFactorChanged(webview()->PageScaleFactor());
 }
 
-double RenderViewImpl::zoomLevelToZoomFactor(double zoom_level) const {
-  return ZoomLevelToZoomFactor(zoom_level);
-}
-
-double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
-  return ZoomFactorToZoomLevel(factor);
-}
-
 void RenderViewImpl::PageImportanceSignalsChanged() {
   if (!webview() || !main_render_frame_)
     return;
