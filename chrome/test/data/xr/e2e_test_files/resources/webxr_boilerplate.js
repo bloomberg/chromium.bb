@@ -78,23 +78,36 @@ function getSessionType(session) {
 function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
-      console.info('Requesting immersive session');
+      console.info('Requesting immersive VR session');
       navigator.xr.requestSession({mode: 'immersive-vr'}).then( (session) => {
-        console.info('Immersive session request succeeded');
+        console.info('Immersive VR session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
       }, (error) => {
-        console.info('Immersive session request rejected with: ' + error);
+        console.info('Immersive VR session request rejected with: ' + error);
       });
       break;
     case sessionTypes.AR:
-      console.info('Requesting AR session');
+      console.info('Requesting Immersive AR session');
       navigator.xr.requestSession({mode: 'immersive-ar'}).then((session) => {
-        console.info('AR session request succeeded');
+        console.info('Immersive AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;
         onSessionStarted(session);
       }, (error) => {
-        console.info('AR session request rejected with: ' + error);
+        console.info('Immersive AR session request rejected with: ' + error);
+        console.info('Attempting to fall back to legacy AR mode');
+        let sessionOptions = {
+          mode: 'legacy-inline-ar',
+          outputContext: webglCanvas.getContext('xrpresent'),
+        }
+        navigator.xr.requestSession(sessionOptions).then(
+            (session) => {
+          console.info('Legacy AR session request succeeded');
+          sessionInfos[sessionTypes.AR].currentSession = session;
+          onSessionStarted(session);
+        }, (error) => {
+          console.info('Legacy AR session request rejected with: ' + error);
+        });
       });
       break;
     default:
