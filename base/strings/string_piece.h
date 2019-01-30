@@ -533,7 +533,7 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& o,
   for (StringPieceType::const_iterator i = string_piece.begin(); \
        i != string_piece.end(); ++i)                             \
     result = (result * 131) + *i;                                \
-  return result;
+  return result
 
 struct StringPieceHash {
   std::size_t operator()(const StringPiece& sp) const {
