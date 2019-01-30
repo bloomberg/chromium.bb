@@ -28,7 +28,8 @@ const base::Feature kNuxOnboardingForceEnabled = {
 // chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
 const base::FeatureParam<std::string> kNuxOnboardingForceEnabledNewUserModules =
     {&kNuxOnboardingForceEnabled, "new-user-modules",
-     "nux-email,nux-google-apps,nux-set-as-default,signin-view"};
+     "nux-email,nux-google-apps,nux-ntp-background,nux-set-as-default,"
+     "signin-view"};
 const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",

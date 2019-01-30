@@ -16,16 +16,19 @@ let NuxOnboardingModules;
  * onboarding flow.
  * @const {!Set<string>}
  */
-const MODULES_WHITELIST = new Set(
-    ['nux-email', 'nux-google-apps', 'nux-set-as-default', 'signin-view']);
+const MODULES_WHITELIST = new Set([
+  'nux-email', 'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default',
+  'signin-view'
+]);
 
 /**
  * This list needs to be updated if new modules that need step-indicators are
  * added.
  * @const {!Set<string>}
  */
-const MODULES_NEEDING_INDICATOR =
-    new Set(['nux-email', 'nux-google-apps', 'nux-set-as-default']);
+const MODULES_NEEDING_INDICATOR = new Set([
+  'nux-email', 'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default'
+]);
 
 Polymer({
   is: 'welcome-app',

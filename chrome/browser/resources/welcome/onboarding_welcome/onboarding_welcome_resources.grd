@@ -36,6 +36,8 @@
       <include name="IDR_NUX_GOOGLE_APPS_TRANSLATE_2X" file="images\translate_2x.png" type="BINDATA" />
       <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_1X" file="images\youtube_1x.png" type="BINDATA" />
       <include name="IDR_NUX_GOOGLE_APPS_YOUTUBE_2X" file="images\youtube_2x.png" type="BINDATA" />
+      <include name="IDR_NUX_NTP_BACKGROUND_LOGO_1X" file="images\ntp_background_1x.png" type="BINDATA" />
+      <include name="IDR_NUX_NTP_BACKGROUND_LOGO_2X" file="images\ntp_background_2x.png" type="BINDATA" />
       <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_1X" file="images\set_as_default_illustration_1x.png" type="BINDATA" />
       <include name="IDR_NUX_SET_AS_DEFAULT_ILLUSTRATION_2X" file="images\set_as_default_illustration_2x.png" type="BINDATA" />
       <include name="IDR_NUX_SET_AS_DEFAULT_LOGO_1X" file="images\set_as_default_1x.png" type="BINDATA" />
@@ -217,6 +219,14 @@
                  type="chrome_html" />
       <structure name="IDR_NUX_SET_AS_DEFAULT_PROXY_JS"
                  file="set_as_default\nux_set_as_default_proxy.js"
+                 type="chrome_html" />
+
+      <!-- NUX NTP background-->
+      <structure name="IDR_NUX_NTP_BACKGROUND_HTML"
+                 file="ntp_background\nux_ntp_background.html"
+                 type="chrome_html" />
+      <structure name="IDR_NUX_NTP_BACKGROUND_JS"
+                 file="ntp_background\nux_ntp_background.js"
                  type="chrome_html" />
     </structures>
   </release>

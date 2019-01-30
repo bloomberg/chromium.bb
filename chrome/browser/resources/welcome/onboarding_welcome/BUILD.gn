@@ -9,6 +9,7 @@ group("closure_compile") {
     ":welcome_files",
     "./email:closure_compile",
     "./google_apps:closure_compile",
+    "./ntp_background:closure_compile",
     "./set_as_default:closure_compile",
   ]
 }
