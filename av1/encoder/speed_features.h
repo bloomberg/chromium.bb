@@ -662,6 +662,9 @@ typedef struct SPEED_FEATURES {
   // Enable/disable interintra wedge search.
   int disable_wedge_interintra_search;
 
+  // Disable loop restoration for Chroma plane
+  int disable_loop_restoration_chroma;
+
   // Flag used to control the extent of coeff R-D optimization
   int perform_coeff_opt;
 
