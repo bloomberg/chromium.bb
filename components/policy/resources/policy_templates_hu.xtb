@@ -3211,7 +3211,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       A felhasználók nem módosíthatják vagy bírálhatják felül ezt a beállítást.</translation>
 <translation id="8631434304112909927">a(z) <ph name="UNTIL_VERSION" /> verzióig</translation>
-<translation id="863319402127182273">Az Android-alkalmazások esetében ez a házirend csak a beépített kamerára vonatkozik. Ha a házirend beállítása igaz, akkor a kamera használata kivétel nélkül le van tiltva valamennyi Android-alkalmazás számára.</translation>
 <translation id="8649763579836720255">A Chrome OS-eszközök távoli hitelesítést (ellenőrzött hozzáférés) használhatnak, hogy a Chrome OS CA által kiállított tanúsítványt kapjanak, amely megerősíti, hogy az eszközön lejátszható védett tartalom is. A folyamat hardver-jóváhagyási információk küldését is magában foglalja a Chrome OS CA-nak, amely egyedileg beazonosítja az eszközt.
 
           Ha „hamis” értékre van állítva, az eszköz nem fog távoli hitelesítést használni a tartalomvédelem érdekében, és az eszközön valószínűleg nem lehet majd védett tartalmat lejátszani.

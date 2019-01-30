@@ -282,7 +282,6 @@
 <translation id="5728700505257787410">Не удалось войти в аккаунт.</translation>
 <translation id="5737974891429562743">Данные для входа в аккаунт устарели. Чтобы начать синхронизацию, обновите их.</translation>
 <translation id="5738887413654608789">Вы сможете узнавать о сайтах, связанных с объектами вокруг вас.</translation>
-<translation id="5771816112378578655">Идет настройка...</translation>
 <translation id="5816228676161003208">Это нужно, чтобы использовать голосовой поиск</translation>
 <translation id="5846482154967366008">Поисковая система</translation>
 <translation id="5854790677617711513">Сохраненные более 30 дней назад</translation>
@@ -309,6 +308,7 @@
 <translation id="6042308850641462728">Ещё</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Нажмите, чтобы отменить загрузку</translation>
+<translation id="6108923351542677676">Настройка…</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6136914049981179737">только что</translation>

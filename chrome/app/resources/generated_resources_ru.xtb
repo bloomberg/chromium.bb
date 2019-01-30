@@ -1439,6 +1439,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> (<ph name="ISSUED_TO" />). Поддерживается аппаратным обеспечением.</translation>
 <translation id="316125635462764134">Удалить приложение</translation>
 <translation id="3161522574479303604">Все языки</translation>
+<translation id="3163201441334626963">Неизвестный продукт <ph name="PRODUCT_ID" /> от поставщика <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Некоторые операторы могут блокировать эту функцию.</translation>
 <translation id="316854673539778496">Чтобы получить доступ к расширениям на всех своих устройствах, войдите в аккаунт и включите синхронизацию.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3958,6 +3959,7 @@
 <translation id="7002454948392136538">Выбор менеджера для этого контролируемого профиля</translation>
 <translation id="7003339318920871147">Базы данных в Интернете</translation>
 <translation id="7003723821785740825">Настроить разблокировку с помощью отпечатка</translation>
+<translation id="7003844668372540529">Неизвестный продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="7004499039102548441">Недавние вкладки</translation>
 <translation id="7005848115657603926">Недопустимый диапазон страниц. Используйте <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Нижнее поле</translation>

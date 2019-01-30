@@ -1436,6 +1436,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (copia de seguridad en hardware)</translation>
 <translation id="316125635462764134">Eliminar aplicación</translation>
 <translation id="3161522574479303604">Todos los idiomas</translation>
+<translation id="3163201441334626963">Producto desconocido <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Es posible que algunos proveedores bloqueen esta función.</translation>
 <translation id="316854673539778496">Para obtener todas tus extensiones en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3955,6 +3956,7 @@
 <translation id="7002454948392136538">Elige el administrador para este usuario supervisado.</translation>
 <translation id="7003339318920871147">Bases de datos web</translation>
 <translation id="7003723821785740825">Configura una manera más rápida de desbloquear tu dispostivo</translation>
+<translation id="7003844668372540529">Producto desconocido <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7005848115657603926">Rango de páginas no válido, utiliza <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margen inferior</translation>

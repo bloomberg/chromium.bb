@@ -1436,6 +1436,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (с хардуерно съхраняване)</translation>
 <translation id="316125635462764134">Премахване на приложението</translation>
 <translation id="3161522574479303604">Всички езици</translation>
+<translation id="3163201441334626963">Неизвестен продукт <ph name="PRODUCT_ID" /> от доставчик <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Някои оператори може да блокират тази функция.</translation>
 <translation id="316854673539778496">Влезте в профила си и включете синхронизирането, за да получите разширенията си на всичките си устройства.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3958,6 +3959,7 @@
 <translation id="7002454948392136538">Избиране на мениджъра за този контролиран потребител</translation>
 <translation id="7003339318920871147">Уеб бази от данни</translation>
 <translation id="7003723821785740825">Настройте по-бърз начин да отключвате устройството си</translation>
+<translation id="7003844668372540529">Неизвестен продукт <ph name="PRODUCT_ID" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="7004499039102548441">Скорошни раздели</translation>
 <translation id="7005848115657603926">Невалиден обхват на страници. Използвайте <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Долно поле</translation>

@@ -282,7 +282,6 @@
 <translation id="5728700505257787410">عذرًا، حدثت مشكلة أثناء تسجيل الدخول إلى حسابك.</translation>
 <translation id="5737974891429562743">تفاصيل تسجيل الدخول إلى الحساب قديمة. يمكنك التحديث لبدء المزامنة.</translation>
 <translation id="5738887413654608789">يتيح لك هذا اكتشاف صفحات الويب ذات الصلة حسب الأشياء المحيطة بك.</translation>
-<translation id="5771816112378578655">الإعداد قيد التقديم...</translation>
 <translation id="5816228676161003208">هذا يتيح لك البحث بشكلٍ أسرع باستخدام صوتك.</translation>
 <translation id="5846482154967366008">محرك بحث</translation>
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
@@ -309,6 +308,7 @@
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6066301408025741299">انقر للإلغاء.</translation>
+<translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6122191549521593678">متصل</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6136914049981179737">قبل ثانية</translation>

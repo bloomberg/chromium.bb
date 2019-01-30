@@ -1439,6 +1439,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (βασιζόμενο σε υλικό)</translation>
 <translation id="316125635462764134">Κατάργηση εφαρμογής</translation>
 <translation id="3161522574479303604">Όλες οι γλώσσες</translation>
+<translation id="3163201441334626963">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από τον προμηθευτή <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Ορισμένες εταιρείες κινητής τηλεφωνίας ενδέχεται να αποκλείσουν αυτήν τη λειτουργία.</translation>
 <translation id="316854673539778496">Για να έχετε όλες τις επεκτάσεις σας σε όλες τις συσκευές σας, συνδεθείτε και ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3959,6 +3960,7 @@
 <translation id="7002454948392136538">Επιλέξτε το διαχειριστή για αυτόν τον εποπτευόμενο χρήστη</translation>
 <translation id="7003339318920871147">Βάσεις δεδομένων ιστού</translation>
 <translation id="7003723821785740825">Ρυθμίστε έναν πιο γρήγορο τρόπο για να ξεκλειδώνετε τη συσκευή σας</translation>
+<translation id="7003844668372540529">Άγνωστο προϊόν <ph name="PRODUCT_ID" /> από <ph name="VENDOR_NAME" /></translation>
 <translation id="7004499039102548441">Πρόσφατες καρτέλες</translation>
 <translation id="7005848115657603926">Μη έγκυρο εύρος σελίδας, χρησιμοποιήστε το <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Κάτω περιθώριο</translation>

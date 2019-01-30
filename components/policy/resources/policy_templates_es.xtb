@@ -805,7 +805,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta política, se habilitará la opción.</translation>
 <translation id="2813281962735757923">Esta política controla los intervalos de tiempo durante los cuales el dispositivo <ph name="PRODUCT_OS_NAME" /> no tiene permiso para buscar actualizaciones automáticamente.
       Si a esta política se le asigna una lista de intervalos de tiempo que no esté vacía:
-      Los dispositivos no podrán buscar actualizaciones automáticamente durante los intervalos especificados. Por motivos de seguridad, los dispositivos que deban restaurarse o cuya versión del sistema operativo sea anterior a <ph name="PRODUCT_OS_NAME" /> no se verán afectados por esta política. Esta política no bloqueará las comprobaciones de actualizaciones solicitadas por los usuarios o administradores.
+      Los dispositivos no podrán buscar actualizaciones automáticamente durante los intervalos especificados. Por motivos de seguridad, los dispositivos que deban restaurarse, o cuya versión del sistema operativo sea anterior a <ph name="PRODUCT_OS_NAME" />, no se verán afectados por esta política. Esta política no bloqueará las comprobaciones de actualizaciones solicitadas por los usuarios o administradores.
       Si no se asigna ningún valor a esta política o no contiene ningún intervalo de tiempo:
       La política no bloqueará ninguna comprobación de actualizaciones automática, pero otras políticas podrían hacerlo. Esta función solo está habilitada en los dispositivos Chrome configurados como kioscos de inicio automático. Esta política no afectará a otros dispositivos.</translation>
 <translation id="2823870601012066791">Ubicación del registro de Windows para clientes de <ph name="PRODUCT_OS_NAME" />:</translation>
@@ -3290,7 +3290,6 @@ Esta política hace que el encabezado X-GoogApps-Allowed-Domains se añada a tod
 
 Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">En el caso de las aplicaciones para Android, esta política solo afecta a la cámara integrada. Si se le asigna el valor true a esta política, la cámara se inhabilitará en todas las aplicaciones para Android, sin excepciones.</translation>
 <translation id="8649763579836720255">Los dispositivos Chrome OS pueden utilizar la confirmación remota (acceso verificado) para obtener un certificado emitido por la autoridad de certificación de Chrome OS que afirme que el dispositivo puede reproducir contenido protegido. Este proceso implica el envío de información de aprobación del hardware a la autoridad de certificación de Chrome OS que identifica el dispositivo de forma única.
 
           Si esta opción está establecida en False, el dispositivo no utilizará la confirmación remota para la protección del contenido y es posible que el dispositivo no pueda reproducir contenido protegido.

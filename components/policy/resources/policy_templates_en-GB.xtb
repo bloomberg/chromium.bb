@@ -3319,7 +3319,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       Users cannot change or override this setting.</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.</translation>
 <translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
 
           If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.

@@ -3207,7 +3207,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 
       Użytkownicy nie mogą zmienić ani zastąpić tego ustawienia.</translation>
 <translation id="8631434304112909927">do wersji <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">W przypadku aplikacji na Androida ta zasada dotyczy tylko wbudowanego aparatu. Gdy zasada jest włączona, aparat jest wyłączony dla wszystkich aplikacji na Androida bez wyjątków.</translation>
 <translation id="8649763579836720255">Urządzenia z Chrome OS mogą używać zaświadczeń zdalnych (zweryfikowanego dostępu), by uzyskać certyfikat Chrome OS CA, który zaświadcza, że urządzenie jest uprawnione do odtwarzania materiałów chronionych. Ten proces obejmuje wysłanie do Chrome OS CA informacji polecających sprzęt, które jednoznacznie identyfikują urządzenie.
 
           Jeśli w tym ustawieniu wybierzesz wartość Fałsz, urządzenie nie będzie korzystać z zaświadczeń zdalnych do ochrony treści i może nie móc odtwarzać materiałów chronionych.

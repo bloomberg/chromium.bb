@@ -1439,6 +1439,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (respaldado por hardware)</translation>
 <translation id="316125635462764134">Eliminar aplicación</translation>
 <translation id="3161522574479303604">Todos los idiomas</translation>
+<translation id="3163201441334626963">Producto <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /> desconocido</translation>
 <translation id="3165390001037658081">Es posible que algunos operadores bloqueen esta función.</translation>
 <translation id="316854673539778496">Inicia sesión y activa la sincronización para ver tus extensiones en todos tus dispositivos.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3955,6 +3956,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7002454948392136538">Selecciona el administrador de este usuario supervisado</translation>
 <translation id="7003339318920871147">Bases de datos web</translation>
 <translation id="7003723821785740825">Configura una forma más rápida de desbloquear el dispositivo</translation>
+<translation id="7003844668372540529">Producto <ph name="PRODUCT_ID" /> de <ph name="VENDOR_NAME" /> desconocido</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7005848115657603926">Intervalo de páginas no válido, utilizar <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margen inferior</translation>

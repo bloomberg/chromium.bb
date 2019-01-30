@@ -282,7 +282,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5728700505257787410">Houve um problema durante o login em sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de login da conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>
 <translation id="5738887413654608789">Isso permite que você descubra páginas da Web relevantes com base nos seus arredores.</translation>
-<translation id="5771816112378578655">Configuração em andamento...</translation>
 <translation id="5816228676161003208">Isso permite que você pesquise mais rapidamente usando sua voz.</translation>
 <translation id="5846482154967366008">Mecanismo de pesquisa</translation>
 <translation id="5854790677617711513">Com mais de 30 dias</translation>
@@ -309,6 +308,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6042308850641462728">Mais</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
+<translation id="6108923351542677676">Configuração em andamento...</translation>
 <translation id="6122191549521593678">On-line</translation>
 <translation id="6127379762771434464">Item removido</translation>
 <translation id="6136914049981179737">Segundos atrás</translation>

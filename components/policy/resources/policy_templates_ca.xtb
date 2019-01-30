@@ -3158,7 +3158,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 
       Els usuaris no poden modificar ni substituir aquesta opció.</translation>
 <translation id="8631434304112909927">fins a la versió <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">En el cas de les aplicacions per a Android, aquesta política afecta només la càmera integrada. Quan s'estableix en "true", es desactiva la càmera en totes les aplicacions per a Android, sense cap excepció.</translation>
 <translation id="8649763579836720255">Els dispositius amb Chrome OS poden utilitzar l'autenticació remota (accés verificat) per obtenir un certificat emès per la entitat emissora de certificats (CA) de Chrome OS que afirmi que el dispositiu és apte per reproduir contingut protegit. Aquest procés inclou l'enviament d'informació de ratificació del maquinari a la CA de Chrome OS que identifica el dispositiu de manera única.
 
           Si el paràmetre està configurat com a False, el dispositiu no farà servir l'autenticació remota de la protecció del contingut i pot ser que no pugui reproduir contingut protegit.

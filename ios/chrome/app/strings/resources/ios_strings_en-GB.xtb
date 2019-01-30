@@ -282,7 +282,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5728700505257787410">Sorry, there was a problem signing in to your account.</translation>
 <translation id="5737974891429562743">Account sign-in details are out of date. Update to start sync.</translation>
 <translation id="5738887413654608789">This lets you discover relevant web pages based on your surroundings.</translation>
-<translation id="5771816112378578655">Setup in progress...</translation>
 <translation id="5816228676161003208">This lets you search faster using your voice.</translation>
 <translation id="5846482154967366008">Search Engine</translation>
 <translation id="5854790677617711513">Older than 30 days</translation>
@@ -309,6 +308,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6042308850641462728">More</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">Tap to cancel.</translation>
+<translation id="6108923351542677676">Setup in progress…</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Item removed</translation>
 <translation id="6136914049981179737">Seconds ago</translation>

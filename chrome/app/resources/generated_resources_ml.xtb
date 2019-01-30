@@ -1436,6 +1436,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (ഹാർഡ്‌വെയർ പിന്തുണയുള്ളത്)</translation>
 <translation id="316125635462764134">അപ്ലിക്കേഷൻ നിക്കം ചെയ്യുക</translation>
 <translation id="3161522574479303604">എല്ലാ ഭാഷകളും</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID" /> വെൻഡറിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /></translation>
 <translation id="3165390001037658081">ചില സേവനദായകർ ഈ ഫീച്ചർ ബ്ലോക്കുചെയ്‌തേക്കും.</translation>
 <translation id="316854673539778496">നിങ്ങളുടെ വിപുലീകരണങ്ങൾ എല്ലാ ഉപകരണങ്ങളിലും ലഭിക്കാൻ, സൈൻ ഇൻ ചെയ്‌ത്, 'സമന്വയിപ്പിക്കൽ' ഓണാക്കുക.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3957,6 +3958,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="7002454948392136538">സൂപ്പർവൈസ് ചെയ്‌ത ഈ ഉപയോക്താവിനായി മാനേജറെ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7003339318920871147">വെബ് ഡാറ്റാബേസുകള്‍‌</translation>
 <translation id="7003723821785740825">നിങ്ങളുടെ ഉപകരണം അൺലോക്ക് ചെയ്യാൻ ഒരു വേഗതയേറിയ മാർഗ്ഗം സജ്ജമാക്കുക</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നുള്ള അജ്ഞാത ഉൽപ്പന്നം <ph name="PRODUCT_ID" /></translation>
 <translation id="7004499039102548441">സമീപകാല ടാബുകൾ</translation>
 <translation id="7005848115657603926">അസാധുവായ പേജ് റേഞ്ച്, <ph name="EXAMPLE_PAGE_RANGE" /> എന്നത് ഉപയോഗിക്കുക</translation>
 <translation id="7006634003215061422">ചുവടെയുള്ള മാർജിൻ</translation>
