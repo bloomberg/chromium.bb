@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/no_destructor.h"
+#include "services/device/public/mojom/mtp_file_entry.mojom.h"
+#include "services/device/public/mojom/mtp_storage_info.mojom.h"
 
 namespace storage_monitor {
 
