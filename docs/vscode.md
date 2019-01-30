@@ -55,7 +55,6 @@ terminal. The argument to `code` is the base directory of the workspace. VS
 Code does not require project or solution files. However, it does store
 workspace settings in a `.vscode` folder in your base directory.
 
-
 ### Fixes for Known Issues
 
 #### Git on Windows

@@ -11,10 +11,13 @@
   "editor.detectIndentation": false,
   // Add a line at 80 characters.
   "editor.rulers": [80],
-  // Trim tailing whitespace on save.
-  "files.trimTrailingWhitespace": true,
   // Forces LF instead of "auto" which uses CRLF on Windows.
   "files.eol": "\n",
+  // Trim tailing whitespace on save.
+  "files.trimTrailingWhitespace": true,
+  // Insert trimmed final new line.
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
 
   "files.associations": {
     // Adds xml syntax highlighting for grd files.
