@@ -600,6 +600,7 @@ void Surface::TakeCopyOutputRequests(Surface::CopyRequestsMap* copy_requests) {
     }
     render_pass->copy_requests.clear();
   }
+  MarkAsDrawn();
 }
 
 void Surface::TakeCopyOutputRequestsFromClient() {
@@ -757,6 +758,7 @@ void Surface::OnWillBeDrawn() {
         surface_info_.id().ToString());
   }
   surface_manager_->SurfaceWillBeDrawn(this);
+  MarkAsDrawn();
 }
 
 }  // namespace viz

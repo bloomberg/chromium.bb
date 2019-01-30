@@ -51,12 +51,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
-  // The set of surfaces that are referenced, but do not contribute to the
-  // aggregated CompositorFrame.
-  const base::flat_set<SurfaceId>& undrawn_surfaces() const {
-    return undrawn_surfaces_;
-  }
-
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
   void SetOutputColorSpace(const gfx::ColorSpace& blending_color_space,
