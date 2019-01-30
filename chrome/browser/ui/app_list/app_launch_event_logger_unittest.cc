@@ -120,7 +120,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
 
   AppLaunchEventLogger app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(nullptr, nullptr, nullptr);
-  app_launch_event_logger_.OnSuggestionChipClicked(kPhotosPWAApp);
+  app_launch_event_logger_.OnSuggestionChipClicked(kPhotosPWAApp, 2);
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -128,6 +128,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
   test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 2);
 }
 
 }  // namespace app_list

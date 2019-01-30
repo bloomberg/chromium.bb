@@ -712,6 +712,12 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     presenter_.GetView()->CloseOpenedPage();
 }
 
+void AppListControllerImpl::LogSearchClick(const std::string& result_id,
+                                           int suggestion_index) {
+  if (client_)
+    client_->LogSearchClick(result_id, suggestion_index);
+}
+
 void AppListControllerImpl::InvokeSearchResultAction(
     const std::string& result_id,
     int action_index,

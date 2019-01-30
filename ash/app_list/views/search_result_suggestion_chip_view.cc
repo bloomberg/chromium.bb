@@ -68,6 +68,8 @@ void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(result()->id(), event.flags());
+  view_delegate_->LogSearchClick(result()->id(),
+                                 index_in_suggestion_chip_container_);
 }
 
 void SearchResultSuggestionChipView::Layout() {

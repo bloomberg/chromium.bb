@@ -61,13 +61,15 @@ AppLaunchEventLogger::AppLaunchEventLogger() : weak_factory_(this) {
 
 AppLaunchEventLogger::~AppLaunchEventLogger() {}
 
-void AppLaunchEventLogger::OnSuggestionChipClicked(const std::string& id) {
+void AppLaunchEventLogger::OnSuggestionChipClicked(const std::string& id,
+                                                   int suggestion_index) {
   if (!base::FeatureList::IsEnabled(kUkmAppLaunchEventLogging)) {
     return;
   }
   AppLaunchEvent event;
   event.set_launched_from(AppLaunchEvent_LaunchedFrom_SUGGESTED);
   event.set_app_id(RemoveScheme(id));
+  event.set_index(suggestion_index);
   SetAppInfo(&event);
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&AppLaunchEventLogger::Log,
@@ -230,6 +232,12 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
 
   ukm::builders::AppListAppLaunch app_launch(source_id);
   base::Time now(base::Time::Now());
+
+  if (app_launch_event.launched_from() ==
+      AppLaunchEvent_LaunchedFrom_SUGGESTED) {
+    app_launch.SetPositionIndex(app_launch_event.index());
+  }
+
   app_launch.SetAppType(app_launch_event.app_type())
       .SetLaunchedFrom(app_launch_event.launched_from())
       .SetDayOfWeek(DayOfWeek(now))
