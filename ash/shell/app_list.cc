@@ -231,6 +231,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     WindowTypeShelfItem::ActivateItem(example_result->type(), event_flags);
   }
 
+  void LogSearchClick(const std::string& result_id,
+                      int suggestion_index) override {}
+
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {

@@ -310,6 +310,10 @@ interface AppListClient {
   // Opens a search result when its view is clicked or pressed.
   // |result_id|: the id of the search result the user wants to open.
   OpenSearchResult(string result_id, int32 event_flags);
+  // Logs a click on the search result.
+  // |result_id|: the id of the search result that was clicked on.
+  // |suggestion_index|: the position of the result in the suggestion chip.
+  LogSearchClick(string result_id, int32 suggestion_index);
   // Invokes a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an action on the search result,
   // for example, installing. They are stored in SearchResult::actions_.

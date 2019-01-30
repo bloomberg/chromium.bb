@@ -49,6 +49,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Invoked to open the search result.
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags) = 0;
+  // Called to log a click on the search result with |result_id| located at
+  // position |suggestion_index| in the suggestion chip.
+  virtual void LogSearchClick(const std::string& result_id,
+                              int suggestion_index) = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an icon in

@@ -30,7 +30,7 @@ class AppLaunchEventLogger {
   ~AppLaunchEventLogger();
   // Processes a click on an app in the suggestion chip and logs the resulting
   // metrics in UKM.
-  void OnSuggestionChipClicked(const std::string& id);
+  void OnSuggestionChipClicked(const std::string& id, int suggestion_index);
   // Processes a click on an app located in the grid of apps in the launcher and
   // logs the resulting metrics in UKM.
   void OnGridClicked(const std::string& id);
