@@ -5,8 +5,9 @@
 
 // Checks navigator.mediaCapabilities.encodingInfo() with some MIME types that
 // should be recordable and a few that shouldn't.
-
-[ [ 'video/webm', true ],
+// A list of test cases. Each test case consists of [MIME type, is supported].
+const testCases = [
+  [ 'video/webm', true ],
   [ 'video/webm;codecs=vp8', true ],
   [ 'video/webm;codecs=vp9', true ],
   [ 'video/webm;codecs=vp8.0', true ],
@@ -25,35 +26,37 @@
   [ 'video/webm;codecs=daala', false],
   [ 'audio/invalid', false],
   [ 'audio/ogg', false],
-  [ 'audio/webm;codecs=vorbis', false]]
-.forEach(function(args) {
-  promise_test(function() {
-    const mimeType = args[0];
-    const media = mimeType.split('/')[0];
-    assert_true(media == 'video' || media == 'audio', 'Unsupported media type');
+  [ 'audio/webm;codecs=vorbis', false]];
 
-    let queryParameters;
-    if (media == 'video') {
-      queryParameters = {
-        type : 'record',
-        video : {
-          contentType : mimeType,
-          width : 640,
-          height : 480,
-          bitrate : 10000,
-          framerate : 30
-        }
-      };
-    } else {
-      queryParameters = {type : 'record', audio : {contentType : mimeType}};
-    }
+function composeQuery(mimeType, queryType) {
+  const media = mimeType.split('/')[0];
+  assert_true(media == 'video' || media == 'audio', 'Unsupported media type');
+  if (media == 'video') {
+    return {
+      type : queryType,
+      video : {
+        contentType : mimeType,
+        width : 640,
+        height : 480,
+        bitrate : 10000,
+        framerate : 30}};
+  }
+  return {type : queryType, audio : {contentType : mimeType}};
+}
 
-    return navigator.mediaCapabilities.encodingInfo(queryParameters)
-        .then((result) => {
-          const isSupported = args[1];
-          assert_equals(isSupported, result.supported, mimeType + 'supported?');
-        });
-  }, args[0]);
+// Tests encodingInfo()'s response for a given encoding type and MIME type.
+testCases.forEach((testCase) => {
+  ['record', 'transmission'].forEach((queryType) => {
+    const mimeType = testCase[0];
+    const isSupported = testCase[1];
+    const testName = 'MediaEncodingConfiguration {type:' + queryType + ' video:{contentType:' + mimeType + '}}';
+    promise_test(() => navigator.mediaCapabilities.encodingInfo(
+      composeQuery(mimeType, queryType)).then(
+        (result) => {
+          assert_equals(isSupported, result.supported, mimeType + ' supported?');
+        }),
+                 testName);
+  });
 });
 
 </script>
