@@ -40,6 +40,7 @@
 #include "jni/AssistantHeaderModel_jni.h"
 #include "jni/AssistantModel_jni.h"
 #include "jni/AssistantOverlayModel_jni.h"
+#include "jni/AssistantPaymentRequestModel_jni.h"
 #include "jni/AutofillAssistantUiController_jni.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,6 +58,7 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
       ui_delegate_(ui_delegate),
       overlay_delegate_(this),
       header_delegate_(this),
+      payment_request_delegate_(this),
       carousel_delegate_(this),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
@@ -75,6 +77,10 @@ UiControllerAndroid::UiControllerAndroid(content::WebContents* web_contents,
   // Register header_delegate_ as delegate for clicks on header buttons.
   Java_AssistantHeaderModel_setDelegate(env, GetHeaderModel(),
                                         header_delegate_.GetJavaObject());
+
+  // Register payment_request_delegate_ as delegate for the payment request UI.
+  Java_AssistantPaymentRequestModel_setDelegate(
+      env, GetPaymentRequestModel(), payment_request_delegate_.GetJavaObject());
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
@@ -318,79 +324,39 @@ void UiControllerAndroid::Close() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+// Payment request related methods.
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetPaymentRequestModel() {
+  return Java_AssistantModel_getPaymentRequestModel(AttachCurrentThread(),
+                                                    GetModel());
+}
+
 void UiControllerAndroid::OnGetPaymentInformation(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jboolean jsucceed,
-    const JavaParamRef<jobject>& jcard,
-    const JavaParamRef<jobject>& jaddress,
-    const JavaParamRef<jstring>& jpayer_name,
-    const JavaParamRef<jstring>& jpayer_phone,
-    const JavaParamRef<jstring>& jpayer_email,
-    jboolean jis_terms_and_services_accepted) {
-  DCHECK(get_payment_information_callback_);
-
-  std::unique_ptr<PaymentInformation> payment_info =
-      std::make_unique<PaymentInformation>();
-  payment_info->succeed = jsucceed;
-  payment_info->is_terms_and_conditions_accepted =
-      jis_terms_and_services_accepted;
-  if (payment_info->succeed) {
-    if (jcard != nullptr) {
-      payment_info->card = std::make_unique<autofill::CreditCard>();
-      autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
-          jcard, env, payment_info->card.get());
-
-      auto guid = payment_info->card->billing_address_id();
-      if (!guid.empty()) {
-        autofill::AutofillProfile* profile =
-            autofill::PersonalDataManagerFactory::GetForProfile(
-                ProfileManager::GetLastUsedProfile())
-                ->GetProfileByGUID(guid);
-        if (profile != nullptr)
-          payment_info->billing_address =
-              std::make_unique<autofill::AutofillProfile>(*profile);
-      }
-    }
-    if (jaddress != nullptr) {
-      payment_info->shipping_address =
-          std::make_unique<autofill::AutofillProfile>();
-      autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
-          jaddress, env, payment_info->shipping_address.get());
-    }
-    if (jpayer_name != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jpayer_name,
-                                             &payment_info->payer_name);
-    }
-    if (jpayer_phone != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jpayer_phone,
-                                             &payment_info->payer_phone);
-    }
-    if (jpayer_email != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jpayer_email,
-                                             &payment_info->payer_email);
-    }
+    std::unique_ptr<PaymentInformation> payment_info) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AssistantModel_setAllowSwipingSheet(env, GetModel(), true);
+  Java_AssistantPaymentRequestModel_clearOptions(env, GetPaymentRequestModel());
+  if (get_payment_information_callback_) {
+    std::move(get_payment_information_callback_).Run(std::move(payment_info));
   }
-  std::move(get_payment_information_callback_).Run(std::move(payment_info));
 }
 
 void UiControllerAndroid::GetPaymentInformation(
     payments::mojom::PaymentOptionsPtr payment_options,
     base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    const std::string& title,
     const std::vector<std::string>& supported_basic_card_networks) {
   DCHECK(!get_payment_information_callback_);
   get_payment_information_callback_ = std::move(callback);
   JNIEnv* env = AttachCurrentThread();
-  Java_AutofillAssistantUiController_onRequestPaymentInformation(
-      env, java_autofill_assistant_ui_controller_,
+  Java_AssistantModel_setAllowSwipingSheet(env, GetModel(), false);
+  Java_AssistantPaymentRequestModel_setOptions(
+      env, GetPaymentRequestModel(),
       base::android::ConvertUTF8ToJavaString(env,
                                              client_->GetAccountEmailAddress()),
       payment_options->request_shipping, payment_options->request_payer_name,
       payment_options->request_payer_phone,
       payment_options->request_payer_email,
-      static_cast<int>(payment_options->shipping_type),
-      base::android::ConvertUTF8ToJavaString(env, title),
       base::android::ToJavaArrayOfStrings(env, supported_basic_card_networks));
 }
 

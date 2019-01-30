@@ -14,6 +14,7 @@
 #include "chrome/browser/android/autofill_assistant/assistant_carousel_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
+#include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -47,7 +48,6 @@ class UiControllerAndroid : public UiController {
   void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
   void OnDetailsChanged(const Details* details) override;
   void ShowProgressBar(int progress) override;
@@ -64,21 +64,15 @@ class UiControllerAndroid : public UiController {
   void OnFeedbackButtonClicked();
   void OnCloseButtonClicked();
 
+  // Called by AssistantPaymentRequestDelegate:
+  void OnGetPaymentInformation(
+      std::unique_ptr<PaymentInformation> payment_info);
+
   // Called by AssistantCarouselDelegate:
   void OnChipSelected(int index);
 
   // Called by Java.
   void Stop(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void OnGetPaymentInformation(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jcaller,
-      jboolean jsucceed,
-      const base::android::JavaParamRef<jobject>& jcard,
-      const base::android::JavaParamRef<jobject>& jaddress,
-      const base::android::JavaParamRef<jstring>& jpayer_name,
-      const base::android::JavaParamRef<jstring>& jpayer_phone,
-      const base::android::JavaParamRef<jstring>& jpayer_email,
-      jboolean jis_terms_and_services_accepted);
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
@@ -88,12 +82,14 @@ class UiControllerAndroid : public UiController {
   UiDelegate* const ui_delegate_;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
+  AssistantPaymentRequestDelegate payment_request_delegate_;
   AssistantCarouselDelegate carousel_delegate_;
 
   base::android::ScopedJavaLocalRef<jobject> GetModel();
   base::android::ScopedJavaLocalRef<jobject> GetOverlayModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
+  base::android::ScopedJavaLocalRef<jobject> GetPaymentRequestModel();
   base::android::ScopedJavaLocalRef<jobject> GetCarouselModel();
 
   void ShowOverlay();

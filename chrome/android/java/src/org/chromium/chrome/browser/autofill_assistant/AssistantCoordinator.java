@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -69,11 +70,14 @@ class AssistantCoordinator {
         mOverlayCoordinator =
                 new AssistantOverlayCoordinator(activity, mAssistantView, mModel.getOverlayModel());
 
-        // Notify AssistantKeyboardCoordinator when we should (dis)allow the soft keyboard.
+        // Listen when we should (dis)allow the soft keyboard or swiping the bottom sheet.
         mModel.addObserver((source, propertyKey) -> {
             if (AssistantModel.ALLOW_SOFT_KEYBOARD == propertyKey) {
                 mKeyboardCoordinator.allowShowingSoftKeyboard(
                         mModel.get(AssistantModel.ALLOW_SOFT_KEYBOARD));
+            } else if (AssistantModel.ALLOW_SWIPING_SHEET == propertyKey) {
+                mBottomBarCoordinator.allowSwipingBottomSheet(
+                        mModel.get(AssistantModel.ALLOW_SWIPING_SHEET));
             }
         });
 
@@ -108,7 +112,7 @@ class AssistantCoordinator {
         // Hide everything except header.
         mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.hidden());
         mModel.getDetailsModel().clearDetails();
-        mBottomBarCoordinator.getPaymentRequestCoordinator().setVisible(false);
+        mModel.getPaymentRequestModel().set(AssistantPaymentRequestModel.OPTIONS, null);
         mModel.getCarouselModel().clearChips();
 
         if (showGiveUpMessage) {

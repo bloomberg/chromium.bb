@@ -4,21 +4,16 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.support.annotation.Nullable;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
-import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentOptions;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -30,8 +25,6 @@ import org.chromium.payments.mojom.PaymentOptions;
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
 class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
-    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
-
     private long mNativeUiController;
 
     private final AssistantCoordinator mCoordinator;
@@ -127,39 +120,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onRequestPaymentInformation(String defaultEmail, boolean requestShipping,
-            boolean requestPayerName, boolean requestPayerPhone, boolean requestPayerEmail,
-            int shippingType, String title, String[] supportedBasicCardNetworks) {
-        PaymentOptions paymentOptions = new PaymentOptions();
-        paymentOptions.requestShipping = requestShipping;
-        paymentOptions.requestPayerName = requestPayerName;
-        paymentOptions.requestPayerPhone = requestPayerPhone;
-        paymentOptions.requestPayerEmail = requestPayerEmail;
-        paymentOptions.shippingType = shippingType;
-
-        mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(false);
-        mCoordinator.getBottomBarCoordinator()
-                .getPaymentRequestCoordinator()
-                .reset(paymentOptions, supportedBasicCardNetworks, defaultEmail)
-                .then(this::onRequestPaymentInformationSuccess,
-                        this::onRequestPaymentInformationFailed);
-    }
-
-    private void onRequestPaymentInformationSuccess(
-            SelectedPaymentInformation selectedInformation) {
-        mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(true);
-        safeNativeOnGetPaymentInformation(/* succeed= */ true, selectedInformation.card,
-                selectedInformation.address, selectedInformation.payerName,
-                selectedInformation.payerPhone, selectedInformation.payerEmail,
-                selectedInformation.isTermsAndConditionsAccepted);
-    }
-
-    private void onRequestPaymentInformationFailed(Exception unusedException) {
-        mCoordinator.getBottomBarCoordinator().allowSwipingBottomSheet(true);
-        mCoordinator.gracefulShutdown(/* showGiveUpMessage= */ true, DropOutReason.PR_FAILED);
-    }
-
-    @CalledByNative
     private void onShowOnboarding(Runnable onAccept) {
         mCoordinator.showOnboarding(onAccept);
     }
@@ -185,18 +145,4 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
     private native void nativeStop(long nativeUiControllerAndroid);
 
-    void safeNativeOnGetPaymentInformation(boolean succeed,
-            @Nullable PersonalDataManager.CreditCard card,
-            @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
-            @Nullable String payerPhone, @Nullable String payerEmail,
-            boolean isTermsAndConditionsAccepted) {
-        if (mNativeUiController != 0)
-            nativeOnGetPaymentInformation(mNativeUiController, succeed, card, address, payerName,
-                    payerPhone, payerEmail, isTermsAndConditionsAccepted);
-    }
-    private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
-            boolean succeed, @Nullable PersonalDataManager.CreditCard card,
-            @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
-            @Nullable String payerPhone, @Nullable String payerEmail,
-            boolean isTermsAndConditionsAccepted);
 }

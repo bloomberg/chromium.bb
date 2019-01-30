@@ -57,7 +57,7 @@ void GetPaymentInformationAction::InternalProcessAction(
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
                      weak_ptr_factory_.GetWeakPtr(), delegate,
                      std::move(get_payment_information), std::move(callback)),
-      get_payment_information.prompt(), supported_basic_card_networks);
+      supported_basic_card_networks);
   if (get_payment_information.has_prompt()) {
     delegate->SetStatusMessage(get_payment_information.prompt());
   }

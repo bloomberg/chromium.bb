@@ -10,10 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import org.chromium.base.Promise;
-import org.chromium.chrome.browser.autofill_assistant.payment.AutofillAssistantPaymentRequest.SelectedPaymentInformation;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentOptions;
 
 // TODO(crbug.com/806868): Refactor AutofillAssistantPaymentRequest and merge with this file.
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
@@ -26,9 +23,10 @@ public class AssistantPaymentRequestCoordinator {
     private Runnable mOnVisibilityChanged;
     private final ViewGroup mView;
 
-    private Promise<SelectedPaymentInformation> mCurrentPromise;
+    private AssistantPaymentRequestDelegate mDelegate;
 
-    public AssistantPaymentRequestCoordinator(Context context, WebContents webContents) {
+    public AssistantPaymentRequestCoordinator(
+            Context context, WebContents webContents, AssistantPaymentRequestModel model) {
         mWebContents = webContents;
         assert webContents != null;
 
@@ -38,13 +36,29 @@ public class AssistantPaymentRequestCoordinator {
 
         // Payment request is initially hidden.
         setVisible(false);
+
+        // Listen for model changes.
+        model.addObserver((source, propertyKey) -> {
+            if (AssistantPaymentRequestModel.DELEGATE == propertyKey) {
+                mDelegate = model.get(AssistantPaymentRequestModel.DELEGATE);
+            } else if (AssistantPaymentRequestModel.OPTIONS == propertyKey) {
+                AssistantPaymentRequestOptions options =
+                        model.get(AssistantPaymentRequestModel.OPTIONS);
+                if (options != null) {
+                    resetView(options);
+                    setVisible(true);
+                } else {
+                    setVisible(false);
+                }
+            }
+        });
     }
 
     public View getView() {
         return mView;
     }
 
-    public void setVisible(boolean visible) {
+    private void setVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
         boolean changed = mView.getVisibility() != visibility;
         if (changed) {
@@ -63,22 +77,13 @@ public class AssistantPaymentRequestCoordinator {
         mOnVisibilityChanged = listener;
     }
 
-    public Promise<SelectedPaymentInformation> reset(
-            PaymentOptions options, String[] supportedBasicCardNetworks, String defaultEmail) {
-        assert mCurrentPromise
-                == null : "AssistantPaymentRequestCoordinator does not support concurrent calls "
-                          + "to requestPaymentInformation";
-        Promise<SelectedPaymentInformation> thisPromise = new Promise<>();
-        mCurrentPromise = thisPromise;
-
-        setVisible(true);
-        AutofillAssistantPaymentRequest paymentRequest = new AutofillAssistantPaymentRequest(
-                mWebContents, options, /* title= */ "", supportedBasicCardNetworks, defaultEmail);
+    private void resetView(AssistantPaymentRequestOptions options) {
+        AutofillAssistantPaymentRequest paymentRequest =
+                new AutofillAssistantPaymentRequest(mWebContents, options);
         paymentRequest.show(mView.getChildAt(0), selectedPaymentInformation -> {
-            setVisible(false);
-            mCurrentPromise = null;
-            thisPromise.fulfill(selectedPaymentInformation);
+            if (mDelegate != null) {
+                mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
+            }
         });
-        return this.mCurrentPromise;
     }
 }
