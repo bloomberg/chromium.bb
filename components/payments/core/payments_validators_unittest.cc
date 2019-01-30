@@ -43,7 +43,7 @@ TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat) {
                 GetParam().code, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CurrencyCodes,
     PaymentsCurrencyValidatorTest,
     testing::Values(
@@ -94,7 +94,7 @@ TEST_P(PaymentsAmountValidatorTest, IsValidAmountFormat) {
                                                               nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Amounts,
     PaymentsAmountValidatorTest,
     testing::Values(TestCase("0", true),
@@ -139,15 +139,15 @@ TEST_P(PaymentsRegionValidatorTest, IsValidCountryCodeFormat) {
                 GetParam().input, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(CountryCodes,
-                        PaymentsRegionValidatorTest,
-                        testing::Values(TestCase("US", true),
-                                        // Invalid country code formats
-                                        TestCase("U1", false),
-                                        TestCase("U", false),
-                                        TestCase("us", false),
-                                        TestCase("USA", false),
-                                        TestCase("", false)));
+INSTANTIATE_TEST_SUITE_P(CountryCodes,
+                         PaymentsRegionValidatorTest,
+                         testing::Values(TestCase("US", true),
+                                         // Invalid country code formats
+                                         TestCase("U1", false),
+                                         TestCase("U", false),
+                                         TestCase("us", false),
+                                         TestCase("USA", false),
+                                         TestCase("", false)));
 
 class PaymentsLanguageValidatorTest : public testing::TestWithParam<TestCase> {
 };
@@ -165,17 +165,17 @@ TEST_P(PaymentsLanguageValidatorTest, IsValidLanguageCodeFormat) {
                 GetParam().input, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(LanguageCodes,
-                        PaymentsLanguageValidatorTest,
-                        testing::Values(TestCase("", true),
-                                        TestCase("en", true),
-                                        TestCase("eng", true),
-                                        // Invalid language code formats
-                                        TestCase("e1", false),
-                                        TestCase("en1", false),
-                                        TestCase("e", false),
-                                        TestCase("engl", false),
-                                        TestCase("EN", false)));
+INSTANTIATE_TEST_SUITE_P(LanguageCodes,
+                         PaymentsLanguageValidatorTest,
+                         testing::Values(TestCase("", true),
+                                         TestCase("en", true),
+                                         TestCase("eng", true),
+                                         // Invalid language code formats
+                                         TestCase("e1", false),
+                                         TestCase("en1", false),
+                                         TestCase("e", false),
+                                         TestCase("engl", false),
+                                         TestCase("EN", false)));
 
 class PaymentsScriptValidatorTest : public testing::TestWithParam<TestCase> {};
 
@@ -192,17 +192,17 @@ TEST_P(PaymentsScriptValidatorTest, IsValidScriptCodeFormat) {
                 GetParam().input, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(ScriptCodes,
-                        PaymentsScriptValidatorTest,
-                        testing::Values(TestCase("", true),
-                                        TestCase("Latn", true),
-                                        // Invalid script code formats
-                                        TestCase("Lat1", false),
-                                        TestCase("1lat", false),
-                                        TestCase("Latin", false),
-                                        TestCase("Lat", false),
-                                        TestCase("latn", false),
-                                        TestCase("LATN", false)));
+INSTANTIATE_TEST_SUITE_P(ScriptCodes,
+                         PaymentsScriptValidatorTest,
+                         testing::Values(TestCase("", true),
+                                         TestCase("Latn", true),
+                                         // Invalid script code formats
+                                         TestCase("Lat1", false),
+                                         TestCase("1lat", false),
+                                         TestCase("Latin", false),
+                                         TestCase("Lat", false),
+                                         TestCase("latn", false),
+                                         TestCase("LATN", false)));
 
 struct LanguageTagTestCase {
   LanguageTagTestCase(const char* language_tag,
@@ -236,7 +236,7 @@ TEST_P(PaymentsLanguageTagSplitTest, Test) {
       PaymentsValidators::IsValidScriptCodeFormat(script_code, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LanguageTags,
     PaymentsLanguageTagSplitTest,
     testing::Values(LanguageTagTestCase("", "", ""),
@@ -324,7 +324,7 @@ TEST_P(PaymentsErrorMessageValidatorTest,
       << error_message;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PaymentValidationErrorss,
     PaymentsErrorMessageValidatorTest,
     testing::Values(
