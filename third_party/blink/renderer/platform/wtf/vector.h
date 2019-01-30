@@ -1263,9 +1263,13 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
       size_ = 0;  // Partial protection against use-after-free.
     }
 
-    // If this is called during sweeping, it must not touch the OutOfLineBuffer.
-    if (Allocator::IsSweepForbidden())
-      return;
+    // If this is called during sweeping, the backing should not be touched.
+    // Other collections have an early return here if IsSweepForbidden(), but
+    // adding that resulted in performance regression for shadow dom benchmarks
+    // (crbug.com/866084) because of the additional access to TLS. The check has
+    // been removed but the same check exists in HeapAllocator::BackingFree() so
+    // things should be fine as long as VectorBase does not touch the backing.
+
     Base::Destruct();
   }
 
