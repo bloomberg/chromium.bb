@@ -316,6 +316,14 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
   FlushAfterDrawIfNeeded();
 }
 
+void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
+                                   SkScalar x,
+                                   SkScalar y,
+                                   const PaintFlags& flags,
+                                   const NodeHolder& holder) {
+  drawTextBlob(blob, x, y, flags);
+}
+
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
   drawPicture(record, PlaybackParams::CustomDataRasterCallback());
 }

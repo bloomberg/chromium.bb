@@ -4,6 +4,8 @@
 
 #include "cc/paint/record_paint_canvas.h"
 
+#include <utility>
+
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_record.h"
@@ -273,6 +275,14 @@ void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                      SkScalar y,
                                      const PaintFlags& flags) {
   list_->push<DrawTextBlobOp>(std::move(blob), x, y, flags);
+}
+
+void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
+                                     SkScalar x,
+                                     SkScalar y,
+                                     const PaintFlags& flags,
+                                     const NodeHolder& holder) {
+  list_->push<DrawTextBlobOp>(std::move(blob), x, y, flags, holder);
 }
 
 void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {

@@ -88,6 +88,12 @@ class MockPaintCanvas : public cc::PaintCanvas {
   MOCK_METHOD4(
       drawTextBlob,
       void(sk_sp<SkTextBlob>, SkScalar x, SkScalar y, const PaintFlags& flags));
+  MOCK_METHOD5(drawTextBlob,
+               void(sk_sp<SkTextBlob>,
+                    SkScalar x,
+                    SkScalar y,
+                    const PaintFlags& flags,
+                    const cc::NodeHolder& holder));
   MOCK_METHOD1(drawPicture, void(sk_sp<const PaintRecord> record));
   MOCK_CONST_METHOD0(isClipEmpty, bool());
   MOCK_CONST_METHOD0(isClipRect, bool());

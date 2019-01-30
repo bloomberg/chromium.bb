@@ -19,6 +19,8 @@ class SkottieWrapper;
 class PaintFlags;
 class PaintOpBuffer;
 
+struct NodeHolder;
+
 using PaintRecord = PaintOpBuffer;
 
 // PaintCanvas is the cc/paint wrapper of SkCanvas.  It has a more restricted
@@ -155,6 +157,12 @@ class CC_PAINT_EXPORT PaintCanvas {
                             SkScalar x,
                             SkScalar y,
                             const PaintFlags& flags) = 0;
+
+  virtual void drawTextBlob(sk_sp<SkTextBlob> blob,
+                            SkScalar x,
+                            SkScalar y,
+                            const PaintFlags& flags,
+                            const NodeHolder& holder) = 0;
 
   // Unlike SkCanvas::drawPicture, this only plays back the PaintRecord and does
   // not add an additional clip.  This is closer to SkPicture::playback.
