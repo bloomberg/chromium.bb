@@ -67,8 +67,13 @@ Response InspectorMemoryAgent::getDOMCounters(int* documents,
 
 Response InspectorMemoryAgent::forciblyPurgeJavaScriptMemory() {
   for (const auto& page : Page::OrdinaryPages()) {
-    if (page->MainFrame()->IsLocalFrame())
-      ToLocalFrame(page->MainFrame())->ForciblyPurgeV8Memory();
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (!frame->IsLocalFrame())
+        continue;
+      LocalFrame* local_frame = ToLocalFrame(frame);
+      local_frame->ForciblyPurgeV8Memory();
+    }
   }
   V8PerIsolateData::MainThreadIsolate()->MemoryPressureNotification(
       v8::MemoryPressureLevel::kCritical);

@@ -85,12 +85,15 @@ void OomInterventionImpl::Check(OomInterventionMetrics current_memory) {
   if (oom_detected) {
     if (navigate_ads_enabled_ || purge_v8_memory_enabled_) {
       for (const auto& page : Page::OrdinaryPages()) {
-        if (page->MainFrame()->IsLocalFrame()) {
-          LocalFrame* frame = ToLocalFrame(page->MainFrame());
+        for (Frame* frame = page->MainFrame(); frame;
+             frame = frame->Tree().TraverseNext()) {
+          if (!frame->IsLocalFrame())
+            continue;
+          LocalFrame* local_frame = ToLocalFrame(frame);
           if (navigate_ads_enabled_)
-            frame->GetDocument()->NavigateLocalAdsFrames();
+            local_frame->GetDocument()->NavigateLocalAdsFrames();
           if (purge_v8_memory_enabled_)
-            frame->ForciblyPurgeV8Memory();
+            local_frame->ForciblyPurgeV8Memory();
         }
       }
     }
