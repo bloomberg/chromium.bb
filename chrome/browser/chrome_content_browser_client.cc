@@ -80,7 +80,7 @@
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
-#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
+#include "chrome/browser/policy/cloud/policy_header_navigation_throttle.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -2294,8 +2294,6 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
     int* extra_load_flags) {
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-
 
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
@@ -2304,33 +2302,6 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
     *extra_load_flags = net::LOAD_PREFETCH;
     extra_headers->SetHeader(prerender::kPurposeHeaderName,
                              prerender::kPurposeHeaderValue);
-  }
-
-  if (!browser_context->IsOffTheRecord()) {
-    // Add policy headers for non-incognito requests.
-    policy::PolicyHeaderService* policy_header_service =
-        policy::PolicyHeaderServiceFactory::GetForBrowserContext(
-            browser_context);
-    if (policy_header_service)
-      policy_header_service->AddPolicyHeaders(url, extra_headers);
-  }
-}
-
-void ChromeContentBrowserClient::NavigationRequestRedirected(
-    int frame_tree_node_id,
-    const GURL& url,
-    net::HttpRequestHeaders* modified_headers) {
-  WebContents* web_contents =
-      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-
-  if (!browser_context->IsOffTheRecord()) {
-    // Add policy headers for non-incognito requests.
-    policy::PolicyHeaderService* policy_header_service =
-        policy::PolicyHeaderServiceFactory::GetForBrowserContext(
-            browser_context);
-    if (policy_header_service)
-      policy_header_service->AddPolicyHeaders(url, modified_headers);
   }
 }
 
@@ -4255,6 +4226,9 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (browser_switcher_throttle)
     throttles.push_back(std::move(browser_switcher_throttle));
 #endif
+
+  throttles.push_back(
+      std::make_unique<policy::PolicyHeaderNavigationThrottle>(handle));
 
   return throttles;
 }

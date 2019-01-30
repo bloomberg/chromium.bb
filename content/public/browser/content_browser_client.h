@@ -560,17 +560,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         net::HttpRequestHeaders* extra_headers,
                                         int* extra_load_flags) {}
 
-  // DEPRECATED. Please use the NavigationHandle to modify headers.
-  // See https://crbug.com/919432.
-  //
-  // Allow the embedder to modify headers for a redirect. If non-nullopt,
-  // |*modified_headers| is applied to the request headers after updating them
-  // for the redirect.
-  virtual void NavigationRequestRedirected(
-      int frame_tree_node_id,
-      const GURL& url,
-      net::HttpRequestHeaders* modified_headers) {}
-
   // Allow the embedder to control if the given cookie can be read.
   // This is called on the IO thread.
   virtual bool AllowGetCookie(const GURL& url,
