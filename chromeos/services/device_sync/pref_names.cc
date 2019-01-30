@@ -44,6 +44,23 @@ const char kCryptAuthEnrollmentLastEnrollmentTimeSeconds[] =
 // chromeos/services/device_sync/proto/cryptauth_api.proto.
 const char kCryptAuthEnrollmentReason[] = "cryptauth.enrollment.reason";
 
+// The most recent ClientDirective--serialized to a string and base64
+// encoded--sent to the CryptAuthEnrollmentScheduler.
+const char kCryptAuthEnrollmentSchedulerClientDirective[] =
+    "cryptauth.enrollment.scheduler_client_directive";
+
+// The time of the last enrollment attempt.
+const char kCryptAuthEnrollmentSchedulerLastEnrollmentAttemptTime[] =
+    "cryptauth.enrollment.scheduler_last_enrollment_attempt_time";
+
+// The time of the last successful enrollment.
+const char kCryptAuthEnrollmentSchedulerLastSuccessfulEnrollmentTime[] =
+    "cryptauth.enrollment.scheduler_last_successful_enrollment_time";
+
+// The number of failed enrollments since the last successful enrollment.
+const char kCryptAuthEnrollmentSchedulerNumConsecutiveFailures[] =
+    "cryptauth.enrollment.scheduler_num_consecutive_failures";
+
 // The public key of the user and device enrolled with CryptAuth.
 const char kCryptAuthEnrollmentUserPublicKey[] =
     "cryptauth.enrollment.user_public_key";
