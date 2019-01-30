@@ -9091,6 +9091,53 @@ static int check_if_optimal_warp(const AV1_COMP *cpi,
   return is_valid_warp;
 }
 
+struct obmc_check_mv_field_ctxt {
+  MB_MODE_INFO *current_mi;
+  int mv_field_check_result;
+};
+
+static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_col,
+                                           uint8_t nb_mi_width,
+                                           MB_MODE_INFO *nb_mi, void *fun_ctxt,
+                                           const int num_planes) {
+  (void)xd;
+  (void)rel_mi_col;
+  (void)nb_mi_width;
+  (void)num_planes;
+  struct obmc_check_mv_field_ctxt *ctxt =
+      (struct obmc_check_mv_field_ctxt *)fun_ctxt;
+  const MB_MODE_INFO *current_mi = ctxt->current_mi;
+
+  if (ctxt->mv_field_check_result == 0) return;
+
+  if (nb_mi->ref_frame[0] != current_mi->ref_frame[0] ||
+      nb_mi->mv[0].as_int != current_mi->mv[0].as_int ||
+      nb_mi->interp_filters != current_mi->interp_filters) {
+    ctxt->mv_field_check_result = 0;
+  }
+  return;
+}
+
+// Check if the neighbors' motions used by obmc have same parameters as for
+// the current block. If all the parameters are identical, obmc will produce
+// the same prediction as from regular bmc, therefore we can skip the
+// overlapping operations for less complexity. The parameters checked include
+// reference frame, motion vector, and interpolation filter.
+int check_identical_obmc_mv_field(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                                  int mi_row, int mi_col) {
+  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
+  struct obmc_check_mv_field_ctxt mv_field_check_ctxt = { xd->mi[0], 1 };
+
+  foreach_overlappable_nb_above(cm, xd, mi_col,
+                                max_neighbor_obmc[mi_size_wide_log2[bsize]],
+                                obmc_check_identical_mv, &mv_field_check_ctxt);
+  foreach_overlappable_nb_left(cm, xd, mi_row,
+                               max_neighbor_obmc[mi_size_high_log2[bsize]],
+                               obmc_check_identical_mv, &mv_field_check_ctxt);
+
+  return mv_field_check_ctxt.mv_field_check_result;
+}
+
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
 static int64_t motion_mode_rd(
@@ -9149,7 +9196,7 @@ static int64_t motion_mode_rd(
   const int identical_obmc_mv_field_detected =
       (cpi->sf.skip_obmc_in_uniform_mv_field ||
        cpi->sf.skip_wm_in_uniform_mv_field)
-          ? av1_check_identical_obmc_mv_field(cm, xd, mi_row, mi_col)
+          ? check_identical_obmc_mv_field(cm, xd, mi_row, mi_col)
           : 0;
   for (int mode_index = (int)SIMPLE_TRANSLATION;
        mode_index <= (int)last_motion_mode_allowed + interintra_allowed;

@@ -800,53 +800,6 @@ void av1_modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
   return;
 }
 
-struct obmc_check_mv_field_ctxt {
-  MB_MODE_INFO *current_mi;
-  int mv_field_check_result;
-};
-
-static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_col,
-                                           uint8_t nb_mi_width,
-                                           MB_MODE_INFO *nb_mi, void *fun_ctxt,
-                                           const int num_planes) {
-  (void)xd;
-  (void)rel_mi_col;
-  (void)nb_mi_width;
-  (void)num_planes;
-  struct obmc_check_mv_field_ctxt *ctxt =
-      (struct obmc_check_mv_field_ctxt *)fun_ctxt;
-  const MB_MODE_INFO *current_mi = ctxt->current_mi;
-
-  if (ctxt->mv_field_check_result == 0) return;
-
-  if (nb_mi->ref_frame[0] != current_mi->ref_frame[0] ||
-      nb_mi->mv[0].as_int != current_mi->mv[0].as_int ||
-      nb_mi->interp_filters != current_mi->interp_filters) {
-    ctxt->mv_field_check_result = 0;
-  }
-  return;
-}
-
-// Check if the neighbors' motions used by obmc have same parameters as for
-// the current block. If all the parameters are identical, obmc will produce
-// the same prediction as from regular bmc, therefore we can skip the
-// overlapping operations for less complexity. The parameters checked include
-// reference frame, motion vector, and interpolation filter.
-int av1_check_identical_obmc_mv_field(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                      int mi_row, int mi_col) {
-  const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
-  struct obmc_check_mv_field_ctxt mv_field_check_ctxt = { xd->mi[0], 1 };
-
-  foreach_overlappable_nb_above(cm, xd, mi_col,
-                                max_neighbor_obmc[mi_size_wide_log2[bsize]],
-                                obmc_check_identical_mv, &mv_field_check_ctxt);
-  foreach_overlappable_nb_left(cm, xd, mi_row,
-                               max_neighbor_obmc[mi_size_high_log2[bsize]],
-                               obmc_check_identical_mv, &mv_field_check_ctxt);
-
-  return mv_field_check_ctxt.mv_field_check_result;
-}
-
 struct obmc_inter_pred_ctxt {
   uint8_t **adjacent;
   int *adjacent_stride;
