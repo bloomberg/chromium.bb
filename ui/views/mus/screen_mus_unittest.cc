@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_task_environment.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/views/test/views_test_base.h"
