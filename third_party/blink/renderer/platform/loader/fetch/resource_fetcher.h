@@ -51,6 +51,8 @@ enum class ResourceType : uint8_t;
 class ArchiveResource;
 class CodeCacheLoader;
 class ConsoleLogger;
+class FetchContext;
+class FrameScheduler;
 class MHTMLArchive;
 class KURL;
 class PreflightTimingInfo;
@@ -345,7 +347,7 @@ class PLATFORM_EXPORT ResourceFetcher
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Member<ConsoleLogger> console_logger_;
   Member<LoaderFactory> loader_factory_;
-  Member<ResourceLoadScheduler> scheduler_;
+  const Member<ResourceLoadScheduler> scheduler_;
 
   DocumentResourceMap cached_resources_map_;
   HeapHashSet<WeakMember<Resource>> document_resources_;
@@ -446,6 +448,7 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   Member<MHTMLArchive> archive;
+  FrameScheduler* frame_scheduler = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceFetcherInit);
 };

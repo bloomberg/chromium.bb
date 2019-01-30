@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
+#include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
@@ -69,12 +69,10 @@ class ResourceLoadSchedulerTest : public testing::Test {
     DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     properties->SetShouldBlockLoadingSubResource(true);
-    auto* context = MakeGarbageCollected<MockFetchContext>();
-    MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context,
-                            base::MakeRefCounted<scheduler::FakeTaskRunner>()));
+    auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
-        ResourceLoadScheduler::ThrottlingPolicy::kTight, context);
+        ResourceLoadScheduler::ThrottlingPolicy::kTight, *properties,
+        frame_scheduler.get());
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }
@@ -586,7 +584,7 @@ TEST_F(ResourceLoadSchedulerTest, LoosenThrottlingPolicy) {
 
   Scheduler()->SetOutstandingLimitForTesting(0, 2);
 
-  // MockFetchContext's initial scheduling policy is |kTight|, setting the
+  // The initial scheduling policy is |kTight|, setting the
   // outstanding limit for the normal mode doesn't take effect.
   EXPECT_FALSE(client1->WasRun());
   EXPECT_FALSE(client2->WasRun());

@@ -13,8 +13,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 
 #include <memory>
@@ -28,14 +26,7 @@ struct ResourceLoaderOptions;
 // Mocked FetchContext for testing.
 class MockFetchContext : public FetchContext {
  public:
-  MockFetchContext() : MockFetchContext(nullptr) {}
-  explicit MockFetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
-      : frame_scheduler_(new MockFrameScheduler(
-            loading_task_runner
-                ? std::move(loading_task_runner)
-                : base::MakeRefCounted<scheduler::FakeTaskRunner>())),
-        transfer_size_(-1) {}
+  MockFetchContext() = default;
   ~MockFetchContext() override = default;
 
   long long GetTransferSize() const { return transfer_size_; }
@@ -82,28 +73,8 @@ class MockFetchContext : public FetchContext {
     transfer_size_ = resource_timing_info.TransferSize();
   }
 
-  FrameScheduler* GetFrameScheduler() const override {
-    return frame_scheduler_.get();
-  }
-
  private:
-  class MockFrameScheduler final : public scheduler::FakeFrameScheduler {
-   public:
-    explicit MockFrameScheduler(
-        scoped_refptr<base::SingleThreadTaskRunner> runner)
-        : runner_(std::move(runner)) {}
-    scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-        TaskType) override {
-      return runner_;
-    }
-
-   private:
-    scoped_refptr<base::SingleThreadTaskRunner> runner_;
-  };
-
-  std::unique_ptr<FrameScheduler> frame_scheduler_;
-  std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
-  long long transfer_size_;
+  long long transfer_size_ = -1;
   base::Optional<ResourceRequest> will_send_request_;
 };
 

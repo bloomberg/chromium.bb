@@ -39,6 +39,9 @@ class PLATFORM_EXPORT NullResourceFetcherProperties final
   bool IsDetached() const override { return true; }
   bool IsLoadComplete() const override { return true; }
   bool ShouldBlockLoadingSubResource() const override { return true; }
+  scheduler::FrameStatus GetFrameStatus() const override {
+    return scheduler::FrameStatus::kNone;
+  }
 
  private:
   const Member<const FetchClientSettingsObject> fetch_client_settings_object_;

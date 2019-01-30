@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -1869,13 +1870,14 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest);
-  MockFetchContext* context =
-      MakeGarbageCollected<MockFetchContext>(task_runner);
+  auto* context = MakeGarbageCollected<MockFetchContext>();
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
       ResourceFetcherInit(*properties, context, task_runner));
+  auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
-      ResourceLoadScheduler::ThrottlingPolicy::kNormal, context);
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal, *properties,
+      frame_scheduler.get());
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 
   // Ensure that |image_resource| has a loader.
