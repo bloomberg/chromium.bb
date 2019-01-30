@@ -108,6 +108,8 @@ jumbo_split_static_library("ui") {
     "confirm_bubble.h",
     "crypto_module_password_dialog.h",
     "cryptuiapi_shim.h",
+    "dark_mode_observer.cc",
+    "dark_mode_observer.h",
     "enterprise_startup_dialog.h",
     "find_bar/find_bar.h",
     "find_bar/find_bar_state.h",

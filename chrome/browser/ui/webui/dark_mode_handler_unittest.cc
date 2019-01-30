@@ -173,3 +173,44 @@ TEST_F(DarkModeHandlerTest, NotifiesAndUpdatesOnChange) {
   ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->is_bool());
   EXPECT_TRUE(web_ui()->call_data()[0]->arg2()->GetBool());
 }
+
+TEST_F(DarkModeHandlerTest, DarkModeChangeBeforeJsAllowed) {
+  features()->InitAndEnableFeature(features::kWebUIDarkMode);
+  theme()->SetDarkMode(false);
+
+  InitializeHandler();
+
+  EXPECT_EQ(web_ui()->GetHandlersForTesting()->size(), 1u);
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
+  EXPECT_FALSE(IsSourceDark());
+
+  theme()->SetDarkMode(true);
+  theme()->NotifyObservers();
+
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
+
+  bundle()->RunUntilIdle();
+  EXPECT_TRUE(IsSourceDark());
+}
+
+TEST_F(DarkModeHandlerTest, DarkModeChangeWhileJsDisallowed) {
+  features()->InitAndEnableFeature(features::kWebUIDarkMode);
+  theme()->SetDarkMode(false);
+
+  InitializeHandler();
+
+  EXPECT_EQ(web_ui()->GetHandlersForTesting()->size(), 1u);
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
+  EXPECT_FALSE(IsSourceDark());
+
+  web_ui()->HandleReceivedMessage("observeDarkMode", /*args=*/nullptr);
+  web_ui()->GetHandlersForTesting()->front()->DisallowJavascript();
+
+  theme()->SetDarkMode(true);
+  theme()->NotifyObservers();
+
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
+
+  bundle()->RunUntilIdle();
+  EXPECT_TRUE(IsSourceDark());
+}
