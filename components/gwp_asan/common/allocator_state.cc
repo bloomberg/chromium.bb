@@ -94,6 +94,8 @@ AllocatorState::ErrorType AllocatorState::GetErrorType(uintptr_t addr,
     return ErrorType::kUnknown;
   if (double_free_address)
     return ErrorType::kDoubleFree;
+  if (free_invalid_address)
+    return ErrorType::kFreeInvalidAddress;
   if (deallocated)
     return ErrorType::kUseAfterFree;
   if (addr < first_page_addr)

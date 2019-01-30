@@ -47,6 +47,7 @@ class AllocatorState {
     kBufferOverflow = 2,
     kDoubleFree = 3,
     kUnknown = 4,
+    kFreeInvalidAddress = 5,
   };
 
   enum class GetMetadataReturnType {
@@ -139,7 +140,10 @@ class AllocatorState {
   uintptr_t slot_metadata = 0;
 
   // Set to the address of a double freed allocation if a double free occurred.
-  uintptr_t double_free_address = false;
+  uintptr_t double_free_address = 0;
+  // If an invalid pointer has been free()d, this is the address of that invalid
+  // pointer.
+  uintptr_t free_invalid_address = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AllocatorState);
 };

@@ -20,6 +20,7 @@ message Crash {
     BUFFER_OVERFLOW = 2;
     DOUBLE_FREE = 3;
     UNKNOWN = 4;
+    FREE_INVALID_ADDRESS = 5;
   }
 
   message AllocationInfo {
@@ -37,4 +38,7 @@ message Crash {
   // Records the bounds of the GWP-ASan allocator region.
   optional uint64 region_start = 6;
   optional uint64 region_size = 7;
+
+  // The invalid address that was free()d, if present.
+  optional uint64 free_invalid_address = 8;
 }
