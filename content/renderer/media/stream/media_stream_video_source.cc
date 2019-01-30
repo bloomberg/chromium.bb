@@ -49,8 +49,8 @@ void MediaStreamVideoSource::AddTrack(
     MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& track_adapter_settings,
     const blink::VideoCaptureDeliverFrameCB& frame_callback,
-    const VideoTrackSettingsCallback& settings_callback,
-    const VideoTrackFormatCallback& format_callback,
+    const blink::VideoTrackSettingsCallback& settings_callback,
+    const blink::VideoTrackFormatCallback& format_callback,
     const ConstraintsCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::ContainsValue(tracks_, track));
@@ -435,8 +435,8 @@ void MediaStreamVideoSource::UpdateTrackSettings(
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     MediaStreamVideoTrack* track,
     const blink::VideoCaptureDeliverFrameCB& frame_callback,
-    const VideoTrackSettingsCallback& settings_callback,
-    const VideoTrackFormatCallback& format_callback,
+    const blink::VideoTrackSettingsCallback& settings_callback,
+    const blink::VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
     const ConstraintsCallback& callback)
     : track(track),

@@ -123,8 +123,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
  public:
   struct VideoTrackCallbacks {
     blink::VideoCaptureDeliverFrameCB frame_callback;
-    VideoTrackSettingsCallback settings_callback;
-    VideoTrackFormatCallback format_callback;
+    blink::VideoTrackSettingsCallback settings_callback;
+    blink::VideoTrackFormatCallback format_callback;
   };
   // Setting |max_frame_rate| to 0.0, means that no frame rate limitation
   // will be done.
@@ -137,8 +137,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // |frame_callback| will however be released on the main render thread.
   void AddCallbacks(const MediaStreamVideoTrack* track,
                     blink::VideoCaptureDeliverFrameCB frame_callback,
-                    VideoTrackSettingsCallback settings_callback,
-                    VideoTrackFormatCallback format_callback);
+                    blink::VideoTrackSettingsCallback settings_callback,
+                    blink::VideoTrackFormatCallback format_callback);
 
   // Removes the callbacks associated with |track| if |track| has been added. It
   // is ok to call RemoveCallbacks() even if |track| has not been added.
@@ -177,7 +177,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   // Updates track settings if either frame width, height or frame rate have
   // changed since last update.
   void MaybeUpdateTrackSettings(
-      const VideoTrackSettingsCallback& settings_callback,
+      const blink::VideoTrackSettingsCallback& settings_callback,
       const scoped_refptr<media::VideoFrame>& frame);
 
   // Updates computed source format for all tracks if either frame width, height
@@ -240,8 +240,8 @@ VideoFrameResolutionAdapter::~VideoFrameResolutionAdapter() {
 void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallbacks(
     const MediaStreamVideoTrack* track,
     blink::VideoCaptureDeliverFrameCB frame_callback,
-    VideoTrackSettingsCallback settings_callback,
-    VideoTrackFormatCallback format_callback) {
+    blink::VideoTrackSettingsCallback settings_callback,
+    blink::VideoTrackFormatCallback format_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   callbacks_.insert({track,
                      {std::move(frame_callback), std::move(settings_callback),
@@ -408,7 +408,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeUpdateTrackSettings(
-    const VideoTrackSettingsCallback& settings_callback,
+    const blink::VideoTrackSettingsCallback& settings_callback,
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   ComputeFrameRate(frame->timestamp(), &track_settings_.frame_rate,
@@ -502,8 +502,8 @@ VideoTrackAdapter::~VideoTrackAdapter() {
 void VideoTrackAdapter::AddTrack(
     const MediaStreamVideoTrack* track,
     blink::VideoCaptureDeliverFrameCB frame_callback,
-    VideoTrackSettingsCallback settings_callback,
-    VideoTrackFormatCallback format_callback,
+    blink::VideoTrackSettingsCallback settings_callback,
+    blink::VideoTrackFormatCallback format_callback,
     const VideoTrackAdapterSettings& settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -517,8 +517,8 @@ void VideoTrackAdapter::AddTrack(
 void VideoTrackAdapter::AddTrackOnIO(
     const MediaStreamVideoTrack* track,
     blink::VideoCaptureDeliverFrameCB frame_callback,
-    VideoTrackSettingsCallback settings_callback,
-    VideoTrackFormatCallback format_callback,
+    blink::VideoTrackSettingsCallback settings_callback,
+    blink::VideoTrackFormatCallback format_callback,
     const VideoTrackAdapterSettings& settings) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   scoped_refptr<VideoFrameResolutionAdapter> adapter;

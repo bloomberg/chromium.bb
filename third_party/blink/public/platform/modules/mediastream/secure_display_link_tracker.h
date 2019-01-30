@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_SECURE_DISPLAY_LINK_TRACKER_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_SECURE_DISPLAY_LINK_TRACKER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_SECURE_DISPLAY_LINK_TRACKER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_SECURE_DISPLAY_LINK_TRACKER_H_
 
 #include <algorithm>
 #include <vector>
 
 #include "base/stl_util.h"
+
+namespace blink {
 
 // Tracks all connected links (video sinks / tracks), and reports if they are
 // all secure for video capturing.
@@ -56,4 +58,6 @@ void SecureDisplayLinkTracker<T>::Update(T* link, bool is_link_secure) {
   Add(link, is_link_secure);
 }
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_SECURE_DISPLAY_LINK_TRACKER_H_
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_SECURE_DISPLAY_LINK_TRACKER_H_
