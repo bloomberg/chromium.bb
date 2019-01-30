@@ -1027,7 +1027,7 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
                                      void* output,
                                      size_t output_size,
                                      const DeserializeOptions& options) {
-  DCHECK_GE(output_size, sizeof(DrawTextBlobOp));
+  DCHECK_GE(output_size, sizeof(DrawTextBlobOp) - sizeof(NodeHolder));
   DrawTextBlobOp* op = new (output) DrawTextBlobOp;
 
   PaintOpReader helper(input, input_size, options);
@@ -1763,6 +1763,8 @@ bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
     return false;
   if (!AreEqualEvenIfNaN(left->y, right->y))
     return false;
+  if (left->node_holder != right->node_holder)
+    return false;
 
   SkSerialProcs default_procs;
   return left->blob->serialize(default_procs)
@@ -2192,6 +2194,17 @@ DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
                                SkScalar y,
                                const PaintFlags& flags)
     : PaintOpWithFlags(kType, flags), blob(std::move(blob)), x(x), y(y) {}
+
+DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
+                               SkScalar x,
+                               SkScalar y,
+                               const PaintFlags& flags,
+                               const NodeHolder& holder)
+    : PaintOpWithFlags(kType, flags),
+      blob(std::move(blob)),
+      x(x),
+      y(y),
+      node_holder(holder) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
 
