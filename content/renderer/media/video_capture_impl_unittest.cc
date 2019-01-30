@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -68,6 +69,7 @@ class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
                void(int32_t, int32_t, GetDeviceSupportedFormatsCallback&));
   MOCK_METHOD3(GetDeviceFormatsInUseMock,
                void(int32_t, int32_t, GetDeviceFormatsInUseCallback&));
+  MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
 
   void GetDeviceSupportedFormats(
       int32_t arg1,

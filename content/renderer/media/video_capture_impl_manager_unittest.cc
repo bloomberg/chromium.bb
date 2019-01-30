@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <array>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -94,6 +95,8 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
                              GetDeviceFormatsInUseCallback) override {
     NOTREACHED();
   }
+
+  MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
 
   PauseResumeCallback* const pause_callback_;
   const base::Closure destruct_callback_;

@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -101,6 +102,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // Resume(id).
   void SuspendDevices(const blink::MediaStreamDevices& video_devices,
                       bool suspend);
+
+  void OnLog(media::VideoCaptureSessionId id, const std::string& message);
 
   virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId session_id) const;

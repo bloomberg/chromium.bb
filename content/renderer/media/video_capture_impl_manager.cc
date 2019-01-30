@@ -25,6 +25,7 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -118,6 +119,8 @@ base::Closure VideoCaptureImplManager::StartCapture(
   // This ID is used to identify a client of VideoCaptureImpl.
   const int client_id = ++next_client_id_;
 
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::StartCapture,
                                 base::Unretained(it->impl.get()), client_id,
@@ -133,6 +136,8 @@ void VideoCaptureImplManager::RequestRefreshFrame(
       devices_.begin(), devices_.end(),
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::RequestRefreshFrame,
                                 base::Unretained(it->impl.get())));
@@ -151,6 +156,8 @@ void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
   it->is_individually_suspended = true;
   if (is_suspending_all_)
     return;  // Device should already be suspended.
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
                                 base::Unretained(it->impl.get()), true));
@@ -167,6 +174,8 @@ void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
   it->is_individually_suspended = false;
   if (is_suspending_all_)
     return;  // Device must remain suspended until all are resumed.
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
                                 base::Unretained(it->impl.get()), false));
@@ -180,6 +189,8 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
       devices_.begin(), devices_.end(),
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceSupportedFormats,
                                 base::Unretained(it->impl.get()), callback));
@@ -193,6 +204,8 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
       devices_.begin(), devices_.end(),
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceFormatsInUse,
                                 base::Unretained(it->impl.get()), callback));
@@ -211,6 +224,8 @@ void VideoCaptureImplManager::StopCapture(int client_id,
       devices_.begin(), devices_.end(),
       [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::StopCapture,
                                 base::Unretained(it->impl.get()), client_id));
@@ -247,10 +262,26 @@ void VideoCaptureImplManager::SuspendDevices(
     DCHECK(it != devices_.end());
     if (it->is_individually_suspended)
       continue;  // Either: 1) Already suspended; or 2) Should not be resumed.
+    // Use of base::Unretained() is safe because |devices_| is released on the
+    // |io_task_runner()| as well.
     ChildProcess::current()->io_task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
                                   base::Unretained(it->impl.get()), suspend));
   }
+}
+
+void VideoCaptureImplManager::OnLog(media::VideoCaptureSessionId id,
+                                    const std::string& message) {
+  DCHECK(render_main_task_runner_->BelongsToCurrentThread());
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id](const DeviceEntry& entry) { return entry.session_id == id; });
+  DCHECK(it != devices_.end());
+  // Use of base::Unretained() is safe because |devices_| is released on the
+  // |io_task_runner()| as well.
+  ChildProcess::current()->io_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::OnLog,
+                                base::Unretained(it->impl.get()), message));
 }
 
 }  // namespace content

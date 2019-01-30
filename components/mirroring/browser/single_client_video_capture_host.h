@@ -65,6 +65,7 @@ class SingleClientVideoCaptureHost final
   void GetDeviceFormatsInUse(int32_t device_id,
                              int32_t session_id,
                              GetDeviceFormatsInUseCallback callback) override;
+  void OnLog(int32_t device_id, const std::string& message) override;
 
   // media::VideoFrameReceiver implementations
   using Buffer = VideoCaptureDevice::Client::Buffer;
