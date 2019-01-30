@@ -222,7 +222,11 @@ TestAutofillManager.prototype = {
 class PaymentsManagerExpectations {
   constructor() {
     this.requestedCreditCards = 0;
+    this.requestedLocalCreditCards = 0;
+    this.requestedServerCreditCards = 0;
     this.listeningCreditCards = 0;
+    this.listeningLocalCreditCards = 0;
+    this.listeningServerCreditCards = 0;
   }
 }
 
@@ -237,11 +241,15 @@ function TestPaymentsManager() {
   // Set these to have non-empty data.
   this.data = {
     creditCards: [],
+    localCreditCards: [],
+    serverCreditCards: [],
   };
 
   // Holds the last callbacks so they can be called when needed.
   this.lastCallback = {
     addCreditCardListChangedListener: null,
+    addLocalCreditCardListChangedListener: null,
+    addServerCreditCardListChangedListener: null,
   };
 }
 
@@ -253,14 +261,48 @@ TestPaymentsManager.prototype = {
   },
 
   /** @override */
+  addLocalCreditCardListChangedListener: function(listener) {
+    this.actual_.listeningLocalCreditCards++;
+    this.lastCallback.addLocalCreditCardListChangedListener = listener;
+  },
+
+  /** @override */
+  addServerCreditCardListChangedListener: function(listener) {
+    this.actual_.listeningServerCreditCards++;
+    this.lastCallback.addServerCreditCardListChangedListener = listener;
+  },
+
+  /** @override */
   removeCreditCardListChangedListener: function(listener) {
     this.actual_.listeningCreditCards--;
+  },
+
+  /** @override */
+  removeLocalCreditCardListChangedListener: function(listener) {
+    this.actual_.listeningLocalCreditCards--;
+  },
+
+  /** @override */
+  removeServerCreditCardListChangedListener: function(listener) {
+    this.actual_.listeningServerCreditCards--;
   },
 
   /** @override */
   getCreditCardList: function(callback) {
     this.actual_.requestedCreditCards++;
     callback(this.data.creditCards);
+  },
+
+  /** @override */
+  getLocalCreditCardList: function(callback) {
+    this.actual_.requestedLocalCreditCards++;
+    callback(this.data.localCreditCards);
+  },
+
+  /** @override */
+  getServerCreditCardList: function(callback) {
+    this.actual_.requestedServerCreditCards++;
+    callback(this.data.serverCreditCards);
   },
 
   /**
@@ -270,6 +312,14 @@ TestPaymentsManager.prototype = {
   assertExpectations: function(expected) {
     const actual = this.actual_;
     assertEquals(expected.requestedCreditCards, actual.requestedCreditCards);
+    assertEquals(
+        expected.requestedLocalCreditCards, actual.requestedLocalCreditCards);
+    assertEquals(
+        expected.requestedServerCreditCards, actual.requestedServerCreditCards);
     assertEquals(expected.listeningCreditCards, actual.listeningCreditCards);
+    assertEquals(
+        expected.listeningLocalCreditCards, actual.listeningLocalCreditCards);
+    assertEquals(
+        expected.listeningServerCreditCards, actual.listeningServerCreditCards);
   },
 };
