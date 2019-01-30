@@ -108,6 +108,11 @@ NSString* const kTranslateNotificationSnackbarCategory =
            completionHandler:completion];
 }
 
+- (void)showTranslateErrorNotification {
+  NSString* text = l10n_util::GetNSString(IDS_TRANSLATE_NOTIFICATION_ERROR);
+  [self showSnackbarWithText:text actionHandler:nil completionHandler:nil];
+}
+
 - (void)dismissNotification {
   [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:
                           kTranslateNotificationSnackbarCategory];
@@ -118,12 +123,16 @@ NSString* const kTranslateNotificationSnackbarCategory =
 - (void)showSnackbarWithText:(NSString*)text
                actionHandler:(void (^)())actionHandler
            completionHandler:(void (^)(BOOL))completionHandler {
-  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
-  action.title = l10n_util::GetNSString(IDS_TRANSLATE_NOTIFICATION_UNDO);
-  action.accessibilityIdentifier = kSnackbarActionAccessibilityIdentifier;
-  action.handler = actionHandler;
   MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
-  message.action = action;
+  if (actionHandler) {
+    // A MDCSnackbarMessageAction is displayed as a button on the Snackbar. If
+    // no action is set no button will appear on the Snackbar.
+    MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
+    action.title = l10n_util::GetNSString(IDS_TRANSLATE_NOTIFICATION_UNDO);
+    action.accessibilityIdentifier = kSnackbarActionAccessibilityIdentifier;
+    action.handler = actionHandler;
+    message.action = action;
+  }
   message.completionHandler = completionHandler;
   message.category = kTranslateNotificationSnackbarCategory;
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);

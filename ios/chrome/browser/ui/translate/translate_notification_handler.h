@@ -31,6 +31,10 @@
 - (void)showNeverTranslateSiteNotificationWithDelegate:
     (id<TranslateNotificationDelegate>)delegate;
 
+// Tells the handler to display a notification that the page could not be
+// translated.
+- (void)showTranslateErrorNotification;
+
 // Tells the handler to stop displaying the notification, if any.
 - (void)dismissNotification;
 

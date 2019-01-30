@@ -135,6 +135,7 @@ typedef NS_OPTIONS(NSUInteger, UserAction) {
       break;
     case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
       _infobarView.state = TranslateInfobarViewStateBeforeTranslate;
+      [self.translateNotificationHandler showTranslateErrorNotification];
   }
 }
 
