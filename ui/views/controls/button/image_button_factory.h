@@ -30,20 +30,23 @@ VIEWS_EXPORT ToggleImageButton* CreateVectorToggleImageButton(
     ButtonListener* listener);
 
 // Sets images on |button| for STATE_NORMAL and STATE_DISABLED from the given
+// vector icon using the default color from the current NativeTheme.
+VIEWS_EXPORT void SetImageFromVectorIcon(ImageButton* button,
+                                         const gfx::VectorIcon& icon);
+
+// Sets images on |button| for STATE_NORMAL and STATE_DISABLED from the given
 // vector icon and color. |related_text_color| is normally the main text color
 // used in the parent view, and the actual color used is derived from that. Call
 // again to update the button if |related_text_color| is changing.
-VIEWS_EXPORT void SetImageFromVectorIcon(
-    ImageButton* button,
-    const gfx::VectorIcon& icon,
-    SkColor related_text_color = gfx::kGoogleGrey900);
+VIEWS_EXPORT void SetImageFromVectorIcon(ImageButton* button,
+                                         const gfx::VectorIcon& icon,
+                                         SkColor related_text_color);
 
 // As above, but creates the images at the given size.
-VIEWS_EXPORT void SetImageFromVectorIcon(
-    ImageButton* button,
-    const gfx::VectorIcon& icon,
-    int dip_size,
-    SkColor related_text_color = gfx::kGoogleGrey900);
+VIEWS_EXPORT void SetImageFromVectorIcon(ImageButton* button,
+                                         const gfx::VectorIcon& icon,
+                                         int dip_size,
+                                         SkColor related_text_color);
 
 // Sets images on |button| for STATE_NORMAL and STATE_DISABLED from the given
 // vector icon and color.
