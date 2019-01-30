@@ -231,7 +231,7 @@ if sys.platform == 'win32':
           u'symlink(%r, %r) failed: %s' % (source, link_name, err))
 
 
-  def unlink(path):
+  def remove(path):
     """Removes a symlink on Windows 7 and later.
 
     Does not delete the link source.
@@ -316,8 +316,34 @@ if sys.platform == 'win32':
       windll.kernel32.CloseHandle(handle)
 
 
-  def walk(top, *args, **kwargs):
-    return os.walk(extend(top), *args, **kwargs)
+  def walk(top, topdown=True, onerror=None, followlinks=False):
+    # We need to reimplement walk() here because the standard library ignores
+    # the flag followlinks=False. This is because ntpath.islink() is hardcoded
+    # to return false. On Windows, os.path is an alias to ntpath.
+    utop = extend(top)
+    try:
+      names = listdir(utop)  # pylint: disable=undefined-variable
+    except os.error as err:
+      if onerror is not None:
+        onerror(err)
+      return
+
+    dirs, nondirs = [], []
+    for name in names:
+      if isdir(os.path.join(top, name)):   # pylint: disable=undefined-variable
+        dirs.append(name)
+      else:
+        nondirs.append(name)
+
+    if topdown:
+      yield top, dirs, nondirs
+    for name in dirs:
+      new_path = os.path.join(top, name)
+      if followlinks or not islink(new_path):
+        for x in walk(new_path, topdown, onerror, followlinks):
+          yield x
+    if not topdown:
+      yield top, dirs, nondirs
 
 
 else:
@@ -349,10 +375,6 @@ else:
     return os.symlink(source, extend(link_name))
 
 
-  def unlink(path):
-    return os.unlink(extend(path))
-
-
   def readlink(path):
     return os.readlink(extend(path)).decode('utf-8')
 
@@ -360,6 +382,10 @@ else:
   def walk(top, *args, **kwargs):
     for root, dirs, files in os.walk(extend(top), *args, **kwargs):
       yield trim(root), dirs, files
+
+
+  def remove(path):
+    return os.remove(extend(path))
 
 
 ## builtin
@@ -382,6 +408,10 @@ def rename(old, new):
 
 def renames(old, new):
   return os.renames(extend(old), extend(new))
+
+
+def unlink(path):
+  return remove(path)
 
 
 ## shutil
@@ -409,7 +439,7 @@ def _is_path_fn(func):
 _os_fns = (
   'access', 'chdir', 'chflags', 'chroot', 'chmod', 'chown', 'lchflags',
   'lchmod', 'lchown', 'listdir', 'lstat', 'mknod', 'mkdir', 'makedirs',
-  'remove', 'removedirs', 'rmdir', 'stat', 'statvfs', 'unlink', 'utime')
+  'removedirs', 'rmdir', 'stat', 'statvfs', 'utime')
 
 _os_path_fns = (
   'exists', 'lexists', 'getatime', 'getmtime', 'getctime', 'getsize', 'isfile',

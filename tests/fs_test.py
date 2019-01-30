@@ -57,7 +57,7 @@ class FSTest(unittest.TestCase):
     # /lf -> /ld/file
     dirpath = os.path.join(self.tempdir, 'dir')
     filepath = os.path.join(dirpath, 'file')
-    os.mkdir(dirpath)
+    fs.mkdir(dirpath)
     write_content(filepath, 'hello')
 
     linkfile = os.path.join(self.tempdir, 'lf')
@@ -74,6 +74,27 @@ class FSTest(unittest.TestCase):
     # /lf resolves to /dir/file.
     self.assertEqual('hello', fs.open(linkfile).read())
 
+    # Ensures that followlinks is respected in walk().
+    expected = [
+      (self.tempdir, ['dir', 'ld'], ['lf']),
+      (dirpath, [], ['file']),
+    ]
+    actual = [
+      (r, sorted(d), sorted(f))
+      for r, d, f in sorted(fs.walk(self.tempdir, followlinks=False))
+    ]
+    self.assertEqual(expected, actual)
+    expected = [
+      (self.tempdir, ['dir', 'ld'], ['lf']),
+      (dirpath, [], ['file']),
+      (linkdir, [], ['file']),
+    ]
+    actual = [
+      (r, sorted(d), sorted(f))
+      for r, d, f in sorted(fs.walk(self.tempdir, followlinks=True))
+    ]
+    self.assertEqual(expected, actual)
+
   def test_symlink_absolute(self):
     # A symlink to an absolute path is valid.
     # /dir
@@ -82,7 +103,7 @@ class FSTest(unittest.TestCase):
     # /lf -> /ld/file
     dirpath = os.path.join(self.tempdir, 'dir')
     filepath = os.path.join(dirpath, 'file')
-    os.mkdir(dirpath)
+    fs.mkdir(dirpath)
     write_content(filepath, 'hello')
 
     linkfile = os.path.join(self.tempdir, 'lf')
@@ -98,6 +119,27 @@ class FSTest(unittest.TestCase):
     self.assertEqual(['file'], fs.listdir(linkdir))
     # /lf resolves to /dir/file.
     self.assertEqual('hello', fs.open(linkfile).read())
+
+    # Ensures that followlinks is respected in walk().
+    expected = [
+      (self.tempdir, ['dir', 'ld'], ['lf']),
+      (dirpath, [], ['file']),
+    ]
+    actual = [
+      (r, sorted(d), sorted(f))
+      for r, d, f in sorted(fs.walk(self.tempdir, followlinks=False))
+    ]
+    self.assertEqual(expected, actual)
+    expected = [
+      (self.tempdir, ['dir', 'ld'], ['lf']),
+      (dirpath, [], ['file']),
+      (linkdir, [], ['file']),
+    ]
+    actual = [
+      (r, sorted(d), sorted(f))
+      for r, d, f in sorted(fs.walk(self.tempdir, followlinks=True))
+    ]
+    self.assertEqual(expected, actual)
 
   def test_symlink_missing_destination_rel(self):
     # A symlink to a missing destination is valid and can be read back.

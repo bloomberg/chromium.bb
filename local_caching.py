@@ -851,8 +851,10 @@ class NamedCache(Cache):
         file_path.ensure_tree(dst)
         return 0
       except (IOError, OSError) as ex:
-        raise NamedCacheError(
+        # Raise using the original traceback.
+        exc = NamedCacheError(
             'cannot install cache named %r at %r: %s' % (name, dst, ex))
+        raise exc, None, sys.exc_info()[2]
       finally:
         self._save()
 
@@ -922,8 +924,10 @@ class NamedCache(Cache):
             raise
         return size
       except (IOError, OSError) as ex:
-        raise NamedCacheError(
+        # Raise using the original traceback.
+        exc = NamedCacheError(
             'cannot uninstall cache named %r at %r: %s' % (name, src, ex))
+        raise exc, None, sys.exc_info()[2]
       finally:
         # Call save() at every uninstall. The assumptions are:
         # - The total the number of named caches is low, so the state.json file
@@ -1070,11 +1074,6 @@ class NamedCache(Cache):
             p = os.path.join(self.cache_dir, self.NAMED_DIR, name)
             expected_link = os.path.join(u'..', self._lru[name][0])
             if fs.islink(p):
-              if sys.platform == 'win32':
-                # TODO(maruel): Implement readlink() on Windows in fs.py, then
-                # remove this condition.
-                # https://crbug.com/853721
-                continue
               link = fs.readlink(p)
               if expected_link == link:
                 continue
