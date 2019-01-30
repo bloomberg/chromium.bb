@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/translate/never_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
+#import "ios/chrome/browser/translate/translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/translate_message_infobar_controller.h"
 #import "ios/chrome/browser/translate/translate_option_selection_handler.h"
 #include "ios/chrome/browser/translate/translate_ranker_factory.h"
@@ -96,6 +97,16 @@ translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {
 
 std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
+    TranslateInfoBarController* controller = [[TranslateInfoBarController alloc]
+        initWithInfoBarDelegate:delegate.get()];
+    controller.languageSelectionHandler = language_selection_handler_;
+    controller.translateOptionSelectionHandler =
+        translate_option_selection_handler_;
+    controller.translateNotificationHandler = translate_notification_handler_;
+    return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  }
+
   translate::TranslateStep step = delegate->translate_step();
 
   InfoBarController* controller;

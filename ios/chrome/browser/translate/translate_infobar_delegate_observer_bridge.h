@@ -15,7 +15,7 @@
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType;
 
-- (BOOL)translateInfoBarDelegateIsDeclinedByUser:
+- (BOOL)translateInfoBarDelegateDidDismissWithoutInteraction:
     (translate::TranslateInfoBarDelegate*)delegate;
 
 @end
