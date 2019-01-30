@@ -88,6 +88,15 @@ class ConnectionManager {
   struct Connection;
   struct DumpProcessesForTracingTracking;
 
+  void HeapProfileRetrieved(
+      scoped_refptr<DumpProcessesForTracingTracking> tracking,
+      base::ProcessId pid,
+      mojom::ProcessType process_type,
+      bool keep_small_allocations,
+      bool strip_path_from_mapped_files,
+      uint32_t sampling_rate,
+      mojom::HeapProfilePtr profile);
+
   void DoDumpOneProcessForTracing(
       scoped_refptr<DumpProcessesForTracingTracking> tracking,
       base::ProcessId pid,

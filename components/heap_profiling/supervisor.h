@@ -72,6 +72,7 @@ class Supervisor {
   void Start(content::ServiceManagerConnection* connection,
              Mode mode,
              mojom::StackMode stack_mode,
+             bool stream_samples,
              uint32_t sampling_rate,
              base::OnceClosure callback);
 
@@ -116,6 +117,7 @@ class Supervisor {
       std::unique_ptr<service_manager::Connector> connector,
       Mode mode,
       mojom::StackMode stack_mode,
+      bool stream_samples,
       uint32_t sampling_rate,
       base::OnceClosure callback);
 

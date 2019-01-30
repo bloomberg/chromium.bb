@@ -23,6 +23,7 @@ class HeapProfilingTestShim {
       const base::android::JavaParamRef<jstring>& mode,
       jboolean dynamically_start_profiling,
       const base::android::JavaParamRef<jstring>& stack_mode,
+      jboolean stream_samples,
       jboolean should_sample,
       jboolean sample_everything);
 
