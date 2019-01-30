@@ -64,10 +64,48 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   bool SupportsConfigChanges() override;
 
  private:
-  // For a detailed state diagram please see this link: http://goo.gl/8jAok
-  // TODO(xhwang): Add a ASCII state diagram in this file after this class
-  // stabilizes.
-  // TODO(xhwang): Update this diagram for DecryptingDemuxerStream.
+  // See this link for a detailed state diagram: http://shortn/_1nXgoVIrps
+  // Each line has a number that corresponds to an action, status or function
+  // that results in a state change. These actions, etc are all listed below.
+  // NOTE: invoking Reset() will cause a transition from any state except
+  //       kUninitialized to the kIdle state.
+  //
+  //    +----------------+         +---------------------------------+
+  //    | kUninitialized |         | Any State Except kUninitialized |
+  //    +----------------+         +---------------------------------+
+  //             |                                  |
+  //             0                                  7
+  //             v                                  v
+  //         +-------+                          +-------+
+  //         | kIdle |<-------+-+               | kIdle |
+  //         +-------+        | |               +-------+
+  //             |            | |
+  //             1            4 5
+  //             v            | |
+  //  +---------------------+ | |
+  //  | kPendingDemuxerRead |-+ |
+  //  +---------------------+   |
+  //             |              |
+  //             2              |
+  //             v              |
+  //    +-----------------+     |
+  // +->| kPendingDecrypt |-----+
+  // |  +-----------------+
+  // |           |
+  // 6           3
+  // |           v
+  // |   +----------------+
+  // +---| kWaitingForKey |
+  //     +----------------+
+  //
+  // 1) Read()
+  // 2) Has encrypted buffer
+  // 3) kNoKey
+  // 4) kConfigChanged, kAborted, has clear buffer or end of stream
+  // 5) kSuccess or kAborted
+  // 6) OnKeyAdded()
+  // 7) Reset()
+
   enum State {
     kUninitialized = 0,
     kIdle,
