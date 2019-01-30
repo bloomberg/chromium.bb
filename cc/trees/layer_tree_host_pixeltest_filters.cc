@@ -19,7 +19,7 @@ namespace {
 
 class LayerTreeHostFiltersPixelTest : public LayerTreePixelTest {};
 
-TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlur) {
+TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRect) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
 
@@ -36,7 +36,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlur) {
   filters.Append(FilterOperation::CreateBlurFilter(
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
-  gfx::RectF backdrop_filter_bounds(gfx::SizeF(blur->bounds()));
+  gfx::RRectF backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())), 0);
   blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
@@ -59,6 +59,46 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlur) {
                base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
 }
 
+TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+
+  // The green box is entirely behind a layer with backdrop blur, so it
+  // should appear blurred on its edges.
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), kCSSGreen);
+  scoped_refptr<SolidColorLayer> blur =
+      CreateSolidColorLayer(gfx::Rect(46, 46, 108, 108), SK_ColorTRANSPARENT);
+  background->AddChild(green);
+  background->AddChild(blur);
+
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(
+      2.f, SkBlurImageFilter::kClamp_TileMode));
+  blur->SetBackdropFilters(filters);
+  gfx::RRectF backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())), 14,
+                                     16, 18, 20, 22, 30, 40, 50);
+  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
+
+#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
+  // Windows and ARM64 have 436 pixels off by 1: crbug.com/259915
+  float percentage_pixels_large_error = 1.09f;  // 436px / (200*200)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 1.f;
+  int large_error_allowed = 1;
+  int small_error_allowed = 0;
+  pixel_comparator_.reset(new FuzzyPixelComparator(
+      true,  // discard_alpha
+      percentage_pixels_large_error, percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels, large_error_allowed,
+      small_error_allowed));
+#endif
+
+  RunPixelTest(
+      PIXEL_TEST_GL, background,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_rounded.png")));
+}
+
 TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
       gfx::Rect(200, 200), SK_ColorWHITE);
@@ -79,7 +119,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
   filters.Append(FilterOperation::CreateBlurFilter(
       5.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
-  gfx::RectF backdrop_filter_bounds(gfx::SizeF(blur->bounds()));
+  gfx::RRectF backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())), 0);
   blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
 #if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
@@ -148,7 +188,7 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOffAxis) {
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
   // TODO(916311): Fix clipping for 3D transformed elements.
-  blur->SetBackdropFilterBounds(gfx::RectF());
+  blur->SetBackdropFilterBounds(gfx::RRectF());
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -426,7 +466,7 @@ class ImageScaledBackdropFilter : public LayerTreeHostFiltersPixelTest {
     FilterOperations filters;
     filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
     filter->SetBackdropFilters(filters);
-    filter->SetBackdropFilterBounds(gfx::RectF());
+    filter->SetBackdropFilterBounds(gfx::RRectF());
 
 #if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -505,7 +545,7 @@ class ImageBackdropFilter : public LayerTreeHostFiltersPixelTest {
     // TODO(916311): Adding filter bounds here should work, but it clips
     // the corner of the red box.
     // gfx::RectF backdrop_filter_bounds(gfx::SizeF(filter_layer->bounds()));
-    gfx::RectF backdrop_filter_bounds;
+    gfx::RRectF backdrop_filter_bounds;
     filter_layer->SetBackdropFilterBounds(backdrop_filter_bounds);
 
     background->AddChild(filter_layer);
@@ -626,7 +666,8 @@ class ZoomFilterTest : public LayerTreeHostFiltersPixelTest {
         FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
     border_edge_zoom->SetBackdropFilters(border_filters);
     gfx::RectF border_filter_bounds(gfx::SizeF(border_edge_zoom->bounds()));
-    border_edge_zoom->SetBackdropFilterBounds(border_filter_bounds);
+    border_edge_zoom->SetBackdropFilterBounds(
+        gfx::RRectF(border_filter_bounds, 0));
     root->AddChild(border_edge_zoom);
 
     // Test a zoom that extends past the edge of the screen.
@@ -637,7 +678,7 @@ class ZoomFilterTest : public LayerTreeHostFiltersPixelTest {
         FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
     top_edge_zoom->SetBackdropFilters(top_filters);
     gfx::RectF top_filter_bounds(gfx::SizeF(top_edge_zoom->bounds()));
-    top_edge_zoom->SetBackdropFilterBounds(top_filter_bounds);
+    top_edge_zoom->SetBackdropFilterBounds(gfx::RRectF(top_filter_bounds, 0));
     root->AddChild(top_edge_zoom);
 
     // Test a zoom that is fully within the screen.
@@ -648,7 +689,7 @@ class ZoomFilterTest : public LayerTreeHostFiltersPixelTest {
         FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
     contained_zoom->SetBackdropFilters(mid_filters);
     gfx::RectF mid_filter_bounds(gfx::SizeF(contained_zoom->bounds()));
-    contained_zoom->SetBackdropFilterBounds(mid_filter_bounds);
+    contained_zoom->SetBackdropFilterBounds(gfx::RRectF(mid_filter_bounds, 0));
     root->AddChild(contained_zoom);
 
 #if defined(OS_WIN)
@@ -1092,7 +1133,7 @@ class BackdropFilterWithDeviceScaleFactorTest
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<OffsetPaintFilter>(0, 80, nullptr)));
     filtered->SetBackdropFilters(filters);
-    filtered->SetBackdropFilterBounds(gfx::RectF());
+    filtered->SetBackdropFilterBounds(gfx::RRectF());
     root->AddChild(filtered);
 
     // This should appear as a grid of 4 100x100 squares which are:

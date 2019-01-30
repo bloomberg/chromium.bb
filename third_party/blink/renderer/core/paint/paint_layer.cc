@@ -2469,13 +2469,23 @@ FloatRect PaintLayer::FilterReferenceBox() const {
   return FloatRect();
 }
 
-FloatRect PaintLayer::BackdropFilterBounds() const {
+FloatRect PaintLayer::BackdropFilterReferenceBox() const {
   FloatRect reference_box(GetLayoutObject().BorderBoundingBox());
   float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
   if (zoom != 1)
     reference_box.Scale(1 / zoom);
   reference_box.Move(-ToFloatSize(FilterReferenceBox().Location()));
   return reference_box;
+}
+
+gfx::RRectF PaintLayer::BackdropFilterBounds(
+    const FloatRect& reference_box) const {
+  auto& style = GetLayoutObject().StyleRef();
+  if (!style.HasBorderRadius())
+    return gfx::RRectF(reference_box, 0);
+  FloatRoundedRect rrect = style.GetRoundedBorderFor(LayoutRect(reference_box));
+  // FloatRoundedRect has a typecast to SkRRect().
+  return gfx::RRectF(rrect);
 }
 
 bool PaintLayer::HitTestClippedOutByClipPath(
@@ -3249,15 +3259,15 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
 
 void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
     CompositorFilterOperations& operations,
-    gfx::RectF* backdrop_filter_bounds) const {
+    gfx::RRectF* backdrop_filter_bounds) const {
   DCHECK(backdrop_filter_bounds);
   const auto& style = GetLayoutObject().StyleRef();
   if (style.BackdropFilter().IsEmpty()) {
     operations.Clear();
     return;
   }
-  FloatRect reference_box = BackdropFilterBounds();
-  *backdrop_filter_bounds = reference_box;
+  FloatRect reference_box = BackdropFilterReferenceBox();
+  *backdrop_filter_bounds = BackdropFilterBounds(reference_box);
   if (operations.IsEmpty() || reference_box != operations.ReferenceBox())
     operations = CreateCompositorFilterOperationsForBackdropFilter();
 }
@@ -3270,7 +3280,7 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
     return return_value;
   }
   float zoom = style.EffectiveZoom();
-  FloatRect reference_box = BackdropFilterBounds();
+  FloatRect reference_box = BackdropFilterReferenceBox();
   return_value = FilterEffectBuilder(reference_box, zoom)
                      .BuildFilterOperations(style.BackdropFilter());
   DCHECK(!return_value.IsEmpty());

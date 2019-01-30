@@ -34,6 +34,40 @@ class GEOMETRY_SKIA_EXPORT RRectF {
       : skrrect_(SkRRect::MakeRectXY(SkRect::MakeXYWH(x, y, width, height),
                                      x_rad,
                                      y_rad)) {}
+  // Directly sets all four corners.
+  RRectF(float x,
+         float y,
+         float width,
+         float height,
+         float upper_left_x,
+         float upper_left_y,
+         float upper_right_x,
+         float upper_right_y,
+         float lower_right_x,
+         float lower_right_y,
+         float lower_left_x,
+         float lower_left_y);
+  RRectF(const gfx::RectF& rect,
+         float upper_left_x,
+         float upper_left_y,
+         float upper_right_x,
+         float upper_right_y,
+         float lower_right_x,
+         float lower_right_y,
+         float lower_left_x,
+         float lower_left_y)
+      : RRectF(rect.x(),
+               rect.y(),
+               rect.width(),
+               rect.height(),
+               upper_left_x,
+               upper_left_y,
+               upper_right_x,
+               upper_right_y,
+               lower_right_x,
+               lower_right_y,
+               lower_left_x,
+               lower_left_y) {}
 
   // The rectangular portion of the RRectF, without the corner radii.
   gfx::RectF rect() const { return gfx::SkRectToRectF(skrrect_.rect()); }
@@ -102,6 +136,7 @@ class GEOMETRY_SKIA_EXPORT RRectF {
   const RRectF& operator-=(const gfx::Vector2dF& offset);
 
   std::string ToString() const;
+  bool ApproximatelyEqual(const RRectF& rect, float tolerance) const;
 
   // Insets bounds by dx and dy, and adjusts radii by dx and dy. dx and dy may
   // be positive, negative, or zero. If either corner radius is zero, the corner

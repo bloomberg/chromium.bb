@@ -183,6 +183,7 @@ _CONFIG = [
             'gfx::Point3F',
             'gfx::Rect',
             'gfx::RectF',
+            'gfx::RRectF',
             'gfx::Size',
             'gfx::SizeF',
             'gfx::Transform',

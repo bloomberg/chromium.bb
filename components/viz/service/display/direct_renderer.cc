@@ -508,7 +508,7 @@ const cc::FilterOperations* DirectRenderer::BackgroundFiltersForPass(
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const gfx::RectF* DirectRenderer::BackgroundFilterBoundsForPass(
+const gfx::RRectF* DirectRenderer::BackgroundFilterBoundsForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
   return it == render_pass_backdrop_filter_bounds_.end() ? nullptr : it->second;

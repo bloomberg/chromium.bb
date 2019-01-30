@@ -741,7 +741,8 @@ TEST_F(StructTraitsTest, RenderPass) {
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(4.f));
   backdrop_filters.Append(cc::FilterOperation::CreateZoomFilter(2.0f, 1));
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(2.f));
-  gfx::RectF backdrop_filter_bounds = gfx::RectF(10, 20, 130, 140);
+  gfx::RRectF backdrop_filter_bounds =
+      gfx::RRectF(10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8);
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
   const bool cache_render_pass = true;
@@ -811,8 +812,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(filters, output->filters);
   EXPECT_EQ(backdrop_filters, output->backdrop_filters);
-  EXPECT_EQ(gfx::ToNearestRect(backdrop_filter_bounds),
-            gfx::ToNearestRect(output->backdrop_filter_bounds));
+  EXPECT_EQ(backdrop_filter_bounds, output->backdrop_filter_bounds);
   EXPECT_EQ(cache_render_pass, output->cache_render_pass);
   EXPECT_EQ(has_damage_from_contributing_content,
             output->has_damage_from_contributing_content);
@@ -888,7 +888,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const bool generate_mipmap = false;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
-                cc::FilterOperations(), cc::FilterOperations(), gfx::RectF(),
+                cc::FilterOperations(), cc::FilterOperations(), gfx::RRectF(),
                 color_space, has_transparent_background, cache_render_pass,
                 has_damage_from_contributing_content, generate_mipmap);
 

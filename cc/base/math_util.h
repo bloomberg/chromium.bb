@@ -30,12 +30,13 @@ namespace gfx {
 class QuadF;
 class Rect;
 class RectF;
+class RRectF;
 class SizeF;
 class Transform;
 class Vector2dF;
 class Vector2d;
 class Vector3dF;
-}
+}  // namespace gfx
 
 namespace cc {
 
@@ -277,6 +278,9 @@ class CC_BASE_EXPORT MathUtil {
                                base::trace_event::TracedValue* res);
   static void AddToTracedValue(const char* name,
                                const gfx::BoxF& box,
+                               base::trace_event::TracedValue* res);
+  static void AddToTracedValue(const char* name,
+                               const gfx::RRectF& rect,
                                base::trace_event::TracedValue* res);
 
   // Returns a base::Value representation of the floating point value.

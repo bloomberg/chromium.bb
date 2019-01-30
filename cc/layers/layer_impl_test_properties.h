@@ -16,6 +16,7 @@
 #include "cc/paint/filter_operations.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
@@ -48,7 +49,7 @@ struct CC_EXPORT LayerImplTestProperties {
   float opacity;
   FilterOperations filters;
   FilterOperations backdrop_filters;
-  gfx::RectF backdrop_filter_bounds;
+  gfx::RRectF backdrop_filter_bounds;
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
   SkBlendMode blend_mode;

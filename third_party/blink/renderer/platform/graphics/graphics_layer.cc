@@ -941,7 +941,7 @@ void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
 
 void GraphicsLayer::SetBackdropFilters(
     CompositorFilterOperations filters,
-    const gfx::RectF& backdrop_filter_bounds) {
+    const gfx::RRectF& backdrop_filter_bounds) {
   CcLayer()->SetBackdropFilters(filters.ReleaseCcFilterOperations());
   CcLayer()->SetBackdropFilterBounds(backdrop_filter_bounds);
 }

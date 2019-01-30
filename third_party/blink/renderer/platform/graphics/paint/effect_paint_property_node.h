@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "ui/gfx/rrect_f.h"
 
 namespace blink {
 
@@ -44,7 +45,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     CompositorFilterOperations filter;
     float opacity = 1;
     CompositorFilterOperations backdrop_filter;
-    gfx::RectF backdrop_filter_bounds;
+    gfx::RRectF backdrop_filter_bounds;
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     // === End of effects ===
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -132,7 +133,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return state_.backdrop_filter;
   }
 
-  const gfx::RectF& BackdropFilterBounds() const {
+  const gfx::RRectF& BackdropFilterBounds() const {
     return state_.backdrop_filter_bounds;
   }
 

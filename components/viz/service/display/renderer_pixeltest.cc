@@ -2637,7 +2637,7 @@ class RendererPixelTestWithBackgroundFilter
 
   RenderPassList pass_list_;
   cc::FilterOperations backdrop_filters_;
-  gfx::RectF backdrop_filter_bounds_;
+  gfx::RRectF backdrop_filter_bounds_;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_layer_rect_;
 };
@@ -2657,8 +2657,8 @@ TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
   // so the clipping bounds should be 0,0 WxH, not
   // this->filter_pass_layer_rect_.
   this->backdrop_filter_bounds_ =
-      gfx::RectF(0, 0, this->filter_pass_layer_rect_.width(),
-                 this->filter_pass_layer_rect_.height());
+      gfx::RRectF(0, 0, this->filter_pass_layer_rect_.width(),
+                  this->filter_pass_layer_rect_.height(), 0);
   this->SetUpRenderPassList();
   EXPECT_TRUE(this->RunPixelTest(
       &this->pass_list_,
@@ -3081,7 +3081,7 @@ TYPED_TEST(GLCapableRendererPixelTest, TrilinearFiltering) {
   std::unique_ptr<RenderPass> child_pass = RenderPass::Create();
   child_pass->SetAll(
       child_pass_id, child_pass_rect, child_pass_rect, transform_to_root,
-      cc::FilterOperations(), cc::FilterOperations(), gfx::RectF(),
+      cc::FilterOperations(), cc::FilterOperations(), gfx::RRectF(),
       gfx::ColorSpace::CreateSRGB(), false, false, false, generate_mipmap);
 
   gfx::Rect red_rect(child_pass_rect);

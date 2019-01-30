@@ -317,7 +317,8 @@ void CompositedLayerMapping::UpdateBackdropFilters() {
     return;
   CompositorFilterOperations backdrop_filters =
       OwningLayer().CreateCompositorFilterOperationsForBackdropFilter();
-  gfx::RectF filter_bounds = OwningLayer().BackdropFilterBounds();
+  gfx::RRectF filter_bounds = OwningLayer().BackdropFilterBounds(
+      OwningLayer().BackdropFilterReferenceBox());
   graphics_layer_->SetBackdropFilters(backdrop_filters, filter_bounds);
 }
 

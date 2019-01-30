@@ -102,17 +102,20 @@ TEST(RRectFTest, RRectRadii) {
   RRectF a(40, 50, 60, 70, 0);
   CheckRadii(a, 0, 0, 0, 0, 0, 0, 0, 0);
 
-  a.SetCornerRadii(RRectF::Corner::kUpperLeft, gfx::Vector2dF(1, 2));
+  a.SetCornerRadii(RRectF::Corner::kUpperLeft, 1, 2);
   CheckRadii(a, 1, 2, 0, 0, 0, 0, 0, 0);
 
-  a.SetCornerRadii(RRectF::Corner::kUpperRight, gfx::Vector2dF(3, 4));
+  a.SetCornerRadii(RRectF::Corner::kUpperRight, 3, 4);
   CheckRadii(a, 1, 2, 3, 4, 0, 0, 0, 0);
 
-  a.SetCornerRadii(RRectF::Corner::kLowerRight, gfx::Vector2dF(5, 6));
+  a.SetCornerRadii(RRectF::Corner::kLowerRight, 5, 6);
   CheckRadii(a, 1, 2, 3, 4, 5, 6, 0, 0);
 
-  a.SetCornerRadii(RRectF::Corner::kLowerLeft, gfx::Vector2dF(7, 8));
+  a.SetCornerRadii(RRectF::Corner::kLowerLeft, 7, 8);
   CheckRadii(a, 1, 2, 3, 4, 5, 6, 7, 8);
+
+  RRectF b(40, 50, 60, 70, 1, 2, 3, 4, 5, 6, 7, 8);
+  EXPECT_EQ(a, b);
 }
 
 TEST(RRectFTest, FromRectF) {
