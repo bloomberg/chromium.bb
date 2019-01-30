@@ -87,7 +87,10 @@ inline void ThreadSpecific<T>::Destroy(void* ptr) {
   // longer has a graceful shutdown sequence. Be careful to call this function
   // (which can be re-entrant) while the pointer is still set, to avoid lazily
   // allocating WTFThreadData after it is destroyed.
-  if (IsMainThread())
+  // This check cannot be performed using WTF::IsMainThread, as it uses TLS to
+  // store thread information, and we can't rely on the destruction order of
+  // TLS variables.
+  if (CurrentThread() == g_main_thread_identifier)
     return;
 
   // The memory was allocated via Partitions::FastZeroedMalloc, and then the
