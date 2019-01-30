@@ -10,7 +10,7 @@
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -34,11 +34,11 @@ class ChildAccountServiceTest : public ::testing::Test {
                               base::BindRepeating(&BuildTestSigninClient));
     builder.AddTestingFactory(
         GaiaCookieManagerServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+        base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
                             &test_url_loader_factory_));
     profile_ = builder.Build();
-    gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
-        GaiaCookieManagerServiceFactory::GetForProfile(profile_.get()));
+    gaia_cookie_manager_service_ =
+        GaiaCookieManagerServiceFactory::GetForProfile(profile_.get());
   }
 
  protected:
@@ -48,11 +48,11 @@ class ChildAccountServiceTest : public ::testing::Test {
   // former outlives the latter.
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingProfile> profile_;
-  FakeGaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
+  GaiaCookieManagerService* gaia_cookie_manager_service_;
 };
 
 TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
-  gaia_cookie_manager_service_->SetListAccountsResponseNoAccounts();
+  signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
 
   ChildAccountService* child_account_service =
       ChildAccountServiceFactory::GetForProfile(profile_.get());
@@ -69,33 +69,36 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
             child_account_service->GetGoogleAuthState());
 
   // A valid, signed-in account means authenticated.
-  gaia_cookie_manager_service_->SetListAccountsResponseOneAccountWithParams(
+  signin::SetListAccountsResponseOneAccountWithParams(
       {"me@example.com", "abcdef",
        /* valid = */ true,
        /* is_signed_out = */ false,
-       /* verified = */ true});
+       /* verified = */ true},
+      &test_url_loader_factory_);
   gaia_cookie_manager_service_->TriggerListAccounts();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
 
   // An invalid (but signed-in) account means not authenticated.
-  gaia_cookie_manager_service_->SetListAccountsResponseOneAccountWithParams(
+  signin::SetListAccountsResponseOneAccountWithParams(
       {"me@example.com", "abcdef",
        /* valid = */ false,
        /* is_signed_out = */ false,
-       /* verified = */ true});
+       /* verified = */ true},
+      &test_url_loader_factory_);
   gaia_cookie_manager_service_->TriggerListAccounts();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
 
   // A valid but not signed-in account means not authenticated.
-  gaia_cookie_manager_service_->SetListAccountsResponseOneAccountWithParams(
+  signin::SetListAccountsResponseOneAccountWithParams(
       {"me@example.com", "abcdef",
        /* valid = */ true,
        /* is_signed_out = */ true,
-       /* verified = */ true});
+       /* verified = */ true},
+      &test_url_loader_factory_);
   gaia_cookie_manager_service_->TriggerListAccounts();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
