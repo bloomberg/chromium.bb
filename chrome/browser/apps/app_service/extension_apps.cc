@@ -455,6 +455,14 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->icon_key->s_key = extension->id();
   app->icon_key->u_key = next_u_key_++;
 
+  if (profile_) {
+    auto* prefs = extensions::ExtensionPrefs::Get(profile_);
+    if (prefs) {
+      app->last_launch_time = prefs->GetLastLaunchTime(extension->id());
+      app->install_time = prefs->GetInstallTime(extension->id());
+    }
+  }
+
   // Extensions where |from_bookmark| is true wrap websites and use web
   // permissions.
   if (extension->from_bookmark()) {

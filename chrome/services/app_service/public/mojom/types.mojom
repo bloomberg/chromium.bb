@@ -4,6 +4,7 @@
 
 module apps.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 
 // Information about an app. See chrome/services/app_service/README.md.
@@ -16,6 +17,9 @@ struct App {
   Readiness readiness;
   string? name;
   IconKey? icon_key;
+  mojo_base.mojom.Time? last_launch_time;
+  mojo_base.mojom.Time? install_time;
+
   // This vector must be treated atomically, if there is a permission
   // change, the publisher must send through the entire list of permissions.
   // Should contain no duplicate IDs.

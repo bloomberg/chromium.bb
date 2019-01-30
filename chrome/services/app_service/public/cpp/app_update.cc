@@ -5,6 +5,7 @@
 #include "chrome/services/app_service/public/cpp/app_update.h"
 
 #include "base/logging.h"
+#include "base/time/time.h"
 
 namespace {
 
@@ -43,6 +44,12 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   }
   if (!delta->icon_key.is_null()) {
     state->icon_key = delta->icon_key.Clone();
+  }
+  if (delta->last_launch_time.has_value()) {
+    state->last_launch_time = delta->last_launch_time;
+  }
+  if (delta->install_time.has_value()) {
+    state->install_time = delta->install_time;
   }
   if (!delta->permissions.empty()) {
     DCHECK(state->permissions.empty() ||
@@ -129,6 +136,36 @@ apps::mojom::IconKeyPtr AppUpdate::IconKey() const {
 bool AppUpdate::IconKeyChanged() const {
   return delta_ && !delta_->icon_key.is_null() &&
          (!state_ || !delta_->icon_key.Equals(state_->icon_key));
+}
+
+base::Time AppUpdate::LastLaunchTime() const {
+  if (delta_ && delta_->last_launch_time.has_value()) {
+    return delta_->last_launch_time.value();
+  }
+  if (state_ && state_->last_launch_time.has_value()) {
+    return state_->last_launch_time.value();
+  }
+  return base::Time();
+}
+
+bool AppUpdate::LastLaunchTimeChanged() const {
+  return delta_ && delta_->last_launch_time.has_value() &&
+         (!state_ || (delta_->last_launch_time != state_->last_launch_time));
+}
+
+base::Time AppUpdate::InstallTime() const {
+  if (delta_ && delta_->install_time.has_value()) {
+    return delta_->install_time.value();
+  }
+  if (state_ && state_->install_time.has_value()) {
+    return state_->install_time.value();
+  }
+  return base::Time();
+}
+
+bool AppUpdate::InstallTimeChanged() const {
+  return delta_ && delta_->install_time.has_value() &&
+         (!state_ || (delta_->install_time != state_->install_time));
 }
 
 std::vector<apps::mojom::PermissionPtr> AppUpdate::Permissions() const {

@@ -405,6 +405,9 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 
   app->icon_key = NewIconKey(app_id);
 
+  app->last_launch_time = app_info.last_launch_time;
+  app->install_time = app_info.install_time;
+
   bool installed_internally =
       prefs_->IsDefault(app_id) ||
       prefs_->IsControlledByPolicy(app_info.package_name);
