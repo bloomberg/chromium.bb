@@ -53,9 +53,13 @@
     --cr-secondary-text-color: var(--google-grey-refresh-700);
 
     --cr-card-background-color: white;
+    --cr-card-shadow-color-rgb: var(--google-grey-800-rgb);
+
+    --cr-card-shadow: rgba(var(--cr-card-shadow-color-rgb), .3) 0 1px 2px 0,
+                      rgba(var(--cr-card-shadow-color-rgb), .15) 0 1px 3px 1px;
+
     --cr-card-elevation: {
-      box-shadow: rgba(var(--google-grey-800-rgb), .3) 0 1px 2px 0,
-                  rgba(var(--google-grey-800-rgb), .15) 0 1px 3px 1px;
+      box-shadow: var(--cr-card-shadow);
     }
 
     --cr-focused-item-color: var(--google-grey-300);
@@ -75,11 +79,14 @@
     --cr-secondary-text-color: var(--google-grey-refresh-500);
 
     --cr-card-background-color: var(--google-grey-900);
+    --cr-card-shadow-color-rgb: 0, 0, 0;
+
     --cr-card-elevation: {
+      /* This gradient intentionally uses the same from/to colors to add 4%
+       * white on top of an opaque background-color. */
       background-image: linear-gradient(rgba(255, 255, 255, .04),
                                         rgba(255, 255, 255, .04));
-      box-shadow: rgba(0, 0, 0, .3) 0 1px 2px 0,
-                  rgba(0, 0, 0, .15) 0 4px 8px 3px;
+      box-shadow: var(--cr-card-shadow);  /* Uses --cr-card-shadow-color-rgb. */
     }
 
     /* TODO(dbeam): form-field-label, {section,title}-text, & toggle colors. */
