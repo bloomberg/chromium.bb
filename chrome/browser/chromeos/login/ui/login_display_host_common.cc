@@ -182,8 +182,12 @@ void LoginDisplayHostCommon::CompleteLogin(const UserContext& user_context) {
 }
 
 void LoginDisplayHostCommon::OnGaiaScreenReady() {
-  if (GetExistingUserController())
+  if (GetExistingUserController()) {
     GetExistingUserController()->OnGaiaScreenReady();
+  } else {
+    // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
+    LOG(ERROR) << "OnGaiaScreenReady: there is no existing user controller";
+  }
 }
 
 void LoginDisplayHostCommon::SetDisplayEmail(const std::string& email) {

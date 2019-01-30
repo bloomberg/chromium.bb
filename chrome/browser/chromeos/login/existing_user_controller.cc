@@ -659,11 +659,15 @@ void ExistingUserController::RestartLogin(const UserContext& user_context) {
 }
 
 void ExistingUserController::OnSigninScreenReady() {
+  // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
+  VLOG(1) << "OnSigninScreenReady";
   auto_launch_ready_ = true;
   StartAutoLoginTimer();
 }
 
 void ExistingUserController::OnGaiaScreenReady() {
+  // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
+  VLOG(1) << "OnGaiaScreenReady";
   auto_launch_ready_ = true;
   StartAutoLoginTimer();
 }

@@ -91,7 +91,8 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
 }
 
 void LoginDisplayMojo::OnPreferencesChanged() {
-  NOTIMPLEMENTED();
+  if (webui_handler_)
+    webui_handler_->OnPreferencesChanged();
 }
 
 void LoginDisplayMojo::SetUIEnabled(bool is_enabled) {
@@ -191,7 +192,8 @@ void LoginDisplayMojo::Signout() {
 }
 
 void LoginDisplayMojo::OnSigninScreenReady() {
-  NOTIMPLEMENTED();
+  if (delegate_)
+    delegate_->OnSigninScreenReady();
 }
 
 void LoginDisplayMojo::ShowEnterpriseEnrollmentScreen() {
