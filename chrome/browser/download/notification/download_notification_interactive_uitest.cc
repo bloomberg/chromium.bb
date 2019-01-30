@@ -10,7 +10,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -37,11 +39,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
+#include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -92,6 +98,151 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   bool opened_;
 };
 
+// A Network Service based implementation of net::URLRequestSlowDownloadJob.
+class SlowDownloadInterceptor {
+ public:
+  static const char* kUnknownSizeUrl;
+  static const char* kKnownSizeUrl;
+  static const char* kFinishDownloadUrl;
+  static const char* kErrorDownloadUrl;
+
+  SlowDownloadInterceptor()
+      : interceptor_(base::BindRepeating(&SlowDownloadInterceptor::OnIntercept,
+                                         base::Unretained(this))),
+        handlers_(
+            {{kKnownSizeUrl, &SlowDownloadInterceptor::HandleKnownSize},
+             {kUnknownSizeUrl, &SlowDownloadInterceptor::HandleUnknownSize},
+             {kFinishDownloadUrl, &SlowDownloadInterceptor::HandleFinish},
+             {kErrorDownloadUrl, &SlowDownloadInterceptor::HandleError}}) {}
+
+ private:
+  using Handler = void (SlowDownloadInterceptor::*)(
+      content::URLLoaderInterceptor::RequestParams*);
+
+  // A wrapper around a URLLoaderInterceptor::RequestParams object that will
+  // make sure things are called on the right sequence. Owns itself.
+  class PendingRequest {
+   public:
+    PendingRequest(content::URLLoaderInterceptor::RequestParams&& params)
+        : params_(std::move(params)),
+          task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+
+    void Complete(net::Error error_code) {
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&PendingRequest::CompleteOnOriginalSequence,
+                                    base::Unretained(this), error_code));
+    }
+
+   private:
+    void CompleteOnOriginalSequence(net::Error error_code) {
+      network::URLLoaderCompletionStatus status;
+      status.error_code = error_code;
+      params_.client->OnComplete(status);
+      delete this;
+    }
+
+    content::URLLoaderInterceptor::RequestParams params_;
+    scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(PendingRequest);
+  };
+
+  // Can be called on the UI or IO thread depending on which factory we hooked.
+  bool OnIntercept(content::URLLoaderInterceptor::RequestParams* params) {
+    const auto& it = handlers_.find(params->url_request.url.spec());
+    if (it == handlers_.end())
+      return false;
+    Handler handler = it->second;
+    (this->*handler)(params);
+    return true;
+  }
+
+  void HandleKnownSize(content::URLLoaderInterceptor::RequestParams* params) {
+    SendHead(params, "application/octet-stream", /*content_length=*/1024);
+    SendBody(params, "some random data");
+    base::AutoLock lock(lock_);
+    pending_requests_.push_back(new PendingRequest(std::move(*params)));
+  }
+
+  void HandleUnknownSize(content::URLLoaderInterceptor::RequestParams* params) {
+    SendHead(params, "application/octet-stream", /*content_length=*/-1);
+    SendBody(params, "some random data");
+    base::AutoLock lock(lock_);
+    pending_requests_.push_back(new PendingRequest(std::move(*params)));
+  }
+
+  void HandleFinish(content::URLLoaderInterceptor::RequestParams* params) {
+    CompletePendingRequests(net::OK);
+    SendOk(params);
+  }
+
+  void HandleError(content::URLLoaderInterceptor::RequestParams* params) {
+    CompletePendingRequests(net::ERR_CONNECTION_RESET);
+    SendOk(params);
+  }
+
+  void CompletePendingRequests(net::Error error_code) {
+    base::AutoLock lock(lock_);
+    for (auto* request : pending_requests_)
+      request->Complete(error_code);
+    pending_requests_.clear();
+  }
+
+  static void SendOk(content::URLLoaderInterceptor::RequestParams* params) {
+    std::string response = "OK";
+    SendHead(params, "text/http", response.size());
+    SendBody(params, response);
+    network::URLLoaderCompletionStatus status;
+    status.error_code = net::OK;
+    params->client->OnComplete(status);
+  }
+
+  static void SendHead(content::URLLoaderInterceptor::RequestParams* params,
+                       std::string mime_type,
+                       int64_t content_length) {
+    network::ResourceResponseHead head;
+    std::string headers =
+        "HTTP/1.1 200 OK\n"
+        "Cache-Control: max-age=0\n";
+    headers += base::StringPrintf("Content-type: %s\n", mime_type.c_str());
+    if (content_length >= 0) {
+      headers += base::StringPrintf("Content-Length: %ld\n", content_length);
+      head.content_length = content_length;
+    }
+    head.headers = new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.length()));
+    head.headers->GetMimeType(&head.mime_type);
+    params->client->OnReceiveResponse(head);
+  }
+
+  static void SendBody(content::URLLoaderInterceptor::RequestParams* params,
+                       std::string data) {
+    mojo::DataPipe pipe(data.size());
+    ASSERT_TRUE(pipe.producer_handle.is_valid());
+    uint32_t write_size = data.size();
+    MojoResult result = pipe.producer_handle->WriteData(
+        data.c_str(), &write_size, MOJO_WRITE_DATA_FLAG_NONE);
+    ASSERT_EQ(MOJO_RESULT_OK, result);
+    ASSERT_EQ(data.size(), write_size);
+    ASSERT_TRUE(pipe.consumer_handle.is_valid());
+    params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+  }
+
+  content::URLLoaderInterceptor interceptor_;
+  const std::map<std::string, Handler> handlers_;
+  base::Lock lock_;
+  std::vector<PendingRequest*> pending_requests_ GUARDED_BY(lock_);
+};
+
+const char* SlowDownloadInterceptor::kUnknownSizeUrl =
+    net::URLRequestSlowDownloadJob::kUnknownSizeUrl;
+const char* SlowDownloadInterceptor::kKnownSizeUrl =
+    net::URLRequestSlowDownloadJob::kKnownSizeUrl;
+const char* SlowDownloadInterceptor::kFinishDownloadUrl =
+    net::URLRequestSlowDownloadJob::kFinishDownloadUrl;
+const char* SlowDownloadInterceptor::kErrorDownloadUrl =
+    net::URLRequestSlowDownloadJob::kErrorDownloadUrl;
+
 // Utility method to retrieve a notification object by id. Warning: this will
 // check the last display service that was created. If there's a normal and an
 // incognito one, you may want to be explicit.
@@ -124,10 +275,17 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         browser()->profile());
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+        !content::IsNetworkServiceRunningInProcess()) {
+      interceptor_ = std::make_unique<SlowDownloadInterceptor>();
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::IO},
+          base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
+    }
   }
+
+  void TearDownOnMainThread() override { interceptor_.reset(); }
 
  protected:
   content::DownloadManager* GetDownloadManager(Browser* browser) {
@@ -140,12 +298,13 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
         GetDownloadManager(browser()), wait_count,
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
     ui_test_utils::NavigateToURL(
-        browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
+        browser(), GURL(SlowDownloadInterceptor::kFinishDownloadUrl));
     download_terminal_observer.WaitForFinished();
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
   std::unique_ptr<NotificationDisplayServiceTester> incognito_display_service_;
+  std::unique_ptr<SlowDownloadInterceptor> interceptor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadNotificationTestBase);
@@ -205,7 +364,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
 
   void CreateDownload() {
     return CreateDownloadForBrowserAndURL(
-        browser(), GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
+        browser(), GURL(SlowDownloadInterceptor::kKnownSizeUrl));
   }
 
   // Returns the correct display service for the given Browser. If |browser| is
@@ -273,7 +432,7 @@ class DownloadNotificationTest : public DownloadNotificationTestBase {
         GetDownloadManager(browser()), 1u, /* wait_count */
         content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
     ui_test_utils::NavigateToURL(
-        browser(), GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl));
+        browser(), GURL(SlowDownloadInterceptor::kErrorDownloadUrl));
     download_interrupted_observer.WaitForFinished();
   }
 
@@ -527,8 +686,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
-  GURL url1(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
-  GURL url2(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
+  GURL url1(SlowDownloadInterceptor::kUnknownSizeUrl);
+  GURL url2(SlowDownloadInterceptor::kKnownSizeUrl);
 
   // Starts the 1st download.
   ui_test_utils::NavigateToURL(browser(), url1);
@@ -630,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_TRUE(notification());
 
   // Starts the second download.
-  GURL url(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
+  GURL url(SlowDownloadInterceptor::kKnownSizeUrl);
   ui_test_utils::NavigateToURL(browser(), url);
   WaitForDownloadNotification();
 
@@ -696,8 +855,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
   PrepareIncognitoBrowser();
 
   // Starts an incognito download.
-  CreateDownloadForBrowserAndURL(
-      incognito_browser(), GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl));
+  CreateDownloadForBrowserAndURL(incognito_browser(),
+                                 GURL(SlowDownloadInterceptor::kKnownSizeUrl));
 
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE,
@@ -712,8 +871,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
       GetDownloadManager(incognito_browser()), 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   ui_test_utils::NavigateToURL(
-      incognito_browser(),
-      GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
+      incognito_browser(), GURL(SlowDownloadInterceptor::kFinishDownloadUrl));
   download_terminal_observer.WaitForFinished();
 
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_COMPLETE_TITLE),
@@ -740,8 +898,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
                        SimultaneousIncognitoAndNormalDownloads) {
   PrepareIncognitoBrowser();
 
-  GURL url_incognito(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
-  GURL url_normal(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
+  GURL url_incognito(SlowDownloadInterceptor::kUnknownSizeUrl);
+  GURL url_normal(SlowDownloadInterceptor::kKnownSizeUrl);
 
   // Starts the incognito download.
   ui_test_utils::NavigateToURL(incognito_browser(), url_incognito);
@@ -902,7 +1060,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
                        DownloadMultipleFiles) {
   AddAllUsers();
 
-  GURL url(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
+  GURL url(SlowDownloadInterceptor::kUnknownSizeUrl);
 
   Profile* profile1 = GetProfileByIndex(1);
   Profile* profile2 = GetProfileByIndex(2);
@@ -993,9 +1151,9 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
       GetDownloadManager(browser2), 2u /* wait_count */,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   ui_test_utils::NavigateToURL(
-      browser1, GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
+      browser1, GURL(SlowDownloadInterceptor::kFinishDownloadUrl));
   ui_test_utils::NavigateToURL(
-      browser2, GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
+      browser2, GURL(SlowDownloadInterceptor::kFinishDownloadUrl));
   download_terminal_observer.WaitForFinished();
   download_terminal_observer2.WaitForFinished();
 
