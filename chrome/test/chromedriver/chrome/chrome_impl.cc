@@ -319,7 +319,7 @@ Status ChromeImpl::SetWindowBounds(
   if (status.IsError())
     return status;
 
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
   std::string state;
   if (!bounds->GetString("windowState", &state))
     return Status(kOk);
