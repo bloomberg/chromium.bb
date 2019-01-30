@@ -544,6 +544,7 @@ void DownloadTargetDeterminerTest::SetUpFileTypePolicies() {
   file_type = fake_file_type_config->add_file_types();
   file_type->set_extension("bad");
   file_type->set_uma_value(-1);
+  file_type->set_ping_setting(DownloadFileType::FULL_PING);
   platform_settings = file_type->add_platform_settings();
   platform_settings->set_danger_level(DownloadFileType::DANGEROUS);
   platform_settings->set_auto_open_hint(DownloadFileType::DISALLOW_AUTO_OPEN);
@@ -1104,8 +1105,7 @@ TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
       {// 0: Safe download due to visiting referrer before.
        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
        DownloadFileType::NOT_DANGEROUS,
-       "http://visited.example.com/foo.kindabad", "application/xml",
-       FILE_PATH_LITERAL(""),
+       "http://visited.example.com/foo.kindabad", "", FILE_PATH_LITERAL(""),
 
        FILE_PATH_LITERAL("foo.kindabad"),
        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
@@ -1115,8 +1115,7 @@ TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
       {// 1: Dangerous due to not having visited referrer before.
        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
        DownloadFileType::ALLOW_ON_USER_GESTURE,
-       "http://not-visited.example.com/foo.kindabad", "application/xml",
-       FILE_PATH_LITERAL(""),
+       "http://not-visited.example.com/foo.kindabad", "", FILE_PATH_LITERAL(""),
 
        FILE_PATH_LITERAL("foo.kindabad"),
        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
@@ -1126,8 +1125,7 @@ TEST_F(DownloadTargetDeterminerTest, VisitedReferrer) {
       {// 2: Safe because the user is being prompted.
        SAVE_AS, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
        DownloadFileType::NOT_DANGEROUS,
-       "http://not-visited.example.com/foo.kindabad", "application/xml",
-       FILE_PATH_LITERAL(""),
+       "http://not-visited.example.com/foo.kindabad", "", FILE_PATH_LITERAL(""),
 
        FILE_PATH_LITERAL("foo.kindabad"),
        DownloadItem::TARGET_DISPOSITION_PROMPT,
@@ -1386,12 +1384,10 @@ TEST_F(DownloadTargetDeterminerTest, ContinueWithoutConfirmation_SaveAs) {
       download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
       DownloadFileType::ALLOW_ON_USER_GESTURE,
       "http://example.com/save-as.kindabad",
-      "text/plain",
+      "",
       FILE_PATH_LITERAL(""),
-
       FILE_PATH_LITERAL("foo.kindabad"),
       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-
       EXPECT_UNCONFIRMED};
 
   EXPECT_CALL(
@@ -1414,12 +1410,10 @@ TEST_F(DownloadTargetDeterminerTest, ContinueWithConfirmation_SaveAs) {
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DownloadFileType::NOT_DANGEROUS,
       "http://example.com/save-as.kindabad",
-      "text/plain",
+      "",
       FILE_PATH_LITERAL(""),
-
       FILE_PATH_LITERAL("foo.kindabad"),
       DownloadItem::TARGET_DISPOSITION_PROMPT,
-
       EXPECT_CRDOWNLOAD};
 
   EXPECT_CALL(
@@ -1442,15 +1436,13 @@ TEST_F(DownloadTargetDeterminerTest, PromptAlways_Extension) {
       {// 0: Automatic Browser Extension download. - Shouldn't prompt for
        //    browser extension downloads even if "Prompt for download"
        //    preference is set.
-       AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
-       DownloadFileType::ALLOW_ON_USER_GESTURE,
-       "http://example.com/foo.kindabad", extensions::Extension::kMimeType,
-       FILE_PATH_LITERAL(""),
+       AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+       DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.kindabad",
+       extensions::Extension::kMimeType, FILE_PATH_LITERAL(""),
 
-       FILE_PATH_LITERAL("foo.kindabad"),
-       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+       FILE_PATH_LITERAL("foo.crx"), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
 
-       EXPECT_UNCONFIRMED},
+       EXPECT_CRDOWNLOAD},
 
       {// 1: Automatic User Script - Shouldn't prompt for user script downloads
        //    even if "Prompt for download" preference is set.
@@ -1558,7 +1550,7 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsUnsafe) {
       download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
       DownloadFileType::ALLOW_ON_USER_GESTURE,
       "http://example.com/foo.kindabad.remove",
-      "text/plain",
+      "",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("overridden/foo.kindabad"),
@@ -1571,7 +1563,7 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsUnsafe) {
       download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
       DownloadFileType::ALLOW_ON_USER_GESTURE,
       "http://example.com/foo.kindabad.remove",
-      "text/plain",
+      "",
       FILE_PATH_LITERAL(""),
 
       FILE_PATH_LITERAL("overridden/foo.kindabad"),
@@ -2065,7 +2057,7 @@ TEST_F(DownloadTargetDeterminerTest, MIMETypeDetermination) {
       {{// 4: Unknown file type.
         AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.notarealext",
-        "image/png", FILE_PATH_LITERAL(""),
+        "", FILE_PATH_LITERAL(""),
 
         FILE_PATH_LITERAL("foo.notarealext"),
         DownloadItem::TARGET_DISPOSITION_OVERWRITE,
@@ -2098,6 +2090,71 @@ TEST_F(DownloadTargetDeterminerTest, MIMETypeDetermination) {
         RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
                                     item.get());
     EXPECT_EQ(test_case.expected_mime_type, target_info->mime_type);
+  }
+}
+
+// Test that the mime type given by the server may determine the target file
+// extension.
+// The file extension is generated through mime type when:
+// 1. Content-Type header is not empty.
+// 2. No suggested file name, which has higher priority than mime type to
+// generate file name.
+// 3. No force file name, which has higher priority.
+// 4. The extension generated from the URL is considered safe by safe browsing,
+// and it's not required to do security check by safe browsing. No matter the
+// new extension is safe or unsafe, we never decrease the number of safe
+// browsing checks.
+TEST_F(DownloadTargetDeterminerTest, MimeTypeFileExtension) {
+  // Safe browsing and empty mime type tests.
+  struct MimeTypeFileExtensionTestCase {
+    // General test case settings.
+    DownloadTestCase general;
+
+    // Return value of DownloadItem::GetSuggestedFilename().
+    std::string suggested_file_name;
+  } kTestCases[] = {
+      {{// 0: Unsafe file extension generated by URL should not be replaced
+        // to a safe extension to bypass the safe browsing check.
+        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+        DownloadFileType::DANGEROUS, "http://example.com/foo.bad", "image/png",
+        FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("foo.bad"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_UNCONFIRMED},
+       ""},
+      {{// 1: Safe file extension generated by URL can be replaced based on
+        // mime type.
+        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.png",
+        "image/gif", FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("foo.gif"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_CRDOWNLOAD},
+       ""},
+      {{// 2: Forced file path. Mime type from Content-Type should not affect
+        // file extension.
+        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.png",
+        "image/gif", FILE_PATH_LITERAL("foo.txt") /* forced_file_path*/,
+        FILE_PATH_LITERAL("foo.txt"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_LOCAL_PATH},
+       ""},
+      {{// 3: Empty mime type.
+        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.png", "",
+        FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("foo.png"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_CRDOWNLOAD},
+       ""},
+      {{// 4: Suggested file name. Mime type from Content-Type should not affect
+        // file extension.
+        AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        DownloadFileType::NOT_DANGEROUS, "http://example.com/foo.png",
+        "image/gif", FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("foo.txt"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_CRDOWNLOAD},
+       "foo.txt" /* suggested_file_name */}};
+
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+    std::unique_ptr<download::MockDownloadItem> item =
+        CreateActiveDownloadItem(i, kTestCases[i].general);
+    ON_CALL(*item, GetSuggestedFilename())
+        .WillByDefault(Return(kTestCases[i].suggested_file_name));
+    RunTestCase(kTestCases[i].general, base::FilePath(), item.get());
   }
 }
 
