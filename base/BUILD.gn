@@ -1414,6 +1414,8 @@ jumbo_component("base") {
       "fuchsia/service_directory.h",
       "fuchsia/service_directory_client.cc",
       "fuchsia/service_directory_client.h",
+      "fuchsia/service_provider_impl.cc",
+      "fuchsia/service_provider_impl.h",
       "memory/platform_shared_memory_region_fuchsia.cc",
       "memory/protected_memory_posix.cc",
       "memory/shared_memory_fuchsia.cc",
@@ -1477,6 +1479,7 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:async_loop_cpp",
       "//third_party/fuchsia-sdk/sdk:fidl",
       "//third_party/fuchsia-sdk/sdk:svc",
+      "//third_party/fuchsia-sdk/sdk:sys",
     ]
   }
 
@@ -2764,6 +2767,7 @@ test("base_unittests") {
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_directory_unittest.cc",
+      "fuchsia/service_provider_impl_unittest.cc",
       "message_loop/message_loop_io_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "task/task_scheduler/task_tracker_posix_unittest.cc",
@@ -2778,6 +2782,7 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:async_default",
       "//third_party/fuchsia-sdk/sdk:fdio",
+      "//third_party/fuchsia-sdk/sdk:sys",
     ]
   }
 
