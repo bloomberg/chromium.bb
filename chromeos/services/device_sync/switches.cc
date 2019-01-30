@@ -14,6 +14,11 @@ namespace switches {
 // by CryptAuth.
 const char kCryptAuthHTTPHost[] = "cryptauth-http-host";
 
+// Overrides the default URL for CryptAuth v2 Enrollment:
+// https://cryptauthenrollment.googleapis.com.
+const char kCryptAuthV2EnrollmentHTTPHost[] =
+    "cryptauth-v2-enrollment-http-host";
+
 }  // namespace switches
 
 }  // namespace device_sync

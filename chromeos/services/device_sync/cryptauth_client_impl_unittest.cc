@@ -13,6 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/device_sync/cryptauth_api_call_flow.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_enrollment.pb.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 #include "chromeos/services/device_sync/switches.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -35,6 +36,8 @@ namespace device_sync {
 namespace {
 
 const char kTestGoogleApisUrl[] = "https://www.testgoogleapis.com";
+const char kTestCryptAuthV2EnrollmentUrl[] =
+    "https://cryptauthenrollment.testgoogleapis.com";
 const char kAccessToken[] = "access_token";
 const char kEmail[] = "test@gmail.com";
 const char kPublicKey1[] = "public_key1";
@@ -111,6 +114,9 @@ class CryptAuthClientTest : public testing::Test {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kCryptAuthHTTPHost, kTestGoogleApisUrl);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kCryptAuthV2EnrollmentHTTPHost,
+        kTestCryptAuthV2EnrollmentUrl);
 
     cryptauth::DeviceClassifier device_classifier;
     device_classifier.set_device_os_version_code(kDeviceOsVersionCode);
@@ -457,6 +463,76 @@ TEST_F(CryptAuthClientTest, FinishEnrollmentSuccess) {
     FinishApiCallFlow(&response_proto);
   }
   EXPECT_EQ("OK", result_proto.status());
+}
+
+TEST_F(CryptAuthClientTest, SyncKeysSuccess) {
+  ExpectRequest(
+      "https://cryptauthenrollment.testgoogleapis.com/v1:syncKeys?alt=proto");
+
+  const char kApplicationName[] = "application_name";
+  const char kRandomSessionId[] = "random_session_id";
+
+  cryptauthv2::SyncKeysRequest request_proto;
+  request_proto.set_application_name(kApplicationName);
+
+  cryptauthv2::SyncKeysResponse result_proto;
+  client_->SyncKeys(
+      request_proto,
+      base::Bind(&SaveResultConstRef<cryptauthv2::SyncKeysResponse>,
+                 &result_proto),
+      base::Bind(&NotCalled<NetworkRequestError>));
+  identity_test_environment_
+      .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+          kAccessToken, base::Time::Max());
+
+  cryptauthv2::SyncKeysRequest expected_request;
+  EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
+  EXPECT_EQ(kApplicationName, expected_request.application_name());
+
+  {
+    cryptauthv2::SyncKeysResponse response_proto;
+    response_proto.set_random_session_id(kRandomSessionId);
+    FinishApiCallFlow(&response_proto);
+  }
+  EXPECT_EQ(kRandomSessionId, result_proto.random_session_id());
+}
+
+TEST_F(CryptAuthClientTest, EnrollKeysSuccess) {
+  ExpectRequest(
+      "https://cryptauthenrollment.testgoogleapis.com/v1:enrollKeys?alt=proto");
+
+  const char kRandomSessionId[] = "random_session_id";
+  const char kCertificateName[] = "certificate_name";
+
+  cryptauthv2::EnrollKeysRequest request_proto;
+  request_proto.set_random_session_id(kRandomSessionId);
+
+  cryptauthv2::EnrollKeysResponse result_proto;
+  client_->EnrollKeys(
+      request_proto,
+      base::Bind(&SaveResultConstRef<cryptauthv2::EnrollKeysResponse>,
+                 &result_proto),
+      base::Bind(&NotCalled<NetworkRequestError>));
+  identity_test_environment_
+      .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+          kAccessToken, base::Time::Max());
+
+  cryptauthv2::EnrollKeysRequest expected_request;
+  EXPECT_TRUE(expected_request.ParseFromString(serialized_request_));
+  EXPECT_EQ(kRandomSessionId, expected_request.random_session_id());
+
+  {
+    cryptauthv2::EnrollKeysResponse response_proto;
+    response_proto.add_enroll_single_key_responses()
+        ->add_certificate()
+        ->set_common_name(kCertificateName);
+    FinishApiCallFlow(&response_proto);
+  }
+  ASSERT_EQ(1, result_proto.enroll_single_key_responses_size());
+  ASSERT_EQ(1, result_proto.enroll_single_key_responses(0).certificate_size());
+  EXPECT_EQ(
+      kCertificateName,
+      result_proto.enroll_single_key_responses(0).certificate(0).common_name());
 }
 
 TEST_F(CryptAuthClientTest, FetchAccessTokenFailure) {
