@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.v4.util.ArraySet;
@@ -43,8 +42,6 @@ import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
-import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
-import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
@@ -72,7 +69,10 @@ import java.util.Set;
  * Integration tests for ClearBrowsingDataPreferences.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+// Disable notifications for the default search engine so that it doesn't interfere with important
+// sites tests.
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=GrantNotificationsToDSE"})
 @RetryOnFailure
 public class ClearBrowsingDataPreferencesTest {
     @Rule
@@ -86,24 +86,11 @@ public class ClearBrowsingDataPreferencesTest {
         SigninTestUtil.setUpAuthForTest();
 
         mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-
-        // Disable notifications for the default search engine so that it doesn't interfere with
-        // important sites tests.
-        PermissionInfo notificationSettings = new PermissionInfo(
-                PermissionInfo.Type.NOTIFICATION, "https://www.google.com", null, false);
-        // Due to Android notification channels we need to delete the existing content setting in
-        // in order to change it to block.
-        ThreadUtils.runOnUiThread(
-                () -> notificationSettings.setContentSetting(ContentSettingValues.DEFAULT));
-        ThreadUtils.runOnUiThread(
-                () -> notificationSettings.setContentSetting(ContentSettingValues.BLOCK));
+        mTestServer = mActivityTestRule.getTestServer();
     }
 
     @After
     public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-
         SigninTestUtil.tearDownAuthForTest();
     }
 
