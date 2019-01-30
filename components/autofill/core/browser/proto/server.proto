@@ -14,7 +14,7 @@ import "password_requirements.proto";
 
 // Request to query field suggestions for forms in a page from legacy Autofill
 // API.
-// Next available id: 14
+// Next available id: 15
 message AutofillQueryContents {
   reserved 11;  // Reserved for server use.
   required string client_version = 1;
@@ -28,6 +28,7 @@ message AutofillQueryContents {
       optional AutofillRandomizedFieldMetadata field_metadata = 13;
     }
   }
+  repeated int64 experiments = 14;
 }
 
 // Response from Autofill query on the legacy API that gives field suggestions
