@@ -11,10 +11,13 @@ import mock
 import os
 
 from chromite.cbuildbot.builders import workspace_builders_unittest
+from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 # pylint: disable=too-many-ancestors
@@ -33,6 +36,7 @@ class WorkspaceStageBase(
 
   def setUp(self):
     self.workspace = os.path.join(self.tempdir, 'workspace')
+    # Make it a 'repo' for chroot path conversions.
     osutils.SafeMakedirs(os.path.join(self.workspace, '.repo'))
 
     self.from_repo_mock = self.PatchObject(
@@ -43,6 +47,8 @@ class WorkspaceStageBase(
         self.build_root, 'manifest-versions')
     self.manifest_versions_int = os.path.join(
         self.build_root, 'manifest-versions-internal')
+
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
 
   def SetWorkspaceVersion(self, version, chrome_branch='1'):
     """Change the "version" of the workspace."""
@@ -637,7 +643,7 @@ class WorkspaceUnitTestStageTest(WorkspaceStageBase):
         self.rc.call_args_list,
         [
             mock.call(
-                [mock.ANY,   # cros_run_unit_tests path changes inside chroot.
+                ['/mnt/host/source/chromite/bin/cros_run_unit_tests',
                  '--board=board'],
                 enter_chroot=True,
                 chroot_args=['--cache-dir', '/cache'],
@@ -680,4 +686,78 @@ class WorkspaceBuildImageStageTest(WorkspaceStageBase):
             'FEATURES': 'separatedebug',
         },
         cwd=self.workspace,
+    )
+
+
+class WorkspaceDebugSymbolsStageTest(WorkspaceStageBase):
+  """Test the workspace_stages classes."""
+
+  def setUp(self):
+    self.tarball_mock = self.PatchObject(
+        commands, 'GenerateDebugTarball',
+        side_effect=('/debug.tgz', '/breakpad.tgz'))
+
+    self.archive_mock = self.PatchObject(
+        generic_stages.ArchivingStageMixin, 'UploadArtifact')
+
+  def ConstructStage(self):
+    # Version for the infra branch.
+    self._run.attrs.version_info = manifest_version.VersionInfo(
+        '10.0.0', chrome_branch='10')
+    self._run.attrs.release_tag = 'infra-tag'
+
+    return workspace_stages.WorkspaceDebugSymbolsStage(
+        self._run, self.buildstore, build_root=self.workspace, board='board')
+
+  def testFactory(self):
+    """Test with a generic factory build config."""
+    self._Prepare(
+        'test-factorybranch',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
+        extra_cmd_args=['--cache-dir', '/cache'])
+
+    self.RunStage()
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled(
+        [
+            '/mnt/host/source/chromite/bin/cros_generate_breakpad_symbols',
+            '--board=board',
+            '--jobs', mock.ANY,
+            '--exclude-dir=firmware',
+        ],
+        enter_chroot=True,
+        chroot_args=['--cache-dir', '/cache'],
+        extra_env={
+            'USE': '-cros-debug chrome_internal',
+            'FEATURES': 'separatedebug',
+        },
+        cwd=self.workspace,
+    )
+
+    self.assertEqual(
+        self.tarball_mock.call_args_list,
+        [
+            mock.call(self.workspace,
+                      'board',
+                      os.path.join(self.build_root,
+                                   'buildbot_archive/test-factorybranch',
+                                   'R10-infra-tag'),
+                      True),
+            mock.call(self.workspace,
+                      'board',
+                      os.path.join(self.build_root,
+                                   'buildbot_archive/test-factorybranch',
+                                   'R10-infra-tag'),
+                      False,
+                      archive_name='debug_breakpad.tar.xz'),
+        ],
+    )
+
+    self.assertEqual(
+        self.archive_mock.call_args_list,
+        [
+            mock.call('/debug.tgz', archive=False),
+            mock.call('/breakpad.tgz', archive=False),
+        ],
     )

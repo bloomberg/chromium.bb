@@ -2076,40 +2076,48 @@ def GenerateCPEExport(buildroot, board, useflags=None):
       useflags=useflags, cpe_format=True, raw_cmd_result=True)
 
 
-def GenerateBreakpadSymbols(buildroot, board, debug):
+def GenerateBreakpadSymbols(
+    buildroot, board, debug, extra_env=None, chroot_args=None):
   """Generate breakpad symbols.
 
   Args:
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine.
     debug: Include extra debugging output.
+    extra_env: A dictionary of environmental variables to set during generation.
+    chroot_args: The args to the chroot.
   """
   # We don't care about firmware symbols.
   # See https://crbug.com/213670.
   exclude_dirs = ['firmware']
 
   cmd = ['cros_generate_breakpad_symbols', '--board=%s' % board,
-         '--jobs=%s' % str(max([1, multiprocessing.cpu_count() / 2]))]
+         '--jobs', str(max([1, multiprocessing.cpu_count() / 2]))]
   cmd += ['--exclude-dir=%s' % x for x in exclude_dirs]
   if debug:
     cmd += ['--debug']
-  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
+  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
+                 chroot_args=chroot_args, extra_env=extra_env)
 
 
-def GenerateAndroidBreakpadSymbols(buildroot, board, symbols_file):
+def GenerateAndroidBreakpadSymbols(
+    buildroot, board, symbols_file, extra_env=None, chroot_args=None):
   """Generate breakpad symbols of Android binaries.
 
   Args:
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine.
     symbols_file: Path to a symbol archive file.
+    extra_env: A dictionary of environmental variables to set during generation.
+    chroot_args: The args to the chroot.
   """
   board_path = cros_build_lib.GetSysroot(board=board)
   breakpad_dir = os.path.join(board_path, 'usr', 'lib', 'debug', 'breakpad')
   cmd = ['cros_generate_android_breakpad_symbols',
          '--symbols_file=%s' % path_util.ToChrootPath(symbols_file),
          '--breakpad_dir=%s' % breakpad_dir]
-  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
+  RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True,
+                 chroot_args=chroot_args, extra_env=extra_env)
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
@@ -2414,7 +2422,8 @@ def UploadArchivedFile(archive_dir, upload_urls, filename, debug,
 
 
 def UploadSymbols(buildroot, board=None, official=False, cnt=None,
-                  failed_list=None, breakpad_root=None, product_name=None):
+                  failed_list=None, breakpad_root=None, product_name=None,
+                  extra_env=None, chroot_args=None):
   """Upload debug symbols for this build."""
   cmd = ['upload_symbols', '--yes', '--dedupe']
 
@@ -2437,7 +2446,8 @@ def UploadSymbols(buildroot, board=None, official=False, cnt=None,
   # We don't want to import upload_symbols directly because it uses the
   # swarming module which itself imports a _lot_ of stuff.  It has also
   # been known to hang.  We want to keep cbuildbot isolated & robust.
-  RunBuildScript(buildroot, cmd, chromite_cmd=True)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True,
+                 chroot_args=chroot_args, extra_env=extra_env)
 
 
 def PushImages(board, archive_url, dryrun, profile, sign_types=(),

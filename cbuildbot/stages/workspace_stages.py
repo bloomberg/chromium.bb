@@ -26,6 +26,7 @@ import os
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import trybot_patch_pool
+from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -527,3 +528,100 @@ class WorkspaceBuildImageStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     self._BuildImages()
+
+class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
+                                 generic_stages.BoardSpecificBuilderStage,
+                                 generic_stages.ArchivingStageMixin):
+  """Handles generation & upload of debug symbols."""
+
+  config_name = 'debug_symbols'
+  category = constants.PRODUCT_OS_STAGE
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    """Generate debug symbols and upload debug.tgz."""
+    buildroot = self._build_root
+    board = self._current_board
+
+    # Generate breakpad symbols of Chrome OS binaries.
+    commands.GenerateBreakpadSymbols(
+        buildroot, board,
+        self._run.options.debug_forced,
+        chroot_args=ChrootArgs(self._run.options),
+        extra_env=self._portage_extra_env)
+
+    # Generate breakpad symbols of Android binaries if we have a symbol archive.
+    # This archive is created by AndroidDebugSymbolsStage in Android PFQ.
+    # This must be done after GenerateBreakpadSymbols because it clobbers the
+    # output directory.
+    symbols_file = os.path.join(self.archive_path,
+                                constants.ANDROID_SYMBOLS_FILE)
+    if os.path.exists(symbols_file):
+      commands.GenerateAndroidBreakpadSymbols(
+          buildroot, board, symbols_file,
+          chroot_args=ChrootArgs(self._run.options),
+          extra_env=self._portage_extra_env)
+
+    # Upload them.
+    self.UploadDebugTarball()
+
+    # Upload debug/breakpad tarball.
+    self.UploadDebugBreakpadTarball()
+
+    # Upload them to crash server.
+    if self._run.config.upload_symbols:
+      self.UploadSymbols(buildroot, board)
+
+  def UploadDebugTarball(self):
+    """Generate and upload the debug tarball."""
+    filename = commands.GenerateDebugTarball(
+        self._build_root, self._current_board, self.archive_path,
+        self._run.config.archive_build_debug)
+    self.UploadArtifact(filename, archive=False)
+
+  def UploadDebugBreakpadTarball(self):
+    """Generate and upload the debug tarball with only breakpad files."""
+    filename = commands.GenerateDebugTarball(
+        self._build_root,
+        self._current_board,
+        self.archive_path,
+        False,
+        archive_name='debug_breakpad.tar.xz')
+    self.UploadArtifact(filename, archive=False)
+
+  def UploadSymbols(self, buildroot, board):
+    """Upload generated debug symbols."""
+    failed_name = 'failed_upload_symbols.list'
+    failed_list = os.path.join(self.archive_path, failed_name)
+
+    if self._run.options.debug:
+      # For debug builds, limit ourselves to just uploading 1 symbol.
+      # This way trybots and such still exercise this code.
+      cnt = 1
+      official = False
+    else:
+      cnt = None
+      official = self._run.config.chromeos_official
+
+    upload_passed = True
+    try:
+      commands.UploadSymbols(
+          buildroot, board, official, cnt, failed_list,
+          chroot_args=ChrootArgs(self._run.options),
+          extra_env=self._portage_extra_env)
+    except failures_lib.BuildScriptFailure:
+      upload_passed = False
+
+    if os.path.exists(failed_list):
+      self.UploadArtifact(failed_name, archive=False)
+
+      logging.notice('To upload the missing symbols from this build, run:')
+      for url in self._GetUploadUrls(filename=failed_name):
+        logging.notice('upload_symbols --failed-list %s %s',
+                       os.path.join(url, failed_name),
+                       os.path.join(url, 'debug_breakpad.tar.xz'))
+
+    # Delay throwing the exception until after we uploaded the list.
+    if not upload_passed:
+      raise artifact_stages.DebugSymbolsUploadException(
+          'Failed to upload all symbols.')
