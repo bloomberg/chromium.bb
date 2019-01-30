@@ -5,6 +5,7 @@
 #include "content/browser/webui/shared_resources_data_source.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -16,6 +17,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -45,6 +47,19 @@ struct IdrGzipped {
 };
 using ResourcesMap = std::unordered_map<std::string, IdrGzipped>;
 
+#if defined(OS_CHROMEOS)
+const char kPolymerHtml[] = "polymer/v1_0/polymer/polymer.html";
+const char kPolymerJs[] = "polymer/v1_0/polymer/polymer-extracted.js";
+const char kPolymer2Html[] = "polymer/v1_0/polymer2/polymer.html";
+const char kPolymer2Js[] = "polymer/v1_0/polymer2/polymer-extracted.js";
+
+// Utility for determining if both Polymer 1 and Polymer 2 are needed.
+bool UsingMultiplePolymerVersions() {
+  return base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
+         base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
+}
+#endif  // defined(OS_CHROMEOS)
+
 const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   // TODO(rkc): Once we have a separate source for apps, remove '*/apps/'
   // aliases.
@@ -58,6 +73,11 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
       {"../../webui/resources/cr_components/", "cr_components/"},
       {"../../webui/resources/cr_elements/", "cr_elements/"},
   };
+
+#if defined(OS_CHROMEOS)
+  if (UsingMultiplePolymerVersions())
+    return aliases;
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebUIPolymer2)) {
@@ -95,6 +115,11 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
 
 #if !defined(OS_ANDROID)
 bool ShouldIgnore(std::string resource) {
+#if defined(OS_CHROMEOS)
+  if (UsingMultiplePolymerVersions())
+    return false;
+#endif  // defined(OS_CHROMEOS)
+
   if (base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
       base::StartsWith(
           resource,
@@ -209,8 +234,19 @@ void SharedResourcesDataSource::StartDataRequest(
     const std::string& path,
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
-  int idr = GetIdrForPath(path);
-  DCHECK_NE(-1, idr) << " path: " << path;
+  std::string updated_path = path;
+#if defined(OS_CHROMEOS)
+  // If this is a Polymer request and multiple Polymer versions are enabled,
+  // return the Polymer 2 path unless the request is from the
+  // |disabled_polymer2_host_|.
+  if ((path == kPolymerHtml || path == kPolymerJs) &&
+      UsingMultiplePolymerVersions() && !IsPolymer2DisabledForPage(wc_getter)) {
+    updated_path = path == kPolymerHtml ? kPolymer2Html : kPolymer2Js;
+  }
+#endif  // defined(OS_CHROMEOS)
+
+  int idr = GetIdrForPath(updated_path);
+  DCHECK_NE(-1, idr) << " path: " << updated_path;
   scoped_refptr<base::RefCountedMemory> bytes;
 
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
@@ -280,6 +316,15 @@ bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
 scoped_refptr<base::SingleThreadTaskRunner>
 SharedResourcesDataSource::TaskRunnerForRequestPath(
     const std::string& path) const {
+  // Since WebContentsGetter can only be run on the UI thread, always return
+  // a task runner if we need to choose between Polymer resources based on the
+  // WebContents that is requesting the resource.
+  // TODO (rbpotter): Remove this once the OOBE Polymer 2 migration is complete.
+#if defined(OS_CHROMEOS)
+  if (UsingMultiplePolymerVersions())
+    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+#endif  // defined(OS_CHROMEOS)
+
   int idr = GetIdrForPath(path);
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS ||
       idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
@@ -313,4 +358,26 @@ bool SharedResourcesDataSource::IsGzipped(const std::string& path) const {
   return it != GetResourcesMap().end() ? it->second.gzipped : false;
 }
 
+#if defined(OS_CHROMEOS)
+void SharedResourcesDataSource::DisablePolymer2ForHost(
+    const std::string& host) {
+  DCHECK(disabled_polymer2_host_.empty() || host == disabled_polymer2_host_);
+  disabled_polymer2_host_ = host;
+}
+
+// Returns true if the WebContents making the request has disabled Polymer 2.
+bool SharedResourcesDataSource::IsPolymer2DisabledForPage(
+    const ResourceRequestInfo::WebContentsGetter& wc_getter) {
+  // Return false in these cases, which sometimes occur in tests.
+  if (!wc_getter)
+    return false;
+
+  content::WebContents* web_contents = wc_getter.Run();
+  if (!web_contents)
+    return false;
+
+  return web_contents->GetLastCommittedURL().host_piece() ==
+         disabled_polymer2_host_;
+}
+#endif  // defined(OS_CHROMEOS)
 }  // namespace content

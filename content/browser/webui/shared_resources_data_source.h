@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
 #define CONTENT_BROWSER_WEBUI_SHARED_RESOURCES_DATA_SOURCE_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -31,8 +33,18 @@ class SharedResourcesDataSource : public URLDataSource {
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) const override;
   bool IsGzipped(const std::string& path) const override;
+#if defined(OS_CHROMEOS)
+  void DisablePolymer2ForHost(const std::string& host) override;
+#endif  // defined (OS_CHROMEOS)
 
  private:
+#if defined(OS_CHROMEOS)
+  std::string disabled_polymer2_host_;
+
+  bool IsPolymer2DisabledForPage(
+      const ResourceRequestInfo::WebContentsGetter& wc_getter);
+#endif  // defined (OS_CHROMEOS)
+
   ~SharedResourcesDataSource() override;
 
   DISALLOW_COPY_AND_ASSIGN(SharedResourcesDataSource);
