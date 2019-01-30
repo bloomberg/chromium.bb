@@ -3075,6 +3075,11 @@ const char kAshEnableDisplayMoveWindowAccelsName[] =
 const char kAshEnableDisplayMoveWindowAccelsDescription[] =
     "Enable shortcuts for moving window between displays.";
 
+const char kAshEnableOverviewRoundedCornersName[] =
+    "Enable rounded corners in overview mode.";
+const char kAshEnableOverviewRoundedCornersDescription[] =
+    "Enables rounded corners on overview windows.";
+
 const char kAshEnablePersistentWindowBoundsName[] =
     "Enable persistent window bounds in multi-displays scenario.";
 const char kAshEnablePersistentWindowBoundsDescription[] =

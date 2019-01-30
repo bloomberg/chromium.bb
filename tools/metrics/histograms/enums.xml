@@ -31575,6 +31575,7 @@ from previous Chrome versions.
   <int value="-345181892" label="new-tab-button-position"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
   <int value="-343769596" label="ServiceWorkerScriptStreaming:disabled"/>
+  <int value="-342421456" label="EnableOverviewRoundedCorners:disabled"/>
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-340023285" label="WebNFC:enabled"/>
@@ -32935,6 +32936,7 @@ from previous Chrome versions.
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:enabled"/>
   <int value="2034198538" label="TabHoverCards:enabled"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
+  <int value="2039276757" label="EnableOverviewRoundedCorners:enabled"/>
   <int value="2040316611" label="IPH_ReopenTab:enabled"/>
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>

@@ -4278,6 +4278,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"app-service-ash", flag_descriptions::kAppServiceAshName,
      flag_descriptions::kAppServiceAshDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceAsh)},
+
+    {"ash-enable-overview-rounded-corners",
+     flag_descriptions::kAshEnableOverviewRoundedCornersName,
+     flag_descriptions::kAshEnableOverviewRoundedCornersDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableOverviewRoundedCorners)},
 #endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

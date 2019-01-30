@@ -459,7 +459,8 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 }
 
 void ScopedOverviewTransformWindow::UpdateMask(bool show) {
-  if (!show) {
+  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
+      !show) {
     mask_.reset();
     return;
   }
