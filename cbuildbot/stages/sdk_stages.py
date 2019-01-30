@@ -138,7 +138,8 @@ class SDKPackageStage(generic_stages.BuilderStage,
     manifest_location = tarball_location + '.Manifest'
 
     # Create a tarball of the latest SDK.
-    CreateTarball(board_location, tarball_location)
+    CreateTarball(board_location, tarball_location,
+                  exclude_paths=PACKAGE_EXCLUDED_PATHS)
     self.UploadArtifact(tarball_location, strict=True, archive=True)
 
     # Create a package manifest for the tarball.
