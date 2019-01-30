@@ -157,6 +157,17 @@ TEST_F(SiteSettingsCounterTest, OnlyCountContentSettings) {
   EXPECT_EQ(1, GetResult());
 }
 
+// Tests that the counter counts WebUSB settings
+TEST_F(SiteSettingsCounterTest, CountWebUsbSettings) {
+  map()->SetWebsiteSettingDefaultScope(
+      GURL("http://www.google.com"), GURL("http://www.google.com"),
+      CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, std::string(),
+      std::make_unique<base::DictionaryValue>());
+
+  counter()->Restart();
+  EXPECT_EQ(1, GetResult());
+}
+
 // Tests that the counter counts settings with the same pattern only
 // once.
 TEST_F(SiteSettingsCounterTest, OnlyCountPatternOnce) {
