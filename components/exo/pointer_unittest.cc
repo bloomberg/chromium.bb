@@ -570,6 +570,41 @@ TEST_F(MAYBE_PointerTest, OnPointerScroll) {
   pointer.reset();
 }
 
+TEST_F(MAYBE_PointerTest, OnPointerScrollWithThreeFinger) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  gfx::Point location = surface->window()->GetBoundsInScreen().origin();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(2);
+
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::PointF(), 0));
+  generator.MoveMouseTo(location);
+
+  {
+    // Expect no scroll.
+    testing::InSequence sequence;
+    EXPECT_CALL(delegate, OnPointerScrollStop(testing::_));
+  }
+
+  // Three fingers scroll.
+  generator.ScrollSequence(location, base::TimeDelta(), 1, 1, 1,
+                           3 /* num_fingers */);
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
 TEST_F(MAYBE_PointerTest, OnPointerScrollDiscrete) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
