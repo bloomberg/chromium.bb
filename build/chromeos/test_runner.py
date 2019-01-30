@@ -198,6 +198,7 @@ class TastTest(RemoteTest):
         '--cmd',
         '--',
         'local_test_runner',
+        '-waituntilready',
     ]
     if self._use_vm:
       # If we're running tests in VMs, tell the test runner to skip tests that
