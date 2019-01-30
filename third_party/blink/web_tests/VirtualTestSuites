@@ -778,6 +778,13 @@
              "--site-per-process"]
   },
   {
+    "prefix": "wasm-site-isolated-code-cache",
+    "base": "http/tests/devtools/wasm-isolated-code-cache",
+    "args": ["--enable-features=IsolatedCodeCache,WasmCodeCache",
+             "--disable-features=WebAssemblyBaseline",
+             "--site-per-process"]
+  },
+  {
     "prefix": "not-site-per-process",
     "base": "http/tests/devtools/isolated-code-cache",
     "args": ["--disable-site-isolation-trials"]
