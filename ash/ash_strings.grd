@@ -816,7 +816,7 @@ This file contains the strings for ash.
         Disconnected
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y" desc="The message used by accessibility for telling that currently the device is not connected to a network.">
-        Not connected to netowrk
+        Not connected to network
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP" desc="The tooltip text used when network is connecting.">
         Connecting to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
