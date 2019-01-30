@@ -42,6 +42,7 @@ js_type_check("ui_resources") {
     ":store",
     ":store_client",
     ":table",
+    ":tabs",
     ":tree",
   ]
 }
@@ -267,6 +268,14 @@ js_library("table") {
     "table:table_column_model",
     "table:table_header",
     "table:table_list",
+  ]
+}
+
+js_library("tabs") {
+  deps = [
+    ":focus_outline_manager",
+    "..:ui",
+    "../..:cr",
   ]
 }
 

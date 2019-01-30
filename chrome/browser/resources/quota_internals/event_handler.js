@@ -51,7 +51,7 @@ function localize_(element) {
 
 /**
  * Returns 'N/A' (Not Available) text if |value| is undefined.
- * @param {Object} value Object to print.
+ * @param {*} value Object to print.
  * @return {string} 'N/A' or ''.
  * @private
  */
@@ -67,7 +67,7 @@ function checkIfAvailable_(value) {
  * @private
  */
 function stringToText_(value) {
-  return checkIfAvailable_(value) || value;
+  return checkIfAvailable_(value) || /** @type {string} */ (value);
 }
 
 /**
@@ -173,7 +173,7 @@ let availableSpace = undefined;
  * holding userdata as |treeViewObject.detail|.
  * @type {cr.ui.Tree}
  */
-let treeViewObject = undefined;
+let treeViewObject;
 
 /**
  * Key-value styled statistics data.
@@ -185,11 +185,11 @@ const statistics = {};
 
 /**
  * Initialize and return |treeViewObject|.
- * @return {cr.ui.Tree} Initialized |treeViewObject|.
+ * @return {!cr.ui.Tree} Initialized |treeViewObject|.
  */
 function getTreeViewObject() {
   if (!treeViewObject) {
-    treeViewObject = $('tree-view');
+    treeViewObject = /** @type {!cr.ui.Tree} */ ($('tree-view'));
     cr.ui.decorate(treeViewObject, cr.ui.Tree);
     treeViewObject.detail = {payload: {}, children: {}};
     treeViewObject.addEventListener('change', updateDescription);
@@ -260,7 +260,7 @@ function getOriginObject(type, host, origin) {
  * Event Handler for |cr.quota.onAvailableSpaceUpdated|.
  * |event.detail| contains |availableSpace|.
  * |availableSpace| represents total available disk space.
- * @param {!CustomEvent<string>} event AvailableSpaceUpdated event.
+ * @param {!CustomEvent<number>} event AvailableSpaceUpdated event.
  */
 function handleAvailableSpace(event) {
   availableSpace = event.detail;
@@ -440,7 +440,7 @@ function updateDescription() {
 
 /**
  * Dump |treeViewObject| or subtree to a object.
- * @param {?{cr.ui.Tree|cr.ui.TreeItem}} opt_treeitem
+ * @param {(cr.ui.Tree|cr.ui.TreeItem)=} opt_treeitem
  * @return {Object} Dump result object from |treeViewObject|.
  */
 function dumpTreeToObj(opt_treeitem) {
