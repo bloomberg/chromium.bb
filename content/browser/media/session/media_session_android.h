@@ -11,7 +11,8 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "content/public/browser/media_session_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
 
@@ -22,7 +23,8 @@ class WebContentsAndroid;
 // MediaSession. This class is owned by the native MediaSession and will
 // teardown Java MediaSession when the native MediaSession is destroyed.
 // Java MediaSessionObservers are also proxied via this class.
-class MediaSessionAndroid final : public MediaSessionObserver {
+class MediaSessionAndroid final
+    : public media_session::mojom::MediaSessionObserver {
  public:
   // Helper class for calling GetJavaObject() in a static method, in order to
   // avoid leaking the Java object outside.
@@ -31,14 +33,13 @@ class MediaSessionAndroid final : public MediaSessionObserver {
   explicit MediaSessionAndroid(MediaSessionImpl* session);
   ~MediaSessionAndroid() override;
 
-  // MediaSessionObserver implementation.
-  void MediaSessionDestroyed() override;
-  void MediaSessionStateChanged(bool is_controllable,
-                                bool is_suspended) override;
+  // media_session::mojom::MediaSessionObserver implementation:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
   void MediaSessionMetadataChanged(
       const base::Optional<media_session::MediaMetadata>& metadata) override;
   void MediaSessionActionsChanged(
-      const std::set<media_session::mojom::MediaSessionAction>& actions)
+      const std::vector<media_session::mojom::MediaSessionAction>& action)
       override;
 
   // MediaSession method wrappers.
@@ -63,6 +64,11 @@ class MediaSessionAndroid final : public MediaSessionObserver {
   // The linked Java object. The strong reference is hold by Java WebContensImpl
   // to avoid introducing a new GC root.
   JavaObjectWeakGlobalRef j_media_session_;
+
+  MediaSessionImpl* const media_session_;
+
+  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionAndroid);
 };
