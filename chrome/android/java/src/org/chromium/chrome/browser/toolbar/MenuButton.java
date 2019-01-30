@@ -99,7 +99,7 @@ public class MenuButton extends FrameLayout implements TintObserver {
         updateContentDescription(visible);
     }
 
-    public void updateImageResources() {
+    private void updateImageResources() {
         MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
         if (buttonState == null) return;
         @DrawableRes
