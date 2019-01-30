@@ -42,6 +42,7 @@ class Controller {
   // named |sampling_interval|.
   Controller(std::unique_ptr<service_manager::Connector> connector,
              mojom::StackMode stack_mode,
+             bool stream_samples,
              uint32_t sampling_rate);
   ~Controller();
 
@@ -71,6 +72,7 @@ class Controller {
   // The same sampling rate and stack mode is used for each client.
   const uint32_t sampling_rate_ = 1;
   const mojom::StackMode stack_mode_;
+  const bool stream_samples_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<Controller> weak_factory_;

@@ -27,6 +27,7 @@ class Client : public mojom::ProfilingClient {
   // mojom::ProfilingClient overrides:
   void StartProfiling(mojom::ProfilingParamsPtr params) override;
   void FlushMemlogPipe(uint32_t barrier_id) override;
+  void RetrieveHeapProfile(RetrieveHeapProfileCallback callback) override;
 
   void BindToInterface(mojom::ProfilingClientRequest request);
 
