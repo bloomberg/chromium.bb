@@ -155,7 +155,6 @@ base::Optional<LayoutUnit> NGLineTruncator::EllipsisOffset(
     return base::nullopt;
 
   // Can't place ellipsis if this child is completely outside of the box.
-  DCHECK_GE(line_width, child->offset.inline_offset + child->inline_size);
   LayoutUnit child_inline_offset =
       IsLtr(line_direction_)
           ? child->offset.inline_offset
