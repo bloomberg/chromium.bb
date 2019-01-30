@@ -3204,11 +3204,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "trace-export-events-to-etw",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "trace-upload-url",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
