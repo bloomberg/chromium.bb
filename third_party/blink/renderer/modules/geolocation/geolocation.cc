@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 
+#include "services/device/public/mojom/geoposition.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
