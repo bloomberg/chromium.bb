@@ -18,7 +18,6 @@ namespace blink {
 class CoreProbeSink;
 class Resource;
 class SubresourceFilter;
-class WebURLLoader;
 class WebWorkerFetchContext;
 class WorkerContentSettingsClient;
 class WorkerSettings;
@@ -67,10 +66,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest&,
-      const ResourceLoaderOptions&) override;
-  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override;
   void PrepareRequest(ResourceRequest&,
                       WebScopedVirtualTimePauser&,
                       RedirectType) override;
@@ -105,14 +100,6 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
-
-  // TODO(altimin): This is used when creating a URLLoader, and
-  // FetchContext::GetLoadingTaskRunner is used whenever asynchronous tasks
-  // around resource loading are posted. Modify the code so that all
-  // the tasks related to loading a resource use the resource loader handle's
-  // task runner.
-  std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle();
 
   SecurityContext& GetSecurityContext() const;
   WorkerSettings* GetWorkerSettings() const;

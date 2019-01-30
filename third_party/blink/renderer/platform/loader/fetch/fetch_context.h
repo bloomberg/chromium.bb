@@ -38,10 +38,8 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
-#include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
-#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -205,18 +203,6 @@ class PLATFORM_EXPORT FetchContext
     return platform_probe_sink_;
   }
 
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest&,
-      const ResourceLoaderOptions&) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  // Create a default code cache loader to fetch data from code caches.
-  virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
-    return Platform::Current()->CreateCodeCacheLoader();
-  }
-
   // Obtains FrameScheduler instance that is used in the attached frame.
   // May return nullptr if a frame is not attached or detached.
   virtual FrameScheduler* GetFrameScheduler() const { return nullptr; }
@@ -249,7 +235,6 @@ class PLATFORM_EXPORT FetchContext
   // Do not use these functions for other purposes.
   // TODO(yhirano): Remove these.
   virtual bool IsDetached() const { return false; }
-  scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner();
   ResourceFetcher* GetFetcher() { return fetcher_; }
 
  private:

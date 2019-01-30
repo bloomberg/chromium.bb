@@ -140,10 +140,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                                  const FetchParameters::ResourceWidth&,
                                  ResourceRequest&);
 
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest&,
-      const ResourceLoaderOptions&) override;
-
   bool IsDetached() const override { return frozen_state_; }
 
   FetchContext* Detach() override;
@@ -159,14 +155,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   friend class FrameFetchContextTest;
 
   struct FrozenState;
-
-  // TODO(altimin): This is used when creating a URLLoader, and
-  // FetchContext::GetLoadingTaskRunner is used whenever asynchronous tasks
-  // around resource loading are posted. Modify the code so that all
-  // the tasks related to loading a resource use the resource loader handle's
-  // task runner.
-  std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle();
 
   // Convenient accessors below can be used to transparently access the
   // relevant document loader or frame in either cases without null-checks.

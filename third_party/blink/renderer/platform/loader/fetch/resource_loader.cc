@@ -372,7 +372,7 @@ bool ResourceLoader::ShouldFetchCodeCache() {
 void ResourceLoader::Start() {
   const ResourceRequest& request = resource_->GetResourceRequest();
   ActivateCacheAwareLoadingIfNeeded(request);
-  loader_ = Context().CreateURLLoader(request, resource_->Options());
+  loader_ = fetcher_->CreateURLLoader(request, resource_->Options());
   DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   auto throttle_option = ResourceLoadScheduler::ThrottleOption::kThrottleable;
 
@@ -439,7 +439,7 @@ void ResourceLoader::StartWith(const ResourceRequest& request) {
 
   if (ShouldFetchCodeCache()) {
     code_cache_request_ = std::make_unique<CodeCacheRequest>(
-        Context().CreateCodeCacheLoader(), request.Url(),
+        fetcher_->CreateCodeCacheLoader(), request.Url(),
         fetcher_->GetProperties().IsPaused());
   }
 
@@ -481,7 +481,7 @@ void ResourceLoader::Release(
 
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
-  loader_ = Context().CreateURLLoader(request, resource_->Options());
+  loader_ = fetcher_->CreateURLLoader(request, resource_->Options());
   StartWith(request);
 }
 

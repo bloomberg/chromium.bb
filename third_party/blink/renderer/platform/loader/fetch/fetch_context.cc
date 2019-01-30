@@ -148,9 +148,4 @@ void FetchContext::PopulateResourceRequest(
     const FetchParameters::ResourceWidth&,
     ResourceRequest&) {}
 
-scoped_refptr<base::SingleThreadTaskRunner>
-FetchContext::GetLoadingTaskRunner() {
-  return fetcher_->GetTaskRunner();
-}
-
 }  // namespace blink

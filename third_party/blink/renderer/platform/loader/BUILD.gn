@@ -180,6 +180,7 @@ jumbo_source_set("test_support") {
     "testing/mock_resource_client.h",
     "testing/replaying_bytes_consumer.cc",
     "testing/replaying_bytes_consumer.h",
+    "testing/test_loader_factory.h",
     "testing/test_resource_fetcher_properties.cc",
     "testing/test_resource_fetcher_properties.h",
     "testing/web_url_loader_factory_with_mock.cc",

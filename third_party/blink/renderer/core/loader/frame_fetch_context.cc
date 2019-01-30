@@ -37,7 +37,6 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
@@ -76,6 +75,7 @@
 #include "third_party/blink/renderer/core/loader/frame_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
@@ -236,7 +236,9 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(
   ResourceFetcherInit init(
       properties,
       MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
-      frame.GetTaskRunner(TaskType::kNetworking), frame.Console());
+      frame.GetTaskRunner(TaskType::kNetworking),
+      MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document),
+      frame.Console());
   // Frame loading should normally start with |kTight| throttling, as the
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
@@ -261,14 +263,15 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   DCHECK(document);
   // |document| is detached.
   DCHECK(!document->GetFrame());
-  auto* frame_or_imported_document =
-      MakeGarbageCollected<FrameOrImportedDocument>(*document);
+  auto& frame_or_imported_document =
+      *MakeGarbageCollected<FrameOrImportedDocument>(*document);
   ResourceFetcherInit init(
       *MakeGarbageCollected<FrameResourceFetcherProperties>(
-          *frame_or_imported_document),
-      MakeGarbageCollected<FrameFetchContext>(*frame_or_imported_document),
+          frame_or_imported_document),
+      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
       document->GetTaskRunner(blink::TaskType::kNetworking),
-      frame_or_imported_document->GetFrame().Console());
+      MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document),
+      frame_or_imported_document.GetFrame().Console());
   return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
@@ -277,17 +280,6 @@ FrameFetchContext::FrameFetchContext(
     : frame_or_imported_document_(frame_or_imported_document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {}
-
-std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
-FrameFetchContext::CreateResourceLoadingTaskRunnerHandle() {
-  if (IsDetached()) {
-    return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-        GetLoadingTaskRunner());
-  }
-  return GetFrame()
-      ->GetFrameScheduler()
-      ->CreateResourceLoadingTaskRunnerHandle();
-}
 
 FrameScheduler* FrameFetchContext::GetFrameScheduler() const {
   if (IsDetached())
@@ -1198,57 +1190,6 @@ void FrameFetchContext::ParseAndPersistClientHints(
     settings_client->PersistClientHints(enabled_client_hints, persist_duration,
                                         response.CurrentRequestUrl());
   }
-}
-
-std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
-    const ResourceRequest& request,
-    const ResourceLoaderOptions& options) {
-  DCHECK(!IsDetached());
-  WrappedResourceRequest webreq(request);
-
-  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
-  if (options.url_loader_factory) {
-    options.url_loader_factory->data->Clone(MakeRequest(&url_loader_factory));
-  }
-  // Resolve any blob: URLs that haven't been resolved yet. The XHR and fetch()
-  // API implementations resolve blob URLs earlier because there can be
-  // arbitrarily long delays between creating requests with those APIs and
-  // actually creating the URL loader here. Other subresource loading will
-  // immediately create the URL loader so resolving those blob URLs here is
-  // simplest.
-  // Don't resolve the URL again if this is a shared worker request though, as
-  // in that case the browser process will have already done so and the code
-  // here should just go through the normal non-blob specific code path (note
-  // that this is only strictly true if NetworkService/S13nSW is enabled, but if
-  // that isn't the case we're going to run into race conditions resolving the
-  // blob URL anyway so it doesn't matter if the blob URL gets resolved here or
-  // later in the browser process, so skipping blob URL resolution here for all
-  // shared worker loads is okay even with NetworkService/S13nSW disabled).
-  // TODO(mek): Move the RequestContext check to the worker side's relevant
-  // callsite when we make Shared Worker loading off-main-thread.
-  Document* document = frame_or_imported_document_->GetDocument();
-  if (document && request.Url().ProtocolIs("blob") &&
-      BlobUtils::MojoBlobURLsEnabled() && !url_loader_factory &&
-      request.GetRequestContext() != mojom::RequestContextType::SHARED_WORKER) {
-    document->GetPublicURLManager().Resolve(request.Url(),
-                                            MakeRequest(&url_loader_factory));
-  }
-  if (url_loader_factory) {
-    return Platform::Current()
-        ->WrapURLLoaderFactory(url_loader_factory.PassInterface().PassHandle())
-        ->CreateURLLoader(webreq, CreateResourceLoadingTaskRunnerHandle());
-  }
-
-  if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
-    auto loader =
-        MasterDocumentLoader()
-            ->GetServiceWorkerNetworkProvider()
-            ->CreateURLLoader(webreq, CreateResourceLoadingTaskRunnerHandle());
-    if (loader)
-      return loader;
-  }
-  return GetFrame()->GetURLLoaderFactory()->CreateURLLoader(
-      webreq, CreateResourceLoadingTaskRunnerHandle());
 }
 
 FetchContext* FrameFetchContext::Detach() {

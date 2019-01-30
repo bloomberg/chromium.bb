@@ -5,15 +5,11 @@
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_mixed_content.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
-#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -175,54 +171,6 @@ void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
   return global_scope_->AddConsoleMessage(message);
 }
 
-std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
-    const ResourceRequest& request,
-    const ResourceLoaderOptions& options) {
-  CountUsage(WebFeature::kOffMainThreadFetch);
-  WrappedResourceRequest wrapped(request);
-
-  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
-  if (options.url_loader_factory) {
-    options.url_loader_factory->data->Clone(MakeRequest(&url_loader_factory));
-  }
-  // Resolve any blob: URLs that haven't been resolved yet. The XHR and fetch()
-  // API implementations resolve blob URLs earlier because there can be
-  // arbitrarily long delays between creating requests with those APIs and
-  // actually creating the URL loader here. Other subresource loading will
-  // immediately create the URL loader so resolving those blob URLs here is
-  // simplest.
-  if (request.Url().ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled() &&
-      !url_loader_factory) {
-    global_scope_->GetPublicURLManager().Resolve(
-        request.Url(), MakeRequest(&url_loader_factory));
-  }
-  if (url_loader_factory) {
-    return web_context_
-        ->WrapURLLoaderFactory(url_loader_factory.PassInterface().PassHandle())
-        ->CreateURLLoader(wrapped, CreateResourceLoadingTaskRunnerHandle());
-  }
-
-  // Use |script_loader_factory_| to load types SCRIPT (classic imported
-  // scripts) and SERVICE_WORKER (module main scripts and module imported
-  // scripts). Note that classic main scripts are also SERVICE_WORKER but loaded
-  // by the shadow page on the main thread, not here.
-  if (request.GetRequestContext() == mojom::RequestContextType::SCRIPT ||
-      request.GetRequestContext() ==
-          mojom::RequestContextType::SERVICE_WORKER) {
-    if (web_context_->GetScriptLoaderFactory()) {
-      return web_context_->GetScriptLoaderFactory()->CreateURLLoader(
-          wrapped, CreateResourceLoadingTaskRunnerHandle());
-    }
-  }
-
-  return web_context_->GetURLLoaderFactory()->CreateURLLoader(
-      wrapped, CreateResourceLoadingTaskRunnerHandle());
-}
-
-std::unique_ptr<CodeCacheLoader> WorkerFetchContext::CreateCodeCacheLoader() {
-  return web_context_->CreateCodeCacheLoader();
-}
-
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
                                         WebScopedVirtualTimePauser&,
                                         RedirectType) {
@@ -335,12 +283,6 @@ void WorkerFetchContext::PopulateResourceRequest(
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {
   if (out_request.SiteForCookies().IsNull())
     out_request.SetSiteForCookies(GetSiteForCookies());
-}
-
-std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-WorkerFetchContext::CreateResourceLoadingTaskRunnerHandle() {
-  return scheduler::WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-      GetLoadingTaskRunner());
 }
 
 SecurityContext& WorkerFetchContext::GetSecurityContext() const {
