@@ -1398,6 +1398,7 @@ void ExtensionWebRequestEventRouter::OnRequestWillBeDestroyed(
   ClearPendingCallbacks(*request);
   signaled_requests_.erase(request->id);
   request_time_tracker_->LogRequestEndTime(request->id, base::TimeTicks::Now());
+  pending_requests_for_frame_data_.erase(request);
 }
 
 void ExtensionWebRequestEventRouter::ClearPendingCallbacks(
@@ -1446,9 +1447,12 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     // We don't have FrameData available yet, so fetch it asynchronously. This
     // event will be dispatched once that operation completes. Unretained is
     // safe here because the ExtensionWebRequestEventRouter singleton is leaked.
-    event_details.release()->DetermineFrameDataOnIO(
-        base::Bind(&ExtensionWebRequestEventRouter::DispatchEventToListeners,
-                   base::Unretained(this), browser_context,
+    pending_requests_for_frame_data_.insert(request);
+    ExtensionApiFrameIdMap::Get()->GetFrameDataOnIO(
+        request->render_process_id, request->frame_id,
+        base::Bind(&ExtensionWebRequestEventRouter::OnFrameDataReceived,
+                   base::Unretained(this), browser_context, request,
+                   base::Passed(&event_details),
                    base::RetainedRef(extension_info_map),
                    base::Passed(&listeners_to_dispatch)));
   }
@@ -1463,6 +1467,31 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
   }
 
   return false;
+}
+
+void ExtensionWebRequestEventRouter::OnFrameDataReceived(
+    void* browser_context,
+    const WebRequestInfo* request,
+    std::unique_ptr<WebRequestEventDetails> event_details,
+    const InfoMap* extension_info_map,
+    std::unique_ptr<ListenerIDs> listeners_to_dispatch,
+    const ExtensionApiFrameIdMap::FrameData& frame_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // Store the |frame_data| in |request| so that the same frame_data can be
+  // persisted across the request lifetime. Requesting id every time isn't
+  // working if the frame host gets deleted during a request; see
+  // https://crbug.com/914232.
+  // Check with |pending_requests_for_frame_data_| to ensure that |request| is
+  // still alive.
+  if (pending_requests_for_frame_data_.count(request) > 0) {
+    request->frame_data = frame_data;
+    pending_requests_for_frame_data_.erase(request);
+  }
+  event_details->SetFrameData(frame_data);
+  DispatchEventToListeners(browser_context, extension_info_map,
+                           std::move(listeners_to_dispatch),
+                           std::move(event_details));
 }
 
 void ExtensionWebRequestEventRouter::DispatchEventToListeners(
