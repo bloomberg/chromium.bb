@@ -555,8 +555,7 @@ TEST_F(ShellTest, EnvPreTargetHandler) {
 
 // Verifies keyboard is re-enabled on proper timing.
 TEST_F(ShellTest, KeyboardCreation) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      keyboard::switches::kEnableVirtualKeyboard);
+  keyboard::SetTouchKeyboardEnabled(true);
 
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
 

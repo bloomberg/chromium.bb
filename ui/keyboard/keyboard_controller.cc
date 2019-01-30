@@ -491,10 +491,8 @@ bool KeyboardController::IsKeyboardEnableRequested() const {
     return true;
 
   // Command line overrides extension and touch enabled flags.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVirtualKeyboard)) {
+  if (IsEnableFlagSet(KeyboardEnableFlag::kCommandLineEnabled))
     return true;
-  }
 
   if (IsEnableFlagSet(KeyboardEnableFlag::kExtensionDisabled))
     return false;
