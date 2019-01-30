@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_AUTH_TOKEN_FUNCTION_H_
 
 #include "base/callback_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/account_state.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 
 namespace identity {
@@ -42,6 +45,7 @@ namespace extensions {
 class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public GaiaWebAuthFlow::Delegate,
                                      public IdentityMintRequestQueue::Request,
+                                     public identity::IdentityManager::Observer,
 #if defined(OS_CHROMEOS)
                                      public OAuth2TokenService::Consumer,
 #endif
@@ -52,9 +56,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   IdentityGetAuthTokenFunction();
 
-  const ExtensionTokenKey* GetExtensionTokenKeyForTest() {
-    return token_key_.get();
-  }
+  const ExtensionTokenKey* GetExtensionTokenKeyForTest() { return &token_key_; }
 
   void OnIdentityAPIShutdown();
 
@@ -125,25 +127,25 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // Called by the IdentityManager in response to this class' request for the
   // primary account info. Extra arguments that are bound internally at the time
   // of calling the IdentityManager:
-  // |scopes|: The scopes that this instance should use for access token
-  // requests.
   // |extension_gaia_id|: The GAIA ID that was set in the parameters for this
   // instance, or empty if this was not in the parameters.
   void OnReceivedPrimaryAccountInfo(
-      const std::set<std::string>& scopes,
       const std::string& extension_gaia_id,
       const base::Optional<AccountInfo>& account_info,
       const identity::AccountState& account_state);
 
   // Called when the AccountInfo that this instance should use is available.
-  // |is_primary_account| is a bool specifying whether the account being used is
-  // the primary account. |scopes| is the set of scopes that this instance
-  // should use for access token requests.
   void OnReceivedExtensionAccountInfo(
-      bool is_primary_account,
-      const std::set<std::string>& scopes,
+      const std::string& extension_gaia_id,
       const base::Optional<AccountInfo>& account_info,
       const identity::AccountState& account_state);
+
+  // identity::IdentityManager::Observer implementation:
+  void OnRefreshTokenUpdatedForAccount(
+      const AccountInfo& account_info) override;
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
 
   // ExtensionFunction:
   bool RunAsync() override;
@@ -182,7 +184,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 #endif
 
   // Methods for invoking UI. Overridable for testing.
-  virtual void ShowLoginPopup();
+  virtual void ShowExtensionLoginPrompt();
   virtual void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice);
 
   // Checks if there is a master login token to mint tokens for the extension.
@@ -201,6 +203,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // Identity Service.
   ::identity::mojom::IdentityManager* GetMojoIdentityManager();
 
+  // Returns true if extensions are restricted to the primary account.
+  bool IsPrimaryAccountOnly() const;
+
   bool interactive_;
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
@@ -208,7 +213,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   OAuth2MintTokenFlow::Mode gaia_mint_token_mode_;
   bool should_prompt_for_signin_;
 
-  std::unique_ptr<ExtensionTokenKey> token_key_;
+  // Shown in the extension login prompt.
+  std::string email_for_default_web_account_;
+
+  ExtensionTokenKey token_key_;
   std::string oauth2_client_id_;
   // When launched in interactive mode, and if there is no existing grant,
   // a permissions prompt will be popped up to the user.
@@ -220,6 +228,18 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
       identity_api_shutdown_subscription_;
 
   identity::mojom::IdentityManagerPtr mojo_identity_manager_;
+  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+      scoped_identity_manager_observer_;
+
+  // This class can be listening to account changes, but only for one type of
+  // events at a time.
+  enum class AccountListeningMode {
+    kNotListening,      // Not listening account changes
+    kListeningCookies,  // Listening cookie changes
+    kListeningTokens    // Listening token changes
+  };
+  AccountListeningMode account_listening_mode_ =
+      AccountListeningMode::kNotListening;
 };
 
 }  // namespace extensions

@@ -169,9 +169,8 @@ void EnableSyncFromPromo(
       identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
           account.account_id);
   if (needs_reauth_before_enable_sync) {
-    browser->signin_view_controller()->ShowDiceSigninTab(
-        browser, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-        access_point, promo_action, account.email);
+    browser->signin_view_controller()->ShowDiceEnableSyncTab(
+        browser, access_point, promo_action, account.email);
     return;
   }
 

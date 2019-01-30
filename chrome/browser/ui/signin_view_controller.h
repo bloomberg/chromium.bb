@@ -43,19 +43,25 @@ class SigninViewController {
   // Shows the signin attached to |browser|'s active web contents.
   // |access_point| indicates the access point used to open the Gaia sign in
   // page.
+  // DEPRECATED: Use ShowDiceEnableSyncTab instead.
   void ShowSignin(profiles::BubbleViewMode mode,
                   Browser* browser,
                   signin_metrics::AccessPoint access_point,
                   const GURL& redirect_url = GURL::EmptyGURL());
 
-  // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
-  // tab attached to |browser|.
-  void ShowDiceSigninTab(Browser* browser,
-                         signin_metrics::Reason signin_reason,
-                         signin_metrics::AccessPoint access_point,
-                         signin_metrics::PromoAction promo_action,
-                         const std::string& email,
-                         const GURL& redirect_url = GURL::EmptyGURL());
+  // Shows a Chrome Sync signin tab. |email_hint| may be empty.
+  // Note: If the user has already set a primary account, then this is
+  // considered a reauth of the primary account, and |email_hint| is ignored.
+  void ShowDiceEnableSyncTab(Browser* browser,
+                             signin_metrics::AccessPoint access_point,
+                             signin_metrics::PromoAction promo_action,
+                             const std::string& email_hint);
+
+  // Shows the Dice "add account" tab, which adds an account to the browser but
+  // does not turn sync on. |email_hint| may be empty.
+  void ShowDiceAddAccountTab(Browser* browser,
+                             signin_metrics::AccessPoint access_point,
+                             const std::string& email_hint);
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser|'s window.
@@ -84,6 +90,15 @@ class SigninViewController {
   void ResetModalSigninDelegate();
 
  private:
+  // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
+  // tab attached to |browser|. |email_hint| may be empty.
+  void ShowDiceSigninTab(Browser* browser,
+                         signin_metrics::Reason signin_reason,
+                         signin_metrics::AccessPoint access_point,
+                         signin_metrics::PromoAction promo_action,
+                         const std::string& email_hint,
+                         const GURL& redirect_url = GURL::EmptyGURL());
+
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
 
   // Returns the web contents of the modal dialog.

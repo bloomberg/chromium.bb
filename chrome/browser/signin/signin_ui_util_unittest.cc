@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -374,7 +375,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     TabStripModel* tab_strip = browser()->tab_strip_model();
     content::WebContents* active_contents = tab_strip->GetActiveWebContents();
     ASSERT_TRUE(active_contents);
-    EXPECT_EQ(signin::GetSigninURLForDice(profile(), kMainEmail),
+    EXPECT_EQ(signin::GetChromeSyncURLForDice(
+                  kMainEmail, GoogleURLTracker::kDefaultGoogleHomepage),
               active_contents->GetVisibleURL());
     tab_strip->CloseWebContentsAt(
         tab_strip->GetIndexOfWebContents(active_contents),
@@ -406,7 +408,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetSigninURLForDice(profile(), ""),
+  EXPECT_EQ(signin::GetChromeSyncURLForDice(
+                "", GoogleURLTracker::kDefaultGoogleHomepage),
             active_contents->GetVisibleURL());
 }
 
@@ -460,7 +463,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetSigninURLForDice(profile(), ""),
+  EXPECT_EQ(signin::GetChromeSyncURLForDice(
+                "", GoogleURLTracker::kDefaultGoogleHomepage),
             active_contents->GetVisibleURL());
 }
 

@@ -32,17 +32,23 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/identity.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/crx_file/id_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
+#include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -50,6 +56,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -344,17 +351,49 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   }
 #endif
 
-  void ShowLoginPopup() override {
+  // Fix auth error on secondary account or add a new account.
+  void FixOrAddSecondaryAccount() {
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(GetProfile());
+    std::vector<AccountInfo> accounts =
+        identity_manager->GetAccountsWithRefreshTokens();
+    std::string primary_id = identity_manager->GetPrimaryAccountId();
+    bool fixed_auth_error = false;
+    for (const auto& account_info : accounts) {
+      std::string account_id = account_info.account_id;
+      if (account_id == primary_id)
+        continue;
+      if (identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+              account_id)) {
+        identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+            account_info.gaia, account_info.email, "token",
+            account_info.is_under_advanced_protection,
+            signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+        fixed_auth_error = true;
+      }
+    }
+    if (!fixed_auth_error) {
+      identity::MakeAccountAvailable(identity_manager, "secondary@example.com");
+    }
+  }
+
+  // Simulate signin through a login prompt.
+  void ShowExtensionLoginPrompt() override {
     EXPECT_FALSE(login_ui_shown_);
     login_ui_shown_ = true;
     if (login_ui_result_) {
-      ::identity::AccountState account_state;
-      account_state.has_refresh_token = true;
-      account_state.is_primary_account = true;
-      OnPrimaryAccountAvailable(
-          IdentityManagerFactory::GetForProfile(GetProfile())
-              ->GetPrimaryAccountInfo(),
-          account_state);
+      identity::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(GetProfile());
+      if (IdentityAPI::GetFactoryInstance()
+              ->Get(GetProfile())
+              ->AreExtensionsRestrictedToPrimaryAccount()) {
+        // Set a primary account.
+        ASSERT_FALSE(identity_manager->HasPrimaryAccount());
+        identity::MakeAccountAvailable(identity_manager, "primary@example.com");
+        identity::SetPrimaryAccount(identity_manager, "primary@example.com");
+      } else {
+        FixOrAddSecondaryAccount();
+      }
     } else {
       SigninFailed();
     }
@@ -424,6 +463,11 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     IdentityTestEnvironmentProfileAdaptor::
         SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
 
+    GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
+        context,
+        base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+                            &test_url_loader_factory_));
+
     // Ensure that AccountFetcherService is (1) created at all and (2) created
     // early enough for it to observe the Profile initialization process and
     // loading of tokens by PO2TS. Explicitly forcing this setup (which happens
@@ -473,6 +517,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   identity::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
+
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
@@ -698,10 +744,6 @@ class GetAuthTokenFunctionTest
 #endif
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    IdentityTestWithSignin::SetUpCommandLine(command_line);
-  }
-
   std::string IssueLoginAccessTokenForAccount(const std::string& account_id) {
     std::string access_token = "access_token-" + account_id;
     identity_test_env()
@@ -717,6 +759,12 @@ class GetAuthTokenFunctionTest
   void SetUpOnMainThread() override {
     IdentityTestWithSignin::SetUpOnMainThread();
     identity_test_env()->identity_manager()->AddDiagnosticsObserver(this);
+
+    FakeGaiaCookieManagerService* fake_gcms =
+        static_cast<FakeGaiaCookieManagerService*>(
+            GaiaCookieManagerServiceFactory::GetForProfile(
+                browser()->profile()));
+    fake_gcms->SetListAccountsResponseNoAccounts();
   }
 
   void TearDownOnMainThread() override {
@@ -757,8 +805,14 @@ class GetAuthTokenFunctionTest
     return identity_test_env()->identity_manager()->GetPrimaryAccountId();
   }
 
+  // Sets a cached token for the primary account.
   void SetCachedToken(const IdentityTokenCacheValue& token_data) {
-    ExtensionTokenKey key(extension_id_, GetPrimaryAccountId(), oauth_scopes_);
+    SetCachedTokenForAccount(GetPrimaryAccountId(), token_data);
+  }
+
+  void SetCachedTokenForAccount(const std::string account_id,
+                                const IdentityTokenCacheValue& token_data) {
+    ExtensionTokenKey key(extension_id_, account_id, oauth_scopes_);
     id_api()->SetCachedToken(key, token_data);
   }
 
@@ -843,8 +897,17 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       PRE_InteractiveNotSignedAndSigninNotAllowed) {
+  // kSigninAllowed cannot be set after the profile creation. Use
+  // kSigninAllowedOnNextStartup instead.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSigninAllowedOnNextStartup, false);
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveNotSignedAndSigninNotAllowed) {
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  ASSERT_FALSE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_login_ui_result(false);
@@ -1469,6 +1532,52 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveCacheHit) {
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
+// Checks that the first account in Gaia cookie can be used when extensions are
+// not restricted to the primary account.
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       NonInteractiveCacheHitSecondary) {
+  Profile* profile = browser()->profile();
+  // Lock the reconcilor so that Google cookies can be configured manually.
+  AccountReconcilor::Lock reconcilor_lock(
+      AccountReconcilorFactory::GetForProfile(profile));
+  // Add a secondary account in Chrome and in cookies.
+  AccountInfo account_info =
+      identity_test_env()->MakeAccountAvailable("email@example.com");
+  content::RunAllTasksUntilIdle();  // Flush pending ListAccounts calls.
+  FakeGaiaCookieManagerService* fake_gcms =
+      static_cast<FakeGaiaCookieManagerService*>(
+          GaiaCookieManagerServiceFactory::GetForProfile(profile));
+  fake_gcms->SetListAccountsResponseOneAccount(account_info.email,
+                                               account_info.gaia);
+  fake_gcms->set_list_accounts_stale_for_testing(true);
+
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(extension.get());
+
+  // pre-populate the cache with a token
+  IdentityTokenCacheValue token(kAccessToken,
+                                base::TimeDelta::FromSeconds(3600));
+  SetCachedTokenForAccount(account_info.account_id, token);
+
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
+    // Fail when there is no primary account.
+    std::string error =
+        utils::RunFunctionAndReturnError(func.get(), "[{}]", browser());
+    EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+  } else {
+    // Use the account from Gaia cookies.
+    std::unique_ptr<base::Value> value(
+        utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
+    std::string access_token;
+    EXPECT_TRUE(value->GetAsString(&access_token));
+    EXPECT_EQ(std::string(kAccessToken), access_token);
+  }
+
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        NonInteractiveIssueAdviceCacheHit) {
   SignIn("primary@example.com");
@@ -1551,7 +1660,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
-  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetCachedToken(std::string()).status());
 }
 #endif
@@ -1857,12 +1966,51 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   std::string error = utils::RunFunctionAndReturnError(
       func.get(),
       "[{\"account\": { \"id\": \"gaia_id_for_secondary_example.com\" }, "
-      "\"interactive\": "
-      "true}]",
+      "\"interactive\": true}]",
       browser());
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       MultiSecondaryInteractiveInvalidToken) {
+  // Setup a secondary account with no valid refresh token, and try to get a
+  // auth token for it.
+  SignIn("primary@example.com");
+  AccountInfo secondary_account =
+      identity_test_env()->MakeAccountAvailable("secondary@example.com");
+  identity_test_env()->SetInvalidRefreshTokenForAccount(
+      secondary_account.account_id);
+
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(extension.get());
+  func->set_login_ui_result(true);
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
+
+  const char kFunctionParams[] =
+      "[{\"account\": { \"id\": \"gaia_id_for_secondary@example.com\" }, "
+      "\"interactive\": true}]";
+
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
+    // Fail if extensions are restricted to the primary account.
+    std::string error = utils::RunFunctionAndReturnError(
+        func.get(), kFunctionParams, browser());
+    EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+    EXPECT_FALSE(func->login_ui_shown());
+    EXPECT_FALSE(func->scope_ui_shown());
+  } else {
+    // Extensions can show the login UI for secondary accounts, and get the auth
+    // token.
+    std::unique_ptr<base::Value> value(utils::RunFunctionAndReturnSingleResult(
+        func.get(), kFunctionParams, browser()));
+    std::string access_token;
+    EXPECT_TRUE(value->GetAsString(&access_token));
+    EXPECT_EQ(std::string(kAccessToken), access_token);
+    EXPECT_TRUE(func->login_ui_shown());
+    EXPECT_TRUE(func->scope_ui_shown());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {

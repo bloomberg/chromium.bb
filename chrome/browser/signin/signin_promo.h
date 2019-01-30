@@ -70,10 +70,19 @@ GURL GetEmbeddedReauthURLWithEmail(signin_metrics::AccessPoint access_point,
                                    signin_metrics::Reason reason,
                                    const std::string& email);
 
-// Returns the URL to be used to add an account when DICE is enabled.
+// Returns the URL to be used to signin and turn on Sync when DICE is enabled.
 // If email is not empty, then it will pass email as hint to the page so that it
 // will be autofilled by Gaia.
-GURL GetSigninURLForDice(Profile* profile, const std::string& email);
+// If |continue_url| is empty, this may redirect to myaccount.
+GURL GetChromeSyncURLForDice(const std::string& email,
+                             const std::string& continue_url);
+
+// Returns the URL to be used to add (secondary) account when DICE is enabled.
+// If email is not empty, then it will pass email as hint to the page so that it
+// will be autofilled by Gaia.
+// If |continue_url| is empty, this may redirect to myaccount.
+GURL GetAddAccountURLForDice(const std::string& email,
+                             const std::string& continue_url);
 
 // Gets the partition URL for the embedded sign in frame/webview.
 GURL GetSigninPartitionURL();
