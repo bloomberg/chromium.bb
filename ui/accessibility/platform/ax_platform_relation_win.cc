@@ -29,10 +29,6 @@
 #include "ui/base/win/atl_module.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-const WCHAR* const IA2_RELATION_DETAILS = L"details";
-const WCHAR* const IA2_RELATION_DETAILS_FOR = L"detailsFor";
-const WCHAR* const IA2_RELATION_ERROR_MESSAGE = L"errorMessage";
-
 namespace ui {
 
 AXPlatformRelationWin::AXPlatformRelationWin() {
@@ -48,7 +44,7 @@ base::string16 GetIA2RelationFromIntAttr(ax::mojom::IntAttribute attribute) {
     case ax::mojom::IntAttribute::kMemberOfId:
       return IA2_RELATION_MEMBER_OF;
     case ax::mojom::IntAttribute::kErrormessageId:
-      return IA2_RELATION_ERROR_MESSAGE;
+      return IA2_RELATION_ERROR;
     default:
       break;
   }
@@ -77,6 +73,8 @@ base::string16 GetIA2ReverseRelationFromIntAttr(
   switch (attribute) {
     case ax::mojom::IntAttribute::kDetailsId:
       return IA2_RELATION_DETAILS_FOR;
+    case ax::mojom::IntAttribute::kErrormessageId:
+      return IA2_RELATION_ERROR_FOR;
     default:
       break;
   }
