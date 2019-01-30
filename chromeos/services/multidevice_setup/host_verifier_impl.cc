@@ -4,6 +4,8 @@
 
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -47,6 +49,10 @@ const char kLastUsedTimeDeltaMsPrefName[] =
 constexpr const base::TimeDelta kFirstRetryDelta =
     base::TimeDelta::FromMinutes(10);
 
+// Delta for the time between a successful FindEligibleDevices call and a
+// request to sync devices.
+constexpr const base::TimeDelta kSyncDelay = base::TimeDelta::FromSeconds(5);
+
 // The multiplier for increasing the backoff timer between retries.
 const double kExponentialBackoffMultiplier = 1.5;
 
@@ -76,10 +82,11 @@ std::unique_ptr<HostVerifier> HostVerifierImpl::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
     PrefService* pref_service,
     base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new HostVerifierImpl(host_backend_delegate,
-                                               device_sync_client, pref_service,
-                                               clock, std::move(timer)));
+    std::unique_ptr<base::OneShotTimer> retry_timer,
+    std::unique_ptr<base::OneShotTimer> sync_timer) {
+  return base::WrapUnique(new HostVerifierImpl(
+      host_backend_delegate, device_sync_client, pref_service, clock,
+      std::move(retry_timer), std::move(sync_timer)));
 }
 
 // static
@@ -93,12 +100,15 @@ HostVerifierImpl::HostVerifierImpl(
     device_sync::DeviceSyncClient* device_sync_client,
     PrefService* pref_service,
     base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> timer)
+    std::unique_ptr<base::OneShotTimer> retry_timer,
+    std::unique_ptr<base::OneShotTimer> sync_timer)
     : host_backend_delegate_(host_backend_delegate),
       device_sync_client_(device_sync_client),
       pref_service_(pref_service),
       clock_(clock),
-      timer_(std::move(timer)) {
+      retry_timer_(std::move(retry_timer)),
+      sync_timer_(std::move(sync_timer)),
+      weak_ptr_factory_(this) {
   host_backend_delegate_->AddObserver(this);
   device_sync_client_->AddObserver(this);
 
@@ -150,21 +160,22 @@ void HostVerifierImpl::OnNewDevicesSynced() {
 void HostVerifierImpl::UpdateRetryState() {
   // If there is no host, verification is not applicable.
   if (!host_backend_delegate_->GetMultiDeviceHostFromBackend()) {
-    StopTimerAndClearPrefs();
+    StopRetryTimerAndClearPrefs();
     return;
   }
 
   // If there is a host and it is verified, verification is no longer necessary.
   if (IsHostVerified()) {
-    bool was_timer_running = timer_->IsRunning();
-    StopTimerAndClearPrefs();
-    if (was_timer_running)
+    sync_timer_->Stop();
+    bool was_retry_timer_running = retry_timer_->IsRunning();
+    StopRetryTimerAndClearPrefs();
+    if (was_retry_timer_running)
       NotifyHostVerified();
     return;
   }
 
-  // If |timer_| is running, an ongoing retry attempt is in progress.
-  if (timer_->IsRunning())
+  // If |retry_timer_| is running, an ongoing retry attempt is in progress.
+  if (retry_timer_->IsRunning())
     return;
 
   int64_t timestamp_from_prefs =
@@ -182,15 +193,15 @@ void HostVerifierImpl::UpdateRetryState() {
 
   // If a timeout value was set but has not yet occurred, start the timer.
   if (clock_->Now() < retry_time_from_prefs) {
-    StartTimer(retry_time_from_prefs);
+    StartRetryTimer(retry_time_from_prefs);
     return;
   }
 
   AttemptVerificationAfterInitialTimeout(retry_time_from_prefs);
 }
 
-void HostVerifierImpl::StopTimerAndClearPrefs() {
-  timer_->Stop();
+void HostVerifierImpl::StopRetryTimerAndClearPrefs() {
+  retry_timer_->Stop();
   pref_service_->SetInt64(kRetryTimestampPrefName, kTimestampNotSet);
   pref_service_->SetInt64(kLastUsedTimeDeltaMsPrefName, 0);
 }
@@ -202,7 +213,7 @@ void HostVerifierImpl::AttemptVerificationWithInitialTimeout() {
   pref_service_->SetInt64(kLastUsedTimeDeltaMsPrefName,
                           kFirstRetryDelta.InMilliseconds());
 
-  StartTimer(retry_time);
+  StartRetryTimer(retry_time);
   AttemptHostVerification();
 }
 
@@ -220,15 +231,15 @@ void HostVerifierImpl::AttemptVerificationAfterInitialTimeout(
   pref_service_->SetInt64(kRetryTimestampPrefName, retry_time.ToJavaTime());
   pref_service_->SetInt64(kLastUsedTimeDeltaMsPrefName, time_delta_ms);
 
-  StartTimer(retry_time);
+  StartRetryTimer(retry_time);
   AttemptHostVerification();
 }
 
-void HostVerifierImpl::StartTimer(const base::Time& time_to_fire) {
+void HostVerifierImpl::StartRetryTimer(const base::Time& time_to_fire) {
   base::Time now = clock_->Now();
   DCHECK(now < time_to_fire);
 
-  timer_->Start(
+  retry_timer_->Start(
       FROM_HERE, time_to_fire - now /* delay */,
       base::Bind(&HostVerifierImpl::UpdateRetryState, base::Unretained(this)));
 }
@@ -245,7 +256,35 @@ void HostVerifierImpl::AttemptHostVerification() {
   PA_LOG(VERBOSE) << "HostVerifierImpl::AttemptHostVerification(): Attempting "
                   << "host verification now.";
   device_sync_client_->FindEligibleDevices(
-      multidevice::SoftwareFeature::kBetterTogetherHost, base::DoNothing());
+      multidevice::SoftwareFeature::kBetterTogetherHost,
+      base::BindOnce(&HostVerifierImpl::OnFindEligibleDevicesResult,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HostVerifierImpl::OnFindEligibleDevicesResult(
+    device_sync::mojom::NetworkRequestResult result,
+    multidevice::RemoteDeviceRefList eligible_devices,
+    multidevice::RemoteDeviceRefList ineligible_devices) {
+  if (result != device_sync::mojom::NetworkRequestResult::kSuccess) {
+    PA_LOG(WARNING) << "HostVerifierImpl::OnFindEligibleDevicesResult(): "
+                    << "FindEligibleDevices call failed. Retry is scheduled.";
+    return;
+  }
+
+  // Now that the FindEligibleDevices call was sent successfully, the host phone
+  // is expected to enable its supported features. This should trigger a push
+  // message asking this Chromebook to sync these updated features, but in
+  // practice it has been observed that the Chromebook sometimes does not
+  // receive this message (see https://crbug.com/913816). Thus, schedule a sync
+  // after the phone has had enough time to enable its features. Note that this
+  // sync is canceled if the Chromebook does receive the push message.
+  sync_timer_->Start(
+      FROM_HERE, kSyncDelay,
+      base::Bind(&HostVerifierImpl::OnSyncTimerFired, base::Unretained(this)));
+}
+
+void HostVerifierImpl::OnSyncTimerFired() {
+  device_sync_client_->ForceSyncNow(base::DoNothing());
 }
 
 }  // namespace multidevice_setup

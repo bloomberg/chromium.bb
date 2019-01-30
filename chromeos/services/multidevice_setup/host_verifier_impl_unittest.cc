@@ -5,6 +5,7 @@
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/test/simple_test_clock.h"
@@ -78,12 +79,16 @@ class MultiDeviceSetupHostVerifierImplTest : public testing::Test {
     test_pref_service_->SetInt64(kLastUsedTimeDeltaMsPrefName,
                                  initial_time_delta_pref_value);
 
-    auto mock_timer = std::make_unique<base::MockOneShotTimer>();
-    mock_timer_ = mock_timer.get();
+    auto mock_retry_timer = std::make_unique<base::MockOneShotTimer>();
+    mock_retry_timer_ = mock_retry_timer.get();
+
+    auto mock_sync_timer = std::make_unique<base::MockOneShotTimer>();
+    mock_sync_timer_ = mock_sync_timer.get();
 
     host_verifier_ = HostVerifierImpl::Factory::Get()->BuildInstance(
         fake_host_backend_delegate_.get(), fake_device_sync_client_.get(),
-        test_pref_service_.get(), test_clock_.get(), std::move(mock_timer));
+        test_pref_service_.get(), test_clock_.get(),
+        std::move(mock_retry_timer), std::move(mock_sync_timer));
 
     fake_observer_ = std::make_unique<FakeHostVerifierObserver>();
     host_verifier_->AddObserver(fake_observer_.get());
@@ -118,22 +123,33 @@ class MultiDeviceSetupHostVerifierImplTest : public testing::Test {
               test_pref_service_->GetInt64(kLastUsedTimeDeltaMsPrefName));
 
     // If a retry timestamp is set, the timer should be running.
-    EXPECT_EQ(expected_retry_timestamp_value != 0, mock_timer_->IsRunning());
+    EXPECT_EQ(expected_retry_timestamp_value != 0,
+              mock_retry_timer_->IsRunning());
   }
 
-  void VerifyFindEligibleDevicesCalled() {
+  void InvokePendingFindEligibleDevicesCall(bool success = true) {
     fake_device_sync_client_->InvokePendingFindEligibleDevicesCallback(
-        device_sync::mojom::NetworkRequestResult::kSuccess,
+        success
+            ? device_sync::mojom::NetworkRequestResult::kSuccess
+            : device_sync::mojom::NetworkRequestResult::kInternalServerError,
         multidevice::RemoteDeviceRefList() /* eligible_devices */,
         multidevice::RemoteDeviceRefList() /* ineligible_devices */);
   }
 
-  void SimulateTimePassing(const base::TimeDelta& delta,
-                           bool simulate_timeout = false) {
+  void SimulateRetryTimePassing(const base::TimeDelta& delta,
+                                bool simulate_timeout = false) {
     test_clock_->Advance(delta);
 
     if (simulate_timeout)
-      mock_timer_->Fire();
+      mock_retry_timer_->Fire();
+  }
+
+  void FireSyncTimerAndVerifySyncOccurred() {
+    EXPECT_TRUE(mock_sync_timer_->IsRunning());
+    mock_sync_timer_->Fire();
+    fake_device_sync_client_->InvokePendingForceSyncNowCallback(
+        true /* success */);
+    SetHostState(HostState::kHostVerified);
   }
 
   FakeHostBackendDelegate* fake_host_backend_delegate() {
@@ -149,7 +165,8 @@ class MultiDeviceSetupHostVerifierImplTest : public testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
-  base::MockOneShotTimer* mock_timer_ = nullptr;
+  base::MockOneShotTimer* mock_retry_timer_ = nullptr;
+  base::MockOneShotTimer* mock_sync_timer_ = nullptr;
 
   std::unique_ptr<HostVerifier> host_verifier_;
 
@@ -160,14 +177,44 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_SetAndVerify) {
   CreateVerifier(HostState::kHostNotSet);
 
   SetHostState(HostState::kHostSetButNotVerified);
-  VerifyFindEligibleDevicesCalled();
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
       kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
       kFirstRetryDeltaMs /* expected_retry_delta_value */);
 
-  SimulateTimePassing(base::TimeDelta::FromMinutes(1));
+  SimulateRetryTimePassing(base::TimeDelta::FromMinutes(1));
   SetHostState(HostState::kHostVerified);
+  VerifyState(true /* expected_is_verified */,
+              1u /* expected_num_verified_events */,
+              0 /* expected_retry_timestamp_value */,
+              0 /* expected_retry_delta_value */);
+}
+
+TEST_F(MultiDeviceSetupHostVerifierImplTest,
+       StartWithoutHost_FindEligibleDevicesFails) {
+  CreateVerifier(HostState::kHostNotSet);
+  SetHostState(HostState::kHostSetButNotVerified);
+
+  // If the FindEligibleDevices call fails, a retry should still be scheduled.
+  InvokePendingFindEligibleDevicesCall(false /* success */);
+  VerifyState(
+      false /* expected_is_verified */, 0u /* expected_num_verified_events */,
+      kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
+      kFirstRetryDeltaMs /* expected_retry_delta_value */);
+}
+
+TEST_F(MultiDeviceSetupHostVerifierImplTest, SyncAfterFindEligibleDevices) {
+  CreateVerifier(HostState::kHostNotSet);
+
+  SetHostState(HostState::kHostSetButNotVerified);
+  InvokePendingFindEligibleDevicesCall();
+  VerifyState(
+      false /* expected_is_verified */, 0u /* expected_num_verified_events */,
+      kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
+      kFirstRetryDeltaMs /* expected_retry_delta_value */);
+
+  FireSyncTimerAndVerifySyncOccurred();
   VerifyState(true /* expected_is_verified */,
               1u /* expected_num_verified_events */,
               0 /* expected_retry_timestamp_value */,
@@ -178,16 +225,17 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_Retry) {
   CreateVerifier(HostState::kHostNotSet);
 
   SetHostState(HostState::kHostSetButNotVerified);
-  VerifyFindEligibleDevicesCalled();
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
       kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
       kFirstRetryDeltaMs /* expected_retry_delta_value */);
 
   // Simulate enough time pasing to time out and retry.
-  SimulateTimePassing(base::TimeDelta::FromMilliseconds(kFirstRetryDeltaMs),
-                      true /* simulate_timeout */);
-  VerifyFindEligibleDevicesCalled();
+  SimulateRetryTimePassing(
+      base::TimeDelta::FromMilliseconds(kFirstRetryDeltaMs),
+      true /* simulate_timeout */);
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(false /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               kTestTimeMs + kFirstRetryDeltaMs +
@@ -196,11 +244,12 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest, StartWithoutHost_Retry) {
               kFirstRetryDeltaMs * kExponentialBackoffMultiplier
               /* expected_retry_delta_value */);
 
-  // Simulate the next retry timeout passing..
-  SimulateTimePassing(base::TimeDelta::FromMilliseconds(
-                          kFirstRetryDeltaMs * kExponentialBackoffMultiplier),
-                      true /* simulate_timeout */);
-  VerifyFindEligibleDevicesCalled();
+  // Simulate the next retry timeout passing.
+  SimulateRetryTimePassing(
+      base::TimeDelta::FromMilliseconds(kFirstRetryDeltaMs *
+                                        kExponentialBackoffMultiplier),
+      true /* simulate_timeout */);
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(false /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               kTestTimeMs + kFirstRetryDeltaMs +
@@ -224,7 +273,7 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest,
        StartWithUnverifiedHost_NoInitialPrefs) {
   CreateVerifier(HostState::kHostSetButNotVerified);
 
-  VerifyFindEligibleDevicesCalled();
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
       kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
@@ -240,9 +289,9 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest,
                  /* initial_timer_pref_value */,
                  kFirstRetryDeltaMs /* initial_time_delta_pref_value */);
 
-  SimulateTimePassing(base::TimeDelta::FromMinutes(5),
-                      true /* simulate_timeout */);
-  VerifyFindEligibleDevicesCalled();
+  SimulateRetryTimePassing(base::TimeDelta::FromMinutes(5),
+                           true /* simulate_timeout */);
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(false /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               kTestTimeMs + base::TimeDelta::FromMinutes(5).InMilliseconds() +
@@ -261,7 +310,7 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest,
                  /* initial_timer_pref_value */,
                  kFirstRetryDeltaMs /* initial_time_delta_pref_value */);
 
-  VerifyFindEligibleDevicesCalled();
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(false /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               kTestTimeMs - base::TimeDelta::FromMinutes(5).InMilliseconds() +
@@ -283,7 +332,7 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest,
   // Because the first delta is 10 minutes, the second delta is 10 * 1.5 = 15
   // minutes. In this case, that means that *two* previous timeouts were missed,
   // so the third one should be scheduled.
-  VerifyFindEligibleDevicesCalled();
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(false /* expected_is_verified */,
               0u /* expected_num_verified_events */,
               kTestTimeMs - base::TimeDelta::FromMinutes(20).InMilliseconds() +
@@ -311,7 +360,7 @@ TEST_F(MultiDeviceSetupHostVerifierImplTest,
               0 /* expected_retry_delta_value */);
 
   SetHostState(HostState::kHostSetButNotVerified);
-  VerifyFindEligibleDevicesCalled();
+  InvokePendingFindEligibleDevicesCall();
   VerifyState(
       false /* expected_is_verified */, 0u /* expected_num_verified_events */,
       kTestTimeMs + kFirstRetryDeltaMs /* expected_retry_timestamp_value */,
