@@ -14,7 +14,6 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -94,9 +93,7 @@ class CWVSyncControllerTest : public PlatformTest {
         token_service_(browser_state_.GetPrefs(),
                        std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate>(
                            token_service_delegate_)),
-        gaia_cookie_manager_service_(&token_service_,
-                                     &signin_client_,
-                                     &test_url_loader_factory_),
+        gaia_cookie_manager_service_(&token_service_, &signin_client_),
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,
@@ -159,10 +156,7 @@ class CWVSyncControllerTest : public PlatformTest {
 
   FakeProfileOAuth2TokenService token_service_;
 
-  // test_url_loader_factory_ is declared before gaia_cookie_manager_service_
-  // to guarantee that the former outlives the latter.
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
+  GaiaCookieManagerService gaia_cookie_manager_service_;
   FakeSigninManager signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;

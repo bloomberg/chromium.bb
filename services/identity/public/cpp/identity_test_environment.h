@@ -21,6 +21,10 @@ namespace sync_preferences {
 class TestingPrefServiceSyncable;
 }
 
+namespace network {
+class TestURLLoaderFactory;
+}
+
 namespace identity {
 
 namespace {
@@ -54,6 +58,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   //
   // This constructor takes an optional parameter |test_url_loader_factory| to
   // use for cookie-related network requests.
+  // Note: the provided |test_url_loader_factory| is expected to outlive
+  // IdentityTestEnvironment.
   //
   // This constructor also takes an optional PrefService instance as parameter,
   // which allows tests to move away from referencing IdentityManager's
@@ -80,7 +86,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       FakeProfileOAuth2TokenService* token_service,
       SigninManagerForTest* signin_manager,
-      FakeGaiaCookieManagerService* gaia_cookie_manager_service);
+      GaiaCookieManagerService* gaia_cookie_manager_service,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
 
   ~IdentityTestEnvironment() override;
 
@@ -286,8 +293,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       FakeProfileOAuth2TokenService* token_service,
       SigninManagerForTest* signin_manager,
-      FakeGaiaCookieManagerService* gaia_cookie_manager_service,
-      IdentityManager* identity_manager);
+      GaiaCookieManagerService* gaia_cookie_manager_service,
+      IdentityManager* identity_manager,
+      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
 
   // Constructs this object from the supplied
   // dependencies of IdentityManager and potentially IdentityManager itself.
@@ -304,7 +312,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       AccountTrackerService* account_tracker_service,
       FakeProfileOAuth2TokenService* token_service,
       SigninManagerForTest* signin_manager,
-      FakeGaiaCookieManagerService* gaia_cookie_manager_service,
+      GaiaCookieManagerService* gaia_cookie_manager_service,
+      network::TestURLLoaderFactory* test_url_loader_factory,
       std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
       IdentityManager* identity_manager);
 
@@ -333,7 +342,11 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   AccountTrackerService* account_tracker_service_ = nullptr;
   FakeProfileOAuth2TokenService* token_service_ = nullptr;
   SigninManagerForTest* signin_manager_ = nullptr;
-  FakeGaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
+  GaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
+
+  // Used to set fake responses for cookie-related requests.
+  // This can be null if no TestURLLoaderFactory was passed via the constructor.
+  network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
 
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager

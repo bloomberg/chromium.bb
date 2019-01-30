@@ -206,7 +206,7 @@ class DiceResponseHandlerTest : public testing::Test,
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
   FakeSigninManager signin_manager_;
-  FakeGaiaCookieManagerService cookie_service_;
+  GaiaCookieManagerService cookie_service_;
   identity::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;
   AboutSigninInternals about_signin_internals_;

@@ -104,7 +104,6 @@ IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
           static_cast<FakeSigninManager*>(
               SigninManagerFactory::GetForProfile(profile)),
 #endif
-          static_cast<FakeGaiaCookieManagerService*>(
-              GaiaCookieManagerServiceFactory::GetForProfile(profile)),
+          GaiaCookieManagerServiceFactory::GetForProfile(profile),
           IdentityManagerFactory::GetForProfile(profile)) {
 }

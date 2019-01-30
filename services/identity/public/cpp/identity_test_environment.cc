@@ -40,7 +40,7 @@ class IdentityManagerDependenciesOwner {
 
   FakeProfileOAuth2TokenService* token_service();
 
-  FakeGaiaCookieManagerService* gaia_cookie_manager_service();
+  GaiaCookieManagerService* gaia_cookie_manager_service();
 
   sync_preferences::TestingPrefServiceSyncable* pref_service();
 
@@ -55,7 +55,7 @@ class IdentityManagerDependenciesOwner {
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   SigninManagerForTest signin_manager_;
-  std::unique_ptr<FakeGaiaCookieManagerService> gaia_cookie_manager_service_;
+  std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerDependenciesOwner);
 };
@@ -82,13 +82,17 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
                       account_consistency) {
 #endif
   if (test_url_loader_factory != nullptr) {
-    gaia_cookie_manager_service_ =
-        std::make_unique<FakeGaiaCookieManagerService>(
-            &token_service_, &signin_client_, test_url_loader_factory);
+    gaia_cookie_manager_service_ = std::make_unique<GaiaCookieManagerService>(
+        &token_service_, &signin_client_,
+        base::BindRepeating(
+            [](network::TestURLLoaderFactory* test_url_loader_factory)
+                -> scoped_refptr<network::SharedURLLoaderFactory> {
+              return test_url_loader_factory->GetSafeWeakWrapper();
+            },
+            test_url_loader_factory));
   } else {
-    gaia_cookie_manager_service_ =
-        std::make_unique<FakeGaiaCookieManagerService>(&token_service_,
-                                                       &signin_client_);
+    gaia_cookie_manager_service_ = std::make_unique<GaiaCookieManagerService>(
+        &token_service_, &signin_client_);
   }
   AccountTrackerService::RegisterPrefs(pref_service()->registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service()->registry());
@@ -115,7 +119,7 @@ IdentityManagerDependenciesOwner::token_service() {
   return &token_service_;
 }
 
-FakeGaiaCookieManagerService*
+GaiaCookieManagerService*
 IdentityManagerDependenciesOwner::gaia_cookie_manager_service() {
   return gaia_cookie_manager_service_.get();
 }
@@ -137,6 +141,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
           /*token_service=*/nullptr,
           /*signin_manager=*/nullptr,
           /*gaia_cookie_manager_service=*/nullptr,
+          /*test_url_loader_factory=*/test_url_loader_factory,
           std::make_unique<IdentityManagerDependenciesOwner>(
               test_url_loader_factory,
               pref_service,
@@ -147,11 +152,13 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerForTest* signin_manager,
-    FakeGaiaCookieManagerService* gaia_cookie_manager_service)
+    GaiaCookieManagerService* gaia_cookie_manager_service,
+    network::TestURLLoaderFactory* test_url_loader_factory)
     : IdentityTestEnvironment(account_tracker_service,
                               token_service,
                               signin_manager,
                               gaia_cookie_manager_service,
+                              test_url_loader_factory,
                               /*dependency_owner=*/nullptr,
                               /*identity_manager=*/nullptr) {}
 
@@ -159,12 +166,14 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerForTest* signin_manager,
-    FakeGaiaCookieManagerService* gaia_cookie_manager_service,
-    IdentityManager* identity_manager)
+    GaiaCookieManagerService* gaia_cookie_manager_service,
+    IdentityManager* identity_manager,
+    network::TestURLLoaderFactory* test_url_loader_factory)
     : IdentityTestEnvironment(account_tracker_service,
                               token_service,
                               signin_manager,
                               gaia_cookie_manager_service,
+                              test_url_loader_factory,
                               /*dependency_owner=*/nullptr,
                               identity_manager) {}
 
@@ -172,10 +181,12 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerForTest* signin_manager,
-    FakeGaiaCookieManagerService* gaia_cookie_manager_service,
+    GaiaCookieManagerService* gaia_cookie_manager_service,
+    network::TestURLLoaderFactory* test_url_loader_factory,
     std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
     IdentityManager* identity_manager)
-    : weak_ptr_factory_(this) {
+    : test_url_loader_factory_(test_url_loader_factory),
+      weak_ptr_factory_(this) {
   DCHECK(base::ThreadTaskRunnerHandle::Get())
       << "IdentityTestEnvironment requires a properly set up task environment. "
          "If your test has an existing one, move it to be initialized before "
@@ -297,7 +308,10 @@ void IdentityTestEnvironment::UpdatePersistentErrorOfRefreshTokenForAccount(
 
 void IdentityTestEnvironment::SetCookieAccounts(
     const std::vector<CookieParams>& cookie_accounts) {
-  identity::SetCookieAccounts(gaia_cookie_manager_service_, identity_manager(),
+  DCHECK(test_url_loader_factory_)
+      << "IdentityTestEnvironment constructor must have been passed a "
+         "test_url_loader_factory in order to use this method.";
+  identity::SetCookieAccounts(identity_manager(), test_url_loader_factory_,
                               cookie_accounts);
 }
 
