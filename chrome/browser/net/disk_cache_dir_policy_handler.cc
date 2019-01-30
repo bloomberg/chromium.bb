@@ -27,8 +27,7 @@ void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (value && value->GetAsString(&string_value)) {
     base::FilePath::StringType expanded_value =
         policy::path_parser::ExpandPathVariables(string_value);
-    prefs->SetValue(prefs::kDiskCacheDir,
-                    std::make_unique<base::Value>(expanded_value));
+    prefs->SetValue(prefs::kDiskCacheDir, base::Value(expanded_value));
   }
 }
 
