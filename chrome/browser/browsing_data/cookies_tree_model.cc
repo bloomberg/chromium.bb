@@ -317,6 +317,14 @@ int64_t CookieTreeNode::InclusiveSize() const {
   return 0;
 }
 
+int CookieTreeNode::NumberOfCookies() const {
+  int number_of_cookies = 0;
+  for (int i = 0; i < this->child_count(); ++i) {
+    number_of_cookies += this->GetChild(i)->NumberOfCookies();
+  }
+  return number_of_cookies;
+}
+
 void CookieTreeNode::AddChildSortedByTitle(
     std::unique_ptr<CookieTreeNode> new_child) {
   DCHECK(new_child);
@@ -349,6 +357,8 @@ class CookieTreeCookieNode : public CookieTreeNode {
   DetailedInfo GetDetailedInfo() const override {
     return DetailedInfo().InitCookie(&*cookie_);
   }
+
+  int NumberOfCookies() const override { return 1; }
 
  private:
   // |cookie_| is expected to remain valid as long as the CookieTreeCookieNode
