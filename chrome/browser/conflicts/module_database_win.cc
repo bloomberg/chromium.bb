@@ -219,7 +219,7 @@ void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
                                               uint32_t module_size,
                                               uint32_t module_time_date_stamp) {
   auto iter = modules_.find(
-      ModuleInfoKey(module_path, module_size, module_time_date_stamp, 0));
+      ModuleInfoKey(module_path, module_size, module_time_date_stamp));
 
   // Only known modules should be added to the blacklist.
   DCHECK(iter != modules_.end());
@@ -303,8 +303,7 @@ bool ModuleDatabase::FindOrCreateModuleInfo(
     ModuleDatabase::ModuleInfo** module_info) {
   auto result = modules_.emplace(
       std::piecewise_construct,
-      std::forward_as_tuple(module_path, module_size, module_time_date_stamp,
-                            modules_.size()),
+      std::forward_as_tuple(module_path, module_size, module_time_date_stamp),
       std::forward_as_tuple());
 
   // New modules must be inspected.

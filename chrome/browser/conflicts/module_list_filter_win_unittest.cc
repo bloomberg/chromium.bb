@@ -122,10 +122,10 @@ class ModuleListBuilder {
 ModuleInfo CreateModuleInfo(const base::FilePath& module_path,
                             uint32_t module_size,
                             uint32_t module_time_date_stamp) {
-  ModuleInfo result(std::piecewise_construct,
-                    std::forward_as_tuple(module_path, module_size,
-                                          module_time_date_stamp, 0),
-                    std::forward_as_tuple());
+  ModuleInfo result(
+      std::piecewise_construct,
+      std::forward_as_tuple(module_path, module_size, module_time_date_stamp),
+      std::forward_as_tuple());
 
   result.second.inspection_result =
       base::make_optional<ModuleInspectionResult>();

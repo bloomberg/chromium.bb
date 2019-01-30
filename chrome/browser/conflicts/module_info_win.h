@@ -15,16 +15,12 @@
 // ModuleInfoKey and ModuleInfoData are used in pair by the ModuleDatabase to
 // maintain information about a module, usually in a std::map.
 
-// Used by the ModuleDatabase as a unique identifier for a module.
-using ModuleId = uint32_t;
-
 // This is the constant portion of the module information, and is used to
 // uniquely identify one.
 struct ModuleInfoKey {
   ModuleInfoKey(const base::FilePath& module_path,
                 uint32_t module_size,
-                uint32_t module_time_date_stamp,
-                uint32_t module_id);
+                uint32_t module_time_date_stamp);
 
   // Less-than operator allowing this object to be used in std::map.
   bool operator<(const ModuleInfoKey& mi) const;
@@ -39,12 +35,6 @@ struct ModuleInfoKey {
   // The module time date stamp. Part of the key for a ModuleInfo. Taken from
   // TimeDateStamp from the module's IMAGE_FILE_HEADER.
   uint32_t module_time_date_stamp;
-
-  // The ID of this module. This is a strictly incrementing value, and is used
-  // by the ModuleDatabase to tie a module to the list of running processes in
-  // which it is found. It is not part of the key for the module, but it is
-  // immutable. This is simply the index of the module in the insertion order.
-  ModuleId module_id;
 };
 
 // Holds more detailed information about a given module. Because all of this

@@ -59,12 +59,10 @@ bool ConvertToLongPath(const base::string16& short_path,
 
 ModuleInfoKey::ModuleInfoKey(const base::FilePath& module_path,
                              uint32_t module_size,
-                             uint32_t module_time_date_stamp,
-                             uint32_t module_id)
+                             uint32_t module_time_date_stamp)
     : module_path(module_path),
       module_size(module_size),
-      module_time_date_stamp(module_time_date_stamp),
-      module_id(module_id) {}
+      module_time_date_stamp(module_time_date_stamp) {}
 
 bool ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
   // The key consists of the triplet of

@@ -202,7 +202,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, OneThirdPartyModule) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Simulate some arbitrary module loading into the process.
-  ModuleInfoKey module_key(dll1_, 0, 0, 0);
+  ModuleInfoKey module_key(dll1_, 0, 0);
   module_blacklist_cache_updater->OnNewModuleFound(
       module_key, CreateLoadedModuleInfoData());
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
@@ -245,7 +245,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
   uint32_t time_date_stamp =
       kernel32_image.GetNTHeaders()->FileHeader.TimeDateStamp;
 
-  ModuleInfoKey module_key(module_path, module_size, time_date_stamp, 0);
+  ModuleInfoKey module_key(module_path, module_size, time_date_stamp);
   ModuleInfoData module_data = CreateLoadedModuleInfoData();
   module_data.inspection_result = InspectModule(module_key.module_path);
 
@@ -279,7 +279,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, WhitelistMatchingCertificateSubject) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Simulate the module loading into the process.
-  ModuleInfoKey module_key(dll1_, 0, 0, 0);
+  ModuleInfoKey module_key(dll1_, 0, 0);
   module_blacklist_cache_updater->OnNewModuleFound(
       module_key, CreateSignedLoadedModuleInfoData());
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
@@ -311,11 +311,11 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Set the respective bit for registered modules.
-  ModuleInfoKey module_key1(dll1_, 123u, 456u, 0);
+  ModuleInfoKey module_key1(dll1_, 123u, 456u);
   ModuleInfoData module_data1 = CreateLoadedModuleInfoData();
   module_data1.module_properties |= ModuleInfoData::kPropertyIme;
 
-  ModuleInfoKey module_key2(dll2_, 456u, 789u, 1);
+  ModuleInfoKey module_key2(dll2_, 456u, 789u);
   ModuleInfoData module_data2 = CreateLoadedModuleInfoData();
   module_data2.module_properties |= ModuleInfoData::kPropertyShellExtension;
 
