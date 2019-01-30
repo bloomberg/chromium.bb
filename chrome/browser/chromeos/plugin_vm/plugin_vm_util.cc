@@ -62,4 +62,13 @@ bool IsPluginVmConfigured(Profile* profile) {
   return true;
 }
 
+std::string GetPluginVmLicenseKey() {
+  std::string plugin_vm_license_key;
+  if (!chromeos::CrosSettings::Get()->GetString(chromeos::kPluginVmLicenseKey,
+                                                &plugin_vm_license_key)) {
+    return std::string();
+  }
+  return plugin_vm_license_key;
+}
+
 }  // namespace plugin_vm
