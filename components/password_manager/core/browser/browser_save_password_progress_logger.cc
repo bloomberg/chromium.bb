@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +16,7 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
 
 using autofill::AutofillUploadContents;
@@ -77,6 +79,13 @@ std::string VoteTypeToString(
   }
 }
 
+std::string FormSignatureToDebugString(autofill::FormSignature form_signature) {
+  return base::StrCat(
+      {NumberToString(form_signature), " - ",
+       NumberToString(
+           PasswordFormMetricsRecorder::HashFormSignature(form_signature))});
+}
+
 }  // namespace
 
 BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
@@ -93,7 +102,7 @@ void BrowserSavePasswordProgressLogger::LogFormSignatures(
   autofill::FormStructure form_structure(form.form_data);
   std::string message = GetStringFromID(label) + ": {\n";
   message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
-             ScrubNonDigit(form_structure.FormSignatureAsStr()) + "\n";
+             FormSignatureToDebugString(form_structure.form_signature()) + "\n";
   message += GetStringFromID(STRING_SIGNON_REALM) + ": " +
              ScrubURL(GURL(form.signon_realm)) + "\n";
   message +=
@@ -112,7 +121,7 @@ void BrowserSavePasswordProgressLogger::LogFormStructure(
     const autofill::FormStructure& form_structure) {
   std::string message = GetStringFromID(label) + ": {\n";
   message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
-             ScrubNonDigit(form_structure.FormSignatureAsStr()) + "\n";
+             FormSignatureToDebugString(form_structure.form_signature()) + "\n";
   message += GetStringFromID(STRING_ORIGIN) + ": " +
              ScrubURL(form_structure.source_url()) + "\n";
   message += GetStringFromID(STRING_ACTION) + ": " +
@@ -217,8 +226,9 @@ void BrowserSavePasswordProgressLogger::LogFormData(
     StringID label,
     const autofill::FormData& form) {
   std::string message = GetStringFromID(label) + ": {\n";
-  message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
-             NumberToString(autofill::CalculateFormSignature(form)) + "\n";
+  message +=
+      GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
+      FormSignatureToDebugString(autofill::CalculateFormSignature(form)) + "\n";
   message +=
       GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.origin) + "\n";
   message +=
