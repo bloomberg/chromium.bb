@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Messages from ServiceWorker to Client only received after DOMContentLoaded event.
+PASS Messages from ServiceWorker to Client only received after calling startMessages().
+FAIL Messages from ServiceWorker to Client only received after setting onmessage. assert_equals: Message sent in state 'start' dispatched in state 'start' expected "start" but got "install"
+PASS Microtasks run before dispatching messages after calling startMessages().
+PASS Microtasks run before dispatching messages after setting onmessage.
+Harness: the test ran to completion.
+
