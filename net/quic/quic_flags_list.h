@@ -335,3 +335,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disallow_peer_ack_0, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
           true)
+
+// If true, close connection with INVALID_STOP_WAITING if received a
+// STOP_WAITING with least_unacked 0.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_close_connection_with_zero_least_unacked_stop_waiting,
+    true)

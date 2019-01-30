@@ -3268,7 +3268,10 @@ bool QuicFramer::ProcessStopWaitingFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read least unacked delta.");
     return false;
   }
-  if (header.packet_number.ToUint64() < least_unacked_delta) {
+  if (header.packet_number.ToUint64() < least_unacked_delta ||
+      (GetQuicReloadableFlag(
+           quic_close_connection_with_zero_least_unacked_stop_waiting) &&
+       header.packet_number.ToUint64() == least_unacked_delta)) {
     set_detailed_error("Invalid unacked delta.");
     return false;
   }
