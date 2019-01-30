@@ -41,8 +41,14 @@ class PlatformSharedMemoryMapping;
 
 using DispatcherVector = std::vector<scoped_refptr<Dispatcher>>;
 
-// A |Dispatcher| implements Mojo EDK calls that are associated with a
+// A |Dispatcher| implements Mojo core API calls that are associated with a
 // particular MojoHandle.
+//
+// Every MojoHandle in the system is an opaque reference to some implementation
+// of this class. See MessagePipeDispatcher, SharedBufferDispatcher,
+// DataPipeConsumerDispatcher, DataPipeProducerDispatcher, WatcherDispatcher
+// (which should really be renamed to TrapDispatcher now), and
+// InvitationDispatcher.
 class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     : public base::RefCountedThreadSafe<Dispatcher> {
  public:
@@ -75,67 +81,130 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
 
   ///////////// Watcher API ////////////////////
 
+  // Supports the |MojoAddTrigger()| API if implemented by this Dispatcher.
+  // |dispatcher| is the resolved Dispatcher implementation from the given
+  // MojoHandle to watch. The remaining arguments correspond directly to
+  // arguments on the original |MojoAddTrigger()| API call. See
+  // |MojoAddTrigger()| documentation.
   virtual MojoResult WatchDispatcher(scoped_refptr<Dispatcher> dispatcher,
                                      MojoHandleSignals signals,
                                      MojoTriggerCondition condition,
                                      uintptr_t context);
+
+  // Supports the |MojoRemoveTrigger()| API if implemented by this Dispatcher.
+  // Arguments correspond directly to arguments on the original
+  // |MojoRemoveTrigger()| API call. See |MojoRemoveTrigger()| documentation.
   virtual MojoResult CancelWatch(uintptr_t context);
+
+  // Supports the |MojoArmTrap()| API if implemented by this Dispatcher.
+  // Arguments correspond directly to arguments on the original |MojoArmTrap()|
+  // API call. See |MojoArmTrap()| documentation.
   virtual MojoResult Arm(uint32_t* num_blocking_events,
                          MojoTrapEvent* blocking_events);
 
   ///////////// Message pipe API /////////////
 
+  // Supports the |MojoWriteMessage()| API if implemented by this Dispatcher.
+  // |message| is the message object referenced by the MojoMessageHandle passed
+  // to the original API call. See |MojoWriteMessage()| documentation.
   virtual MojoResult WriteMessage(
       std::unique_ptr<ports::UserMessageEvent> message);
 
+  // Supports the |MojoReadMessage()| API if implemented by this Dispatcher.
+  // If successful, |*message| contains a newly read message object, which will
+  // be yielded to the API caller as an opaque MojoMessageHandle value. See
+  // |MojoReadMessage()| documentation.
   virtual MojoResult ReadMessage(
       std::unique_ptr<ports::UserMessageEvent>* message);
 
   ///////////// Shared buffer API /////////////
 
+  // Supports the |MojoDuplicateBufferHandle()| API if implemented by this
+  // Dispatcher.
+  //
   // |options| may be null. |new_dispatcher| must not be null, but
   // |*new_dispatcher| should be null (and will contain the dispatcher for the
   // new handle on success).
+  //
+  // See |MojoDuplicateBufferHandle()| documentation.
   virtual MojoResult DuplicateBufferHandle(
       const MojoDuplicateBufferHandleOptions* options,
       scoped_refptr<Dispatcher>* new_dispatcher);
 
+  // Supports the |MojoMapBuffer()| API if implemented by this Dispatcher.
+  // |offset| and |num_bytes| correspond to arguments given to the original API
+  // call. On success, |*mapping| will contain a memory mapping that Mojo Core
+  // will internally retain until the buffer is unmapped by |MojoUnmapBuffer()|.
+  // See |MojoMapBuffer()| documentation.
   virtual MojoResult MapBuffer(
       uint64_t offset,
       uint64_t num_bytes,
       std::unique_ptr<PlatformSharedMemoryMapping>* mapping);
 
+  // Supports the |MojoGetBufferInfo()| API if implemented by this Dispatcher.
+  // Arguments correspond to the ones given to the original API call. See
+  // |MojoGetBufferInfo()| documentation.
   virtual MojoResult GetBufferInfo(MojoSharedBufferInfo* info);
 
   ///////////// Data pipe consumer API /////////////
 
+  // Supports the the |MojoReadData()| API if implemented by this Dispatcher.
+  // Arguments correspond to the ones given to the original API call. See
+  // |MojoReadData()| documentation.
   virtual MojoResult ReadData(const MojoReadDataOptions& options,
                               void* elements,
                               uint32_t* num_bytes);
 
+  // Supports the the |MojoBeginReadData()| API if implemented by this
+  // Dispatcher. Arguments correspond to the ones given to the original API
+  // call. See |MojoBeginReadData()| documentation.
   virtual MojoResult BeginReadData(const void** buffer,
                                    uint32_t* buffer_num_bytes);
 
+  // Supports the the |MojoEndReadData()| API if implemented by this Dispatcher.
+  // Arguments correspond to the ones given to the original API call. See
+  // |MojoEndReadData()| documentation.
   virtual MojoResult EndReadData(uint32_t num_bytes_read);
 
   ///////////// Data pipe producer API /////////////
 
+  // Supports the the |MojoWriteData()| API if implemented by this Dispatcher.
+  // Arguments correspond to the ones given to the original API call. See
+  // |MojoWriteData()| documentation.
   virtual MojoResult WriteData(const void* elements,
                                uint32_t* num_bytes,
                                const MojoWriteDataOptions& options);
 
+  // Supports the the |MojoBeginWriteData()| API if implemented by this
+  // Dispatcher. Arguments correspond to the ones given to the original API
+  // call. See |MojoBeginWriteData()| documentation.
   virtual MojoResult BeginWriteData(void** buffer, uint32_t* buffer_num_bytes);
 
+  // Supports the the |MojoEndWriteData()| API if implemented by this
+  // Dispatcher. Arguments correspond to the ones given to the original API
+  // call. See |MojoEndWriteData()| documentation.
   virtual MojoResult EndWriteData(uint32_t num_bytes_written);
 
-  // Invitation API.
+  // Supports the |MojoAttachMessagePipeToInvitation()| API if implemented by
+  // this Dispatcher. Arguments correspond to the ones given to the original API
+  // call. See |MojoAttachMessagePipeToInvitation()| documentation.
   virtual MojoResult AttachMessagePipe(base::StringPiece name,
                                        ports::PortRef remote_peer_port);
+
+  // Supports the |MojoExtractMessagePipeFromInvitation()| API if implemented by
+  // this Dispatcher. Arguments correspond to the ones given to the original API
+  // call. See |MojoExtractMessagePipeFromInvitation()| documentation.
   virtual MojoResult ExtractMessagePipe(base::StringPiece name,
                                         MojoHandle* message_pipe_handle);
 
-  // Quota API.
+  // Supports the |MojoSetQuota()| API if implemented by this Dispatcher.
+  // Arguments correspond to the ones given to the original API call. See
+  // |MojoSetQuota()| documentation.
   virtual MojoResult SetQuota(MojoQuotaType type, uint64_t limit);
+
+  // Supports the |MojoQueryQuota()| API if implemented by this Dispatcher.
+  // Arguments correspond to the ones given to the original API call. See
+  // |MojoQueryQuota()| documentation.
   virtual MojoResult QueryQuota(MojoQuotaType type,
                                 uint64_t* limit,
                                 uint64_t* usage);
