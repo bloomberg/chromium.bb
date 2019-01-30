@@ -223,7 +223,8 @@ class BuilderStage(object):
       Expected arguments are the same as cidb.InsertBuildStage, except
       |build_id|, which is populated here.
     """
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if build_id:
       self._build_stage_id = self.buildstore.InsertBuildStage(
           build_id, name, board, status)
@@ -409,7 +410,8 @@ class BuilderStage(object):
 
   def GetBuildFailureMessage(self):
     """Get message summarizing failure of this build."""
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if db is not None:
       return self.GetBuildFailureMessageFromCIDB(build_id, db)
     else:
@@ -417,7 +419,8 @@ class BuilderStage(object):
 
   def GetJobKeyvals(self):
     """Get job keyvals for the build stage."""
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     job_keyvals = {
         constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
             'Build', build_id, 'BuildStage', self._build_stage_id),
@@ -1239,7 +1242,8 @@ class ArchivingStageMixin(object):
       logging.info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
 
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if self.buildstore.AreClientsReady():
       logging.info('Writing updated metadata to database for build_id %s.',
                    build_id)

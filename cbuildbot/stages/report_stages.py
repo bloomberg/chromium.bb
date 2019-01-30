@@ -84,7 +84,8 @@ def WriteTagMetadata(builder_run):
   This is a proof of concept for using tags to help find commonality
   in failures.
   """
-  build_id, _ = builder_run.GetCIDBHandle()
+  build_identifier, _ = builder_run.GetCIDBHandle()
+  build_id = build_identifier.cidb_id
 
   # Yes, these values match general metadata values, but they are just
   # proof of concept, so far.
@@ -387,7 +388,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     debug = (self._run.options.remote_trybot or
              (not self._run.options.buildbot) or
              self._run.options.debug)
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if db:
       builds = db.GetBuildHistory(self._run.config.name, 2,
                                   milestone_version=milestone,
@@ -516,7 +518,8 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
     # Write child-per-build and board-per-build rows to database
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if db:
       # TODO(akeshet): replace this with a GetValue call once crbug.com/406522
       # is resolved
@@ -932,7 +935,8 @@ class ReportStage(generic_stages.BuilderStage,
     This includes final metadata archival, and update CIDB with our final status
     as well as producting a logged build result summary.
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if results_lib.Results.BuildSucceededSoFar(db, build_id, self.name):
       final_status = constants.BUILDER_STATUS_PASSED
     else:
@@ -1073,7 +1077,8 @@ class ReportStage(generic_stages.BuilderStage,
 
   def _RunRiskReport(self):
     """Fetches the CL-Scanner risk report and prints step text and links."""
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     report = risk_report.GetCLRiskReport(build_id)
     for link_text, url in sorted(report.iteritems()):
       logging.PrintBuildbotLink(link_text, url)
@@ -1084,8 +1089,9 @@ class ReportStage(generic_stages.BuilderStage,
     This method should be called only after the build has been Finished in
     cidb.
     """
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     if self.buildstore.AreClientsReady():
+      build_id = build_identifier.cidb_id
       build_info = self.buildstore.GetBuildStatuses(build_ids=[build_id])[0]
       duration = (build_info['finish_time'] -
                   build_info['start_time']).total_seconds()
@@ -1170,7 +1176,8 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
       action: The action for the changes to record (must be one of
         constants.CL_ACTIONS).
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if db:
       cl_actions = [clactions.CLAction.FromGerritPatchAndAction(
           change, action) for change in changes]

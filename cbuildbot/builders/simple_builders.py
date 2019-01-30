@@ -529,7 +529,8 @@ class DistributedBuilder(SimpleBuilder):
     build_finished = False
     try:
       super(DistributedBuilder, self).RunStages()
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       was_build_successful = results_lib.Results.BuildSucceededSoFar(
           db, build_id)
       build_finished = True

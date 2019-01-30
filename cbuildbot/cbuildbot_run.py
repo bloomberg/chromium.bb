@@ -37,6 +37,7 @@ except ImportError:
 import types
 
 from chromite.cbuildbot import archive_lib
+from chromite.lib import buildstore
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
@@ -687,25 +688,31 @@ class _BuilderRunBase(object):
     return self.options.prebuilts and self.config.prebuilts
 
   def GetCIDBHandle(self):
-    """Get the build_id and cidb handle, if available.
+    """Get the build_identifier and cidb handle, if available.
 
     Returns:
-      A (build_id, CIDBConnection) tuple if cidb is set up and a build_id is
-      known in metadata. Otherwise, (None, None).
+      A (BuildIdentifier, CIDBConnection) tuple if cidb is set up and
+      a build_id is known in metadata. Otherwise,
+      (BuildIdentifier(None, None), None).
     """
     try:
       build_id = self.attrs.metadata.GetValue('build_id')
+      buildbucket_id = self.options.buildbucket_id
+      build_identifier = buildstore.BuildIdentifier(
+          cidb_id=build_id, buildbucket_id=buildbucket_id)
     except KeyError:
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
+    except AttributeError:
+      return (buildstore.BuildIdentifier(None, None), None)
 
     if not cidb.CIDBConnectionFactory.IsCIDBSetup():
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
 
     cidb_handle = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
     if cidb_handle:
-      return (build_id, cidb_handle)
+      return (build_identifier, cidb_handle)
     else:
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
 
   def ShouldReexecAfterSync(self):
     """Return True if this run should re-exec itself after sync stage."""

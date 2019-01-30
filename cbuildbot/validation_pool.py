@@ -465,8 +465,9 @@ class ValidationPool(object):
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     timeout = cls.DEFAULT_TIMEOUT
-    build_id, db = builder_run.GetCIDBHandle()
+    build_identifier, db = builder_run.GetCIDBHandle()
     if db:
+      build_id = build_identifier.cidb_id
       time_to_deadline = db.GetTimeToDeadline(build_id)
       if time_to_deadline is not None:
         # We must leave enough time before the deadline to allow us to extend
@@ -537,7 +538,8 @@ class ValidationPool(object):
     tree throttled validation pool logic.
     """
     # TODO(sosa): Remove Google Storage Fail Streak Counter.
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if not db:
       return 0
 
@@ -1592,8 +1594,9 @@ class ValidationPool(object):
       reason: string reason for submission to be recorded in cidb. (Should be
         None or constant with name STRATEGY_* from constants.py)
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
     if db:
+      build_id = build_identifier.cidb_id
       db.InsertCLActions(
           build_id,
           [clactions.CLAction.FromGerritPatchAndAction(change, action, reason)])
@@ -1984,7 +1987,8 @@ class ValidationPool(object):
     candidates = []
 
     if self.pre_cq_trybot:
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       action_history = []
       if db:
         action_history = db.GetActionsForChanges(changes)

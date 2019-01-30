@@ -683,7 +683,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       chroot_args = chroot_args or []
       chroot_args += ['--cache-dir', self._run.options.cache_dir]
 
-    build_id, _ = self._run.GetCIDBHandle()
     commands.Build(
         self._build_root,
         self._current_board,
@@ -706,7 +705,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
       creds_file = topology.topology.get(topology.DATASTORE_WRITER_CREDS_KEY)
 
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       if db and creds_file:
         parent_key = ('Build', build_id, 'BuildStage', self._build_stage_id)
 
@@ -730,7 +730,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                                                        update_dict)
 
       # Write board metadata update to cidb
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       if db:
         db.UpdateBoardPerBuildMetadata(build_id, self._current_board,
                                        update_dict)

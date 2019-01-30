@@ -265,7 +265,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     if config_lib.IsCanaryType(self._run.config.build_type):
       skip_duts_check = True
 
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
 
     test_args = None
     if config_lib.IsCQType(self._run.config.build_type):

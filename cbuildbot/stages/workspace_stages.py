@@ -141,7 +141,8 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     workspace_version_info = self.GetWorkspaceVersionInfo()
 
     if self._run.options.debug:
-      build_id, _ = self._run.GetCIDBHandle()
+      build_identifier, _ = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       return 'R%s-%s-b%s' % (
           workspace_version_info.chrome_branch,
           workspace_version_info.VersionString(),
@@ -347,7 +348,8 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
 
   def PerformStage(self):
     """Schedule child builds for this buildspec."""
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     master_buildbucket_id = self._run.options.buildbucket_id
     version_info = self.GetWorkspaceVersionInfo()
 

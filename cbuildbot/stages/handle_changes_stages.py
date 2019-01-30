@@ -47,7 +47,8 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     Args:
       success: bool indicating whether the CQ was a success.
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if self.buildstore.AreClientsReady():
       my_actions = db.GetActionsForBuild(build_id)
       my_submit_actions = [
@@ -173,9 +174,10 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
         self.completion_stage.GetSlaveStatuses(), failing)
     changes = self.sync_stage.pool.applied
 
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
 
     if db:
+      build_id = build_identifier.cidb_id
       builds_passed_sync_stage = self._GetBuildsPassedSyncStage(
           build_id, db, slave_buildbucket_ids)
       builds_not_passed_sync_stage = failing.union(inflight).union(

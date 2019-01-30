@@ -127,7 +127,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """
     # Wait for slaves if we're a master, in production or mock-production.
     # Otherwise just look at our own status.
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     builders_array = None
     if not self._run.config.master:
       # The slave build returns its own status.
@@ -335,8 +336,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         # If the master build itself didn't pass, report fatal.
         return self._run.config.name in not_passed_builders
 
-      build_id, _ = self._run.GetCIDBHandle()
+      build_identifier, _ = self._run.GetCIDBHandle()
       if self.buildstore.AreClientsReady():
+        build_id = build_identifier.cidb_id
         aborted_slaves = (
             builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
                 build_id, self.buildstore))
@@ -898,7 +900,8 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       if not config_lib.IsMasterChromePFQ(self._run.config):
         raise ValueError('This build must be a master chrome PFQ build '
                          'when stage_push is True.')
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
 
       # If the master passed BinHostTest and all the important slaves passed
       # UploadPrebuiltsTest, push uprev commits to a staging_branch.

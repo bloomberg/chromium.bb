@@ -24,6 +24,20 @@ class BuildStoreException(Exception):
   """General exception class for this module."""
 
 
+class BuildIdentifier(object):
+  """The class maintains all the IDs corresponding to a build."""
+
+  def __init__(self, cidb_id=None, buildbucket_id=None):
+    """Instantiate a container class for all IDs.
+
+    Args:
+      cidb_id: ID of the build in CIDB.
+      buildbucket_id: ID of the build in Buildbucket.
+    """
+    self.cidb_id = cidb_id
+    self.buildbucket_id = buildbucket_id
+
+
 class BuildStore(object):
   """BuildStore class to handle all DB calls."""
 

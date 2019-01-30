@@ -911,7 +911,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       e.g. MilestoneVersion(milestone='44', platform='7072.0.0-rc4')
       or None if failed to retrieve milestone and platform versions.
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
 
     if db is None:
       return None
@@ -1085,7 +1086,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     # We must extend the builder deadline before publishing a new manifest to
     # ensure that slaves have enough time to complete the builds about to
     # start.
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if self.buildstore.AreClientsReady():
       self.buildstore.ExtendDeadline(build_id, self._run.config.build_timeout)
 
@@ -1391,7 +1393,8 @@ class PreCQLauncherStage(SyncStage):
         clactions.CLAction.FromGerritPatchAndAction(
             change, constants.CL_ACTION_SCREENED_FOR_PRE_CQ))
 
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     db.InsertCLActions(build_id, actions)
 
   def CanSubmitChangeInPreCQ(self, change):
@@ -1606,7 +1609,8 @@ class PreCQLauncherStage(SyncStage):
     action_string = clactions.GetRequeuedOrSpeculative(change, action_history,
                                                        not change.IsMergeable())
     if action_string:
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       action = clactions.CLAction.FromGerritPatchAndAction(
           change, action_string)
       db.InsertCLActions(build_id, [action])
@@ -1631,7 +1635,8 @@ class PreCQLauncherStage(SyncStage):
                           constants.CL_STATUS_FULLY_VERIFIED)
     if timed_out and verified:
       msg = PRECQ_EXPIRY_MSG % self.STATUS_EXPIRY_TIMEOUT
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       if db:
         pool.SendNotification(change, '%(details)s', details=msg)
         action = clactions.CLAction.FromGerritPatchAndAction(
@@ -1915,7 +1920,8 @@ class PreCQLauncherStage(SyncStage):
       status: One of constants.CL_STATUS_* statuses.
     """
     if changes:
-      build_id, db = self._run.GetCIDBHandle()
+      build_identifier, db = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       a = clactions.TranslatePreCQStatusToAction(status)
       actions = [
           clactions.CLAction.FromGerritPatchAndAction(c, a) for c in changes
@@ -1929,7 +1935,8 @@ class PreCQLauncherStage(SyncStage):
       pool: An instance of ValidationPool.validation_pool.
       changes: GerritPatch instances.
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
 
     action_history, _, status_map = (
         self._GetUpdatedActionHistoryAndStatusMaps(db, changes))
@@ -2015,7 +2022,8 @@ class PreCQLauncherStage(SyncStage):
     Non-manifest changes are just submitted here because they don't need to be
     verified by either the Pre-CQ or CQ.
     """
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
 
     action_history = db.GetActionsForChanges(changes)
 

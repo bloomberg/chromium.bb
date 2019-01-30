@@ -113,7 +113,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       logging.info('No buildbucket_client. Skip scheduling slaves.')
       return
 
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     if build_id is None:
       logging.info('No build id. Skip scheduling slaves.')
       return

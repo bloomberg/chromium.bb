@@ -21,6 +21,7 @@ import time
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool
+from chromite.lib import buildstore
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import config_lib
@@ -107,21 +108,25 @@ class FakeBuilderRun(object):
     self.config = FakeConfig(name='master-paladin')
 
   def GetCIDBHandle(self):
-    """Get the build_id and cidb handle, if available.
+    """Get the build_identifier and cidb handle, if available.
 
     Returns:
-      A (build_id, CIDBConnection) tuple if fake_db is set up and a build_id is
-      known in metadata. Otherwise, (None, None).
+      A (build_identifier, CIDBConnection) tuple if fake_db is set up
+      and a build_id is known in metadata. Otherwise,
+      (BuildIdentifier(None, None), None).
     """
     try:
       build_id = self.attrs.metadata.GetValue('build_id')
+      buildbucket_id = 1234
+      build_identifier = buildstore.BuildIdentifier(
+          cidb_id=build_id, buildbucket_id=buildbucket_id)
     except KeyError:
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
 
     if build_id is not None and self.fake_db:
-      return (build_id, self.fake_db)
+      return (build_identifier, self.fake_db)
 
-    return (None, None)
+    return (buildstore.BuildIdentifier(None, None), None)
 
 
 # pylint: disable=protected-access
@@ -348,7 +353,8 @@ class ValidationFailureOrTimeout(_Base):
 
   def testCancelledPreCQ(self):
     """Do not RemoveReady for cancelled Pre-CQs."""
-    build_id, _ = self._pool._run.GetCIDBHandle()
+    build_identifier, _ = self._pool._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     for change in self._patches:
       self.fake_db.InsertCLActions(
           build_id, [clactions.CLAction.FromGerritPatchAndAction(
@@ -369,7 +375,8 @@ class ValidationFailureOrTimeout(_Base):
 
   def testFirstFailureInPreCQ(self):
     """Tests that the first failure in pre-CQ is notified."""
-    build_id, _ = self._pool._run.GetCIDBHandle()
+    build_identifier, _ = self._pool._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     for change in self._patches:
       self.fake_db.InsertCLActions(
           build_id,
@@ -388,7 +395,8 @@ class ValidationFailureOrTimeout(_Base):
 
   def testSecondFailureInPreCQ(self):
     """Tests that the second failure in pre-CQ is NOT notified."""
-    build_id, _ = self._pool._run.GetCIDBHandle()
+    build_identifier, _ = self._pool._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     for change in self._patches:
       self.fake_db.InsertCLActions(
           build_id,

@@ -171,7 +171,8 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     self.workspace_version_info = self.GetWorkspaceVersionInfo()
 
     if self._run.options.debug:
-      build_id, _ = self._run.GetCIDBHandle()
+      build_identifier, _ = self._run.GetCIDBHandle()
+      build_id = build_identifier.cidb_id
       self.dummy_firmware_config = '%s-firmware-tryjob' % self._current_board
       self.firmware_version = 'R%s-%s-b%s' % (
           self.workspace_version_info.chrome_branch,
