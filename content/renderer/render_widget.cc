@@ -719,7 +719,7 @@ void RenderWidget::OnSynchronizeVisualProperties(
   VisualProperties params = original_params;
   // Web tests can override the device scale factor in the renderer.
   if (device_scale_factor_for_testing_) {
-    params.screen_info.device_scale_factor = *device_scale_factor_for_testing_;
+    params.screen_info.device_scale_factor = device_scale_factor_for_testing_;
     params.compositor_viewport_pixel_size = gfx::ScaleToCeiledSize(
         params.new_size, params.screen_info.device_scale_factor);
   }
@@ -1484,20 +1484,15 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
 
   if (!params.auto_resize_enabled) {
     visible_viewport_size_ = params.visible_viewport_size;
-
     display_mode_ = params.display_mode;
-
     size_ = params.new_size;
 
     ResizeWebWidget();
 
-    WebSize visual_viewport_size;
+    gfx::Size visual_viewport_size = visible_viewport_size_;
     if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-      visual_viewport_size =
-          gfx::ScaleToCeiledSize(params.visible_viewport_size,
-                                 GetOriginalScreenInfo().device_scale_factor);
-    } else {
-      visual_viewport_size = visible_viewport_size_;
+      visual_viewport_size = gfx::ScaleToCeiledSize(
+          visual_viewport_size, GetOriginalScreenInfo().device_scale_factor);
     }
     GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
 
@@ -3333,29 +3328,39 @@ void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
-  device_scale_factor_for_testing_ = factor;
+  DCHECK_GT(factor, 0.f);
 
-  VisualProperties visual_properties;
-  visual_properties.screen_info = screen_info_;
-  visual_properties.screen_info.device_scale_factor = factor;
-  visual_properties.new_size = size();
-  visual_properties.visible_viewport_size = visible_viewport_size_;
-  visual_properties.compositor_viewport_pixel_size =
-      gfx::ScaleToCeiledSize(size(), factor);
-  visual_properties.browser_controls_shrink_blink_size = false;
-  visual_properties.top_controls_height = 0.f;
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-  visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id_allocation =
-      local_surface_id_allocation_from_parent_;
   // We are changing the device scale factor from the renderer, so allocate a
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_view_->RequestNewLocalSurfaceId();
-  OnSynchronizeVisualProperties(visual_properties);
+
+  ScreenInfo info = screen_info_;
+  info.device_scale_factor = factor;
+  gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             viewport_pixel_size, info);
+
+  ResizeWebWidget();  // This picks up the new device scale factor in |info|.
+
+  gfx::Size visible_viewport_size = visible_viewport_size_;
+  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
+    visible_viewport_size =
+        gfx::ScaleToCeiledSize(visible_viewport_size, factor);
+  }
+  GetWebWidget()->ResizeVisualViewport(visible_viewport_size);
+
+  // Make sure the DSF override stays for future VisualProperties updates, and
+  // that includes overriding the VisualProperties'
+  // compositor_viewport_pixel_size with size * this for-testing DSF.
+  device_scale_factor_for_testing_ = factor;
 }
 
 void RenderWidget::SetDeviceColorSpaceForTesting(
     const gfx::ColorSpace& color_space) {
+  // We are changing the device color space from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  layer_tree_view_->RequestNewLocalSurfaceId();
+
   ScreenInfo info = screen_info_;
   info.color_space = color_space;
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
