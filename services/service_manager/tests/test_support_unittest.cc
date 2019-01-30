@@ -15,7 +15,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/service_manager/tests/test.mojom.h"
+#include "services/service_manager/tests/test_support.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -24,7 +24,7 @@ namespace {
 
 // TestBImpl and TestCImpl are simple test interfaces whose methods invokes
 // their callback when called without doing anything.
-class TestBImpl : public TestB {
+class TestBImpl : public mojom::TestB {
  public:
   TestBImpl() = default;
   ~TestBImpl() override = default;
@@ -37,7 +37,7 @@ class TestBImpl : public TestB {
   DISALLOW_COPY_AND_ASSIGN(TestBImpl);
 };
 
-class TestCImpl : public TestC {
+class TestCImpl : public mojom::TestC {
  public:
   TestCImpl() = default;
   ~TestCImpl() override = default;
@@ -49,11 +49,11 @@ class TestCImpl : public TestC {
   DISALLOW_COPY_AND_ASSIGN(TestCImpl);
 };
 
-void OnTestBRequest(TestBRequest request) {
+void OnTestBRequest(mojom::TestBRequest request) {
   mojo::MakeStrongBinding(std::make_unique<TestBImpl>(), std::move(request));
 }
 
-void OnTestCRequest(TestCRequest request) {
+void OnTestCRequest(mojom::TestCRequest request) {
   mojo::MakeStrongBinding(std::make_unique<TestCImpl>(), std::move(request));
 }
 
@@ -115,7 +115,7 @@ TEST(ServiceManagerTestSupport, TestConnectorFactoryUniqueService) {
   TestCServiceImpl c_service(factory.RegisterInstance(kServiceCName));
   auto* connector = factory.GetDefaultConnector();
 
-  TestCPtr c;
+  mojom::TestCPtr c;
   connector->BindInterface(kServiceCName, &c);
   base::RunLoop loop;
   c->C(loop.QuitClosure());
@@ -131,7 +131,7 @@ TEST(ServiceManagerTestSupport, TestConnectorFactoryMultipleServices) {
   auto* connector = factory.GetDefaultConnector();
 
   {
-    TestBPtr b;
+    mojom::TestBPtr b;
     connector->BindInterface(kServiceBName, &b);
     base::RunLoop loop;
     b->B(loop.QuitClosure());
@@ -139,7 +139,7 @@ TEST(ServiceManagerTestSupport, TestConnectorFactoryMultipleServices) {
   }
 
   {
-    TestCPtr c;
+    mojom::TestCPtr c;
     connector->BindInterface(kServiceCName, &c);
     base::RunLoop loop;
     c->C(loop.QuitClosure());

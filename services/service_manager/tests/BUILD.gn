@@ -44,8 +44,9 @@ test("service_manager_unittests") {
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "test.mojom",
+    "test_support.test-mojom",
   ]
 }
 
