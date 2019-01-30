@@ -635,6 +635,14 @@ void AssistantInteractionController::OnUiVisible(
       break;
   }
 
+  // Explicitly check the interaction state to ensure warmer welcome will
+  // not interrupt any ongoing active interactions. This happens, for example,
+  // when the first Assistant launch of the current user session is trigger by
+  // Assistant notification, or directly sending query without showing Ui
+  // during integration test.
+  if (model_.interaction_state() == InteractionState::kActive)
+    should_attempt_warmer_welcome_ = false;
+
   // TODO(yileili): Currently WW is only triggered when the first Assistant
   // launch of the user session does not automatically start an interaction that
   // would otherwise cause us to interrupt the user. Need further UX design to
