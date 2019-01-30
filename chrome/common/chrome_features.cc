@@ -294,6 +294,11 @@ const base::Feature kGdiTextPrinting{"GdiTextPrinting",
 const base::Feature kGeoLanguage{"GeoLanguage",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+const base::Feature kGoogleBrandedContextMenu{
+    "GoogleBrandedContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+
 #if defined(OS_ANDROID)
 const base::Feature kGrantNotificationsToDSE{"GrantNotificationsToDSE",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

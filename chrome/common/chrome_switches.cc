@@ -697,12 +697,6 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 // resulted in a browser startup.
 const char kWinJumplistAction[]             = "win-jumplist-action";
 
-#if defined(GOOGLE_CHROME_BUILD)
-// Shows a Google icon next to context menu items powered by Google services.
-const char kEnableGoogleBrandedContextMenu[] =
-    "enable-google-branded-context-menu";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 #if !defined(GOOGLE_CHROME_BUILD)
 // Enables a live-reload for local NTP resources. This only works when Chrome
 // is running from a Chrome source directory.

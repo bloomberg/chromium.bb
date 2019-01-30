@@ -202,10 +202,6 @@ extern const char kWindowWorkspace[];
 extern const char kWinHttpProxyResolver[];
 extern const char kWinJumplistAction[];
 
-#if defined(GOOGLE_CHROME_BUILD)
-extern const char kEnableGoogleBrandedContextMenu[];
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 #if !defined(GOOGLE_CHROME_BUILD)
 extern const char kLocalNtpReload[];
 #endif

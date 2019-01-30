@@ -483,10 +483,7 @@ void AddAvatarToLastMenuItem(const gfx::Image& icon,
 // services like translate and search.
 void AddGoogleIconToLastMenuItem(ui::SimpleMenuModel* menu) {
 #if defined(GOOGLE_CHROME_BUILD)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGoogleBrandedContextMenu) ||
-      base::FieldTrialList::FindFullName("GoogleBrandedContextMenu") ==
-          "branded") {
+  if (base::FeatureList::IsEnabled(features::kGoogleBrandedContextMenu)) {
     menu->SetIcon(
         menu->GetItemCount() - 1,
         ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_GOOGLE_ICON));

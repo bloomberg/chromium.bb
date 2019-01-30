@@ -2609,7 +2609,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-google-branded-context-menu",
      flag_descriptions::kGoogleBrandedContextMenuName,
      flag_descriptions::kGoogleBrandedContextMenuDescription, kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableGoogleBrandedContextMenu)},
+     FEATURE_VALUE_TYPE(features::kGoogleBrandedContextMenu)},
 #endif  // !OS_ANDROID && GOOGLE_CHROME_BUILD
 #if defined(OS_MACOSX)
     {"enable-content-fullscreen", flag_descriptions::kContentFullscreenName,
