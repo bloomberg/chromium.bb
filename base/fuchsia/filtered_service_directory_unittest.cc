@@ -16,8 +16,8 @@ namespace fuchsia {
 class FilteredServiceDirectoryTest : public ServiceDirectoryTestBase {
  public:
   FilteredServiceDirectoryTest() {
-    filtered_service_dir_ =
-        std::make_unique<FilteredServiceDirectory>(client_context_.get());
+    filtered_service_dir_ = std::make_unique<FilteredServiceDirectory>(
+        public_service_directory_client_.get());
     filtered_client_context_ = std::make_unique<ComponentContext>(
         filtered_service_dir_->ConnectClient());
   }

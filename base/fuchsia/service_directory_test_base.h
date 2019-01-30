@@ -6,6 +6,7 @@
 #define BASE_FUCHSIA_SERVICE_DIRECTORY_TEST_BASE_H_
 
 #include <lib/zx/channel.h>
+#include <memory>
 
 #include "base/fuchsia/component_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
@@ -22,18 +23,21 @@ class ServiceDirectoryTestBase : public testing::Test {
   ServiceDirectoryTestBase();
   ~ServiceDirectoryTestBase() override;
 
-  void ConnectClientContextToDirectory(const char* path);
   void VerifyTestInterface(fidl::InterfacePtr<testfidl::TestInterface>* stub,
                            zx_status_t expected_error);
 
  protected:
   MessageLoopForIO message_loop_;
+
   std::unique_ptr<ServiceDirectory> service_directory_;
-  zx::channel service_directory_client_channel_;
   TestInterfaceImpl test_service_;
   std::unique_ptr<ScopedServiceBinding<testfidl::TestInterface>>
       service_binding_;
-  std::unique_ptr<ComponentContext> client_context_;
+
+  std::unique_ptr<ServiceDirectoryClient> public_service_directory_client_;
+  std::unique_ptr<ServiceDirectoryClient> root_service_directory_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceDirectoryTestBase);
 };
 
 }  // namespace fuchsia
