@@ -13,9 +13,11 @@
 namespace quic {
 namespace test {
 
-void NoopEncoderStreamErrorDelegate::OnError(QuicStringPiece error_message) {}
+void NoopEncoderStreamErrorDelegate::OnEncoderStreamError(
+    QuicStringPiece error_message) {}
 
-void NoopDecoderStreamSenderDelegate::Write(QuicStringPiece data) {}
+void NoopDecoderStreamSenderDelegate::WriteDecoderStreamData(
+    QuicStringPiece data) {}
 
 TestHeadersHandler::TestHeadersHandler()
     : decoding_completed_(false), decoding_error_detected_(false) {}

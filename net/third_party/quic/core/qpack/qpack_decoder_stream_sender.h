@@ -24,9 +24,10 @@ class QUIC_EXPORT_PRIVATE QpackDecoderStreamSender {
     virtual ~Delegate() = default;
 
     // Encoded |data| is ready to be written on the decoder stream.
-    // Write() is called exactly once for each instruction, |data| contains the
-    // entire encoded instruction and it is guaranteed to be not empty.
-    virtual void Write(QuicStringPiece data) = 0;
+    // WriteDecoderStreamData() is called exactly once for each instruction.
+    // |data| contains the entire encoded instruction and it is guaranteed to be
+    // not empty.
+    virtual void WriteDecoderStreamData(QuicStringPiece data) = 0;
   };
 
   explicit QpackDecoderStreamSender(Delegate* delegate);

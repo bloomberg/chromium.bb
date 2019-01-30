@@ -154,7 +154,7 @@ TEST_P(QpackEncoderTest, SimpleIndexed) {
 
 TEST_P(QpackEncoderTest, DecoderStreamError) {
   EXPECT_CALL(decoder_stream_error_delegate_,
-              OnError(Eq("Encoded integer too large.")));
+              OnDecoderStreamError(Eq("Encoded integer too large.")));
 
   QpackEncoder encoder(&decoder_stream_error_delegate_,
                        &encoder_stream_sender_delegate_);
