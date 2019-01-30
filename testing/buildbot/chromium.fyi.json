@@ -1920,6 +1920,7 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_browser_tests",
