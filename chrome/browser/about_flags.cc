@@ -4281,6 +4281,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kEnableOverviewRoundedCorners)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+    {"d3d11-video-decoder", flag_descriptions::kD3D11VideoDecoderName,
+     flag_descriptions::kD3D11VideoDecoderDescription, kOsWin,
+     FEATURE_VALUE_TYPE(media::kD3D11VideoDecoder)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
