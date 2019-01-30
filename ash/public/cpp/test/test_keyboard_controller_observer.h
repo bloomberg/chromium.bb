@@ -7,6 +7,7 @@
 
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "ui/keyboard/public/keyboard_config.mojom.h"
 
 namespace ash {
 
