@@ -57,10 +57,6 @@ void CreateShortcutsForApp(Profile* profile, const Extension* app) {
                            creation_locations, profile, app);
 }
 
-void SetCurrentAppShortcutsVersion(PrefService* prefs) {
-  prefs->SetInteger(prefs::kAppShortcutsVersion, kCurrentAppShortcutsVersion);
-}
-
 }  // namespace
 
 // static
@@ -73,7 +69,6 @@ void AppShortcutManager::RegisterProfilePrefs(
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
       is_profile_attributes_storage_observer_(false),
-      prefs_(profile->GetPrefs()),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   // Use of g_browser_process requires that we are either on the UI thread, or
@@ -145,17 +140,32 @@ void AppShortcutManager::OnProfileWillBeRemoved(
                      profile_path));
 }
 
+void AppShortcutManager::UpdateShortcutsForAllAppsNow() {
+  web_app::UpdateShortcutsForAllApps(
+      profile_,
+      base::BindOnce(&AppShortcutManager::SetCurrentAppShortcutsVersion,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AppShortcutManager::SetCurrentAppShortcutsVersion() {
+  profile_->GetPrefs()->SetInteger(prefs::kAppShortcutsVersion,
+                                   kCurrentAppShortcutsVersion);
+}
+
 void AppShortcutManager::UpdateShortcutsForAllAppsIfNeeded() {
+  // Updating shortcuts writes to user home folders, which can not be done in
+  // tests without exploding disk space usage on the bots.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     return;
 
-  int last_version = prefs_->GetInteger(prefs::kAppShortcutsVersion);
+  int last_version =
+      profile_->GetPrefs()->GetInteger(prefs::kAppShortcutsVersion);
   if (last_version >= kCurrentAppShortcutsVersion)
     return;
 
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&web_app::UpdateShortcutsForAllApps, profile_,
-                     base::Bind(&SetCurrentAppShortcutsVersion, prefs_)),
+      base::BindOnce(&AppShortcutManager::UpdateShortcutsForAllAppsNow,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kUpdateShortcutsForAllAppsDelay));
 }
