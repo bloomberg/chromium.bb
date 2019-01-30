@@ -849,7 +849,6 @@ class RTCPeerConnectionHandler::Observer
   void OnIceConnectionChange(
       PeerConnectionInterface::IceConnectionState new_state) override {}
   void OnStandardizedIceConnectionChange(
-
       PeerConnectionInterface::IceConnectionState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
       main_thread_->PostTask(
