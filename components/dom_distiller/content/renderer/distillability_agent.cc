@@ -100,10 +100,10 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
     int score_int = std::round(score * 100);
     if (score > 0) {
       UMA_HISTOGRAM_COUNTS_1000("DomDistiller.DistillabilityScoreNMF.Positive",
-          score_int);
+                                score_int);
     } else {
       UMA_HISTOGRAM_COUNTS_1000("DomDistiller.DistillabilityScoreNMF.Negative",
-          -score_int);
+                                -score_int);
     }
     if (distillable) {
       // The long-article model is trained with pages that are
@@ -112,10 +112,10 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
       int long_score_int = std::round(long_score * 100);
       if (long_score > 0) {
         UMA_HISTOGRAM_COUNTS_1000("DomDistiller.LongArticleScoreNMF.Positive",
-            long_score_int);
+                                  long_score_int);
       } else {
         UMA_HISTOGRAM_COUNTS_1000("DomDistiller.LongArticleScoreNMF.Negative",
-            -long_score_int);
+                                  -long_score_int);
       }
     }
   }
@@ -124,25 +124,25 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
                (static_cast<unsigned>(distillable) << 1);
   if (is_last) {
     UMA_HISTOGRAM_ENUMERATION("DomDistiller.PageDistillableAfterLoading",
-        bucket, 4);
+                              bucket, 4);
   } else {
     UMA_HISTOGRAM_ENUMERATION("DomDistiller.PageDistillableAfterParsing",
-        bucket, 4);
+                              bucket, 4);
     if (!distillable) {
       UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
-          NOT_ARTICLE, REJECTION_BUCKET_BOUNDARY);
+                                NOT_ARTICLE, REJECTION_BUCKET_BOUNDARY);
     } else if (features.is_mobile_friendly) {
       UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
-          MOBILE_FRIENDLY, REJECTION_BUCKET_BOUNDARY);
+                                MOBILE_FRIENDLY, REJECTION_BUCKET_BOUNDARY);
     } else if (blacklisted) {
       UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
-          BLACKLISTED, REJECTION_BUCKET_BOUNDARY);
+                                BLACKLISTED, REJECTION_BUCKET_BOUNDARY);
     } else if (!long_article) {
       UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
-          TOO_SHORT, REJECTION_BUCKET_BOUNDARY);
+                                TOO_SHORT, REJECTION_BUCKET_BOUNDARY);
     } else {
       UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
-          NOT_REJECTED, REJECTION_BUCKET_BOUNDARY);
+                                NOT_REJECTED, REJECTION_BUCKET_BOUNDARY);
     }
   }
 
@@ -174,20 +174,18 @@ bool IsDistillablePage(WebDocument& doc,
 
 }  // namespace
 
-DistillabilityAgent::DistillabilityAgent(
-    content::RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
-}
+DistillabilityAgent::DistillabilityAgent(content::RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame) {}
 
-void DistillabilityAgent::DidMeaningfulLayout(
-    WebMeaningfulLayout layout_type) {
+void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
   if (layout_type != WebMeaningfulLayout::kFinishedParsing &&
       layout_type != WebMeaningfulLayout::kFinishedLoading) {
     return;
   }
 
   DCHECK(render_frame());
-  if (!render_frame()->IsMainFrame()) return;
+  if (!render_frame()->IsMainFrame())
+    return;
   DCHECK(render_frame()->GetWebFrame());
   WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
   if (doc.IsNull() || doc.Body().IsNull())
@@ -196,15 +194,16 @@ void DistillabilityAgent::DidMeaningfulLayout(
     return;
 
   bool is_loaded = layout_type == WebMeaningfulLayout::kFinishedLoading;
-  if (!NeedToUpdate(is_loaded)) return;
+  if (!NeedToUpdate(is_loaded))
+    return;
 
   bool is_last = IsLast(is_loaded);
   // Connect to Mojo service on browser to notify page distillability.
   mojom::DistillabilityServicePtr distillability_service;
-  render_frame()->GetRemoteInterfaces()->GetInterface(
-      &distillability_service);
+  render_frame()->GetRemoteInterfaces()->GetInterface(&distillability_service);
   DCHECK(distillability_service);
-  if (!distillability_service.is_bound()) return;
+  if (!distillability_service.is_bound())
+    return;
   bool is_mobile_friendly = false;
   bool is_distillable = IsDistillablePage(doc, is_last, is_mobile_friendly);
   distillability_service->NotifyIsDistillable(is_distillable, is_last,
