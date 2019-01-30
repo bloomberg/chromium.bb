@@ -1357,9 +1357,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
-      // If large_scale_tile = 1, only support to output to ivf format.
-      if (config->cfg.large_scale_tile && !config->write_ivf)
-        die("only support ivf output format while %s.\n", arg.name);
     } else if (arg_match(&arg, &monochrome, argi)) {
       config->cfg.monochrome = 1;
     } else if (arg_match(&arg, &full_still_picture_hdr, argi)) {
@@ -2117,6 +2114,10 @@ int main(int argc, const char **argv_) {
   FOREACH_STREAM(stream, streams) {
     check_encoder_config(global.disable_warning_prompt, &global,
                          &stream->config.cfg);
+
+    // If large_scale_tile = 1, only support to output to ivf format.
+    if (stream->config.cfg.large_scale_tile && !stream->config.write_ivf)
+      die("only support ivf output format while large-scale-tile=1\n");
   }
 
   /* Handle non-option arguments */
