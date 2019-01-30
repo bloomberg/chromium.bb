@@ -126,6 +126,10 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     return media_session::test::GetMediaSessionInfoSync(session)->state;
   }
 
+  void ClearMojoObservers(MediaSessionImpl* session) {
+    session->mojo_observers_.CloseAll();
+  }
+
   bool HasMojoObservers(MediaSessionImpl* session) {
     return !session->mojo_observers_.empty();
   }
@@ -302,6 +306,10 @@ TEST_F(MediaSessionImplTest, PepperForcesDuckAndRequestsFocus) {
 }
 
 TEST_F(MediaSessionImplTest, RegisterMojoObserver) {
+  // There is no way to get the number of mojo observers so we should just
+  // remove them all and check if the mojo observers interface ptr set is
+  // empty or not.
+  ClearMojoObservers(GetMediaSession());
   EXPECT_FALSE(HasMojoObservers(GetMediaSession()));
 
   MockMediaSessionMojoObserver observer(*GetMediaSession());

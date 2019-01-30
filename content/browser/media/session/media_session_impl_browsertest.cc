@@ -232,7 +232,8 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   }
 
   std::unique_ptr<MediaSessionImpl> CreateDummyMediaSession() {
-    return base::WrapUnique<MediaSessionImpl>(new MediaSessionImpl(nullptr));
+    return base::WrapUnique<MediaSessionImpl>(
+        new MediaSessionImpl(CreateBrowser()->web_contents()));
   }
 
   MediaSessionUmaHelper* GetMediaSessionUMAHelper() {

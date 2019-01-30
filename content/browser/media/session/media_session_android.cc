@@ -4,6 +4,8 @@
 
 #include "content/browser/media/session/media_session_android.h"
 
+#include <utility>
+
 #include "base/android/jni_array.h"
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_impl.h"
@@ -26,7 +28,9 @@ struct MediaSessionAndroid::JavaObjectGetter {
 };
 
 MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
-    : MediaSessionObserver(session) {
+    : media_session_(session) {
+  DCHECK(media_session_);
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_media_session =
       Java_MediaSessionImpl_create(env, reinterpret_cast<intptr_t>(this));
@@ -35,9 +39,26 @@ MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
   WebContentsAndroid* contents_android = GetWebContentsAndroid();
   if (contents_android)
     contents_android->SetMediaSession(j_media_session);
+
+  media_session::mojom::MediaSessionObserverPtr observer;
+  observer_binding_.Bind(mojo::MakeRequest(&observer));
+  session->AddObserver(std::move(observer));
 }
 
-MediaSessionAndroid::~MediaSessionAndroid() = default;
+MediaSessionAndroid::~MediaSessionAndroid() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_local_session = j_media_session_.get(env);
+
+  // The Java object will tear down after this call.
+  if (!j_local_session.is_null())
+    Java_MediaSessionImpl_mediaSessionDestroyed(env, j_local_session);
+
+  j_media_session_.reset();
+
+  WebContentsAndroid* contents_android = GetWebContentsAndroid();
+  if (contents_android)
+    contents_android->SetMediaSession(nullptr);
+}
 
 // static
 ScopedJavaLocalRef<jobject> JNI_MediaSessionImpl_GetMediaSessionFromWebContents(
@@ -53,30 +74,17 @@ ScopedJavaLocalRef<jobject> JNI_MediaSessionImpl_GetMediaSessionFromWebContents(
       session->session_android());
 }
 
-void MediaSessionAndroid::MediaSessionDestroyed() {
+void MediaSessionAndroid::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  // The Java object will tear down after this call.
-  Java_MediaSessionImpl_mediaSessionDestroyed(env, j_local_session);
-  j_media_session_.reset();
-
-  WebContentsAndroid* contents_android = GetWebContentsAndroid();
-  if (contents_android)
-    contents_android->SetMediaSession(nullptr);
-}
-
-void MediaSessionAndroid::MediaSessionStateChanged(bool is_controllable,
-                                                   bool is_suspended) {
-  ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
-  if (j_local_session.is_null())
-    return;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaSessionImpl_mediaSessionStateChanged(env, j_local_session,
-                                                 is_controllable, is_suspended);
+  Java_MediaSessionImpl_mediaSessionStateChanged(
+      env, j_local_session, session_info->is_controllable,
+      session_info->playback_state ==
+          media_session::mojom::MediaPlaybackState::kPaused);
 }
 
 void MediaSessionAndroid::MediaSessionMetadataChanged(
@@ -99,7 +107,7 @@ void MediaSessionAndroid::MediaSessionMetadataChanged(
 }
 
 void MediaSessionAndroid::MediaSessionActionsChanged(
-    const std::set<media_session::mojom::MediaSessionAction>& actions) {
+    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
@@ -116,55 +124,52 @@ void MediaSessionAndroid::MediaSessionActionsChanged(
 void MediaSessionAndroid::Resume(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
-  DCHECK(media_session());
-  media_session()->Resume(MediaSession::SuspendType::kUI);
+  DCHECK(media_session_);
+  media_session_->Resume(MediaSession::SuspendType::kUI);
 }
 
 void MediaSessionAndroid::Suspend(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
-  DCHECK(media_session());
-  media_session()->Suspend(MediaSession::SuspendType::kUI);
+  DCHECK(media_session_);
+  media_session_->Suspend(MediaSession::SuspendType::kUI);
 }
 
 void MediaSessionAndroid::Stop(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
-  DCHECK(media_session());
-  media_session()->Stop(MediaSession::SuspendType::kUI);
+  DCHECK(media_session_);
+  media_session_->Stop(MediaSession::SuspendType::kUI);
 }
 
 void MediaSessionAndroid::Seek(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj,
     const jlong millis) {
-  DCHECK(media_session());
+  DCHECK(media_session_);
   DCHECK_NE(millis, 0)
       << "Attempted to seek by a missing number of milliseconds";
-  media_session()->Seek(base::TimeDelta::FromMilliseconds(millis));
+  media_session_->Seek(base::TimeDelta::FromMilliseconds(millis));
 }
 
 void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            int action) {
-  media_session()->DidReceiveAction(
+  media_session_->DidReceiveAction(
       static_cast<media_session::mojom::MediaSessionAction>(action));
 }
 
 void MediaSessionAndroid::RequestSystemAudioFocus(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
-  DCHECK(media_session());
-  static_cast<MediaSessionImpl*>(media_session())
-      ->RequestSystemAudioFocus(media_session::mojom::AudioFocusType::kGain);
+  DCHECK(media_session_);
+  media_session_->RequestSystemAudioFocus(
+      media_session::mojom::AudioFocusType::kGain);
 }
 
 WebContentsAndroid* MediaSessionAndroid::GetWebContentsAndroid() {
-  MediaSessionImpl* session = static_cast<MediaSessionImpl*>(media_session());
-  if (!session)
-    return nullptr;
   WebContentsImpl* contents =
-      static_cast<WebContentsImpl*>(session->web_contents());
+      static_cast<WebContentsImpl*>(media_session_->web_contents());
   if (!contents)
     return nullptr;
   return contents->GetWebContentsAndroid();
