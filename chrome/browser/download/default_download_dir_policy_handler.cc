@@ -40,9 +40,9 @@ void DefaultDownloadDirPolicyHandler::ApplyPolicySettingsWithParameters(
 
   if (policies.Get(policy_name())->level == policy::POLICY_LEVEL_RECOMMENDED) {
     prefs->SetValue(prefs::kDownloadDefaultDirectory,
-                    std::make_unique<base::Value>(expanded_value));
+                    base::Value(expanded_value));
     prefs->SetValue(prefs::kSaveFileDefaultDirectory,
-                    std::make_unique<base::Value>(expanded_value));
+                    base::Value(expanded_value));
   }
 }
 
