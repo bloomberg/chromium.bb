@@ -31,6 +31,7 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT,
                int key_modifiers = 0) override;
+  void Cancel(int index = 0) override;
   void Leave(int index = 0) override;
 
   bool UserInputCheck(

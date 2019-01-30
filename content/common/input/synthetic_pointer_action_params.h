@@ -29,6 +29,7 @@ struct CONTENT_EXPORT SyntheticPointerActionParams {
     PRESS,
     MOVE,
     RELEASE,
+    CANCEL,
     LEAVE,
     IDLE,
     POINTER_ACTION_TYPE_MAX = IDLE

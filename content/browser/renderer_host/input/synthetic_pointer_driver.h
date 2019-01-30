@@ -39,6 +39,7 @@ class CONTENT_EXPORT SyntheticPointerDriver {
                        SyntheticPointerActionParams::Button button =
                            SyntheticPointerActionParams::Button::LEFT,
                        int key_modifiers = 0) = 0;
+  virtual void Cancel(int index = 0) = 0;
   virtual void Leave(int index = 0) = 0;
 
   // Check if the user inputs in the SyntheticPointerActionParams can generate

@@ -86,6 +86,9 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
         synthetic_pointer_driver_->Release(param.pointer_id(), param.button(),
                                            param.key_modifiers());
         break;
+      case SyntheticPointerActionParams::PointerActionType::CANCEL:
+        synthetic_pointer_driver_->Cancel(param.pointer_id());
+        break;
       case SyntheticPointerActionParams::PointerActionType::LEAVE:
         synthetic_pointer_driver_->Leave(param.pointer_id());
         break;
