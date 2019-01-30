@@ -13,6 +13,7 @@
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gfx/geometry/rect.h"
