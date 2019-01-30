@@ -1122,26 +1122,25 @@ IFACEMETHODIMP AXPlatformNodeWin::get_relationTargetsOfType(BSTR type_bstr,
   }
 
   base::string16 relation_type;
-  std::set<int32_t> target_ids;
+  std::set<AXPlatformNode*> enumerated_targets;
   int found = AXPlatformRelationWin::EnumerateRelationships(
-      GetData(), GetDelegate(), 0, type, &relation_type, &target_ids);
+      this, 0, type, &relation_type, &enumerated_targets);
   if (found == 0)
     return S_FALSE;
 
   // Don't return more targets than max_targets - but note that the caller
   // is allowed to specify max_targets=0 to mean no limit.
-  int count = static_cast<int>(target_ids.size());
+  int count = static_cast<int>(enumerated_targets.size());
   if (max_targets > 0 && count > max_targets)
     count = max_targets;
 
   // Allocate COM memory for the result array and populate it.
   *targets = static_cast<IUnknown**>(CoTaskMemAlloc(count * sizeof(IUnknown*)));
   int index = 0;
-  for (int target_id : target_ids) {
-    AXPlatformNodeWin* target = static_cast<AXPlatformNodeWin*>(
-        GetDelegate()->GetFromNodeID(target_id));
+  for (AXPlatformNode* target : enumerated_targets) {
     if (target) {
-      (*targets)[index] = static_cast<IAccessible*>(target);
+      AXPlatformNodeWin* win_target = static_cast<AXPlatformNodeWin*>(target);
+      (*targets)[index] = static_cast<IAccessible*>(win_target);
       (*targets)[index]->AddRef();
       if (++index > count)
         break;
@@ -1186,7 +1185,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nRelations(LONG* n_relations) {
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   int count = AXPlatformRelationWin::EnumerateRelationships(
-      GetData(), GetDelegate(), -1, base::string16(), nullptr, nullptr);
+      this, -1, base::string16(), nullptr, nullptr);
   *n_relations = count;
   return S_OK;
 }
@@ -1198,10 +1197,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_relation(LONG relation_index,
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   base::string16 relation_type;
-  std::set<int32_t> targets;
+  std::set<AXPlatformNode*> targets;
   int found = AXPlatformRelationWin::EnumerateRelationships(
-      GetData(), GetDelegate(), relation_index, base::string16(),
-      &relation_type, &targets);
+      this, relation_index, base::string16(), &relation_type, &targets);
   if (found == 0)
     return E_INVALIDARG;
 
@@ -1210,12 +1208,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_relation(LONG relation_index,
   DCHECK(SUCCEEDED(hr));
   relation_obj->AddRef();
   relation_obj->Initialize(relation_type);
-  for (int target_id : targets) {
-    AXPlatformNodeWin* target = static_cast<AXPlatformNodeWin*>(
-        GetDelegate()->GetFromNodeID(target_id));
-    if (!target)
-      continue;
-    relation_obj->AddTarget(target);
+  for (AXPlatformNode* target : targets) {
+    if (target)
+      relation_obj->AddTarget(static_cast<AXPlatformNodeWin*>(target));
   }
 
   // Maintain references to all relations returned by this object.

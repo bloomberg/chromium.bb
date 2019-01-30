@@ -2003,9 +2003,11 @@ static AtkIntListRelation kIntListRelations[] = {
 
 void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
                                                AtkRelationType relation,
-                                               int target_id) {
+                                               AXPlatformNode* target) {
+  DCHECK(target);
+
   // Avoid adding self-referential relations.
-  if (target_id == GetData().id)
+  if (target == this)
     return;
 
   // If we were compiled with a newer version of ATK than the runtime version,
@@ -2022,9 +2024,6 @@ void AXPlatformNodeAuraLinux::AddRelationToSet(AtkRelationSet* relation_set,
   if (relation > max_relation_type.value())
     return;
 
-  AXPlatformNode* target = GetDelegate()->GetFromNodeID(target_id);
-  if (!target)
-    return;
   atk_relation_set_add_relation_by_type(relation_set, relation,
                                         target->GetNativeViewAccessible());
 }
@@ -2038,18 +2037,17 @@ AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
   for (unsigned i = 0; i < G_N_ELEMENTS(kIntRelations); i++) {
     const AtkIntRelation& relation = kIntRelations[i];
 
-    int target_id;
-    if (GetIntAttribute(relation.attribute, &target_id))
-      AddRelationToSet(relation_set, relation.relation, target_id);
+    if (AXPlatformNode* target =
+            GetDelegate()->GetTargetNodeForRelation(relation.attribute))
+      AddRelationToSet(relation_set, relation.relation, target);
 
     if (!relation.reverse_relation.has_value())
       continue;
 
-    std::set<int32_t> target_ids =
-        GetDelegate()->GetReverseRelations(relation.attribute, GetData().id);
-    for (int32_t target_id : target_ids) {
-      AddRelationToSet(relation_set, relation.reverse_relation.value(),
-                       target_id);
+    std::set<AXPlatformNode*> target_ids =
+        GetDelegate()->GetReverseRelations(relation.attribute);
+    for (AXPlatformNode* target : target_ids) {
+      AddRelationToSet(relation_set, relation.reverse_relation.value(), target);
     }
   }
 
@@ -2058,21 +2056,18 @@ AtkRelationSet* AXPlatformNodeAuraLinux::GetAtkRelations() {
   for (unsigned i = 0; i < G_N_ELEMENTS(kIntListRelations); i++) {
     const AtkIntListRelation& relation = kIntListRelations[i];
 
-    std::vector<int32_t> target_ids;
-    if (GetIntListAttribute(relation.attribute, &target_ids)) {
-      for (int32_t target_id : target_ids) {
-        AddRelationToSet(relation_set, relation.relation, target_id);
-      }
-    }
+    std::set<AXPlatformNode*> targets =
+        GetDelegate()->GetTargetNodesForRelation(relation.attribute);
+    for (AXPlatformNode* target : targets)
+      AddRelationToSet(relation_set, relation.relation, target);
 
     if (!relation.reverse_relation.has_value())
       continue;
 
-    std::set<int32_t> reverse_target_ids =
-        GetDelegate()->GetReverseRelations(relation.attribute, GetData().id);
-    for (int32_t target_id : reverse_target_ids) {
-      AddRelationToSet(relation_set, relation.reverse_relation.value(),
-                       target_id);
+    std::set<AXPlatformNode*> reverse_target_ids =
+        GetDelegate()->GetReverseRelations(relation.attribute);
+    for (AXPlatformNode* target : reverse_target_ids) {
+      AddRelationToSet(relation_set, relation.reverse_relation.value(), target);
     }
   }
 
