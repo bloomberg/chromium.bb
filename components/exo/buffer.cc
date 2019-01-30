@@ -21,7 +21,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -412,7 +412,7 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
 Buffer::~Buffer() {}
 
 bool Buffer::ProduceTransferableResource(
-    LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
+    FrameSinkResourceManager* resource_manager,
     bool secure_output_only,
     viz::TransferableResource* resource) {
   TRACE_EVENT1("exo", "Buffer::ProduceTransferableResource", "buffer_id",
@@ -437,7 +437,7 @@ bool Buffer::ProduceTransferableResource(
     return false;
   }
 
-  resource->id = layer_tree_frame_sink_holder->AllocateResourceId();
+  resource->id = resource_manager->AllocateResourceId();
   resource->format = viz::RGBA_8888;
   resource->filter = GL_LINEAR;
   resource->size = gpu_memory_buffer_->GetSize();
@@ -471,7 +471,7 @@ bool Buffer::ProduceTransferableResource(
 
     // The contents texture will be released when no longer used by the
     // compositor.
-    layer_tree_frame_sink_holder->SetResourceReleaseCallback(
+    resource_manager->SetResourceReleaseCallback(
         resource->id,
         base::BindOnce(&Buffer::Texture::ReleaseTexImage,
                        base::Unretained(contents_texture),
@@ -501,7 +501,7 @@ bool Buffer::ProduceTransferableResource(
 
   // The mailbox texture will be released when no longer used by the
   // compositor.
-  layer_tree_frame_sink_holder->SetResourceReleaseCallback(
+  resource_manager->SetResourceReleaseCallback(
       resource->id,
       base::BindOnce(&Buffer::Texture::Release, base::Unretained(texture),
                      base::Bind(&Buffer::ReleaseTexture, AsWeakPtr(),

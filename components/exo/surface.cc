@@ -13,8 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/buffer.h"
+#include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
@@ -659,7 +659,7 @@ void Surface::AppendSurfaceHierarchyCallbacks(
 void Surface::AppendSurfaceHierarchyContentsToFrame(
     const gfx::Point& origin,
     float device_scale_factor,
-    LayerTreeFrameSinkHolder* frame_sink_holder,
+    FrameSinkResourceManager* resource_manager,
     viz::CompositorFrame* frame) {
   // The top most sub-surface is at the front of the RenderPass's quad_list,
   // so we need composite sub-surface in reversed order.
@@ -669,17 +669,16 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
     // decendents.
     sub_surface->AppendSurfaceHierarchyContentsToFrame(
         origin + sub_surface_entry.second.OffsetFromOrigin(),
-        device_scale_factor, frame_sink_holder, frame);
+        device_scale_factor, resource_manager, frame);
   }
 
   if (needs_update_resource_)
-    UpdateResource(frame_sink_holder);
+    UpdateResource(resource_manager);
 
   AppendContentsToFrame(origin, device_scale_factor, frame);
 
-  DCHECK(
-      !current_resource_.id ||
-      frame_sink_holder->HasReleaseCallbackForResource(current_resource_.id));
+  DCHECK(!current_resource_.id ||
+         resource_manager->HasReleaseCallbackForResource(current_resource_.id));
 }
 
 bool Surface::IsSynchronized() const {
@@ -818,12 +817,12 @@ void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
   buffer_ = buffer;
 }
 
-void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
+void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
   DCHECK(needs_update_resource_);
   needs_update_resource_ = false;
   if (current_buffer_.buffer()) {
     if (current_buffer_.buffer()->ProduceTransferableResource(
-            frame_sink_holder, state_.only_visible_on_secure_output,
+            resource_manager, state_.only_visible_on_secure_output,
             &current_resource_)) {
       current_resource_has_alpha_ =
           FormatHasAlpha(current_buffer_.buffer()->GetFormat());

@@ -17,7 +17,7 @@
 
 namespace exo {
 
-class LayerTreeFrameSinkHolder;
+class FrameSinkResourceManager;
 
 // This class provides the content for a Surface. The mechanism by which a
 // client provides and updates the contents is the responsibility of the client
@@ -51,10 +51,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // buffer. Returns a release callback on success. The release callback should
   // be called before a new texture mailbox can be acquired unless
   // |non_client_usage| is true.
-  bool ProduceTransferableResource(
-      LayerTreeFrameSinkHolder* layer_tree_frame_sink_holder,
-      bool secure_output_only,
-      viz::TransferableResource* resource);
+  bool ProduceTransferableResource(FrameSinkResourceManager* resource_manager,
+                                   bool secure_output_only,
+                                   viz::TransferableResource* resource);
 
   // This should be called when the buffer is attached to a Surface.
   void OnAttach();

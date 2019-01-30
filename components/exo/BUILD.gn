@@ -23,6 +23,8 @@ source_set("exo") {
     "data_source_observer.h",
     "display.cc",
     "display.h",
+    "frame_sink_resource_manager.cc",
+    "frame_sink_resource_manager.h",
     "keyboard_delegate.h",
     "keyboard_device_configuration_delegate.h",
     "keyboard_observer.h",

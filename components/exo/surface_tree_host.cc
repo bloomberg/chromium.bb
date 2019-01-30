@@ -250,7 +250,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       host_window()->GetLocalSurfaceIdAllocation().allocation_time();
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
       root_surface_origin_, device_scale_factor,
-      layer_tree_frame_sink_holder_.get(), &frame);
+      layer_tree_frame_sink_holder_->resource_manager(), &frame);
 
   std::vector<GLbyte*> sync_tokens;
   for (auto& resource : frame.resource_list)

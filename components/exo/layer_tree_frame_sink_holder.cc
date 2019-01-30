@@ -29,9 +29,6 @@ LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
   if (frame_sink_)
     frame_sink_->DetachFromClient();
 
-  for (auto& callback : release_callbacks_)
-    std::move(callback.second).Run(gpu::SyncToken(), true /* lost */);
-
   if (lifetime_manager_)
     lifetime_manager_->RemoveObserver(this);
 }
@@ -68,7 +65,7 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
 
   // Delete sink holder immediately if not waiting for resources to be
   // reclaimed.
-  if (holder->release_callbacks_.empty())
+  if (holder->resource_manager_.HasNoCallbacks())
     return;
 
   WMHelper::LifetimeManager* lifetime_manager =
@@ -102,22 +99,6 @@ void LayerTreeFrameSinkHolder::DidNotProduceFrame(
   frame_sink_->DidNotProduceFrame(ack);
 }
 
-bool LayerTreeFrameSinkHolder::HasReleaseCallbackForResource(
-    viz::ResourceId id) {
-  return release_callbacks_.find(id) != release_callbacks_.end();
-}
-
-void LayerTreeFrameSinkHolder::SetResourceReleaseCallback(
-    viz::ResourceId id,
-    viz::ReleaseCallback callback) {
-  DCHECK(!callback.is_null());
-  release_callbacks_[id] = std::move(callback);
-}
-
-int LayerTreeFrameSinkHolder::AllocateResourceId() {
-  return next_resource_id_++;
-}
-
 base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -138,15 +119,10 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
     if (base::ContainsValue(last_frame_resources_, resource.id)) {
       continue;
     }
-    auto it = release_callbacks_.find(resource.id);
-    DCHECK(it != release_callbacks_.end());
-    if (it != release_callbacks_.end()) {
-      std::move(it->second).Run(resource.sync_token, resource.lost);
-      release_callbacks_.erase(it);
-    }
+    resource_manager_.ReclaimResource(resource);
   }
 
-  if (lifetime_manager_ && release_callbacks_.empty())
+  if (lifetime_manager_ && resource_manager_.HasNoCallbacks())
     ScheduleDelete();
 }
 
@@ -164,9 +140,7 @@ void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
 
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   last_frame_resources_.clear();
-  for (auto& callback : release_callbacks_)
-    std::move(callback.second).Run(gpu::SyncToken(), true /* lost */);
-  release_callbacks_.clear();
+  resource_manager_.ClearAllCallbacks();
 
   if (lifetime_manager_)
     ScheduleDelete();

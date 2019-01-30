@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/exo/buffer.h"
+#include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
@@ -65,8 +66,8 @@ TEST_F(BufferTest, ReleaseCallback) {
   buffer->OnAttach();
   viz::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
-  bool rv =
-      buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
+  bool rv = buffer->ProduceTransferableResource(
+      frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
   // Release buffer.
@@ -97,8 +98,8 @@ TEST_F(BufferTest, IsLost) {
   buffer->OnAttach();
   // Acquire a texture transferable resource for the contents of the buffer.
   viz::TransferableResource resource;
-  bool rv =
-      buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
+  bool rv = buffer->ProduceTransferableResource(
+      frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
   scoped_refptr<viz::ContextProvider> context_provider =
@@ -122,8 +123,8 @@ TEST_F(BufferTest, IsLost) {
   // Producing a new texture transferable resource for the contents of the
   // buffer.
   viz::TransferableResource new_resource;
-  rv = buffer->ProduceTransferableResource(frame_sink_holder, false,
-                                           &new_resource);
+  rv = buffer->ProduceTransferableResource(
+      frame_sink_holder->resource_manager(), false, &new_resource);
   ASSERT_TRUE(rv);
   buffer->OnDetach();
 
@@ -150,8 +151,8 @@ TEST_F(BufferTest, OnLostResources) {
   buffer->OnAttach();
   // Acquire a texture transferable resource for the contents of the buffer.
   viz::TransferableResource resource;
-  bool rv =
-      buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
+  bool rv = buffer->ProduceTransferableResource(
+      frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
   static_cast<ui::InProcessContextFactory*>(GetAuraEnv()->context_factory())
@@ -178,8 +179,8 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
   buffer->OnAttach();
   viz::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
-  bool rv =
-      buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
+  bool rv = buffer->ProduceTransferableResource(
+      frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
   // Submit frame with resource.
@@ -231,8 +232,8 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   buffer->OnAttach();
   viz::TransferableResource resource;
   // Produce a transferable resource for the contents of the buffer.
-  bool rv =
-      buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
+  bool rv = buffer->ProduceTransferableResource(
+      frame_sink_holder->resource_manager(), false, &resource);
   ASSERT_TRUE(rv);
 
   // Submit frame with resource.
