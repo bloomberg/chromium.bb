@@ -14,7 +14,7 @@
 <translation id="1165039591588034296">错误</translation>
 <translation id="1172898394251786223">下一个字段</translation>
 <translation id="1176932207622159128">无法保存图片</translation>
-<translation id="1181037720776840403">移除</translation>
+<translation id="1181037720776840403">删除</translation>
 <translation id="1201530049782216880">打开新的无痕式标签页</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
 <translation id="1219674500290482172">无法连接到互联网。</translation>
@@ -282,7 +282,6 @@
 <translation id="5728700505257787410">很抱歉，登录您的帐号时出现问题。</translation>
 <translation id="5737974891429562743">帐号登录详细信息已过期，请进行更新以开始同步。</translation>
 <translation id="5738887413654608789">这样可让您找到与目前周遭环境相关的网页。</translation>
-<translation id="5771816112378578655">正在设置...</translation>
 <translation id="5816228676161003208">这样，您就可以使用语音更快速地进行搜索。</translation>
 <translation id="5846482154967366008">搜索引擎</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
@@ -309,6 +308,7 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
+<translation id="6108923351542677676">正在设置…</translation>
 <translation id="6122191549521593678">在线</translation>
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6136914049981179737">几秒前</translation>

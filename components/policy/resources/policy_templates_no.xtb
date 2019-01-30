@@ -3262,7 +3262,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="8631434304112909927">frem til versjon <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">For Android-apper blir bare det innebygde kameraet påvirket av denne regelen. Når denne regelen er angitt som «true» (sann), slås kameraet av for alle Android-apper – uten unntak.</translation>
 <translation id="8649763579836720255">Chrome OS-enheter can bruke ekstern godkjenning (godkjent tilgang) for å få et sertifikat utstedt av Chrome OS CA, som bekrefter at enheten er kvalifisert til å spille av beskyttet innhold. Denne prosessen involverer sending av godkjenningsinformasjon for maskinvaren til Chrome OS CA, som unikt identifiserer enheten.
 
           Hvis denne innstillingen angis til «false», kommer ikke enheten til å bruke ekstern godkjenning for innholdsbeskyttelse, og enheten kan sannsynligvis ikke spille av beskyttet innhold.

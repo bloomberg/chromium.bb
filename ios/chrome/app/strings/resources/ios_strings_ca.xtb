@@ -282,7 +282,6 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5728700505257787410">S'ha produït un problema en iniciar la sessió al vostre compte.</translation>
 <translation id="5737974891429562743">Actualitza les dades d'inici de sessió del compte per iniciar la sincronització.</translation>
 <translation id="5738887413654608789">Això et permet detectar pàgines web rellevants del teu entorn.</translation>
-<translation id="5771816112378578655">Configuració en curs...</translation>
 <translation id="5816228676161003208">Això et permet fer cerques més de pressa amb la veu.</translation>
 <translation id="5846482154967366008">Motor de cerca</translation>
 <translation id="5854790677617711513">Anterior a 30 dies</translation>
@@ -309,6 +308,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6042308850641462728">Més</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toca per cancel·lar.</translation>
+<translation id="6108923351542677676">Configuració en curs...</translation>
 <translation id="6122191549521593678">En línia</translation>
 <translation id="6127379762771434464">S'ha suprimit l'element</translation>
 <translation id="6136914049981179737">Fa segons</translation>

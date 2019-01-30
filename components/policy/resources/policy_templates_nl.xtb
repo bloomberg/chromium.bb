@@ -3269,7 +3269,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">Voor Android-apps is dit beleid alleen van invloed op de ingebouwde camera. Wanneer dit beleid is ingesteld op 'True', wordt voor alle Android-apps, zonder uitzondering, de camera uitgeschakeld.</translation>
 <translation id="8649763579836720255">Chrome OS-apparaten kunnen externe verificatie (geverifieerde toegang) gebruiken om een certificaat te ontvangen dat is uitgegeven door de certificaatautoriteit voor Chrome OS en waarin het apparaat uniek wordt geïdentificeerd.
 
           Als deze instelling is ingesteld op 'False', gebruikt het apparaat geen externe verificatie om content te beveiligen en kan het apparaat beveiligde content mogelijk niet afspelen.

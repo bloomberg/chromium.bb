@@ -1438,6 +1438,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (使用硬體加密金鑰)</translation>
 <translation id="316125635462764134">移除應用程式</translation>
 <translation id="3161522574479303604">所有語言</translation>
+<translation id="3163201441334626963">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
 <translation id="3165390001037658081">部分電信業者可能會封鎖這項功能。</translation>
 <translation id="316854673539778496">如要將擴充功能同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3952,6 +3953,7 @@
 <translation id="7002454948392136538">選擇這位受監管使用者的管理員</translation>
 <translation id="7003339318920871147">網路資料庫</translation>
 <translation id="7003723821785740825">設定更快速的裝置解鎖方式</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
 <translation id="7004499039102548441">最近開啟的分頁</translation>
 <translation id="7005848115657603926">頁面範圍無效，請使用 <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">下邊界</translation>

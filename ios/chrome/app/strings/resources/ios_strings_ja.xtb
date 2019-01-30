@@ -282,7 +282,6 @@
 <translation id="5728700505257787410">アカウントへのログイン中に問題が発生しました。</translation>
 <translation id="5737974891429562743">アカウントのログイン情報が古くなっています。同期を開始するには更新してください。</translation>
 <translation id="5738887413654608789">この機能を使用すると、周囲で発信されているデータを受信して関連のあるウェブページを表示することができます。</translation>
-<translation id="5771816112378578655">セットアップ中...</translation>
 <translation id="5816228676161003208">音声を使ってより速く検索できます。</translation>
 <translation id="5846482154967366008">検索エンジン</translation>
 <translation id="5854790677617711513">30 日以上経過</translation>
@@ -309,6 +308,7 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
+<translation id="6108923351542677676">設定しています...</translation>
 <translation id="6122191549521593678">オンライン</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>

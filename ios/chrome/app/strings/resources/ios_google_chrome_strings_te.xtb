@@ -24,7 +24,7 @@
 <translation id="384394811301901750">Google Chrome ప్రస్తుతం మీ కెమెరాను ఉపయోగించలేదు</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">మీరు సింక్ ఖాతాలను <ph name="USER_EMAIL1" /> నుండి <ph name="USER_EMAIL2" />కి మారుస్తున్నారు. ఇప్పటికే ఉన్న మీ Chrome డేటా <ph name="DOMAIN" /> నిర్వహణలో ఉంది. దీని వలన మీ డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా <ph name="USER_EMAIL1" />లో అలాగే ఉంటుంది.</translation>
-<translation id="3988789688219830639">మీ ఫోటోలు లేదా వీడియోలకు Google Chrome యాక్సెస్‌ను కలిగి లేదు. iOS సెట్టింగ్‌లు &gt; గోప్యత &gt; ఫోటోలులో యాక్సెస్‌ను ప్రారంభించండి.</translation>
+<translation id="3988789688219830639">Google Chrome మీ ఫోటోలు లేదా వీడియోలకు యాక్సెస్‌ను కలిగి లేదు. iOS సెట్టింగ్‌లు &gt; గోప్యత &gt; ఫోటోల్లో యాక్సెస్‌ను ప్రారంభించండి.</translation>
 <translation id="4099578267706723511">Googleకు వినియోగ గణాంకాలు, క్రాష్ నివేదికలను పంపడం ద్వారా Chromeను మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="415767770115540173">మీ స్థానం ఆధారంగా Chromeలో మెరుగైన Google అనుభవాన్ని పొందండి.</translation>
 <translation id="424864128008805179">Chrome నుండి సైన్ అవుట్ చేయాలా?</translation>
@@ -36,7 +36,7 @@
 <translation id="5639704535586432836">సెట్టింగ్‌లు &gt; గోప్యత &gt; కెమెరా &gt; Google Chromeని తెరిచి, కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="5642200033778930880">Google Chrome విభజన వీక్షణ మోడ్‌లో మీ కెమెరాను ఉపయోగించలేదు</translation>
 <translation id="5854621639439811139">Chrome చిట్కా. వెనకకు, ముందుకు మరియు శోధన వంటి కొన్ని బటన్‌లు ఇప్పుడు మీ స్క్రీన్ దిగువున ఉన్నాయి.</translation>
-<translation id="6036420186814142909">ఇంటర్నెట్ డేటాను నిర్వహించడంలో, వెబ్ పేజీలను త్వరగా లోడ్ చేయగలగడంలో మీకు సహాయపడే ఫీచ‌ర్‌లను Google Chrome కలిగి ఉంది.
+<translation id="6036420186814142909">మీ ఇంటర్నెట్ డేటాను నిర్వహించడంలో మరియు మీరు వెబ్ పేజీలను త్వరగా లోడ్ చేయగలగడంలో మీకు సహాయపడే ఫీచర్‌లు Google Chromeలో ఉన్నాయి.
 <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">మీరు మీ ఇతర పరికరాల్లోని Chromeలో తెరిచిన ట్యాబ్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
@@ -46,7 +46,7 @@
 <translation id="7165736900384873061">Google Chrome QR స్కానర్‌ని వినియోగించండి</translation>
 <translation id="7172660552945675509">చిట్కా: <ph name="BEGIN_LINK" />Chromeను మీ డాక్‌కు తరలించండి<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome మీ పాస్‌వర్డ్‌లను ప్రమాణీకరణ ఉన్న వారు మాత్రమే యాక్సెస్ చేస్తున్నట్లు నిర్ధారించడం కోసం ఫేస్ IDని ఉపయోగిస్తుంది.</translation>
-<translation id="7265369419224458312">మీరు మీ కంప్యూటర్‌లో తెరిచిన ట్యాబ్‌లను ఇక్కడి నుండే యాక్సెస్ చేయండి. మీ కంప్యూటర్‌లో Chromeను తెరిచి, మెనూకు వెళ్లి, “Chromeకు సైన్ ఇన్ చేయి…” ఎంచుకోండి</translation>
+<translation id="7265369419224458312">మీరు మీ కంప్యూటర్‌లో తెరిచిన ట్యాబ్‌లను ఇక్కడి నుండే యాక్సెస్ చేయండి. మీ కంప్యూటర్‌లో Chromeని తెరిచి, మెనుకి వెళ్లి, “Chromeకి సైన్ ఇన్ చేయి…” ఎంచుకోండి</translation>
 <translation id="728488472449859922">Google Chrome QR స్కానర్‌ని ఆన్ చేయండి</translation>
 <translation id="7400722733683201933">Google Chrome గురించి</translation>
 <translation id="7437998757836447326">Chrome నుండి సైన్ అవుట్ చేయండి</translation>

@@ -132,7 +132,7 @@
 <translation id="2100350898815792233">అన్ని విరామచిహ్నాలు</translation>
 <translation id="2110480898214777136">పేజీ, డైలాగ్ లేదా ఇతర కంటైనర్‌లో ప్రారంభం నుండి ముగింపు వరకు లేదా ముగింపు నుండి ప్రారంభం వరకు సర్దుబాటు చేయండి</translation>
 <translation id="2119965627982867824">spnbtn</translation>
-<translation id="2121067395472282800">ప్రాప్యత కీ:<ph name="KEY" /></translation>
+<translation id="2121067395472282800">యాక్సెస్ కీ:<ph name="KEY" /></translation>
 <translation id="2138345533858834403">స్క్రీన్ ఎగువన ChromeVox ప్యానెల్‌లో రీఫ్రెష్ చేయదగిన
         బ్రెయిలీ ప్రదర్శన యొక్క అవుట్‌పుట్‌ను ప్రతిబింబిస్తుంది.</translation>
 <translation id="2163782704988363449">తప్పొప్పుల పట్టిక</translation>
@@ -962,7 +962,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="844681116543532394">మునుపటి చెక్‌బాక్స్ లేదు.</translation>
 <translation id="8446884382197647889">మరింత తెలుసుకోండి</translation>
 <translation id="8455868257606149352">గరిష్టం <ph name="X" /></translation>
-<translation id="84575901236241018">ప్రాప్యత కీ కలిగి ఉంది, <ph name="KEY" /></translation>
+<translation id="84575901236241018">యాక్సెస్ కీ కలిగి ఉంది, <ph name="KEY" /></translation>
 <translation id="847154984256717791">బిజీ</translation>
 <translation id="8476408756881832830">ChromeVox మాట్లాడుతున్నప్పుడు ప్లేబ్యాక్‌ను పాజ్ చేయి</translation>
 <translation id="8476508772960940536">విండో స్థూలదృష్టి</translation>

@@ -282,7 +282,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5728700505257787410">Жао нам је, дошло је до проблема при пријављивању на налог.</translation>
 <translation id="5737974891429562743">Подаци за пријављивање на налог су застарели. Ажурирајте их да бисте започели синхронизацију.</translation>
 <translation id="5738887413654608789">Ово вам омогућава да откријете релевантне веб-странице на основу окружења.</translation>
-<translation id="5771816112378578655">Подешавање је у току...</translation>
 <translation id="5816228676161003208">Ово вам омогућава да брже претражујте помоћу гласа.</translation>
 <translation id="5846482154967366008">Претраживач</translation>
 <translation id="5854790677617711513">Старије од 30 дана</translation>
@@ -306,9 +305,10 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6021332621416007159">Отвори у...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Затвори</translation>
-<translation id="6042308850641462728">Још</translation>
+<translation id="6042308850641462728">Више</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Додирните да бисте отказали.</translation>
+<translation id="6108923351542677676">Подешавање је у току...</translation>
 <translation id="6122191549521593678">Онлајн</translation>
 <translation id="6127379762771434464">Уклонили сте ставку</translation>
 <translation id="6136914049981179737">Малопре</translation>

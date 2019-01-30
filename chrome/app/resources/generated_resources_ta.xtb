@@ -1440,6 +1440,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (வன்பொருளில் சேமிக்கப்பட்டிருக்கும்)</translation>
 <translation id="316125635462764134">பயன்பாட்டை அகற்று</translation>
 <translation id="3161522574479303604">எல்லா மொழிகளும்</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID" /> அனுப்பிய <ph name="PRODUCT_ID" /> தயாரிப்பை அறிய முடியவில்லை.</translation>
 <translation id="3165390001037658081">சில தொலைத்தொடர்பு நிறுவனங்கள் இந்த அம்சத்தைத் தடுக்கலாம்.</translation>
 <translation id="316854673539778496">உங்கள் எல்லாச் சாதனங்களிலும் நீட்டிப்புகளைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3959,6 +3960,7 @@
 <translation id="7002454948392136538">இந்தக் கண்காணிக்கப்படும் பயனருக்கான நிர்வாகியைத் தேர்வுசெய்க</translation>
 <translation id="7003339318920871147">வலை தரவுத்தளங்கள்</translation>
 <translation id="7003723821785740825">சாதனத்தை விரைவாகத் திறப்பதற்கான வழியை அமைக்கவும்</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME" /> அனுப்பிய <ph name="PRODUCT_ID" /> தயாரிப்பை அறிய முடியவில்லை</translation>
 <translation id="7004499039102548441">சமீபத்திய தாவல்கள்</translation>
 <translation id="7005848115657603926">தவறான பக்க வரம்பு, <ph name="EXAMPLE_PAGE_RANGE" /> ஐப் பயன்படுத்தவும்</translation>
 <translation id="7006634003215061422">கீழ் ஓரம்</translation>

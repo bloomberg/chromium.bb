@@ -3134,7 +3134,6 @@
 
       使用者無法變更或覆寫這項設定。</translation>
 <translation id="8631434304112909927">到第 <ph name="UNTIL_VERSION" /> 版為止</translation>
-<translation id="863319402127182273">這項政策對 Android 應用程式的影響僅限於內建攝影機。將這項政策設為 true 時，所有 Android 應用程式皆無法使用攝影機，沒有任何例外。</translation>
 <translation id="8649763579836720255">當 Chrome 作業系統 CA 判斷裝置可播放受保護內容，Chrome 作業系統裝置可以使用遠端證明 (已驗證存取權) 取得其所發出的憑證。在此過程中，系統會傳送硬體簽署資訊到識別裝置的 Chrome 作業系統 CA。
 
           如果設定為 False，裝置將不會針對受保護內容使用遠端證明，並且無法播放受保護內容。

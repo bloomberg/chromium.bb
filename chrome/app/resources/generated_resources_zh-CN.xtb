@@ -131,7 +131,7 @@
 <translation id="1177138678118607465">Google 可能会使用您的浏览记录为您量身定制 Google 搜索、广告和其他 Google 服务。您随时可通过 myaccount.google.com/activitycontrols/search 更改此设置</translation>
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1178581264944972037">暂停</translation>
-<translation id="1181037720776840403">移除</translation>
+<translation id="1181037720776840403">删除</translation>
 <translation id="1183237619868651138">无法将 <ph name="EXTERNAL_CRX_FILE" /> 安装在本地缓存中。</translation>
 <translation id="1185924365081634987">您也可以尝试<ph name="GUEST_SIGNIN_LINK_START" />以访客身份浏览<ph name="GUEST_SIGNIN_LINK_END" />，以便修复该网络错误。</translation>
 <translation id="1186771945450942097">移除有害软件</translation>
@@ -1434,6 +1434,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（由硬件支持）</translation>
 <translation id="316125635462764134">卸载应用</translation>
 <translation id="3161522574479303604">所有语言</translation>
+<translation id="3163201441334626963">来自供应商 <ph name="VENDOR_ID" /> 的未知产品 <ph name="PRODUCT_ID" /></translation>
 <translation id="3165390001037658081">有些运营商可能会屏蔽此功能。</translation>
 <translation id="316854673539778496">要将您的所有扩展程序同步到您的所有设备上，请登录您的帐号并开启同步功能。</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3945,6 +3946,7 @@
 <translation id="7002454948392136538">选择此受监管用户的管理员</translation>
 <translation id="7003339318920871147">网络数据库</translation>
 <translation id="7003723821785740825">为您的设备设置更快速的解锁方式</translation>
+<translation id="7003844668372540529">来自<ph name="VENDOR_NAME" />的未知产品 <ph name="PRODUCT_ID" /></translation>
 <translation id="7004499039102548441">最近打开的标签页</translation>
 <translation id="7005848115657603926">页码范围无效，请使用 <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">下边距</translation>

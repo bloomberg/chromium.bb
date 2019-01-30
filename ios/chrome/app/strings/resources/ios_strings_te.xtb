@@ -11,7 +11,7 @@
 <translation id="1112015203684611006">ముద్రణ విఫలమైంది.</translation>
 <translation id="1125564390852150847">కొత్త ట్యాబ్‌ను సృష్టించండి.</translation>
 <translation id="1145536944570833626">ఇప్పటికే ఉన్న డేటాను తొలగించండి.</translation>
-<translation id="1165039591588034296">లోపం</translation>
+<translation id="1165039591588034296">ఎర్రర్</translation>
 <translation id="1172898394251786223">తర్వాతి ఫీల్డ్</translation>
 <translation id="1176932207622159128">చిత్రాన్ని సేవ్ చేయడం సాధ్యపడదు</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
@@ -96,7 +96,7 @@
 <translation id="2523184218357549926">మీరు సందర్శించే పేజీల URLలను Googleకి పంపుతుంది</translation>
 <translation id="2523363575747517183">ఈ వెబ్‌సైట్ మరో అప్లికేషన్‌ను తెరవడానికి పలుసార్లు ప్రయత్నిస్తోంది.</translation>
 <translation id="2529021024822217800">అన్నీ తెరువు</translation>
-<translation id="2572712655377361602">మీ ఫోటోలకు యాక్సెస్‌ను ఒక పరికర విధానం బ్లాక్ చేసింది</translation>
+<translation id="2572712655377361602">ఒక పరికర విధానం మీ ఫోటోలకు యాక్సెస్‌ను బ్లాక్ చేసింది</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు…</translation>
 <translation id="2625189173221582860">పాస్‌వర్డ్ కాపీ చేయబడింది</translation>
 <translation id="2648803196158606475">చదివిన వాటిని తొలగించు</translation>
@@ -282,7 +282,6 @@
 <translation id="5728700505257787410">క్షమించండి, మీ ఖాతాకు సైన్ ఇన్ చేయడంలో సమస్య ఉంది.</translation>
 <translation id="5737974891429562743">ఖాతా సైన్-ఇన్ వివరాలు పాతవి. సింక్‌ను ప్రారంభించడానికి అప్‌డేట్ చేయండి.</translation>
 <translation id="5738887413654608789">దీని వలన మీరు మీ పరిసరాల ఆధారంగా సంబంధిత వెబ్‌ పేజీలను కనుగొనగలుగుతారు.</translation>
-<translation id="5771816112378578655">సెటప్ పురోగమనంలో ఉంది...</translation>
 <translation id="5816228676161003208">దీని వలన మీ వాయిస్‌ను ఉపయోగించి వేగంగా వెతకగలుగుతారు.</translation>
 <translation id="5846482154967366008">శోధన ఇంజిన్</translation>
 <translation id="5854790677617711513">30 రోజుల కన్నా పాతవి</translation>
@@ -309,6 +308,7 @@
 <translation id="6042308850641462728">మరింత</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">రద్దు చేయడానికి నొక్కండి.</translation>
+<translation id="6108923351542677676">సెటప్ ప్రోగ్రెస్‌లో ఉంది...</translation>
 <translation id="6122191549521593678">ఆన్‌లైన్</translation>
 <translation id="6127379762771434464">అంశాన్ని తీసివేసారు</translation>
 <translation id="6136914049981179737">సెకన్ల క్రితం</translation>

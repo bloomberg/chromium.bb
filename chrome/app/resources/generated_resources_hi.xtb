@@ -1439,6 +1439,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (हार्डवेयर समर्थित)</translation>
 <translation id="316125635462764134">ऐप्स निकालें</translation>
 <translation id="3161522574479303604">सभी भाषाएं</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
 <translation id="3165390001037658081">कुछ वाहक इस सुविधा को बंद कर सकते हैं.</translation>
 <translation id="316854673539778496">अपने सभी डिवाइस पर अपने सारे एक्सटेंशन पाने के लिए, साइन इन करें और सिंक चालू करें.</translation>
 <translation id="3169472444629675720">तलाश करें</translation>
@@ -3957,6 +3958,7 @@
 <translation id="7002454948392136538">'निगरानी में रखे गए इस उपयोगकर्ता' के लिए प्रबंधक चुनें</translation>
 <translation id="7003339318920871147">वेब डेटाबेस</translation>
 <translation id="7003723821785740825">अपना डिवाइस अनलॉक करने के लिए कोई तेज़ तरीका सेट अप करें</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME" /> की ओर से अज्ञात <ph name="PRODUCT_ID" /> उत्पाद</translation>
 <translation id="7004499039102548441">हाल के टैब</translation>
 <translation id="7005848115657603926">अमान्य पेज श्रेणी, <ph name="EXAMPLE_PAGE_RANGE" /> का उपयोग करें</translation>
 <translation id="7006634003215061422">निचला हाशिया</translation>

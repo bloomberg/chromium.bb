@@ -691,7 +691,6 @@
 <translation id="6154478581116148741">இந்தச் சாதனத்திலிருந்து உங்கள் கடவுச்சொற்களை ஏற்ற, அமைப்புகளில் திரைப் பூட்டை இயக்கவும்</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> தரவுச் சேமிப்புகள்</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
-<translation id="6171019622954353983">தொடர்வதன் மூலம், Chrome இந்தச் சேவையை வழங்குவதற்காக ‘Chrome தன்னிரப்பி’ அம்சத்தின் தரவு, தளத்தின் URL, அதன் உள்ளடக்கம் போன்றவற்றை Googleளுக்கு அனுப்பும் என்பதை ஏற்கிறீர்கள்.\n\n‘Chromeமில் Google அசிஸ்டண்ட்’, 'Chrome தன்னிரப்பி’ அம்சம் ஆகியவற்றை முடக்க Chrome அமைப்புகளைப் பார்க்கவும்.  <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">நடப்புத் தேடல் இன்ஜினுக்குத் தடுக்கப்பட்டுள்ளது</translation>
 <translation id="6177390657002841081">டேட்டா சேமிப்பானை இயக்கு</translation>
 <translation id="6181444274883918285">தள விதிவிலக்கைச் சேர்</translation>
@@ -927,7 +926,7 @@
 <translation id="784934925303690534">நேர வரம்பு</translation>
 <translation id="7851858861565204677">பிற சாதனங்கள்</translation>
 <translation id="7854964836418414587">‘இது போன்று மேலும்’ பரிந்துரைகள் மூடப்படும்</translation>
-<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> டொமைனில் பின்னர் விதிமுறைகள் &amp; நிபந்தனைகளைப் படித்து, ஏற்கிறேன்</translation>
+<translation id="7871791972254842204"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> டொமைனில் விதிமுறைகள் &amp; நிபந்தனைகளைப் பின்னர் படித்து, ஏற்கிறேன்</translation>
 <translation id="7875915731392087153">மின்னஞ்சலை உருவாக்கவும்</translation>
 <translation id="7876243839304621966">அனைத்தையும் அகற்று</translation>
 <translation id="7882131421121961860">வரலாறு எதுவுமில்லை</translation>

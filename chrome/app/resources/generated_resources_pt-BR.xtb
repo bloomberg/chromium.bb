@@ -1439,6 +1439,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />] (no hardware)</translation>
 <translation id="316125635462764134">Remover aplicativo</translation>
 <translation id="3161522574479303604">Todos os idiomas</translation>
+<translation id="3163201441334626963">Produto <ph name="PRODUCT_ID" /> desconhecido do fornecedor <ph name="VENDOR_ID" /></translation>
 <translation id="3165390001037658081">Algumas operadoras podem bloquear esse recurso.</translation>
 <translation id="316854673539778496">Para ter todas as suas extensões em todos os seus dispositivos, faça login e ative a sincronização.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3960,6 +3961,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7002454948392136538">Escolha o gerente para este usuário supervisionado</translation>
 <translation id="7003339318920871147">Bancos de dados da web</translation>
 <translation id="7003723821785740825">Configure uma forma mais rápida de desbloquear seu dispositivo</translation>
+<translation id="7003844668372540529">Produto <ph name="PRODUCT_ID" /> desconhecido de <ph name="VENDOR_NAME" /></translation>
 <translation id="7004499039102548441">Guias recentes</translation>
 <translation id="7005848115657603926">Intervalo de páginas inválido. Use <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margem inferior</translation>

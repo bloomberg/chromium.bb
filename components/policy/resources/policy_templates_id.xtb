@@ -3149,7 +3149,6 @@ https://support.google.com/a/answer/1668854.
 
 Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">Untuk aplikasi Android, kebijakan ini hanya memengaruhi kamera built-in. Jika kebijakan ini disetel ke true, kamera akan dinonaktifkan untuk semua aplikasi Android, tanpa pengecualian.</translation>
 <translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan hardware ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
 
           Jika disetel ke false, perangkat tidak akan menggunakan atestasi perlindungan konten jarak jauh dan tidak dapat memutar konten yang dilindungi.

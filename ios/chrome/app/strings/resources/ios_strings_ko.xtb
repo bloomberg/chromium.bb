@@ -282,7 +282,6 @@
 <translation id="5728700505257787410">죄송합니다. 계정에 로그인하는 중에 문제가 발생했습니다.</translation>
 <translation id="5737974891429562743">계정 로그인 세부정보가 오래되었습니다. 업데이트하여 동기화를 시작하세요.</translation>
 <translation id="5738887413654608789">이를 통해 사용자의 주변 환경을 토대로 관련 웹 페이지를 발견할 수 있습니다.</translation>
-<translation id="5771816112378578655">설정 진행 중...</translation>
 <translation id="5816228676161003208">액세스를 허용하면 음성으로 더 빨리 검색할 수 있습니다.</translation>
 <translation id="5846482154967366008">검색엔진</translation>
 <translation id="5854790677617711513">30일 이상 전</translation>
@@ -309,6 +308,7 @@
 <translation id="6042308850641462728">더보기</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">취소하려면 탭하세요.</translation>
+<translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6122191549521593678">온라인</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6136914049981179737">초 전</translation>

@@ -3203,7 +3203,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 
       Brugerne kan ikke ændre eller tilsidesætte denne indstilling.</translation>
 <translation id="8631434304112909927">indtil version <ph name="UNTIL_VERSION" /></translation>
-<translation id="863319402127182273">I Android-apps påvirker denne politik kun det indbyggede kamera. Når denne politik er angivet som Sand, deaktiveres kameraet i alle Android-apps uden undtagelser.</translation>
 <translation id="8649763579836720255">Chrome OS-enheder kan bruge ekstern attestation (bekræftet adgang) til at få udstedt et certifikat af Chrome OS CA, som bekræfter, at enheden er kvalificeret til at afspille beskyttet indhold. Denne proces involverer afsendelse af oplysninger om hardwaregodkendelse til Chrome OS CA, som identificerer enheden.
 
           Hvis denne indstilling er angivet som falsk, anvender enheden ikke ekstern attestation til indholdsbeskyttelse, og enheden kan muligvis ikke afspille beskyttet indhold.

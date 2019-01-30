@@ -1439,6 +1439,7 @@
 <translation id="3160842278951476457"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]（ハードウェアにより保護を強化）</translation>
 <translation id="316125635462764134">アプリを削除</translation>
 <translation id="3161522574479303604">すべての言語</translation>
+<translation id="3163201441334626963">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_ID" />）</translation>
 <translation id="3165390001037658081">携帯通信会社によってはこの機能を利用できない場合があります。</translation>
 <translation id="316854673539778496">お使いのどの端末でも同じ拡張機能を使用するには、ログインして同期を有効にします。</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -3958,6 +3959,7 @@
 <translation id="7002454948392136538">この監視対象ユーザーの管理者を選択</translation>
 <translation id="7003339318920871147">ウェブ データベース</translation>
 <translation id="7003723821785740825">端末のロックをすばやく解除する方法を設定できます</translation>
+<translation id="7003844668372540529">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_NAME" />）</translation>
 <translation id="7004499039102548441">最近使ったタブ</translation>
 <translation id="7005848115657603926">ページ範囲が無効です。<ph name="EXAMPLE_PAGE_RANGE" /> の範囲で指定してください。</translation>
 <translation id="7006634003215061422">下余白</translation>

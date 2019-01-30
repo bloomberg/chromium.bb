@@ -25,7 +25,7 @@
 <translation id="1172593791219290334">启动页</translation>
 <translation id="1175310183703641346">您的书签、历史记录、密码和其他设置将不再同步到您的 Google 帐号中</translation>
 <translation id="1178581264944972037">暂停</translation>
-<translation id="1181037720776840403">移除</translation>
+<translation id="1181037720776840403">删除</translation>
 <translation id="1197267115302279827">移动书签</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一页</translation>
@@ -691,7 +691,6 @@
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
-<translation id="6171019622954353983">继续操作即表示您同意：Chrome 可将 Chrome 自动填充功能所保存的数据以及相应网站的网址和内容发送给 Google，以便为您提供此项服务。\n\n若想关闭 Chrome 中的 Google 助理和 Chrome 自动填充功能，请访问 Chrome 设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="6177111841848151710">已设为不可供当前的搜索引擎使用</translation>
 <translation id="6177390657002841081">启用流量节省程序</translation>
 <translation id="6181444274883918285">添加例外网站</translation>

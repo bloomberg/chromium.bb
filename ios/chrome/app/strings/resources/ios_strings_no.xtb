@@ -282,7 +282,6 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5728700505257787410">Det oppsto et problem ved pålogging til kontoen din.</translation>
 <translation id="5737974891429562743">Påloggingsdetaljene for kontoen er utdatert. Oppdater for å starte synkroniseringen.</translation>
 <translation id="5738887413654608789">Med denne kan du oppdage relevante nettsider basert på omgivelsene dine.</translation>
-<translation id="5771816112378578655">Konfigurasjon pågår ...</translation>
 <translation id="5816228676161003208">Dette gjør at du kan søke raskere ved å bruke stemmen.</translation>
 <translation id="5846482154967366008">Søkemotor</translation>
 <translation id="5854790677617711513">Eldre enn 30 dager</translation>
@@ -309,6 +308,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6042308850641462728">Mer</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6066301408025741299">Trykk for å avbryte.</translation>
+<translation id="6108923351542677676">Konfigurasjon pågår …</translation>
 <translation id="6122191549521593678">Pålogget</translation>
 <translation id="6127379762771434464">Elementet ble fjernet</translation>
 <translation id="6136914049981179737">For noen sekunder siden</translation>
