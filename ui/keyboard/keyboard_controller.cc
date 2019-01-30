@@ -411,9 +411,6 @@ void KeyboardController::Reload() {
   if (!GetKeyboardWindow())
     return;
 
-  // A reload should never try to show virtual keyboard. If keyboard is not
-  // visible before reload, it should stay invisible after reload.
-  show_on_keyboard_window_load_ = false;
   ui_->ReloadKeyboardIfNeeded();
 }
 
