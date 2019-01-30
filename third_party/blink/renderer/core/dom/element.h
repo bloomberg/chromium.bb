@@ -161,6 +161,7 @@ class CORE_EXPORT Element : public ContainerNode {
   static Element* Create(const QualifiedName&, Document*);
 
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
+  ~Element() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut);

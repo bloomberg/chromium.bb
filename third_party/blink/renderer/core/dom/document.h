@@ -1515,6 +1515,15 @@ class CORE_EXPORT Document : public ContainerNode,
   void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
   void CancelPendingJavaScriptUrl();
 
+  // Functions to keep count of display locks in this document.
+  void AddActivationBlockingDisplayLock();
+  void RemoveActivationBlockingDisplayLock();
+  int ActivationBlockingDisplayLockCount() const;
+
+  void AddLockedDisplayLock();
+  void RemoveLockedDisplayLock();
+  int LockedDisplayLockCount() const;
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
@@ -1950,6 +1959,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // The number of canvas elements on the document
   int num_canvases_ = 0;
+
+  // Number of activation blocking display locks currently in this document.
+  int activation_blocking_display_lock_count_ = 0;
+  // Number of locked display locks in the document.
+  int locked_display_lock_count_ = 0;
 
   // A list of all the navigation_initiator bindings owned by this document.
   // Used to report CSP violations that result from CSP blocking

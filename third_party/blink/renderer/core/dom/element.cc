@@ -223,6 +223,11 @@ Element::Element(const QualifiedName& tag_name,
                  ConstructionType type)
     : ContainerNode(document, type), tag_name_(tag_name) {}
 
+Element::~Element() {
+  if (auto* context = GetDisplayLockContext())
+    context->ElementWasDestroyed(GetDocument());
+}
+
 inline ElementRareData* Element::GetElementRareData() const {
   DCHECK(HasRareData());
   return static_cast<ElementRareData*>(RareData());
@@ -3356,6 +3361,10 @@ bool Element::IsMouseFocusable() const {
 bool Element::DisplayLockPreventsActivation() const {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
     return false;
+
+  if (GetDocument().ActivationBlockingDisplayLockCount() == 0)
+    return false;
+
   // TODO(vmpstr): Similar to Document::EnsurePaintLocationDataValidForNode(),
   // this iterates up to the ancestor hierarchy looking for locked display
   // locks. This is inefficient, particularly since it's unlikely that this will

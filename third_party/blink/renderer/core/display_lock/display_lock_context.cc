@@ -49,6 +49,7 @@ DisplayLockContext::DisplayLockContext(Element* element,
                                        ExecutionContext* context)
     : ContextLifecycleObserver(context),
       element_(element),
+      state_(this),
       weak_factory_(this) {
   DCHECK(element_->GetDocument().View());
   element_->GetDocument().View()->RegisterForLifecycleNotifications(this);
@@ -106,6 +107,11 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   double timeout_ms = (options && options->hasTimeout())
                           ? options->timeout()
                           : kDefaultLockTimeoutMs;
+
+  // TODO(vmpstr): IMPORTANT. When searchability changes, we might need to
+  // adjust the count of activation blocking locks we keep on the document
+  // object.
+
   // We always reschedule a timeout task even if we're not starting a new
   // acquire. The reason for this is that the last acquire dictates the timeout
   // interval. Note that the following call cancels any existing timeout tasks.
@@ -324,7 +330,7 @@ void DisplayLockContext::DidPaint() {
 bool DisplayLockContext::IsSearchable() const {
   // TODO(vmpstr): Support "searchable: true" option, which allows locked
   // elements to be searched.
-  return state_ == kUnlocked;
+  return !IsLocked();
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
@@ -527,12 +533,23 @@ bool DisplayLockContext::IsElementDirtyForPrePaint() const {
 }
 
 void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
+  DCHECK(element_);
+
   // Since we're observing the lifecycle updates, ensure that we listen to the
   // right document's view.
   if (old_document.View())
     old_document.View()->UnregisterFromLifecycleNotifications(this);
-  if (element_ && element_->GetDocument().View())
+  if (element_->GetDocument().View())
     element_->GetDocument().View()->RegisterForLifecycleNotifications(this);
+
+  if (!IsSearchable()) {
+    old_document.RemoveActivationBlockingDisplayLock();
+    element_->GetDocument().AddActivationBlockingDisplayLock();
+  }
+  if (IsLocked()) {
+    old_document.RemoveLockedDisplayLock();
+    element_->GetDocument().AddLockedDisplayLock();
+  }
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate() {
@@ -609,6 +626,15 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
         ->PostTask(FROM_HERE, WTF::Bind(&DisplayLockContext::StartCommit,
                                         WrapWeakPersistent(this)));
   }
+}
+
+void DisplayLockContext::ElementWasDestroyed(Document& document) {
+  // Since the element is destroyed, this is the last chance we get to adjust
+  // our lock counts.
+  if (!IsSearchable())
+    document.RemoveActivationBlockingDisplayLock();
+  if (IsLocked())
+    document.RemoveLockedDisplayLock();
 }
 
 void DisplayLockContext::ScheduleAnimation() {
@@ -693,6 +719,44 @@ DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
 DisplayLockContext::ScopedForcedUpdate::~ScopedForcedUpdate() {
   if (context_)
     context_->NotifyForcedUpdateScopeEnded();
+}
+
+// StateChangeHelper implementation
+// -----------------------------------------------
+DisplayLockContext::StateChangeHelper::StateChangeHelper(
+    DisplayLockContext* context)
+    : context_(context) {}
+
+DisplayLockContext::StateChangeHelper& DisplayLockContext::StateChangeHelper::
+operator=(State new_state) {
+  if (new_state == state_)
+    return *this;
+
+  bool was_searchable = context_->IsSearchable();
+  bool was_locked = context_->IsLocked();
+
+  state_ = new_state;
+
+  if (!context_->element_)
+    return *this;
+
+  // Adjust the total number of locked display locks.
+  auto& document = context_->element_->GetDocument();
+  if (context_->IsLocked() != was_locked) {
+    if (was_locked)
+      document.RemoveLockedDisplayLock();
+    else
+      document.AddLockedDisplayLock();
+  }
+
+  // Adjust activation blocking lock counts.
+  if (context_->IsSearchable() != was_searchable) {
+    if (was_searchable)
+      document.AddActivationBlockingDisplayLock();
+    else
+      document.RemoveActivationBlockingDisplayLock();
+  }
+  return *this;
 }
 
 }  // namespace blink

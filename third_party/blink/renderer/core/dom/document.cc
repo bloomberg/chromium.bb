@@ -2625,7 +2625,8 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
   // subtree. We need to figure out if there is a supplementary structure that
   // we can use to quickly identify nodes that are in the locked subtree.
   Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list;
-  if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+      LockedDisplayLockCount() > 0) {
     for (auto* ancestor = node; ancestor;
          ancestor = ancestor->ParentOrShadowHostNode()) {
       if (!ancestor->IsElementNode())
@@ -7852,6 +7853,32 @@ void Document::ReportFeaturePolicyViolation(
 
 void Document::IncrementNumberOfCanvases() {
   num_canvases_++;
+}
+
+void Document::AddActivationBlockingDisplayLock() {
+  ++activation_blocking_display_lock_count_;
+}
+
+void Document::RemoveActivationBlockingDisplayLock() {
+  DCHECK_GT(activation_blocking_display_lock_count_, 0);
+  --activation_blocking_display_lock_count_;
+}
+
+int Document::ActivationBlockingDisplayLockCount() const {
+  return activation_blocking_display_lock_count_;
+}
+
+void Document::AddLockedDisplayLock() {
+  ++locked_display_lock_count_;
+}
+
+void Document::RemoveLockedDisplayLock() {
+  DCHECK_GT(locked_display_lock_count_, 0);
+  --locked_display_lock_count_;
+}
+
+int Document::LockedDisplayLockCount() const {
+  return locked_display_lock_count_;
 }
 
 void Document::ExecuteJavaScriptUrl(

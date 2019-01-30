@@ -132,6 +132,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
   ASSERT_TRUE(text_finder.Find(identifier, search_text, *find_options,
                                wrap_within_frame));
   text_finder.ClearActiveFindMatch();
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   auto* element = GetDocument().getElementById("container");
   {
@@ -145,6 +147,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -152,6 +156,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
   EXPECT_FALSE(element->GetDisplayLockContext()->IsSearchable());
 
@@ -170,6 +176,9 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaTextFinder) {
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
 
   UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   EXPECT_TRUE(text_finder.Find(identifier, search_text, *find_options,
                                wrap_within_frame));
@@ -208,6 +217,9 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   EXPECT_EQ(1, client.Count());
   client.Reset();
 
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
   auto* element = GetDocument().getElementById("container");
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
@@ -220,6 +232,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -227,6 +241,8 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
   EXPECT_FALSE(element->GetDisplayLockContext()->IsSearchable());
 
@@ -249,6 +265,9 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldPaint());
 
   UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   find_in_page->Find(current_id++, "testing", find_options->Clone());
   EXPECT_FALSE(client.FindResultsAreReady());
@@ -279,6 +298,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   ASSERT_TRUE(GetDocument().getElementById("textfield")->IsKeyboardFocusable());
   ASSERT_TRUE(GetDocument().getElementById("textfield")->IsMouseFocusable());
   ASSERT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 
   auto* element = GetDocument().getElementById("container");
   {
@@ -292,6 +313,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
   UpdateAllLifecyclePhasesForTest();
 
@@ -299,6 +322,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
   EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
 
   // The input should not be focusable now.
   EXPECT_FALSE(
@@ -323,6 +348,8 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsKeyboardFocusable());
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsMouseFocusable());
   EXPECT_TRUE(GetDocument().getElementById("textfield")->IsFocusable());
@@ -331,5 +358,96 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   GetDocument().getElementById("textfield")->focus();
   EXPECT_EQ(GetDocument().FocusedElement(),
             GetDocument().getElementById("textfield"));
+}
+
+TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .container {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body>
+    <div id="one" class="container">
+      <div id="two" class="container"></div>
+    </div>
+    <div id="three" class="container"></div>
+    </body>
+  )HTML");
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  auto* one = GetDocument().getElementById("one");
+  auto* two = GetDocument().getElementById("two");
+  auto* three = GetDocument().getElementById("three");
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    one->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+
+  {
+    ScriptState::Scope scope(script_state);
+    two->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+
+  {
+    ScriptState::Scope scope(script_state);
+    three->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 3);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 3);
+
+  // Now commit the inner lock.
+  {
+    ScriptState::Scope scope(script_state);
+    two->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+
+  // Commit the outer lock.
+  {
+    ScriptState::Scope scope(script_state);
+    one->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Both inner and outer locks should have committed.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+
+  // Commit the sibling lock.
+  {
+    ScriptState::Scope scope(script_state);
+    three->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Both inner and outer locks should have committed.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
 }
 }  // namespace blink
