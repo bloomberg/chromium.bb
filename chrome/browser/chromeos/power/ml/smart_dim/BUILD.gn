@@ -25,6 +25,7 @@ source_set("smart_dim") {
     "//chrome/common:constants",
     "//chromeos:chromeos",
     "//chromeos/services/machine_learning/public/cpp:cpp",
+    "//chromeos/services/machine_learning/public/mojom:mojom",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/sessions",

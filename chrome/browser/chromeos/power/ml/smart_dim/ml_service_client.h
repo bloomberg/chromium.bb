@@ -13,6 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 
 namespace chromeos {
 namespace power {
