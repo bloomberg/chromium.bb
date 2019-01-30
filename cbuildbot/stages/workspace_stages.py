@@ -141,6 +141,7 @@ class SyncStage(WorkspaceStageBase):
                branch=None,
                version=None,
                patch_pool=None,
+               copy_repo=None,
                **kwargs):
     """Initializer.
 
@@ -152,6 +153,7 @@ class SyncStage(WorkspaceStageBase):
       branch: Branch to sync, with default to master.
       version: Version number to sync too.
       patch_pool: None or a list of lib.patch.GerritPatch objects.
+      copy_repo: None, or the copy of a repo to seed the sync from.
     """
     super(SyncStage, self).__init__(
         builder_run, buildstore, build_root=build_root, **kwargs)
@@ -160,6 +162,7 @@ class SyncStage(WorkspaceStageBase):
     self.branch = branch
     self.version = version
     self.patch_pool = patch_pool
+    self.copy_repo = copy_repo
 
   def PerformStage(self):
     """Sync stuff!"""
@@ -188,6 +191,9 @@ class SyncStage(WorkspaceStageBase):
         patch_options += ['--gerrit-patches', patch.gerrit_number_str]
 
       cmd += patch_options
+
+    if self.copy_repo:
+      cmd += ['--copy-repo', self.copy_repo]
 
     assert not (self.version and self.patch_pool), (
         'Can\'t cherry-pick "%s" into an official version "%s."' %
@@ -231,6 +237,7 @@ class WorkspaceSyncStage(WorkspaceStageBase):
         branch=branch,
         version=self._run.options.force_version,
         patch_pool=branch_pool,
+        copy_repo=self._orig_root,
         suffix=' [%s]' % branch).Run()
 
 

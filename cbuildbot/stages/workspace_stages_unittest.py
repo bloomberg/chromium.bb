@@ -212,6 +212,37 @@ class SyncStageTest(WorkspaceStageBase):
         '--gerrit-patches', '2',
     ])
 
+  def testMax(self):
+    """Tests sync command with as many options as possible."""
+    self._Prepare(
+        'buildspec',
+        site_config=workspace_builders_unittest.CreateMockSiteConfig())
+
+    patchA = mock.Mock()
+    patchA.url = 'urlA'
+    patchA.gerrit_number_str = '1'
+
+    patchB = mock.Mock()
+    patchB.url = 'urlB'
+    patchB.gerrit_number_str = '2'
+
+    self.RunStage(build_root='/root',
+                  branch='branch',
+                  patch_pool=[patchA, patchB],
+                  copy_repo='/source')
+
+    self.assertEqual(self.rc.call_count, 1)
+    self.rc.assertCommandCalled([
+        os.path.join(constants.CHROMITE_DIR, 'scripts', 'repo_sync_manifest'),
+        '--repo-root', '/root',
+        '--manifest-versions-int', self.manifest_versions_int,
+        '--manifest-versions-ext', self.manifest_versions,
+        '--branch', 'branch',
+        '--gerrit-patches', '1',
+        '--gerrit-patches', '2',
+        '--copy-repo', '/source',
+    ])
+
 
 class WorkspaceSyncStageTest(WorkspaceStageBase):
   """Test the WorkspaceSyncStage."""
@@ -250,7 +281,8 @@ class WorkspaceSyncStageTest(WorkspaceStageBase):
                   external=True,
                   branch='test-branch',
                   version=None,
-                  build_root=self.workspace),
+                  build_root=self.workspace,
+                  copy_repo=self.build_root),
     ])
 
     self.assertEqual(
@@ -291,7 +323,8 @@ class WorkspaceSyncStageTest(WorkspaceStageBase):
                   external=True,
                   branch='test-branch',
                   version=None,
-                  build_root=self.workspace),
+                  build_root=self.workspace,
+                  copy_repo=self.build_root),
     ])
 
     self.assertEqual(
