@@ -87,16 +87,22 @@ class PLATFORM_EXPORT FetchContext
 
   virtual ~FetchContext() = default;
 
-  // Binds |fetcher| to |this|.
-  void Bind(ResourceFetcher* fetcher);
-  // Unbinds the fetcher.
-  void Unbind() { fetcher_ = nullptr; }
+  // Called from a ResourceFetcher constructor. This is called only once.
+  // TODO(yhirano): Consider removing this.
+  void Init(const ResourceFetcherProperties& properties) {
+    DCHECK(!resource_fetcher_properties_);
+    resource_fetcher_properties_ = &properties;
+  }
 
   virtual void Trace(blink::Visitor*);
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&);
 
-  const ResourceFetcherProperties& GetResourceFetcherProperties() const;
+  // This function must not be called before |Init| is called.
+  const ResourceFetcherProperties& GetResourceFetcherProperties() const {
+    DCHECK(resource_fetcher_properties_);
+    return *resource_fetcher_properties_;
+  }
 
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
@@ -211,7 +217,12 @@ class PLATFORM_EXPORT FetchContext
   // FetchContexts continue working after detached (e.g., for fetch() operations
   // with "keepalive" specified).
   // Returns a "detached" fetch context which cannot be null.
-  virtual FetchContext* Detach() { return &NullInstance(); }
+  virtual FetchContext* Detach() {
+    DCHECK(resource_fetcher_properties_);
+    auto* context = &NullInstance();
+    context->Init(*resource_fetcher_properties_);
+    return context;
+  }
 
   // Returns the updated priority of the resource based on the experiments that
   // may be currently enabled.
@@ -230,16 +241,9 @@ class PLATFORM_EXPORT FetchContext
   // Called when IdlenessDetector emits its network idle signal.
   virtual void DispatchNetworkQuiet() {}
 
- protected:
-  // The following methods are needed to make FetchContext cleanup smoother.
-  // Do not use these functions for other purposes.
-  // TODO(yhirano): Remove these.
-  virtual bool IsDetached() const { return false; }
-  ResourceFetcher* GetFetcher() { return fetcher_; }
-
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
-  Member<ResourceFetcher> fetcher_;
+  Member<const ResourceFetcherProperties> resource_fetcher_properties_;
 };
 
 }  // namespace blink

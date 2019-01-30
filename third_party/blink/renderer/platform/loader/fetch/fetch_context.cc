@@ -60,21 +60,9 @@ FetchContext::FetchContext()
       MakeGarbageCollected<PlatformTraceEventsAgent>());
 }
 
-void FetchContext::Bind(ResourceFetcher* fetcher) {
-  DCHECK(fetcher);
-  DCHECK(!fetcher_);
-  DCHECK_EQ(&fetcher->Context(), this);
-  fetcher_ = fetcher;
-}
-
 void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_probe_sink_);
-  visitor->Trace(fetcher_);
-}
-
-const ResourceFetcherProperties& FetchContext::GetResourceFetcherProperties()
-    const {
-  return fetcher_->GetProperties();
+  visitor->Trace(resource_fetcher_properties_);
 }
 
 void FetchContext::DispatchDidChangeResourcePriority(unsigned long,

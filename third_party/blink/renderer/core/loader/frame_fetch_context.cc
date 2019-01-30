@@ -278,17 +278,18 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
 FrameFetchContext::FrameFetchContext(
     const FrameOrImportedDocument& frame_or_imported_document)
     : frame_or_imported_document_(frame_or_imported_document),
-      save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
-                         !GetSettings()->GetDataSaverHoldbackWebApi()) {}
+      save_data_enabled_(
+          GetNetworkStateNotifier().SaveDataEnabled() &&
+          !GetFrame()->GetSettings()->GetDataSaverHoldbackWebApi()) {}
 
 FrameScheduler* FrameFetchContext::GetFrameScheduler() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
   return GetFrame()->GetFrameScheduler();
 }
 
 KURL FrameFetchContext::GetSiteForCookies() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->site_for_cookies;
 
   Document* document = frame_or_imported_document_->GetDocument();
@@ -300,7 +301,7 @@ KURL FrameFetchContext::GetSiteForCookies() const {
 }
 
 SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
   DocumentLoader* document_loader = MasterDocumentLoader();
   return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
@@ -308,7 +309,7 @@ SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
 
 PreviewsResourceLoadingHints*
 FrameFetchContext::GetPreviewsResourceLoadingHints() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
   DocumentLoader* document_loader = MasterDocumentLoader();
   if (!document_loader)
@@ -331,7 +332,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
     return;
 
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   // Reload should reflect the current data saver setting.
@@ -374,7 +375,7 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
     const ResourceRequest& request,
     ResourceType type,
     FetchParameters::DeferOption defer) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return mojom::FetchCacheMode::kDefault;
 
   DCHECK(GetFrame());
@@ -390,12 +391,12 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
 }
 
 DocumentLoader* FrameFetchContext::GetDocumentLoader() const {
-  DCHECK(!IsDetached());
+  DCHECK(!GetResourceFetcherProperties().IsDetached());
   return frame_or_imported_document_->GetDocumentLoader();
 }
 
 inline DocumentLoader* FrameFetchContext::MasterDocumentLoader() const {
-  DCHECK(!IsDetached());
+  DCHECK(!GetResourceFetcherProperties().IsDetached());
   return &frame_or_imported_document_->GetMasterDocumentLoader();
 }
 
@@ -403,7 +404,7 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
     unsigned long identifier,
     ResourceLoadPriority load_priority,
     int intra_priority_value) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
   TRACE_EVENT1("devtools.timeline", "ResourceChangePriority", "data",
                inspector_change_resource_priority_event::Data(
@@ -425,7 +426,7 @@ void FrameFetchContext::PrepareRequest(
   String user_agent = GetUserAgent();
   request.SetHTTPUserAgent(AtomicString(user_agent));
 
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
   GetLocalFrameClient()->DispatchWillSendRequest(request);
   if (redirect_type == FetchContext::RedirectType::kNotForRedirect &&
@@ -456,7 +457,7 @@ void FrameFetchContext::DispatchWillSendRequest(
     const ResourceResponse& redirect_response,
     ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   if (redirect_response.IsNull()) {
@@ -485,7 +486,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     const ResourceResponse& response,
     Resource* resource,
     ResourceResponseType response_type) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   // Note: resource is null if and only if this is a navigation response.
@@ -578,7 +579,7 @@ void FrameFetchContext::DispatchDidReceiveResponse(
 void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
                                                const char* data,
                                                uint64_t data_length) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
@@ -589,7 +590,7 @@ void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
 void FrameFetchContext::DispatchDidReceiveEncodedData(
     unsigned long identifier,
     size_t encoded_data_length) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
   probe::didReceiveEncodedDataLength(Probe(), MasterDocumentLoader(),
                                      identifier, encoded_data_length);
@@ -597,7 +598,7 @@ void FrameFetchContext::DispatchDidReceiveEncodedData(
 
 void FrameFetchContext::DispatchDidDownloadToBlob(unsigned long identifier,
                                                   BlobDataHandle* blob) {
-  if (IsDetached() || !blob)
+  if (GetResourceFetcherProperties().IsDetached() || !blob)
     return;
 
   probe::didReceiveBlob(Probe(), identifier, MasterDocumentLoader(), blob);
@@ -609,7 +610,7 @@ void FrameFetchContext::DispatchDidFinishLoading(
     int64_t encoded_data_length,
     int64_t decoded_body_length,
     bool should_report_corb_blocking) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
@@ -630,7 +631,7 @@ void FrameFetchContext::DispatchDidFail(const KURL& url,
                                         const ResourceError& error,
                                         int64_t encoded_data_length,
                                         bool is_internal_request) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   if (DocumentLoader* loader = MasterDocumentLoader()) {
@@ -671,7 +672,7 @@ void FrameFetchContext::RecordLoadingActivity(
     const ResourceRequest& request,
     ResourceType type,
     const AtomicString& fetch_initiator_name) {
-  if (IsDetached() || !GetDocumentLoader() ||
+  if (GetResourceFetcherProperties().IsDetached() || !GetDocumentLoader() ||
       GetDocumentLoader()->Fetcher()->Archive() || !request.Url().IsValid())
     return;
   V8DOMActivityLogger* activity_logger = nullptr;
@@ -691,7 +692,8 @@ void FrameFetchContext::RecordLoadingActivity(
 }
 
 void FrameFetchContext::DidLoadResource(Resource* resource) {
-  if (IsDetached() || !frame_or_imported_document_->GetDocument())
+  if (GetResourceFetcherProperties().IsDetached() ||
+      !frame_or_imported_document_->GetDocument())
     return;
   if (LocalFrame* local_frame =
           frame_or_imported_document_->GetDocument()->GetFrame()) {
@@ -715,7 +717,8 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // Normally, |document_| is cleared on Document shutdown. However, Documents
   // for HTML imports will also not have a LocalFrame set: in that case, also
   // early return, as there is nothing to report the resource timing to.
-  if (IsDetached() || !frame_or_imported_document_->GetDocument())
+  if (GetResourceFetcherProperties().IsDetached() ||
+      !frame_or_imported_document_->GetDocument())
     return;
   LocalFrame* frame = frame_or_imported_document_->GetDocument()->GetFrame();
   if (!frame)
@@ -729,7 +732,7 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return true;
   if (auto* settings_client = GetContentSettingsClient())
     images_enabled = settings_client->AllowImage(images_enabled, url);
@@ -737,7 +740,7 @@ bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
 }
 
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   // Record the latest requiredCSP value that will be used when sending this
@@ -802,7 +805,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences, enabled_hints) &&
-      !IsDetached() && GetFrame()->View()) {
+      !GetResourceFetcherProperties().IsDetached() && GetFrame()->View()) {
     request.AddHTTPHeaderField(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
@@ -907,7 +910,7 @@ bool FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
 }
 
 bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return false;
 
   return GetFrame()
@@ -920,7 +923,7 @@ bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
 
 scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
     const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->top_frame_origin;
 
   Document* document = frame_or_imported_document_->GetDocument();
@@ -930,7 +933,7 @@ scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
 }
 
 bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return false;
   bool should_block_request = false;
   probe::shouldBlockRequest(Probe(), url, &should_block_request);
@@ -942,7 +945,7 @@ void FrameFetchContext::DispatchDidBlockRequest(
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason,
     ResourceType resource_type) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
   probe::didBlockRequest(GetFrame()->GetDocument(), resource_request,
                          MasterDocumentLoader(), fetch_initiator_info,
@@ -950,7 +953,7 @@ void FrameFetchContext::DispatchDidBlockRequest(
 }
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return false;
 
   return ContentSecurityPolicy::ShouldBypassMainWorld(
@@ -958,28 +961,28 @@ bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
 }
 
 bool FrameFetchContext::IsSVGImageChromeClient() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->is_svg_image_chrome_client;
 
   return GetFrame()->GetChromeClient().IsSVGImageChromeClient();
 }
 
 void FrameFetchContext::CountUsage(WebFeature feature) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
   if (DocumentLoader* loader = MasterDocumentLoader())
     loader->GetUseCounter().Count(feature, GetFrame());
 }
 
 void FrameFetchContext::CountDeprecation(WebFeature feature) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
   Deprecation::CountDeprecation(GetFrame(), feature);
 }
 
 bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(
     const KURL& url) const {
-  if (IsDetached()) {
+  if (GetResourceFetcherProperties().IsDetached()) {
     // TODO(yhirano): Implement the detached case.
     return false;
   }
@@ -988,7 +991,7 @@ bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(
 
 std::unique_ptr<WebSocketHandshakeThrottle>
 FrameFetchContext::CreateWebSocketHandshakeThrottle() {
-  if (IsDetached()) {
+  if (GetResourceFetcherProperties().IsDetached()) {
     // TODO(yhirano): Implement the detached case.
     return nullptr;
   }
@@ -1006,7 +1009,7 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
-  if (IsDetached()) {
+  if (GetResourceFetcherProperties().IsDetached()) {
     // TODO(yhirano): Implement the detached case.
     return false;
   }
@@ -1055,7 +1058,7 @@ bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
 }
 
 const KURL& FrameFetchContext::Url() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->url;
   if (!frame_or_imported_document_->GetDocument())
     return NullURL();
@@ -1063,7 +1066,7 @@ const KURL& FrameFetchContext::Url() const {
 }
 
 const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->parent_security_origin.get();
   Frame* parent = GetFrame()->Tree().Parent();
   if (!parent)
@@ -1073,7 +1076,7 @@ const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
 
 base::Optional<mojom::IPAddressSpace> FrameFetchContext::GetAddressSpace()
     const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->address_space;
   if (!frame_or_imported_document_->GetDocument())
     return base::nullopt;
@@ -1083,14 +1086,14 @@ base::Optional<mojom::IPAddressSpace> FrameFetchContext::GetAddressSpace()
 
 const ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicy()
     const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->content_security_policy;
   Document* document = frame_or_imported_document_->GetDocument();
   return document ? document->GetContentSecurityPolicy() : nullptr;
 }
 
 void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return;
 
   Document* document = frame_or_imported_document_->GetDocument();
@@ -1104,27 +1107,27 @@ void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
 }
 
 WebContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
   return GetFrame()->GetContentSettingsClient();
 }
 
 Settings* FrameFetchContext::GetSettings() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
   DCHECK(GetFrame());
   return GetFrame()->GetSettings();
 }
 
 String FrameFetchContext::GetUserAgent() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->user_agent;
   return GetFrame()->Loader().UserAgent();
 }
 
 const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
     const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->client_hints_preferences;
 
   Document* document = frame_or_imported_document_->GetDocument();
@@ -1135,7 +1138,7 @@ const ClientHintsPreferences FrameFetchContext::GetClientHintsPreferences()
 }
 
 float FrameFetchContext::GetDevicePixelRatio() const {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->device_pixel_ratio;
 
   Document* document = frame_or_imported_document_->GetDocument();
@@ -1193,7 +1196,7 @@ void FrameFetchContext::ParseAndPersistClientHints(
 }
 
 FetchContext* FrameFetchContext::Detach() {
-  if (IsDetached())
+  if (GetResourceFetcherProperties().IsDetached())
     return this;
 
   if (frame_or_imported_document_->GetDocument()) {
@@ -1282,8 +1285,9 @@ base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
     ResourceRequest::RedirectStatus redirect_status) const {
-  Document* document =
-      IsDetached() ? nullptr : frame_or_imported_document_->GetDocument();
+  Document* document = GetResourceFetcherProperties().IsDetached()
+                           ? nullptr
+                           : frame_or_imported_document_->GetDocument();
   if (document && document->IsFreezingInProgress() &&
       !resource_request.GetKeepalive()) {
     AddConsoleMessage(ConsoleMessage::Create(

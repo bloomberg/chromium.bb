@@ -470,7 +470,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
-  context_->Bind(this);
+  context_->Init(*properties_);
   scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
       init.initial_throttling_policy, context_);
 }
@@ -1551,11 +1551,8 @@ void ResourceFetcher::ClearContext() {
     // "detach" for multiple objects in a coordinated manner. See
     // https://crbug.com/914739 for the progress.
     // TODO(yhirano): Remove the cross-class dependency.
-    auto* context = context_.Get();
     context_ = Context().Detach();
-    context->Unbind();
     properties_->Detach();
-    context_->Bind(this);
   }
 
   console_logger_ = MakeGarbageCollected<NullConsoleLogger>();
