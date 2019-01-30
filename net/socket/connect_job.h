@@ -147,7 +147,19 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // TODO(mmenke): Can that be fixed?
   int Connect();
 
+  // Returns the current LoadState of the ConnectJob. Each ConnectJob class must
+  // start (optionally) with a LOAD_STATE_RESOLVING_HOST followed by
+  // LOAD_STATE_CONNECTING, and never return to LOAD_STATE_CONNECTING. This
+  // behavior is needed for backup ConnectJobs to function correctly.
+  //
+  // TODO(mmenke): Can something better be done here?
   virtual LoadState GetLoadState() const = 0;
+
+  // Returns true if the ConnectJob has ever successfully established a TCP
+  // connection. Used solely for deciding if a backup job is needed. Once it
+  // starts returning true, must always return true when called in the future,
+  // until NotifyComplete() is invoked.
+  virtual bool HasEstablishedConnection() const = 0;
 
   // If Connect returns an error (or OnConnectJobComplete reports an error
   // result) this method will be called, allowing a SocketPool to add additional

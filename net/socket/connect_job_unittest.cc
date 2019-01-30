@@ -71,6 +71,7 @@ class TestConnectJob : public ConnectJob {
 
   // From ConnectJob:
   LoadState GetLoadState() const override { return LOAD_STATE_IDLE; }
+  bool HasEstablishedConnection() const override { return false; }
   int ConnectInternal() override {
     SetSocket(std::unique_ptr<StreamSocket>(new MockTCPClientSocket(
         AddressList(), net_log().net_log(), &socket_data_provider_)));

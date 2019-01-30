@@ -266,6 +266,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
 
   void SetJobLoadState(size_t job, LoadState load_state);
 
+  // Sets the HasConnectionEstablished value of the specified job to true,
+  // without invoking the callback.
+  void SetJobHasEstablishedConnection(size_t job);
+
   int allocation_count() const { return allocation_count_; }
 
  private:
@@ -312,6 +316,7 @@ class TestConnectJob : public ConnectJob {
         job_type_(job_type),
         client_socket_factory_(client_socket_factory),
         load_state_(LOAD_STATE_IDLE),
+        has_established_connection_(false),
         store_additional_error_state_(false),
         weak_factory_(this) {}
 
@@ -321,9 +326,18 @@ class TestConnectJob : public ConnectJob {
 
   void set_load_state(LoadState load_state) { load_state_ = load_state; }
 
+  void set_has_established_connection() {
+    DCHECK(!has_established_connection_);
+    has_established_connection_ = true;
+  }
+
   // From ConnectJob:
 
   LoadState GetLoadState() const override { return load_state_; }
+
+  bool HasEstablishedConnection() const override {
+    return has_established_connection_;
+  }
 
   void GetAdditionalErrorState(ClientSocketHandle* handle) override {
     if (store_additional_error_state_) {
@@ -429,6 +443,7 @@ class TestConnectJob : public ConnectJob {
 
   int DoConnect(bool succeed, bool was_async, bool recoverable) {
     int result = OK;
+    has_established_connection_ = true;
     if (succeed) {
       socket()->Connect(CompletionOnceCallback());
     } else if (recoverable) {
@@ -447,6 +462,7 @@ class TestConnectJob : public ConnectJob {
   const JobType job_type_;
   MockClientSocketFactory* const client_socket_factory_;
   LoadState load_state_;
+  bool has_established_connection_;
   bool store_additional_error_state_;
 
   base::WeakPtrFactory<TestConnectJob> weak_factory_;
@@ -665,6 +681,11 @@ void MockClientSocketFactory::SetJobLoadState(size_t job,
                                               LoadState load_state) {
   ASSERT_LT(job, waiting_jobs_.size());
   waiting_jobs_[job]->set_load_state(load_state);
+}
+
+void MockClientSocketFactory::SetJobHasEstablishedConnection(size_t job) {
+  ASSERT_LT(job, waiting_jobs_.size());
+  waiting_jobs_[job]->set_has_established_connection();
 }
 
 class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
@@ -2646,6 +2667,59 @@ TEST_F(ClientSocketPoolBaseTest, AbortAllRequestsOnFlush) {
   pool_->FlushWithError(ERR_NETWORK_CHANGED);
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_NETWORK_CHANGED));
   EXPECT_THAT(callback.WaitForNestedResult(), IsOk());
+}
+
+TEST_F(ClientSocketPoolBaseTest, BackupSocketWaitsForHostResolution) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSockets);
+  pool_->EnableConnectBackupJobs();
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            handle.Init("bar", params_, DEFAULT_PRIORITY, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        callback.callback(), pool_.get(), NetLogWithSource()));
+  // The backup timer fires but doesn't start a new ConnectJob while resolving
+  // the hostname.
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_RESOLVING_HOST);
+  FastForwardBy(base::TimeDelta::FromMilliseconds(
+      ClientSocketPool::kMaxConnectRetryIntervalMs * 100));
+  EXPECT_EQ(1, client_socket_factory_.allocation_count());
+
+  // Once the ConnectJob has finished resolving the hostname, the backup timer
+  // will create a ConnectJob when it fires.
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_CONNECTING);
+  FastForwardBy(base::TimeDelta::FromMilliseconds(
+      ClientSocketPool::kMaxConnectRetryIntervalMs));
+  EXPECT_EQ(2, client_socket_factory_.allocation_count());
+}
+
+// Test that no backup socket is created when a ConnectJob connects before it
+// completes.
+TEST_F(ClientSocketPoolBaseTest, NoBackupSocketWhenConnected) {
+  CreatePool(kDefaultMaxSockets, kDefaultMaxSockets);
+  pool_->EnableConnectBackupJobs();
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            handle.Init("bar", params_, DEFAULT_PRIORITY, SocketTag(),
+                        ClientSocketPool::RespectLimits::ENABLED,
+                        callback.callback(), pool_.get(), NetLogWithSource()));
+  // The backup timer fires but doesn't start a new ConnectJob while resolving
+  // the hostname.
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_RESOLVING_HOST);
+  FastForwardBy(base::TimeDelta::FromMilliseconds(
+      ClientSocketPool::kMaxConnectRetryIntervalMs * 100));
+  EXPECT_EQ(1, client_socket_factory_.allocation_count());
+
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_SSL_HANDSHAKE);
+  client_socket_factory_.SetJobHasEstablishedConnection(0);
+  FastForwardBy(base::TimeDelta::FromMilliseconds(
+      ClientSocketPool::kMaxConnectRetryIntervalMs * 100));
+  EXPECT_EQ(1, client_socket_factory_.allocation_count());
 }
 
 // Cancel a pending socket request while we're at max sockets,

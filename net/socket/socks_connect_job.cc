@@ -63,6 +63,11 @@ LoadState SOCKSConnectJob::GetLoadState() const {
   }
 }
 
+bool SOCKSConnectJob::HasEstablishedConnection() const {
+  return next_state_ == STATE_SOCKS_CONNECT ||
+         next_state_ == STATE_SOCKS_CONNECT_COMPLETE;
+}
+
 base::TimeDelta SOCKSConnectJob::ConnectionTimeout() {
   return TransportConnectJob::ConnectionTimeout() +
          base::TimeDelta::FromSeconds(kSOCKSConnectJobTimeoutInSeconds);

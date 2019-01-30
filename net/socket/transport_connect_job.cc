@@ -123,6 +123,12 @@ LoadState TransportConnectJob::GetLoadState() const {
   return LOAD_STATE_IDLE;
 }
 
+bool TransportConnectJob::HasEstablishedConnection() const {
+  // No need to ever return true, since NotifyComplete() is called as soon as a
+  // connection is established.
+  return false;
+}
+
 void TransportConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   // If hostname resolution failed, record an empty endpoint and the result.
   // Also record any attempts made on either of the sockets.
