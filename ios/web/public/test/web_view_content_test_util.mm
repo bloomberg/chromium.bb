@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -96,6 +97,7 @@ bool IsWebViewContainingText(web::WebState* web_state,
 
 bool WaitForWebViewContainingText(web::WebState* web_state, std::string text) {
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
+    base::RunLoop().RunUntilIdle();
     return IsWebViewContainingText(web_state, text);
   });
 }
