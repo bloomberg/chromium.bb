@@ -119,7 +119,6 @@ def parse_rfc3339_datetime(value):
       seconds += (int(timezone[1:pos]) * 60 + int(timezone[pos + 1:])) * 60
   return timestamp_to_datetime(int(seconds) * 1e6 + int(nanos) / 1e3)
 
-
 def TimestampToDatetime(input_time):
   """Converts seconds in google.protobuf.Timestamp to readable format.
 

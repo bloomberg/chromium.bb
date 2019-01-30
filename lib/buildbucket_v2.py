@@ -18,6 +18,7 @@ from google.protobuf import field_mask_pb2
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib.luci import utils
 from chromite.lib.luci.prpc.client import Client, ProtocolError
 
 from infra_libs.buildbucket.proto import rpc_pb2
@@ -84,6 +85,7 @@ def UpdateSelfCommonBuildProperties(
     ec_firmware_version: (Optional) ec_firmware version of the build.
   """
   if critical is not None:
+    critical = 1 if critical in [1, True] else 0
     UpdateSelfBuildPropertiesNonBlocking('critical', critical)
   if cidb_id is not None:
     UpdateSelfBuildPropertiesNonBlocking('cidb_id', cidb_id)
@@ -194,3 +196,89 @@ class BuildbucketV2(object):
       if ('killed_child_builds' in build_properties and
           build_properties['killed_child_builds'] is not 'None'):
         return ast.literal_eval(build_properties['killed_child_builds'])
+
+  def GetBuildStatus(self, buildbucket_id):
+    """Retrieve the build status for build corresponding to buildbucket_id.
+
+    Args:
+      buildbucket_id: Buildbucket ID of the build to be queried for.
+
+    Returns:
+      A Dictionary with keys (build_config, start_time, finish_time, status,
+      platform_version, full_version, milestone_version, critical,
+      buildbucket_id, summary, master_build_id, bot_hostname,
+      deadline, build_type, metadata_url, toolchain_url, branch).
+    """
+    CIDB_TO_BB_PROPERTIES_MAP = {
+        # A mapping of CIDB property names to their Buildbucket v2 equivalents.
+        'bot_id': 'bot_hostname',
+        'cidb_id': 'id',
+        'cbb_branch': 'branch',
+        'cbb_config': 'build_config',
+        'cbb_master_build_id': 'master_build_id',
+        'chrome_version': 'chrome_version',
+        'platform_version': 'platform_version',
+        'full_version': 'full_version',
+        'milestone_version': 'milestone_version',
+        'toolchain_url': 'toolchain_url',
+        'critical': 'important',
+        'build_type': 'build_type',
+        'summary': 'summary',
+    }
+    try:
+      properties = "output.properties"
+      build_with_properties = self.GetBuild(buildbucket_id, properties)
+      build = self.GetBuild(buildbucket_id)
+    except ProtocolError:
+      logging.error('Could not fetch Buildbucket status for %d', buildbucket_id)
+      status_shell = {
+          'buildbucket_id': buildbucket_id,
+          'start_time': None,
+          'finish_time': None,
+          'status': None,
+          'builder_name': None,
+          'build_number': None,
+          'buildbot_generation': None,
+          'waterfall': None,
+          'metadata_url': None,
+          'deadline': None,
+      }
+      for _, status_name in CIDB_TO_BB_PROPERTIES_MAP.iteritems():
+        status_shell[status_name] = None
+      return status_shell
+
+    build_status = {'buildbucket_id': build.id}
+    build_status['start_time'] = utils.TimestampToDatetime(build.start_time)
+    build_status['finish_time'] = utils.TimestampToDatetime(build.end_time)
+    build_status['status'] = build.status
+
+    if build_with_properties.output.HasField('properties'):
+      build_properties = build_with_properties.output.properties
+      for property_name, status_name in CIDB_TO_BB_PROPERTIES_MAP.iteritems():
+        if (property_name in build_properties and
+            build_properties[property_name] is not "None"):
+          build_status[status_name] = str(build_properties[property_name])
+        else:
+          build_status[status_name] = None
+
+    # Including the now-defunct columns of CIDB Table so as to not break logic.
+    # TODO(dhanyaganesh): remove these one at a time.
+    build_status['builder_name'] = None
+    build_status['build_number'] = None
+    build_status['buildbot_generation'] = None
+    build_status['waterfall'] = None
+    build_status['metadata_url'] = None
+    build_status['deadline'] = None
+    # Post-processing some properties.
+    if (build_status['status'] is not None and
+        build_status['status'] in BB_STATUS_DICT):
+      build_status['status'] = BB_STATUS_DICT[build_status['status']]
+    if build_status['important'] == "True":
+      build_status['important'] = 1
+    for int_property in ['id', 'master_build_id', 'important']:
+      if build_status[int_property]:
+        try:
+          build_status[int_property] = int(build_status[int_property])
+        except ValueError:
+          build_status[int_property] = None
+    return build_status

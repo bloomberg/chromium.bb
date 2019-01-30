@@ -7,10 +7,14 @@
 
 from __future__ import print_function
 
+import datetime
+
 from google.protobuf import field_mask_pb2
 from google.protobuf.struct_pb2 import Struct, Value
+from google.protobuf.timestamp_pb2 import Timestamp
 
 from chromite.lib import buildbucket_v2
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import metadata_lib
@@ -73,6 +77,91 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
                      side_effect=ProtocolError)
     builds = bbv2.GetKilledChildBuilds(buildbucket_id)
     self.assertIsNone(builds)
+  def testGetBuildStatusWithValidId(self):
+    """Tests for GetBuildStatus with a valid ID."""
+    properties_dict = {
+        'cidb_id': '1234',
+        'bot_id': 'swarm-cros-34',
+        'cbb_branch': 'master',
+        'cbb_config': 'sludge-paladin-tryjob',
+        'cbb_master_build_id': '4321',
+        'platform_version':'11721.0.0',
+        'milestone_version': '74',
+        'full_version': 'R74-11721.0.0-b3457724',
+        'critical': '1',
+        'build_type': 'Try',
+    }
+    start_time = Timestamp()
+    start_time.GetCurrentTime()
+    fake_properties = Struct(fields={
+        key: Value(string_value=value) for key, value in properties_dict.items()
+    })
+    fake_output = build_pb2.Build.Output(properties=fake_properties)
+    fake_build = build_pb2.Build(
+        id=1234, start_time=start_time, status=2, output=fake_output)
+    self.PatchObject(buildbucket_v2.BuildbucketV2, 'GetBuild',
+                     return_value=fake_build)
+    expected_valid_status = {
+        'build_config': 'sludge-paladin-tryjob',
+        'start_time': datetime.datetime.fromtimestamp(start_time.seconds),
+        'finish_time': None,
+        'id': 1234,
+        'status': constants.BUILDER_STATUS_INFLIGHT,
+        'chrome_version': None,
+        'platform_version':'11721.0.0',
+        'milestone_version': '74',
+        'full_version': 'R74-11721.0.0-b3457724',
+        'important': 1,
+        'buildbucket_id': 1234L,
+        'summary': None,
+        'master_build_id': 4321,
+        'bot_hostname': 'swarm-cros-34',
+        'builder_name': None,
+        'build_number': None,
+        'buildbot_generation': None,
+        'waterfall': None,
+        'deadline': None,
+        'build_type': 'Try',
+        'metadata_url': None,
+        'toolchain_url': None,
+        'branch': 'master'
+    }
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    status = bbv2.GetBuildStatus(1234)
+    self.assertEqual(status, expected_valid_status)
+
+  def testGetBuildStatusWithInvalidId(self):
+    """Test the function for an ID that doesn't exist in Buildbucket."""
+    expected_invalid_status = {
+        'build_config': None,
+        'start_time': None,
+        'finish_time': None,
+        'status': None,
+        'id': None,
+        'chrome_version': None,
+        'platform_version': None,
+        'milestone_version': None,
+        'full_version': None,
+        'important': None,
+        'buildbucket_id': 0,
+        'summary': None,
+        'master_build_id': None,
+        'bot_hostname': None,
+        'builder_name': None,
+        'build_number': None,
+        'buildbot_generation': None,
+        'waterfall': None,
+        'deadline': None,
+        'build_type': None,
+        'metadata_url': None,
+        'toolchain_url': None,
+        'branch': None
+    }
+    self.PatchObject(buildbucket_v2.BuildbucketV2, 'GetBuild',
+                     side_effect=ProtocolError)
+    bbv2 = buildbucket_v2.BuildbucketV2()
+    status = bbv2.GetBuildStatus(0)
+    self.assertEqual(status, expected_invalid_status)
 
 
 class StaticFunctionsTest(cros_test_lib.MockTestCase):
