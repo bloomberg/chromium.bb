@@ -1363,6 +1363,9 @@ Securely access your computer from your iOS device. It's fast, simple and free.
       <message  name="IDS_WEBSITE_INVITE_DEPRECATION" desc="Requirement all users to try the new version">
         This app is no longer supported. To ensure you're getting the latest features and security updates, please use the <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>Chrome Remote Desktop web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
       </message>
+      <message name="IDS_DOWNLOAD_FILE_DIALOG_TITLE" desc="Window title for file chooser to select file to download to the client">
+        Download File
+      </message>
       <if expr="is_macosx">
         <message name="IDS_HOST_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when making changes to the system.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
           <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> wants to make changes.
