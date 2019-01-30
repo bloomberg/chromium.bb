@@ -32,6 +32,7 @@
 #error "Instant is only used on desktop";
 #endif
 
+class DarkModeObserver;
 class InstantIOContext;
 class InstantServiceObserver;
 class NtpBackgroundService;
@@ -148,8 +149,6 @@ class InstantService : public KeyedService,
  private:
   class SearchProviderObserver;
 
-  class DarkModeHandler;
-
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
 
@@ -213,6 +212,8 @@ class InstantService : public KeyedService,
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
 
+  void CreateDarkModeObserver(ui::NativeTheme* theme);
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -236,12 +237,12 @@ class InstantService : public KeyedService,
   // Keeps track of any changes in search engine provider. May be null.
   std::unique_ptr<SearchProviderObserver> search_provider_observer_;
 
-  // Keeps track of any changes to system dark mode.
-  std::unique_ptr<DarkModeHandler> dark_mode_handler_;
-
   PrefChangeRegistrar pref_change_registrar_;
 
   PrefService* pref_service_;
+
+  // Keeps track of any changes to system dark mode.
+  std::unique_ptr<DarkModeObserver> dark_mode_observer_;
 
   NtpBackgroundService* background_service_;
 

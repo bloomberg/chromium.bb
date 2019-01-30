@@ -30,6 +30,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/dark_mode_observer.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_paths.h"
@@ -50,7 +51,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 namespace {
 
@@ -147,48 +147,6 @@ class InstantService::SearchProviderObserver
   base::RepeatingCallback<void(bool)> callback_;
 };
 
-// Keeps track of any changes to system dark mode and notifies InstantService if
-// dark mode has been changed. Use this to check if dark mode is enabled.
-class InstantService::DarkModeHandler : public ui::NativeThemeObserver {
- public:
-  explicit DarkModeHandler(ui::NativeTheme* theme,
-                           base::RepeatingCallback<void(bool)> callback)
-      : theme_(theme), callback_(std::move(callback)), observer_(this) {
-    using_dark_mode_ = IsDarkModeEnabled();
-    observer_.Add(theme_);
-  }
-
-  bool IsDarkModeEnabled() { return theme_->SystemDarkModeEnabled(); }
-
-  void SetThemeForTesting(ui::NativeTheme* theme) {
-    observer_.RemoveAll();
-
-    theme_ = theme;
-    using_dark_mode_ = IsDarkModeEnabled();
-    observer_.Add(theme_);
-  }
-
- private:
-  // ui::NativeThemeObserver:
-  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override {
-    DCHECK_EQ(observed_theme, theme_);
-
-    bool using_dark_mode = IsDarkModeEnabled();
-    if (using_dark_mode == using_dark_mode_)
-      return;
-
-    using_dark_mode_ = using_dark_mode;
-    callback_.Run(using_dark_mode_);
-  }
-
-  // The theme to query/watch for changes.
-  ui::NativeTheme* theme_;
-  // Whether or not the theme is using dark mode.
-  bool using_dark_mode_;
-  base::RepeatingCallback<void(bool)> callback_;
-  ScopedObserver<ui::NativeTheme, DarkModeHandler> observer_;
-};
-
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
       pref_service_(profile_->GetPrefs()),
@@ -242,10 +200,7 @@ InstantService::InstantService(Profile* profile)
     }
   }
 
-  dark_mode_handler_ = std::make_unique<DarkModeHandler>(
-      ui::NativeTheme::GetInstanceForNativeUi(),
-      base::BindRepeating(&InstantService::OnDarkModeChanged,
-                          weak_ptr_factory_.GetWeakPtr()));
+  CreateDarkModeObserver(ui::NativeTheme::GetInstanceForNativeUi());
 
   background_service_ = NtpBackgroundServiceFactory::GetForProfile(profile_);
 
@@ -271,7 +226,7 @@ InstantService::InstantService(Profile* profile)
   pref_change_registrar_.Add(
       prefs::kNtpCustomBackgroundDict,
       base::BindRepeating(&InstantService::UpdateBackgroundFromSync,
-                          base::Unretained(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 InstantService::~InstantService() = default;
@@ -450,8 +405,7 @@ void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
 }
 
 void InstantService::SetDarkModeThemeForTesting(ui::NativeTheme* theme) {
-  if (dark_mode_handler_)
-    dark_mode_handler_->SetThemeForTesting(theme);
+  CreateDarkModeObserver(theme);
 }
 
 void InstantService::Shutdown() {
@@ -585,7 +539,7 @@ void InstantService::BuildThemeInfo() {
   theme_info_->using_default_theme =
       theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme();
 
-  theme_info_->using_dark_mode = dark_mode_handler_->IsDarkModeEnabled();
+  theme_info_->using_dark_mode = dark_mode_observer_->InDarkMode();
 
   // Get theme colors.
   const ui::ThemeProvider& theme_provider =
@@ -790,6 +744,13 @@ void InstantService::DeleteThumbnailDataIfExists(
 
 void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {
   background_service_->AddValidBackdropUrlForTesting(url);
+}
+
+void InstantService::CreateDarkModeObserver(ui::NativeTheme* theme) {
+  dark_mode_observer_ = std::make_unique<DarkModeObserver>(
+      theme, base::BindRepeating(&InstantService::OnDarkModeChanged,
+                                 weak_ptr_factory_.GetWeakPtr()));
+  dark_mode_observer_->Start();
 }
 
 // static

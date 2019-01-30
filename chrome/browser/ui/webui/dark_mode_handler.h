@@ -8,11 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/dark_mode_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 namespace base {
 class ListValue;
@@ -29,8 +30,7 @@ class NativeTheme;
 
 class Profile;
 
-class DarkModeHandler : public content::WebUIMessageHandler,
-                        public ui::NativeThemeObserver {
+class DarkModeHandler : public content::WebUIMessageHandler {
  public:
   ~DarkModeHandler() override;
 
@@ -55,34 +55,22 @@ class DarkModeHandler : public content::WebUIMessageHandler,
  private:
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
-  void OnJavascriptDisallowed() override;
-
-  // ui::NativeThemeObserver:
-  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // Handles the "observeDarkMode" message. No arguments. Protected for testing.
   void HandleObserveDarkMode(const base::ListValue* args);
+
+  bool UseDarkMode() const;
 
   // Generates a dictionary with "dark" and "darkMode" i18n keys based on
   // |using_dark_|. Called initialize and on each change for notifications.
   std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate() const;
 
-  // Whether the feature is enabled and the system is in dark mode.
-  bool IsDarkModeEnabled() const;
-
-  // Fire a webui listener notification if dark mode actually changed.
-  void NotifyIfChanged();
-
-  // The theme to query/watch for changes. Injected for testing.
-  ui::NativeTheme* const theme_;
+  void OnDarkModeChanged(bool dark_mode);
 
   // Profile to update data sources on. Injected for testing.
   Profile* const profile_;
 
-  // Whether or not this page is using dark mode.
-  bool using_dark_;
-
-  ScopedObserver<ui::NativeTheme, DarkModeHandler> observer_;
+  DarkModeObserver dark_mode_observer_;
 
   // Populated if feature is enabled.
   std::string source_name_;
