@@ -73,7 +73,6 @@ cr.define('header_test', function() {
       header.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       header.errorMessage = '';
       header.state = print_preview_new.State.READY;
@@ -87,7 +86,7 @@ cr.define('header_test', function() {
               print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
               print_preview.DestinationType.LOCAL,
               print_preview.DestinationOrigin.LOCAL,
-              loadTimeData.getString('printToPDF'), false,
+              loadTimeData.getString('printToPDF'),
               print_preview.DestinationConnectionStatus.ONLINE));
     }
 

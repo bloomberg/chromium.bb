@@ -301,7 +301,6 @@ cr.define('preview_generation_test', function() {
             const barDestination = new print_preview.Destination(
                 'BarDevice', print_preview.DestinationType.LOCAL,
                 print_preview.DestinationOrigin.LOCAL, 'BarName',
-                false /*isRecent*/,
                 print_preview.DestinationConnectionStatus.ONLINE);
             barDestination.capabilities =
                 print_preview_test_utils.getCddTemplate(barDestination.id)

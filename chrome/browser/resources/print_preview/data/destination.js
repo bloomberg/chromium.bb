@@ -263,7 +263,6 @@ cr.define('print_preview', function() {
      * @param {!print_preview.DestinationOrigin} origin Origin of the
      *     destination.
      * @param {string} displayName Display name of the destination.
-     * @param {boolean} isRecent Whether the destination has been used recently.
      * @param {!print_preview.DestinationConnectionStatus} connectionStatus
      *     Connection status of the print destination.
      * @param {{tags: (Array<string>|undefined),
@@ -283,8 +282,7 @@ cr.define('print_preview', function() {
      *         }=} opt_params Optional
      *     parameters for the destination.
      */
-    constructor(
-        id, type, origin, displayName, isRecent, connectionStatus, opt_params) {
+    constructor(id, type, origin, displayName, connectionStatus, opt_params) {
       /**
        * ID of the destination.
        * @private {string}
@@ -308,12 +306,6 @@ cr.define('print_preview', function() {
        * @private {string}
        */
       this.displayName_ = displayName || '';
-
-      /**
-       * Whether the destination has been used recently.
-       * @private {boolean}
-       */
-      this.isRecent_ = isRecent;
 
       /**
        * Tags associated with the destination.
@@ -457,18 +449,6 @@ cr.define('print_preview', function() {
     /** @return {string} Display name of the destination. */
     get displayName() {
       return this.displayName_;
-    }
-
-    /** @return {boolean} Whether the destination has been used recently. */
-    get isRecent() {
-      return this.isRecent_;
-    }
-
-    /**
-     * @param {boolean} isRecent Whether the destination has been used recently.
-     */
-    set isRecent(isRecent) {
-      this.isRecent_ = isRecent;
     }
 
     /**

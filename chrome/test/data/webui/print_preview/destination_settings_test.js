@@ -99,8 +99,7 @@ cr.define('destination_settings_test', function() {
       // is enabled.
       destinationSettings.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.LOCAL, getLocalOrigin(),
-          'FooName', true /* isRecent */,
-          print_preview.DestinationConnectionStatus.ONLINE);
+          'FooName', print_preview.DestinationConnectionStatus.ONLINE);
       destinationSettings.recentDestinations = [
         print_preview.makeRecentDestination(destinationSettings.destination),
       ];
@@ -162,8 +161,7 @@ cr.define('destination_settings_test', function() {
           'FooName';
       destinationSettings.destination = new print_preview.Destination(
           defaultId, print_preview.DestinationType.LOCAL, getLocalOrigin(),
-          defaultName, true /* isRecent */,
-          print_preview.DestinationConnectionStatus.ONLINE);
+          defaultName, print_preview.DestinationConnectionStatus.ONLINE);
       destinationSettings.destinationStore = destinationStore;
       destinationSettings.invitationStore = new print_preview.InvitationStore();
       destinationSettings.recentDestinations = recentDestinations;

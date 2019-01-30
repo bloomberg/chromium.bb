@@ -68,7 +68,6 @@ cr.define('print_header_interactive_test', function() {
       header.destination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooName',
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       header.errorMessage = '';
       header.state = print_preview_new.State.NOT_READY;

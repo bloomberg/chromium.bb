@@ -124,7 +124,7 @@ cr.define('destination_select_test', function() {
     /**
      * Tests that if the user has multiple valid recent destination the most
      * recent destination is automatically reselected and the remaining
-     * destinations are marked as recent in the store.
+     * destinations are prefetched.
      */
     test(assert(TestNames.MultipleRecentDestinations), function() {
       const recentDestinations = destinations.slice(0, 3).map(
@@ -144,11 +144,6 @@ cr.define('destination_select_test', function() {
             assertEquals('ID1', page.destination_.id);
             return assertPrinterDisplay('One');
           })
-          .then(() => {
-            // Load all local destinations.
-            page.destinationStore_.startLoadAllDestinations();
-            return nativeLayer.whenCalled('getPrinters');
-          })
           .then(function() {
             // Verify the correct printers are marked as recent in the store.
             const reportedPrinters = page.destinationStore_.destinations();
@@ -156,8 +151,7 @@ cr.define('destination_select_test', function() {
               const match = reportedPrinters.find((reportedPrinter) => {
                 return reportedPrinter.id == destination.id;
               });
-              assertFalse(typeof match === 'undefined');
-              assertEquals(index < 3, match.isRecent);
+              assertEquals(index >= 3, typeof match === 'undefined');
             });
           });
     });

@@ -32,7 +32,6 @@ cr.define('destination_item_test', function() {
       item.destination = new print_preview.Destination(
           printerId, print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, printerName,
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       item.searchQuery = null;
       document.body.appendChild(item);
@@ -64,7 +63,6 @@ cr.define('destination_item_test', function() {
       item.destination = new print_preview.Destination(
           printerId, print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, printerName,
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.OFFLINE,
           {lastAccessTime: twoMonthsAgo.getTime()});
 
@@ -124,8 +122,7 @@ cr.define('destination_item_test', function() {
       item.destination = new print_preview.Destination(
           printerId, print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, printerName,
-          true /* isRecent */, print_preview.DestinationConnectionStatus.ONLINE,
-          params);
+          print_preview.DestinationConnectionStatus.ONLINE, params);
       item.searchQuery = /(ABC)/i;
 
       // No highlighting on name.
