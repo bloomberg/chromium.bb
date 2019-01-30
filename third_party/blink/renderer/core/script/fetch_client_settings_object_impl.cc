@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 
 namespace blink {
 
@@ -59,6 +60,11 @@ FetchClientSettingsObjectImpl::MimeTypeCheckForClassicWorkerScript() const {
   // Nested workers is a new feature (enabled by default in M69) and there is no
   // backward compatibility issue.
   return AllowedByNosniff::MimeTypeCheck::kStrict;
+}
+
+base::Optional<mojom::IPAddressSpace>
+FetchClientSettingsObjectImpl::GetAddressSpace() const {
+  return execution_context_->GetSecurityContext().AddressSpace();
 }
 
 void FetchClientSettingsObjectImpl::Trace(Visitor* visitor) {

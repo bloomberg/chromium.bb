@@ -119,7 +119,10 @@ FrameResourceFetcherProperties::CreateFetchClientSettingsObject(
 
       // This is only for workers and this value is not (and isn't
       // expected to be) used.
-      AllowedByNosniff::MimeTypeCheck::kStrict);
+      AllowedByNosniff::MimeTypeCheck::kStrict,
+
+      // address space; Until the document gets available, return nullopt.
+      base::nullopt);
 }
 
 }  // namespace blink

@@ -121,7 +121,7 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
         request.HttpReferrer());
   }
 
-  auto address_space = GetAddressSpace();
+  auto address_space = fetch_client_settings_object.GetAddressSpace();
   if (address_space)
     request.SetExternalRequestStateFromRequestorAddressSpace(*address_space);
 

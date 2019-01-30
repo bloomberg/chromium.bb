@@ -195,7 +195,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
-  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override;
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
