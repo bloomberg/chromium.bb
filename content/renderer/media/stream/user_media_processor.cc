@@ -1254,6 +1254,11 @@ void UserMediaProcessor::DelayedGetUserMediaRequestFailed(
       web_request.RequestFailed(
           blink::WebUserMediaRequest::Error::kKillSwitchOn);
       return;
+    case blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED:
+      web_request.RequestFailed(
+          blink::WebUserMediaRequest::Error::kSystemPermissionDenied,
+          "Permission denied by system");
+      return;
   }
   NOTREACHED();
   web_request.RequestFailed(

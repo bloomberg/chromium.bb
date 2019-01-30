@@ -9,6 +9,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -31,8 +32,11 @@
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
-
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#endif
 
 using content::BrowserThread;
 
@@ -123,6 +127,25 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
   }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_MACOSX)
+  // Fail if access is denied in system permission. Note that if permission is
+  // not yet determined, we don't fail. If all other permissions are OK, we'll
+  // allow access. The reason for doing this is that if the permission is not
+  // yet determined, the user will get an async alert dialog and we don't want
+  // to wait on that before resolving getUserMedia. getUserMedia will succeed,
+  // but audio will be silent until user allows permission in the dialog. If the
+  // user denies permission audio will continue being silent but they will
+  // likely understand why since they denied it.
+  // TODO(https://crbug.com/885184): Handle the not determined case better.
+  if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
+      SystemAudioCapturePermissionIsDisallowed()) {
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED,
+                            nullptr);
+    return;
+  }
+#endif  // defined(OS_MACOSX)
+
   RequestsQueue& queue = pending_requests_[web_contents];
   queue.push_back(PendingAccessRequest(
       request, base::AdaptCallbackForRepeating(std::move(callback))));
@@ -206,6 +229,17 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
   RequestsQueue& queue(it->second);
   if (queue.empty())
     return;
+
+#if defined(OS_MACOSX)
+  // If the request was approved, trigger system user dialog if needed. We need
+  // to do this explicitly so that the system gives the correct information
+  // about the permission state in future requests
+  // (see PermissionBubbleMediaAccessHandler::HandleRequest).
+  if (queue.front().request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
+      result == blink::MEDIA_DEVICE_OK) {
+    EnsureSystemAudioCapturePermission();
+  }
+#endif  // defined(OS_MACOSX)
 
   RepeatingMediaResponseCallback callback = queue.front().callback;
   queue.pop_front();

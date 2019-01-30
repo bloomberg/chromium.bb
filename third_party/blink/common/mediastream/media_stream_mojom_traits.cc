@@ -119,6 +119,8 @@ blink::mojom::MediaStreamRequestResult EnumTraits<
       return blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN;
     case blink::MediaStreamRequestResult::MEDIA_DEVICE_KILL_SWITCH_ON:
       return blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON;
+    case blink::MediaStreamRequestResult::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED:
+      return blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
     default:
       break;
   }
@@ -182,6 +184,10 @@ bool EnumTraits<blink::mojom::MediaStreamRequestResult,
       return true;
     case blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON:
       *out = blink::MediaStreamRequestResult::MEDIA_DEVICE_KILL_SWITCH_ON;
+      return true;
+    case blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED:
+      *out = blink::MediaStreamRequestResult::
+          MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED;
       return true;
   }
   NOTREACHED();
