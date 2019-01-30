@@ -59,7 +59,7 @@ void PasswordManagerClientHelper::OnCredentialsChosen(
 void PasswordManagerClientHelper::NotifyStorePasswordCalled() {
   // If a site stores a credential the autofill password manager shouldn't kick
   // in.
-  delegate_->GetPasswordManager()->DropFormManagers();
+  delegate_->GetPasswordManager()->NotifyStorePasswordCalled();
 }
 
 void PasswordManagerClientHelper::NotifyUserAutoSignin() {

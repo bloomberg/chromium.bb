@@ -3333,4 +3333,35 @@ TEST_F(PasswordManagerTest, CreateNewPasswordFormManagerOnSaving) {
               FormMatches(submitted_form));
 }
 
+// Tests that no save prompt from form manager is shown when Credentials
+// Management API function store is called.
+TEST_F(PasswordManagerTest, NoSavePromptAfterStoreCalled) {
+  for (bool new_parsing_for_saving : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "new_parsing_for_saving = " << new_parsing_for_saving);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (new_parsing_for_saving)
+      TurnOnNewParsingForSaving(&scoped_feature_list);
+
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+        .WillRepeatedly(Return(true));
+
+    PasswordForm form(MakeSimpleForm());
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+    manager()->OnPasswordFormsParsed(&driver_, {form});
+
+    // Simulate that navigator.credentials.store function is called.
+    manager()->NotifyStorePasswordCalled();
+
+    OnPasswordFormSubmitted(form);
+    EXPECT_FALSE(manager()->GetSubmittedManagerForTest());
+    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+
+    manager()->OnPasswordFormsRendered(&driver_, {}, true);
+    testing::Mock::VerifyAndClearExpectations(&client_);
+  }
+}
+
 }  // namespace password_manager

@@ -188,6 +188,9 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
                              uint32_t form_renderer_id,
                              int32_t result);
 
+  // Notifies that Credential Management API function store() is called.
+  void NotifyStorePasswordCalled();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(
       PasswordManagerTest,
@@ -259,7 +262,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // gone.
   PasswordFormManagerInterface* GetSubmittedManager() const;
 
- private:
   // Returns the form manager that corresponds to the submitted form. It also
   // sets |submitted_form_manager_| to nullptr.
   // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
@@ -357,6 +359,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // If true, it turns off using PasswordFormManager in PasswordManager.
   const bool is_only_new_parser_enabled_;
+
+  // True if Credential Management API function store() was called. In this case
+  // PasswordManager does not need to show a save/update prompt since
+  // CredentialManagerImpl takes care of it.
+  bool store_password_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
