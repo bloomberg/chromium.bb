@@ -185,7 +185,7 @@ void PaymentRequestDialogView::ShowPaymentHandlerScreen(
               request_->spec(), request_->state(), this,
               request_->web_contents(), GetProfile(), url, std::move(callback)),
           &controller_map_),
-      /* animate = */ true);
+      /* animate = */ !request_->skipped_payment_request_ui());
   HideProcessingSpinner();
 }
 
