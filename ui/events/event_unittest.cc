@@ -879,6 +879,19 @@ TEST(EventTest, OperatorEqual) {
   EXPECT_EQ(properties, *(m2.properties()));
 }
 
+// Verifies that ToString() generates something and doesn't crash. The specific
+// format isn't important.
+TEST(EventTest, ToStringNotEmpty) {
+  MouseEvent mouse_event(ET_MOUSE_PRESSED, gfx::Point(1, 2), gfx::Point(2, 3),
+                         EventTimeForNow(), EF_LEFT_MOUSE_BUTTON,
+                         EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_FALSE(mouse_event.ToString().empty());
+
+  ScrollEvent scroll_event(ET_SCROLL, gfx::Point(1, 2), EventTimeForNow(),
+                           EF_NONE, 1.f, 2.f, 3.f, 4.f, 1);
+  EXPECT_FALSE(scroll_event.ToString().empty());
+}
+
 #if defined(OS_WIN)
 namespace {
 

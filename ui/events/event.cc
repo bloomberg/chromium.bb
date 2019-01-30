@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/events/base_event_utils.h"
@@ -119,6 +120,34 @@ SourceEventType EventTypeToLatencySourceEventType(EventType type) {
   }
   NOTREACHED();
   return SourceEventType::UNKNOWN;
+}
+
+std::string MomentumPhaseToString(EventMomentumPhase phase) {
+  switch (phase) {
+    case EventMomentumPhase::NONE:
+      return "NONE";
+    case EventMomentumPhase::BEGAN:
+      return "BEGAN";
+    case EventMomentumPhase::MAY_BEGIN:
+      return "MAY_BEGIN";
+    case EventMomentumPhase::INERTIAL_UPDATE:
+      return "INERTIAL_UPDATE";
+    case EventMomentumPhase::END:
+      return "END";
+  }
+}
+
+std::string ScrollEventPhaseToString(ScrollEventPhase phase) {
+  switch (phase) {
+    case ScrollEventPhase::kNone:
+      return "kEnd";
+    case ScrollEventPhase::kBegan:
+      return "kBegan";
+    case ScrollEventPhase::kUpdate:
+      return "kUpdate";
+    case ScrollEventPhase::kEnd:
+      return "kEnd";
+  }
 }
 
 }  // namespace
@@ -273,6 +302,13 @@ void Event::SetHandled() {
   result_ = static_cast<EventResult>(result_ | ER_HANDLED);
 }
 
+std::string Event::ToString() const {
+  std::string s = GetName();
+  s += " time_stamp ";
+  s += base::NumberToString(time_stamp_.since_origin().InSecondsF());
+  return s;
+}
+
 Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp),
@@ -414,6 +450,15 @@ void LocatedEvent::UpdateForRootTransform(
     reversed_root_transform.TransformPoint(&transformed_location);
     root_location_ = location_ = transformed_location.AsPointF();
   }
+}
+
+std::string LocatedEvent::ToString() const {
+  std::string s = Event::ToString();
+  s += " location ";
+  s += location_.ToString();
+  s += " root_location ";
+  s += root_location_.ToString();
+  return s;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1154,6 +1199,17 @@ void ScrollEvent::Scale(const float factor) {
   y_offset_ *= factor;
   x_offset_ordinal_ *= factor;
   y_offset_ordinal_ *= factor;
+}
+
+std::string ScrollEvent::ToString() const {
+  std::string s = MouseEvent::ToString();
+  s += " offset " + base::NumberToString(x_offset_) + "," +
+       base::NumberToString(y_offset_);
+  s += " offset_ordinal " + base::NumberToString(x_offset_ordinal_) + "," +
+       base::NumberToString(y_offset_ordinal_);
+  s += " momentum_phase " + MomentumPhaseToString(momentum_phase_);
+  s += " event_phase " + ScrollEventPhaseToString(scroll_event_phase_);
+  return s;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

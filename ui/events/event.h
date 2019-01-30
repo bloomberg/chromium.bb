@@ -300,6 +300,9 @@ class EVENTS_EXPORT Event {
   void SetHandled();
   bool handled() const { return result_ != ER_UNHANDLED; }
 
+  // For debugging. Not a stable serialization format.
+  virtual std::string ToString() const;
+
  protected:
   Event(EventType type, base::TimeTicks time_stamp, int flags);
   Event(const PlatformEvent& native_event, EventType type, int flags);
@@ -386,6 +389,9 @@ class EVENTS_EXPORT LocatedEvent : public Event {
     gfx::Vector2d diff = gfx::ToFlooredPoint(location_) - offset;
     location_ = location_ - diff;
   }
+
+  // Event:
+  std::string ToString() const override;
 
  protected:
   friend class LocatedEventTestApi;
@@ -1009,6 +1015,9 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
   int finger_count() const { return finger_count_; }
   EventMomentumPhase momentum_phase() const { return momentum_phase_; }
   ScrollEventPhase scroll_event_phase() const { return scroll_event_phase_; }
+
+  // Event:
+  std::string ToString() const override;
 
  private:
   // Potential accelerated offsets.
