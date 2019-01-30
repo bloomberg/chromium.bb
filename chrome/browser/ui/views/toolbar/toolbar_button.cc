@@ -78,6 +78,11 @@ void ToolbarButton::SetHighlightColor(base::Optional<SkColor> color) {
   UpdateHighlightBackgroundAndInsets();
 }
 
+void ToolbarButton::SetText(const base::string16& text) {
+  LabelButton::SetText(text);
+  UpdateHighlightBackgroundAndInsets();
+}
+
 void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
   const int highlight_radius =
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -98,8 +103,17 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
 
   gfx::Insets insets = GetLayoutInsets(TOOLBAR_BUTTON) + layout_inset_delta_ +
                        *GetProperty(views::kInternalPaddingKey);
-  if (highlight_color_)
-    insets += gfx::Insets(0, highlight_radius / 2, 0, 0);
+  if (!GetText().empty()) {
+    const int text_side_inset = highlight_radius / 2;
+
+    // Some subclasses (AvatarToolbarButton) may be change alignment. This adds
+    // an inset to the text-label side.
+    if (horizontal_alignment() == gfx::ALIGN_RIGHT) {
+      insets += gfx::Insets(0, text_side_inset, 0, 0);
+    } else {
+      insets += gfx::Insets(0, 0, 0, text_side_inset);
+    }
+  }
 
   SetBorder(views::CreateEmptyBorder(insets));
 }
