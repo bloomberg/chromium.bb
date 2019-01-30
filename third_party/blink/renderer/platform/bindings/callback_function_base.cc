@@ -73,9 +73,10 @@ ScriptState* CallbackFunctionBase::CallbackRelevantScriptStateOrThrowException(
 V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(
     CallbackFunctionBase* callback_function)
     : callback_function_(callback_function) {
-  v8::HandleScope scope(callback_function_->GetIsolate());
-  v8_function_.Reset(callback_function_->GetIsolate(),
-                     callback_function_->callback_function_.Get());
+  v8::Isolate* isolate = callback_function_->GetIsolate();
+  v8::HandleScope scope(isolate);
+  auto local = callback_function_->callback_function_.NewLocal(isolate);
+  v8_function_.Reset(isolate, local);
 }
 
 void V8PersistentCallbackFunctionBase::Trace(blink::Visitor* visitor) {

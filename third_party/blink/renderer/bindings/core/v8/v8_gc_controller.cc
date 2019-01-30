@@ -34,7 +34,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "base/feature_list.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -57,11 +56,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-
-// When CollectLiveNonNodeWrappers is enabled, live non-Node wrappers that are
-// recreatable will get collected during scavenger GC.
-const base::Feature kCollectLiveNonNodeWrappers{
-    "CollectLiveNonNodeWrappers", base::FEATURE_DISABLED_BY_DEFAULT};
 
 Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   DCHECK(node);
@@ -89,74 +83,10 @@ bool IsDOMWrapperClassId(uint16_t class_id) {
          class_id == WrapperTypeInfo::kCustomWrappableId;
 }
 
-class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
- public:
-  explicit MinorGCUnmodifiedWrapperVisitor(v8::Isolate* isolate)
-      : isolate_(isolate) {}
-
-  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
-                             uint16_t class_id) override {
-    if (!IsDOMWrapperClassId(class_id))
-      return;
-
-    if (class_id == WrapperTypeInfo::kCustomWrappableId) {
-      v8::Persistent<v8::Object>::Cast(*value).MarkActive();
-      return;
-    }
-
-    const bool collect_non_node_wrappers =
-        base::FeatureList::IsEnabled(kCollectLiveNonNodeWrappers);
-
-    // MinorGC does not collect objects because it may be expensive to
-    // update references during minorGC
-    if (!collect_non_node_wrappers &&
-        class_id == WrapperTypeInfo::kObjectClassId) {
-      v8::Persistent<v8::Object>::Cast(*value).MarkActive();
-      return;
-    }
-
-    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
-        isolate_, v8::Persistent<v8::Object>::Cast(*value));
-    DCHECK(V8DOMWrapper::HasInternalFieldsSet(wrapper));
-
-    if (ToWrapperTypeInfo(wrapper)->IsActiveScriptWrappable() &&
-        ToScriptWrappable(wrapper)->HasPendingActivity()) {
-      v8::Persistent<v8::Object>::Cast(*value).MarkActive();
-      return;
-    }
-
-    if (ToScriptWrappable(wrapper)->HasEventListeners()) {
-      v8::Persistent<v8::Object>::Cast(*value).MarkActive();
-      return;
-    }
-
-    if (class_id == WrapperTypeInfo::kNodeClassId) {
-      DCHECK(V8Node::HasInstance(wrapper, isolate_));
-      Node* node = V8Node::ToImpl(wrapper);
-      // FIXME: Remove the special handling for SVG elements.
-      // We currently can't collect SVG Elements from minor gc, as we have
-      // strong references from SVG property tear-offs keeping context SVG
-      // element alive.
-      if (node->IsSVGElement()) {
-        v8::Persistent<v8::Object>::Cast(*value).MarkActive();
-        return;
-      }
-    }
-  }
-
- private:
-  v8::Isolate* isolate_;
-};
-
 size_t UsedHeapSize(v8::Isolate* isolate) {
   v8::HeapStatistics heap_statistics;
   isolate->GetHeapStatistics(&heap_statistics);
   return heap_statistics.used_heap_size();
-}
-
-void VisitWeakHandlesForMinorGC(v8::Isolate* isolate) {
-  MinorGCUnmodifiedWrapperVisitor visitor(isolate);
-  isolate->VisitWeakHandles(&visitor);
 }
 
 bool IsNestedInV8GC(ThreadState* thread_state, v8::GCType type) {
@@ -193,7 +123,6 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
     case v8::kGCTypeScavenge:
       TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC",
                          "usedHeapSizeBefore", UsedHeapSize(isolate));
-      VisitWeakHandlesForMinorGC(isolate);
       break;
     case v8::kGCTypeMarkSweepCompact:
       if (ThreadState::Current())
@@ -365,20 +294,34 @@ void V8GCController::CollectAllGarbageForTesting(
 
 namespace {
 
-// Traces all DOM persistent handles using the provided visitor.
-class DOMWrapperTracer final : public v8::PersistentHandleVisitor {
+// Visitor forwarding all DOM wrapper handles to the provided Blink visitor.
+class DOMWrapperForwardingVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
  public:
-  explicit DOMWrapperTracer(Visitor* visitor) : visitor_(visitor) {
+  explicit DOMWrapperForwardingVisitor(Visitor* visitor) : visitor_(visitor) {
     DCHECK(visitor_);
   }
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) final {
+    // TODO(mlippautz): There should be no more v8::Persistent that have a class
+    // id set.
+    VisitHandle(value, class_id);
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    VisitHandle(&value, value.WrapperClassId());
+  }
+
+ private:
+  template <typename T>
+  void VisitHandle(T* value, uint16_t class_id) {
     if (!IsDOMWrapperClassId(class_id))
       return;
 
     WrapperTypeInfo* wrapper_type_info = const_cast<WrapperTypeInfo*>(
-        ToWrapperTypeInfo(v8::Persistent<v8::Object>::Cast(*value)));
+        ToWrapperTypeInfo(value->template As<v8::Object>()));
 
     // WrapperTypeInfo pointer may have been cleared before termination GCs on
     // worker threads.
@@ -386,21 +329,34 @@ class DOMWrapperTracer final : public v8::PersistentHandleVisitor {
       return;
 
     wrapper_type_info->Trace(
-        visitor_, ToUntypedWrappable(v8::Persistent<v8::Object>::Cast(*value)));
+        visitor_, ToUntypedWrappable(value->template As<v8::Object>()));
   }
 
- private:
   Visitor* const visitor_;
 };
 
-// Purges all DOM persistent handles.
-class DOMWrapperPurger final : public v8::PersistentHandleVisitor {
+// Visitor purging all DOM wrapper handles.
+class DOMWrapperPurgingVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
  public:
-  explicit DOMWrapperPurger(v8::Isolate* isolate)
+  explicit DOMWrapperPurgingVisitor(v8::Isolate* isolate)
       : isolate_(isolate), scope_(isolate) {}
 
   void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
                              uint16_t class_id) final {
+    // TODO(mlippautz): There should be no more v8::Persistent that have a class
+    // id set.
+    VisitHandle(value, class_id);
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    VisitHandle(&value, value.WrapperClassId());
+  }
+
+ private:
+  template <typename T>
+  void VisitHandle(T* value, uint16_t class_id) {
     if (!IsDOMWrapperClassId(class_id))
       return;
 
@@ -409,27 +365,39 @@ class DOMWrapperPurger final : public v8::PersistentHandleVisitor {
     // anymore.
     int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
     void* values[] = {nullptr, nullptr};
-    v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(
-        isolate_, v8::Persistent<v8::Object>::Cast(*value));
+    v8::Local<v8::Object> wrapper =
+        v8::Local<v8::Object>::New(isolate_, value->template As<v8::Object>());
     wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
                                                values);
   }
 
- private:
-  v8::Isolate* isolate_;
+  v8::Isolate* const isolate_;
   v8::HandleScope scope_;
 };
 
 }  // namespace
 
-void V8GCController::TraceDOMWrappers(v8::Isolate* isolate, Visitor* visitor) {
-  DOMWrapperTracer tracer(visitor);
-  isolate->VisitHandlesWithClassIds(&tracer);
+void V8GCController::TraceDOMWrappers(v8::Isolate* isolate,
+                                      Visitor* parent_visitor) {
+  DOMWrapperForwardingVisitor visitor(parent_visitor);
+  isolate->VisitHandlesWithClassIds(&visitor);
+  v8::EmbedderHeapTracer* tracer =
+      V8PerIsolateData::From(isolate)->GetEmbedderHeapTracer();
+  // There may be no tracer during tear down garbage collections.
+  // Not all threads have a tracer attached.
+  if (tracer)
+    tracer->IterateTracedGlobalHandles(&visitor);
 }
 
 void V8GCController::ClearDOMWrappers(v8::Isolate* isolate) {
-  DOMWrapperPurger purger(isolate);
-  isolate->VisitHandlesWithClassIds(&purger);
+  DOMWrapperPurgingVisitor visitor(isolate);
+  isolate->VisitHandlesWithClassIds(&visitor);
+  v8::EmbedderHeapTracer* tracer =
+      V8PerIsolateData::From(isolate)->GetEmbedderHeapTracer();
+  // There may be no tracer during tear down garbage collections.
+  // Not all threads have a tracer attached.
+  if (tracer)
+    tracer->IterateTracedGlobalHandles(&visitor);
 }
 
 }  // namespace blink

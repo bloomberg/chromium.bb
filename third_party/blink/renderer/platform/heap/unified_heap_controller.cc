@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -133,6 +134,41 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
 
 bool UnifiedHeapController::IsTracingDone() {
   return is_tracing_done_;
+}
+
+bool UnifiedHeapController::IsRootForNonTracingGCInternal(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  const uint16_t class_id = handle.WrapperClassId();
+  // Stand-alone TracedGlobal reference or kCustomWrappableId. Keep as root as
+  // we don't know better.
+  if (class_id != WrapperTypeInfo::kNodeClassId &&
+      class_id != WrapperTypeInfo::kObjectClassId)
+    return true;
+
+  const bool collect_non_node_wrappers =
+      RuntimeEnabledFeatures::HeapCollectLiveNonNodeWrappersEnabled();
+
+  if (!collect_non_node_wrappers &&
+      class_id == WrapperTypeInfo::kObjectClassId) {
+    return true;
+  }
+
+  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
+  if (ToWrapperTypeInfo(traced)->IsActiveScriptWrappable() &&
+      ToScriptWrappable(traced)->HasPendingActivity()) {
+    return true;
+  }
+
+  if (ToScriptWrappable(traced)->HasEventListeners()) {
+    return true;
+  }
+
+  return false;
+}
+
+bool UnifiedHeapController::IsRootForNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  return IsRootForNonTracingGCInternal(handle);
 }
 
 }  // namespace blink

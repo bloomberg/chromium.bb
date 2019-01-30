@@ -86,6 +86,7 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   void TraceEpilogue() override;
   void EnterFinalPause(EmbedderStackState) override;
   bool IsTracingDone() override;
+  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>&) override;
 
   // ScriptWrappableVisitor interface.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override;

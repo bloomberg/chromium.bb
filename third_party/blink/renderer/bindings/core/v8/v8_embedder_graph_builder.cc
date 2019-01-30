@@ -32,6 +32,10 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraphCallback(
 
 void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   isolate_->VisitHandlesWithClassIds(this);
+  v8::EmbedderHeapTracer* tracer =
+      V8PerIsolateData::From(isolate_)->GetEmbedderHeapTracer();
+  if (tracer)
+    tracer->IterateTracedGlobalHandles(this);
 // At this point we collected ScriptWrappables in three groups:
 // attached, detached, and unknown.
 #if DCHECK_IS_ON()
@@ -98,14 +102,9 @@ V8EmbedderGraphBuilder::DomTreeStateFromWrapper(
   return DomTreeState::kDetached;
 }
 
-void V8EmbedderGraphBuilder::VisitPersistentHandle(
-    v8::Persistent<v8::Value>* value,
+void V8EmbedderGraphBuilder::VisitPersistentHandleInternal(
+    v8::Local<v8::Object> v8_value,
     uint16_t class_id) {
-  if (class_id != WrapperTypeInfo::kNodeClassId &&
-      class_id != WrapperTypeInfo::kObjectClassId)
-    return;
-  v8::Local<v8::Object> v8_value = v8::Local<v8::Object>::New(
-      isolate_, v8::Persistent<v8::Object>::Cast(*value));
   ScriptWrappable* traceable = ToScriptWrappable(v8_value);
   if (!traceable)
     return;
@@ -129,11 +128,30 @@ void V8EmbedderGraphBuilder::VisitPersistentHandle(
   }
 }
 
+void V8EmbedderGraphBuilder::VisitTracedGlobalHandle(
+    const v8::TracedGlobal<v8::Value>& value) {
+  const uint16_t class_id = value.WrapperClassId();
+  if (class_id != WrapperTypeInfo::kNodeClassId &&
+      class_id != WrapperTypeInfo::kObjectClassId)
+    return;
+  VisitPersistentHandleInternal(value.As<v8::Object>().Get(isolate_), class_id);
+}
+
+void V8EmbedderGraphBuilder::VisitPersistentHandle(
+    v8::Persistent<v8::Value>* value,
+    uint16_t class_id) {
+  if (class_id != WrapperTypeInfo::kNodeClassId &&
+      class_id != WrapperTypeInfo::kObjectClassId)
+    return;
+  v8::Local<v8::Object> v8_value = v8::Local<v8::Object>::New(
+      isolate_, v8::Persistent<v8::Object>::Cast(*value));
+  VisitPersistentHandleInternal(v8_value, class_id);
+}
+
 void V8EmbedderGraphBuilder::Visit(
     const TraceWrapperV8Reference<v8::Value>& traced_wrapper) {
-  const v8::PersistentBase<v8::Value>* value = &traced_wrapper.Get();
   // Add an edge from the current parent to the V8 object.
-  v8::Local<v8::Value> v8_value = v8::Local<v8::Value>::New(isolate_, *value);
+  v8::Local<v8::Value> v8_value = traced_wrapper.NewLocal(isolate_);
   if (!v8_value.IsEmpty()) {
     graph_->AddEdge(current_parent_, GraphNode(v8_value));
   }
