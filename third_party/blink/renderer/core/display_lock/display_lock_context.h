@@ -111,6 +111,10 @@ class CORE_EXPORT DisplayLockContext final
   // for find-in-page and tab order.
   bool IsSearchable() const;
 
+  // Returns true if this lock is locked. Note from the outside perspective, the
+  // lock is locked any time the state is not kUnlocked.
+  bool IsLocked() const { return state_ != kUnlocked; }
+
   // Called when the layout tree is attached. This is used to verify
   // containment.
   void DidAttachLayoutTree();
@@ -138,6 +142,11 @@ class CORE_EXPORT DisplayLockContext final
   void WillStartLifecycleUpdate() override;
   void DidFinishLifecycleUpdate() override;
 
+  // Called when the element associated with this lock is destroyed. Note that
+  // because the lifetime of this lock is independent of the element, this can
+  // happen.
+  void ElementWasDestroyed(Document&);
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
@@ -150,6 +159,18 @@ class CORE_EXPORT DisplayLockContext final
     kCommitting,
     kUnlocked,
     kPendingAcquire,
+  };
+
+  class StateChangeHelper {
+   public:
+    StateChangeHelper(DisplayLockContext*);
+
+    operator State() const { return state_; }
+    StateChangeHelper& operator=(State);
+
+   private:
+    State state_ = kUnlocked;
+    UntracedMember<DisplayLockContext> context_;
   };
 
   // Initiate a commit.
@@ -215,7 +236,7 @@ class CORE_EXPORT DisplayLockContext final
   Member<ScriptPromiseResolver> acquire_resolver_;
   WeakMember<Element> element_;
 
-  State state_ = kUnlocked;
+  StateChangeHelper state_;
   LayoutRect pending_frame_rect_;
   base::Optional<LayoutRect> locked_frame_rect_;
 
