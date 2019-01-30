@@ -14,6 +14,7 @@ import tempfile
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import goma_util
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import auth
@@ -481,6 +482,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testGoma(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
+    self.PatchObject(goma_util.Goma, 'ForceUpdate')
     self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir, \
@@ -505,6 +507,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testGomaWithMissingCertFile(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
+    self.PatchObject(goma_util.Goma, 'ForceUpdate')
     self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
@@ -519,6 +522,7 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
+    self.PatchObject(goma_util.Goma, 'ForceUpdate')
     self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
