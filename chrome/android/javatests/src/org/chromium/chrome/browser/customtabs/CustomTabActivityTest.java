@@ -2343,7 +2343,28 @@ public class CustomTabActivityTest {
     @CommandLineFlags.Add("enable-spdy-proxy-auth")
     @DisableFeatures("DataReductionProxyDecidesTransform")
     @RetryOnFailure
-    public void testLaunchWebLiteURLNoPreviews() throws Exception {
+    public void testLaunchWebLiteURLDRPDecidesTransformDisabled() throws Exception {
+        final String testUrl = WEBLITE_PREFIX + mTestPage;
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
+                CustomTabsTestUtils.createMinimalCustomTabIntent(
+                        InstrumentationRegistry.getTargetContext(), testUrl));
+        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        Assert.assertEquals(testUrl, tab.getUrl());
+    }
+
+    /**
+     * Tests that a Weblite URL from an external app does not use the lite_url param when Previews
+     * are not being used.
+     */
+    @Test
+    @SmallTest
+    @CommandLineFlags.Add("enable-spdy-proxy-auth")
+    @EnableFeatures(
+            {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
+    @DisableFeatures("Previews")
+    @RetryOnFailure
+    public void
+    testLaunchWebLiteURLNoPreviews() throws Exception {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
@@ -2358,28 +2379,12 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures("DataReductionProxyDecidesTransform")
+    @EnableFeatures(
+            {"DataReductionProxyDecidesTransform", "DataReductionProxyEnabledWithNetworkService"})
     @RetryOnFailure
-    public void testLaunchWebLiteURLNoDataReductionProxy() throws Exception {
+    public void
+    testLaunchWebLiteURLNoDataReductionProxy() throws Exception {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
-                CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getTargetContext(), testUrl));
-        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-        Assert.assertEquals(testUrl, tab.getUrl());
-    }
-
-    /**
-     * Tests that a Weblite URL from an external app does not use the lite_url param when the param
-     * is an https URL.
-     */
-    @Test
-    @SmallTest
-    @CommandLineFlags.Add("enable-spdy-proxy-auth")
-    @EnableFeatures("DataReductionProxyDecidesTransform")
-    @RetryOnFailure
-    public void testLaunchHttpsWebLiteURL() throws Exception {
-        final String testUrl = WEBLITE_PREFIX + mTestPage.replaceFirst("http", "https");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(), testUrl));
