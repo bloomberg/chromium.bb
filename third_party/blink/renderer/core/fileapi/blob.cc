@@ -105,13 +105,13 @@ Blob* Blob::Create(
 }
 
 Blob* Blob::Create(const unsigned char* data,
-                   size_t bytes,
+                   size_t size,
                    const String& content_type) {
   DCHECK(data);
 
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(content_type);
-  blob_data->AppendBytes(data, bytes);
+  blob_data->AppendBytes(data, size);
   long long blob_size = blob_data->length();
 
   return MakeGarbageCollected<Blob>(
