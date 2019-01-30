@@ -2287,24 +2287,6 @@ void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
       out_prefs, Profile::FromBrowserContext(browser_context));
 }
 
-void ChromeContentBrowserClient::NavigationRequestStarted(
-    int frame_tree_node_id,
-    const GURL& url,
-    net::HttpRequestHeaders* extra_headers,
-    int* extra_load_flags) {
-  WebContents* web_contents =
-      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-
-  prerender::PrerenderContents* prerender_contents =
-      prerender::PrerenderContents::FromWebContents(web_contents);
-  if (prerender_contents &&
-      prerender_contents->prerender_mode() == prerender::PREFETCH_ONLY) {
-    *extra_load_flags = net::LOAD_PREFETCH;
-    extra_headers->SetHeader(prerender::kPurposeHeaderName,
-                             prerender::kPurposeHeaderValue);
-  }
-}
-
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& first_party,

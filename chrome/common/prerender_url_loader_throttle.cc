@@ -78,6 +78,11 @@ void PrerenderURLLoaderThrottle::DetachFromCurrentSequence() {
 void PrerenderURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
+  if (mode_ == PREFETCH_ONLY) {
+    request->load_flags |= net::LOAD_PREFETCH;
+    request->headers.SetHeader(kPurposeHeaderName, kPurposeHeaderValue);
+  }
+
   resource_type_ = static_cast<content::ResourceType>(request->resource_type);
   // Abort any prerenders that spawn requests that use unsupported HTTP
   // methods or schemes.
@@ -132,7 +137,6 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
 #endif  // OS_ANDROID
 
   if (mode_ == PREFETCH_ONLY) {
-    request->headers.SetHeader(kPurposeHeaderName, kPurposeHeaderValue);
     detached_timer_.Start(FROM_HERE,
                           base::TimeDelta::FromMilliseconds(
                               content::kDefaultDetachableCancelDelayMs),
