@@ -11194,7 +11194,6 @@
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
       For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${MACHINE_NAME[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${MACHINE_NAME,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
-      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE">${machine_name}</ph> (lowercase) is deprecated in M71 and will be removed in M72.
       ''',
     },
     {
