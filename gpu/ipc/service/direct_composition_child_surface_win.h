@@ -26,7 +26,7 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
   gfx::Size GetSize() override;
   bool IsOffscreen() override;
   void* GetHandle() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   bool FlipsVertically() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(gl::GLContext* context) override;

@@ -13040,8 +13040,8 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
     client_->OnSwapBuffers(c.swap_id(), c.flags);
     surface_->PostSubBufferAsync(
         c.x, c.y, c.width, c.height,
-        base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
-                   weak_ptr_factory_.GetWeakPtr(), c.swap_id()),
+        base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
+                       weak_ptr_factory_.GetWeakPtr(), c.swap_id()),
         base::DoNothing());
   } else {
     client_->OnSwapBuffers(c.swap_id(), c.flags);
@@ -16260,8 +16260,8 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
 
     client_->OnSwapBuffers(swap_id, flags);
     surface_->SwapBuffersAsync(
-        base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
-                   weak_ptr_factory_.GetWeakPtr(), swap_id),
+        base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
+                       weak_ptr_factory_.GetWeakPtr(), swap_id),
         base::DoNothing());
   } else {
     client_->OnSwapBuffers(swap_id, flags);
@@ -16313,8 +16313,8 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes(uint64_t swap_id,
   if (supports_async_swap_) {
     client_->OnSwapBuffers(swap_id, flags);
     surface_->CommitOverlayPlanesAsync(
-        base::Bind(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
-                   weak_ptr_factory_.GetWeakPtr(), swap_id),
+        base::BindOnce(&GLES2DecoderImpl::FinishAsyncSwapBuffers,
+                       weak_ptr_factory_.GetWeakPtr(), swap_id),
         base::DoNothing());
   } else {
     client_->OnSwapBuffers(swap_id, flags);

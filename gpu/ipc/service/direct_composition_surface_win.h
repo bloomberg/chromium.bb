@@ -70,12 +70,12 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
               float scale_factor,
               ColorSpace color_space,
               bool has_alpha) override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
                                 int height,
-                                const PresentationCallback& callback) override;
+                                PresentationCallback callback) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
   bool SetEnableDCLayers(bool enable) override;

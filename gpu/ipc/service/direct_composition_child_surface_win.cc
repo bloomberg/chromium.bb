@@ -216,7 +216,7 @@ void* DirectCompositionChildSurfaceWin::GetHandle() {
 }
 
 gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
   // surface doesn't need provide presentation feedback.
   DCHECK(!callback);

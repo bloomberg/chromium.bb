@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_surface_egl_surface_control.h"
 
+#include <utility>
+
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
@@ -64,32 +66,34 @@ bool GLSurfaceEGLSurfaceControl::IsOffscreen() {
 }
 
 gfx::SwapResult GLSurfaceEGLSurfaceControl::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
 
 void GLSurfaceEGLSurfaceControl::SwapBuffersAsync(
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
-  CommitPendingTransaction(completion_callback, presentation_callback);
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
+  CommitPendingTransaction(std::move(completion_callback),
+                           std::move(presentation_callback));
 }
 
 gfx::SwapResult GLSurfaceEGLSurfaceControl::CommitOverlayPlanes(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
 
 void GLSurfaceEGLSurfaceControl::CommitOverlayPlanesAsync(
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
-  CommitPendingTransaction(completion_callback, presentation_callback);
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
+  CommitPendingTransaction(std::move(completion_callback),
+                           std::move(presentation_callback));
 }
 
 void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& present_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback present_callback) {
   DCHECK(pending_transaction_);
 
   // Release resources for the current frame once the next frame is acked.
@@ -101,10 +105,10 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   current_frame_resources_.swap(pending_frame_resources_);
   pending_frame_resources_.clear();
 
-  SurfaceControl::Transaction::OnCompleteCb callback =
-      base::BindOnce(&GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
-                     weak_factory_.GetWeakPtr(), completion_callback,
-                     present_callback, std::move(resources_to_release));
+  SurfaceControl::Transaction::OnCompleteCb callback = base::BindOnce(
+      &GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
+      weak_factory_.GetWeakPtr(), std::move(completion_callback),
+      std::move(present_callback), std::move(resources_to_release));
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
 
   pending_transaction_->Apply();
@@ -246,14 +250,14 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   context_->MakeCurrent(this);
 
   // The presentation feedback callback must run after swap completion.
-  completion_callback.Run(gfx::SwapResult::SWAP_ACK, nullptr);
+  std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
 
   // TODO(khushalsagar): Maintain a queue of present fences so we poll to see if
   // they are signaled every frame, and get a signal timestamp to feed into this
   // feedback.
   gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
                                      0 /* flags */);
-  presentation_callback.Run(feedback);
+  std::move(presentation_callback).Run(feedback);
 
   for (auto& surface_stat : transaction_stats.surface_stats) {
     auto it = released_resources.find(surface_stat.surface);

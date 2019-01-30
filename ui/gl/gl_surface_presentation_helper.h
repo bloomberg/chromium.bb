@@ -31,9 +31,9 @@ class GL_EXPORT GLSurfacePresentationHelper {
   class GL_EXPORT ScopedSwapBuffers {
    public:
     ScopedSwapBuffers(GLSurfacePresentationHelper* helper,
-                      const GLSurface::PresentationCallback& callback);
+                      GLSurface::PresentationCallback callback);
     ScopedSwapBuffers(GLSurfacePresentationHelper* helper,
-                      const GLSurface::PresentationCallback& callback,
+                      GLSurface::PresentationCallback callback,
                       int frame_id);
     ~ScopedSwapBuffers();
 
@@ -55,19 +55,18 @@ class GL_EXPORT GLSurfacePresentationHelper {
   ~GLSurfacePresentationHelper();
 
   void OnMakeCurrent(GLContext* context, GLSurface* surface);
-  void PreSwapBuffers(const GLSurface::PresentationCallback& callback,
-                      int frame_id);
+  void PreSwapBuffers(GLSurface::PresentationCallback callback, int frame_id);
   void PostSwapBuffers(gfx::SwapResult result);
 
  private:
   struct Frame {
     Frame(Frame&& other);
-    Frame(int frame_id, const GLSurface::PresentationCallback& callback);
+    Frame(int frame_id, GLSurface::PresentationCallback callback);
     Frame(std::unique_ptr<GPUTimer>&& timer,
-          const GLSurface::PresentationCallback& callback);
+          GLSurface::PresentationCallback callback);
     Frame(std::unique_ptr<GLFence>&& fence,
-          const GLSurface::PresentationCallback& callback);
-    Frame(const GLSurface::PresentationCallback& callback);
+          GLSurface::PresentationCallback callback);
+    explicit Frame(GLSurface::PresentationCallback callback);
     ~Frame();
     Frame& operator=(Frame&& other);
 

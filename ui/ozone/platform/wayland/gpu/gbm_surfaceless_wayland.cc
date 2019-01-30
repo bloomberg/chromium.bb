@@ -75,21 +75,21 @@ gfx::SwapResult GbmSurfacelessWayland::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   // The actual sub buffer handling is handled at higher layers.
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
 
 void GbmSurfacelessWayland::SwapBuffersAsync(
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
   TRACE_EVENT0("wayland", "GbmSurfacelessWayland::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
-    completion_callback.Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
     // Notify the caller, the buffer is never presented on a screen.
-    presentation_callback.Run(gfx::PresentationFeedback::Failure());
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
@@ -99,8 +99,8 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
-  frame->completion_callback = completion_callback;
-  frame->presentation_callback = presentation_callback;
+  frame->completion_callback = std::move(completion_callback);
+  frame->presentation_callback = std::move(presentation_callback);
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 
   // TODO: the following should be replaced by a per surface flush as it gets
@@ -125,12 +125,13 @@ void GbmSurfacelessWayland::PostSubBufferAsync(
     int y,
     int width,
     int height,
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->damage_region_ = gfx::Rect(x, y, width, height);
 
-  SwapBuffersAsync(completion_callback, presentation_callback);
+  SwapBuffersAsync(std::move(completion_callback),
+                   std::move(presentation_callback));
 }
 
 EGLConfig GbmSurfacelessWayland::GetConfig() {
