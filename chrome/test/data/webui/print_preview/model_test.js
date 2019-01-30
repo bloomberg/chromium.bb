@@ -221,7 +221,7 @@ cr.define('model_test', function() {
     test(assert(TestNames.GetPrintTicket), function() {
       const testDestination = new print_preview.Destination(
           'FooDevice', print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL, 'FooName', true /* isRecent */,
+          print_preview.DestinationOrigin.LOCAL, 'FooName',
           print_preview.DestinationConnectionStatus.ONLINE);
       testDestination.capabilities =
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)
@@ -315,7 +315,6 @@ cr.define('model_test', function() {
       const testDestination = new print_preview.Destination(
           'FooCloudDevice', print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, 'FooCloudName',
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       testDestination.capabilities =
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)

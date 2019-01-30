@@ -32,7 +32,6 @@ cr.define('advanced_dialog_test', function() {
       destination = new print_preview.Destination(
           printerId, print_preview.DestinationType.GOOGLE,
           print_preview.DestinationOrigin.COOKIES, printerName,
-          true /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       PolymerTest.clearBody();
       dialog = document.createElement('print-preview-advanced-dialog');

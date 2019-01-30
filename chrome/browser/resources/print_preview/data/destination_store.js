@@ -235,12 +235,6 @@ cr.define('print_preview', function() {
           print_preview.DestinationOrigin.LOCAL;
 
       /**
-       * The recent print destinations, set when the store is initialized.
-       * @private {!Array<!print_preview.RecentDestination>}
-       */
-      this.recentDestinations_ = [];
-
-      /**
        * Currently selected destination.
        * @private {print_preview.Destination}
        */
@@ -378,7 +372,6 @@ cr.define('print_preview', function() {
         return;
       }
 
-      this.recentDestinations_ = recentDestinations;
       const serializedDestination = {
         id: '',
         origin: this.platformOrigin_,
@@ -398,7 +391,6 @@ cr.define('print_preview', function() {
         const candidate = this.destinationMap_.get(
             print_preview.createRecentDestinationKey(destination));
         if (candidate != undefined) {
-          candidate.isRecent = true;
           if (!foundDestination && !this.useSystemDefaultAsDefault_) {
             this.selectDestination(candidate);
           }
@@ -507,7 +499,7 @@ cr.define('print_preview', function() {
             };
         this.selectedDestination_ = new print_preview.Destination(
             id, print_preview.DestinationType.LOCAL, origin,
-            serializedDestination.displayName, false /*isRecent*/,
+            serializedDestination.displayName,
             print_preview.DestinationConnectionStatus.ONLINE, params);
 
         if (serializedDestination.capabilities) {
@@ -698,7 +690,6 @@ cr.define('print_preview', function() {
 
       // Update and persist selected destination.
       this.selectedDestination_ = destination;
-      this.selectedDestination_.isRecent = true;
       // Adjust metrics.
       if (destination.cloudID &&
           this.destinations_.some(function(otherDestination) {
@@ -1103,12 +1094,6 @@ cr.define('print_preview', function() {
       const key = destination.key;
       const existingDestination = this.destinationMap_.get(key);
       if (existingDestination == undefined) {
-        destination.isRecent = destination.isRecent ||
-            this.recentDestinations_.some(function(recent) {
-              return (
-                  destination.id == recent.id &&
-                  destination.origin == recent.origin);
-            }, this);
         this.destinations_.push(destination);
         this.destinationMap_.set(key, destination);
         return true;
@@ -1135,7 +1120,7 @@ cr.define('print_preview', function() {
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
             print_preview.DestinationType.LOCAL,
             print_preview.DestinationOrigin.LOCAL,
-            loadTimeData.getString('printToPDF'), false /*isRecent*/,
+            loadTimeData.getString('printToPDF'),
             print_preview.DestinationConnectionStatus.ONLINE));
       }
     }

@@ -120,8 +120,7 @@ cr.define('cloudprint', function() {
     };
     const cloudDest = new print_preview.Destination(
         id, parseType(json[CloudDestinationField.TYPE]), origin,
-        json[CloudDestinationField.DISPLAY_NAME],
-        tags.includes(RECENT_TAG) /*isRecent*/, connectionStatus,
+        json[CloudDestinationField.DISPLAY_NAME], connectionStatus,
         optionalParams);
     if (json.hasOwnProperty(CloudDestinationField.CAPABILITIES)) {
       cloudDest.capabilities = /** @type {!print_preview.Cdd} */ (

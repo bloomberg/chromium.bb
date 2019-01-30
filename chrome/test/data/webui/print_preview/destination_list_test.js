@@ -21,30 +21,27 @@ cr.define('destination_list_test', function() {
       const destinations = [
         new print_preview.Destination(
             'id1', print_preview.DestinationType.LOCAL,
-            print_preview.DestinationOrigin.LOCAL, 'One', true /* isRecent */,
+            print_preview.DestinationOrigin.LOCAL, 'One',
             print_preview.DestinationConnectionStatus.ONLINE,
             {description: 'ABC'}),
         new print_preview.Destination(
             'id2', print_preview.DestinationType.LOCAL,
-            print_preview.DestinationOrigin.LOCAL, 'Two', true /* isRecent */,
+            print_preview.DestinationOrigin.LOCAL, 'Two',
             print_preview.DestinationConnectionStatus.ONLINE,
             {description: 'XYZ'}),
         new print_preview.Destination(
             'id3', print_preview.DestinationType.GOOGLE,
             print_preview.DestinationOrigin.COOKIES, 'Three',
-            true /* isRecent */,
             print_preview.DestinationConnectionStatus.ONLINE,
             {description: 'ABC', tags: ['__cp__location=123']}),
         new print_preview.Destination(
             'id4', print_preview.DestinationType.GOOGLE,
             print_preview.DestinationOrigin.COOKIES, 'Four',
-            true /* isRecent */,
             print_preview.DestinationConnectionStatus.ONLINE,
             {description: 'XYZ', tags: ['__cp__location=123']}),
         new print_preview.Destination(
             'id5', print_preview.DestinationType.GOOGLE,
             print_preview.DestinationOrigin.COOKIES, 'Five',
-            true /* isRecent */,
             print_preview.DestinationConnectionStatus.ONLINE,
             {description: 'XYZ', tags: ['__cp__location=123']})
       ];

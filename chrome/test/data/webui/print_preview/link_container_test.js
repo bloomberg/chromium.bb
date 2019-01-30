@@ -26,7 +26,6 @@ cr.define('link_container_test', function() {
       const fooDestination = new print_preview.Destination(
           'FooPrinter', print_preview.DestinationType.LOCAL,
           print_preview.DestinationOrigin.LOCAL, 'Foo Printer',
-          false /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       fooDestination.capabilities =
           print_preview_test_utils.getCddTemplate(fooDestination.id)

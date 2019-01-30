@@ -57,7 +57,7 @@ cr.define('print_preview', function() {
         destinationInfo.deviceName, print_preview.DestinationType.LOCAL,
         cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
                         print_preview.DestinationOrigin.LOCAL,
-        destinationInfo.printerName, false /*isRecent*/,
+        destinationInfo.printerName,
         print_preview.DestinationConnectionStatus.ONLINE, options);
   }
 
@@ -71,7 +71,7 @@ cr.define('print_preview', function() {
     return new print_preview.Destination(
         destinationInfo.serviceName, print_preview.DestinationType.LOCAL,
         print_preview.DestinationOrigin.PRIVET, destinationInfo.name,
-        false /*isRecent*/, print_preview.DestinationConnectionStatus.ONLINE,
+        print_preview.DestinationConnectionStatus.ONLINE,
         {cloudID: destinationInfo.cloudID});
   }
 
@@ -90,8 +90,7 @@ cr.define('print_preview', function() {
     return new print_preview.Destination(
         destinationInfo.id, print_preview.DestinationType.LOCAL,
         print_preview.DestinationOrigin.EXTENSION, destinationInfo.name,
-        false /* isRecent */, print_preview.DestinationConnectionStatus.ONLINE,
-        {
+        print_preview.DestinationConnectionStatus.ONLINE, {
           description: destinationInfo.description || '',
           extensionId: destinationInfo.extensionId,
           extensionName: destinationInfo.extensionName || '',

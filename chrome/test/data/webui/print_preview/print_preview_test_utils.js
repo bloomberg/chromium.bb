@@ -165,7 +165,7 @@ cr.define('print_preview_test_utils', function() {
     };
     const dest = new print_preview.Destination(
         id, print_preview.DestinationType.GOOGLE,
-        print_preview.DestinationOrigin.COOKIES, name, true /* isRecent */,
+        print_preview.DestinationOrigin.COOKIES, name,
         print_preview.DestinationConnectionStatus.ONLINE, tags);
     return dest;
   }
@@ -247,7 +247,7 @@ cr.define('print_preview_test_utils', function() {
         .forEach((info, index) => {
           const destination = new print_preview.Destination(
               info.id, print_preview.DestinationType.LOCAL, origin, info.name,
-              false, print_preview.DestinationConnectionStatus.ONLINE);
+              print_preview.DestinationConnectionStatus.ONLINE);
           if (nativeLayer) {
             nativeLayer.setLocalDestinationCapabilities(
                 print_preview_test_utils.getCddTemplate(info.id, info.name));
@@ -321,7 +321,7 @@ cr.define('print_preview_test_utils', function() {
         print_preview.Destination.GooglePromotedId.DOCS,
         print_preview.DestinationType.GOOGLE,
         print_preview.DestinationOrigin.COOKIES,
-        print_preview.Destination.GooglePromotedId.DOCS, true /* isRecent */,
+        print_preview.Destination.GooglePromotedId.DOCS,
         print_preview.DestinationConnectionStatus.ONLINE,
         {account: 'foo@chromium.org'});
   }
@@ -332,7 +332,7 @@ cr.define('print_preview_test_utils', function() {
         print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         print_preview.DestinationType.LOCAL,
         print_preview.DestinationOrigin.LOCAL,
-        loadTimeData.getString('printToPDF'), false /*isRecent*/,
+        loadTimeData.getString('printToPDF'),
         print_preview.DestinationConnectionStatus.ONLINE);
   }
 
