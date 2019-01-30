@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_media_blocker.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/time/time.h"
 #include "content/public/browser/media_session.h"
@@ -67,7 +68,14 @@ class CastMediaBlockerTest : public content::RenderViewHostTestHarness {
   }
 
   void MediaSessionChanged(bool controllable, bool suspended) {
-    media_blocker_->MediaSessionStateChanged(controllable, suspended);
+    media_session::mojom::MediaSessionInfoPtr session_info(
+        media_session::mojom::MediaSessionInfo::New());
+    session_info->is_controllable = controllable;
+    session_info->playback_state =
+        suspended ? media_session::mojom::MediaPlaybackState::kPaused
+                  : media_session::mojom::MediaPlaybackState::kPlaying;
+
+    media_blocker_->MediaSessionInfoChanged(std::move(session_info));
   }
 
  protected:
