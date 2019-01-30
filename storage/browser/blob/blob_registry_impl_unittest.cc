@@ -28,6 +28,8 @@
 #include "storage/browser/test/mock_bytes_provider.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
 namespace storage {
 
