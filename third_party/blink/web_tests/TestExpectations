@@ -3085,6 +3085,10 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-self-block.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/fetch/api/cors/cors-redirect.any.html [ Timeout ]
