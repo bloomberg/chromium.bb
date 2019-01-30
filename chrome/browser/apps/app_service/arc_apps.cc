@@ -330,7 +330,14 @@ void ArcApps::OnAppNameUpdated(const std::string& app_id,
 }
 
 void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
-  // TODO(crbug.com/826982): implement.
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
+  if (app_info) {
+    apps::mojom::AppPtr app = apps::mojom::App::New();
+    app->app_type = apps::mojom::AppType::kArc;
+    app->app_id = app_id;
+    app->last_launch_time = app_info->last_launch_time;
+    Publish(std::move(app));
+  }
 }
 
 void ArcApps::ObservePrefs() {
