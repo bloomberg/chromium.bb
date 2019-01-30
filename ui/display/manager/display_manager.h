@@ -71,6 +71,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     // Closes the mirror window if not necessary.
     virtual void CloseMirroringDisplayIfNotNecessary() = 0;
 
+    // Sets the primary display by display id.
+    virtual void SetPrimaryDisplayId(int64_t id) = 0;
+
     // Called before and after the display configuration changes.  When
     // |clear_focus| is true, the implementation should deactivate the active
     // window and set the focus window to NULL.
@@ -555,6 +558,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Update the info used to restore mirror mode.
   void UpdateInfoForRestoringMirrorMode();
+
+  void UpdatePrimaryDisplayIdIfNecessary();
 
   Delegate* delegate_ = nullptr;  // not owned.
 

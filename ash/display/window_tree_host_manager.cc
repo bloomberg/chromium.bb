@@ -346,85 +346,6 @@ WindowTreeHostManager::GetAllRootWindowControllers() {
   return controllers;
 }
 
-void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
-  // TODO(oshima): Move primary display management to DisplayManager.
-  DCHECK_NE(display::kInvalidDisplayId, id);
-  if (id == display::kInvalidDisplayId || primary_display_id == id ||
-      window_tree_hosts_.size() < 2) {
-    return;
-  }
-
-  const display::Display& new_primary_display =
-      GetDisplayManager()->GetDisplayForId(id);
-  if (!new_primary_display.is_valid()) {
-    LOG(ERROR) << "Invalid or non-existent display is requested:"
-               << new_primary_display.ToString();
-    return;
-  }
-
-  display::DisplayManager* display_manager = GetDisplayManager();
-  DCHECK(new_primary_display.is_valid());
-  DCHECK(display_manager->GetDisplayForId(new_primary_display.id()).is_valid());
-
-  AshWindowTreeHost* non_primary_host =
-      window_tree_hosts_[new_primary_display.id()];
-  LOG_IF(ERROR, !non_primary_host)
-      << "Unknown display is requested in SetPrimaryDisplay: id="
-      << new_primary_display.id();
-  if (!non_primary_host)
-    return;
-
-  display::Display old_primary_display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-  DCHECK_EQ(old_primary_display.id(), primary_display_id);
-
-  // Swap root windows between current and new primary display.
-  AshWindowTreeHost* primary_host = window_tree_hosts_[primary_display_id];
-  CHECK(primary_host);
-  CHECK_NE(primary_host, non_primary_host);
-
-  aura::Window* primary_window = GetWindow(primary_host);
-  aura::Window* non_primary_window = GetWindow(non_primary_host);
-  window_tree_hosts_[new_primary_display.id()] = primary_host;
-  GetRootWindowSettings(primary_window)->display_id = new_primary_display.id();
-
-  window_tree_hosts_[old_primary_display.id()] = non_primary_host;
-  GetRootWindowSettings(non_primary_window)->display_id =
-      old_primary_display.id();
-
-  base::string16 old_primary_title = primary_window->GetTitle();
-  primary_window->SetTitle(non_primary_window->GetTitle());
-  non_primary_window->SetTitle(old_primary_title);
-
-  for (auto& observer : observers_)
-    observer.OnWindowTreeHostsSwappedDisplays(primary_host, non_primary_host);
-
-  const display::DisplayLayout& layout =
-      GetDisplayManager()->GetCurrentDisplayLayout();
-  // The requested primary id can be same as one in the stored layout
-  // when the primary id is set after new displays are connected.
-  // Only update the layout if it is requested to swap primary display.
-  if (layout.primary_id != new_primary_display.id()) {
-    std::unique_ptr<display::DisplayLayout> swapped_layout = layout.Copy();
-    swapped_layout->SwapPrimaryDisplay(new_primary_display.id());
-    display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
-    GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(
-        list, std::move(swapped_layout));
-  }
-
-  primary_display_id = new_primary_display.id();
-
-  UpdateWorkAreaOfDisplayNearestWindow(GetWindow(primary_host),
-                                       old_primary_display.GetWorkAreaInsets());
-  UpdateWorkAreaOfDisplayNearestWindow(GetWindow(non_primary_host),
-                                       new_primary_display.GetWorkAreaInsets());
-
-  // Update the dispay manager with new display info.
-  GetDisplayManager()->set_force_bounds_changed(true);
-  GetDisplayManager()->UpdateDisplays();
-  GetDisplayManager()->set_force_bounds_changed(false);
-}
-
 void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
   // If the mouse is currently on a display in native location,
   // use the same native location. Otherwise find the display closest
@@ -748,23 +669,89 @@ void WindowTreeHostManager::PreDisplayConfigurationChange(bool clear_focus) {
   cursor_location_in_native_coords_for_restore_ = point_in_native;
 }
 
+void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
+  // TODO(oshima): Move primary display management to DisplayManager.
+  DCHECK_NE(display::kInvalidDisplayId, id);
+  if (id == display::kInvalidDisplayId || primary_display_id == id ||
+      window_tree_hosts_.size() < 2) {
+    return;
+  }
+
+  const display::Display& new_primary_display =
+      GetDisplayManager()->GetDisplayForId(id);
+  if (!new_primary_display.is_valid()) {
+    LOG(ERROR) << "Invalid or non-existent display is requested:"
+               << new_primary_display.ToString();
+    return;
+  }
+
+  display::DisplayManager* display_manager = GetDisplayManager();
+  DCHECK(new_primary_display.is_valid());
+  DCHECK(display_manager->GetDisplayForId(new_primary_display.id()).is_valid());
+
+  AshWindowTreeHost* non_primary_host =
+      window_tree_hosts_[new_primary_display.id()];
+  LOG_IF(ERROR, !non_primary_host)
+      << "Unknown display is requested in SetPrimaryDisplay: id="
+      << new_primary_display.id();
+  if (!non_primary_host)
+    return;
+
+  display::Display old_primary_display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+  DCHECK_EQ(old_primary_display.id(), primary_display_id);
+
+  // Swap root windows between current and new primary display.
+  AshWindowTreeHost* primary_host = window_tree_hosts_[primary_display_id];
+  CHECK(primary_host);
+  CHECK_NE(primary_host, non_primary_host);
+
+  aura::Window* primary_window = GetWindow(primary_host);
+  aura::Window* non_primary_window = GetWindow(non_primary_host);
+  window_tree_hosts_[new_primary_display.id()] = primary_host;
+  GetRootWindowSettings(primary_window)->display_id = new_primary_display.id();
+
+  window_tree_hosts_[old_primary_display.id()] = non_primary_host;
+  GetRootWindowSettings(non_primary_window)->display_id =
+      old_primary_display.id();
+
+  base::string16 old_primary_title = primary_window->GetTitle();
+  primary_window->SetTitle(non_primary_window->GetTitle());
+  non_primary_window->SetTitle(old_primary_title);
+
+  for (auto& observer : observers_)
+    observer.OnWindowTreeHostsSwappedDisplays(primary_host, non_primary_host);
+
+  const display::DisplayLayout& layout =
+      GetDisplayManager()->GetCurrentDisplayLayout();
+  // The requested primary id can be same as one in the stored layout
+  // when the primary id is set after new displays are connected.
+  // Only update the layout if it is requested to swap primary display.
+  if (layout.primary_id != new_primary_display.id()) {
+    std::unique_ptr<display::DisplayLayout> swapped_layout = layout.Copy();
+    swapped_layout->SwapPrimaryDisplay(new_primary_display.id());
+    display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+    GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(
+        list, std::move(swapped_layout));
+  }
+
+  primary_display_id = new_primary_display.id();
+
+  UpdateWorkAreaOfDisplayNearestWindow(GetWindow(primary_host),
+                                       old_primary_display.GetWorkAreaInsets());
+  UpdateWorkAreaOfDisplayNearestWindow(GetWindow(non_primary_host),
+                                       new_primary_display.GetWorkAreaInsets());
+
+  // Update the dispay manager with new display info.
+  GetDisplayManager()->set_force_bounds_changed(true);
+  GetDisplayManager()->UpdateDisplays();
+  GetDisplayManager()->set_force_bounds_changed(false);
+}
+
 void WindowTreeHostManager::PostDisplayConfigurationChange() {
   focus_activation_store_->Restore();
 
   display::DisplayManager* display_manager = GetDisplayManager();
-  display::DisplayLayoutStore* layout_store = display_manager->layout_store();
-  if (display_manager->num_connected_displays() > 1) {
-    display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
-    const display::DisplayLayout& layout =
-        layout_store->GetRegisteredDisplayLayout(list);
-    layout_store->UpdateDefaultUnified(list, layout.default_unified);
-    if (display::Screen::GetScreen()->GetNumDisplays() > 1) {
-      SetPrimaryDisplayId(layout.primary_id == display::kInvalidDisplayId
-                              ? list[0]
-                              : layout.primary_id);
-    }
-  }
-
   for (const display::Display& display :
        display_manager->active_display_list()) {
     bool output_is_secure =
