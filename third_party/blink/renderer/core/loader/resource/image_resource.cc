@@ -313,16 +313,7 @@ void ImageResource::AllClientsAndObserversRemoved() {
   // TODO(hiroshige): Make the CHECK condition cleaner.
   CHECK(is_during_finish_as_error_ || !GetContent()->HasImage() ||
         !ErrorOccurred());
-  // If possible, delay the resetting until back at the event loop. Doing so
-  // after a conservative GC prevents resetAnimation() from upsetting ongoing
-  // animation updates (crbug.com/613709)
-  if (!ThreadHeap::WillObjectBeLazilySwept(this)) {
-    Thread::Current()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&ImageResourceContent::DoResetAnimation,
-                             WrapWeakPersistent(GetContent())));
-  } else {
-    GetContent()->DoResetAnimation();
-  }
+  GetContent()->DoResetAnimation();
   if (multipart_parser_)
     multipart_parser_->Cancel();
   Resource::AllClientsAndObserversRemoved();
