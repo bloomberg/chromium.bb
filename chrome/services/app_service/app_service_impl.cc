@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace {
