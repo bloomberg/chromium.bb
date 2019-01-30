@@ -35,30 +35,14 @@ FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
     OAuth2TokenService* token_service,
     SigninClient* client,
     network::TestURLLoaderFactory* test_url_loader_factory)
-    : FakeGaiaCookieManagerService(
+    : GaiaCookieManagerService(
           token_service,
           client,
-          test_url_loader_factory,
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              test_url_loader_factory)) {}
+          base::BindRepeating(&GetSharedURLLoaderFactory,
+                              test_url_loader_factory->GetSafeWeakWrapper())),
+      test_url_loader_factory_(test_url_loader_factory) {}
 
-FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
-    OAuth2TokenService* token_service,
-    SigninClient* client,
-    network::TestURLLoaderFactory* test_url_loader_factory,
-    scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-        shared_url_loader_factory)
-    : GaiaCookieManagerService(token_service,
-                               client,
-                               base::BindRepeating(&GetSharedURLLoaderFactory,
-                                                   shared_url_loader_factory)),
-      test_url_loader_factory_(test_url_loader_factory),
-      shared_url_loader_factory_(shared_url_loader_factory) {}
-
-FakeGaiaCookieManagerService::~FakeGaiaCookieManagerService() {
-  if (shared_url_loader_factory_)
-    shared_url_loader_factory_->Detach();
-}
+FakeGaiaCookieManagerService::~FakeGaiaCookieManagerService() {}
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseHttpNotFound() {
   signin::SetListAccountsResponseHttpNotFound(test_url_loader_factory_);

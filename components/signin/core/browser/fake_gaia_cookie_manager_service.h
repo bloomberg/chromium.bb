@@ -13,10 +13,6 @@
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "services/network/test/test_url_loader_factory.h"
 
-namespace network {
-class WeakWrapperSharedURLLoaderFactory;
-}
-
 class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   // Convenience constructor overload which uses the SharedURLLoaderFactory from
@@ -50,21 +46,10 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
                                           const std::string& gaia_id2);
 
  private:
-  // Internal constructor which does the actual construction.
-  FakeGaiaCookieManagerService(
-      OAuth2TokenService* token_service,
-      SigninClient* client,
-      network::TestURLLoaderFactory* test_url_loader_factory,
-      scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-          shared_url_loader_factory);
-
   // Provides a fake response for calls to /ListAccounts.
   // Owned by the client if passed in via the constructor that takes in this
   // pointer; null otherwise.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
-
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      shared_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGaiaCookieManagerService);
 };
