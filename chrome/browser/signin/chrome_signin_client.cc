@@ -24,7 +24,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
-#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -173,16 +172,6 @@ void ChromeSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
   HostContentSettingsMapFactory::GetForProfile(profile_)
       ->RemoveObserver(observer);
-}
-
-void ChromeSigninClient::PostSignedIn(const std::string& account_id,
-                                      const std::string& username,
-                                      const std::string& password) {
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  // Don't store password hash except when lock is available for the user.
-  if (!password.empty() && profiles::IsLockAvailable(profile_))
-    LocalAuth::SetLocalAuthCredentials(profile_, password);
-#endif
 }
 
 void ChromeSigninClient::PreSignOut(

@@ -215,6 +215,30 @@ bool ShouldShowAccountManagement(const GURL& url, bool is_mirror_enabled) {
   return false;
 }
 
+// Callback for OneClickSigninSyncStarter.
+void OnSyncSetupComplete(Profile* profile,
+                         base::WeakPtr<InlineLoginHandlerImpl> handler,
+                         const std::string& username,
+                         const std::string& password,
+                         OneClickSigninSyncStarter::SyncSetupResult result) {
+  if (result == OneClickSigninSyncStarter::SYNC_SETUP_SUCCESS &&
+      !password.empty()) {
+    scoped_refptr<password_manager::PasswordStore> password_store =
+        PasswordStoreFactory::GetForProfile(profile,
+                                            ServiceAccessType::EXPLICIT_ACCESS);
+    password_store->SaveGaiaPasswordHash(
+        username, base::UTF8ToUTF16(password),
+        password_manager::metrics_util::SyncPasswordHashChange::
+            SAVED_ON_CHROME_SIGNIN);
+
+    if (profiles::IsLockAvailable(profile))
+      LocalAuth::SetLocalAuthCredentials(profile, password);
+  }
+
+  if (handler)
+    handler->SyncStarterCallback(result);
+}
+
 }  // namespace
 
 InlineSigninHelper::InlineSigninHelper(
@@ -413,7 +437,7 @@ void InlineSigninHelper::CreateSyncStarter(
       profile_, browser, gaia_id_, email_, password_, refresh_token,
       signin::GetAccessPointForEmbeddedPromoURL(current_url),
       signin::GetSigninReasonForEmbeddedPromoURL(current_url), profile_mode,
-      base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
+      base::Bind(&OnSyncSetupComplete, profile_, handler_, email_, password_));
 }
 
 bool InlineSigninHelper::HandleCrossAccountError(
