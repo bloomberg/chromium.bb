@@ -17,6 +17,17 @@ let BlockAutoplayStatus;
  */
 (function() {
 
+/**
+ * Must be kept in sync with the C++ enum of the same name.
+ * @enum {number}
+ */
+const NetworkPredictionOptions = {
+  ALWAYS: 0,
+  WIFI_ONLY: 1,
+  NEVER: 2,
+  DEFAULT: 1,
+};
+
 Polymer({
   is: 'settings-privacy-page',
 
@@ -62,6 +73,17 @@ Polymer({
     showDoNotTrackDialog_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * Used for HTML bindings. This is defined as a property rather than within
+     * the ready callback, because the value needs to be available before
+     * local DOM initialization - otherwise, the toggle has unexpected behavior.
+     * @private
+     */
+    networkPredictionUncheckedValue_: {
+      type: Number,
+      value: NetworkPredictionOptions.NEVER,
     },
 
     /** @private */
