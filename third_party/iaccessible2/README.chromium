@@ -14,3 +14,16 @@ Description:
 
 Local modifications:
   None.
+
+Update recipe:
+1. git clone the IAccessible2 project
+2. Run concatidl.sh
+3. Copy the resulting ia2_api_all.idl into this directory
+4. Resave with Windows line-endings, so that the changes are easier to review
+5. Update the compiled idl for each CPU, by building the target
+   third_party\iaccessible2 with each of the following
+   target_cpu options in args.gn: x86, arm64 and x64
+   For example:
+   autoninja -C out\arm64-release third_party\iaccessible2
+   autoninja -C out\x86-release third_party\iaccessible2
+   autoninja -C out\x64-release third_party\iaccessible2
