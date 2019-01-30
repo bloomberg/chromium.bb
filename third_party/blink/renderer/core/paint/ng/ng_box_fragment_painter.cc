@@ -148,7 +148,8 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
-  if (PhysicalFragment().IsAtomicInline())
+  if (PhysicalFragment().IsAtomicInline() &&
+      !box_fragment_.HasSelfPaintingLayer())
     PaintAtomicInline(paint_info);
   else
     PaintInternal(paint_info);
@@ -669,6 +670,10 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
 
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     const PaintInfo& paint_info) {
+  // Self-painting AtomicInlines should go to normal paint logic.
+  DCHECK(!(PhysicalFragment().IsAtomicInline() &&
+           box_fragment_.HasSelfPaintingLayer()));
+
   // Pass PaintPhaseSelection and PaintPhaseTextClip is handled by the regular
   // foreground paint implementation. We don't need complete painting for these
   // phases.
@@ -676,23 +681,13 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   if (phase == PaintPhase::kSelection || phase == PaintPhase::kTextClip)
     return PaintInternal(paint_info);
 
-  // Self-painting AtomicInlines must paint their background in background
-  // phase.
-  bool is_self_painting_atomic_inline =
-      PhysicalFragment().IsAtomicInline() && PhysicalFragment().Layer() &&
-      PhysicalFragment().Layer()->IsSelfPaintingLayer();
-  if (phase == PaintPhase::kSelfBlockBackgroundOnly &&
-      is_self_painting_atomic_inline)
-    return PaintInternal(paint_info);
-
   if (phase != PaintPhase::kForeground)
     return;
 
   PaintInfo local_paint_info(paint_info);
-  if (!is_self_painting_atomic_inline) {
-    local_paint_info.phase = PaintPhase::kBlockBackground;
-    PaintInternal(local_paint_info);
-  }
+  local_paint_info.phase = PaintPhase::kBlockBackground;
+  PaintInternal(local_paint_info);
+
   local_paint_info.phase = PaintPhase::kFloat;
   PaintInternal(local_paint_info);
 
@@ -853,6 +848,10 @@ void NGBoxFragmentPainter::PaintSymbol(const NGPaintFragment& fragment,
 }
 
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {
+  DCHECK(PhysicalFragment().IsAtomicInline());
+  // Self-painting AtomicInlines should go to normal paint logic.
+  DCHECK(!box_fragment_.HasSelfPaintingLayer());
+
   // Text clips are painted only for the direct inline children of the object
   // that has a text clip style on it, not block children.
   if (paint_info.phase == PaintPhase::kTextClip)
