@@ -108,10 +108,6 @@ class RenderFrameHostTester {
                                           const GURL& url,
                                           ui::PageTransition transition) = 0;
 
-  // If set, future loads will have |mime_type| set as the mime type.
-  // If not set, the mime type will default to "text/html".
-  virtual void SetContentsMimeType(const std::string& mime_type) = 0;
-
   // Calls OnBeforeUnloadACK on this RenderFrameHost with the given parameter.
   virtual void SendBeforeUnloadACK(bool proceed) = 0;
 

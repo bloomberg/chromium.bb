@@ -73,7 +73,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   bool did_create_new_entry,
                                   const GURL& url,
                                   ui::PageTransition transition) override;
-  void SetContentsMimeType(const std::string& mime_type) override;
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
   void SimulateFeaturePolicyHeader(
@@ -268,8 +267,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   std::vector<std::string> console_messages_;
 
   TestRenderFrameHostCreationObserver child_creation_observer_;
-
-  std::string contents_mime_type_;
 
   // See set_simulate_history_list_was_cleared() above.
   bool simulate_history_list_was_cleared_;

@@ -1040,11 +1040,12 @@ TEST_F(ClientSideDetectionHostTest,
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckXHTML) {
   // Check that XHTML is supported, in addition to the default HTML type.
   GURL url("http://host.com/xhtml");
-  RenderFrameHostTester::For(web_contents()->GetMainFrame())->
-      SetContentsMimeType("application/xhtml+xml");
+  auto navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+  navigation->SetContentsMimeType("application/xhtml+xml");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  navigation->Commit();
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1083,11 +1084,12 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMimeType) {
   // same domain as the previous URL, otherwise it will create a new
   // RenderFrameHost that won't have the mime type set.
   GURL url("http://host2.com/image.jpg");
-  RenderFrameHostTester::For(web_contents()->GetMainFrame())->
-      SetContentsMimeType("image/jpeg");
+  auto navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+  navigation->SetContentsMimeType("image/jpeg");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  navigation->Commit();
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);
