@@ -757,8 +757,6 @@ bool DocumentLoader::HandleResponse(const ResourceResponse& response) {
     }
   }
 
-  DCHECK(!frame_->GetPage()->Paused());
-
   // Pre-commit state, count usage the use counter associated with "this"
   // (provisional document loader) instead of frame_'s document loader.
   if (response.DidServiceWorkerNavigationPreload())
