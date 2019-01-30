@@ -80,7 +80,8 @@ SurfacesInstance::SurfacesInstance()
       nullptr /* shared_bitmap_manager */, settings, frame_sink_id_,
       std::move(output_surface_holder), std::move(scheduler),
       nullptr /* current_task_runner */);
-  display_->Initialize(this, frame_sink_manager_->surface_manager());
+  display_->Initialize(this, frame_sink_manager_->surface_manager(),
+                       false /* enable_shared_images */);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                 frame_sink_id_);
 
