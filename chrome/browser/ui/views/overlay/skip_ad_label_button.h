@@ -19,6 +19,9 @@ class SkipAdLabelButton : public views::LabelButton {
   // Sets the position of itself with an offset from the given window size.
   void SetPosition(const gfx::Size& size);
 
+  // Toggle visibility.
+  void ToggleVisibility(bool is_visible);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SkipAdLabelButton);
 };
