@@ -346,9 +346,9 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
 
   SkSurfaceCharacterization* characterization = nullptr;
   if (characterization_.isValid()) {
-    characterization_ = CreateSkSurfaceCharacterization(
-        gfx::Size(size.width(), size.height()), BGRA_8888, false,
-        color_space.ToSkColorSpace());
+    // TODO(weiliang): suppoot color space. https://crbug.com/795132
+    characterization_ =
+        characterization_.createResized(size.width(), size.height());
   } else {
     characterization = &characterization_;
     initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
