@@ -1012,7 +1012,6 @@ enum WebFeature {
   kVisualViewportResizeFired = 1466,
   kNodeGetRootNode = 1467,
   kSlotChangeEventAddListener = 1468,
-  kCSSValueAppearanceButtonRendered = 1469,
   kCSSValueAppearanceButtonForAnchor = 1470,
   kCSSValueAppearanceButtonForButton = 1471,
   kCSSValueAppearanceButtonForOtherButtons = 1472,
@@ -2024,6 +2023,8 @@ enum WebFeature {
   kCursorImageLE32x32 = 2589,
   kCursorImageGT32x32 = 2590,
   kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics = 2591,
+  // The above items are available in M71 branch.
+
   kResizeObserver_Constructor = 2592,
   kCollator = 2593,
   kNumberFormat = 2594,
@@ -2080,6 +2081,8 @@ enum WebFeature {
   kCSSSelectorNotWithValidList = 2645,
   kCSSSelectorNotWithInvalidList = 2646,
   kCSSSelectorNotWithPartiallyValidList = 2647,
+  // The above items are available in M72 branch.
+
   kV8IDBFactory_Databases_Method = 2648,
   kOpenerNavigationDownloadCrossOriginNoGesture = 2649,
   kV8RegExpMatchIsTrueishOnNonJSRegExp = 2650,
@@ -2201,11 +2204,15 @@ enum WebFeature {
   kV8RTCQuicStream_Reset_Method = 2766,
   kV8RTCQuicStream_WaitForWriteBufferedAmountBelow_Method = 2767,
   kV8RTCQuicStream_WaitForReadable_Method = 2768,
+  // The above items are available in M73 branch.
+
   kHTMLTemplateElement = 2769,
   kNoSysexWebMIDIWithoutPermission = 2770,
   kNoSysexWebMIDIOnInsecureOrigin = 2771,
   kApplicationCacheInstalledButNoManifest = 2772,
   kPerMethodCanMakePaymentQuota = 2773,
+  kCSSValueAppearanceButtonForNonButtonRendered = 2774,
+  kCSSValueAppearanceButtonForOthersRendered = 2775,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

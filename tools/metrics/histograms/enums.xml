@@ -20109,7 +20109,7 @@ Called by update_net_error_codes.py.-->
   <int value="1466" label="VisualViewportResizeFired"/>
   <int value="1467" label="NodeGetRootNode"/>
   <int value="1468" label="SlotChangeEventAddListener"/>
-  <int value="1469" label="CSSValueAppearanceButtonRendered"/>
+  <int value="1469" label="OBSOLETE_CSSValueAppearanceButtonRendered"/>
   <int value="1470" label="CSSValueAppearanceButtonForAnchor"/>
   <int value="1471" label="CSSValueAppearanceButtonForButton"/>
   <int value="1472" label="CSSValueAppearanceButtonForOtherButtons"/>
@@ -21470,6 +21470,8 @@ Called by update_net_error_codes.py.-->
   <int value="2771" label="NoSysexWebMIDIOnInsecureOrigin"/>
   <int value="2772" label="ApplicationCacheInstalledButNoManifest"/>
   <int value="2773" label="PerMethodCanMakePaymentQuota"/>
+  <int value="2774" label="CSSValueAppearanceButtonForNonButtonRendered"/>
+  <int value="2775" label="CSSValueAppearanceButtonForOthersRendered"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

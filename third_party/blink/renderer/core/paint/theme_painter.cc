@@ -81,9 +81,9 @@ bool ThemePainter::Paint(const LayoutObject& o,
     return PaintUsingFallbackTheme(node, style, paint_info, r);
 
   if (part == kButtonPart && node) {
-    UseCounter::Count(doc, WebFeature::kCSSValueAppearanceButtonRendered);
     if (IsHTMLAnchorElement(node)) {
       UseCounter::Count(doc, WebFeature::kCSSValueAppearanceButtonForAnchor);
+      COUNT_APPEARANCE(doc, ButtonForNonButton);
     } else if (IsHTMLButtonElement(node)) {
       UseCounter::Count(doc, WebFeature::kCSSValueAppearanceButtonForButton);
     } else if (IsHTMLInputElement(node) &&
@@ -92,6 +92,9 @@ bool ThemePainter::Paint(const LayoutObject& o,
       // -webkit-appearance:push-button by default.
       UseCounter::Count(doc,
                         WebFeature::kCSSValueAppearanceButtonForOtherButtons);
+    } else {
+      COUNT_APPEARANCE(doc, ButtonForNonButton);
+      COUNT_APPEARANCE(doc, ButtonForOthers);
     }
   }
 
