@@ -200,7 +200,7 @@ class DataReductionProxySettingsAndroidTest : public ::testing::Test {
 };
 
 TEST_F(DataReductionProxySettingsAndroidTest,
-       MaybeRewriteWebliteUrlDefaultParams) {
+       MaybeRewriteWebliteUrlDefaultParams_Http) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
@@ -242,11 +242,51 @@ TEST_F(DataReductionProxySettingsAndroidTest,
   EXPECT_EQ(
       "http://googleweblight.com/i?u=notaurl",
       MaybeRewriteWebliteUrlAsUTF8("http://googleweblight.com/i?u=notaurl"));
+}
 
-  // A weblite URL that wraps an "https://" URL should not be rewritten.
-  EXPECT_EQ("http://googleweblight.com/i?u=https://example.com/",
+TEST_F(DataReductionProxySettingsAndroidTest,
+       MaybeRewriteWebliteUrlDefaultParams_Https) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  Init();
+  drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+
+  EXPECT_EQ("https://example.com/",
             MaybeRewriteWebliteUrlAsUTF8(
-                "http://googleweblight.com/i?u=https://example.com/"));
+                "https://googleweblight.com/i?u=https://example.com/"));
+  EXPECT_EQ("https://example.com/foo",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://googleweblight.com/i?u=https://example.com/foo"));
+  EXPECT_EQ("https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://googleweblight.com/i?u=https://example.com/&foo=bar"));
+
+  EXPECT_TRUE(android_settings()
+                  ->MaybeRewriteWebliteUrl(env(), nullptr, nullptr)
+                  .is_null());
+
+  EXPECT_EQ("not a url", MaybeRewriteWebliteUrlAsUTF8("not a url"));
+  EXPECT_EQ("", MaybeRewriteWebliteUrlAsUTF8(""));
+  EXPECT_EQ("https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8("https://example.com/"));
+
+  EXPECT_EQ("https://otherhost.com/i?u=https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://otherhost.com/i?u=https://example.com/"));
+
+  EXPECT_EQ("https://googleweblight.com/otherpath?u=https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://googleweblight.com/otherpath?u=https://example.com/"));
+
+  EXPECT_EQ(
+      "https://googleweblight.com/i?otherparam=https://example.com/",
+      MaybeRewriteWebliteUrlAsUTF8(
+          "https://googleweblight.com/i?otherparam=https://example.com/"));
+
+  EXPECT_EQ(
+      "https://googleweblight.com/i?u=notaurl",
+      MaybeRewriteWebliteUrlAsUTF8("https://googleweblight.com/i?u=notaurl"));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest,
@@ -259,6 +299,10 @@ TEST_F(DataReductionProxySettingsAndroidTest,
   EXPECT_EQ("http://googleweblight.com/i?u=http://example.com/",
             MaybeRewriteWebliteUrlAsUTF8(
                 "http://googleweblight.com/i?u=http://example.com/"));
+
+  EXPECT_EQ("https://googleweblight.com/i?u=https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://googleweblight.com/i?u=https://example.com/"));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest,
@@ -273,6 +317,11 @@ TEST_F(DataReductionProxySettingsAndroidTest,
   EXPECT_EQ("http://googleweblight.com/i?u=http://example.com/",
             MaybeRewriteWebliteUrlAsUTF8(
                 "http://googleweblight.com/i?u=http://example.com/"));
+
+  // DataReductionProxyDecidesTransform should not affect https webpages.
+  EXPECT_EQ("https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://googleweblight.com/i?u=https://example.com/"));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest,
@@ -301,6 +350,11 @@ TEST_F(DataReductionProxySettingsAndroidTest,
   EXPECT_EQ("http://googleweblight.com/i?u=http://example.com/",
             MaybeRewriteWebliteUrlAsUTF8(
                 "http://googleweblight.com/i?u=http://example.com/"));
+
+  // DataCompressionProxyHoldback should not affect https webpages.
+  EXPECT_EQ("https://example.com/",
+            MaybeRewriteWebliteUrlAsUTF8(
+                "https://googleweblight.com/i?u=https://example.com/"));
 }
 
 TEST_F(DataReductionProxySettingsAndroidTest,

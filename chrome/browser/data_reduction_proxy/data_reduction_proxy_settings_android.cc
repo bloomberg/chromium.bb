@@ -166,10 +166,7 @@ DataReductionProxySettingsAndroid::MaybeRewriteWebliteUrl(
     const base::android::JavaRef<jobject>& obj,
     const base::android::JavaRef<jstring>& url) {
   if (url.is_null() || !Settings()->IsDataReductionProxyEnabled() ||
-      !previews::params::ArePreviewsAllowed() ||
-      data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
-      !base::FeatureList::IsEnabled(data_reduction_proxy::features::
-                                        kDataReductionProxyDecidesTransform)) {
+      !previews::params::ArePreviewsAllowed()) {
     return ScopedJavaLocalRef<jstring>(url);
   }
 
@@ -199,8 +196,20 @@ DataReductionProxySettingsAndroid::MaybeRewriteWebliteUrl(
 
   GURL wrapped_gurl(wrapped_url_str);
   if (!wrapped_gurl.is_valid() || wrapped_gurl.is_empty() ||
-      !wrapped_gurl.SchemeIs("http")) {
+      (!wrapped_gurl.SchemeIs("http") && !wrapped_gurl.SchemeIs("https"))) {
     return ScopedJavaLocalRef<jstring>(url);
+  }
+
+  // For http:// webpages that are fetched via data saver proxy, do not
+  // rewrite the URL if the use of proxy or previews delivered via proxy is
+  // disabled.
+  if (wrapped_gurl.SchemeIs("http")) {
+    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
+        !base::FeatureList::IsEnabled(
+            data_reduction_proxy::features::
+                kDataReductionProxyDecidesTransform)) {
+      return ScopedJavaLocalRef<jstring>(url);
+    }
   }
 
   return base::android::ConvertUTF8ToJavaString(env, wrapped_gurl.spec());
