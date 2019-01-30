@@ -412,6 +412,7 @@ bool ActionsParser::ParseAction(
       action_param.set_button(button);
       action_param.set_key_modifiers(key_modifiers);
       break;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
     case SyntheticPointerActionParams::PointerActionType::IDLE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:

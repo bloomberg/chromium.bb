@@ -30,6 +30,8 @@ WebTouchPoint::State ToWebTouchPointState(
       return WebTouchPoint::kStateMoved;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
       return WebTouchPoint::kStateReleased;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
+      return WebTouchPoint::kStateCancelled;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
       return WebTouchPoint::kStateStationary;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
@@ -53,6 +55,7 @@ WebInputEvent::Type ToWebMouseEventType(
       return WebInputEvent::kMouseUp;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
       return WebInputEvent::kMouseLeave;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
     case SyntheticPointerActionParams::PointerActionType::IDLE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
@@ -506,6 +509,70 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionsMultiPressRelease) {
         pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
             param_list3, index_array));
   }
+}
+
+TEST_F(SyntheticPointerActionTest, PointerTouchActionCancel) {
+  CreateSyntheticPointerActionTarget<MockSyntheticPointerTouchActionTarget>();
+
+  // Send a touch press for one finger.
+  SyntheticPointerActionParams param1 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::PRESS);
+  param1.set_pointer_id(0);
+  param1.set_position(gfx::PointF(54, 89));
+  SyntheticPointerActionListParams::ParamList param_list1;
+  param_list1.push_back(param1);
+  params_.PushPointerActionParamsList(param_list1);
+
+  // Send a touch move for the first finger and a touch press for the second
+  // finger.
+  param1.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+  param1.set_position(gfx::PointF(133, 156));
+  SyntheticPointerActionParams param2 = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::PRESS);
+  param2.set_pointer_id(1);
+  param2.set_position(gfx::PointF(79, 132));
+  SyntheticPointerActionListParams::ParamList param_list2;
+  param_list2.push_back(param1);
+  param_list2.push_back(param2);
+  params_.PushPointerActionParamsList(param_list2);
+
+  // Send touch cancel for both fingers.
+  SyntheticPointerActionListParams::ParamList param_list3;
+  param1.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::CANCEL);
+  param2.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::CANCEL);
+  param_list3.push_back(param1);
+  param_list3.push_back(param2);
+  params_.PushPointerActionParamsList(param_list3);
+  pointer_action_.reset(new SyntheticPointerAction(params_));
+
+  ForwardSyntheticPointerAction();
+  MockSyntheticPointerTouchActionTarget* pointer_touch_target =
+      static_cast<MockSyntheticPointerTouchActionTarget*>(target_.get());
+  int index_array[2] = {0, 1};
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      param_list1, index_array));
+
+  ForwardSyntheticPointerAction();
+  EXPECT_EQ(2, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  // The type of the SyntheticWebTouchEvent is the action of the last finger.
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchStart);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      param_list2, index_array));
+
+  ForwardSyntheticPointerAction();
+  index_array[1] = 0;
+  EXPECT_EQ(3, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::kTouchCancel);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      param_list3, index_array));
 }
 
 TEST_F(SyntheticPointerActionTest, PointerTouchActionTypeInvalid) {

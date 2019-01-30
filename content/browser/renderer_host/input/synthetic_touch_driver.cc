@@ -54,6 +54,14 @@ void SyntheticTouchDriver::Release(int index,
   pointer_id_map_.erase(index);
 }
 
+void SyntheticTouchDriver::Cancel(int index) {
+  DCHECK_GE(index, 0);
+  DCHECK(pointer_id_map_.find(index) != pointer_id_map_.end());
+  touch_event_.CancelPoint(pointer_id_map_[index]);
+  touch_event_.dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+  pointer_id_map_.erase(index);
+}
+
 void SyntheticTouchDriver::Leave(int index) {
   NOTIMPLEMENTED();
 }

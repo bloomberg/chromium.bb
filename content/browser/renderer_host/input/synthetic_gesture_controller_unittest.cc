@@ -67,6 +67,8 @@ WebTouchPoint::State ToWebTouchPointState(
       return WebTouchPoint::kStateMoved;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
       return WebTouchPoint::kStateReleased;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
+      return WebTouchPoint::kStateCancelled;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
       return WebTouchPoint::kStateStationary;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
@@ -90,6 +92,7 @@ WebInputEvent::Type ToWebMouseEventType(
       return WebInputEvent::kMouseUp;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
       return WebInputEvent::kMouseLeave;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
     case SyntheticPointerActionParams::PointerActionType::IDLE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()

@@ -70,6 +70,10 @@ void SyntheticMouseDriver::Release(int index,
       (~SyntheticPointerActionParams::GetWebMouseEventModifier(button));
 }
 
+void SyntheticMouseDriver::Cancel(int index) {
+  NOTIMPLEMENTED();
+}
+
 void SyntheticMouseDriver::Leave(int index) {
   NOTIMPLEMENTED();
 }
