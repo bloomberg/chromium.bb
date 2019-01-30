@@ -13,19 +13,43 @@
 
 namespace openscreen {
 
-class FakeQuicConnectionFactory final : public QuicConnectionFactory {
+class FakeQuicConnectionFactoryBridge {
  public:
-  FakeQuicConnectionFactory(const IPEndpoint& local_endpoint,
-                            MessageDemuxer* remote_demuxer);
-  ~FakeQuicConnectionFactory() override;
+  explicit FakeQuicConnectionFactoryBridge(
+      const IPEndpoint& controller_endpoint);
 
   bool idle() const { return idle_; }
 
-  void StartServerConnection(const IPEndpoint& endpoint);
-  FakeQuicStream* StartIncomingStream(const IPEndpoint& endpoint);
-  FakeQuicStream* GetIncomingStream(const IPEndpoint& endpoint,
-                                    uint64_t connection_id);
   void OnConnectionClosed(QuicConnection* connection);
+  void OnOutgoingStream(QuicConnection* connection, QuicStream* stream);
+
+  void SetServerDelegate(QuicConnectionFactory::ServerDelegate* delegate,
+                         const IPEndpoint& endpoint);
+  void RunTasks();
+  std::unique_ptr<QuicConnection> Connect(
+      const IPEndpoint& endpoint,
+      QuicConnection::Delegate* connection_delegate);
+
+ private:
+  struct ConnectionPair {
+    FakeQuicConnection* controller;
+    FakeQuicConnection* receiver;
+  };
+
+  const IPEndpoint controller_endpoint_;
+  IPEndpoint receiver_endpoint_;
+  bool idle_ = true;
+  uint64_t next_connection_id_ = 0;
+  bool connections_pending_ = true;
+  ConnectionPair connections_ = {};
+  QuicConnectionFactory::ServerDelegate* delegate_ = nullptr;
+};
+
+class FakeClientQuicConnectionFactory final : public QuicConnectionFactory {
+ public:
+  explicit FakeClientQuicConnectionFactory(
+      FakeQuicConnectionFactoryBridge* bridge);
+  ~FakeClientQuicConnectionFactory() override;
 
   // QuicConnectionFactory overrides.
   void SetServerDelegate(ServerDelegate* delegate,
@@ -36,14 +60,25 @@ class FakeQuicConnectionFactory final : public QuicConnectionFactory {
       QuicConnection::Delegate* connection_delegate) override;
 
  private:
-  ServerDelegate* server_delegate_ = nullptr;
-  MessageDemuxer* const remote_demuxer_;
-  const IPEndpoint local_endpoint_;
-  bool idle_ = true;
-  uint64_t next_connection_id_ = 0;
-  std::map<IPEndpoint, FakeQuicConnection*, IPEndpointComparator>
-      pending_connections_;
-  std::map<IPEndpoint, FakeQuicConnection*, IPEndpointComparator> connections_;
+  FakeQuicConnectionFactoryBridge* bridge_;
+};
+
+class FakeServerQuicConnectionFactory final : public QuicConnectionFactory {
+ public:
+  explicit FakeServerQuicConnectionFactory(
+      FakeQuicConnectionFactoryBridge* bridge);
+  ~FakeServerQuicConnectionFactory() override;
+
+  // QuicConnectionFactory overrides.
+  void SetServerDelegate(ServerDelegate* delegate,
+                         const std::vector<IPEndpoint>& endpoints) override;
+  void RunTasks() override;
+  std::unique_ptr<QuicConnection> Connect(
+      const IPEndpoint& endpoint,
+      QuicConnection::Delegate* connection_delegate) override;
+
+ private:
+  FakeQuicConnectionFactoryBridge* bridge_;
 };
 
 }  // namespace openscreen

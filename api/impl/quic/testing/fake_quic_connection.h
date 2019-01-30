@@ -12,7 +12,7 @@
 
 namespace openscreen {
 
-class FakeQuicConnectionFactory;
+class FakeQuicConnectionFactoryBridge;
 
 class FakeQuicStream final : public QuicStream {
  public:
@@ -25,6 +25,9 @@ class FakeQuicStream final : public QuicStream {
   std::vector<uint8_t> TakeReceivedData();
   std::vector<uint8_t> TakeWrittenData();
 
+  bool both_ends_closed() const {
+    return write_end_closed_ && read_end_closed_;
+  }
   bool write_end_closed() const { return write_end_closed_; }
   bool read_end_closed() const { return read_end_closed_; }
 
@@ -42,16 +45,14 @@ class FakeQuicStream final : public QuicStream {
 
 class FakeQuicConnection final : public QuicConnection {
  public:
-  FakeQuicConnection(FakeQuicConnectionFactory* parent_factory,
+  FakeQuicConnection(FakeQuicConnectionFactoryBridge* parent_factory,
                      uint64_t connection_id,
                      Delegate* delegate);
   ~FakeQuicConnection() override;
 
   Delegate* delegate() { return delegate_; }
   uint64_t id() const { return connection_id_; }
-  const std::map<uint64_t, FakeQuicStream*>& streams() const {
-    return streams_;
-  }
+  std::map<uint64_t, FakeQuicStream*>& streams() { return streams_; }
 
   std::unique_ptr<FakeQuicStream> MakeIncomingStream();
 
@@ -62,7 +63,7 @@ class FakeQuicConnection final : public QuicConnection {
   void Close() override;
 
  private:
-  FakeQuicConnectionFactory* const parent_factory_;
+  FakeQuicConnectionFactoryBridge* const parent_factory_;
   const uint64_t connection_id_;
   uint64_t next_stream_id_ = 1;
   std::map<uint64_t, FakeQuicStream*> streams_;

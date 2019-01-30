@@ -154,8 +154,6 @@ class ConnectionServerObserver final
         : parent_(parent) {}
     ~ConnectionObserver() override = default;
 
-    void OnConnectionChanged(const ProtocolConnection& connection) override {}
-
     void OnConnectionClosed(const ProtocolConnection& connection) override {
       auto& connections = parent_->connections_;
       connections.erase(
@@ -203,7 +201,8 @@ class ConnectionMessageCallback final : public MessageDemuxer::MessageCallback {
                                   uint64_t connection_id,
                                   msgs::Type message_type,
                                   const uint8_t* buffer,
-                                  size_t buffer_size) override {
+                                  size_t buffer_size,
+                                  platform::TimeDelta now) override {
     msgs::PresentationConnectionMessage message;
     ssize_t result = msgs::DecodePresentationConnectionMessage(
         buffer, buffer_size, &message);

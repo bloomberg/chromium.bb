@@ -7,6 +7,7 @@
 namespace openscreen {
 
 FakeClock::FakeClock(platform::TimeDelta now) : now_(now) {}
+FakeClock::FakeClock(FakeClock& other) : now_(other.Now()) {}
 FakeClock::~FakeClock() = default;
 
 platform::TimeDelta FakeClock::Now() {

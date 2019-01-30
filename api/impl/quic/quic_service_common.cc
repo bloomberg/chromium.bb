@@ -30,8 +30,11 @@ QuicProtocolConnection::QuicProtocolConnection(Owner* owner,
     : ProtocolConnection(endpoint_id, connection_id), owner_(owner) {}
 
 QuicProtocolConnection::~QuicProtocolConnection() {
-  if (stream_)
+  if (stream_) {
+    stream_->CloseWriteEnd();
     owner_->OnConnectionDestroyed(this);
+    stream_ = nullptr;
+  }
 }
 
 void QuicProtocolConnection::Write(const uint8_t* data, size_t data_size) {
@@ -53,6 +56,7 @@ ServiceStreamPair::ServiceStreamPair(
     std::unique_ptr<QuicStream>&& stream,
     QuicProtocolConnection* protocol_connection)
     : stream(std::move(stream)),
+      connection_id(protocol_connection->connection_id()),
       protocol_connection(std::move(protocol_connection)) {}
 ServiceStreamPair::~ServiceStreamPair() = default;
 
@@ -66,6 +70,7 @@ ServiceConnectionDelegate::ServiceConnectionDelegate(ServiceDelegate* parent,
     : parent_(parent), endpoint_(endpoint) {}
 
 ServiceConnectionDelegate::~ServiceConnectionDelegate() {
+  void DestroyClosedStreams();
   OSP_DCHECK(streams_.empty());
 }
 
@@ -80,6 +85,10 @@ void ServiceConnectionDelegate::DropProtocolConnection(
   if (stream_entry == streams_.end())
     return;
   stream_entry->second.protocol_connection = nullptr;
+}
+
+void ServiceConnectionDelegate::DestroyClosedStreams() {
+  closed_streams_.clear();
 }
 
 void ServiceConnectionDelegate::OnCryptoHandshakeComplete(
@@ -115,28 +124,27 @@ void ServiceConnectionDelegate::OnReceived(QuicStream* stream,
   auto stream_entry = streams_.find(stream->id());
   if (stream_entry == streams_.end())
     return;
-  // TODO(btolsch): It happens that for normal stream data, OnClose is called
-  // before the fin bit is passed here.  Would OnClose instead be the last
-  // callback if a RST_STREAM or CONNECTION_CLOSE is received?
-  if (stream_entry->second.protocol_connection) {
-    parent_->OnDataReceived(
-        stream_entry->second.protocol_connection->endpoint_id(),
-        stream_entry->second.protocol_connection->connection_id(),
-        reinterpret_cast<const uint8_t*>(data), data_size);
-  }
-  if (!data_size) {
-    if (stream_entry->second.protocol_connection)
-      stream_entry->second.protocol_connection->set_stream(nullptr);
-    streams_.erase(stream_entry);
-  }
+  ServiceStreamPair& stream_pair = stream_entry->second;
+  parent_->OnDataReceived(endpoint_id_, stream_pair.connection_id,
+                          reinterpret_cast<const uint8_t*>(data), data_size);
 }
 
 void ServiceConnectionDelegate::OnClose(uint64_t stream_id) {
   auto stream_entry = streams_.find(stream_id);
   if (stream_entry == streams_.end())
     return;
-  if (stream_entry->second.protocol_connection)
-    stream_entry->second.protocol_connection->OnClose();
+  ServiceStreamPair& stream_pair = stream_entry->second;
+  parent_->OnDataReceived(endpoint_id_, stream_pair.connection_id, nullptr, 0);
+  if (stream_pair.protocol_connection) {
+    stream_pair.protocol_connection->set_stream(nullptr);
+    stream_pair.protocol_connection->OnClose();
+  }
+  // NOTE: If this OnClose is the result of the read end closing when the write
+  // end was already closed, there will likely still be a call to OnReceived.
+  // We need to delay actually destroying the stream object until the end of the
+  // event loop.
+  closed_streams_.push_back(std::move(stream_entry->second));
+  streams_.erase(stream_entry);
 }
 
 ServiceConnectionData::ServiceConnectionData(

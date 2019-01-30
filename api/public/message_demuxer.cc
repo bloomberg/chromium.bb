@@ -57,8 +57,10 @@ MessageDemuxer::MessageWatch& MessageDemuxer::MessageWatch::operator=(
   return *this;
 }
 
-MessageDemuxer::MessageDemuxer(size_t buffer_limit)
-    : buffer_limit_(buffer_limit) {}
+MessageDemuxer::MessageDemuxer(size_t buffer_limit,
+                               std::unique_ptr<Clock> clock)
+    : buffer_limit_(buffer_limit),
+      clock_(clock ? std::move(clock) : std::make_unique<PlatformClock>()) {}
 MessageDemuxer::~MessageDemuxer() = default;
 
 MessageDemuxer::MessageWatch MessageDemuxer::WatchMessageType(
@@ -189,7 +191,7 @@ MessageDemuxer::HandleStreamBufferResult MessageDemuxer::HandleStreamBuffer(
     OSP_VLOG(1) << "handling message type " << static_cast<int>(message_type);
     auto consumed_or_error = callback_entry->second->OnStreamMessage(
         endpoint_id, connection_id, message_type, buffer->data() + 1,
-        buffer->size() - 1);
+        buffer->size() - 1, clock_->Now());
     if (!consumed_or_error) {
       if (consumed_or_error.error().code() !=
           Error::Code::kCborIncompleteMessage) {

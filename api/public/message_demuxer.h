@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "api/public/clock.h"
 #include "base/error.h"
 #include "msgs/osp_messages.h"
 #include "platform/api/time.h"
@@ -35,7 +36,8 @@ class MessageDemuxer {
                                             uint64_t connection_id,
                                             msgs::Type message_type,
                                             const uint8_t* buffer,
-                                            size_t buffer_size) = 0;
+                                            size_t buffer_size,
+                                            platform::TimeDelta now) = 0;
   };
 
   class MessageWatch {
@@ -60,7 +62,8 @@ class MessageDemuxer {
 
   static constexpr size_t kDefaultBufferLimit = 1 << 16;
 
-  explicit MessageDemuxer(size_t buffer_limit = kDefaultBufferLimit);
+  explicit MessageDemuxer(size_t buffer_limit = kDefaultBufferLimit,
+                          std::unique_ptr<Clock> clock = nullptr);
   ~MessageDemuxer();
 
   // Starts watching for messages of type |message_type| from the endpoint
@@ -109,6 +112,7 @@ class MessageDemuxer {
   std::map<uint64_t, std::map<msgs::Type, MessageCallback*>> message_callbacks_;
   std::map<msgs::Type, MessageCallback*> default_callbacks_;
   std::map<uint64_t, std::map<uint64_t, std::vector<uint8_t>>> buffers_;
+  std::unique_ptr<Clock> clock_;
 };
 
 // TODO(btolsch): Make sure all uses of MessageWatch are converted to this

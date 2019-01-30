@@ -26,9 +26,6 @@ class ProtocolConnection {
    public:
     virtual ~Observer() = default;
 
-    // Called when the state of |connection| has changed.
-    virtual void OnConnectionChanged(const ProtocolConnection& connection) = 0;
-
     // Called when |connection| is no longer available, either because the
     // underlying transport was terminated, the underying system resource was
     // closed, or data can no longer be exchanged.

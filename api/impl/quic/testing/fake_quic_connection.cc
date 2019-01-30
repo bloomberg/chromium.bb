@@ -43,7 +43,7 @@ void FakeQuicStream::CloseWriteEnd() {
 }
 
 FakeQuicConnection::FakeQuicConnection(
-    FakeQuicConnectionFactory* parent_factory,
+    FakeQuicConnectionFactoryBridge* parent_factory,
     uint64_t connection_id,
     Delegate* delegate)
     : QuicConnection(delegate),
@@ -68,6 +68,7 @@ std::unique_ptr<QuicStream> FakeQuicConnection::MakeOutgoingStream(
     QuicStream::Delegate* delegate) {
   auto result = std::make_unique<FakeQuicStream>(delegate, next_stream_id_++);
   streams_.emplace(result->id(), result.get());
+  parent_factory_->OnOutgoingStream(this, result.get());
   return result;
 }
 

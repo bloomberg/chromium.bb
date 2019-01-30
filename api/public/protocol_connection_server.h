@@ -72,6 +72,8 @@ class ProtocolConnectionServer {
   virtual std::unique_ptr<ProtocolConnection> CreateProtocolConnection(
       uint64_t endpoint_id) = 0;
 
+  MessageDemuxer* message_demuxer() const { return demuxer_; }
+
   // Returns the current state of the listener.
   State state() const { return state_; }
 

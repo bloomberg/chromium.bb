@@ -418,7 +418,8 @@ ErrorOr<size_t> UrlAvailabilityRequester::ReceiverRequester::OnStreamMessage(
     uint64_t connection_id,
     msgs::Type message_type,
     const uint8_t* buffer,
-    size_t buffer_size) {
+    size_t buffer_size,
+    platform::TimeDelta now) {
   switch (message_type) {
     case msgs::Type::kPresentationUrlAvailabilityResponse: {
       msgs::PresentationUrlAvailabilityResponse response;

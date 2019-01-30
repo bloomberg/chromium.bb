@@ -60,6 +60,7 @@ struct ServiceStreamPair {
   ServiceStreamPair& operator=(ServiceStreamPair&&);
 
   std::unique_ptr<QuicStream> stream;
+  uint64_t connection_id;
   QuicProtocolConnection* protocol_connection;
 };
 
@@ -89,6 +90,12 @@ class ServiceConnectionDelegate final : public QuicConnection::Delegate,
 
   void AddStreamPair(ServiceStreamPair&& stream_pair);
   void DropProtocolConnection(QuicProtocolConnection* connection);
+
+  // This should be called at the end of each event loop that effects this
+  // connection so streams that were closed by the other endpoint can be
+  // destroyed properly.
+  void DestroyClosedStreams();
+
   const IPEndpoint& endpoint() const { return endpoint_; }
 
   // QuicConnection::Delegate overrides.
@@ -111,6 +118,7 @@ class ServiceConnectionDelegate final : public QuicConnection::Delegate,
   uint64_t endpoint_id_;
   std::unique_ptr<QuicProtocolConnection> pending_connection_;
   std::map<uint64_t, ServiceStreamPair> streams_;
+  std::vector<ServiceStreamPair> closed_streams_;
 };
 
 struct ServiceConnectionData {

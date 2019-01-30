@@ -50,13 +50,15 @@ QuicStreamImpl::QuicStreamImpl(QuicStream::Delegate* delegate,
 QuicStreamImpl::~QuicStreamImpl() = default;
 
 void QuicStreamImpl::Write(const uint8_t* data, size_t data_size) {
+  OSP_DCHECK(!stream_->write_side_closed());
   stream_->WriteOrBufferData(
       ::quic::QuicStringPiece(reinterpret_cast<const char*>(data), data_size),
       false, nullptr);
 }
 
 void QuicStreamImpl::CloseWriteEnd() {
-  stream_->FinishWriting();
+  if (!stream_->write_side_closed())
+    stream_->FinishWriting();
 }
 
 void QuicStreamImpl::OnReceived(::quic::QuartcStream* stream,
