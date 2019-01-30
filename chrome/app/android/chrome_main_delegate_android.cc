@@ -17,7 +17,6 @@
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 
 using safe_browsing::SafeBrowsingApiHandler;
