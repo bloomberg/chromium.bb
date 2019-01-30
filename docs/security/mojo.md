@@ -235,7 +235,7 @@ mojom("view_bindings") {
 
   enabled_features = []
   if (is_android) {
-    enabled_features += [ "is_android" ];
+    enabled_features += [ "is_android" ]
   }
 }
 
