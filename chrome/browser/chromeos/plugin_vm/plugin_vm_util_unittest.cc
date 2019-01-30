@@ -77,13 +77,23 @@ TEST_F(PluginVmUtilTest,
   EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
 }
 
-TEST_F(PluginVmUtilTest, IsPluginVmConfiguredOnceAllConditionsAreMet) {
+TEST_F(PluginVmUtilTest,
+       IsPluginVmConfiguredReturnsTrueOnceAllConditionsAreMet) {
   EXPECT_FALSE(IsPluginVmConfigured(testing_profile_.get()));
 
   testing_profile_->GetPrefs()->SetBoolean(
       plugin_vm::prefs::kPluginVmImageExists, true);
 
   EXPECT_TRUE(IsPluginVmConfigured(testing_profile_.get()));
+}
+
+TEST_F(PluginVmUtilTest, GetPluginVmLicenseKey) {
+  // If no license key is set, the method should return the empty string.
+  EXPECT_EQ(std::string(), GetPluginVmLicenseKey());
+
+  const std::string kLicenseKey = "LICENSE_KEY";
+  settings_helper_.SetString(chromeos::kPluginVmLicenseKey, kLicenseKey);
+  EXPECT_EQ(kLicenseKey, GetPluginVmLicenseKey());
 }
 
 }  // namespace plugin_vm

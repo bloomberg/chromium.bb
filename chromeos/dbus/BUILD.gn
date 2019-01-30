@@ -26,6 +26,7 @@ component("dbus") {
     ":media_perception_proto",
     ":metrics_event_proto",
     ":oobe_config_proto",
+    ":plugin_vm_service_proto",
     ":power_manager_proto",
     ":runtime_probe_proto",
     ":seneschal_proto",
@@ -408,6 +409,14 @@ proto_library("oobe_config_proto") {
   ]
 
   proto_out_dir = "chromeos/dbus/oobe_config"
+}
+
+proto_library("plugin_vm_service_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/plugin_vm_service/plugin_vm_service.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/plugin_vm_service"
 }
 
 proto_library("power_manager_proto") {
