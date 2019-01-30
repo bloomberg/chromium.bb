@@ -74,6 +74,7 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 
 using gpu::gles2::GLES2Interface;
@@ -212,7 +213,7 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   gfx::Transform quad_to_target_transform;
   const cc::FilterOperations* filters = nullptr;
   const cc::FilterOperations* backdrop_filters = nullptr;
-  const gfx::RectF* backdrop_filter_bounds = nullptr;
+  const gfx::RRectF* backdrop_filter_bounds = nullptr;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -715,10 +716,12 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const cc::FilterOperations* filters,
     const cc::FilterOperations* backdrop_filters,
     const gfx::QuadF* clip_region,
-    const gfx::RectF* backdrop_filter_bounds_input,
+    const gfx::RRectF* backdrop_filter_bounds_input,
     bool use_aa,
-    gfx::Rect* backdrop_filter_bounds,
+    gfx::RRectF* backdrop_filter_bounds,
     gfx::Rect* unclipped_rect) {
+  DCHECK(backdrop_filter_bounds);
+  DCHECK(unclipped_rect);
   gfx::QuadF scaled_region;
   if (!GetScaledRegion(quad->rect, clip_region, &scaled_region)) {
     scaled_region = SharedGeometryQuad().BoundingBox();
@@ -732,10 +735,9 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   // was not found. For example, some GLRenderer tests can trigger this case,
   // e.g. GLRendererShaderTest.DrawRenderPassQuadShaderPermutations.
   if (backdrop_filter_bounds_input) {
-    *backdrop_filter_bounds =
-        gfx::ToEnclosingRect(*backdrop_filter_bounds_input);
+    *backdrop_filter_bounds = *backdrop_filter_bounds_input;
   } else {
-    *backdrop_filter_bounds = gfx::Rect();
+    *backdrop_filter_bounds = gfx::RRectF();
   }
 
   if (ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
@@ -833,7 +835,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const gfx::Rect& rect,
     const gfx::Rect& unclipped_rect,
     const float backdrop_filter_quality,
-    const gfx::Rect& backdrop_filter_bounds) {
+    const gfx::RRectF& backdrop_filter_bounds) {
   DCHECK(ShouldApplyBackgroundFilters(quad, backdrop_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
@@ -915,13 +917,12 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
       quad->filters_origin, true);
 
   if (!backdrop_filter_bounds.IsEmpty()) {
-    // Clip the filtered image to the bounding box of the element.
+    // Clip the filtered image to the (rounded) bounding box of the element.
     surface->getCanvas()->save();
-    gfx::RectF clip_rect_scaled = gfx::RectF(backdrop_filter_bounds);
-    clip_rect_scaled.Scale(backdrop_filter_quality);
-    SkRRect clip_rect =
-        SkRRect::MakeRectXY(RectFToSkRect(clip_rect_scaled), 0, 0);
-    surface->getCanvas()->clipRRect(clip_rect, SkClipOp::kIntersect,
+    gfx::RRectF clip_rect(backdrop_filter_bounds);
+    DCHECK(backdrop_filter_quality);
+    clip_rect.Scale(backdrop_filter_quality);
+    surface->getCanvas()->clipRRect(SkRRect(clip_rect), SkClipOp::kIntersect,
                                     true /* antialias */);
   }
 
@@ -1091,7 +1092,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   if (params->use_shaders_for_blending) {
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
-    gfx::Rect backdrop_filter_bounds_rect;
+    gfx::RRectF backdrop_filter_bounds_rect;
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
         quad, params->contents_device_transform, params->filters,

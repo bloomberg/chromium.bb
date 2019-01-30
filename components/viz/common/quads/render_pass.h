@@ -20,7 +20,7 @@
 #include "components/viz/common/viz_common_export.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -91,7 +91,7 @@ class VIZ_COMMON_EXPORT RenderPass {
               const gfx::Transform& transform_to_root_target,
               const cc::FilterOperations& filters,
               const cc::FilterOperations& backdrop_filters,
-              const gfx::RectF& backdrop_filter_bounds,
+              const gfx::RRectF& backdrop_filter_bounds,
               const gfx::ColorSpace& color_space,
               bool has_transparent_background,
               bool cache_render_pass,
@@ -131,7 +131,7 @@ class VIZ_COMMON_EXPORT RenderPass {
   cc::FilterOperations backdrop_filters;
 
   // Clipping bounds for backdrop filter.
-  gfx::RectF backdrop_filter_bounds;
+  gfx::RRectF backdrop_filter_bounds;
 
   // The color space into which content will be rendered for this render pass.
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();

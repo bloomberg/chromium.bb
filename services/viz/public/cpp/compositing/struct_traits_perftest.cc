@@ -155,6 +155,8 @@ class VizSerializationPerfTest : public testing::Test {
     gfx::Size arbitrary_size1(15, 19);
     gfx::Size arbitrary_size2(3, 99);
     gfx::RectF arbitrary_rectf1(4.2f, -922.1f, 15.6f, 29.5f);
+    gfx::RRectF arbitrary_rrectf1(4.2f, -922.1f, 15.6f, 29.5f, 1.2f, 2.3f, 3.4f,
+                                  4.5f, 5.6f, 6.7f, 7.8f, 8.9f);
     gfx::PointF arbitrary_pointf1(31.4f, 15.9f);
     gfx::PointF arbitrary_pointf2(26.5f, -35.8f);
     float arbitrary_float1 = 0.7f;
@@ -199,7 +201,7 @@ class VizSerializationPerfTest : public testing::Test {
     std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
     pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2,
                     arbitrary_matrix1, arbitrary_filters2, arbitrary_filters1,
-                    arbitrary_rectf1, arbitrary_color_space, arbitrary_bool1,
+                    arbitrary_rrectf1, arbitrary_color_space, arbitrary_bool1,
                     arbitrary_bool1, arbitrary_bool1, arbitrary_bool1);
 
     // Texture quads

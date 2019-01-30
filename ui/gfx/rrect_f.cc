@@ -12,6 +12,25 @@
 
 namespace gfx {
 
+// Directly sets all four corners.
+RRectF::RRectF(float x,
+               float y,
+               float width,
+               float height,
+               float upper_left_x,
+               float upper_left_y,
+               float upper_right_x,
+               float upper_right_y,
+               float lower_right_x,
+               float lower_right_y,
+               float lower_left_x,
+               float lower_left_y)
+    : RRectF(x, y, width, height, upper_left_x, upper_left_y) {
+  SetCornerRadii(RRectF::Corner::kUpperRight, upper_right_x, upper_right_y);
+  SetCornerRadii(RRectF::Corner::kLowerRight, lower_right_x, lower_right_y);
+  SetCornerRadii(RRectF::Corner::kLowerLeft, lower_left_x, lower_left_y);
+}
+
 gfx::Vector2dF RRectF::GetSimpleRadii() const {
   DCHECK(GetType() <= Type::kOval);
   SkPoint result = skrrect_.getSimpleRadii();
@@ -116,6 +135,29 @@ std::string RRectF::ToString() const {
     }
   }
   return ss.str();
+}
+
+namespace {
+inline bool AboveTol(float val1, float val2, float tolerance) {
+  return (std::abs(val1 - val2) > tolerance);
+}
+}  // namespace
+
+bool RRectF::ApproximatelyEqual(const RRectF& rect, float tolerance) const {
+  if (AboveTol(skrrect_.rect().x(), rect.skrrect_.rect().x(), tolerance) ||
+      AboveTol(skrrect_.rect().y(), rect.skrrect_.rect().y(), tolerance) ||
+      AboveTol(skrrect_.width(), rect.skrrect_.width(), tolerance) ||
+      AboveTol(skrrect_.height(), rect.skrrect_.height(), tolerance))
+    return false;
+  for (int i = 0; i < 4; i++) {
+    SkVector r1 = skrrect_.radii(SkRRect::Corner(i));
+    SkVector r2 = rect.skrrect_.radii(SkRRect::Corner(i));
+    if (std::abs(r1.x() - r2.x()) > tolerance ||
+        std::abs(r1.y() - r2.y()) > tolerance) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace gfx

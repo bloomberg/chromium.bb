@@ -9,6 +9,7 @@ import "services/viz/public/interfaces/compositing/filter_operations.mojom";
 import "services/viz/public/interfaces/compositing/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/mojo/rrect_f.mojom";
 import "ui/gfx/mojo/transform.mojom";
 
 // See components/viz/common/quads/render_pass.h.
@@ -19,7 +20,7 @@ struct RenderPass {
   gfx.mojom.Transform transform_to_root_target;
   FilterOperations filters;
   FilterOperations backdrop_filters;
-  gfx.mojom.RectF backdrop_filter_bounds;
+  gfx.mojom.RRectF backdrop_filter_bounds;
   gfx.mojom.ColorSpace color_space;
   bool has_transparent_background;
   bool cache_render_pass = false;

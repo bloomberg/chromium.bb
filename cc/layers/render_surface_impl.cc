@@ -153,7 +153,7 @@ const FilterOperations& RenderSurfaceImpl::BackdropFilters() const {
   return OwningEffectNode()->backdrop_filters;
 }
 
-const gfx::RectF& RenderSurfaceImpl::BackdropFilterBounds() const {
+const gfx::RRectF& RenderSurfaceImpl::BackdropFilterBounds() const {
   return OwningEffectNode()->backdrop_filter_bounds;
 }
 

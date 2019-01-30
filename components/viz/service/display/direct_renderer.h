@@ -29,6 +29,7 @@ class FilterOperations;
 
 namespace gfx {
 class ColorSpace;
+class RRectF;
 }
 
 namespace viz {
@@ -154,7 +155,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   const cc::FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
   const cc::FilterOperations* BackgroundFiltersForPass(
       RenderPassId render_pass_id) const;
-  const gfx::RectF* BackgroundFilterBoundsForPass(
+  const gfx::RRectF* BackgroundFilterBoundsForPass(
       RenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
@@ -235,7 +236,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   base::flat_map<RenderPassId, cc::FilterOperations*> render_pass_filters_;
   base::flat_map<RenderPassId, cc::FilterOperations*>
       render_pass_backdrop_filters_;
-  base::flat_map<RenderPassId, gfx::RectF*> render_pass_backdrop_filter_bounds_;
+  base::flat_map<RenderPassId, gfx::RRectF*>
+      render_pass_backdrop_filter_bounds_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;

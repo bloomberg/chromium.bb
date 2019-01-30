@@ -34,8 +34,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -284,8 +284,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.backdrop_filters;
   }
 
-  void SetBackdropFilterBounds(const gfx::RectF& backdrop_filter_bounds);
-  const gfx::RectF& backdrop_filter_bounds() const {
+  void SetBackdropFilterBounds(const gfx::RRectF& backdrop_filter_bounds);
+  const gfx::RRectF& backdrop_filter_bounds() const {
     return inputs_.backdrop_filter_bounds;
   }
 
@@ -920,7 +920,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     FilterOperations filters;
     FilterOperations backdrop_filters;
-    gfx::RectF backdrop_filter_bounds;
+    gfx::RRectF backdrop_filter_bounds;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 
