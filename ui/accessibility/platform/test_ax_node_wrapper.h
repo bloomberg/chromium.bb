@@ -5,6 +5,9 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_TEST_AX_NODE_WRAPPER_H_
 #define UI_ACCESSIBILITY_PLATFORM_TEST_AX_NODE_WRAPPER_H_
 
+#include <set>
+#include <vector>
+
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -53,10 +56,10 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   const ui::AXUniqueId& GetUniqueId() const override;
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
-                                        int32_t dst_id) override;
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
-                                        int32_t dst_id) override;
+  std::set<AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntAttribute attr) override;
+  std::set<AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
   int32_t GetPosInSet() const override;

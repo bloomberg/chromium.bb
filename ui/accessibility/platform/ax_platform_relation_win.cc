@@ -23,6 +23,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/base/win/atl_module.h"
@@ -101,12 +102,14 @@ base::string16 GetIA2ReverseRelationFromIntListAttr(
 
 // static
 int AXPlatformRelationWin::EnumerateRelationships(
-    const AXNodeData& node_data,
-    AXPlatformNodeDelegate* delegate,
+    AXPlatformNodeBase* node,
     int desired_index,
     const base::string16& desired_ia2_relation,
     base::string16* out_ia2_relation,
-    std::set<int32_t>* out_targets) {
+    std::set<AXPlatformNode*>* out_targets) {
+  const AXNodeData& node_data = node->GetData();
+  AXPlatformNodeDelegate* delegate = node->GetDelegate();
+
   // The first time this is called, populate vectors with all of the
   // int attributes and intlist attributes that have reverse relations
   // we care about on Windows. Computing these by calling
@@ -158,7 +161,8 @@ int AXPlatformRelationWin::EnumerateRelationships(
         continue;
       if (desired_index == total_count) {
         *out_ia2_relation = relation;
-        out_targets->insert(node_data.int_attributes[i].second);
+        out_targets->insert(
+            delegate->GetFromNodeID(node_data.int_attributes[i].second));
         return 1;
       }
       total_count++;
@@ -170,10 +174,10 @@ int AXPlatformRelationWin::EnumerateRelationships(
   for (ax::mojom::IntAttribute int_attribute :
        int_attributes_with_reverse_relations) {
     base::string16 relation = GetIA2ReverseRelationFromIntAttr(int_attribute);
-    std::set<int32_t> targets =
-        delegate->GetReverseRelations(int_attribute, node_data.id);
+    std::set<AXPlatformNode*> targets =
+        delegate->GetReverseRelations(int_attribute);
     // Erase reflexive relations.
-    targets.erase(node_data.id);
+    targets.erase(node);
     if (targets.size()) {
       if (!relation.empty() &&
           (desired_ia2_relation.empty() || desired_ia2_relation == relation)) {
@@ -201,7 +205,7 @@ int AXPlatformRelationWin::EnumerateRelationships(
           // Skip reflexive relations
           if (target_id == node_data.id)
             continue;
-          out_targets->insert(target_id);
+          out_targets->insert(delegate->GetFromNodeID(target_id));
         }
         if (out_targets->size() == 0)
           continue;
@@ -217,10 +221,10 @@ int AXPlatformRelationWin::EnumerateRelationships(
        intlist_attributes_with_reverse_relations) {
     base::string16 relation =
         GetIA2ReverseRelationFromIntListAttr(intlist_attribute);
-    std::set<int32_t> targets =
-        delegate->GetReverseRelations(intlist_attribute, node_data.id);
+    std::set<AXPlatformNode*> targets =
+        delegate->GetReverseRelations(intlist_attribute);
     // Erase reflexive relations.
-    targets.erase(node_data.id);
+    targets.erase(node);
     if (targets.size()) {
       if (!relation.empty() &&
           (desired_ia2_relation.empty() || desired_ia2_relation == relation)) {

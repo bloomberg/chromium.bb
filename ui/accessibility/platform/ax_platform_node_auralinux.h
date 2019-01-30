@@ -130,7 +130,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
   void DestroyAtkObjects();
-  void AddRelationToSet(AtkRelationSet*, AtkRelationType, int target_id);
+  void AddRelationToSet(AtkRelationSet*,
+                        AtkRelationType,
+                        AXPlatformNode* target);
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();

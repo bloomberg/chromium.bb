@@ -924,18 +924,59 @@ bool BrowserAccessibility::IsOffscreen() const {
   return offscreen;
 }
 
-std::set<int32_t> BrowserAccessibility::GetReverseRelations(
-    ax::mojom::IntAttribute attr,
-    int32_t dst_id) {
-  DCHECK(manager_);
-  return manager_->ax_tree()->GetReverseRelations(attr, dst_id);
+std::set<ui::AXPlatformNode*> BrowserAccessibility::GetNodesForNodeIdSet(
+    const std::set<int32_t>& ids) {
+  std::set<ui::AXPlatformNode*> nodes;
+  for (int32_t node_id : ids) {
+    if (ui::AXPlatformNode* node = GetFromNodeID(node_id)) {
+      nodes.insert(node);
+    }
+  }
+  return nodes;
 }
 
-std::set<int32_t> BrowserAccessibility::GetReverseRelations(
-    ax::mojom::IntListAttribute attr,
-    int32_t dst_id) {
+ui::AXPlatformNode* BrowserAccessibility::GetTargetNodeForRelation(
+    ax::mojom::IntAttribute attr) {
+  DCHECK(ui::IsNodeIdIntAttribute(attr));
+
+  if (!node_)
+    return nullptr;
+
+  int target_id;
+  if (!GetData().GetIntAttribute(attr, &target_id))
+    return nullptr;
+
+  return GetFromNodeID(target_id);
+}
+
+std::set<ui::AXPlatformNode*> BrowserAccessibility::GetTargetNodesForRelation(
+    ax::mojom::IntListAttribute attr) {
+  DCHECK(ui::IsNodeIdIntListAttribute(attr));
+
+  std::vector<int32_t> target_ids;
+  if (!GetIntListAttribute(attr, &target_ids))
+    return std::set<ui::AXPlatformNode*>();
+
+  std::set<int32_t> target_id_set(target_ids.begin(), target_ids.end());
+  return GetNodesForNodeIdSet(target_id_set);
+}
+
+std::set<ui::AXPlatformNode*> BrowserAccessibility::GetReverseRelations(
+    ax::mojom::IntAttribute attr) {
   DCHECK(manager_);
-  return manager_->ax_tree()->GetReverseRelations(attr, dst_id);
+  DCHECK(node_);
+  DCHECK(ui::IsNodeIdIntAttribute(attr));
+  return GetNodesForNodeIdSet(
+      manager_->ax_tree()->GetReverseRelations(attr, GetData().id));
+}
+
+std::set<ui::AXPlatformNode*> BrowserAccessibility::GetReverseRelations(
+    ax::mojom::IntListAttribute attr) {
+  DCHECK(manager_);
+  DCHECK(node_);
+  DCHECK(ui::IsNodeIdIntListAttribute(attr));
+  return GetNodesForNodeIdSet(
+      manager_->ax_tree()->GetReverseRelations(attr, GetData().id));
 }
 
 const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {

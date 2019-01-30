@@ -97,19 +97,29 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
 
-  // Given a node ID attribute (one where IsNodeIdIntAttribute is true),
-  // and a destination node ID, return a set of all source node IDs that
-  // have that relationship attribute between them and the destination.
-  virtual std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
-                                                int32_t dst_id) = 0;
+  // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
+  // a target nodes for which this delegate's node has that relationship
+  // attribute or NULL if there is no such relationship.
+  virtual AXPlatformNode* GetTargetNodeForRelation(
+      ax::mojom::IntAttribute attr) = 0;
 
-  // Given a node ID list attribute (one where
-  // IsNodeIdIntListAttribute is true), and a destination node ID,
-  // return a set of all source node IDs that have that relationship
-  // attribute between them and the destination.
-  virtual std::set<int32_t> GetReverseRelations(
-      ax::mojom::IntListAttribute attr,
-      int32_t dst_id) = 0;
+  // Given a node ID attribute (one where IsNodeIdIntListAttribute is true),
+  // return a set of all target nodes for which this delegate's node has that
+  // relationship attribute.
+  virtual std::set<AXPlatformNode*> GetTargetNodesForRelation(
+      ax::mojom::IntListAttribute attr) = 0;
+
+  // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
+  // a set of all source nodes that have that relationship attribute between
+  // them and this delegate's node.
+  virtual std::set<AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntAttribute attr) = 0;
+
+  // Given a node ID list attribute (one where IsNodeIdIntListAttribute is
+  // true), return a set of all source nodes that have that relationship
+  // attribute between them and this delegate's node.
+  virtual std::set<AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntListAttribute attr) = 0;
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
 

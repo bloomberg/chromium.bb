@@ -285,16 +285,16 @@ bool TestAXNodeWrapper::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }
 
-std::set<int32_t> TestAXNodeWrapper::GetReverseRelations(
-    ax::mojom::IntAttribute attr,
-    int32_t dst_id) {
-  return tree_->GetReverseRelations(attr, dst_id);
+std::set<AXPlatformNode*> TestAXNodeWrapper::GetReverseRelations(
+    ax::mojom::IntAttribute attr) {
+  DCHECK(IsNodeIdIntAttribute(attr));
+  return GetNodesForNodeIds(tree_->GetReverseRelations(attr, GetData().id));
 }
 
-std::set<int32_t> TestAXNodeWrapper::GetReverseRelations(
-    ax::mojom::IntListAttribute attr,
-    int32_t dst_id) {
-  return tree_->GetReverseRelations(attr, dst_id);
+std::set<AXPlatformNode*> TestAXNodeWrapper::GetReverseRelations(
+    ax::mojom::IntListAttribute attr) {
+  DCHECK(IsNodeIdIntListAttribute(attr));
+  return GetNodesForNodeIds(tree_->GetReverseRelations(attr, GetData().id));
 }
 
 const ui::AXUniqueId& TestAXNodeWrapper::GetUniqueId() const {

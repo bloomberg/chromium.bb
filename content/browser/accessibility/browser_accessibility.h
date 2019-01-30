@@ -8,6 +8,8 @@
 #include <cstdint>
 
 #include <map>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -386,10 +388,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntAttribute attr,
-                                        int32_t dst_id) override;
-  std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
-                                        int32_t dst_id) override;
+  ui::AXPlatformNode* GetTargetNodeForRelation(
+      ax::mojom::IntAttribute attr) override;
+  std::set<ui::AXPlatformNode*> GetTargetNodesForRelation(
+      ax::mojom::IntListAttribute attr) override;
+  std::set<ui::AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntAttribute attr) override;
+  std::set<ui::AXPlatformNode*> GetReverseRelations(
+      ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
   int32_t GetPosInSet() const override;
@@ -423,6 +429,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::string16 GetInnerText() const;
 
   gfx::Rect GetPageBoundsPastEndOfText() const;
+
+  // Given a set of node ids, return the nodes in this delegate's tree to
+  // which they correspond.
+  std::set<ui::AXPlatformNode*> GetNodesForNodeIdSet(
+      const std::set<int32_t>& ids);
 
   // A unique ID, since node IDs are frame-local.
   ui::AXUniqueId unique_id_;
