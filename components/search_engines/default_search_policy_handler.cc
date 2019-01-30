@@ -278,7 +278,7 @@ void DefaultSearchPolicyHandler::EnsureListPrefExists(
   base::Value* value;
   base::ListValue* list_value;
   if (!prefs->GetValue(path, &value) || !value->GetAsList(&list_value))
-    prefs->SetValue(path, std::make_unique<base::ListValue>());
+    prefs->SetValue(path, base::Value(base::Value::Type::LIST));
 }
 
 }  // namespace policy
