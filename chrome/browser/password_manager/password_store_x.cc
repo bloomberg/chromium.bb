@@ -548,17 +548,35 @@ void PasswordStoreX::ShutdownOnUIThread() {
 
 bool PasswordStoreX::ReadAllLogins(
     password_manager::PrimaryKeyToFormMap* key_to_form_map) {
-  NOTIMPLEMENTED();
-  return false;
+  // This method is called from the PasswordSyncBridge which supports only
+  // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
+  // client is using LogainDatabase instead of the NativeBackend's. It's the
+  // responsibility of the caller to guarantee that.
+  if (use_native_backend()) {
+    NOTREACHED();
+  }
+  return PasswordStoreDefault::ReadAllLogins(key_to_form_map);
 }
 
 PasswordStoreChangeList PasswordStoreX::RemoveLoginByPrimaryKeySync(
     int primary_key) {
-  NOTIMPLEMENTED();
-  return PasswordStoreChangeList();
+  // This method is called from the PasswordSyncBridge which supports only
+  // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
+  // client is using LogainDatabase instead of the NativeBackend's. It's the
+  // responsibility of the caller to guarantee that.
+  if (use_native_backend()) {
+    NOTREACHED();
+  }
+  return PasswordStoreDefault::RemoveLoginByPrimaryKeySync(primary_key);
 }
 
 syncer::SyncMetadataStore* PasswordStoreX::GetMetadataStore() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // This method is called from the PasswordSyncBridge which supports only
+  // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
+  // client is using LogainDatabase instead of the NativeBackend's. It's the
+  // responsibility of the caller to guarantee that.
+  if (use_native_backend()) {
+    NOTREACHED();
+  }
+  return PasswordStoreDefault::GetMetadataStore();
 }
