@@ -403,6 +403,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
                                        const base::FilePath& plugin_path,
                                        bool is_hung) {}
 
+  // Notifies that an inner WebContents instance has been created with the
+  // observed WebContents as its container. |inner_web_contents| has not been
+  // added to the WebContents tree at this point, but can be observed safely.
+  virtual void InnerWebContentsCreated(WebContents* inner_web_contents) {}
+
   // Invoked when WebContents::Clone() was used to clone a WebContents.
   virtual void DidCloneToNewWebContents(WebContents* old_web_contents,
                                         WebContents* new_web_contents) {}

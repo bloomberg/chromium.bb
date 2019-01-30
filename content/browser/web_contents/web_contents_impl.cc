@@ -329,14 +329,19 @@ std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
         .SetSessionStorageNamespace(it->first, it->second.get());
   }
 
+  WebContentsImpl* outer_web_contents = nullptr;
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
     BrowserPluginGuest::CreateInWebContents(new_contents.get(),
                                             params.guest_delegate);
+    outer_web_contents = static_cast<WebContentsImpl*>(
+        params.guest_delegate->GetOwnerWebContents());
   }
 
   new_contents->Init(params);
+  if (outer_web_contents)
+    outer_web_contents->InnerWebContentsCreated(new_contents.get());
   return new_contents;
 }
 
@@ -772,14 +777,19 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
   if (params.created_with_opener)
     new_contents->created_with_opener_ = true;
 
+  WebContentsImpl* outer_web_contents = nullptr;
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
     BrowserPluginGuest::CreateInWebContents(new_contents.get(),
                                             params.guest_delegate);
+    outer_web_contents = static_cast<WebContentsImpl*>(
+        params.guest_delegate->GetOwnerWebContents());
   }
 
   new_contents->Init(params);
+  if (outer_web_contents)
+    outer_web_contents->InnerWebContentsCreated(new_contents.get());
   return new_contents;
 }
 
@@ -5557,6 +5567,11 @@ void WebContentsImpl::FocusOuterAttachmentFrameChain() {
     GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
 
   outer_contents->FocusOuterAttachmentFrameChain();
+}
+
+void WebContentsImpl::InnerWebContentsCreated(WebContents* inner_web_contents) {
+  for (auto& observer : observers_)
+    observer.InnerWebContentsCreated(inner_web_contents);
 }
 
 void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
