@@ -1,6 +1,6 @@
 # Code Coverage in Chromium
 
-### Coverage Dashboard: [https://analysis.chromium.org/p/chromium/coverage]
+### Coverage Dashboard: [link](https://analysis.chromium.org/p/chromium/coverage)
 
 Table of contents:
 
@@ -24,7 +24,7 @@ features in general.
 In this document, we first introduce the code coverage infrastructure that
 continuously generates code coverage information for the whole codebase and for
 specific CLs in Gerrit. For the latter, refer to
-[code\_coverage\_in\_gerrit.md](code_coverage_in_gerrit.md)
+[code\_coverage\_in\_gerrit.md](code_coverage_in_gerrit.md).
 We then present a script that can be used to locally generate code coverage
 reports with one command, and finally we provide a description of the
 process of producing these reports.
@@ -55,7 +55,7 @@ CQ Builder
 
 The code coverage CQ builders instrument only the files changed for a given CL.
 more information about per-cl coverage info in [this
-doc](code_coverage_in_gerrit.md)
+doc](code_coverage_in_gerrit.md).
 
 ### Coverage Service
 
@@ -76,7 +76,7 @@ them, as well as per-directory and per-component aggregation, and can be drilled
 down to the single line of code level of detail.
 
 Refer tho the following screenshots, or this [18-second video
-tutorial](https://www.youtube.com/watch?v=eX7im2_3YfA)
+tutorial](https://www.youtube.com/watch?v=eX7im2_3YfA).
 
 ##### Project View
 
@@ -112,7 +112,7 @@ The other client supported at the moment is the gerrit plugin for code coverage.
 See [this doc](code_coverage_in_gerrit.md) for information about the feature
 that allows gerrit to display code coverage information generated for a given CL
 by CQ bot. Or see this
-[15-second video tutorial](https://www.youtube.com/watch?v=cxXlYcSgIPE)
+[15-second video tutorial](https://www.youtube.com/watch?v=cxXlYcSgIPE).
 
 ## Local Coverage Script
 The [coverage script] automates the process described below and provides a
@@ -214,7 +214,7 @@ Finally, `llvm-cov` is used to render code coverage reports. There are different
 report generation modes, and all of them require the following as input:
 - Indexed profile
 - All built target binaries
-- All exercised source files.
+- All exercised source files
 
 For example, the following command can be used to generate per-file line-by-line
 code coverage report:
@@ -296,7 +296,7 @@ reported usually grows after that.
 Source code of the dashboard is not open sourced at the moment, but if you are a
 Googler, you should have access to the code-coverage repository. There is a
 documentation and scripts for running it locally. To get access and report
-issues, ping chrome-code-coverage@ list.
+issues, ping the [code-coverage group].
 
 The code for the service and dashboard currently lives along with findit at
 [this location](https://chromium.googlesource.com/infra/infra/+/master/appengine/findit/)
@@ -304,14 +304,14 @@ because of significant shared logic.
 
 The code used by the bots that generate the coverage data lives (among other
 places) in the
-[clang coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/clang_coverage/)
+[clang coverage recipe module](https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/clang_coverage/).
 
 ### Why is coverage for X not reported or unreasonably low, even though there is a test for X?
 
 There are several reasons why coverage reports can be incomplete or incorrect:
 
 * A particular test is not used for code coverage report generation. Please
-check the [test suite], and if the test is missing, upload a CL to add it.
+[file a bug].
 * A test may have a build failure or a runtime crash. Please check the build
 for that particular report (rightmost column on the [coverage dashboard]).
 If there is any failure, please upload a CL with the fix. If you can't fix it,
