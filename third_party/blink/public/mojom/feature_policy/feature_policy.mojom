@@ -104,6 +104,18 @@ enum FeaturePolicyFeature {
   // Controls access to font-display attribute in @font-face CSS rule
   kFontDisplay = 32,
 
+  // These are the defined sandbox features implemented as policy-controlled
+  // features.
+  kTopNavigation = 33,
+  kFormSubmission = 34,
+  kScript = 35,
+  kPopups = 36,
+  kPointerLock = 37,
+  kModals = 38,
+  kOrientationLock = 39,
+  kPresentation = 40,
+  // End of sandbox features.
+
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Also, run update_feature_policy_enum.py in
   // chromium/src/tools/metrics/histograms/ to update the UMA mapping.

@@ -21508,6 +21508,14 @@ Called by update_net_error_codes.py.-->
   <int value="30" label="LayoutAnimations"/>
   <int value="31" label="WakeLock"/>
   <int value="32" label="FontDisplay"/>
+  <int value="33" label="TopNavigation"/>
+  <int value="34" label="FormSubmission"/>
+  <int value="35" label="Script"/>
+  <int value="36" label="Popups"/>
+  <int value="37" label="PointerLock"/>
+  <int value="38" label="Modals"/>
+  <int value="39" label="OrientationLock"/>
+  <int value="40" label="Presentation"/>
 </enum>
 
 <enum name="FeedbackSource">

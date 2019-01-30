@@ -11,6 +11,8 @@
 
 namespace blink {
 
+constexpr size_t expected_number_of_sandbox_features = 8;
+
 class HTMLIFrameElementTest : public testing::Test {
  public:
   scoped_refptr<const SecurityOrigin> GetOriginForFeaturePolicy(
@@ -219,9 +221,39 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_EQ("http://example.net", container_policy2[1].origins[0].Serialize());
 }
 
+// Sandboxing an iframe should result in a container policy with an item for
+// each sandbox feature
+TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
+  // TODO(iclelland): Remove the runtime feature override when this feature
+  // becomes experimental or stable.
+  ASSERT_FALSE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(true);
+
+  Document* document = Document::CreateForTest();
+  const KURL document_url("http://example.com");
+  document->SetURL(document_url);
+  document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
+
+  HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
+
+  frame_element->setAttribute(html_names::kSandboxAttr, "");
+  frame_element->UpdateContainerPolicyForTests();
+
+  const ParsedFeaturePolicy& container_policy =
+      frame_element->ContainerPolicy();
+
+  EXPECT_EQ(expected_number_of_sandbox_features, container_policy.size());
+  // TODO: Check that each item is present.
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
+}
+
 // Test that the allow attribute on a sandboxed frame results in a container
 // policy which is restricted to a unique origin.
-TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
+TEST_F(HTMLIFrameElementTest, CrossOriginSandboxAttributeContainerPolicy) {
+  // TODO(iclelland): Remove the runtime feature override when this feature
+  // becomes experimental or stable.
+  ASSERT_FALSE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(true);
   Document* document = Document::CreateForTest();
   const KURL document_url("http://example.com");
   document->SetURL(document_url);
@@ -237,18 +269,31 @@ TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
   const ParsedFeaturePolicy& container_policy =
       frame_element->ContainerPolicy();
 
-  EXPECT_EQ(1UL, container_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
-            container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_TRUE(container_policy[0].matches_opaque_src);
-  EXPECT_EQ(0UL, container_policy[0].origins.size());
+  EXPECT_EQ(expected_number_of_sandbox_features + 1, container_policy.size());
+  const auto& container_policy_item = std::find_if(
+      container_policy.begin(), container_policy.end(),
+      [](const auto& declaration) {
+        return declaration.feature == mojom::FeaturePolicyFeature::kFullscreen;
+      });
+  EXPECT_NE(container_policy_item, container_policy.end())
+      << "Fullscreen feature not found in container policy";
+
+  const ParsedFeaturePolicyDeclaration item = *container_policy_item;
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, item.feature);
+  EXPECT_FALSE(item.matches_all_origins);
+  EXPECT_TRUE(item.matches_opaque_src);
+  EXPECT_EQ(0UL, item.origins.size());
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
 // Test that the allow attribute on a sandboxed frame with the allow-same-origin
 // flag results in a container policy which is restricted to the origin of the
 // containing document.
 TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
+  // TODO(iclelland): Remove the runtime feature override when this feature
+  // becomes experimental or stable.
+  ASSERT_FALSE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(true);
   Document* document = Document::CreateForTest();
   const KURL document_url("http://example.com");
   document->SetURL(document_url);
@@ -264,14 +309,23 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
   const ParsedFeaturePolicy& container_policy =
       frame_element->ContainerPolicy();
 
-  EXPECT_EQ(1UL, container_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
-            container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_FALSE(container_policy[0].matches_opaque_src);
-  EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_FALSE(container_policy[0].origins[0].opaque());
-  EXPECT_EQ("http://example.net", container_policy[0].origins[0].Serialize());
+  EXPECT_EQ(expected_number_of_sandbox_features + 1, container_policy.size());
+  const auto& container_policy_item = std::find_if(
+      container_policy.begin(), container_policy.end(),
+      [](const auto& declaration) {
+        return declaration.feature == mojom::FeaturePolicyFeature::kFullscreen;
+      });
+  EXPECT_NE(container_policy_item, container_policy.end())
+      << "Fullscreen feature not found in container policy";
+
+  const ParsedFeaturePolicyDeclaration item = *container_policy_item;
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, item.feature);
+  EXPECT_FALSE(item.matches_all_origins);
+  EXPECT_FALSE(item.matches_opaque_src);
+  EXPECT_EQ(1UL, item.origins.size());
+  EXPECT_FALSE(item.origins[0].opaque());
+  EXPECT_EQ("http://example.net", item.origins[0].Serialize());
+  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
 // Test the ConstructContainerPolicy method when no attributes are set on the

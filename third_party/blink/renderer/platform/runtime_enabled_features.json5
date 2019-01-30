@@ -481,6 +481,9 @@
       name: "FastMobileScrolling",
     },
     {
+      name: "FeaturePolicyForSandbox",
+    },
+    {
       name: "FeaturePolicyJavaScriptInterface",
       implied_by: ["ExperimentalProductivityFeatures"],
       origin_trial_feature_name: "FeaturePolicyJSAPI",
