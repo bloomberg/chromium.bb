@@ -52,7 +52,9 @@ bool ExtensionListPolicyHandler::CheckListEntry(const base::Value& value) {
 void ExtensionListPolicyHandler::ApplyList(
     std::unique_ptr<base::ListValue> filtered_list,
     PrefValueMap* prefs) {
-  prefs->SetValue(pref_path_, std::move(filtered_list));
+  DCHECK(filtered_list);
+  prefs->SetValue(pref_path_,
+                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
 }
 
 // ExtensionInstallListPolicyHandler implementation ----------------------------
@@ -75,9 +77,9 @@ void ExtensionInstallListPolicyHandler::ApplyPolicySettings(
     const policy::PolicyMap& policies,
     PrefValueMap* prefs) {
   const base::Value* value = nullptr;
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue dict;
   if (CheckAndGetValue(policies, nullptr, &value) && value &&
-      ParseList(value, dict.get(), nullptr)) {
+      ParseList(value, &dict, nullptr)) {
     prefs->SetValue(pref_name_, std::move(dict));
   }
 }
@@ -212,7 +214,7 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 // ExtensionSettingsPolicyHandler implementation  ------------------------------
@@ -346,7 +348,8 @@ void ExtensionSettingsPolicyHandler::ApplyPolicySettings(
   std::unique_ptr<base::Value> policy_value;
   if (!CheckAndGetValue(policies, NULL, &policy_value) || !policy_value)
     return;
-  prefs->SetValue(pref_names::kExtensionManagement, std::move(policy_value));
+  prefs->SetValue(pref_names::kExtensionManagement,
+                  base::Value::FromUniquePtrValue(std::move(policy_value)));
 }
 
 }  // namespace extensions
