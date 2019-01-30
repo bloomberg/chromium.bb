@@ -75,7 +75,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
   void RunDisabledStateChangedCallback(Element& element,
                                        bool is_disabled) override;
   void RunRestoreValueCallback(Element& element,
-                               const FileOrUSVString& value) override;
+                               const FileOrUSVString& value,
+                               const String& mode) override;
 
  private:
   // Implementations of |CustomElementDefinition|

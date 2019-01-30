@@ -15,8 +15,9 @@ class MyControl1 extends HTMLElement {
     this.value_ = v;
     this.internals_.setFormValue(v);
   }
-  restoreValueCallback(v) {
+  restoreValueCallback(v, mode) {
     this.value = v;
+    this.lastRestoreMode = mode;
   }
 }
 customElements.define('my-control-1', MyControl1);
@@ -47,8 +48,9 @@ function upgradeMyControl2() {
       this.value_ = v;
       this.internals_.setFormValue(v);
     }
-    restoreValueCallback(v) {
+    restoreValueCallback(v, mode) {
       this.value = v;
+      this.lastRestoreMode = mode;
     }
   }
   customElements.define('my-control-2', MyControl2);

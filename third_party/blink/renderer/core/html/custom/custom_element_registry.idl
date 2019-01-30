@@ -18,4 +18,5 @@ callback CustomElementAdoptedCallback = void (Document oldOwner, Document newOwn
 callback CustomElementAttributeChangedCallback = void (DOMString localName, DOMString? oldValue, DOMString? newValue, USVString? attrNamespace);
 callback CustomElementFormAssociatedCallback = void (HTMLFormElement? form);
 callback CustomElementDisabledStateChangedCallback = void (boolean disabled);
-callback CustomElementRestoreValueCallback = void (FormDataEntryValue value);
+enum RestoreValueMode { "restore", "autocomplete" };
+callback CustomElementRestoreValueCallback = void (FormDataEntryValue value, RestoreValueMode mode);

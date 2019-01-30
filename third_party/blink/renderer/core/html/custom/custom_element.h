@@ -111,7 +111,8 @@ class CORE_EXPORT CustomElement {
   static void EnqueueDisabledStateChangedCallback(Element& element,
                                                   bool is_disabled);
   static void EnqueueRestoreValueCallback(Element& element,
-                                          const FileOrUSVString& value);
+                                          const FileOrUSVString& value,
+                                          const String& mode);
 
   static void TryToUpgrade(Element&, bool upgrade_invisible_elements = false);
 

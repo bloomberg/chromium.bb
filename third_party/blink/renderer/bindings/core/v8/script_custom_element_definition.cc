@@ -342,10 +342,11 @@ void ScriptCustomElementDefinition::RunDisabledStateChangedCallback(
 
 void ScriptCustomElementDefinition::RunRestoreValueCallback(
     Element& element,
-    const FileOrUSVString& value) {
+    const FileOrUSVString& value,
+    const String& mode) {
   if (!restore_value_callback_)
     return;
-  restore_value_callback_->InvokeAndReportException(&element, value);
+  restore_value_callback_->InvokeAndReportException(&element, value, mode);
 }
 
 }  // namespace blink

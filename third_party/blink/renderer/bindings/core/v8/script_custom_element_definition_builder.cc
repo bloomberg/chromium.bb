@@ -208,15 +208,11 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
         "restoreValueCallback", exception_state_);
     if (exception_state_.HadException())
       return false;
-    if (!v8_restore_value_callback_->IsFunction()) {
-      exception_state_.ThrowDOMException(
-          DOMExceptionCode::kTypeMismatchError,
-          "A class for form-associated custom elements must have a "
-          "'restoreValueCallback'.");
-      return false;
+    if (v8_restore_value_callback_->IsFunction()) {
+      data_.restore_value_callback_ =
+          V8CustomElementRestoreValueCallback::Create(
+              v8_restore_value_callback_.As<v8::Function>());
     }
-    data_.restore_value_callback_ = V8CustomElementRestoreValueCallback::Create(
-        v8_restore_value_callback_.As<v8::Function>());
   }
 
   return true;
