@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 
+#include "ash/public/interfaces/login_user_info.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
