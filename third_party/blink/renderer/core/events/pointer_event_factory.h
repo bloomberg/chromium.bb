@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_FACTORY_H_
 
+#include <unordered_map>
+
 #include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -143,11 +145,10 @@ class CORE_EXPORT PointerEventFactory {
           WTF::PairHashTraits<WTF::UnsignedWithZeroKeyHashTraits<int>,
                               WTF::UnsignedWithZeroKeyHashTraits<int>>>
       pointer_incoming_id_mapping_;
-  HashMap<PointerId,
-          PointerAttributes,
-          WTF::IntHash<PointerId>,
-          WTF::UnsignedWithZeroKeyHashTraits<PointerId>>
-      pointer_id_mapping_;
+  // We are using unordered_map instead of WTF::HashMap to accommodate
+  // for all the possible keys in the given rage as WTF::HashTraits have at
+  // least one unsupported key like 0 or max value in their range.
+  std::unordered_map<PointerId, PointerAttributes> pointer_id_mapping_;
   int primary_id_[static_cast<int>(
                       WebPointerProperties::PointerType::kLastEntry) +
                   1];
@@ -155,11 +156,7 @@ class CORE_EXPORT PointerEventFactory {
                     WebPointerProperties::PointerType::kLastEntry) +
                 1];
 
-  HashMap<PointerId,
-          FloatPoint,
-          WTF::IntHash<PointerId>,
-          WTF::UnsignedWithZeroKeyHashTraits<PointerId>>
-      pointer_id_last_position_mapping_;
+  std::unordered_map<PointerId, FloatPoint> pointer_id_last_position_mapping_;
 };
 
 }  // namespace blink
