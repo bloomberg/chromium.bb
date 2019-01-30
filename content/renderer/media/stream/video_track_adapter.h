@@ -14,9 +14,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_types.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/video_frame.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -92,8 +92,8 @@ class VideoTrackAdapter
   // passing frames and inform of the result via |on_muted_state_callback|.
   void AddTrack(const MediaStreamVideoTrack* track,
                 blink::VideoCaptureDeliverFrameCB frame_callback,
-                VideoTrackSettingsCallback settings_callback,
-                VideoTrackFormatCallback track_callback,
+                blink::VideoTrackSettingsCallback settings_callback,
+                blink::VideoTrackFormatCallback track_callback,
                 const VideoTrackAdapterSettings& settings);
   void RemoveTrack(const MediaStreamVideoTrack* track);
   void ReconfigureTrack(const MediaStreamVideoTrack* track,
@@ -134,8 +134,8 @@ class VideoTrackAdapter
 
   void AddTrackOnIO(const MediaStreamVideoTrack* track,
                     blink::VideoCaptureDeliverFrameCB frame_callback,
-                    VideoTrackSettingsCallback settings_callback,
-                    VideoTrackFormatCallback track_callback,
+                    blink::VideoTrackSettingsCallback settings_callback,
+                    blink::VideoTrackFormatCallback track_callback,
                     const VideoTrackAdapterSettings& settings);
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
   void ReconfigureTrackOnIO(const MediaStreamVideoTrack* track,

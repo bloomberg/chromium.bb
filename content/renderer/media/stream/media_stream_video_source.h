@@ -14,12 +14,12 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_types.h"
-#include "content/renderer/media/stream/secure_display_link_tracker.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -70,8 +70,8 @@ class CONTENT_EXPORT MediaStreamVideoSource
   void AddTrack(MediaStreamVideoTrack* track,
                 const VideoTrackAdapterSettings& track_adapter_settings,
                 const blink::VideoCaptureDeliverFrameCB& frame_callback,
-                const VideoTrackSettingsCallback& settings_callback,
-                const VideoTrackFormatCallback& format_callback,
+                const blink::VideoTrackSettingsCallback& settings_callback,
+                const blink::VideoTrackFormatCallback& format_callback,
                 const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track, base::OnceClosure callback);
 
@@ -273,8 +273,8 @@ class CONTENT_EXPORT MediaStreamVideoSource
     PendingTrackInfo(
         MediaStreamVideoTrack* track,
         const blink::VideoCaptureDeliverFrameCB& frame_callback,
-        const VideoTrackSettingsCallback& settings_callback,
-        const VideoTrackFormatCallback& format_callback,
+        const blink::VideoTrackSettingsCallback& settings_callback,
+        const blink::VideoTrackFormatCallback& format_callback,
         std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
         const ConstraintsCallback& callback);
     PendingTrackInfo(PendingTrackInfo&& other);
@@ -283,8 +283,8 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
     MediaStreamVideoTrack* track;
     blink::VideoCaptureDeliverFrameCB frame_callback;
-    VideoTrackSettingsCallback settings_callback;
-    VideoTrackFormatCallback format_callback;
+    blink::VideoTrackSettingsCallback settings_callback;
+    blink::VideoTrackFormatCallback format_callback;
     // TODO(guidou): Make |adapter_settings| a regular field instead of a
     // unique_ptr.
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings;
@@ -308,7 +308,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   std::vector<MediaStreamVideoTrack*> suspended_tracks_;
 
   // This is used for tracking if all connected video sinks are secure.
-  SecureDisplayLinkTracker<MediaStreamVideoTrack> secure_tracker_;
+  blink::SecureDisplayLinkTracker<MediaStreamVideoTrack> secure_tracker_;
 
   // This flag enables a heuristic to detect device rotation based on frame
   // size.

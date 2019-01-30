@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
-#include "content/renderer/media/stream/secure_display_link_tracker.h"
+#include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
@@ -174,7 +174,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack
   base::WeakPtr<MediaStreamVideoSource> source_;
 
   // This is used for tracking if all connected video sinks are secure.
-  SecureDisplayLinkTracker<MediaStreamVideoSink> secure_tracker_;
+  blink::SecureDisplayLinkTracker<MediaStreamVideoSink> secure_tracker_;
 
   // Remembering our desired video size and frame rate.
   int width_ = 0;
