@@ -518,6 +518,9 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
   // (restore_session.html) into the web view. The session history is encoded
   // in the query parameter. When loaded, restore_session.html parses the
   // session history and replays them into the web view using History API.
+  for (size_t index = 0; index < items.size(); ++index) {
+    RewriteItemURLIfNecessary(items[index].get());
+  }
 
   // TODO(crbug.com/771200): Retain these original NavigationItems restored from
   // storage and associate them with new WKBackForwardListItems created after

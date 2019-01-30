@@ -441,6 +441,18 @@ void NavigationManagerImpl::WillRestore(size_t item_count) {
   UMA_HISTOGRAM_COUNTS_100(kRestoreNavigationItemCount, item_count);
 }
 
+void NavigationManagerImpl::RewriteItemURLIfNecessary(
+    NavigationItem* item) const {
+  GURL url = item->GetURL();
+  if (web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
+          &url, browser_state_)) {
+    // |url| must be set first for -SetVirtualURL to not no-op.
+    GURL virtual_url = item->GetURL();
+    item->SetURL(url);
+    item->SetVirtualURL(virtual_url);
+  }
+}
+
 std::unique_ptr<NavigationItemImpl>
 NavigationManagerImpl::CreateNavigationItemWithRewriters(
     const GURL& url,
