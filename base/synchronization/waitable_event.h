@@ -199,7 +199,7 @@ class BASE_EXPORT WaitableEvent {
    public:
     ReceiveRight(mach_port_t name, bool create_slow_watch_list);
 
-    mach_port_t Name() const { return right_.get(); };
+    mach_port_t Name() const { return right_.get(); }
 
     // This structure is used iff UseSlowWatchList() is true. See the comment
     // in Signal() for details.

@@ -242,7 +242,7 @@ class BASE_EXPORT ProcessMemoryDump {
   const UnguessableToken& process_token() const { return process_token_; }
   void set_process_token_for_testing(UnguessableToken token) {
     process_token_ = token;
-  };
+  }
 
   // Returns the Guid of the dump for the given |absolute_name| for
   // for the given process' token. |process_token| is used to disambiguate GUIDs

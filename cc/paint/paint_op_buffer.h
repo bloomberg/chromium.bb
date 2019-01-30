@@ -66,7 +66,7 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
                           const SerializeOptions& options);                  \
   static PaintOp* Deserialize(const volatile void* input, size_t input_size, \
                               void* output, size_t output_size,              \
-                              const DeserializeOptions& options);
+                              const DeserializeOptions& options)
 
 enum class PaintOpType : uint8_t {
   Annotate,

@@ -118,7 +118,7 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
 
     bool empty() const { return size_ == 0; }
 
-    TaskQueue::QueuePriority min_id() const { return index_to_id_[0]; };
+    TaskQueue::QueuePriority min_id() const { return index_to_id_[0]; }
 
     void insert(int64_t key, TaskQueue::QueuePriority id);
 

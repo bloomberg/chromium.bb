@@ -203,7 +203,7 @@ TYPED_TEST_CASE(ObserverListTest, ObserverTypes);
   (void)(Disrupter*)(0);                                                    \
   (void)(Adder*)(0);                                                        \
   (void)(const_iterator*)(0);                                               \
-  (void)(iterator*)(0);
+  (void)(iterator*)(0)
 
 TYPED_TEST(ObserverListTest, BasicTest) {
   DECLARE_TYPES;

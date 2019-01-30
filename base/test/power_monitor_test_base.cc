@@ -40,7 +40,7 @@ void PowerMonitorTestSource::GenerateResumeEvent() {
 
 bool PowerMonitorTestSource::IsOnBatteryPowerImpl() {
   return test_on_battery_power_;
-};
+}
 
 PowerMonitorTestObserver::PowerMonitorTestObserver()
     : last_power_state_(false),

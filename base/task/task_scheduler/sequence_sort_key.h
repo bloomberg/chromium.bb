@@ -32,7 +32,7 @@ class BASE_EXPORT SequenceSortKey final {
   }
   bool operator!=(const SequenceSortKey& other) const {
     return !(other == *this);
-  };
+  }
 
  private:
   // The private section allows this class to keep its immutable property while
