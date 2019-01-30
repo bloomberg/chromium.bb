@@ -178,6 +178,8 @@ constexpr char kBatchResponse[] = R"(
   ]
 })";
 
+constexpr base::TimeDelta kThrottle = base::TimeDelta::FromSeconds(1);
+
 // An image processor that holds and exposes the callbacks it is passed.
 class TestImageProcessor : public mojom::ImageProcessor {
  public:
@@ -303,7 +305,8 @@ TEST(AnnotatorTest, SuccessAndCache) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
   TestImageProcessor processor;
 
@@ -326,10 +329,6 @@ TEST(AnnotatorTest, SuccessAndCache) {
 
     // No request should be sent yet (because service is waiting to batch up
     // multiple requests).
-    //
-    // TODO(crbug.com/916420): update this (and other similar uses in this file)
-    //                         to reflect throttle construction arg once
-    //                         Annotator accepts one.
     EXPECT_THAT(test_url_factory.requests(), IsEmpty());
     test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
     test_task_env.RunUntilIdle();
@@ -370,7 +369,8 @@ TEST(AnnotatorTest, HttpError) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor;
@@ -412,7 +412,8 @@ TEST(AnnotatorTest, BackendError) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor;
@@ -455,7 +456,8 @@ TEST(AnnotatorTest, ServerError) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor;
@@ -498,7 +500,8 @@ TEST(AnnotatorTest, ProcessorFails) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor[3];
@@ -558,7 +561,8 @@ TEST(AnnotatorTest, ProcessorDies) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor[3];
@@ -613,15 +617,12 @@ TEST(AnnotatorTest, ProcessorDies) {
 
 // Test that multiple concurrent requests are handled in the same batch.
 TEST(AnnotatorTest, ConcurrentSameBatch) {
-  // This test assumes that the Annotator batch size constant is >= 3.
-  // TODO(crbug.com/916420): guarantee this when the Annotator accepts the batch
-  //                         size as a construction arg.
-
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 3 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor[3];
@@ -678,7 +679,8 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 3 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor[2];
@@ -788,7 +790,8 @@ TEST(AnnotatorTest, DuplicateWork) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory("https://test_ia_server.com/v1:");
 
-  Annotator annotator(GURL(kTestServerUrl),
+  Annotator annotator(GURL(kTestServerUrl), kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory());
 
   TestImageProcessor processor[4];

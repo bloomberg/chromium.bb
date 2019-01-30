@@ -7,18 +7,26 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace image_annotation {
 
-// TODO(crbug.com/916420): Use real server URL.
-constexpr char kServerUrl[] = "";
+constexpr base::Feature ImageAnnotationService::kExperiment;
+constexpr base::FeatureParam<std::string> ImageAnnotationService::kServerUrl;
+constexpr base::FeatureParam<int> ImageAnnotationService::kThrottleMs;
+constexpr base::FeatureParam<int> ImageAnnotationService::kBatchSize;
+constexpr base::FeatureParam<double> ImageAnnotationService::kMinOcrConfidence;
 
 ImageAnnotationService::ImageAnnotationService(
     service_manager::mojom::ServiceRequest request,
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
     : service_binding_(this, std::move(request)),
-      annotator_(GURL(kServerUrl), shared_url_loader_factory) {}
+      annotator_(GURL(kServerUrl.Get()),
+                 base::TimeDelta::FromMilliseconds(kThrottleMs.Get()),
+                 kBatchSize.Get(),
+                 kMinOcrConfidence.Get(),
+                 shared_url_loader_factory) {}
 
 ImageAnnotationService::~ImageAnnotationService() = default;
 

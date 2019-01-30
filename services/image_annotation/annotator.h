@@ -15,6 +15,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -37,7 +38,22 @@ namespace image_annotation {
 // images) or image pixels to the external server.
 class Annotator : public mojom::Annotator {
  public:
+  // Constructs an annotator.
+  //  |server_url|        : the URL of the server with which the annotator
+  //                        communicates. The annotator gracefully handles (i.e.
+  //                        returns errors when constructed with) an empty
+  //                        server URL.
+  //  |throttle|          : the miminum amount of time to wait between sending
+  //                        new HTTP requests to the image annotation server.
+  //  |batch_size|        : The maximum number of image annotation requests that
+  //                        should be batched into a single request to the
+  //                        server.
+  //  |min_ocr_confidence|: The minimum confidence value needed to return an OCR
+  //                        result.
   Annotator(GURL server_url,
+            base::TimeDelta throttle,
+            int batch_size,
+            double min_ocr_confidence,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~Annotator() override;
 
@@ -132,6 +148,10 @@ class Annotator : public mojom::Annotator {
   base::RepeatingTimer http_request_timer_;
 
   const GURL server_url_;
+
+  const int batch_size_;
+
+  const double min_ocr_confidence_;
 
   DISALLOW_COPY_AND_ASSIGN(Annotator);
 };

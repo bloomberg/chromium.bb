@@ -13,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
-#include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -24,26 +23,14 @@ namespace {
 
 constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 
-// TODO(crbug.com/916420): move these values into feature params.
-
-// The minimum confidence value needed to return an OCR result.
-constexpr double kMinOcrConfidence = 0.7;
-
-// The number of image annotation requests that should be batched into one HTTP
-// request.
-constexpr int kHttpRequestBatchSize = 10;
-
-// The amount of time to wait between spawning new HTTP requests.
-constexpr base::TimeDelta kHttpRequestThrottle =
-    base::TimeDelta::FromMilliseconds(300);
-
 // The server returns separate OCR results for each region of the image; we
 // naively concatenate these into one response string.
 //
 // Returns nullopt if there is any unexpected structure to the annotations
 // message.
 base::Optional<std::string> ParseJsonOcrAnnotation(
-    const base::Value& annotations) {
+    const base::Value& annotations,
+    const double min_ocr_confidence) {
   const base::Value* const ocr_regions = annotations.FindKey("ocrRegions");
   // No OCR regions is valid - it just means there is no text.
   if (!ocr_regions)
@@ -76,7 +63,7 @@ base::Optional<std::string> ParseJsonOcrAnnotation(
           confidence->GetDouble() < 0.0 || confidence->GetDouble() > 1.0)
         return base::nullopt;
 
-      if (confidence->GetDouble() < kMinOcrConfidence)
+      if (confidence->GetDouble() < min_ocr_confidence)
         continue;
 
       const std::string& detected_text_str = detected_text->GetString();
@@ -97,7 +84,8 @@ base::Optional<std::string> ParseJsonOcrAnnotation(
 // Attempts to extract OCR results from the server response, returning a map
 // from each source ID to its OCR text (if successfully extracted).
 std::map<std::string, std::string> ParseJsonOcrResponse(
-    const std::string* const json_response) {
+    const std::string* const json_response,
+    const double min_ocr_confidence) {
   if (!json_response)
     return {};
 
@@ -124,7 +112,7 @@ std::map<std::string, std::string> ParseJsonOcrResponse(
       continue;
 
     const base::Optional<std::string> ocr_text =
-        ParseJsonOcrAnnotation(*annotations);
+        ParseJsonOcrAnnotation(*annotations, min_ocr_confidence);
     if (!ocr_text.has_value())
       continue;
 
@@ -138,14 +126,19 @@ std::map<std::string, std::string> ParseJsonOcrResponse(
 
 Annotator::Annotator(
     GURL server_url,
+    const base::TimeDelta throttle,
+    const int batch_size,
+    const double min_ocr_confidence,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(std::move(url_loader_factory)),
       http_request_timer_(
           FROM_HERE,
-          kHttpRequestThrottle,
+          throttle,
           base::BindRepeating(&Annotator::SendRequestBatchToServer,
                               base::Unretained(this))),
-      server_url_(std::move(server_url)) {}
+      server_url_(std::move(server_url)),
+      batch_size_(batch_size),
+      min_ocr_confidence_(min_ocr_confidence) {}
 
 Annotator::~Annotator() {}
 
@@ -317,7 +310,7 @@ void Annotator::SendRequestBatchToServer() {
   // Take last n elements (or all elements if there are less than n).
   const auto begin_it =
       http_request_queue_.end() -
-      std::min<size_t>(http_request_queue_.size(), kHttpRequestBatchSize);
+      std::min<size_t>(http_request_queue_.size(), batch_size_);
   const auto end_it = http_request_queue_.end();
 
   // The set of source IDs relevant for this request.
@@ -346,7 +339,7 @@ void Annotator::OnServerResponseReceived(
 
   // Extract OCR results for each source ID with valid results.
   const std::map<std::string, std::string> ocr_results =
-      ParseJsonOcrResponse(json_response.get());
+      ParseJsonOcrResponse(json_response.get(), min_ocr_confidence_);
 
   // Process each source ID for which we expect to have results.
   for (const std::string& source_id : source_ids) {
