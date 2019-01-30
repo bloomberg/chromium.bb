@@ -78,7 +78,7 @@ void PushVideoStreamSubscriptionImpl::Suspend(SuspendCallback callback) {
   if (status_ != Status::kActive)
     return;
 
-  subscriber_ = broadcaster_->RemoveClient(broadcaster_client_id_);
+  broadcaster_->SuspendClient(broadcaster_client_id_);
   status_ = Status::kSuspended;
   std::move(callback).Run();
 }
@@ -86,7 +86,7 @@ void PushVideoStreamSubscriptionImpl::Suspend(SuspendCallback callback) {
 void PushVideoStreamSubscriptionImpl::Resume() {
   if (status_ != Status::kSuspended)
     return;
-  broadcaster_client_id_ = broadcaster_->AddClient(std::move(subscriber_));
+  broadcaster_->ResumeClient(broadcaster_client_id_);
   status_ = Status::kActive;
 }
 
@@ -141,14 +141,14 @@ void PushVideoStreamSubscriptionImpl::Close(CloseCallback callback) {
     case Status::kClosed:
       std::move(callback).Run();
       return;
-    case Status::kActive:
+    case Status::kActive:  // Fall through.
+    case Status::kSuspended:
       broadcaster_->RemoveClient(broadcaster_client_id_);
       status_ = Status::kClosed;
       if (on_closed_handler_)
         std::move(on_closed_handler_).Run(std::move(callback));
       return;
-    case Status::kNotYetActivated:  // Fall through.
-    case Status::kSuspended:
+    case Status::kNotYetActivated:
       status_ = Status::kClosed;
       if (on_closed_handler_)
         std::move(on_closed_handler_).Run(std::move(callback));

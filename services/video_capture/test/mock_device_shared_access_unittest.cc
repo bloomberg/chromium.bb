@@ -23,6 +23,7 @@ using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
+using testing::SaveArg;
 
 namespace video_capture {
 
@@ -322,7 +323,7 @@ TEST_F(
 
   {
     testing::InSequence s;
-    EXPECT_CALL(mock_receiver_1_, OnBufferRetired(_)).Times(1);
+    EXPECT_CALL(mock_receiver_1_, DoOnBufferRetired(_)).Times(1);
     EXPECT_CALL(mock_receiver_1_, DoOnNewBuffer(_, _)).Times(1);
   }
   EXPECT_CALL(mock_receiver_1_, OnStarted()).Times(0);

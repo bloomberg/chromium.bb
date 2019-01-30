@@ -21,8 +21,10 @@ class BroadcastingReceiver : public mojom::Receiver {
   BroadcastingReceiver();
   ~BroadcastingReceiver() override;
 
-  // Returns a client_id that can be used for a call to RemoveClient().
+  // Returns a client_id that can be used for a call to Suspend/Resume/Remove.
   int32_t AddClient(mojom::ReceiverPtr client);
+  void SuspendClient(int32_t client_id);
+  void ResumeClient(int32_t client_id);
   // Returns ownership of the client back to the caller.
   mojom::ReceiverPtr RemoveClient(int32_t client_id);
 
@@ -49,9 +51,28 @@ class BroadcastingReceiver : public mojom::Receiver {
     kOnErrorHasBeenCalled,
   };
 
-  // Combines ownership of a media::mojom::VideoBufferHandlePtr with context
-  // needed for sharing the buffer as well as temporary access permission to
-  // its contents with potentially multiple consumers.
+  // Wrapper that suppresses calls to OnStarted() and OnStartedUsingGpuDecode()
+  // after they have already been called once.
+  class ClientContext {
+   public:
+    explicit ClientContext(mojom::ReceiverPtr client);
+    ~ClientContext();
+    ClientContext(ClientContext&& other);
+    ClientContext& operator=(ClientContext&& other);
+    void OnStarted();
+    void OnStartedUsingGpuDecode();
+
+    mojom::ReceiverPtr& client() { return client_; }
+    void set_is_suspended(bool suspended) { is_suspended_ = suspended; }
+    bool is_suspended() const { return is_suspended_; }
+
+   private:
+    mojom::ReceiverPtr client_;
+    bool is_suspended_;
+    bool on_started_has_been_called_;
+    bool on_started_using_gpu_decode_has_been_called_;
+  };
+
   class BufferContext {
    public:
     BufferContext(int32_t buffer_id,
@@ -76,25 +97,6 @@ class BroadcastingReceiver : public mojom::Receiver {
     // |access_permission_|.
     int32_t consumer_hold_count_;
     mojom::ScopedAccessPermissionPtr access_permission_;
-  };
-
-  // Wrapper for a mojom::ReceiverPtr that suppresses calls to OnStarted() and
-  // OnStartedUsingGpuDecode() after they have already been called once.
-  class ClientContext {
-   public:
-    explicit ClientContext(mojom::ReceiverPtr client);
-    ~ClientContext();
-    ClientContext(ClientContext&& other);
-    ClientContext& operator=(ClientContext&& other);
-    void OnStarted();
-    void OnStartedUsingGpuDecode();
-
-    mojom::ReceiverPtr& client() { return client_; }
-
-   private:
-    mojom::ReceiverPtr client_;
-    bool on_started_has_been_called_;
-    bool on_started_using_gpu_decode_has_been_called_;
   };
 
   void OnClientFinishedConsumingFrame(int32_t buffer_id);

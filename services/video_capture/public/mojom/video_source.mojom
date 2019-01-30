@@ -24,7 +24,11 @@ interface PushVideoStreamSubscription {
   // pushed to |subscriber| in case the obtained settings are unacceptable.
   Activate();
 
-  // The callback event indicates that no more frames will be pushed.
+  // When suspended, the subscriber will no longer receive any calls to
+  // OnFrameReadyInBuffer() and OnFrameDropped(), but will still receive any
+  // other calls, e.g. OnNewBuffer() and OnBufferRetired().
+  // Callers may wait for the empty callback event to get notified when it is
+  // guaranteed that no more frames will be pushed.
   Suspend() => ();
 
   Resume();

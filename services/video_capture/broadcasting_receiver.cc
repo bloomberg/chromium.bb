@@ -25,6 +25,7 @@ class ConsumerAccessPermission : public mojom::ScopedAccessPermission {
 
 BroadcastingReceiver::ClientContext::ClientContext(mojom::ReceiverPtr client)
     : client_(std::move(client)),
+      is_suspended_(false),
       on_started_has_been_called_(false),
       on_started_using_gpu_decode_has_been_called_(false) {}
 
@@ -151,6 +152,14 @@ int32_t BroadcastingReceiver::AddClient(mojom::ReceiverPtr client) {
   return client_id;
 }
 
+void BroadcastingReceiver::SuspendClient(int32_t client_id) {
+  clients_.at(client_id).set_is_suspended(true);
+}
+
+void BroadcastingReceiver::ResumeClient(int32_t client_id) {
+  clients_.at(client_id).set_is_suspended(false);
+}
+
 mojom::ReceiverPtr BroadcastingReceiver::RemoveClient(int32_t client_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto client = std::move(clients_.at(client_id));
@@ -181,6 +190,8 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
   auto& buffer_context = LookupBufferContextFromBufferId(buffer_id);
   buffer_context.set_access_permission(std::move(access_permission));
   for (auto& client : clients_) {
+    if (client.second.is_suspended())
+      continue;
     mojom::ScopedAccessPermissionPtr consumer_access_permission;
     mojo::MakeStrongBinding(
         std::make_unique<ConsumerAccessPermission>(base::BindOnce(
@@ -222,6 +233,8 @@ void BroadcastingReceiver::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& client : clients_) {
+    if (client.second.is_suspended())
+      continue;
     client.second.client()->OnFrameDropped(reason);
   }
 }
