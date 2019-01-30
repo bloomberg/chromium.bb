@@ -95,7 +95,14 @@ void SimNetwork::AddRequest(SimRequestBase& request) {
   requests_.insert(request.url_.GetString(), &request);
   WebURLResponse response(request.url_);
   response.SetMIMEType(request.mime_type_);
-  response.SetHTTPStatusCode(200);
+
+  if (request.redirect_url_.IsEmpty()) {
+    response.SetHTTPStatusCode(200);
+  } else {
+    response.SetHTTPStatusCode(302);
+    response.AddHTTPHeaderField("Location", request.redirect_url_);
+  }
+
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(request.url_,
                                                               response, "");
 }
