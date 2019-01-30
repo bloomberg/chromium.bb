@@ -33,6 +33,7 @@
 #include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
+#include "chromecast/browser/cast_network_contexts.h"
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_overlay_manifests.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
@@ -76,6 +77,7 @@
 #include "media/mojo/buildflags.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/embedder/descriptors.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -188,6 +190,8 @@ CastContentBrowserClient::CastContentBrowserClient(
     : cast_browser_main_parts_(nullptr),
       url_request_context_factory_(new URLRequestContextFactory()),
       cast_feature_list_creator_(cast_feature_list_creator) {
+  cast_network_contexts_ =
+      std::make_unique<CastNetworkContexts>(url_request_context_factory_.get());
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession,
 #if defined(OS_ANDROID)
@@ -211,6 +215,7 @@ CastContentBrowserClient::~CastContentBrowserClient() {
   DCHECK(!media_resource_tracker_)
       << "ResetMediaResourceTracker was not called";
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+  cast_network_contexts_.reset();
   content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE,
                                      url_request_context_factory_.release());
 }
@@ -910,6 +915,29 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
   }
 #endif
   return throttles;
+}
+
+void CastContentBrowserClient::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  // Need to set up global NetworkService state before anything else uses it.
+  cast_network_contexts_->OnNetworkServiceCreated(network_service);
+}
+
+network::mojom::NetworkContextPtr
+CastContentBrowserClient::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  // StoragePartition will wrap the URLRequestContext it owns with a
+  // NetworkContext pipe if network service is disabled.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return nullptr;
+
+  return cast_network_contexts_->CreateNetworkContext(context, in_memory,
+                                                      relative_partition_path);
 }
 
 std::string CastContentBrowserClient::GetUserAgent() const {
