@@ -20,6 +20,7 @@
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
