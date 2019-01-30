@@ -70,7 +70,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
   }
 
   static Blob* Create(const unsigned char* data,
-                      size_t bytes,
+                      size_t size,
                       const String& content_type);
 
   explicit Blob(scoped_refptr<BlobDataHandle>);
