@@ -38,6 +38,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
@@ -481,7 +482,13 @@ bool ContainsUnsupportedSwitch(const base::CommandLine& cmd_line) {
 }
 
 bool IsProcessorSupported() {
+#if defined(ARCH_CPU_X86_FAMILY)
   return base::CPU().has_sse2();
+#elif defined(ARCH_CPU_ARM64)
+  return true;
+#else
+#error Port
+#endif
 }
 
 base::string16 GetCommandKey(const wchar_t* name) {
