@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
 
 namespace download {
 
@@ -18,4 +18,4 @@ bool IsFileQuarantined(const base::FilePath& file,
 
 }  // namespace download
 
-#endif  // !WIN && !MAC
+#endif  // !WIN && !MAC && !LINUX
