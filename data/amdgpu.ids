@@ -4,6 +4,10 @@
 # device_id,	revision_id,	product_name        <-- single tab after comma
 
 1.0.0
+15DD,	81,	AMD Ryzen Embedded V1807B with Radeon Vega Gfx
+15DD,	82,	AMD Ryzen Embedded V1756B with Radeon Vega Gfx
+15DD,	83,	AMD Ryzen Embedded V1605B with Radeon Vega Gfx
+15DD,	85,	AMD Ryzen Embedded V1202B with Radeon Vega Gfx
 6600,	0,	AMD Radeon HD 8600/8700M
 6600,	81,	AMD Radeon (TM) R7 M370
 6601,	0,	AMD Radeon (TM) HD 8500M/8700M
