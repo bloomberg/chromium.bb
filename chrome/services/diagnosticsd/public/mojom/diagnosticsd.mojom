@@ -67,7 +67,7 @@ interface DiagnosticsdClient {
   PerformWebRequest@0(DiagnosticsdWebRequestHttpMethod http_method,
                       handle url,
                       array<handle> headers,
-                      handle request_body)
+                      handle? request_body)
       => (DiagnosticsdWebRequestStatus status, int32 http_status,
-          handle response_body);
+          handle? response_body);
 };
