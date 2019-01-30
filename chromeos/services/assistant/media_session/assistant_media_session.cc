@@ -60,6 +60,7 @@ void AssistantMediaSession::RequestAudioFocus(AudioFocusType audio_focus_type) {
 
   // Create a mojo interface pointer to our media session.
   media_session::mojom::MediaSessionPtr media_session;
+  binding_.Close();
   binding_.Bind(mojo::MakeRequest(&media_session));
   audio_focus_ptr_->RequestAudioFocus(
       mojo::MakeRequest(&request_client_ptr_), std::move(media_session),
