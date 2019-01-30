@@ -88,9 +88,4 @@ static_assert(kTrayMenuWidth == kUnifiedFeaturePodHorizontalSidePadding * 2 +
                                         kUnifiedFeaturePodItemsInRow,
               "Total feature pod width does not match kTrayMenuWidth");
 
-// static
-int TrayConstants::GetTrayIconSize() {
-  return kUnifiedTrayIconSize;
-}
-
 }  // namespace ash

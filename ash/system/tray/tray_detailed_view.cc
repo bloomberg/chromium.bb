@@ -109,9 +109,8 @@ class ScrollContentsView : public views::View {
     // that's below the header view so we don't get both a separator and a full
     // shadow.
     if (y() != 0 && !did_draw_shadow)
-      DrawShadow(
-          paint_info.context(),
-          gfx::Rect(0, 0, width(), -y() - TrayConstants::separator_width()));
+      DrawShadow(paint_info.context(),
+                 gfx::Rect(0, 0, width(), -y() - kTraySeparatorWidth));
   }
 
   void Layout() override {
