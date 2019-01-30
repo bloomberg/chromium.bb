@@ -1898,6 +1898,17 @@ TEST_F(DisplayManagerTest, DisplayRemovedOnlyOnceWhenEnteringDockedMode) {
       display::DisplayObserver::DISPLAY_METRIC_WORK_AREA |
       display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
   EXPECT_EQ(expected_changed_metrics, changed_metrics());
+
+  // Exit docked mode by re-adding the internal display again.
+  reset();
+  display_info_list.clear();
+  display_info_list.emplace_back(internal_info);
+  display_info_list.emplace_back(external_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  // Expect that we get a "primary" change notification.
+  EXPECT_EQ("5 1 0 1 1", GetCountSummary());
+  EXPECT_EQ(expected_changed_metrics, changed_metrics());
 }
 
 TEST_F(DisplayManagerTest, Rotate) {

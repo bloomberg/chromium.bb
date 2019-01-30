@@ -1061,6 +1061,8 @@ void DisplayManager::UpdateDisplaysWith(
   active_display_list_.resize(active_display_list_size);
   is_updating_display_list_ = false;
 
+  UpdatePrimaryDisplayIdIfNecessary();
+
   bool notify_primary_change =
       delegate_ ? old_primary.id() != screen_->GetPrimaryDisplay().id() : false;
 
@@ -2201,6 +2203,21 @@ void DisplayManager::UpdateInfoForRestoringMirrorMode() {
       external_display_mirror_info_.emplace(masked_id);
     else
       external_display_mirror_info_.erase(masked_id);
+  }
+}
+
+void DisplayManager::UpdatePrimaryDisplayIdIfNecessary() {
+  if (num_connected_displays() < 2)
+    return;
+
+  const display::DisplayIdList list = GetCurrentDisplayIdList();
+  const display::DisplayLayout& layout =
+      layout_store()->GetRegisteredDisplayLayout(list);
+  layout_store()->UpdateDefaultUnified(list, layout.default_unified);
+  if (delegate_ && GetNumDisplays() > 1) {
+    delegate_->SetPrimaryDisplayId(
+        layout.primary_id == display::kInvalidDisplayId ? list[0]
+                                                        : layout.primary_id);
   }
 }
 
