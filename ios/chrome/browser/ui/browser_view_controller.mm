@@ -42,6 +42,7 @@
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -156,7 +157,11 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
+#import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
+#import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
@@ -369,7 +374,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      TabModelObserver,
                                      TabStripPresentation,
                                      ToolbarHeightProviderForFullscreen,
-                                     UIGestureRecognizerDelegate> {
+                                     UIGestureRecognizerDelegate,
+                                     URLLoadingObserver> {
   // The dependency factory passed on initialization.  Used to vend objects used
   // by the BVC.
   BrowserViewControllerDependencyFactory* _dependencyFactory;
@@ -486,6 +492,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Bridges C++ WebStateObserver methods to this BrowserViewController.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
+
+  std::unique_ptr<UrlLoadingObserverBridge> _URLLoadingObserverBridge;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -1851,6 +1859,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _allWebStateObservationForwarder =
       std::make_unique<AllWebStateObservationForwarder>(
           self.tabModel.webStateList, _webStateObserverBridge.get());
+
+  _URLLoadingObserverBridge = std::make_unique<UrlLoadingObserverBridge>(self);
+  UrlLoadingNotifier* urlLoadingNotifier =
+      ios::UrlLoadingNotifierFactory::GetForBrowserState(_browserState);
+  urlLoadingNotifier->AddObserver(_URLLoadingObserverBridge.get());
 
   NSUInteger count = self.tabModel.count;
   for (NSUInteger index = 0; index < count; ++index)
@@ -3391,12 +3404,46 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-#pragma mark - CRWWebStateObserver methods.
+#pragma mark - URLLoadingObserver
 
-- (void)webState:(web::WebState*)webState
-    didStartNavigation:(web::NavigationContext*)navigation {
+// TODO(crbug.com/907527): consider moving these separate functional blurbs
+// closer to their main component (using localized observers)
+
+- (void)tabWillOpenURL:(GURL)URL
+        transitionType:(ui::PageTransition)transitionType {
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
+
+  WebStateList* webStateList = self.tabModel.webStateList;
+  web::WebState* current_web_state = webStateList->GetActiveWebState();
+  DCHECK(current_web_state);
+  if (transitionType & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
+    bool isExpectingVoiceSearch =
+        VoiceSearchNavigationTabHelper::FromWebState(current_web_state)
+            ->IsExpectingVoiceSearch();
+    new_tab_page_uma::RecordActionFromOmnibox(
+        self.browserState, URL, transitionType, isExpectingVoiceSearch);
+  }
 }
+
+- (void)tabDidOpenURL:(GURL)URL
+       transitionType:(ui::PageTransition)transitionType {
+  // Deactivate the NTP immediately on a load to hide the NTP quickly, but
+  // after calling -LoadURLWithParams.  Otherwise, if the webState has never
+  // been visible (such as during startup with an NTP), it's possible the
+  // webView can trigger a unnecessary load for chrome://newtab.
+  if (URL.GetOrigin() != kChromeUINewTabURL) {
+    WebStateList* webStateList = self.tabModel.webStateList;
+    web::WebState* current_web_state = webStateList->GetActiveWebState();
+
+    NewTabPageTabHelper* NTPHelper =
+        NewTabPageTabHelper::FromWebState(current_web_state);
+    if (NTPHelper && NTPHelper->IsActive()) {
+      NTPHelper->Deactivate();
+    }
+  }
+}
+
+#pragma mark - CRWWebStateObserver methods.
 
 // TODO(crbug.com/918934): This call to closeFindInPage incorrectly triggers for
 // all navigations, not just navigations in the active WebState.
