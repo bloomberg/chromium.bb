@@ -137,6 +137,11 @@ LoadState SSLConnectJob::GetLoadState() const {
   }
 }
 
+bool SSLConnectJob::HasEstablishedConnection() const {
+  // TODO(mmenke): Implement this, as nested pools are removed.
+  return false;
+}
+
 void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   // Headers in |error_response_info_| indicate a proxy tunnel setup
   // problem. See DoTunnelConnectComplete.

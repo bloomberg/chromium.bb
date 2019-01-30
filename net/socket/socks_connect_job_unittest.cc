@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
@@ -196,6 +197,46 @@ TEST_F(SOCKSConnectJobTest, SOCKS5) {
           host_resolution_synchronous && read_and_writes_synchronous);
     }
   }
+}
+
+TEST_F(SOCKSConnectJobTest, HasEstablishedConnection) {
+  host_resolver_.set_ondemand_mode(true);
+  MockWrite writes[] = {
+      MockWrite(ASYNC, kSOCKS4OkRequestLocalHostPort80,
+                kSOCKS4OkRequestLocalHostPort80Length, 0),
+  };
+
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, kSOCKS4OkReply, kSOCKS4OkReplyLength, 2),
+  };
+
+  SequencedSocketData sequenced_socket_data(reads, writes);
+  sequenced_socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
+
+  TestConnectJobDelegate test_delegate;
+  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+                                    CreateSOCKSParams(SOCKSVersion::V4),
+                                    &test_delegate);
+  socks_connect_job.Connect();
+  EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, socks_connect_job.GetLoadState());
+  EXPECT_FALSE(socks_connect_job.HasEstablishedConnection());
+
+  host_resolver_.ResolveNow(1);
+  EXPECT_EQ(LOAD_STATE_CONNECTING, socks_connect_job.GetLoadState());
+  EXPECT_FALSE(socks_connect_job.HasEstablishedConnection());
+
+  sequenced_socket_data.RunUntilPaused();
+  // "LOAD_STATE_CONNECTING" is also returned when negotiating a SOCKS
+  // connection.
+  EXPECT_EQ(LOAD_STATE_CONNECTING, socks_connect_job.GetLoadState());
+  EXPECT_TRUE(socks_connect_job.HasEstablishedConnection());
+  EXPECT_FALSE(test_delegate.has_result());
+
+  sequenced_socket_data.Resume();
+  EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+  EXPECT_TRUE(test_delegate.has_result());
 }
 
 // Check that TransportConnectJob's timeout is respected for the nested

@@ -45,6 +45,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
+  bool HasEstablishedConnection() const override;
 
  private:
   friend class WebSocketTransportConnectSubJob;

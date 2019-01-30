@@ -219,6 +219,11 @@ LoadState HttpProxyConnectJob::GetLoadState() const {
   return client_socket_->GetConnectLoadState();
 }
 
+bool HttpProxyConnectJob::HasEstablishedConnection() const {
+  // TODO(mmenke): Implement this, as nested pools are removed.
+  return false;
+}
+
 void HttpProxyConnectJob::GetAdditionalErrorState(ClientSocketHandle * handle) {
   if (error_response_info_) {
     handle->set_ssl_error_response_info(*error_response_info_);

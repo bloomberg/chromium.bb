@@ -1260,6 +1260,19 @@ void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
     return;
   }
 
+  // If the old job has already established a connection, don't start a backup
+  // job. Backup jobs are only for issues establishing the initial TCP
+  // connection - the timeout they used is tuned for that, and tests expect that
+  // behavior.
+  //
+  // TODO(mmenke): Replace both this and the LOAD_STATE_RESOLVING_HOST check
+  // with a callback. Use the LOAD_STATE_RESOLVING_HOST callback to start the
+  // timer (And invoke the OnHostResolved callback of any pending requests), and
+  // the HasEstablishedConnection() callback to stop the timer. That should
+  // result in a more robust, testable API.
+  if ((*jobs_.begin())->HasEstablishedConnection())
+    return;
+
   // If our old job is waiting on DNS, or if we can't create any sockets
   // right now due to limits, just reset the timer.
   if (pool->ReachedMaxSocketsLimit() ||

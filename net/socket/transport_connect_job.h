@@ -99,6 +99,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
+  bool HasEstablishedConnection() const override;
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 
   // Rolls |addrlist| forward until the first IPv4 address, if any.

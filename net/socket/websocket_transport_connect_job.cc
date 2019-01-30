@@ -54,6 +54,12 @@ LoadState WebSocketTransportConnectJob::GetLoadState() const {
   return load_state;
 }
 
+bool WebSocketTransportConnectJob::HasEstablishedConnection() const {
+  // No need to ever return true, since NotifyComplete() is called as soon as a
+  // connection is established.
+  return false;
+}
+
 void WebSocketTransportConnectJob::OnIOComplete(int result) {
   result = DoLoop(result);
   if (result != ERR_IO_PENDING)

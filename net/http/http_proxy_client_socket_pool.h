@@ -127,6 +127,7 @@ class HttpProxyConnectJob : public ConnectJob {
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
+  bool HasEstablishedConnection() const override;
 
   void GetAdditionalErrorState(ClientSocketHandle* handle) override;
 

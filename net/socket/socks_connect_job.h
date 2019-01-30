@@ -70,6 +70,7 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
 
   // ConnectJob methods.
   LoadState GetLoadState() const override;
+  bool HasEstablishedConnection() const override;
 
   // Returns the connection timeout used by SOCKSConnectJobs.
   static base::TimeDelta ConnectionTimeout();
