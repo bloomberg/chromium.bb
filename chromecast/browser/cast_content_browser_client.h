@@ -216,6 +216,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       service_manager::mojom::InterfaceProvider* host_interfaces);
 #endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
+  CastNetworkContexts* cast_network_contexts() {
+    return cast_network_contexts_.get();
+  }
+
  protected:
   explicit CastContentBrowserClient(
       CastFeatureListCreator* cast_feature_list_creator);
