@@ -70,6 +70,44 @@ void SecurityContext::SetContentSecurityPolicy(
   content_security_policy_ = content_security_policy;
 }
 
+bool SecurityContext::IsSandboxed(SandboxFlag mask) const {
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    switch (mask) {
+      case kSandboxAll:
+        NOTREACHED();
+        break;
+      case kSandboxTopNavigation:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kTopNavigation);
+      case kSandboxForms:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kFormSubmission);
+      case kSandboxScripts:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kScript);
+      case kSandboxPopups:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kPopups);
+      case kSandboxPointerLock:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kPointerLock);
+      case kSandboxOrientationLock:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kOrientationLock);
+      case kSandboxModals:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kModals);
+      case kSandboxPresentationController:
+        return !feature_policy_->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kPresentation);
+      default:
+        // Any other flags fall through to the bitmask test below
+        break;
+    }
+  }
+  return sandbox_flags_ & mask;
+}
+
 void SecurityContext::EnforceSandboxFlags(SandboxFlags mask) {
   ApplySandboxFlags(mask);
 }

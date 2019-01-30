@@ -150,6 +150,16 @@ void HTMLIFrameElement::ParseAttribute(
           kOtherMessageSource, kErrorMessageLevel,
           "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
     }
+    if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+      Vector<String> messages;
+      UpdateContainerPolicy(&messages);
+      if (!messages.IsEmpty()) {
+        for (const String& message : messages) {
+          GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+              kOtherMessageSource, kWarningMessageLevel, message));
+        }
+      }
+    }
     UseCounter::Count(GetDocument(), WebFeature::kSandboxViaIFrame);
   } else if (name == kReferrerpolicyAttr) {
     referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
@@ -240,8 +250,65 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   scoped_refptr<const SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   scoped_refptr<const SecurityOrigin> self_origin =
       GetDocument().GetSecurityOrigin();
+
+  // Start with the allow attribute
   ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
       allow_, self_origin, src_origin, messages, &GetDocument());
+
+  // Next, process sandbox flags. These all only take effect if a corresponding
+  // policy does *not* exist in the allow attribute's value.
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+    SandboxFlags sandbox_flags = GetSandboxFlags();
+
+    // If the frame is sandboxed at all, then warn if feature policy attributes
+    // will override the sandbox attributes.
+    if (messages && (sandbox_flags & kSandboxNavigation)) {
+      if (!(sandbox_flags & kSandboxForms) &&
+          IsFeatureDeclared(mojom::FeaturePolicyFeature::kFormSubmission,
+                            container_policy)) {
+        messages->push_back(
+            "Allow and Sandbox attributes both mention forms. Allow will take "
+            "precedence.");
+      }
+    }
+
+    if ((sandbox_flags & kSandboxTopNavigation)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kTopNavigation,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxForms)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kFormSubmission,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxScripts)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kScript,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxPopups)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPopups,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxPointerLock)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPointerLock,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxModals)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kModals,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxOrientationLock)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kOrientationLock,
+                                  container_policy);
+    }
+    if ((sandbox_flags & kSandboxPresentationController)) {
+      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPresentation,
+                                  container_policy);
+    }
+  }
+
+  // Finally, process the allow* attribuets. Like sandbox attributes, they only
+  // take effect if the corresponding feature is not present in the allow
+  // attribute's value.
 
   // If allowfullscreen attribute is present and no fullscreen policy is set,
   // enable the feature for all origins.
@@ -264,7 +331,8 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     }
   }
 
-  // Update Policy associated with this iframe, if exists.
+  // Update the JavaScript policy object associated with this iframe, if it
+  // exists.
   if (policy_)
     policy_->UpdateContainerPolicy(container_policy, src_origin);
 

@@ -282,6 +282,24 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set("sync-script",
                                    mojom::FeaturePolicyFeature::kSyncScript);
     }
+    if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
+      default_feature_name_map.Set(
+          "forms", mojom::FeaturePolicyFeature::kFormSubmission);
+      default_feature_name_map.Set("modals",
+                                   mojom::FeaturePolicyFeature::kModals);
+      default_feature_name_map.Set(
+          "orientation-lock", mojom::FeaturePolicyFeature::kOrientationLock);
+      default_feature_name_map.Set("pointer-lock",
+                                   mojom::FeaturePolicyFeature::kPointerLock);
+      default_feature_name_map.Set("popups",
+                                   mojom::FeaturePolicyFeature::kPopups);
+      default_feature_name_map.Set("presentation",
+                                   mojom::FeaturePolicyFeature::kPresentation);
+      default_feature_name_map.Set("scripts",
+                                   mojom::FeaturePolicyFeature::kScript);
+      default_feature_name_map.Set("top-navigation",
+                                   mojom::FeaturePolicyFeature::kTopNavigation);
+    }
     if (RuntimeEnabledFeatures::PaymentRequestEnabled()) {
       default_feature_name_map.Set("payment",
                                    mojom::FeaturePolicyFeature::kPayment);
