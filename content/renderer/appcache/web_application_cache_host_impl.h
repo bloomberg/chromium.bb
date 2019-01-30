@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "content/common/appcache_interfaces.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_application_cache_host_client.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -38,7 +38,7 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost {
   void OnEventRaised(blink::mojom::AppCacheEventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
   void OnErrorEventRaised(const blink::mojom::AppCacheErrorDetails& details);
-  virtual void OnLogMessage(AppCacheLogLevel log_level,
+  virtual void OnLogMessage(blink::mojom::ConsoleMessageLevel log_level,
                             const std::string& message) {}
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 

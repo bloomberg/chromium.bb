@@ -12,14 +12,6 @@
 
 namespace content {
 
-// Temporarily renumber them in wierd way, to help remove LOG_TIP from WebKit
-enum AppCacheLogLevel {
-  APPCACHE_LOG_VERBOSE,
-  APPCACHE_LOG_INFO,
-  APPCACHE_LOG_WARNING,
-  APPCACHE_LOG_ERROR
-};
-
 // Useful string constants.
 CONTENT_EXPORT extern const char kHttpGETMethod[];
 CONTENT_EXPORT extern const char kHttpHEADMethod[];

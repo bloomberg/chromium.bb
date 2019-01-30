@@ -12,6 +12,7 @@
 #include "content/public/common/bind_interface_helpers.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -73,9 +74,10 @@ void AppCacheFrontendProxy::OnErrorEventRaised(
   GetAppCacheFrontend()->ErrorEventRaised(host_ids, details.Clone());
 }
 
-void AppCacheFrontendProxy::OnLogMessage(int host_id,
-                                         AppCacheLogLevel log_level,
-                                         const std::string& message) {
+void AppCacheFrontendProxy::OnLogMessage(
+    int host_id,
+    blink::mojom::ConsoleMessageLevel log_level,
+    const std::string& message) {
   GetAppCacheFrontend()->LogMessage(host_id, log_level, message);
 }
 

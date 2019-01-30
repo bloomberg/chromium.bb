@@ -17,13 +17,13 @@
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_update_request_base.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
-#include "content/common/appcache_interfaces.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -146,7 +146,8 @@ class HostNotifier {
     for (const auto& pair : hosts_to_notify_) {
       AppCacheFrontend* frontend = pair.first;
       for (const auto& id : pair.second)
-        frontend->OnLogMessage(id, APPCACHE_LOG_WARNING, message);
+        frontend->OnLogMessage(id, blink::mojom::ConsoleMessageLevel::kWarning,
+                               message);
     }
   }
 

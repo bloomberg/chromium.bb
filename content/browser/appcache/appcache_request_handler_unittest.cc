@@ -35,7 +35,6 @@
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "content/common/appcache_interfaces.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
@@ -52,6 +51,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 
@@ -93,7 +93,7 @@ class AppCacheRequestHandlerTest
                                int num_complete) override {}
 
     void OnLogMessage(int host_id,
-                      AppCacheLogLevel log_level,
+                      blink::mojom::ConsoleMessageLevel log_level,
                       const std::string& message) override {}
 
     void OnContentBlocked(int host_id, const GURL& manifest_url) override {}

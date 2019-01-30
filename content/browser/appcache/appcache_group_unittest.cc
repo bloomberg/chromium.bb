@@ -13,10 +13,10 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "content/common/appcache_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace {
 
@@ -50,7 +50,7 @@ class TestAppCacheFrontend : public content::AppCacheFrontend {
                              int num_complete) override {}
 
   void OnLogMessage(int host_id,
-                    content::AppCacheLogLevel log_level,
+                    blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override {}
 
   void OnContentBlocked(int host_id, const GURL& manifest_url) override {}

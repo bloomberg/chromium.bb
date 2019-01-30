@@ -4,6 +4,8 @@
 
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 
+#include <string>
+
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -30,7 +32,8 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
       frame_routing_id_(frame_routing_id) {}
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
-    AppCacheLogLevel log_level, const std::string& message) {
+    blink::mojom::ConsoleMessageLevel log_level,
+    const std::string& message) {
   if (RenderThreadImpl::current()->web_test_mode())
     return;
 

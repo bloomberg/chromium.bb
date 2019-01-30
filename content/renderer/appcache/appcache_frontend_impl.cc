@@ -11,10 +11,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
-#include "third_party/blink/public/web/web_console_message.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 using blink::WebApplicationCacheHost;
-using blink::WebConsoleMessage;
 
 namespace content {
 
@@ -91,12 +90,13 @@ void AppCacheFrontendImpl::ErrorEventRaised(
   }
 }
 
-void AppCacheFrontendImpl::LogMessage(int32_t host_id,
-                                      int32_t log_level,
-                                      const std::string& message) {
+void AppCacheFrontendImpl::LogMessage(
+    int32_t host_id,
+    blink::mojom::ConsoleMessageLevel log_level,
+    const std::string& message) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
-    host->OnLogMessage(static_cast<AppCacheLogLevel>(log_level), message);
+    host->OnLogMessage(log_level, message);
 }
 
 void AppCacheFrontendImpl::ContentBlocked(int32_t host_id,
@@ -113,22 +113,5 @@ void AppCacheFrontendImpl::SetSubresourceFactory(
   if (host)
     host->SetSubresourceFactory(std::move(url_loader_factory));
 }
-
-// Ensure that enum values never get out of sync with the
-// ones declared for use within the WebKit api
-
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatched enum: " #a)
-
-STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kVerbose,
-                   APPCACHE_LOG_VERBOSE);
-STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kInfo, APPCACHE_LOG_INFO);
-STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kWarning,
-                   APPCACHE_LOG_WARNING);
-STATIC_ASSERT_ENUM(blink::mojom::ConsoleMessageLevel::kError,
-                   APPCACHE_LOG_ERROR);
-
-#undef STATIC_ASSERT_ENUM
 
 }  // namespace content

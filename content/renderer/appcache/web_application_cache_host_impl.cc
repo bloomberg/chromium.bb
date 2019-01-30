@@ -11,8 +11,10 @@
 #include "base/containers/id_map.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/common/appcache_interfaces.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -110,7 +112,7 @@ void WebApplicationCacheHostImpl::OnEventRaised(
   const char kFormatString[] = "Application Cache %s event";
   std::string message = base::StringPrintf(
       kFormatString, kEventNames[static_cast<int>(event_id)]);
-  OnLogMessage(APPCACHE_LOG_INFO, message);
+  OnLogMessage(blink::mojom::ConsoleMessageLevel::kInfo, message);
 
   switch (event_id) {
     case blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT:
@@ -144,7 +146,7 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
   const char kFormatString[] = "Application Cache Progress event (%d of %d) %s";
   std::string message = base::StringPrintf(kFormatString, num_complete,
                                            num_total, url.spec().c_str());
-  OnLogMessage(APPCACHE_LOG_INFO, message);
+  OnLogMessage(blink::mojom::ConsoleMessageLevel::kInfo, message);
   status_ = blink::mojom::AppCacheStatus::APPCACHE_STATUS_DOWNLOADING;
   client_->NotifyProgressEventListener(url, num_total, num_complete);
 }
@@ -156,7 +158,7 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
   const char kFormatString[] = "Application Cache Error event: %s";
   std::string full_message =
       base::StringPrintf(kFormatString, details.message.c_str());
-  OnLogMessage(APPCACHE_LOG_ERROR, full_message);
+  OnLogMessage(blink::mojom::ConsoleMessageLevel::kError, full_message);
 
   status_ = cache_info_.is_complete
                 ? blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE

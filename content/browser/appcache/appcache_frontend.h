@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 class GURL;
 
@@ -39,7 +39,7 @@ class CONTENT_EXPORT AppCacheFrontend {
       const blink::mojom::AppCacheErrorDetails& details) = 0;
   virtual void OnContentBlocked(int host_id, const GURL& manifest_url) = 0;
   virtual void OnLogMessage(int host_id,
-                            AppCacheLogLevel log_level,
+                            blink::mojom::ConsoleMessageLevel log_level,
                             const std::string& message) = 0;
   // In the network service world, we pass the URLLoaderFactory instance to be
   // used to issue subresource requeste in the |loader_factory_pipe_handle|

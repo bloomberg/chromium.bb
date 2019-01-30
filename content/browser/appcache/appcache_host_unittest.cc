@@ -17,12 +17,12 @@
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "content/common/appcache_interfaces.h"
 #include "net/url_request/url_request.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -84,7 +84,7 @@ class AppCacheHostTest : public testing::Test {
     }
 
     void OnLogMessage(int host_id,
-                      AppCacheLogLevel log_level,
+                      blink::mojom::ConsoleMessageLevel log_level,
                       const std::string& message) override {}
 
     void OnContentBlocked(int host_id, const GURL& manifest_url) override {
