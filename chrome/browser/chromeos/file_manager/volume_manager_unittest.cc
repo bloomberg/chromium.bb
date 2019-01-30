@@ -38,6 +38,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
+#include "services/device/public/mojom/mtp_storage_info.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chromeos::disks::Disk;
