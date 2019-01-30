@@ -2649,13 +2649,19 @@ base::Optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
         flag |= viz::HitTestRegionFlags::kHitTestAsk;
         async_hit_test_reasons |= viz::AsyncHitTestReasons::kOverlappedRegion;
       }
-      if (surface_layer->is_clipped()) {
+      bool layer_hit_test_region_is_masked =
+          active_tree()
+              ->property_trees()
+              ->effect_tree.Node(surface_layer->effect_tree_index())
+              ->is_masked;
+      if (surface_layer->is_clipped() || layer_hit_test_region_is_masked) {
         bool layer_hit_test_region_is_rectangle =
+            !layer_hit_test_region_is_masked &&
+            surface_layer->ScreenSpaceTransform().Preserves2dAxisAlignment() &&
             active_tree()
                 ->property_trees()
                 ->effect_tree.ClippedHitTestRegionIsRectangle(
-                    surface_layer->effect_tree_index()) &&
-            surface_layer->ScreenSpaceTransform().Preserves2dAxisAlignment();
+                    surface_layer->effect_tree_index());
         content_rect =
             gfx::ScaleToEnclosingRect(surface_layer->visible_layer_rect(),
                                       device_scale_factor, device_scale_factor);
