@@ -7952,8 +7952,12 @@ static int64_t build_and_cost_compound_type(
     }
   } else {
     assert(comp_dist[compound_type] != INT64_MAX);
-    // Rate is populated assuming no refinement is done=> not NEWMV case
-    assert(!have_newmv_in_inter_mode(this_mode));
+    // When disable_interinter_wedge_newmv_search is set, motion refinement is
+    // disabled. Hence rate and distortion can be reused in this case as well
+    assert(IMPLIES(have_newmv_in_inter_mode(this_mode),
+                   cpi->sf.disable_interinter_wedge_newmv_search));
+    assert(mbmi->mv[0].as_int == cur_mv[0].as_int);
+    assert(mbmi->mv[1].as_int == cur_mv[1].as_int);
     *out_rate_mv = rate_mv;
     // Calculate RD cost based on stored stats
     rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + comp_rate[compound_type],
@@ -8407,7 +8411,8 @@ static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
 }
 
 // Checks if characteristics of search match
-static INLINE int is_comp_rd_match(const MACROBLOCK *const x,
+static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
+                                   const MACROBLOCK *const x,
                                    const COMP_RD_STATS *st,
                                    const MB_MODE_INFO *const mi,
                                    int32_t *comp_rate, int64_t *comp_dist) {
@@ -8433,15 +8438,12 @@ static INLINE int is_comp_rd_match(const MACROBLOCK *const x,
 
   // For compound wedge/segment, reuse data only if NEWMV is not present in
   // either of the directions
-  if (!have_newmv_in_inter_mode(mi->mode) &&
-      !have_newmv_in_inter_mode(st->mode)) {
+  if ((!have_newmv_in_inter_mode(mi->mode) &&
+       !have_newmv_in_inter_mode(st->mode)) ||
+      (cpi->sf.disable_interinter_wedge_newmv_search)) {
     memcpy(&comp_rate[1], &st->rate[1], sizeof(comp_rate[1]) * 2);
     memcpy(&comp_dist[1], &st->dist[1], sizeof(comp_dist[1]) * 2);
   }
-
-  // TODO(ranjit) : Check if compound wedge/segment can reuse data for NEWMV
-  // case as well based on speed feature
-
   return 1;
 }
 
@@ -8460,12 +8462,14 @@ static INLINE int find_interp_filter_in_stats(MACROBLOCK *x,
 }
 // Checks if similar compound type search case is accounted earlier
 // If found, returns relevant rd data
-static INLINE int find_comp_rd_in_stats(const MACROBLOCK *x,
+static INLINE int find_comp_rd_in_stats(const AV1_COMP *const cpi,
+                                        const MACROBLOCK *x,
                                         const MB_MODE_INFO *const mbmi,
                                         int32_t *comp_rate,
                                         int64_t *comp_dist) {
   for (int j = 0; j < x->comp_rd_stats_idx; ++j) {
-    if (is_comp_rd_match(x, &x->comp_rd_stats[j], mbmi, comp_rate, comp_dist)) {
+    if (is_comp_rd_match(cpi, x, &x->comp_rd_stats[j], mbmi, comp_rate,
+                         comp_dist)) {
       return 1;
     }
   }
@@ -9746,7 +9750,8 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   int calc_pred_masked_compound = 1;
   int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX };
   int32_t comp_rate[COMPOUND_TYPES] = { INT_MAX, INT_MAX, INT_MAX };
-  const int match_found = find_comp_rd_in_stats(x, mbmi, comp_rate, comp_dist);
+  const int match_found =
+      find_comp_rd_in_stats(cpi, x, mbmi, comp_rate, comp_dist);
   best_mv[0].as_int = cur_mv[0].as_int;
   best_mv[1].as_int = cur_mv[1].as_int;
   *rd = INT64_MAX;
