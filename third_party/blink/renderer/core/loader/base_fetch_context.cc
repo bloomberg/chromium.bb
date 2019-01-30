@@ -256,7 +256,7 @@ BaseFetchContext::CanRequestInternal(
     const ResourceLoaderOptions& options,
     SecurityViolationReportingPolicy reporting_policy,
     ResourceRequest::RedirectStatus redirect_status) const {
-  if (IsDetached()) {
+  if (GetResourceFetcherProperties().IsDetached()) {
     if (!resource_request.GetKeepalive() ||
         redirect_status == ResourceRequest::RedirectStatus::kNoRedirect) {
       return ResourceRequestBlockedReason::kOther;

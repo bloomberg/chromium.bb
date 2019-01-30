@@ -107,16 +107,9 @@ class MockBaseFetchContext final : public BaseFetchContext {
     BaseFetchContext::Trace(visitor);
   }
 
-  bool IsDetached() const override { return is_detached_; }
-  FetchContext* Detach() override {
-    is_detached_ = true;
-    return this;
-  }
-
  private:
   Member<ExecutionContext> execution_context_;
   Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;
-  bool is_detached_ = false;
 };
 
 class BaseFetchContextTest : public testing::Test {
