@@ -105,6 +105,8 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   crashpad::VMAddress exception_addr = GetAccessAddress(exception);
   if (valid_state.double_free_address)
     exception_addr = valid_state.double_free_address;
+  else if (valid_state.free_invalid_address)
+    exception_addr = valid_state.free_invalid_address;
 
   if (!exception_addr)
     return GwpAsanCrashAnalysisResult::kUnrelatedCrash;
@@ -136,6 +138,8 @@ GwpAsanCrashAnalysisResult CrashAnalyzer::AnalyzeCrashedAllocator(
   proto->set_region_start(valid_state.pages_base_addr);
   proto->set_region_size(valid_state.pages_end_addr -
                          valid_state.pages_base_addr);
+  if (valid_state.free_invalid_address)
+    proto->set_free_invalid_address(valid_state.free_invalid_address);
 
   return GwpAsanCrashAnalysisResult::kGwpAsanCrash;
 }

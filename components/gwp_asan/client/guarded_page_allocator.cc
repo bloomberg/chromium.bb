@@ -102,7 +102,14 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
 
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  DCHECK_EQ(addr, slots_[slot].alloc_ptr);
+
+  // Check for a call to free() with an incorrect pointer (e.g. the pointer does
+  // not match the allocated pointer.)
+  if (addr != slots_[slot].alloc_ptr) {
+    state_.free_invalid_address = addr;
+    __builtin_trap();
+  }
+
   // Check for double free.
   if (slots_[slot].deallocation_occurred.exchange(true)) {
     state_.double_free_address = addr;

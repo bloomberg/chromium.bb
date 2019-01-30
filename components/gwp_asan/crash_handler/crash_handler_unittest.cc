@@ -128,6 +128,10 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
       ((unsigned char*)ptr)[i] = 0;
   } else if (test_name == "UnrelatedException") {
     __builtin_trap();
+  } else if (test_name == "FreeInvalidAddress") {
+    void* ptr = gpa->Allocate(kAllocationSize);
+    uintptr_t bad_address = reinterpret_cast<uintptr_t>(ptr) + 1;
+    gpa->Deallocate(reinterpret_cast<void*>(bad_address));
   } else {
     LOG(ERROR) << "Unknown test name " << test_name;
   }
@@ -274,6 +278,12 @@ TEST_F(CrashHandlerTest, MAYBE_DISABLED(Underflow)) {
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(Overflow)) {
   ASSERT_TRUE(gwp_asan_found_);
   checkProto(Crash_ErrorType_BUFFER_OVERFLOW, false);
+}
+
+TEST_F(CrashHandlerTest, MAYBE_DISABLED(FreeInvalidAddress)) {
+  ASSERT_TRUE(gwp_asan_found_);
+  checkProto(Crash_ErrorType_FREE_INVALID_ADDRESS, false);
+  EXPECT_TRUE(proto_.has_free_invalid_address());
 }
 
 TEST_F(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {

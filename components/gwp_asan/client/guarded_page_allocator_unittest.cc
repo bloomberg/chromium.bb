@@ -69,6 +69,13 @@ TEST_F(GuardedPageAllocatorTest, SingleAllocDealloc) {
   EXPECT_DEATH(gpa_.Deallocate(buf), "");
 }
 
+TEST_F(GuardedPageAllocatorTest, CrashOnBadDeallocPointer) {
+  EXPECT_DEATH(gpa_.Deallocate(nullptr), "");
+  char* buf = reinterpret_cast<char*>(gpa_.Allocate(8));
+  EXPECT_DEATH(gpa_.Deallocate(buf + 1), "");
+  gpa_.Deallocate(buf);
+}
+
 TEST_F(GuardedPageAllocatorTest, PointerIsMine) {
   void* buf = gpa_.Allocate(1);
   auto malloc_ptr = std::make_unique<char>();

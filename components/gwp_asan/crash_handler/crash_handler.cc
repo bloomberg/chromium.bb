@@ -68,6 +68,8 @@ const char* ErrorToString(Crash_ErrorType type) {
       return "double-free";
     case Crash::UNKNOWN:
       return "unknown";
+    case Crash::FREE_INVALID_ADDRESS:
+      return "free-invalid-address";
     default:
       return "unexpected error type";
   }
@@ -96,6 +98,10 @@ HandleException(const crashpad::ProcessSnapshot& snapshot) {
   LOG(ERROR) << "Detected GWP-ASan crash for allocation at 0x" << std::hex
              << proto.allocation_address() << std::dec << " of type "
              << ErrorToString(proto.error_type());
+  if (proto.has_free_invalid_address()) {
+    LOG(ERROR) << "Invalid address passed to free() is " << std::hex
+               << proto.free_invalid_address() << std::dec;
+  }
 
 #if !defined(NDEBUG)
   if (proto.has_deallocation() && proto.deallocation().stack_trace_size() > 0) {
