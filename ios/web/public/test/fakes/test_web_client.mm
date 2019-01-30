@@ -5,7 +5,9 @@
 #import "ios/web/public/test/fakes/test_web_client.h"
 
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "ios/web/public/features.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/test/test_url_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -16,10 +18,9 @@
 
 namespace web {
 
-TestWebClient::TestWebClient()
-    : last_cert_error_code_(0), last_cert_error_overridable_(true) {}
+TestWebClient::TestWebClient() = default;
 
-TestWebClient::~TestWebClient() {}
+TestWebClient::~TestWebClient() = default;
 
 void TestWebClient::AddAdditionalSchemes(Schemes* schemes) const {
   schemes->standard_schemes.push_back(kTestWebUIScheme);
@@ -66,7 +67,13 @@ void TestWebClient::AllowCertificateError(
   last_cert_error_request_url_ = request_url;
   last_cert_error_overridable_ = overridable;
 
-  callback.Run(false);
+  // Embedder should consult the user, so reply is asynchronous.
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI},
+                           base::BindOnce(callback, allow_certificate_errors_));
+}
+
+void TestWebClient::SetAllowCertificateErrors(bool flag) {
+  allow_certificate_errors_ = flag;
 }
 
 }  // namespace web

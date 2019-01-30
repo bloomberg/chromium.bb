@@ -41,6 +41,9 @@ class TestWebClient : public web::WebClient {
   // Changes Early Page Script for testing purposes.
   void SetEarlyPageScript(NSString* page_script);
 
+  // Overrides AllowCertificateError response.
+  void SetAllowCertificateErrors(bool flag);
+
   // Accessors for last arguments passed to AllowCertificateError.
   int last_cert_error_code() const { return last_cert_error_code_; }
   const net::SSLInfo& last_cert_error_ssl_info() const {
@@ -52,12 +55,13 @@ class TestWebClient : public web::WebClient {
   bool last_cert_error_overridable() { return last_cert_error_overridable_; }
 
  private:
-  NSString* early_page_script_;
+  NSString* early_page_script_ = nil;
   // Last arguments passed to AllowCertificateError.
-  int last_cert_error_code_;
+  int last_cert_error_code_ = 0;
   net::SSLInfo last_cert_error_ssl_info_;
   GURL last_cert_error_request_url_;
-  bool last_cert_error_overridable_;
+  bool last_cert_error_overridable_ = true;
+  bool allow_certificate_errors_ = false;
 };
 
 }  // namespace web
