@@ -48,8 +48,6 @@ jumbo_static_library("test_support") {
     "../browser/background_fetch/mock_background_fetch_delegate.h",
     "../browser/fileapi/file_system_chooser_test_helpers.cc",
     "../browser/fileapi/file_system_chooser_test_helpers.h",
-    "../browser/media/session/mock_media_session_observer.cc",
-    "../browser/media/session/mock_media_session_observer.h",
     "../browser/media/session/mock_media_session_player_observer.cc",
     "../browser/media/session/mock_media_session_player_observer.h",
     "../browser/media/session/mock_media_session_service_impl.cc",
