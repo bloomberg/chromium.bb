@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
@@ -325,6 +326,14 @@ base::FilePath GetCrashpadDatabasePath() {
 #endif
 }
 
+void ClearReportsBetween(const base::Time& begin, const base::Time& end) {
+#if defined(OS_WIN)
+  ClearReportsBetween_ExportThunk(begin.ToTimeT(), end.ToTimeT());
+#else
+  ClearReportsBetweenImpl(begin.ToTimeT(), end.ToTimeT());
+#endif
+}
+
 void GetReportsImpl(std::vector<Report>* reports) {
   reports->clear();
 
@@ -398,6 +407,21 @@ base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl() {
     return nullptr;
 
   return g_database_path->value().c_str();
+}
+
+void ClearReportsBetweenImpl(time_t begin, time_t end) {
+  std::vector<Report> reports;
+  GetReports(&reports);
+  for (const Report& report : reports) {
+    // Delete if either time lies in the range, as they both reveal that the
+    // browser was open.
+    if ((begin <= report.capture_time && report.capture_time <= end) ||
+        (begin <= report.upload_time && report.upload_time <= end)) {
+      crashpad::UUID uuid;
+      uuid.InitializeFromString(report.local_id);
+      g_database->DeleteReport(uuid);
+    }
+  }
 }
 
 namespace internal {

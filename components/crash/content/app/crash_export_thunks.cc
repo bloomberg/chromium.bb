@@ -66,6 +66,10 @@ const wchar_t* GetCrashpadDatabasePath_ExportThunk() {
   return crash_reporter::GetCrashpadDatabasePathImpl();
 }
 
+void ClearReportsBetween_ExportThunk(time_t begin, time_t end) {
+  crash_reporter::ClearReportsBetweenImpl(begin, end);
+}
+
 bool DumpHungProcessWithPtype_ExportThunk(HANDLE process_handle,
                                           const char* ptype) {
   base::Process process(process_handle);

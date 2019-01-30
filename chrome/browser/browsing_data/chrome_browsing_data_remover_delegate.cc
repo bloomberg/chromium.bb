@@ -69,6 +69,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -602,6 +603,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       explore_sites_service->ClearActivities(
           delete_begin_, delete_end_, CreatePendingTaskCompletionClosure());
     }
+#endif
+
+#if !defined(OS_CHROMEOS)
+    crash_reporter::ClearReportsBetween(delete_begin_, delete_end_);
 #endif
   }
 
