@@ -10,6 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom.h"
 
 namespace storage {
 

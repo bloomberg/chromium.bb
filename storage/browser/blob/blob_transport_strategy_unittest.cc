@@ -20,6 +20,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/test/mock_bytes_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom.h"
 
 namespace storage {
 
