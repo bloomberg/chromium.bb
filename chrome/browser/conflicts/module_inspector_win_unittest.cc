@@ -69,7 +69,7 @@ class ModuleInspectorTest : public testing::Test {
 
 TEST_F(ModuleInspectorTest, OneModule) {
   AddModules({
-      {GetKernel32DllFilePath(), 0, 0, 1},
+      {GetKernel32DllFilePath(), 0, 0},
   });
 
   test_browser_thread_bundle_.RunUntilIdle();
@@ -79,11 +79,11 @@ TEST_F(ModuleInspectorTest, OneModule) {
 
 TEST_F(ModuleInspectorTest, MultipleModules) {
   AddModules({
-      {base::FilePath(), 0, 0, 1},
-      {base::FilePath(), 0, 0, 2},
-      {base::FilePath(), 0, 0, 3},
-      {base::FilePath(), 0, 0, 4},
-      {base::FilePath(), 0, 0, 5},
+      {base::FilePath(), 0, 0},
+      {base::FilePath(), 0, 0},
+      {base::FilePath(), 0, 0},
+      {base::FilePath(), 0, 0},
+      {base::FilePath(), 0, 0},
   });
 
   test_browser_thread_bundle_.RunUntilIdle();

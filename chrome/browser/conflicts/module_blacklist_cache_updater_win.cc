@@ -233,16 +233,14 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
     const ModuleInfoData& module_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // The module id is always positive.
-  if (module_key.module_id + 1 > module_blocking_state_.size())
-    module_blocking_state_.resize(module_key.module_id + 1);
-
   // Create a "packed list module" entry for this module.
   third_party_dlls::PackedListModule packed_list_module;
   PopulatePackedListModule(module_key, &packed_list_module);
 
+  // This is meant to create the element in the map if it doesn't exist yet.
+  ModuleBlockingState& blocking_state = module_blocking_states_[module_key];
+
   // Determine if the module was in the initial blacklist cache.
-  auto& blocking_state = module_blocking_state_[module_key.module_id];
   blocking_state.was_in_blacklist_cache =
       std::binary_search(std::begin(initial_blacklisted_modules_),
                          std::end(initial_blacklisted_modules_),
@@ -301,12 +299,10 @@ void ModuleBlacklistCacheUpdater::OnModuleDatabaseIdle() {
 
 const ModuleBlacklistCacheUpdater::ModuleBlockingState&
 ModuleBlacklistCacheUpdater::GetModuleBlockingState(
-    ModuleInfoKey module_key) const {
-  DCHECK_GT(module_blocking_state_.size(),
-            static_cast<size_t>(module_key.module_id));
-  DCHECK_NE(module_blocking_state_[module_key.module_id].blocking_decision,
-            ModuleBlockingDecision::kUnknown);
-  return module_blocking_state_[module_key.module_id];
+    const ModuleInfoKey& module_key) const {
+  auto it = module_blocking_states_.find(module_key);
+  DCHECK(it != module_blocking_states_.end());
+  return it->second;
 }
 
 void ModuleBlacklistCacheUpdater::OnTimerExpired() {

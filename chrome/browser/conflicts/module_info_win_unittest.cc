@@ -46,7 +46,7 @@ TEST(ModuleInfoTest, InspectModule) {
 
 TEST(ModuleInfoTest, GenerateCodeId) {
   static const char kExpected[] = "00000BADf00d";
-  ModuleInfoKey module_key = {base::FilePath(), 0xf00d, 0xbad, 1};
+  ModuleInfoKey module_key = {base::FilePath(), 0xf00d, 0xbad};
   EXPECT_STREQ(kExpected, GenerateCodeId(module_key).c_str());
 }
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/md5.h"
@@ -76,10 +77,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // IncompatibleApplicationsUpdater. This is done so that it is easier to keep
   // the 2 features separate, as they can be independently enabled/disabled.
   enum class ModuleBlockingDecision {
-    // Explicitly defined as zero so it is the default value when a
-    // ModuleBlockingDecision variable is value-initialized
-    // (std::vector::resize()).
-    kUnknown = 0,
+    // No decision was taken yet for the module.
+    kUnknown,
 
     // Detailed reasons why modules will be allowed to load in subsequent
     // startups.
@@ -122,20 +121,20 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   struct ModuleBlockingState {
     // Whether or not the module was in the blacklist cache that existed at
     // startup.
-    bool was_in_blacklist_cache;
+    bool was_in_blacklist_cache = false;
 
     // Whether or not the module was ever actively blocked from loading during
     // this session.
-    bool was_blocked;
+    bool was_blocked = false;
 
     // Whether or not the module ever loaded during this session. Usually this
     // means that the module is currently loaded, but it's possible for DLLs to
     // subsequently be unloaded at runtime.
-    bool was_loaded;
+    bool was_loaded = false;
 
     // The current blocking decision. This is synced to the cache and will be
     // applied at the next startup.
-    ModuleBlockingDecision blocking_decision;
+    ModuleBlockingDecision blocking_decision = ModuleBlockingDecision::kUnknown;
   };
 
   struct CacheUpdateResult {
@@ -184,7 +183,7 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
 
   // Returns the blocking decision for a module.
   const ModuleBlockingState& GetModuleBlockingState(
-      ModuleInfoKey module_key) const;
+      const ModuleInfoKey& module_key) const;
 
  private:
   // The state of the module with respect to the ModuleList.
@@ -242,9 +241,8 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // OnModuleDatabaseIdle() is never called again.
   base::OneShotTimer timer_;
 
-  // Holds the blocking state for all known modules. The index is the module
-  // id.
-  std::vector<ModuleBlockingState> module_blocking_state_;
+  // Holds the blocking state for all known modules.
+  base::flat_map<ModuleInfoKey, ModuleBlockingState> module_blocking_states_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

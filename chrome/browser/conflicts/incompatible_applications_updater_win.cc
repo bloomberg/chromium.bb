@@ -283,15 +283,14 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
     const ModuleInfoData& module_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // The module id is always positive.
-  if (module_key.module_id + 1 > module_warning_decisions_.size())
-    module_warning_decisions_.resize(module_key.module_id + 1);
+  // This is meant to create the element in the map if it doesn't exist yet.
+  ModuleWarningDecision& warning_decision =
+      module_warning_decisions_[module_key];
 
   // Only consider loaded modules.
   if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
       0) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kNotLoaded;
+    warning_decision = ModuleWarningDecision::kNotLoaded;
     return;
   }
 
@@ -303,8 +302,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   if (exe_certificate_info_.type != CertificateInfo::Type::NO_CERTIFICATE &&
       exe_certificate_info_.subject ==
           module_data.inspection_result->certificate_info.subject) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedSameCertificate;
+    warning_decision = ModuleWarningDecision::kAllowedSameCertificate;
     return;
   }
 
@@ -312,8 +310,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // attempt is made to check the validity of the certificate.
   if (IsMicrosoftModule(
           module_data.inspection_result->certificate_info.subject)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedMicrosoft;
+    warning_decision = ModuleWarningDecision::kAllowedMicrosoft;
     return;
   }
 
@@ -328,15 +325,13 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   base::FilePath exe_path;
   if (base::PathService::Get(base::DIR_EXE, &exe_path) &&
       exe_path.DirName().IsParent(module_key.module_path)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedSameDirectory;
+    warning_decision = ModuleWarningDecision::kAllowedSameDirectory;
     return;
   }
 
   // Skip modules whitelisted by the Module List component.
   if (module_list_filter_->IsWhitelisted(module_key, module_data)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedWhitelisted;
+    warning_decision = ModuleWarningDecision::kAllowedWhitelisted;
     return;
   }
 
@@ -344,14 +339,12 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // it is whitelisted, not because it's a shell extension. Thus, check for the
   // module type after.
   if (module_data.module_properties & ModuleInfoData::kPropertyShellExtension) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedShellExtension;
+    warning_decision = ModuleWarningDecision::kAllowedShellExtension;
     return;
   }
 
   if (module_data.module_properties & ModuleInfoData::kPropertyIme) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedIME;
+    warning_decision = ModuleWarningDecision::kAllowedIME;
     return;
   }
 
@@ -359,8 +352,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // is going to be blocked on the next Chrome launch.
   if (module_data.module_properties &
       ModuleInfoData::kPropertyAddedToBlacklist) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAddedToBlacklist;
+    warning_decision = ModuleWarningDecision::kAddedToBlacklist;
     return;
   }
 
@@ -371,13 +363,11 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
       module_key.module_path, &associated_applications);
   UMA_HISTOGRAM_BOOLEAN("ThirdPartyModules.Uninstallable", tied_to_app);
   if (!tied_to_app) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kNoTiedApplication;
+    warning_decision = ModuleWarningDecision::kNoTiedApplication;
     return;
   }
 
-  module_warning_decisions_[module_key.module_id] =
-      ModuleWarningDecision::kIncompatible;
+  warning_decision = ModuleWarningDecision::kIncompatible;
 
   std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action =
       module_list_filter_->IsBlacklisted(module_key, module_data);
@@ -437,9 +427,8 @@ void IncompatibleApplicationsUpdater::OnModuleDatabaseIdle() {
 
 IncompatibleApplicationsUpdater::ModuleWarningDecision
 IncompatibleApplicationsUpdater::GetModuleWarningDecision(
-    ModuleInfoKey module_key) const {
-  DCHECK(module_warning_decisions_.size() > module_key.module_id);
-  DCHECK_NE(module_warning_decisions_[module_key.module_id],
-            ModuleWarningDecision::kUnknown);
-  return module_warning_decisions_[module_key.module_id];
+    const ModuleInfoKey& module_key) const {
+  auto it = module_warning_decisions_.find(module_key);
+  DCHECK(it != module_warning_decisions_.end());
+  return it->second;
 }
