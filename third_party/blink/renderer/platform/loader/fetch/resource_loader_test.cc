@@ -48,16 +48,18 @@ class ResourceLoaderTest : public testing::Test {
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
-
   const KURL foo_url_;
   const KURL bar_url_;
 
-  class TestWebURLLoaderFactory final : public WebURLLoaderFactory {
+  class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     std::unique_ptr<WebURLLoader> CreateURLLoader(
-        const WebURLRequest& request,
-        std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>)
-        override {
-      return std::make_unique<TestWebURLLoader>();
+        const ResourceRequest& request,
+        const ResourceLoaderOptions& options,
+        scoped_refptr<base::SingleThreadTaskRunner>) override {
+      return std::make_unique<NoopWebURLLoader>();
+    }
+    std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
+      return Platform::Current()->CreateCodeCacheLoader();
     }
   };
 
@@ -66,9 +68,9 @@ class ResourceLoaderTest : public testing::Test {
   }
 
  private:
-  class TestWebURLLoader final : public WebURLLoader {
+  class NoopWebURLLoader final : public WebURLLoader {
    public:
-    ~TestWebURLLoader() override = default;
+    ~NoopWebURLLoader() override = default;
     void LoadSynchronously(const WebURLRequest&,
                            WebURLLoaderClient*,
                            WebURLResponse&,
@@ -163,11 +165,10 @@ TEST_F(ResourceLoaderTest, ResponseType) {
 
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(origin);
-    FetchContext* context = MakeGarbageCollected<MockFetchContext>(
-        nullptr, std::make_unique<TestWebURLLoaderFactory>());
+    FetchContext* context = MakeGarbageCollected<MockFetchContext>();
     auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
-
+        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                            MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
     request.SetURL(test.url);
     request.SetFetchRequestMode(test.request_mode);
@@ -204,11 +205,10 @@ class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
 
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(origin);
-    FetchContext* context = MakeGarbageCollected<MockFetchContext>(
-        nullptr, std::make_unique<TestWebURLLoaderFactory>());
+    FetchContext* context = MakeGarbageCollected<MockFetchContext>();
     auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner()));
-
+        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                            MakeGarbageCollected<NoopLoaderFactory>()));
     ResourceRequest request;
     request.SetURL(foo_url_);
     request.SetRequestContext(mojom::RequestContextType::FETCH);

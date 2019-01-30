@@ -259,10 +259,12 @@ bool MatchesStaleWhileRevalidateAllowList(const String& host) {
 ResourceFetcherInit::ResourceFetcherInit(
     const ResourceFetcherProperties& properties,
     FetchContext* context,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    ResourceFetcher::LoaderFactory* loader_factory)
     : ResourceFetcherInit(properties,
                           context,
                           std::move(task_runner),
+                          loader_factory,
                           *MakeGarbageCollected<NullConsoleLogger>()) {}
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
@@ -453,6 +455,7 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       context_(init.context),
       task_runner_(init.task_runner),
       console_logger_(init.console_logger),
+      loader_factory_(init.loader_factory),
       archive_(init.archive),
       resource_timing_report_timer_(
           task_runner_,
@@ -1081,6 +1084,22 @@ void ResourceFetcher::InitializeRevalidation(
   resource->SetRevalidatingRequest(revalidating_request);
 }
 
+std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
+    const ResourceRequest& request,
+    const ResourceLoaderOptions& options) {
+  DCHECK(!GetProperties().IsDetached());
+  DCHECK(loader_factory_);
+  if (!IsMainThread())
+    Context().CountUsage(mojom::WebFeature::kOffMainThreadFetch);
+  return loader_factory_->CreateURLLoader(request, options, task_runner_);
+}
+
+std::unique_ptr<CodeCacheLoader> ResourceFetcher::CreateCodeCacheLoader() {
+  DCHECK(!GetProperties().IsDetached());
+  DCHECK(loader_factory_);
+  return loader_factory_->CreateCodeCacheLoader();
+}
+
 void ResourceFetcher::AddToMemoryCacheIfNeeded(const FetchParameters& params,
                                                Resource* resource) {
   if (!ShouldResourceBeAddedToMemoryCache(params, resource))
@@ -1540,6 +1559,7 @@ void ResourceFetcher::ClearContext() {
   }
 
   console_logger_ = MakeGarbageCollected<NullConsoleLogger>();
+  loader_factory_ = nullptr;
 
   // Make sure the only requests still going are keepalive requests.
   // Callers of ClearContext() should be calling StopFetching() prior
@@ -2021,6 +2041,7 @@ void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(properties_);
   visitor->Trace(console_logger_);
+  visitor->Trace(loader_factory_);
   visitor->Trace(scheduler_);
   visitor->Trace(archive_);
   visitor->Trace(loaders_);

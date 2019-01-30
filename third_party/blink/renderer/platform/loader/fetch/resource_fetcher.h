@@ -28,18 +28,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -49,48 +47,20 @@
 
 namespace blink {
 
+enum class ResourceType : uint8_t;
 class ArchiveResource;
+class CodeCacheLoader;
 class ConsoleLogger;
 class MHTMLArchive;
 class KURL;
+class PreflightTimingInfo;
 class Resource;
+class ResourceError;
 class ResourceFetcherProperties;
 class ResourceTimingInfo;
-enum class ResourceType : uint8_t;
-
-// Used for ResourceFetcher construction.
-// Creators of ResourceFetcherInit are responsible for setting consistent
-// members to ensure the correctness of ResourceFetcher.
-struct PLATFORM_EXPORT ResourceFetcherInit final {
-  STACK_ALLOCATED();
-
- public:
-  // |context| and |task_runner| must not be null.
-  // The given ResourceFetcherProperties is kept until ClearContext() is called.
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
-                      FetchContext* context,
-                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                      ConsoleLogger& console_logger)
-      : properties(properties),
-        context(context),
-        task_runner(std::move(task_runner)),
-        console_logger(console_logger) {
-    DCHECK(this->context);
-    DCHECK(this->task_runner);
-  }
-  const Member<const ResourceFetcherProperties> properties;
-  const Member<FetchContext> context;
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
-      ResourceLoadScheduler::ThrottlingPolicy::kNormal;
-  const Member<ConsoleLogger> console_logger;
-  Member<MHTMLArchive> archive;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceFetcherInit);
-};
+class WebURLLoader;
+struct ResourceFetcherInit;
+struct ResourceLoaderOptions;
 
 // The ResourceFetcher provides a per-context interface to the MemoryCache and
 // enforces a bunch of security checks and rules for resource revalidation. Its
@@ -110,6 +80,23 @@ class PLATFORM_EXPORT ResourceFetcher
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
+  // An abstract interface for creating loaders.
+  class LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
+   public:
+    virtual ~LoaderFactory() = default;
+
+    virtual void Trace(Visitor*) {}
+
+    // Create a WebURLLoader for given the request information and task runner.
+    virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+        const ResourceRequest&,
+        const ResourceLoaderOptions&,
+        scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+
+    // Create a code cache loader to fetch data from code caches.
+    virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() = 0;
+  };
+
   // ResourceFetcher creators are responsible for setting consistent objects
   // in ResourceFetcherInit to ensure correctness of this ResourceFetcher.
   explicit ResourceFetcher(const ResourceFetcherInit&);
@@ -139,6 +126,13 @@ class PLATFORM_EXPORT ResourceFetcher
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const {
     return task_runner_;
   }
+
+  // Create a loader. This cannot be called after ClearContext is called.
+  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
+                                                const ResourceLoaderOptions&);
+  // Create a code cache loader. This cannot be called after ClearContext is
+  // called.
+  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader();
 
   Resource* CachedResource(const KURL&) const;
 
@@ -350,6 +344,7 @@ class PLATFORM_EXPORT ResourceFetcher
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Member<ConsoleLogger> console_logger_;
+  Member<LoaderFactory> loader_factory_;
   Member<ResourceLoadScheduler> scheduler_;
 
   DocumentResourceMap cached_resources_map_;
@@ -407,6 +402,52 @@ class ResourceCacheValidationSuppressor {
  private:
   Member<ResourceFetcher> loader_;
   bool previous_state_;
+};
+
+// Used for ResourceFetcher construction.
+// Creators of ResourceFetcherInit are responsible for setting consistent
+// members to ensure the correctness of ResourceFetcher.
+struct PLATFORM_EXPORT ResourceFetcherInit final {
+  STACK_ALLOCATED();
+
+ public:
+  // |context| and |task_runner| must not be null.
+  // |loader_factory| can be null if |properties.IsDetached()| is true.
+  // The given ResourceFetcherProperties is kept until ClearContext() is called.
+  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+                      FetchContext* context,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : ResourceFetcherInit(properties,
+                            context,
+                            std::move(task_runner),
+                            nullptr) {}
+  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+                      FetchContext* context,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                      ResourceFetcher::LoaderFactory* loader_factory);
+  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+                      FetchContext* context,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                      ResourceFetcher::LoaderFactory* loader_factory,
+                      ConsoleLogger& console_logger)
+      : properties(properties),
+        context(context),
+        task_runner(std::move(task_runner)),
+        loader_factory(loader_factory),
+        console_logger(console_logger) {
+    DCHECK(context);
+    DCHECK(this->task_runner);
+  }
+  const Member<const ResourceFetcherProperties> properties;
+  const Member<FetchContext> context;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  const Member<ResourceFetcher::LoaderFactory> loader_factory;
+  const Member<ConsoleLogger> console_logger;
+  ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal;
+  Member<MHTMLArchive> archive;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceFetcherInit);
 };
 
 }  // namespace blink

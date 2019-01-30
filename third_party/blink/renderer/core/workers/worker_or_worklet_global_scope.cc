@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
@@ -137,19 +138,23 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   InitializeWebFetchContextIfNeeded();
   ResourceFetcherProperties* properties = nullptr;
   FetchContext* context = nullptr;
+  ResourceFetcher::LoaderFactory* loader_factory = nullptr;
   if (web_worker_fetch_context_) {
     properties = MakeGarbageCollected<WorkerResourceFetcherProperties>(
         *this, *fetch_client_settings_object, web_worker_fetch_context_);
     context = MakeGarbageCollected<WorkerFetchContext>(
         *this, web_worker_fetch_context_, subresource_filter_);
+    loader_factory = MakeGarbageCollected<LoaderFactoryForWorker>(
+        *this, web_worker_fetch_context_);
   } else {
     // This code path is for unittests.
     properties = MakeGarbageCollected<NullResourceFetcherProperties>();
     context = &FetchContext::NullInstance();
   }
-  auto* resource_fetcher =
-      MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-          *properties, context, GetTaskRunner(TaskType::kNetworking), *this));
+  ResourceFetcherInit init(*properties, context,
+                           GetTaskRunner(TaskType::kNetworking), loader_factory,
+                           *this);
+  auto* resource_fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   if (IsContextPaused())
     resource_fetcher->SetDefersLoading(true);
   resource_fetchers_.insert(resource_fetcher);
