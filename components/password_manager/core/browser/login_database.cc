@@ -1568,6 +1568,23 @@ std::string LoginDatabase::GetEncryptedPassword(
   return encrypted_password;
 }
 
+std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
+  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
+      GetAllSyncEntityMetadata();
+  if (metadata_batch == nullptr) {
+    return nullptr;
+  }
+
+  std::unique_ptr<sync_pb::ModelTypeState> model_type_state =
+      GetModelTypeState();
+  if (model_type_state == nullptr) {
+    return nullptr;
+  }
+
+  metadata_batch->SetModelTypeState(*model_type_state);
+  return metadata_batch;
+}
+
 bool LoginDatabase::UpdateSyncMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key,
@@ -1663,25 +1680,7 @@ int LoginDatabase::GetPrimaryKey(const PasswordForm& form) const {
 }
 
 std::unique_ptr<syncer::MetadataBatch>
-LoginDatabase::GetAllSyncMetadataForTesting() {
-  std::unique_ptr<syncer::MetadataBatch> metadata_batch =
-      GetAllSyncEntityMetadataForTesting();
-  if (metadata_batch == nullptr) {
-    return nullptr;
-  }
-
-  std::unique_ptr<sync_pb::ModelTypeState> model_type_state =
-      GetModelTypeStateForTesting();
-  if (model_type_state == nullptr) {
-    return nullptr;
-  }
-
-  metadata_batch->SetModelTypeState(*model_type_state);
-  return metadata_batch;
-}
-
-std::unique_ptr<syncer::MetadataBatch>
-LoginDatabase::GetAllSyncEntityMetadataForTesting() {
+LoginDatabase::GetAllSyncEntityMetadata() {
   auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
                                           "SELECT storage_key, metadata FROM "
@@ -1705,8 +1704,7 @@ LoginDatabase::GetAllSyncEntityMetadataForTesting() {
   return metadata_batch;
 }
 
-std::unique_ptr<sync_pb::ModelTypeState>
-LoginDatabase::GetModelTypeStateForTesting() {
+std::unique_ptr<sync_pb::ModelTypeState> LoginDatabase::GetModelTypeState() {
   auto state = std::make_unique<sync_pb::ModelTypeState>();
   sql::Statement s(db_.GetCachedStatement(
       SQL_FROM_HERE,

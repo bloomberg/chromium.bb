@@ -143,7 +143,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
       password_manager::PrimaryKeyToFormMap* key_to_form_map) override;
   password_manager::PasswordStoreChangeList RemoveLoginByPrimaryKeySync(
       int primary_key) override;
-  syncer::SyncMetadataStore* GetMetadataStore() override;
+  password_manager::PasswordStoreSync::MetadataStore* GetMetadataStore()
+      override;
 
  private:
   friend class PasswordStoreXTest;

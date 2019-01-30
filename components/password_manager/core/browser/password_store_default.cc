@@ -254,7 +254,7 @@ PasswordStoreChangeList PasswordStoreDefault::RemoveLoginByPrimaryKeySync(
   return PasswordStoreChangeList();
 }
 
-syncer::SyncMetadataStore* PasswordStoreDefault::GetMetadataStore() {
+PasswordStoreSync::MetadataStore* PasswordStoreDefault::GetMetadataStore() {
   return login_db_.get();
 }
 

@@ -18,6 +18,7 @@
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/model_impl/sync_metadata_store_change_list.h"
+#include "components/sync/test/test_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -167,11 +168,12 @@ class FakeDatabase {
   DISALLOW_COPY_AND_ASSIGN(FakeDatabase);
 };
 
-class MockSyncMetadataStore : public syncer::SyncMetadataStore {
+class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
  public:
   MockSyncMetadataStore() = default;
   ~MockSyncMetadataStore() = default;
 
+  MOCK_METHOD0(GetAllSyncMetadata, std::unique_ptr<syncer::MetadataBatch>());
   MOCK_METHOD3(UpdateSyncMetadata,
                bool(syncer::ModelType,
                     const std::string&,
@@ -203,16 +205,14 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
   MOCK_METHOD0(BeginTransaction, bool());
   MOCK_METHOD0(CommitTransaction, bool());
-  MOCK_METHOD0(GetMetadataStore, syncer::SyncMetadataStore*());
+  MOCK_METHOD0(GetMetadataStore, PasswordStoreSync::MetadataStore*());
 };
 
 }  // namespace
 
 class PasswordSyncBridgeTest : public testing::Test {
  public:
-  PasswordSyncBridgeTest()
-      : bridge_(mock_processor_.CreateForwardingProcessor(),
-                &mock_password_store_sync_) {
+  PasswordSyncBridgeTest() {
     ON_CALL(mock_password_store_sync_, GetMetadataStore())
         .WillByDefault(testing::Return(&mock_sync_metadata_store_sync_));
     ON_CALL(mock_password_store_sync_, ReadAllLogins(_))
@@ -223,6 +223,11 @@ class PasswordSyncBridgeTest : public testing::Test {
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::UpdateLogin));
     ON_CALL(mock_password_store_sync_, RemoveLoginByPrimaryKeySync(_))
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::RemoveLogin));
+
+    bridge_ = std::make_unique<PasswordSyncBridge>(
+        mock_processor_.CreateForwardingProcessor(),
+        &mock_password_store_sync_);
+
     // It's the responsibility of the PasswordStoreSync to inform the bridge
     // about changes in the password store. The bridge notifies the
     // PasswordStoreSync about the new changes even if they are initiated by the
@@ -231,6 +236,9 @@ class PasswordSyncBridgeTest : public testing::Test {
         .WillByDefault(
             Invoke(bridge(), &PasswordSyncBridge::ActOnPasswordStoreChanges));
 
+    ON_CALL(mock_sync_metadata_store_sync_, GetAllSyncMetadata())
+        .WillByDefault(
+            []() { return std::make_unique<syncer::MetadataBatch>(); });
     ON_CALL(mock_sync_metadata_store_sync_, UpdateSyncMetadata(_, _, _))
         .WillByDefault(testing::Return(true));
     ON_CALL(mock_sync_metadata_store_sync_, ClearSyncMetadata(_, _))
@@ -246,11 +254,11 @@ class PasswordSyncBridgeTest : public testing::Test {
   base::Optional<sync_pb::PasswordSpecifics> GetDataFromBridge(
       const std::string& storage_key) {
     std::unique_ptr<syncer::DataBatch> batch;
-    bridge_.GetData({storage_key},
-                    base::BindLambdaForTesting(
-                        [&](std::unique_ptr<syncer::DataBatch> in_batch) {
-                          batch = std::move(in_batch);
-                        }));
+    bridge_->GetData({storage_key},
+                     base::BindLambdaForTesting(
+                         [&](std::unique_ptr<syncer::DataBatch> in_batch) {
+                           batch = std::move(in_batch);
+                         }));
     EXPECT_THAT(batch, NotNull());
     if (!batch || !batch->HasNext()) {
       return base::nullopt;
@@ -263,7 +271,7 @@ class PasswordSyncBridgeTest : public testing::Test {
 
   FakeDatabase* fake_db() { return &fake_db_; }
 
-  PasswordSyncBridge* bridge() { return &bridge_; }
+  PasswordSyncBridge* bridge() { return bridge_.get(); }
 
   syncer::MockModelTypeChangeProcessor& mock_processor() {
     return mock_processor_;
@@ -282,7 +290,7 @@ class PasswordSyncBridgeTest : public testing::Test {
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
   testing::NiceMock<MockSyncMetadataStore> mock_sync_metadata_store_sync_;
   testing::NiceMock<MockPasswordStoreSync> mock_password_store_sync_;
-  PasswordSyncBridge bridge_;
+  std::unique_ptr<PasswordSyncBridge> bridge_;
 };
 
 TEST_F(PasswordSyncBridgeTest, ShouldComputeClientTagHash) {
@@ -307,7 +315,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldForwardLocalChangesToTheProcessor) {
       PasswordStoreChange::UPDATE, MakePasswordForm(kSignonRealm2), /*id=*/2));
   changes.push_back(PasswordStoreChange(
       PasswordStoreChange::REMOVE, MakePasswordForm(kSignonRealm3), /*id=*/3));
-  syncer::SyncMetadataStore* store =
+  PasswordStoreSync::MetadataStore* store =
       mock_password_store_sync()->GetMetadataStore();
   EXPECT_CALL(mock_processor(),
               Put("1", EntityDataHasSignonRealm(kSignonRealm1),
@@ -578,6 +586,26 @@ TEST_F(PasswordSyncBridgeTest, ShouldGetAllDataForDebuggingWithHiddenPassword) {
                             .client_only_encrypted_data()
                             .password_value());
   }
+}
+
+TEST_F(PasswordSyncBridgeTest,
+       ShouldCallModelReadyUponConstructionWithMetadata) {
+  ON_CALL(*mock_sync_metadata_store_sync(), GetAllSyncMetadata())
+      .WillByDefault([&]() {
+        sync_pb::ModelTypeState model_type_state;
+        model_type_state.set_initial_sync_done(true);
+        auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
+        metadata_batch->SetModelTypeState(model_type_state);
+        metadata_batch->AddMetadata("storage_key", sync_pb::EntityMetadata());
+        return metadata_batch;
+      });
+
+  EXPECT_CALL(mock_processor(), ModelReadyToSync(MetadataBatchContains(
+                                    /*state=*/syncer::HasInitialSyncDone(),
+                                    /*entities=*/testing::SizeIs(1))));
+
+  PasswordSyncBridge bridge(mock_processor().CreateForwardingProcessor(),
+                            mock_password_store_sync());
 }
 
 }  // namespace password_manager
