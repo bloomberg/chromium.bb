@@ -2122,9 +2122,12 @@ void Element::DetachLayoutTree(const AttachContext& context) {
   DetachPseudoElement(kPseudoIdBefore, context);
 
   if (ChildNeedsReattachLayoutTree() || GetComputedStyle()) {
-    if (ShadowRoot* shadow_root = GetShadowRoot())
+    if (ShadowRoot* shadow_root = GetShadowRoot()) {
       shadow_root->DetachLayoutTree(context);
-    ContainerNode::DetachLayoutTree(context);
+      Node::DetachLayoutTree(context);
+    } else {
+      ContainerNode::DetachLayoutTree(context);
+    }
   } else {
     Node::DetachLayoutTree(context);
   }
