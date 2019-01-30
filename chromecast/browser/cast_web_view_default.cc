@@ -63,9 +63,8 @@ CastWebViewDefault::CastWebViewDefault(
       transparent_(params.transparent),
       allow_media_access_(params.allow_media_access),
       web_contents_(CreateWebContents(browser_context_, site_instance_)),
-      cast_web_contents_(delegate_,
-                         web_contents_.get(),
-                         params.enabled_for_dev),
+      cast_web_contents_(web_contents_.get(),
+                         {delegate_, params.enabled_for_dev}),
       window_(shell::CastContentWindow::Create(params.window_params)),
       resize_window_when_navigation_starts_(true) {
   DCHECK(delegate_);

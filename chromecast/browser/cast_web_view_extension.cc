@@ -30,9 +30,8 @@ CastWebViewExtension::CastWebViewExtension(
           initial_url,
           site_instance.get(),
           extensions::VIEW_TYPE_EXTENSION_POPUP)),
-      cast_web_contents_(delegate_,
-                         extension_host_->host_contents(),
-                         params.enabled_for_dev) {
+      cast_web_contents_(extension_host_->host_contents(),
+                         {delegate_, params.enabled_for_dev}) {
   DCHECK(delegate_);
   content::WebContentsObserver::Observe(web_contents());
   web_contents()->GetNativeView()->SetName(params.activity_id);

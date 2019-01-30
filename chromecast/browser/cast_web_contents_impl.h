@@ -5,8 +5,11 @@
 #ifndef CHROMECAST_BROWSER_CAST_WEB_CONTENTS_IMPL_H_
 #define CHROMECAST_BROWSER_CAST_WEB_CONTENTS_IMPL_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -25,21 +28,21 @@ class RemoteDebuggingServer;
 class CastWebContentsImpl : public CastWebContents,
                             public content::WebContentsObserver {
  public:
-  CastWebContentsImpl(Delegate* delegate,
-                      content::WebContents* web_contents,
-                      bool enabled_for_dev);
+  CastWebContentsImpl(content::WebContents* web_contents,
+                      const InitParams& init_params);
   ~CastWebContentsImpl() override;
 
   content::WebContents* web_contents() const override;
   PageState page_state() const override;
 
   // CastWebContents implementation:
+  void SetDelegate(Delegate* delegate) override;
+  void AddRendererFeatures(std::vector<RendererFeature> features) override;
+  void AllowWebAndMojoWebUiBindings() override;
+  void ClearRenderWidgetHostView() override;
   void LoadUrl(const GURL& url) override;
   void ClosePage() override;
   void Stop(int error_code) override;
-  void SetDelegate(Delegate* delegate) override;
-  void AllowWebAndMojoWebUiBindings() override;
-  void ClearRenderWidgetHostView() override;
 
   // Observer interface:
   void AddObserver(Observer* observer) override;
@@ -61,6 +64,8 @@ class CastWebContentsImpl : public CastWebContents,
                    const GURL& validated_url,
                    int error_code,
                    const base::string16& error_description) override;
+  void InnerWebContentsCreated(
+      content::WebContents* inner_web_contents) override;
   void WebContentsDestroyed() override;
 
   void UpdatePageState();
@@ -68,12 +73,16 @@ class CastWebContentsImpl : public CastWebContents,
   void TracePageLoadEnd(const GURL& url);
   void DisableDebugging();
   void OnClosePageTimeout();
+  std::vector<chromecast::shell::mojom::FeaturePtr> GetRendererFeatures();
 
-  Delegate* delegate_;
   content::WebContents* web_contents_;
+  Delegate* delegate_;
   PageState page_state_;
   const bool enabled_for_dev_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;
+
+  base::flat_set<std::unique_ptr<CastWebContents>> inner_contents_;
+  std::vector<RendererFeature> renderer_features_;
 
   base::TimeTicks start_loading_ticks_;
   bool closing_;
