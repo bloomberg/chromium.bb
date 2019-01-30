@@ -3155,6 +3155,7 @@
           '${gpu_device_id}',
         ],
       },
+      'trace_test': {}
     },
 
     # GPU gtests which run on both the main and FYI waterfalls.
@@ -3448,7 +3449,6 @@
           '--dont-restore-color-profile-after-test',
         ],
       },
-      'trace_test': {},
       'webgl_conformance': {
         'android_args': [
           # The current working directory when run via isolate is
