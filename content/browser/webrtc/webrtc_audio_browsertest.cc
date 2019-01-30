@@ -76,25 +76,29 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        CanMakeVideoCallAndThenRenegotiateToAudio) {
   MakeAudioDetectingPeerConnectionCall(
-      "callAndRenegotiateToAudio({audio: true, video:true}, {audio: true});");
+      "callAndRenegotiateToAudio({audio: {echoCancellation: {exact: false}}, "
+      "video:true}, {audio: {echoCancellation: {exact: false}}});");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureAudioIsPlaying({audio:true, video:true});");
+      "callAndEnsureAudioIsPlaying({audio: {echoCancellation: {exact: false}}, "
+      "video:true});");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(
-      "callAndEnsureAudioIsPlaying({audio:true});");
+      "callAndEnsureAudioIsPlaying({audio:{echoCancellation: {exact: "
+      "false}}});");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
                        EstablishIsac16KCallAndEnsureAudioIsPlaying) {
   MakeAudioDetectingPeerConnectionCall(
-      "callWithIsac16KAndEnsureAudioIsPlaying({audio:true});");
+      "callWithIsac16KAndEnsureAudioIsPlaying({audio:{echoCancellation: "
+      "{exact: false}}});");
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
