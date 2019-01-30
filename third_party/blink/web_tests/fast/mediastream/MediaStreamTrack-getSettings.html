@@ -34,7 +34,7 @@ promise_test(function() {
                 'Noise suppression missing: ' + JSON.stringify(settings));
     assert_true('echoCancellationType' in settings,
                 'Echo cancellation type missing: ' + JSON.stringify(settings));
-    assert_in_array(settings.echoCancellationType, [ "browser", "system" ],
+    assert_in_array(settings.echoCancellationType, [ "aec3", "system" ],
                 'Echo cancellation type invalid: ' + JSON.stringify(settings));
   });
 }, 'An audio track returns the expected variables');
