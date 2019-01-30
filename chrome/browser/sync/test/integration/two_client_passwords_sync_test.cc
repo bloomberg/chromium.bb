@@ -53,21 +53,19 @@ class TwoClientPasswordsSyncTest
   // after it has been used is needed for this test (by setting up each client
   // with a different ScopedFeatureList).
   void BeforeSetupClient(int index) override {
-    const bool should_enable_pseudo_uss =
+    const bool should_enable_uss =
         index == 0 ? std::get<0>(GetParam()) : std::get<1>(GetParam());
 
-    // The value of the feature kSyncPseudoUSSPasswords only matters during the
+    // The value of the feature kSyncUSSPasswords only matters during the
     // setup of each client, when the profile is created, ProfileSyncService
     // instantiated as well as the datatype controllers. By overriding the
     // feature, we can influence whether client |index| is running with the new
     // codepath or the legacy one.
     override_features_ = std::make_unique<base::test::ScopedFeatureList>();
-    if (should_enable_pseudo_uss) {
-      override_features_->InitAndEnableFeature(
-          switches::kSyncPseudoUSSPasswords);
+    if (should_enable_uss) {
+      override_features_->InitAndEnableFeature(switches::kSyncUSSPasswords);
     } else {
-      override_features_->InitAndDisableFeature(
-          switches::kSyncPseudoUSSPasswords);
+      override_features_->InitAndDisableFeature(switches::kSyncUSSPasswords);
     }
   }
 
@@ -340,9 +338,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
   }
 }
 
-// We instantiate every test 4 times, for every combination of pseudo-USS being
-// enabled in individual clients. This verifies backward-compatibility between
-// the two implementations.
+// We instantiate every test 4 times, for every combination of USS being enabled
+// in individual clients. This verifies backward-compatibility between the two
+// implementations.
 INSTANTIATE_TEST_SUITE_P(USS,
                          TwoClientPasswordsSyncTest,
                          ::testing::Combine(::testing::Values(false, true),

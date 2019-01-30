@@ -1674,9 +1674,7 @@ class ModelTypeWorkerPasswordsTest : public ModelTypeWorkerTest {
 
 // Similar to EncryptedCommit but tests PASSWORDS specifically, which use a
 // different encryption mechanism.
-TEST_F(ModelTypeWorkerPasswordsTest, EncryptedPasswordCommit) {
-  const std::string kEncryptedPasswordBlob = "encryptedpasswordblob";
-
+TEST_F(ModelTypeWorkerPasswordsTest, PasswordCommit) {
   NormalInitialize();
 
   EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
@@ -1689,8 +1687,9 @@ TEST_F(ModelTypeWorkerPasswordsTest, EncryptedPasswordCommit) {
             processor()->GetNthUpdateState(0).encryption_key_name());
 
   EntitySpecifics specifics;
-  specifics.mutable_password()->mutable_encrypted()->set_blob(
-      kEncryptedPasswordBlob);
+  sync_pb::PasswordSpecificsData* password_data =
+      specifics.mutable_password()->mutable_client_only_encrypted_data();
+  password_data->set_signon_realm("signon_realm");
 
   // Normal commit request stuff.
   processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
@@ -1703,8 +1702,6 @@ TEST_F(ModelTypeWorkerPasswordsTest, EncryptedPasswordCommit) {
   EXPECT_FALSE(tag1_entity.specifics().has_encrypted());
   EXPECT_TRUE(tag1_entity.specifics().has_password());
   EXPECT_TRUE(tag1_entity.specifics().password().has_encrypted());
-  EXPECT_EQ(kEncryptedPasswordBlob,
-            tag1_entity.specifics().password().encrypted().blob());
 
   // The title should be overwritten.
   EXPECT_EQ(tag1_entity.name(), "encrypted");
@@ -1735,14 +1732,13 @@ TEST_F(ModelTypeWorkerPasswordsTest, ReceiveDecryptablePasswordEntities) {
   // Test its basic features and the value of encryption_key_name.
   ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
   UpdateResponseData update = processor()->GetUpdateResponse(kHash1);
-  EXPECT_TRUE(update.entity->specifics.password().has_encrypted());
-  EXPECT_EQ(encrypted_specifics.password().encrypted().key_name(),
-            update.entity->specifics.password().encrypted().key_name());
-  EXPECT_EQ(encrypted_specifics.password().encrypted().blob(),
-            update.entity->specifics.password().encrypted().blob());
+  EXPECT_FALSE(update.entity->specifics.password().has_encrypted());
   EXPECT_FALSE(update.entity->specifics.has_encrypted());
-  EXPECT_FALSE(
+  ASSERT_TRUE(
       update.entity->specifics.password().has_client_only_encrypted_data());
+  EXPECT_EQ(kPassword, update.entity->specifics.password()
+                           .client_only_encrypted_data()
+                           .password_value());
 }
 
 // Similar to ReceiveDecryptableEntities but for PASSWORDS, which have a custom
@@ -1812,16 +1808,14 @@ TEST_F(ModelTypeWorkerPasswordsTest, ReceiveUndecryptablePasswordEntries) {
   EXPECT_EQ(1U, processor()->GetNumUpdateResponses());
   ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
   UpdateResponseData update = processor()->GetUpdateResponse(kHash1);
-  // Password should remain unencrypted when sent to the processor.
+  // Password should now be decrypted and sent to the processor.
   EXPECT_TRUE(update.entity->specifics.has_password());
-  EXPECT_TRUE(update.entity->specifics.password().has_encrypted());
-  EXPECT_EQ(encrypted_specifics.password().encrypted().key_name(),
-            update.entity->specifics.password().encrypted().key_name());
-  EXPECT_EQ(encrypted_specifics.password().encrypted().blob(),
-            update.entity->specifics.password().encrypted().blob());
-  EXPECT_FALSE(update.entity->specifics.has_encrypted());
-  EXPECT_FALSE(
+  EXPECT_FALSE(update.entity->specifics.password().has_encrypted());
+  ASSERT_TRUE(
       update.entity->specifics.password().has_client_only_encrypted_data());
+  EXPECT_EQ(kPassword, update.entity->specifics.password()
+                           .client_only_encrypted_data()
+                           .password_value());
 }
 
 }  // namespace syncer

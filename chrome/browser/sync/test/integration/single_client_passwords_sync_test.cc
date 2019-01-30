@@ -25,8 +25,7 @@ using autofill::PasswordForm;
 class SingleClientPasswordsSyncTest : public FeatureToggler, public SyncTest {
  public:
   SingleClientPasswordsSyncTest()
-      : FeatureToggler(switches::kSyncPseudoUSSPasswords),
-        SyncTest(SINGLE_CLIENT) {}
+      : FeatureToggler(switches::kSyncUSSPasswords), SyncTest(SINGLE_CLIENT) {}
   ~SingleClientPasswordsSyncTest() override {}
 
  private:

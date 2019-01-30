@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -134,6 +135,10 @@ PasswordSyncBridge::PasswordSyncBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       password_store_sync_(password_store_sync) {
   DCHECK(password_store_sync_);
+  // TODO(crbug.com/902349): Read the actual metadata from the PasswordStoreSync
+  // be introducing a new API to read them.
+  this->change_processor()->ModelReadyToSync(
+      std::make_unique<syncer::MetadataBatch>());
 }
 
 PasswordSyncBridge::~PasswordSyncBridge() = default;

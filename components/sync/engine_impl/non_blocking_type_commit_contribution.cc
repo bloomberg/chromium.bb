@@ -231,7 +231,16 @@ void NonBlockingTypeCommitContribution::AdjustCommitProto(
 
   // Encrypt the specifics and hide the title if necessary.
   if (commit_proto->specifics().has_password()) {
-    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSPasswords)) {
+      // If explicit encryption is enabled, password metadata fields must be
+      // cleared. See documentation in password_specifics.proto.
+      if (IsExplicitPassphrase(passphrase_type_)) {
+        commit_proto->mutable_specifics()
+            ->mutable_password()
+            ->clear_unencrypted_metadata();
+      }
+      commit_proto->set_name("encrypted");
+    } else {
       DCHECK(cryptographer_);
       const sync_pb::PasswordSpecifics& password_specifics =
           commit_proto->specifics().password();
@@ -251,15 +260,6 @@ void NonBlockingTypeCommitContribution::AdjustCommitProto(
           encrypted_password.mutable_password()->mutable_encrypted());
       DCHECK(result);
       *commit_proto->mutable_specifics() = std::move(encrypted_password);
-      commit_proto->set_name("encrypted");
-    } else {
-      // If explicit encryption is enabled, password metadata fields must be
-      // cleared. See documentation in password_specifics.proto.
-      if (IsExplicitPassphrase(passphrase_type_)) {
-        commit_proto->mutable_specifics()
-            ->mutable_password()
-            ->clear_unencrypted_metadata();
-      }
       commit_proto->set_name("encrypted");
     }
   } else if (cryptographer_) {
