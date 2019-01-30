@@ -455,20 +455,12 @@ class PathParser {
     [href, this.dir, this.file] = path.match("/(.*/)?(.*)");
     this.dir = this.dir || "";
     try {
-      [, this.raw_basename, this.raw_extension] = this.file.match(/(.+)\.(.+)/);
+      [, this.file, this.query ] = this.file.match("([^\?]*)(.*)");
+      [, this.basename, this.extension ] = this.file.match(/(.+)\.(.+)/);
+      this.resultPrefix = (this.basename + this.query).replace(/[~#%&*{}\:<>?\/|"]/g, "_");
     } catch {
-      this.raw_basename = "ERROR";
-      this.raw_extension = "ERROR";
-    }
-    // blink/tools/blinkpy/web_tests/port/base.py output_filename()
-    let index = this.raw_extension.indexOf("?");
-    if (index > -1) {
-      let query_string = this.raw_extension.slice(index + 1);
-      query_string = query_string.replace(/[~#%&*{}\:<>?\/|"]/g, "_");
-      this.basename = this.raw_basename + "_" + query_string;
-      this.extension = this.raw_extension.slice(0, index);
-    } else {
-      [this.basename, this.extension] = [this.raw_basename, this.raw_extension];
+      this.file = "ERROR";
+      this.resultPrefix = "ERROR";
     }
 
     href = href.replace(/^\/virtual\/[^\/]*/, "");  // virtual suites
@@ -482,7 +474,7 @@ class PathParser {
   }
 
   resultLink(resultName) {
-    return this.dir + this.basename + resultName;
+    return this.dir + this.resultPrefix + resultName;
   }
 
   repaintOverlayLink() {
@@ -540,7 +532,7 @@ const Report = {
     let html = `
     <div class='expect' tabindex='0' data-id='${test.expectId}'>
       <div class='details'></div>${Report.printFlag(test)}
-     ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
+     ${pathParser.dir}<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}${pathParser.query}</a>
     </div>`;
     traversal.html.push(html);
   },
