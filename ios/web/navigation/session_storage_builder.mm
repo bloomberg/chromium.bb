@@ -69,16 +69,9 @@ void SessionStorageBuilder::ExtractSessionState(
     std::unique_ptr<NavigationItemImpl> item_impl =
         item_storage_builder.BuildNavigationItemImpl(item_storages[index]);
 
-    // Some app-specific URLs need to be rewritten to about: scheme.
-    GURL url = item_impl->GetURL();
-    if (web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
-            &url, web_state->GetBrowserState())) {
-      // |url| must be set first for -SetVirtualURL to not no-op.
-      GURL virtual_url = item_impl->GetURL();
-      item_impl->SetURL(url);
-      item_impl->SetVirtualURL(virtual_url);
-    }
-
+    web::NavigationManagerImpl* navigation_manager =
+        web_state->navigation_manager_.get();
+    navigation_manager->RewriteItemURLIfNecessary(item_impl.get());
     items[index] = std::move(item_impl);
   }
   web_state->navigation_manager_->Restore(storage.lastCommittedItemIndex,

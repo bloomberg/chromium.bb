@@ -238,6 +238,9 @@ class NavigationManagerImpl : public NavigationManager {
   // items.
   void WillRestore(size_t item_count);
 
+  // Some app-specific URLs need to be rewritten to about: scheme.
+  void RewriteItemURLIfNecessary(NavigationItem* item) const;
+
   // Creates a NavigationItem using the given properties, where |previous_url|
   // is the URL of the navigation just prior to the current one. If
   // |url_rewriters| is not nullptr, apply them before applying the permanent
