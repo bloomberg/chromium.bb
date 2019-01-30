@@ -60,10 +60,10 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPhysicalOffset offset);
 
   // Next/last fragment for  when this is fragmented.
-  NGPaintFragment* Next();
+  const NGPaintFragment* Next() const;
   void SetNext(scoped_refptr<NGPaintFragment>);
-  NGPaintFragment* Last();
-  NGPaintFragment* Last(const NGBreakToken&);
+  const NGPaintFragment* Last() const;
+  const NGPaintFragment* Last(const NGBreakToken&) const;
   static scoped_refptr<NGPaintFragment>* Find(scoped_refptr<NGPaintFragment>*,
                                               const NGBlockBreakToken*);
 
