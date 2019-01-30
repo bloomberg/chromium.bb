@@ -6,6 +6,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -37,6 +38,13 @@ ToggleImageButton* CreateVectorToggleImageButton(ButtonListener* listener) {
   ToggleImageButton* button = new ToggleImageButton(listener);
   ConfigureVectorImageButton(button);
   return button;
+}
+
+void SetImageFromVectorIcon(ImageButton* button, const gfx::VectorIcon& icon) {
+  SetImageFromVectorIconWithColor(
+      button, icon,
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
 }
 
 void SetImageFromVectorIcon(ImageButton* button,
