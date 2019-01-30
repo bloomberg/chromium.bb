@@ -397,8 +397,10 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   WriteSimple(shader->flags_);
   WriteSimple(shader->end_radius_);
   WriteSimple(shader->start_radius_);
-  WriteSimple(shader->tx_);
-  WriteSimple(shader->ty_);
+  // SkShader::TileMode does not have an explicitly defined backing type, so
+  // write a consistently sized value.
+  Write(static_cast<int32_t>(shader->tx_));
+  Write(static_cast<int32_t>(shader->ty_));
   WriteSimple(shader->fallback_color_);
   WriteSimple(shader->scaling_behavior_);
   if (shader->local_matrix_) {
