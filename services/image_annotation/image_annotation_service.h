@@ -8,8 +8,10 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/field_trial_params.h"
 #include "services/image_annotation/annotator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -21,12 +23,29 @@ namespace image_annotation {
 
 class ImageAnnotationService : public service_manager::Service {
  public:
-  explicit ImageAnnotationService(
+  // Whether or not to enable service logic for experimentation.
+  static constexpr base::Feature kExperiment{
+      "ImageAnnotationServiceExperimental", base::FEATURE_DISABLED_BY_DEFAULT};
+
+  ImageAnnotationService(
       service_manager::mojom::ServiceRequest request,
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
   ~ImageAnnotationService() override;
 
  private:
+  // Service params:
+
+  // The service will fail gracefully (i.e. return error codes) when this param
+  // is empty. This ensures graceful behavior when |kExperiment| is disabled.
+  static constexpr base::FeatureParam<std::string> kServerUrl{&kExperiment,
+                                                              "server_url", ""};
+  static constexpr base::FeatureParam<int> kThrottleMs{&kExperiment,
+                                                       "throttle_ms", 300};
+  static constexpr base::FeatureParam<int> kBatchSize{&kExperiment,
+                                                      "batch_size", 10};
+  static constexpr base::FeatureParam<double> kMinOcrConfidence{
+      &kExperiment, "min_ocr_confidence", 0.7};
+
   // service_manager::Service:
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
