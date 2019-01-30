@@ -1404,6 +1404,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/nested-repeating-t
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/nested-repeating-thead-4.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/nested-repeating-thead-tfoot-4.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/nested-repeating-thead-tfoot.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/fragmentation/no-repeating-table-header-after-sections.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/overflow-crossing-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/relayout-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/remove-unbreakable-block-in-line-float.html [ Failure ]

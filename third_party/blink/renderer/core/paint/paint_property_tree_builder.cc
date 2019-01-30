@@ -2515,10 +2515,12 @@ void PaintPropertyTreeBuilder::
         IntMod(original_offset_in_flow_thread, fragment_height);
   }
 
+  const LayoutTable& table = *section.Table();
+
   // This is total height of repeating headers seen by the table - height of
   // this header (which is the lowest repeating header seen by this table.
   auto repeating_offset_in_fragment =
-      section.Table()->RowOffsetFromRepeatingHeader() - section.LogicalHeight();
+      table.RowOffsetFromRepeatingHeader() - section.LogicalHeight();
 
   // For a repeating table header, the original location (which may be in the
   // middle of the fragment) and repeated locations (which should be always,
@@ -2529,6 +2531,15 @@ void PaintPropertyTreeBuilder::
 
   auto fragment_offset_in_flow_thread =
       original_offset_in_flow_thread - original_offset_in_fragment;
+
+  // It's the table sections that make room for repeating headers. Stop
+  // repeating when we're past the last section. There may be trailing
+  // border-spacing, and also bottom captions. No room has been made for a
+  // repeated header there.
+  auto sections_logical_height =
+      table.BottomSection()->LogicalBottom() - table.TopSection()->LogicalTop();
+  auto content_remaining = sections_logical_height - table.VBorderSpacing();
+
   for (wtf_size_t i = 0; i < context_.fragments.size(); ++i) {
     auto& fragment_context = context_.fragments[i];
     fragment_context.repeating_paint_offset_adjustment = LayoutSize();
@@ -2539,6 +2550,10 @@ void PaintPropertyTreeBuilder::
     // Calculate the adjustment for the repeating which will appear in the next
     // fragment.
     adjustment += fragment_height;
+
+    if (adjustment >= content_remaining)
+      break;
+
     // Calculate the offset of the next fragment in flow thread. It's used to
     // get the height of that fragment.
     fragment_offset_in_flow_thread += fragment_height;
