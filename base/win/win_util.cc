@@ -319,19 +319,19 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
       break;
 
     // Get the device ID.
-    wchar_t device_id[MAX_DEVICE_ID_LEN];
+    char16 device_id[MAX_DEVICE_ID_LEN];
     CONFIGRET status = CM_Get_Device_ID(device_info_data.DevInst,
-                                        device_id,
-                                        MAX_DEVICE_ID_LEN,
-                                        0);
+                                        wdata(device_id), MAX_DEVICE_ID_LEN, 0);
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.
-      if (StartsWith(device_id, L"ACPI", CompareCase::INSENSITIVE_ASCII) ||
-          StartsWith(device_id, L"HID\\VID", CompareCase::INSENSITIVE_ASCII)) {
+      if (StartsWith(device_id, STRING16_LITERAL("ACPI"),
+                     CompareCase::INSENSITIVE_ASCII) ||
+          StartsWith(device_id, STRING16_LITERAL("HID\\VID"),
+                     CompareCase::INSENSITIVE_ASCII)) {
         if (reason) {
           *reason += "device: ";
-          *reason += WideToUTF8(device_id);
+          *reason += UTF16ToUTF8(device_id);
           *reason += '\n';
         }
         // The heuristic we are using is to check the count of keyboards and
@@ -393,12 +393,16 @@ bool UserAccountControlIsEnabled() {
   //   http://code.google.com/p/chromium/issues/detail?id=61644
   ThreadRestrictions::ScopedAllowIO allow_io;
 
-  RegKey key(HKEY_LOCAL_MACHINE,
-             L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
-             KEY_READ);
+  RegKey key(
+      HKEY_LOCAL_MACHINE,
+      STRING16_LITERAL(
+          "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"),
+      KEY_READ);
   DWORD uac_enabled;
-  if (key.ReadValueDW(L"EnableLUA", &uac_enabled) != ERROR_SUCCESS)
+  if (key.ReadValueDW(STRING16_LITERAL("EnableLUA"), &uac_enabled) !=
+      ERROR_SUCCESS) {
     return true;
+  }
   // Users can set the EnableLUA value to something arbitrary, like 2, which
   // Vista will treat as UAC enabled, so we make sure it is not set to 0.
   return (uac_enabled != 0);
@@ -458,7 +462,7 @@ bool SetAppIdForPropertyStore(IPropertyStore* property_store,
 }
 
 static const char16 kAutoRunKeyPath[] =
-    L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+    STRING16_LITERAL("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
 
 bool AddCommandToAutoRun(HKEY root_key, const string16& name,
                          const string16& command) {

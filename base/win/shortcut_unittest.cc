@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/scoped_com_initializer.h"
@@ -31,19 +32,20 @@ class ShortcutTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(temp_dir_2_.CreateUniqueTempDir());
 
-    link_file_ = temp_dir_.GetPath().Append(L"My Link.lnk");
+    link_file_ = temp_dir_.GetPath().Append(FILE_PATH_LITERAL("My Link.lnk"));
 
     // Shortcut 1's properties
     {
-      const FilePath target_file(temp_dir_.GetPath().Append(L"Target 1.txt"));
+      const FilePath target_file(
+          temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Target 1.txt")));
       WriteFile(target_file, kFileContents, base::size(kFileContents));
 
       link_properties_.set_target(target_file);
       link_properties_.set_working_dir(temp_dir_.GetPath());
-      link_properties_.set_arguments(L"--magic --awesome");
-      link_properties_.set_description(L"Chrome is awesome.");
+      link_properties_.set_arguments(STRING16_LITERAL("--magic --awesome"));
+      link_properties_.set_description(STRING16_LITERAL("Chrome is awesome."));
       link_properties_.set_icon(link_properties_.target, 4);
-      link_properties_.set_app_id(L"Chrome");
+      link_properties_.set_app_id(STRING16_LITERAL("Chrome"));
       link_properties_.set_dual_mode(false);
 
       // The CLSID below was randomly selected.
@@ -57,7 +59,8 @@ class ShortcutTest : public testing::Test {
 
     // Shortcut 2's properties (all different from properties of shortcut 1).
     {
-      const FilePath target_file_2(temp_dir_.GetPath().Append(L"Target 2.txt"));
+      const FilePath target_file_2(
+          temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Target 2.txt")));
       WriteFile(target_file_2, kFileContents2, base::size(kFileContents2));
 
       FilePath icon_path_2;
@@ -65,10 +68,12 @@ class ShortcutTest : public testing::Test {
 
       link_properties_2_.set_target(target_file_2);
       link_properties_2_.set_working_dir(temp_dir_2_.GetPath());
-      link_properties_2_.set_arguments(L"--super --crazy");
-      link_properties_2_.set_description(L"The best in the west.");
+      link_properties_2_.set_arguments(STRING16_LITERAL("--super --crazy"));
+      link_properties_2_.set_description(
+          STRING16_LITERAL("The best in the west."));
       link_properties_2_.set_icon(icon_path_2, 0);
-      link_properties_2_.set_app_id(L"Chrome.UserLevelCrazySuffix");
+      link_properties_2_.set_app_id(
+          STRING16_LITERAL("Chrome.UserLevelCrazySuffix"));
       link_properties_2_.set_dual_mode(true);
       link_properties_2_.set_toast_activator_clsid(CLSID_NULL);
     }
@@ -92,7 +97,7 @@ class ShortcutTest : public testing::Test {
 
 TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   // Test all properties.
-  FilePath file_1(temp_dir_.GetPath().Append(L"Link1.lnk"));
+  FilePath file_1(temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Link1.lnk")));
   ASSERT_TRUE(CreateOrUpdateShortcutLink(
       file_1, link_properties_, SHORTCUT_CREATE_ALWAYS));
 
@@ -114,7 +119,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
             properties_read_1.toast_activator_clsid);
 
   // Test simple shortcut with no special properties set.
-  FilePath file_2(temp_dir_.GetPath().Append(L"Link2.lnk"));
+  FilePath file_2(temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Link2.lnk")));
   ShortcutProperties only_target_properties;
   only_target_properties.set_target(link_properties_.target);
   ASSERT_TRUE(CreateOrUpdateShortcutLink(
@@ -128,11 +133,11 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   ValidatePathsAreEqual(only_target_properties.target,
                         properties_read_2.target);
   ValidatePathsAreEqual(FilePath(), properties_read_2.working_dir);
-  EXPECT_EQ(L"", properties_read_2.arguments);
-  EXPECT_EQ(L"", properties_read_2.description);
+  EXPECT_EQ(STRING16_LITERAL(""), properties_read_2.arguments);
+  EXPECT_EQ(STRING16_LITERAL(""), properties_read_2.description);
   ValidatePathsAreEqual(FilePath(), properties_read_2.icon);
   EXPECT_EQ(0, properties_read_2.icon_index);
-  EXPECT_EQ(L"", properties_read_2.app_id);
+  EXPECT_EQ(STRING16_LITERAL(""), properties_read_2.app_id);
   EXPECT_FALSE(properties_read_2.dual_mode);
   EXPECT_EQ(CLSID_NULL, properties_read_2.toast_activator_clsid);
 }

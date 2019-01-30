@@ -38,7 +38,7 @@ BASE_EXPORT HRESULT RoActivateInstance(HSTRING class_id,
                                        IInspectable** instance);
 
 // Retrieves an activation factory for the type specified.
-template <typename InterfaceType, char16 const* runtime_class_id>
+template <typename InterfaceType, wchar_t const* runtime_class_id>
 HRESULT GetActivationFactory(InterfaceType** factory) {
   ScopedHString class_id_hstring = ScopedHString::Create(runtime_class_id);
   if (!class_id_hstring.is_valid())

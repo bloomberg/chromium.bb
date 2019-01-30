@@ -12,6 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 
@@ -39,17 +41,17 @@ namespace {
 int GetUBR() {
   // The values under the CurrentVersion registry hive are mirrored under
   // the corresponding Wow6432 hive.
-  static constexpr wchar_t kRegKeyWindowsNTCurrentVersion[] =
-      L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
+  static constexpr char16 kRegKeyWindowsNTCurrentVersion[] =
+      STRING16_LITERAL("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
 
-  base::win::RegKey key;
+  RegKey key;
   if (key.Open(HKEY_LOCAL_MACHINE, kRegKeyWindowsNTCurrentVersion,
                KEY_QUERY_VALUE) != ERROR_SUCCESS) {
     return 0;
   }
 
   DWORD ubr = 0;
-  key.ReadValueDW(L"UBR", &ubr);
+  key.ReadValueDW(STRING16_LITERAL("UBR"), &ubr);
 
   return static_cast<int>(ubr);
 }
@@ -102,7 +104,7 @@ OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
       version_number_.major, version_number_.minor, version_number_.build);
   service_pack_.major = version_info.wServicePackMajor;
   service_pack_.minor = version_info.wServicePackMinor;
-  service_pack_str_ = base::WideToUTF8(version_info.szCSDVersion);
+  service_pack_str_ = WideToUTF8(version_info.szCSDVersion);
 
   switch (system_info.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_INTEL: architecture_ = X86_ARCHITECTURE; break;
@@ -193,16 +195,16 @@ Version OSInfo::Kernel32Version() const {
 // compatibility mode for a down-level version of the OS, the file version of
 // kernel32 will still be the "real" version.
 base::Version OSInfo::Kernel32BaseVersion() const {
-  static const base::NoDestructor<base::Version> version([] {
+  static const NoDestructor<base::Version> version([] {
     std::unique_ptr<FileVersionInfoWin> file_version_info =
         FileVersionInfoWin::CreateFileVersionInfoWin(
-            base::FilePath(FILE_PATH_LITERAL("kernel32.dll")));
+            FilePath(FILE_PATH_LITERAL("kernel32.dll")));
     if (!file_version_info) {
       // crbug.com/912061: on some systems it seems kernel32.dll might be
       // corrupted or not in a state to get version info. In this case try
       // kernelbase.dll as a fallback.
       file_version_info = FileVersionInfoWin::CreateFileVersionInfoWin(
-          base::FilePath(FILE_PATH_LITERAL("kernelbase.dll")));
+          FilePath(FILE_PATH_LITERAL("kernelbase.dll")));
     }
     CHECK(file_version_info);
     const int major =
@@ -220,11 +222,11 @@ base::Version OSInfo::Kernel32BaseVersion() const {
 
 std::string OSInfo::processor_model_name() {
   if (processor_model_name_.empty()) {
-    const wchar_t kProcessorNameString[] =
-        L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0";
-    base::win::RegKey key(HKEY_LOCAL_MACHINE, kProcessorNameString, KEY_READ);
+    const char16 kProcessorNameString[] =
+        STRING16_LITERAL("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0");
+    RegKey key(HKEY_LOCAL_MACHINE, kProcessorNameString, KEY_READ);
     string16 value;
-    key.ReadValue(L"ProcessorNameString", &value);
+    key.ReadValue(STRING16_LITERAL("ProcessorNameString"), &value);
     processor_model_name_ = UTF16ToUTF8(value);
   }
   return processor_model_name_;
