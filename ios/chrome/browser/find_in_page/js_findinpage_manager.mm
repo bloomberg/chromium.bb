@@ -209,6 +209,7 @@ const FindInPageEntry kFindInPageEntryZero = {{0.0, 0.0}, 0};
   CGPoint point = CGPointZero;
   if ([result isEqual:kFindInPagePending]) {
     completionHandler(NO, point);
+    return;
   }
   BOOL processFIPResult =
       [self processFindInPageResult:result scrollPosition:&point];
