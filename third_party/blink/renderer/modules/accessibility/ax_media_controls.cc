@@ -65,7 +65,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaTimelineContainer:
     case kMediaOverflowButton:
     case kMediaOverflowList:
-    case kMediaDisplayCutoutFullscreenButton:
       return MakeGarbageCollected<AccessibilityMediaControl>(layout_object,
                                                              ax_object_cache);
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
@@ -113,9 +112,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaControlsPanel:
     case kMediaOverflowList:
       return QueryString(WebLocalizedString::kAXMediaDefault);
-    case kMediaDisplayCutoutFullscreenButton:
-      return QueryString(
-          WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton);
     case kMediaSlider:
     // Removed as a part of the a11y tree rewrite https://crbug/836549.
     case kMediaIgnore:
@@ -134,11 +130,6 @@ String AccessibilityMediaControl::Description(
   switch (ControlType()) {
     case kMediaOverflowButton:
       return QueryString(WebLocalizedString::kAXMediaOverflowButtonHelp);
-    // The following descriptions are repeats of their respective titles. When
-    // read by accessibility, we get the same thing said twice, with no value
-    // added. So instead, we just return an empty string.
-    case kMediaDisplayCutoutFullscreenButton:
-      return "";
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
     case kMediaControlsPanel:
@@ -168,7 +159,6 @@ bool AccessibilityMediaControl::ComputeAccessibilityIsIgnored(
 ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
   switch (ControlType()) {
     case kMediaOverflowButton:
-    case kMediaDisplayCutoutFullscreenButton:
       return ax::mojom::Role::kButton;
 
     case kMediaTimelineContainer:

@@ -15,7 +15,6 @@ enum MediaControlElementType {
   kMediaControlsPanel,
   kMediaOverflowButton,
   kMediaOverflowList,
-  kMediaDisplayCutoutFullscreenButton,
   kMediaIgnore
 };
 
