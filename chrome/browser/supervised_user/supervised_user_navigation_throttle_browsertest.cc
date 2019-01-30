@@ -120,9 +120,9 @@ void SupervisedUserNavigationThrottleTest::SetUpCommandLine(
 #endif
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SupervisedUserNavigationThrottleTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SupervisedUserNavigationThrottleTest,
+                         ::testing::Values(false, true));
 
 // Tests that navigating to a blocked page simply fails if there is no
 // SupervisedUserNavigationObserver.
@@ -198,9 +198,9 @@ class SupervisedUserNavigationThrottleNotSupervisedTest
   void SetUpCommandLine(base::CommandLine* command_line) override {}
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SupervisedUserNavigationThrottleNotSupervisedTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SupervisedUserNavigationThrottleNotSupervisedTest,
+                         ::testing::Values(false, true));
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleNotSupervisedTest,
                        DontBlock) {
