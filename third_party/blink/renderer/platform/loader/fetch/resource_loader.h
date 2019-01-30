@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_H_
 
 #include <memory>
+#include <vector>
 #include "base/gtest_prod_util.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -38,10 +39,12 @@
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/response_body_loader_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -51,6 +54,7 @@ class ConsoleLogger;
 class FetchContext;
 class ResourceError;
 class ResourceFetcher;
+class ResponseBodyLoader;
 
 // A ResourceLoader is created for each Resource by the ResourceFetcher when it
 // needs to load the specified resource. A ResourceLoader creates a
@@ -60,7 +64,8 @@ class PLATFORM_EXPORT ResourceLoader final
     : public GarbageCollectedFinalized<ResourceLoader>,
       public ResourceLoadSchedulerClient,
       protected WebURLLoaderClient,
-      protected mojom::blink::ProgressClient {
+      protected mojom::blink::ProgressClient,
+      private ResponseBodyLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ResourceLoader);
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
@@ -160,6 +165,11 @@ class PLATFORM_EXPORT ResourceLoader final
   void Run() override;
   ConsoleLogger* GetConsoleLogger() override;
 
+  // ResponseBodyLoaderClient implementation.
+  void DidReceiveData(base::span<const char> data) override;
+  void DidFinishLoadingBody() override;
+  void DidFailLoadingBody() override;
+
   bool ShouldFetchCodeCache();
   void StartWith(const ResourceRequest&);
 
@@ -196,6 +206,9 @@ class PLATFORM_EXPORT ResourceLoader final
   Member<ResourceFetcher> fetcher_;
   Member<ResourceLoadScheduler> scheduler_;
   Member<Resource> resource_;
+  Member<ResponseBodyLoader> response_body_loader_;
+  Member<DataPipeBytesConsumer::CompletionNotifier>
+      data_pipe_completion_notifier_;
   // code_cache_request_ is created only if required. It is required to check
   // if it is valid before using it.
   std::unique_ptr<CodeCacheRequest> code_cache_request_;
@@ -211,15 +224,17 @@ class PLATFORM_EXPORT ResourceLoader final
   mojo::AssociatedBinding<mojom::blink::ProgressClient> progress_binding_;
   bool blob_finished_ = false;
   bool blob_response_started_ = false;
+  bool has_seen_end_of_body_ = false;
   // If DidFinishLoading is called while downloading to a blob before the blob
   // is finished, we might have to defer actually handling the event. This
   // struct is used to store the information needed to refire DidFinishLoading
   // when the blob is finished too.
-  struct DeferedFinishLoadingInfo {
+  struct DeferredFinishLoadingInfo {
     TimeTicks finish_time;
     bool should_report_corb_blocking;
+    std::vector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
-  base::Optional<DeferedFinishLoadingInfo> load_did_finish_before_blob_;
+  base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
 
   TaskRunnerTimer<ResourceLoader> cancel_timer_;
 };

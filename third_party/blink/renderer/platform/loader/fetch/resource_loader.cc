@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
+#include <algorithm>
+#include <utility>
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -53,6 +55,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -325,6 +328,8 @@ void ResourceLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(scheduler_);
   visitor->Trace(resource_);
+  visitor->Trace(response_body_loader_);
+  visitor->Trace(data_pipe_completion_notifier_);
   ResourceLoadSchedulerClient::Trace(visitor);
 }
 
@@ -423,6 +428,27 @@ ConsoleLogger* ResourceLoader::GetConsoleLogger() {
   return fetcher_->GetConsoleLogger();
 }
 
+void ResourceLoader::DidReceiveData(base::span<const char> data) {
+  DidReceiveData(data.data(), data.size());
+}
+
+void ResourceLoader::DidFinishLoadingBody() {
+  has_seen_end_of_body_ = true;
+
+  const ResourceResponse& response = resource_->GetResponse();
+  if (deferred_finish_loading_info_) {
+    DidFinishLoading(deferred_finish_loading_info_->finish_time,
+                     response.EncodedDataLength(), response.EncodedBodyLength(),
+                     response.DecodedBodyLength(),
+                     deferred_finish_loading_info_->should_report_corb_blocking,
+                     deferred_finish_loading_info_->cors_preflight_timing_info);
+  }
+}
+
+void ResourceLoader::DidFailLoadingBody() {
+  DidFail(ResourceError::Failure(resource_->Url()), 0, 0, 0);
+}
+
 void ResourceLoader::StartWith(const ResourceRequest& request) {
   DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   DCHECK(loader_);
@@ -490,6 +516,14 @@ void ResourceLoader::SetDefersLoading(bool defers) {
   // If CodeCacheRequest handles this, then no need to handle here.
   if (code_cache_request_ && code_cache_request_->SetDefersLoading(defers))
     return;
+
+  if (response_body_loader_) {
+    if (defers) {
+      response_body_loader_->Suspend();
+    } else {
+      response_body_loader_->Resume();
+    }
+  }
 
   loader_->SetDefersLoading(defers);
   if (defers) {
@@ -943,26 +977,39 @@ void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
 
 void ResourceLoader::DidStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  DCHECK(is_downloading_to_blob_);
-  DCHECK(!blob_response_started_);
-  blob_response_started_ = true;
+  if (is_downloading_to_blob_) {
+    DCHECK(!blob_response_started_);
+    blob_response_started_ = true;
 
-  const ResourceResponse& response = resource_->GetResponse();
-  AtomicString mime_type = response.MimeType();
+    const ResourceResponse& response = resource_->GetResponse();
+    AtomicString mime_type = response.MimeType();
 
-  mojom::blink::ProgressClientAssociatedPtrInfo progress_client_ptr;
-  progress_binding_.Bind(MakeRequest(&progress_client_ptr),
-                         GetLoadingTaskRunner());
+    mojom::blink::ProgressClientAssociatedPtrInfo progress_client_ptr;
+    progress_binding_.Bind(MakeRequest(&progress_client_ptr),
+                           GetLoadingTaskRunner());
 
-  // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
-  // ResourceFetcher as long as we still care about the result of the load.
-  mojom::blink::BlobRegistry* blob_registry = BlobDataHandle::GetBlobRegistry();
-  blob_registry->RegisterFromStream(
-      mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
-      std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
-      std::move(body), std::move(progress_client_ptr),
-      WTF::Bind(&ResourceLoader::FinishedCreatingBlob,
-                WrapWeakPersistent(this)));
+    // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
+    // ResourceFetcher as long as we still care about the result of the load.
+    mojom::blink::BlobRegistry* blob_registry =
+        BlobDataHandle::GetBlobRegistry();
+    blob_registry->RegisterFromStream(
+        mime_type.IsNull() ? g_empty_string : mime_type.LowerASCII(), "",
+        std::max(static_cast<int64_t>(0), response.ExpectedContentLength()),
+        std::move(body), std::move(progress_client_ptr),
+        WTF::Bind(&ResourceLoader::FinishedCreatingBlob,
+                  WrapWeakPersistent(this)));
+    return;
+  }
+
+  DCHECK(!response_body_loader_);
+  DataPipeBytesConsumer::CompletionNotifier* completion_notifier = nullptr;
+  ResponseBodyLoaderClient& response_body_loader_client = *this;
+  response_body_loader_ = MakeGarbageCollected<ResponseBodyLoader>(
+      *MakeGarbageCollected<DataPipeBytesConsumer>(
+          GetLoadingTaskRunner(), std::move(body), &completion_notifier),
+      response_body_loader_client, GetLoadingTaskRunner());
+  data_pipe_completion_notifier_ = completion_notifier;
+  response_body_loader_->Start();
 }
 
 void ResourceLoader::DidReceiveData(const char* data, int length) {
@@ -1001,9 +1048,13 @@ void ResourceLoader::DidFinishLoading(
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
 
-  if (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_) {
-    load_did_finish_before_blob_ =
-        DeferedFinishLoadingInfo{finish_time, should_report_corb_blocking};
+  if (data_pipe_completion_notifier_)
+    data_pipe_completion_notifier_->SignalComplete();
+
+  if ((response_body_loader_ && !has_seen_end_of_body_) ||
+      (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_)) {
+    deferred_finish_loading_info_ = DeferredFinishLoadingInfo{
+        finish_time, should_report_corb_blocking, cors_preflight_timing_info};
     return;
   }
 
@@ -1012,6 +1063,9 @@ void ResourceLoader::DidFinishLoading(
                                                     decoded_body_length));
   loader_.reset();
   code_cache_request_.reset();
+  response_body_loader_ = nullptr;
+  has_seen_end_of_body_ = false;
+  deferred_finish_loading_info_ = base::nullopt;
 
   network_instrumentation::EndResourceLoad(
       resource_->Identifier(),
@@ -1028,6 +1082,9 @@ void ResourceLoader::DidFail(const WebURLError& error,
                              int64_t encoded_body_length,
                              int64_t decoded_body_length) {
   const ResourceRequest& request = resource_->GetResourceRequest();
+
+  if (data_pipe_completion_notifier_)
+    data_pipe_completion_notifier_->SignalError(BytesConsumer::Error());
 
   if (request.IsAutomaticUpgrade()) {
     auto recorder =
@@ -1059,10 +1116,16 @@ void ResourceLoader::HandleError(const ResourceError& error) {
             resource_->GetType(), resource_->Options().initiator_info.name));
   }
 
+  if (response_body_loader_)
+    response_body_loader_->Abort();
+
   Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule,
           ResourceLoadScheduler::TrafficReportHints::InvalidInstance());
   loader_.reset();
   code_cache_request_.reset();
+  response_body_loader_ = nullptr;
+  has_seen_end_of_body_ = false;
+  deferred_finish_loading_info_ = base::nullopt;
 
   network_instrumentation::EndResourceLoad(
       resource_->Identifier(), network_instrumentation::RequestOutcome::kFail);
@@ -1203,13 +1266,13 @@ void ResourceLoader::FinishedCreatingBlob(
   resource_->DidDownloadToBlob(blob);
 
   blob_finished_ = true;
-  if (load_did_finish_before_blob_) {
+  if (deferred_finish_loading_info_) {
     const ResourceResponse& response = resource_->GetResponse();
-    DidFinishLoading(load_did_finish_before_blob_->finish_time,
+    DidFinishLoading(deferred_finish_loading_info_->finish_time,
                      response.EncodedDataLength(), response.EncodedBodyLength(),
                      response.DecodedBodyLength(),
-                     load_did_finish_before_blob_->should_report_corb_blocking,
-                     std::vector<network::cors::PreflightTimingInfo>());
+                     deferred_finish_loading_info_->should_report_corb_blocking,
+                     deferred_finish_loading_info_->cors_preflight_timing_info);
   }
 }
 
