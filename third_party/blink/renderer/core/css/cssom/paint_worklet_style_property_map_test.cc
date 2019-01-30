@@ -108,7 +108,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
 
     const HashMap<String, std::unique_ptr<CrossThreadStyleValue>>& values =
         map->ValuesForTest();
-    EXPECT_EQ(values.size(), 7u);
+    EXPECT_EQ(values.size(), 8u);
     EXPECT_EQ(values.at("color")->ToCSSStyleValue()->CSSText(),
               "rgb(0, 255, 0)");
     EXPECT_EQ(values.at("color")->ToCSSStyleValue()->GetType(),
@@ -138,6 +138,9 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     EXPECT_EQ(ToCSSUnitValue(values.at("--x")->ToCSSStyleValue())->value(), 10);
     EXPECT_EQ(ToCSSUnitValue(values.at("--x")->ToCSSStyleValue())->unit(),
               "px");
+    EXPECT_EQ(values.at("--y")->ToCSSStyleValue()->GetType(),
+              CSSStyleValue::StyleValueType::kUnknownType);
+    EXPECT_EQ(values.at("--y")->ToCSSStyleValue()->CSSText(), "rgb(0, 255, 0)");
 
     waitable_event->Signal();
   }
@@ -213,17 +216,21 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "display", "block", "", ASSERT_NO_EXCEPTION);
   Vector<AtomicString> custom_properties(
-      {"--foo", "--bar", "--keyword", "--x"});
+      {"--foo", "--bar", "--keyword", "--x", "--y"});
   css_test_helpers::RegisterProperty(GetDocument(), "--keyword", "test", "test",
                                      false);
   css_test_helpers::RegisterProperty(GetDocument(), "--x", "<length>", "42px",
                                      false);
+  css_test_helpers::RegisterProperty(GetDocument(), "--y", "<color>",
+                                     "rgb(0, 0, 0)", false);
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "--foo", "PaintWorklet", "", ASSERT_NO_EXCEPTION);
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "--keyword", "test", "", ASSERT_NO_EXCEPTION);
   GetDocument().documentElement()->style()->setProperty(
       &GetDocument(), "--x", "10px", "", ASSERT_NO_EXCEPTION);
+  GetDocument().documentElement()->style()->setProperty(
+      &GetDocument(), "--y", "rgb(0, 255, 0)", "", ASSERT_NO_EXCEPTION);
 
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
