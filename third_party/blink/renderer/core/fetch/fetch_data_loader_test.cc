@@ -9,10 +9,10 @@
 #include "base/stl_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
 
 namespace blink {
 

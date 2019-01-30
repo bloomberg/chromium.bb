@@ -2,35 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
 
 #include <memory>
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
-#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/testing/replaying_web_data_consumer_handle.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
 namespace {
 
-using DataConsumerCommand = DataConsumerHandleTestUtil::Command;
 using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
-using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
 using testing::ByMove;
 using testing::InSequence;
 using testing::Return;
 
-class BytesConsumerForDataConsumerHandleTest : public PageTestBase {
+class BytesConsumerForDataConsumerHandleTest : public testing::Test {
  protected:
-  void SetUp() override { PageTestBase::SetUp(IntSize()); }
+  using Command = ReplayingWebDataConsumerHandle::Command;
   ~BytesConsumerForDataConsumerHandleTest() override {
     ThreadState::Current()->CollectAllGarbage();
   }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+    return platform_->test_task_runner();
+  }
+
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform_;
 };
 
 class MockBytesConsumerClient
@@ -92,12 +98,12 @@ class MockDataConsumerHandle final : public WebDataConsumerHandle {
 };
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, Create) {
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kData, "hello"));
+  handle->Add(Command(Command::kDone));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeReadable) {
@@ -110,17 +116,17 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeReadable) {
   EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kData, "hello"));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(client);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
 
   checkpoint.Call(1);
-  test::RunPendingTasks();
+  platform_->RunUntilIdle();
   checkpoint.Call(2);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
@@ -136,17 +142,17 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeClosed) {
   EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kDone));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(client);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
 
   checkpoint.Call(1);
-  test::RunPendingTasks();
+  platform_->RunUntilIdle();
   checkpoint.Call(2);
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, consumer->GetPublicState());
 }
@@ -161,17 +167,17 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeErrored) {
   EXPECT_CALL(*client, OnStateChange());
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kError));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(client);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
 
   checkpoint.Call(1);
-  test::RunPendingTasks();
+  platform_->RunUntilIdle();
   checkpoint.Call(2);
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, consumer->GetPublicState());
 }
@@ -185,25 +191,25 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, ClearClient) {
   EXPECT_CALL(checkpoint, Call(1));
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kError));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(client);
   consumer->ClearClient();
 
   checkpoint.Call(1);
-  test::RunPendingTasks();
+  platform_->RunUntilIdle();
   checkpoint.Call(2);
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenReadable) {
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kData, "hello"));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kData, "hello"));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
 
   const char* buffer = nullptr;
@@ -220,10 +226,10 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenReadable) {
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenWaiting) {
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   const char* buffer = nullptr;
   size_t available = 0;
@@ -231,11 +237,11 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenWaiting) {
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenClosed) {
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kDone));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kDone));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   const char* buffer = nullptr;
   size_t available = 0;
@@ -243,11 +249,11 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenClosed) {
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenErrored) {
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
-  handle->Add(DataConsumerCommand(DataConsumerCommand::kError));
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
+  handle->Add(Command(Command::kError));
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   const char* buffer = nullptr;
   size_t available = 0;
@@ -256,10 +262,10 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, TwoPhaseReadWhenErrored) {
 }
 
 TEST_F(BytesConsumerForDataConsumerHandleTest, Cancel) {
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::Create();
+  auto handle = std::make_unique<ReplayingWebDataConsumerHandle>();
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
   consumer->Cancel();
   const char* buffer = nullptr;
@@ -275,7 +281,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, drainAsBlobDataHandle) {
   Persistent<MockDataConsumerHandle::MockReaderProxy> proxy = handle->Proxy();
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
 
   Checkpoint checkpoint;
@@ -295,7 +301,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, drainAsFormData) {
   Persistent<MockDataConsumerHandle::MockReaderProxy> proxy = handle->Proxy();
   Persistent<BytesConsumer> consumer =
       MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-          &GetDocument(), std::move(handle));
+          GetTaskRunner(), std::move(handle));
   consumer->SetClient(MockBytesConsumerClient::Create());
 
   Checkpoint checkpoint;

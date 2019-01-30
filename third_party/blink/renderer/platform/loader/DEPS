@@ -60,5 +60,8 @@ specific_include_rules = {
   "ftp_directory_listing_test.cc": [
     "+net/net_buildflags.h",
     "+third_party/icu/source/i18n/unicode/timezone.h"
-  ]
+  ],
+  "replaying_web_data_consumer_handle.h": [
+      "+third_party/blink/renderer/platform/waitable_event.h",
+  ],
 }
