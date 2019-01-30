@@ -19,16 +19,52 @@ class PaymentsManager {
   addCreditCardListChangedListener(listener) {}
 
   /**
+   * Add an observer to the list of local credit cards.
+   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
+   */
+  addLocalCreditCardListChangedListener(listener) {}
+
+  /**
+   * Add an observer to the list of server credit cards.
+   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
+   */
+  addServerCreditCardListChangedListener(listener) {}
+
+  /**
    * Remove an observer from the list of credit cards.
    * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
    */
   removeCreditCardListChangedListener(listener) {}
 
   /**
+   * Remove an observer from the list of local credit cards.
+   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
+   */
+  removeLocalCreditCardListChangedListener(listener) {}
+
+  /**
+   * Remove an observer from the list of server credit cards.
+   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} listener
+   */
+  removeServerCreditCardListChangedListener(listener) {}
+
+  /**
    * Request the list of credit cards.
    * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} callback
    */
   getCreditCardList(callback) {}
+
+  /**
+   * Request the list of local credit cards.
+   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} callback
+   */
+  getLocalCreditCardList(callback) {}
+
+  /**
+   * Request the list of server credit cards.
+   * @param {function(!Array<!PaymentsManager.CreditCardEntry>):void} callback
+   */
+  getServerCreditCardList(callback) {}
 
   /** @param {string} guid The GUID of the credit card to remove.  */
   removeCreditCard(guid) {}
@@ -67,13 +103,45 @@ class PaymentsManagerImpl {
   }
 
   /** @override */
+  addLocalCreditCardListChangedListener(listener) {
+    chrome.autofillPrivate.onLocalCreditCardListChanged.addListener(listener);
+  }
+
+  /** @override */
+  addServerCreditCardListChangedListener(listener) {
+    chrome.autofillPrivate.onServerCreditCardListChanged.addListener(listener);
+  }
+
+  /** @override */
   removeCreditCardListChangedListener(listener) {
     chrome.autofillPrivate.onCreditCardListChanged.removeListener(listener);
   }
 
   /** @override */
+  removeLocalCreditCardListChangedListener(listener) {
+    chrome.autofillPrivate.onLocalCreditCardListChanged.removeListener(
+        listener);
+  }
+
+  /** @override */
+  removeServerCreditCardListChangedListener(listener) {
+    chrome.autofillPrivate.onServerCreditCardListChanged.removeListener(
+        listener);
+  }
+
+  /** @override */
   getCreditCardList(callback) {
     chrome.autofillPrivate.getCreditCardList(callback);
+  }
+
+  /** @override */
+  getLocalCreditCardList(callback) {
+    chrome.autofillPrivate.getLocalCreditCardList(callback);
+  }
+
+  /** @override */
+  getServerCreditCardList(callback) {
+    chrome.autofillPrivate.getServerCreditCardList(callback);
   }
 
   /** @override */
@@ -117,10 +185,22 @@ Polymer({
 
   properties: {
     /**
-     * An array of saved credit cards.
+     * An array of all saved credit cards.
      * @type {!Array<!PaymentsManager.CreditCardEntry>}
      */
     creditCards: Array,
+
+    /**
+     * An array of saved locl credit cards.
+     * @type {!Array<!PaymentsManager.CreditCardEntry>}
+     */
+    localCreditCards: Array,
+
+    /**
+     * An array of saved server credit cards.
+     * @type {!Array<!PaymentsManager.CreditCardEntry>}
+     */
+    serverCreditCards: Array,
 
     /**
      * The model for any credit card related action menus or dialogs.
@@ -211,10 +291,24 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /**
+     * True when the cards list should be split in two..
+     * @private {boolean}
+     */
+    splitCreditCardList_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('splitCreditCardList');
+      },
+      readOnly: true,
+    },
   },
 
   listeners: {
     'save-credit-card': 'saveCreditCard_',
+    'dots-card-menu-click': 'onCreditCardDotsMenuTap_',
+    'remote-card-menu-click': 'onRemoteEditCreditCardTap_',
   },
 
   /**
@@ -236,6 +330,18 @@ Polymer({
    */
   setCreditCardsListener_: null,
 
+  /**
+   * @type {?function(!Array<!PaymentsManager.CreditCardEntry>)}
+   * @private
+   */
+  setLocalCreditCardsListener_: null,
+
+  /**
+   * @type {?function(!Array<!PaymentsManager.CreditCardEntry>)}
+   * @private
+   */
+  setServerCreditCardsListener_: null,
+
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
@@ -246,19 +352,35 @@ Polymer({
     const setCreditCardsListener = list => {
       this.creditCards = list;
     };
+    /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */
+    const setLocalCreditCardsListener = list => {
+      this.localCreditCards = list;
+    };
+    /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */
+    const setServerCreditCardsListener = list => {
+      this.serverCreditCards = list;
+    };
 
     // Remember the bound reference in order to detach.
     this.setCreditCardsListener_ = setCreditCardsListener;
+    this.setLocalCreditCardsListener_ = setLocalCreditCardsListener;
+    this.setServerCreditCardsListener_ = setServerCreditCardsListener;
 
     // Set the managers. These can be overridden by tests.
     this.paymentsManager_ = PaymentsManagerImpl.getInstance();
 
     // Request initial data.
     this.paymentsManager_.getCreditCardList(setCreditCardsListener);
+    this.paymentsManager_.getLocalCreditCardList(setLocalCreditCardsListener);
+    this.paymentsManager_.getServerCreditCardList(setServerCreditCardsListener);
 
     // Listen for changes.
     this.paymentsManager_.addCreditCardListChangedListener(
         setCreditCardsListener);
+    this.paymentsManager_.addLocalCreditCardListChangedListener(
+        setLocalCreditCardsListener);
+    this.paymentsManager_.addServerCreditCardListChangedListener(
+        setServerCreditCardsListener);
 
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
@@ -275,42 +397,27 @@ Polymer({
     this.paymentsManager_.removeCreditCardListChangedListener(
         /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
             this.setCreditCardsListener_));
-  },
-
-  /**
-   * Formats the expiration date so it's displayed as MM/YYYY.
-   * @param {!chrome.autofillPrivate.CreditCardEntry} item
-   * @return {string}
-   * @private
-   */
-  expiration_: function(item) {
-    return item.expirationMonth + '/' + item.expirationYear;
+    this.paymentsManager_.removeLocalCreditCardListChangedListener(
+        /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
+            this.setLocalCreditCardsListener_));
+    this.paymentsManager_.removeServerCreditCardListChangedListener(
+        /** @type {function(!Array<!PaymentsManager.CreditCardEntry>)} */ (
+            this.setServerCreditCardsListener_));
   },
 
   /**
    * Opens the credit card action menu.
-   * @param {!Event} e The polymer event.
+   * @param {!CustomEvent<{creditCard: !chrome.autofillPrivate.CreditCardEntry,
+   *     anchorElement: !HTMLElement}>} e
    * @private
    */
-  onCreditCardMenuTap_: function(e) {
-    const menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
-
-    /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
-     https://github.com/Polymer/polymer/issues/2574 */
-    // TODO(dpapad): The [dataHost][dataHost] workaround is only necessary for
-    // Polymer 1. Remove once migration to Polymer 2 has completed.
-    const item = Polymer.DomIf ? menuEvent.model.item :
-                                 menuEvent.model['dataHost']['dataHost'].item;
-
+  onCreditCardDotsMenuTap_: function(e) {
     // Copy item so dialog won't update model on cancel.
-    this.activeCreditCard =
-        /** @type {!chrome.autofillPrivate.CreditCardEntry} */ (
-            Object.assign({}, item));
+    this.activeCreditCard = e.detail.creditCard;
 
-    const dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
     /** @type {!CrActionMenuElement} */ (this.$.creditCardSharedMenu)
-        .showAt(dotsButton);
-    this.activeDialogAnchor_ = dotsButton;
+        .showAt(e.detail.anchorElement);
+    this.activeDialogAnchor_ = e.detail.anchorElement;
   },
 
   /**
@@ -384,21 +491,12 @@ Polymer({
   },
 
   /**
-   * Handles clicking on the "Migrate" button for migrate local credit cards.
+   * Handles clicking on the "Migrate" button for migrate local credit
+   * cards.
    * @private
    */
   onMigrateCreditCardsClick_: function() {
     this.paymentsManager_.migrateCreditCards();
-  },
-
-  /**
-   * The 3-dot menu should not be shown if the card is entirely remote.
-   * @param {!chrome.autofillPrivate.AutofillMetadata} metadata
-   * @return {boolean}
-   * @private
-   */
-  showDots_: function(metadata) {
-    return !!(metadata.isLocal || metadata.isCached);
   },
 
   /**
@@ -433,9 +531,10 @@ Polymer({
    * @param {!settings.SyncStatus} syncStatus
    * @param {!Array<!PaymentsManager.CreditCardEntry>} creditCards
    * @param {boolean} creditCardEnabled
-   * @return {boolean} Whether to show the migration button. True iff at least
-   * one valid local card, enable migration, signed-in & synced and credit card
-   * pref enabled.
+   * @return {boolean} Whether to show the migration button. True iff at
+   *     least
+   * one valid local card, enable migration, signed-in & synced and credit
+   * card pref enabled.
    * @private
    */
   checkIfMigratable_: function(syncStatus, creditCards, creditCardEnabled) {
@@ -466,8 +565,8 @@ Polymer({
       return false;
     }
 
-    // If upload-to-Google state is not active, card cannot be saved to Google
-    // Payments. Return false.
+    // If upload-to-Google state is not active, card cannot be saved to
+    // Google Payments. Return false.
     if (!this.uploadToGoogleActive_) {
       return false;
     }
@@ -494,7 +593,8 @@ Polymer({
       return false;
     }
 
-    // Update the display text depends on the number of migratable credit cards.
+    // Update the display text depends on the number of migratable credit
+    // cards.
     this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard == 1 ?
         this.i18n('migratableCardsInfoSingle') :
         this.i18n('migratableCardsInfoMultiple');

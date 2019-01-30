@@ -124,6 +124,10 @@ cr.define('settings_autofill_page', function() {
       const expected = new PaymentsManagerExpectations();
       expected.requestedCreditCards = 1;
       expected.listeningCreditCards = 1;
+      expected.requestedLocalCreditCards = 1;
+      expected.listeningLocalCreditCards = 1;
+      expected.requestedServerCreditCards = 1;
+      expected.listeningServerCreditCards = 1;
       return expected;
     }
 
@@ -172,6 +176,8 @@ cr.define('settings_autofill_page', function() {
         autofillManager.assertExpectations(autofillExpectations);
 
         paymentsExpectations.listeningCreditCards = 0;
+        paymentsExpectations.listeningLocalCreditCards = 0;
+        paymentsExpectations.listeningServerCreditCards = 0;
         paymentsManager.assertExpectations(paymentsExpectations);
 
         destroyPrefs(prefs);

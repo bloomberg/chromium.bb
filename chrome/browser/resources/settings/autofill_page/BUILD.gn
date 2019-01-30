@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
     ":autofill_page",
     ":autofill_section",
     ":credit_card_edit_dialog",
+    ":credit_card_list_entry",
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",
@@ -51,6 +52,7 @@ js_library("autofill_section") {
 js_library("payments_section") {
   deps = [
     ":credit_card_edit_dialog",
+    ":credit_card_list_entry",
     "../people_page:sync_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
@@ -74,6 +76,12 @@ js_library("credit_card_edit_dialog") {
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/autofill_private.js" ]
+}
+
+js_library("credit_card_list_entry") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("password_list_item") {

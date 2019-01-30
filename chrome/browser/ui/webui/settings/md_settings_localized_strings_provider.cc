@@ -1432,6 +1432,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
       {"passwords", IDS_SETTINGS_PASSWORDS},
       {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
+      {"localCreditCardsSectionTitle", IDS_AUTOFILL_LOCAL_PAYMENT_METHODS},
+      {"serverCreditCardsSectionTitle", IDS_AUTOFILL_SERVER_PAYMENT_METHODS},
       {"noCreditCardsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
       {"googlePaymentsCached", IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED},
@@ -1910,6 +1912,11 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::switches::IsAccountManagerEnabled());
 #endif
+
+  html_source->AddBoolean(
+      "splitCreditCardList",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillSettingsCardTypeSplit));
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
