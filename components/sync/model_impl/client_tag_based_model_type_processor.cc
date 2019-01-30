@@ -750,7 +750,8 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   if (!data.is_deleted() && bridge_->SupportsGetClientTag() &&
       client_tag_hash !=
           GenerateSyncableHash(type_, bridge_->GetClientTag(data))) {
-    DLOG(WARNING) << "Received unexpected client tag hash: " << client_tag_hash;
+    DLOG(WARNING) << "Received unexpected client tag hash: " << client_tag_hash
+                  << " for " << ModelTypeToString(type_);
     return nullptr;
   }
 
@@ -760,7 +761,8 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
   if (entity == nullptr && data.is_deleted()) {
     // Local entity doesn't exist and update is tombstone.
     DLOG(WARNING) << "Received remote delete for a non-existing item."
-                  << " client_tag_hash: " << client_tag_hash;
+                  << " client_tag_hash: " << client_tag_hash << " for "
+                  << ModelTypeToString(type_);
     return nullptr;
   }
 
@@ -987,7 +989,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     }
     if (update.entity->is_deleted()) {
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
-                    << "client_tag_hash = " << client_tag_hash;
+                    << "client_tag_hash = " << client_tag_hash << " for "
+                    << ModelTypeToString(type_);
       continue;
     }
     if (bridge_->SupportsGetClientTag() &&
@@ -995,7 +998,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
             GenerateSyncableHash(
                 type_, bridge_->GetClientTag(update.entity.value()))) {
       DLOG(WARNING) << "Received unexpected client tag hash: "
-                    << client_tag_hash;
+                    << client_tag_hash << " for " << ModelTypeToString(type_);
       continue;
     }
 
