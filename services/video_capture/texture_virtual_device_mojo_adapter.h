@@ -46,8 +46,7 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;
-
-  void Stop();
+  void Stop(StopCallback callback) override;
 
  private:
   void OnReceiverConnectionErrorOrClose();

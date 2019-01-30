@@ -57,6 +57,10 @@ void MockDeviceFactory::AddMockDevice(
   devices_[descriptor] = device;
 }
 
+void MockDeviceFactory::RemoveAllDevices() {
+  devices_.clear();
+}
+
 std::unique_ptr<media::VideoCaptureDevice> MockDeviceFactory::CreateDevice(
     const media::VideoCaptureDeviceDescriptor& device_descriptor) {
   if (devices_.find(device_descriptor) == devices_.end())

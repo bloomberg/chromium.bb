@@ -204,18 +204,21 @@ void SharedMemoryVirtualDeviceMojoAdapter::TakePhoto(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SharedMemoryVirtualDeviceMojoAdapter::Stop() {
+void SharedMemoryVirtualDeviceMojoAdapter::Stop(StopCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!receiver_.is_bound())
+  if (!receiver_.is_bound()) {
+    std::move(callback).Run();
     return;
+  }
   // Unsubscribe from connection error callbacks.
   receiver_.set_connection_error_handler(base::OnceClosure());
   receiver_.reset();
+  std::move(callback).Run();
 }
 
 void SharedMemoryVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Stop();
+  Stop(base::DoNothing());
 }
 
 }  // namespace video_capture

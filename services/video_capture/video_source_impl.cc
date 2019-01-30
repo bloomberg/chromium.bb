@@ -18,6 +18,7 @@ VideoSourceImpl::VideoSourceImpl(
       device_id_(device_id),
       on_last_binding_closed_cb_(std::move(on_last_binding_closed_cb)),
       device_status_(DeviceStatus::kNotStarted),
+      restart_device_once_when_stop_complete_(false),
       weak_factory_(this) {
   bindings_.set_connection_error_handler(base::BindRepeating(
       &VideoSourceImpl::OnClientDisconnected, base::Unretained(this)));
@@ -37,10 +38,6 @@ void VideoSourceImpl::CreatePushSubscription(
     bool force_reopen_with_new_settings,
     mojom::PushVideoStreamSubscriptionRequest subscription_request,
     CreatePushSubscriptionCallback callback) {
-  if (force_reopen_with_new_settings) {
-    NOTIMPLEMENTED();
-    return;
-  }
   auto subscription = std::make_unique<PushVideoStreamSubscriptionImpl>(
       std::move(subscription_request), std::move(subscriber),
       requested_settings, std::move(callback), &broadcaster_, &device_);
@@ -52,20 +49,28 @@ void VideoSourceImpl::CreatePushSubscription(
       std::make_pair(subscription.get(), std::move(subscription)));
   switch (device_status_) {
     case DeviceStatus::kNotStarted:
-      device_start_settings_ = requested_settings;
-      device_status_ = DeviceStatus::kStartingAsynchronously;
-      device_factory_->CreateDevice(
-          device_id_, mojo::MakeRequest(&device_),
-          base::BindOnce(&VideoSourceImpl::OnCreateDeviceResponse,
-                         weak_factory_.GetWeakPtr()));
+      StartDeviceWithSettings(requested_settings);
       return;
     case DeviceStatus::kStartingAsynchronously:
-      // No need to do anything. Response will be sent when
+      if (force_reopen_with_new_settings)
+        device_start_settings_ = requested_settings;
+      // No need to do anything else. Response will be sent when
       // OnCreateDeviceResponse() gets called.
       return;
     case DeviceStatus::kStarted:
-      subscription_ptr->NotifySubscriberCreateSubscriptionSucceededWithSettings(
-          device_start_settings_);
+      if (!force_reopen_with_new_settings ||
+          requested_settings == device_start_settings_) {
+        subscription_ptr->OnDeviceStartSucceededWithSettings(
+            device_start_settings_);
+        return;
+      }
+      restart_device_once_when_stop_complete_ = true;
+      device_start_settings_ = requested_settings;
+      StopDeviceAsynchronously();
+      return;
+    case DeviceStatus::kStoppingAsynchronously:
+      restart_device_once_when_stop_complete_ = true;
+      device_start_settings_ = requested_settings;
       return;
   }
 }
@@ -76,6 +81,16 @@ void VideoSourceImpl::OnClientDisconnected() {
     // |this|, so no more member access should be done after it.
     on_last_binding_closed_cb_.Run();
   }
+}
+
+void VideoSourceImpl::StartDeviceWithSettings(
+    const media::VideoCaptureParams& requested_settings) {
+  device_start_settings_ = requested_settings;
+  device_status_ = DeviceStatus::kStartingAsynchronously;
+  device_factory_->CreateDevice(
+      device_id_, mojo::MakeRequest(&device_),
+      base::BindOnce(&VideoSourceImpl::OnCreateDeviceResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VideoSourceImpl::OnCreateDeviceResponse(
@@ -89,12 +104,12 @@ void VideoSourceImpl::OnCreateDeviceResponse(
                      std::move(broadcaster_as_receiver));
       device_status_ = DeviceStatus::kStarted;
       if (push_subscriptions_.empty()) {
-        StopDevice();
+        StopDeviceAsynchronously();
         return;
       }
       for (auto& entry : push_subscriptions_) {
         auto& subscription = entry.second;
-        subscription->NotifySubscriberCreateSubscriptionSucceededWithSettings(
+        subscription->OnDeviceStartSucceededWithSettings(
             device_start_settings_);
       }
       return;
@@ -103,7 +118,7 @@ void VideoSourceImpl::OnCreateDeviceResponse(
     case mojom::DeviceAccessResultCode::NOT_INITIALIZED:
       for (auto& entry : push_subscriptions_) {
         auto& subscription = entry.second;
-        subscription->NotifySubscriberCreateSubscriptionFailed();
+        subscription->OnDeviceStartFailed();
       }
       push_subscriptions_.clear();
       device_status_ = DeviceStatus::kNotStarted;
@@ -128,16 +143,29 @@ void VideoSourceImpl::OnPushSubscriptionClosedOrDisconnectedOrDiscarded(
         // are any subscriptions.
         break;
       case DeviceStatus::kStarted:
-        StopDevice();
+        StopDeviceAsynchronously();
+        break;
+      case DeviceStatus::kStoppingAsynchronously:
+        // Nothing to do here.
         break;
     }
   }
   std::move(done_cb).Run();
 }
 
-void VideoSourceImpl::StopDevice() {
+void VideoSourceImpl::StopDeviceAsynchronously() {
+  device_->Stop(base::BindOnce(&VideoSourceImpl::OnStopDeviceComplete,
+                               weak_factory_.GetWeakPtr()));
+  device_status_ = DeviceStatus::kStoppingAsynchronously;
+}
+
+void VideoSourceImpl::OnStopDeviceComplete() {
   device_.reset();
   device_status_ = DeviceStatus::kNotStarted;
+  if (!restart_device_once_when_stop_complete_)
+    return;
+  restart_device_once_when_stop_complete_ = false;
+  StartDeviceWithSettings(device_start_settings_);
 }
 
 }  // namespace video_capture

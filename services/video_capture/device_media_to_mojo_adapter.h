@@ -41,8 +41,8 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;
+  void Stop(StopCallback callback) override;
 
-  void Stop();
   void OnClientConnectionErrorOrClose();
 
   // Returns the fixed maximum number of buffers passed to the constructor

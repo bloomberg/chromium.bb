@@ -59,9 +59,9 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
 
   void StopDevice() {
     if (shared_memory_device_)
-      shared_memory_device_->Stop();
+      shared_memory_device_->Stop(base::DoNothing());
     else
-      texture_device_->Stop();
+      texture_device_->Stop(base::DoNothing());
   }
 
   media::VideoCaptureDeviceInfo device_info() const { return device_info_; }

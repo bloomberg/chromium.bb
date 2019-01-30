@@ -40,11 +40,12 @@ void PushVideoStreamSubscriptionImpl::SetOnClosedHandler(
                      weak_factory_.GetWeakPtr()));
 }
 
-void PushVideoStreamSubscriptionImpl::
-    NotifySubscriberCreateSubscriptionSucceededWithSettings(
-        const media::VideoCaptureParams& settings) {
-  DCHECK_EQ(Status::kCreationCallbackNotYetRun, status_)
-      << "Illegal call in current state.";
+void PushVideoStreamSubscriptionImpl::OnDeviceStartSucceededWithSettings(
+    const media::VideoCaptureParams& settings) {
+  if (status_ != Status::kCreationCallbackNotYetRun) {
+    // Creation callback has already been run from a previous device start.
+    return;
+  }
   mojom::CreatePushSubscriptionResultCode result_code =
       settings == requested_settings_
           ? mojom::CreatePushSubscriptionResultCode::
@@ -55,10 +56,11 @@ void PushVideoStreamSubscriptionImpl::
   status_ = Status::kNotYetActivated;
 }
 
-void PushVideoStreamSubscriptionImpl::
-    NotifySubscriberCreateSubscriptionFailed() {
-  DCHECK_EQ(Status::kCreationCallbackNotYetRun, status_)
-      << "Illegal call in current state.";
+void PushVideoStreamSubscriptionImpl::OnDeviceStartFailed() {
+  if (status_ != Status::kCreationCallbackNotYetRun) {
+    // Creation callback has already been run from a previous device start.
+    return;
+  }
   std::move(creation_callback_)
       .Run(mojom::CreatePushSubscriptionResultCode::kFailed,
            requested_settings_);

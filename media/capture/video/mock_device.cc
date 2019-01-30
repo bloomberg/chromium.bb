@@ -25,6 +25,10 @@ void MockDevice::SendStubFrame(const media::VideoCaptureFormat& format,
       frame_feedback_id);
 }
 
+void MockDevice::SendOnStarted() {
+  client_->OnStarted();
+}
+
 void MockDevice::AllocateAndStart(const media::VideoCaptureParams& params,
                                   std::unique_ptr<Client> client) {
   client_ = std::move(client);

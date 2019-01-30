@@ -29,6 +29,13 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
       decoder_task_runner);
 }
 
+void FinishUpCallToStop(
+    std::unique_ptr<video_capture::ReceiverMojoToMediaAdapter> receiver,
+    video_capture::mojom::Device::StopCallback callback) {
+  receiver.reset();
+  std::move(callback).Run();
+}
+
 }  // anonymous namespace
 
 namespace video_capture {
@@ -144,24 +151,27 @@ void DeviceMediaToMojoAdapter::TakePhoto(TakePhotoCallback callback) {
   device_->TakePhoto(std::move(scoped_callback));
 }
 
-void DeviceMediaToMojoAdapter::Stop() {
+void DeviceMediaToMojoAdapter::Stop(StopCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_started_ == false)
+  if (!device_started_) {
+    std::move(callback).Run();
     return;
+  }
   device_started_ = false;
   weak_factory_.InvalidateWeakPtrs();
   device_->StopAndDeAllocate();
-  // We need to post the deletion of receiver to the end of the message queue,
-  // because |device_->StopAndDeAllocate()| may post messages (e.g.
-  // OnBufferRetired()) to a WeakPtr to |receiver_| to this queue, and we need
-  // those messages to be sent before we invalidate the WeakPtr.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  std::move(receiver_));
+  // We need to post a continuation of the stop routine to the end of the
+  // message queue, because |device_->StopAndDeAllocate()| may post messages
+  // (e.g. OnBufferRetired()) to a WeakPtr to |receiver_| to this queue, and we
+  // need those messages to be sent out before we continue.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FinishUpCallToStop, std::move(receiver_),
+                                std::move(callback)));
 }
 
 void DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Stop();
+  Stop(base::DoNothing());
 }
 
 // static

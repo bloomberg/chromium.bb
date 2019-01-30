@@ -23,6 +23,33 @@ class ConsumerAccessPermission : public mojom::ScopedAccessPermission {
 
 }  // anonymous namespace
 
+BroadcastingReceiver::ClientContext::ClientContext(mojom::ReceiverPtr client)
+    : client_(std::move(client)),
+      on_started_has_been_called_(false),
+      on_started_using_gpu_decode_has_been_called_(false) {}
+
+BroadcastingReceiver::ClientContext::~ClientContext() = default;
+
+BroadcastingReceiver::ClientContext::ClientContext(
+    BroadcastingReceiver::ClientContext&& other) = default;
+
+BroadcastingReceiver::ClientContext& BroadcastingReceiver::ClientContext::
+operator=(BroadcastingReceiver::ClientContext&& other) = default;
+
+void BroadcastingReceiver::ClientContext::OnStarted() {
+  if (on_started_has_been_called_)
+    return;
+  on_started_has_been_called_ = true;
+  client_->OnStarted();
+}
+
+void BroadcastingReceiver::ClientContext::OnStartedUsingGpuDecode() {
+  if (on_started_using_gpu_decode_has_been_called_)
+    return;
+  on_started_using_gpu_decode_has_been_called_ = true;
+  client_->OnStarted();
+}
+
 BroadcastingReceiver::BufferContext::BufferContext(
     int buffer_id,
     media::mojom::VideoBufferHandlePtr buffer_handle)
@@ -100,32 +127,35 @@ BroadcastingReceiver::~BroadcastingReceiver() {
 int32_t BroadcastingReceiver::AddClient(mojom::ReceiverPtr client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto client_id = next_client_id_++;
-  clients_.insert(std::make_pair(client_id, std::move(client)));
-  auto& added_client = clients_[client_id];
-  added_client.set_connection_error_handler(
+  ClientContext context(std::move(client));
+  auto& added_client_context =
+      clients_.insert(std::make_pair(client_id, std::move(context)))
+          .first->second;
+  added_client_context.client().set_connection_error_handler(
       base::BindOnce(&BroadcastingReceiver::OnClientDisconnected,
                      weak_factory_.GetWeakPtr(), client_id));
   if (status_ == Status::kOnErrorHasBeenCalled) {
-    added_client->OnError(error_);
+    added_client_context.client()->OnError(error_);
     return client_id;
   }
-  if (status_ == Status::kOnStartedHasBeenCalled)
-    added_client->OnStarted();
+  if (status_ == Status::kOnStartedHasBeenCalled) {
+    added_client_context.OnStarted();
+  }
   if (status_ == Status::kOnStartedUsingGpuDecodeHasBeenCalled)
-    added_client->OnStartedUsingGpuDecode();
+    added_client_context.OnStartedUsingGpuDecode();
 
   for (auto& buffer_context : buffer_contexts_) {
-    added_client->OnNewBuffer(buffer_context.buffer_id(),
-                              buffer_context.CloneBufferHandle());
+    added_client_context.client()->OnNewBuffer(
+        buffer_context.buffer_id(), buffer_context.CloneBufferHandle());
   }
   return client_id;
 }
 
 mojom::ReceiverPtr BroadcastingReceiver::RemoveClient(int32_t client_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto client = std::move(clients_[client_id]);
+  auto client = std::move(clients_.at(client_id));
   clients_.erase(client_id);
-  return client;
+  return std::move(client.client());
 }
 
 void BroadcastingReceiver::OnNewBuffer(
@@ -135,8 +165,8 @@ void BroadcastingReceiver::OnNewBuffer(
   buffer_contexts_.emplace_back(buffer_id, std::move(buffer_handle));
   auto& buffer_context = buffer_contexts_.back();
   for (auto& client : clients_) {
-    client.second->OnNewBuffer(buffer_context.buffer_id(),
-                               buffer_context.CloneBufferHandle());
+    client.second.client()->OnNewBuffer(buffer_context.buffer_id(),
+                                        buffer_context.CloneBufferHandle());
   }
 }
 
@@ -157,7 +187,7 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
             &BroadcastingReceiver::OnClientFinishedConsumingFrame,
             weak_factory_.GetWeakPtr(), buffer_context.buffer_id())),
         mojo::MakeRequest(&consumer_access_permission));
-    client.second->OnFrameReadyInBuffer(
+    client.second.client()->OnFrameReadyInBuffer(
         buffer_context.buffer_id(), frame_feedback_id,
         std::move(consumer_access_permission), frame_info.Clone());
     buffer_context.IncreaseConsumerCount();
@@ -166,17 +196,23 @@ void BroadcastingReceiver::OnFrameReadyInBuffer(
 
 void BroadcastingReceiver::OnBufferRetired(int32_t buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto& buffer_context = LookupBufferContextFromBufferId(buffer_id);
+  auto context_iter =
+      std::find_if(buffer_contexts_.begin(), buffer_contexts_.end(),
+                   [buffer_id](const BufferContext& entry) {
+                     return entry.buffer_id() == buffer_id;
+                   });
+  auto& buffer_context = *context_iter;
   CHECK(!buffer_context.IsStillBeingConsumed());
+  buffer_contexts_.erase(context_iter);
   for (auto& client : clients_) {
-    client.second->OnBufferRetired(buffer_id);
+    client.second.client()->OnBufferRetired(buffer_id);
   }
 }
 
 void BroadcastingReceiver::OnError(media::VideoCaptureError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& client : clients_) {
-    client.second->OnError(error);
+    client.second.client()->OnError(error);
   }
   status_ = Status::kOnErrorHasBeenCalled;
   error_ = error;
@@ -186,21 +222,21 @@ void BroadcastingReceiver::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& client : clients_) {
-    client.second->OnFrameDropped(reason);
+    client.second.client()->OnFrameDropped(reason);
   }
 }
 
 void BroadcastingReceiver::OnLog(const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& client : clients_) {
-    client.second->OnLog(message);
+    client.second.client()->OnLog(message);
   }
 }
 
 void BroadcastingReceiver::OnStarted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& client : clients_) {
-    client.second->OnStarted();
+    client.second.OnStarted();
   }
   status_ = Status::kOnStartedHasBeenCalled;
 }
@@ -208,7 +244,7 @@ void BroadcastingReceiver::OnStarted() {
 void BroadcastingReceiver::OnStartedUsingGpuDecode() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& client : clients_) {
-    client.second->OnStartedUsingGpuDecode();
+    client.second.OnStartedUsingGpuDecode();
   }
   status_ = Status::kOnStartedUsingGpuDecodeHasBeenCalled;
 }

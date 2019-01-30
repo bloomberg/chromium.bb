@@ -78,12 +78,31 @@ class BroadcastingReceiver : public mojom::Receiver {
     mojom::ScopedAccessPermissionPtr access_permission_;
   };
 
+  // Wrapper for a mojom::ReceiverPtr that suppresses calls to OnStarted() and
+  // OnStartedUsingGpuDecode() after they have already been called once.
+  class ClientContext {
+   public:
+    explicit ClientContext(mojom::ReceiverPtr client);
+    ~ClientContext();
+    ClientContext(ClientContext&& other);
+    ClientContext& operator=(ClientContext&& other);
+    void OnStarted();
+    void OnStartedUsingGpuDecode();
+
+    mojom::ReceiverPtr& client() { return client_; }
+
+   private:
+    mojom::ReceiverPtr client_;
+    bool on_started_has_been_called_;
+    bool on_started_using_gpu_decode_has_been_called_;
+  };
+
   void OnClientFinishedConsumingFrame(int32_t buffer_id);
   void OnClientDisconnected(int32_t client_id);
   BufferContext& LookupBufferContextFromBufferId(int32_t buffer_id);
 
   SEQUENCE_CHECKER(sequence_checker_);
-  std::map<int32_t /*client_id*/, mojom::ReceiverPtr> clients_;
+  std::map<int32_t /*client_id*/, ClientContext> clients_;
   std::vector<BufferContext> buffer_contexts_;
   Status status_;
 
