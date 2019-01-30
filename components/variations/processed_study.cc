@@ -55,11 +55,11 @@ bool ValidateStudyAndComputeTotalProbability(
       return false;
     }
 
-    // Note: This checks for ACTIVATION_EXPLICIT, since there is no reason to
-    // have this association with ACTIVATION_AUTO (where the trial starts
+    // Note: This checks for ACTIVATE_ON_QUERY, since there is no reason to
+    // have this association with ACTIVATE_ON_STARTUP (where the trial starts
     // active), as well as allowing flexibility to disable this behavior in the
     // future from the server by introducing a new activation type.
-    if (study.activation_type() == Study_ActivationType_ACTIVATION_EXPLICIT) {
+    if (study.activation_type() == Study_ActivationType_ACTIVATE_ON_QUERY) {
       const auto& features = experiment.feature_association();
       for (int i = 0; i < features.enable_feature_size(); ++i) {
         features_to_associate.insert(features.enable_feature(i));
