@@ -12,7 +12,7 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 visibility = [ "//third_party/blink/*" ]
 
-component("controller") {
+jumbo_component("controller") {
   output_name = "blink_controller"
 
   deps = [
