@@ -185,6 +185,13 @@ class DialServiceImpl : public DialService {
   // Starts the control flow for one discovery cycle.
   void StartDiscovery();
 
+  // Task to retrieve networks on UI thread.
+  void GetNetworkListOnUIThread();
+
+  // Callback invoked to send retrieved networks on IO thread.
+  void PostSendNetworkList(
+      const base::Optional<net::NetworkInterfaceList>& networks);
+
   // For each network interface in |list|, finds all unqiue IPv4 network
   // interfaces and call |DiscoverOnAddresses()| with their IP addresses.
   void SendNetworkList(const net::NetworkInterfaceList& list);
@@ -261,6 +268,12 @@ class DialServiceImpl : public DialService {
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::CancelableTaskTracker task_tracker_;
+
+  // WeakPrtFactory for WeakPtrs that are invalidated on UI thread.
+  base::WeakPtrFactory<DialServiceImpl> weak_ptr_factory_for_ui_{this};
+
+  // WeakPrtFactory for WeakPtrs that are invalidated on IO thread.
+  base::WeakPtrFactory<DialServiceImpl> weak_ptr_factory_for_io_{this};
 
   friend class DialServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestSendMultipleRequests);
