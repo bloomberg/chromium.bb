@@ -91,6 +91,7 @@ void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
   FinishUpdateResolver(kReject);
   FinishCommitResolver(kReject);
   FinishAcquireResolver(kReject);
+  CancelTimeoutTask();
   state_ = kUnlocked;
 }
 
@@ -394,6 +395,7 @@ void DisplayLockContext::StartCommit() {
   if (!element_ || !element_->isConnected()) {
     state_ = kUnlocked;
     update_budget_.reset();
+    CancelTimeoutTask();
     FinishUpdateResolver(kReject);
     // TODO(vmpstr): Should we resolve here? What's the path to unlocking an
     // element without connecting it (i.e. acquire the lock, then change your
@@ -407,6 +409,7 @@ void DisplayLockContext::StartCommit() {
   if (state_ == kPendingAcquire) {
     FinishAcquireResolver(kReject);
     FinishCommitResolver(kResolve);
+    CancelTimeoutTask();
     state_ = kUnlocked;
     return;
   }
@@ -561,6 +564,7 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
   if (state_ == kPendingAcquire) {
     if (!ElementSupportsDisplayLocking()) {
       FinishAcquireResolver(kReject);
+      CancelTimeoutTask();
       state_ = kUnlocked;
       return;
     }
@@ -568,6 +572,10 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
     FinishAcquireResolver(kResolve);
     state_ = kLocked;
     auto* layout_object = element_->GetLayoutObject();
+    // TODO(vmpstr): Note that we may be in a nested display lock, so it's
+    // unclear which frame rect to save here since we have not necessarily done
+    // a layout to acquire this lock. We need to figure out what to do here. For
+    // now, just stash whatever the current frame rect is. See crbug.com/926276.
     if (layout_object && layout_object->IsBox()) {
       locked_frame_rect_ = ToLayoutBox(layout_object)->FrameRect();
     } else {
@@ -595,6 +603,7 @@ void DisplayLockContext::DidFinishLifecycleUpdate() {
 
     if (commit_resolver_) {
       FinishCommitResolver(kReject);
+      CancelTimeoutTask();
       state_ = kUnlocked;
     } else {
       state_ = kLocked;
@@ -638,6 +647,7 @@ void DisplayLockContext::ElementWasDestroyed(Document& document) {
 }
 
 void DisplayLockContext::ScheduleAnimation() {
+  DCHECK(element_);
   DCHECK(element_->isConnected());
 
   // Schedule an animation to perform the lifecycle phases.
@@ -670,12 +680,25 @@ void DisplayLockContext::CancelTimeoutTask() {
 }
 
 void DisplayLockContext::TriggerTimeout() {
+  // We might have started to shut down while we're triggering a timeout. In
+  // that case, do nothing.
+  if (!element_ || !element_->GetDocument().Lifecycle().IsActive())
+    return;
   StartCommit();
   timeout_task_is_scheduled_ = false;
 }
 
 bool DisplayLockContext::ElementSupportsDisplayLocking() const {
-  DCHECK(element_ && !IsElementDirtyForStyleRecalc());
+  DCHECK(element_);
+  // The style can be dirty if we're in a nested lock.
+  // TODO(vmpstr): We need to figure out what to do here, since we don't know
+  // what the style is and whether this element has proper containment. However,
+  // forcing an update from the ancestor locks seems inefficient. For now, we
+  // just optimistically assume that we have all of the right containment in
+  // place. See crbug.com/926276 for more information.
+  if (IsElementDirtyForStyleRecalc())
+    return true;
+
   // If we have a layout object, check that since it's a more authoritative
   // source of containment information.
   if (auto* layout_object = element_->GetLayoutObject()) {
