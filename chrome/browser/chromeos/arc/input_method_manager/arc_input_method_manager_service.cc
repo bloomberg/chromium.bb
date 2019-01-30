@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -386,6 +387,8 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
 
   // Refresh allowed IME list.
   UpdateArcIMEAllowed();
+
+  UMA_HISTOGRAM_COUNTS_100("Arc.ImeCount", descriptors.size());
 }
 
 void ArcInputMethodManagerService::OnConnectionClosed() {
