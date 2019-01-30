@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
