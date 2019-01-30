@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 
 namespace content {
 
