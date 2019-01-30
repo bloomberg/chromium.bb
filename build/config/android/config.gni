@@ -228,6 +228,9 @@ if (is_android || is_chromeos) {
 
     # Checks that proguard flags have not changed (!is_java_debug only).
     check_android_configuration = false
+
+    # Enables instantiation of 64-bit browser targets.
+    enable_64_bit_browser = false
   }
 
   assert(!(check_android_configuration && is_java_debug),

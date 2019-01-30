@@ -41,14 +41,8 @@ chrome_public_android_manifest =
     "$target_gen_dir/chrome_public_apk/AndroidManifest.xml"
 chrome_modern_public_android_manifest =
     "$target_gen_dir/chrome_modern_public_apk/AndroidManifest.xml"
-monochrome_public_apk_android_manifest =
-    "$target_gen_dir/monochrome_public_apk/AndroidManifest.xml"
-monochrome_public_bundle_android_manifest =
-    "$target_gen_dir/monochrome_public_bundle/AndroidManifest.xml"
 trichrome_library_android_manifest =
     "$target_gen_dir/trichrome_library_apk/AndroidManifest.xml"
-trichrome_chrome_android_manifest =
-    "$target_gen_dir/trichrome_chrome_apk/AndroidManifest.xml"
 
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 _chrome_version_java_file = "$target_gen_dir/templates/org/chromium/chrome/browser/ChromeVersionConstants.java"
@@ -88,48 +82,11 @@ jinja_template("chrome_modern_public_android_manifest") {
   variables += [ "include_arcore_manifest_flag=false" ]
 }
 
-jinja_template("monochrome_public_apk_android_manifest") {
-  input = "java/AndroidManifest_monochrome.xml"
-  includes = [
-    "//android_webview/apk/java/AndroidManifest.xml",
-    "java/AndroidManifest.xml",
-  ]
-  output = monochrome_public_apk_android_manifest
-  variables = chrome_public_jinja_variables +
-              monochrome_android_manifest_jinja_variables +
-              [
-                "target_sdk_version=$android_sdk_version",
-                "webview_library=libmonochrome.so",
-              ]
-}
-
-jinja_template("monochrome_public_bundle_android_manifest") {
-  input = "java/AndroidManifest_monochrome.xml"
-  includes = [
-    "//android_webview/apk/java/AndroidManifest.xml",
-    "java/AndroidManifest.xml",
-  ]
-  output = monochrome_public_bundle_android_manifest
-  variables = chrome_public_jinja_variables +
-              monochrome_android_manifest_jinja_variables +
-              [
-                "target_sdk_version=$android_sdk_version",
-                "webview_library=libmonochrome${bundle_library_suffix}.so",
-              ]
-}
-
 jinja_template("trichrome_library_android_manifest") {
   input = "java/AndroidManifest_trichrome_library.xml"
   output = trichrome_library_android_manifest
   variables = trichrome_jinja_variables +
               [ "manifest_package=$trichrome_library_package" ]
-}
-
-jinja_template("trichrome_chrome_android_manifest") {
-  input = "java/AndroidManifest_trichrome_chrome.xml"
-  includes = [ "java/AndroidManifest.xml" ]
-  output = trichrome_chrome_android_manifest
-  variables = chrome_public_jinja_variables + trichrome_jinja_variables
 }
 
 android_resources("chrome_app_java_resources") {
@@ -1284,28 +1241,22 @@ if (current_toolchain == default_toolchain) {
   }
 }  # current_toolchain == host_toolchain
 
-# Only 32-bit //chrome/android/monochrome is needed, beside
-# being built with 32-bit default toolchain, it is also built
-# with secondary 32-bit toolchain in 64-bit platform because we
-# need 64-bit //android_webview/monochrome and 32-bit this target
-# for 64-bit APK.
+# Monochrome equivalent of Chrome's APK or bundle library template.
+template("libmonochrome_apk_or_bundle_tmpl") {
+  chrome_common_shared_library(target_name) {
+    forward_variables_from(invoker, "*")
+    sources = [
+      "../browser/android/monochrome_entry_point.cc",
+    ]
+    deps = [
+      "//android_webview:common",
+      "//components/crash/android:crashpad_main",
+    ]
+    is_monochrome = true
+  }
+}
 
 if (!android_64bit_target_cpu || !current_abi_is_webview_only) {
-  # Monochrome equivalent of Chrome's APK or bundle library template.
-  template("libmonochrome_apk_or_bundle_tmpl") {
-    chrome_common_shared_library(target_name) {
-      forward_variables_from(invoker, "*")
-      sources = [
-        "../browser/android/monochrome_entry_point.cc",
-      ]
-      deps = [
-        "//android_webview:common",
-        "//components/crash/android:crashpad_main",
-      ]
-      is_monochrome = true
-    }
-  }
-
   # Monochrome APK native library.
   libmonochrome_apk_or_bundle_tmpl("monochrome") {
   }
@@ -1313,7 +1264,29 @@ if (!android_64bit_target_cpu || !current_abi_is_webview_only) {
   # Monochrome bundle native library.
   libmonochrome_apk_or_bundle_tmpl("monochrome_base") {
   }
+
+  if (android_64bit_target_cpu && enable_64_bit_browser) {
+    group("monochrome_64_secondary_abi_lib") {
+      public_deps = [
+        ":monochrome_64($android_secondary_abi_toolchain)",
+      ]
+    }
+    group("monochrome_64_base_secondary_abi_lib") {
+      public_deps = [
+        ":monochrome_64_base($android_secondary_abi_toolchain)",
+      ]
+    }
+  }
 } else {
+  # 64-bit browser library targets (APK and bundle).
+  if (enable_64_bit_browser) {
+    libmonochrome_apk_or_bundle_tmpl("monochrome_64") {
+    }
+    libmonochrome_apk_or_bundle_tmpl("monochrome_64_base") {
+    }
+  }
+
+  # 32-bit browser library alias targets, pulled in by 64-bit WebView builds.
   group("monochrome_secondary_abi_lib") {
     public_deps = [
       ":monochrome($android_secondary_abi_toolchain)",
@@ -1535,14 +1508,55 @@ android_library("monochrome_java") {
 #     suffix (e.g. "MonochromePublicBase")
 #   is_base_module: For module target types, a boolean indicating whether
 #     this is a base bundle module (instead of a feature one).
-#
+#   is_64_bit_browser: When compiling in a 64-bit configuration, a boolean
+#     indicating whether the browser is 64-bit or 32-bit.
+#   include_32_bit_webview: When compiling a 64-bit browser configuration, if
+#     true, a 32-bit WebView library will also be built and included.
 template("monochrome_public_apk_or_module_tmpl") {
+  _android_manifest =
+      "$target_gen_dir/manifest/${target_name}/AndroidManifest.xml"
+
+  # Generate the manifest here in the template, to avoid a growing collection
+  # of manually-instantiated manifests.
+  jinja_template("${target_name}__android_manifest") {
+    _is_trichrome =
+        defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
+    includes = [ "java/AndroidManifest.xml" ]
+    variables = chrome_public_jinja_variables
+    if (_is_trichrome) {
+      input = "java/AndroidManifest_trichrome_chrome.xml"
+      variables += trichrome_jinja_variables
+    } else {
+      _arch = ""
+      _lib_suffix = ""
+      if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+        _arch = "_64"
+      }
+      if (invoker.target_type == "android_app_bundle_module") {
+        _lib_suffix = bundle_library_suffix
+      }
+      input = "java/AndroidManifest_monochrome.xml"
+      includes += [ "//android_webview/apk/java/AndroidManifest.xml" ]
+      variables += monochrome_android_manifest_jinja_variables + [
+                     "target_sdk_version=$android_sdk_version",
+                     "webview_library=libmonochrome${_arch}${_lib_suffix}.so",
+                   ]
+    }
+
+    # 32-bit is the common case, so remove the ABI variable in the 64-case.
+    if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+      variables -= [ use_32bit_abi_jinja_variable ]
+    }
+
+    output = _android_manifest
+  }
+
   monochrome_public_common_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker,
                            [
-                             "android_manifest",
-                             "android_manifest_dep",
                              "apk_name",
+                             "include_32_bit_webview",
+                             "is_64_bit_browser",
                              "is_base_module",
                              "module_name",
                              "verify_android_configuration",
@@ -1550,16 +1564,8 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "target_type",
                              "use_trichrome_library",
                            ])
-
-    if (!defined(android_manifest) && !defined(android_manifest_dep)) {
-      if (target_type == "android_app_bundle_module") {
-        android_manifest = monochrome_public_bundle_android_manifest
-        android_manifest_dep = ":monochrome_public_bundle_android_manifest"
-      } else {
-        android_manifest = monochrome_public_apk_android_manifest
-        android_manifest_dep = ":monochrome_public_apk_android_manifest"
-      }
-    }
+    android_manifest = _android_manifest
+    android_manifest_dep = ":${target_name}__android_manifest"
 
     if (public_android_sdk) {
       # Resource whitelist used when generating R.java files and causes
@@ -1600,6 +1606,26 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_base_bundle_module") {
   is_base_module = true
 }
 
+if (android_64bit_target_cpu && enable_64_bit_browser) {
+  monochrome_public_apk_or_module_tmpl(
+      "monochrome_64_public_base_bundle_module") {
+    module_name = "Monochrome64PublicBase"
+    target_type = "android_app_bundle_module"
+    is_base_module = true
+    is_64_bit_browser = true
+    include_32_bit_webview = false
+  }
+
+  monochrome_public_apk_or_module_tmpl(
+      "monochrome_64_32_public_base_bundle_module") {
+    module_name = "Monochrome6432PublicBase"
+    target_type = "android_app_bundle_module"
+    is_base_module = true
+    is_64_bit_browser = true
+    include_32_bit_webview = true
+  }
+}
+
 if (public_android_sdk) {
   trichrome_library_apk_tmpl("trichrome_library_apk") {
     apk_name = "TrichromeLibrary"
@@ -1611,8 +1637,6 @@ if (public_android_sdk) {
 monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
   apk_name = "TrichromeChrome"
   target_type = "android_apk"
-  android_manifest = trichrome_chrome_android_manifest
-  android_manifest_dep = ":trichrome_chrome_android_manifest"
   use_trichrome_library = true
 }
 
@@ -1885,30 +1909,55 @@ android_app_bundle("chrome_modern_public_bundle") {
   }
 }
 
-android_app_bundle("monochrome_public_bundle") {
+template("monochrome_public_bundle_tmpl") {
+  android_app_bundle(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "bundle_name",
+                             "base_module_target",
+                           ])
+
+    command_line_flags_file = "chrome-command-line"
+    if (!is_java_debug) {
+      proguard_enabled = true
+      proguard_android_sdk_dep = webview_framework_dep
+    }
+    enable_language_splits = enable_chrome_language_splits
+
+    # TODO(cjgrant): We need to create base-module-specific module targets.
+    extra_modules = []
+    if (modularize_ar) {
+      extra_modules = [
+        {
+          name = "ar"
+          module_target = ":ar_public_bundle_module"
+        },
+      ]
+    }
+    if (modularize_vr) {
+      extra_modules += [
+        {
+          name = "vr"
+          module_target = ":vr_monochrome_public_bundle_module"
+        },
+      ]
+    }
+  }
+}
+
+monochrome_public_bundle_tmpl("monochrome_public_bundle") {
   bundle_name = "MonochromePublic"
   base_module_target = ":monochrome_public_base_bundle_module"
-  command_line_flags_file = "chrome-command-line"
-  if (!is_java_debug) {
-    proguard_enabled = true
-    proguard_android_sdk_dep = webview_framework_dep
+}
+
+if (android_64bit_target_cpu && enable_64_bit_browser) {
+  monochrome_public_bundle_tmpl("monochrome_64_public_bundle") {
+    bundle_name = "MonochromePublic64"
+    base_module_target = ":monochrome_64_public_base_bundle_module"
   }
-  enable_language_splits = enable_chrome_language_splits
-  extra_modules = []
-  if (modularize_ar) {
-    extra_modules += [
-      {
-        name = "ar"
-        module_target = ":ar_public_bundle_module"
-      },
-    ]
-  }
-  if (modularize_vr) {
-    extra_modules += [
-      {
-        name = "vr"
-        module_target = ":vr_monochrome_public_bundle_module"
-      },
-    ]
+
+  monochrome_public_bundle_tmpl("monochrome_64_32_public_bundle") {
+    bundle_name = "MonochromePublic6432"
+    base_module_target = ":monochrome_64_32_public_base_bundle_module"
   }
 }
