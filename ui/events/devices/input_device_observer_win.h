@@ -16,7 +16,7 @@ struct DefaultSingletonTraits;
 
 namespace ui {
 
-class EVENTS_DEVICES_EXPORT InputDeviceObserverWin {
+class EVENTS_DEVICES_EXPORT InputDeviceObserverWin final {
  public:
   static InputDeviceObserverWin* GetInstance();
   ~InputDeviceObserverWin();
@@ -24,11 +24,10 @@ class EVENTS_DEVICES_EXPORT InputDeviceObserverWin {
   void AddObserver(InputDeviceEventObserver* observer);
   void RemoveObserver(InputDeviceEventObserver* observer);
 
- protected:
-  InputDeviceObserverWin();
-
  private:
   friend struct base::DefaultSingletonTraits<InputDeviceObserverWin>;
+
+  InputDeviceObserverWin();
 
   void OnRegistryKeyChanged();
   bool IsSlateModeEnabled();
