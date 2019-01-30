@@ -2918,6 +2918,10 @@ const char kCloudPrintXpsDescription[] =
     "Print with Chrome. Printers must be re-connected after changing this "
     "flag.";
 
+const char kD3D11VideoDecoderName[] = "D3D11 Video Decoder";
+const char kD3D11VideoDecoderDescription[] =
+    "Enables D3D11VideoDecoder for hardware accelerated video decoding.";
+
 const char kDisablePostscriptPrinting[] = "Disable PostScript Printing";
 const char kDisablePostscriptPrintingDescription[] =
     "Disables PostScript generation when printing to PostScript capable "

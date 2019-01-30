@@ -31848,6 +31848,7 @@ from previous Chrome versions.
   <int value="123097915" label="FaviconsFromWebManifest:enabled"/>
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
+  <int value="128086566" label="D3D11VideoDecoder:enabled"/>
   <int value="131881947" label="D3DVsync:enabled"/>
   <int value="132560299"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
@@ -32596,6 +32597,7 @@ from previous Chrome versions.
   <int value="1454527518" label="ArcNativeBridgeExperiment:enabled"/>
   <int value="1455881930" label="V8VmFuture:enabled"/>
   <int value="1458255488" label="BlinkGenPropertyTrees:enabled"/>
+  <int value="1458475849" label="D3D11VideoDecoder:disabled"/>
   <int value="1458583431" label="arc-use-auth-endpoint"/>
   <int value="1459529277" label="disable-text-input-focus-manager"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>

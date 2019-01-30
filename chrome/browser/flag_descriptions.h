@@ -1727,6 +1727,9 @@ extern const char kCalculateNativeWinOcclusionDescription[];
 extern const char kCloudPrintXpsName[];
 extern const char kCloudPrintXpsDescription[];
 
+extern const char kD3D11VideoDecoderName[];
+extern const char kD3D11VideoDecoderDescription[];
+
 extern const char kDisablePostscriptPrinting[];
 extern const char kDisablePostscriptPrintingDescription[];
 
