@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/release_callback.h"
@@ -40,11 +41,9 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   void SubmitCompositorFrame(viz::CompositorFrame frame);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
-  bool HasReleaseCallbackForResource(viz::ResourceId id);
-  void SetResourceReleaseCallback(viz::ResourceId id,
-                                  viz::ReleaseCallback callback);
-  int AllocateResourceId();
   base::WeakPtr<LayerTreeFrameSinkHolder> GetWeakPtr();
+
+  FrameSinkResourceManager* resource_manager() { return &resource_manager_; }
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
@@ -73,16 +72,10 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   // WMHelper::LifetimeManager::Observer:
   void OnDestroyed() override;
 
-  // A collection of callbacks used to release resources.
-  using ResourceReleaseCallbackMap =
-      base::flat_map<viz::ResourceId, viz::ReleaseCallback>;
-  ResourceReleaseCallbackMap release_callbacks_;
-
   SurfaceTreeHost* surface_tree_host_;
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
 
-  // The next resource id the buffer is attached to.
-  int next_resource_id_ = 1;
+  FrameSinkResourceManager resource_manager_;
 
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
