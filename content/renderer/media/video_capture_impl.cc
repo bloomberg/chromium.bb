@@ -173,6 +173,8 @@ void VideoCaptureImpl::StartCapture(
     const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb) {
   DVLOG(1) << __func__ << " |device_id_| = " << device_id_;
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  OnLog("VideoCaptureImpl got request to start capture.");
+
   ClientInfo client_info;
   client_info.params = params;
   client_info.state_update_cb = state_update_cb;
@@ -182,6 +184,7 @@ void VideoCaptureImpl::StartCapture(
     case blink::VIDEO_CAPTURE_STATE_STARTING:
     case blink::VIDEO_CAPTURE_STATE_STARTED:
       clients_[client_id] = client_info;
+      OnLog("VideoCaptureImpl capture is already started or starting.");
       // TODO(sheu): Allowing resolution change will require that all
       // outstanding clients of a capture session support resolution change.
       DCHECK_EQ(params_.resolution_change_policy,
@@ -202,9 +205,11 @@ void VideoCaptureImpl::StartCapture(
 
       DVLOG(1) << "StartCapture: starting with first resolution "
                << params_.requested_format.frame_size.ToString();
+      OnLog("VideoCaptureImpl starting capture.");
       StartCaptureInternal();
       return;
     case blink::VIDEO_CAPTURE_STATE_ERROR:
+      OnLog("VideoCaptureImpl is in error state.");
       state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
       return;
     case blink::VIDEO_CAPTURE_STATE_PAUSED:
@@ -256,12 +261,17 @@ void VideoCaptureImpl::GetDeviceFormatsInUse(
                      weak_factory_.GetWeakPtr(), callback));
 }
 
+void VideoCaptureImpl::OnLog(const std::string& message) {
+  GetVideoCaptureHost()->OnLog(device_id_, message);
+}
+
 void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
   DVLOG(1) << __func__ << " state: " << state;
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   switch (state) {
     case media::mojom::VideoCaptureState::STARTED:
+      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTED");
       state_ = blink::VIDEO_CAPTURE_STATE_STARTED;
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_STARTED);
@@ -271,11 +281,14 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
       RequestRefreshFrame();
       break;
     case media::mojom::VideoCaptureState::STOPPED:
+      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STOPPED");
       state_ = blink::VIDEO_CAPTURE_STATE_STOPPED;
       client_buffers_.clear();
       weak_factory_.InvalidateWeakPtrs();
-      if (!clients_.empty() || !clients_pending_on_restart_.empty())
+      if (!clients_.empty() || !clients_pending_on_restart_.empty()) {
+        OnLog("VideoCaptureImpl restarting capture");
         RestartCapture();
+      }
       break;
     case media::mojom::VideoCaptureState::PAUSED:
       for (const auto& client : clients_)
@@ -286,12 +299,14 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_RESUMED);
       break;
     case media::mojom::VideoCaptureState::FAILED:
+      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ERROR");
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
       clients_.clear();
       state_ = blink::VIDEO_CAPTURE_STATE_ERROR;
       break;
     case media::mojom::VideoCaptureState::ENDED:
+      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ENDED");
       // We'll only notify the client that the stream has stopped.
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_STOPPED);
@@ -333,8 +348,10 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
       media::VideoFrameMetadata::REFERENCE_TIME, &reference_time);
   DCHECK(success);
 
-  if (first_frame_ref_time_.is_null())
+  if (first_frame_ref_time_.is_null()) {
     first_frame_ref_time_ = reference_time;
+    OnLog("First frame received at VideoCaptureImpl");
+  }
 
   // If the timestamp is not prepared, we use reference time to make a rough
   // estimate. e.g. ThreadSafeCaptureOracle::DidCaptureFrame().
@@ -479,6 +496,7 @@ void VideoCaptureImpl::StopDevice() {
       state_ != blink::VIDEO_CAPTURE_STATE_STARTED)
     return;
   state_ = blink::VIDEO_CAPTURE_STATE_STOPPING;
+  OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STOPPING");
   GetVideoCaptureHost()->Stop(device_id_);
   params_.requested_format.frame_size.SetSize(0, 0);
 }
@@ -506,6 +524,7 @@ void VideoCaptureImpl::RestartCapture() {
 void VideoCaptureImpl::StartCaptureInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   state_ = blink::VIDEO_CAPTURE_STATE_STARTING;
+  OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTING");
 
   media::mojom::VideoCaptureObserverPtr observer;
   observer_binding_.Bind(mojo::MakeRequest(&observer));

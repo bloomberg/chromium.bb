@@ -616,13 +616,14 @@ void VideoCaptureController::OnLog(const std::string& message) {
 
 void VideoCaptureController::OnStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
   state_ = blink::VIDEO_CAPTURE_STATE_STARTED;
   PerformForClientsWithOpenSession(base::BindRepeating(&CallOnStarted));
 }
 
 void VideoCaptureController::OnStartedUsingGpuDecode() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  OnLog("StartedUsingGpuDecode");
+  EmitLogMessage(__func__, 3);
   PerformForClientsWithOpenSession(
       base::BindRepeating(&CallOnStartedUsingGpuDecode));
 }
@@ -630,6 +631,7 @@ void VideoCaptureController::OnStartedUsingGpuDecode() {
 void VideoCaptureController::OnDeviceLaunched(
     std::unique_ptr<LaunchedVideoCaptureDevice> device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
   launched_device_ = std::move(device);
   for (auto& entry : buffer_contexts_)
     entry.set_consumer_feedback_observer(launched_device_.get());
@@ -641,6 +643,7 @@ void VideoCaptureController::OnDeviceLaunched(
 void VideoCaptureController::OnDeviceLaunchFailed(
     media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
   if (device_launch_observer_) {
     device_launch_observer_->OnDeviceLaunchFailed(this, error);
     device_launch_observer_ = nullptr;
@@ -649,6 +652,7 @@ void VideoCaptureController::OnDeviceLaunchFailed(
 
 void VideoCaptureController::OnDeviceLaunchAborted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
   if (device_launch_observer_) {
     device_launch_observer_->OnDeviceLaunchAborted();
     device_launch_observer_ = nullptr;
@@ -657,6 +661,7 @@ void VideoCaptureController::OnDeviceLaunchAborted() {
 
 void VideoCaptureController::OnDeviceConnectionLost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
   if (device_launch_observer_) {
     device_launch_observer_->OnDeviceConnectionLost(this);
     device_launch_observer_ = nullptr;
@@ -732,12 +737,14 @@ void VideoCaptureController::TakePhoto(
 void VideoCaptureController::MaybeSuspend() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(launched_device_);
+  EmitLogMessage(__func__, 3);
   launched_device_->MaybeSuspendDevice();
 }
 
 void VideoCaptureController::Resume() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(launched_device_);
+  EmitLogMessage(__func__, 3);
   launched_device_->ResumeDevice();
 }
 

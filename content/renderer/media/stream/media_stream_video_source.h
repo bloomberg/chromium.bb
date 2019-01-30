@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_SOURCE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -124,6 +125,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
+
+  // Optionally overridden by subclasses to implement handling log messages.
+  virtual void OnLog(const std::string& message) {}
 
   // Enables or disables an heuristic to detect frames from rotated devices.
   void SetDeviceRotationDetection(bool enabled);

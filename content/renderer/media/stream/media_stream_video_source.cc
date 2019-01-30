@@ -340,11 +340,16 @@ void MediaStreamVideoSource::OnStartDone(
     blink::MediaStreamRequestResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "OnStartDone({result =" << result << "})";
-  if (state_ == ENDED)
+  if (state_ == ENDED) {
+    OnLog(
+        "MediaStreamVideoSource::OnStartDone dropping event because state_ == "
+        "ENDED.");
     return;
+  }
 
   if (result == blink::MEDIA_DEVICE_OK) {
     DCHECK_EQ(STARTING, state_);
+    OnLog("MediaStreamVideoSource changing state to STARTED");
     state_ = STARTED;
     SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
     StartFrameMonitoring();
@@ -374,8 +379,16 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
       UpdateTrackSettings(track_info.track, *track_info.adapter_settings);
     }
 
-    if (!track_info.callback.is_null())
+    if (!track_info.callback.is_null()) {
+      OnLog(
+          "MediaStreamVideoSource invoking callback indicating result of "
+          "starting track.");
       track_info.callback.Run(this, result, blink::WebString());
+    } else {
+      OnLog(
+          "MediaStreamVideoSource dropping event indicating result of starting "
+          "track.");
+    }
   }
 }
 

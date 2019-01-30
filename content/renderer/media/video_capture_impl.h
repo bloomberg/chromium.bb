@@ -9,6 +9,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -62,6 +63,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   // |callback| will be invoked with the results.
   void GetDeviceFormatsInUse(
       const blink::VideoCaptureDeviceFormatsCB& callback);
+
+  void OnLog(const std::string& message);
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 

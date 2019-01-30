@@ -173,6 +173,12 @@ void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
   std::move(callback).Run(media::VideoCaptureFormats());
 }
 
+void SingleClientVideoCaptureHost::OnLog(int32_t device_id,
+                                         const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Ignore this call.
+}
+
 void SingleClientVideoCaptureHost::OnNewBuffer(
     int buffer_id,
     media::mojom::VideoBufferHandlePtr buffer_handle) {

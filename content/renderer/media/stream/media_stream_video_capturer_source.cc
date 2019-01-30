@@ -38,7 +38,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   explicit LocalVideoCapturerSource(int session_id);
   ~LocalVideoCapturerSource() override;
 
-  // VideoCaptureDelegate Implementation.
+  // VideoCaptureSource Implementation.
   media::VideoCaptureFormats GetPreferredFormats() override;
   void StartCapture(const media::VideoCaptureParams& params,
                     const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
@@ -47,6 +47,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   void MaybeSuspend() override;
   void Resume() override;
   void StopCapture() override;
+  void OnLog(const std::string& message) override;
 
  private:
   void OnStateUpdate(blink::VideoCaptureState state);
@@ -130,12 +131,22 @@ void LocalVideoCapturerSource::StopCapture() {
     base::ResetAndReturn(&stop_capture_cb_).Run();
 }
 
+void LocalVideoCapturerSource::OnLog(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  manager_->OnLog(session_id_, message);
+}
+
 void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (running_callback_.is_null())
+  if (running_callback_.is_null()) {
+    OnLog("LocalVideoCapturerSource::OnStateUpdate discarding state update.");
     return;
+  }
   switch (state) {
     case blink::VIDEO_CAPTURE_STATE_STARTED:
+      OnLog(
+          "LocalVideoCapturerSource::OnStateUpdate signaling to "
+          "consumer that source is now running.");
       running_callback_.Run(true);
       break;
 
@@ -145,6 +156,9 @@ void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
     case blink::VIDEO_CAPTURE_STATE_ENDED:
       release_device_cb_.Run();
       release_device_cb_ = manager_->UseDevice(session_id_);
+      OnLog(
+          "LocalVideoCapturerSource::OnStateUpdate signaling to "
+          "consumer that source is no longer running.");
       running_callback_.Run(false);
       break;
 
@@ -201,6 +215,11 @@ void MediaStreamVideoCapturerSource::
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   source_->RequestRefreshFrame();
+}
+
+void MediaStreamVideoCapturerSource::OnLog(const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  source_->OnLog(message);
 }
 
 void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
@@ -300,6 +319,7 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state_) {
     case STARTING:
+      source_->OnLog("MediaStreamVideoCapturerSource sending OnStartDone");
       if (is_running) {
         state_ = STARTED;
         DCHECK(capture_params_ == new_capture_params);
@@ -316,6 +336,8 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
       }
       break;
     case STOPPING_FOR_RESTART:
+      source_->OnLog(
+          "MediaStreamVideoCapturerSource sending OnStopForRestartDone");
       state_ = is_running ? STARTED : STOPPED;
       OnStopForRestartDone(!is_running);
       break;
@@ -329,6 +351,7 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
       } else {
         state_ = STOPPED;
       }
+      source_->OnLog("MediaStreamVideoCapturerSource sending OnRestartDone");
       OnRestartDone(is_running);
       break;
     case STOPPED:

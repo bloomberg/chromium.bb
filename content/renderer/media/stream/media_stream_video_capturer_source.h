@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -57,6 +58,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
 
   // MediaStreamVideoSource overrides.
   void RequestRefreshFrame() override;
+  void OnLog(const std::string& message) override;
   void OnHasConsumers(bool has_consumers) override;
   void OnCapturingLinkSecured(bool is_secure) override;
   void StartSourceImpl(
