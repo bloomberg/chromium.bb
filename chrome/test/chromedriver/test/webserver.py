@@ -4,6 +4,7 @@
 
 import BaseHTTPServer
 import os
+import SocketServer
 import threading
 import ssl
 import sys
@@ -115,6 +116,11 @@ class _BaseServer(BaseHTTPServer.HTTPServer):
     return 'http' + postfix
 
 
+class _ThreadingServer(SocketServer.ThreadingMixIn, _BaseServer):
+  """_BaseServer enhanced to handle multiple requests simultaneously"""
+  pass
+
+
 class WebServer(object):
   """An HTTP or HTTPS server that serves on its own thread.
 
@@ -133,7 +139,7 @@ class WebServer(object):
                                 if it is None, start the server as an HTTP one.
     """
     self._root_dir = os.path.abspath(root_dir)
-    self._server = _BaseServer(self._OnRequest, server_cert_and_key_path)
+    self._server = _ThreadingServer(self._OnRequest, server_cert_and_key_path)
     self._thread = threading.Thread(target=self._server.serve_forever)
     self._thread.daemon = True
     self._thread.start()
