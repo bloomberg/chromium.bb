@@ -203,7 +203,7 @@ ImageType ImageTypeForNetwork(const NetworkState* network, IconType icon_type) {
 gfx::Size GetSizeForIconType(IconType icon_type) {
   int size = kMenuIconSize;
   if (IsTrayIcon(icon_type)) {
-    size = TrayConstants::GetTrayIconSize();
+    size = kTrayIconSize;
   } else if (icon_type == ICON_TYPE_DEFAULT_VIEW) {
     size = kUnifiedFeaturePodVectorIconSize;
   }

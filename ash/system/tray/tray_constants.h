@@ -85,9 +85,12 @@ extern const SkColor kMobileNotConnectedXIconColor;
 // Extra padding used to adjust hitting region around tray items.
 extern const int kHitRegionPadding;
 
-// Width of a line used to separate tray items in the shelf.
-ASH_EXPORT const int kSeparatorWidth = 1;
-const int kSeparatorWidthNewUi = 0;
+// Width of lines used to separate menu items (e.g. input method menu).
+constexpr int kMenuSeparatorWidth = 1;
+
+// Width of lines used to separate sections of the system tray, for instance
+// in tray detailed views.
+constexpr int kTraySeparatorWidth = 0;
 
 // The color of the separators used in the system menu.
 extern const SkColor kMenuSeparatorColor;
@@ -238,17 +241,6 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 // Constants used in the title row of a detailed view in UnifiedSystemTray.
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
-
-// TODO(tetsui): Remove this class.
-class TrayConstants {
- public:
-  // Returns the width of a line used to separate tray items in the shelf.
-  static int separator_width() { return kSeparatorWidthNewUi; }
-
-  static int GetTrayIconSize();
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);
-};
 
 }  // namespace ash
 

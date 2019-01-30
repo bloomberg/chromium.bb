@@ -224,12 +224,11 @@ void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
 void TrayPopupUtils::ShowStickyHeaderSeparator(views::View* view,
                                                bool show_separator) {
   if (show_separator) {
-    const int separator_width = ash::TrayConstants::separator_width();
     view->SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
+        views::CreateSolidSidedBorder(0, 0, kTraySeparatorWidth, 0,
                                       kMenuSeparatorColor),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
-                    kMenuSeparatorVerticalPadding - separator_width, 0)));
+                    kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
     view->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
