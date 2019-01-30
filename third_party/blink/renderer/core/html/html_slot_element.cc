@@ -280,10 +280,8 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   if (SupportsAssignment()) {
     AttachContext children_context(context);
 
-    for (auto& node : AssignedNodes()) {
-      if (node->NeedsReattachLayoutTree())
-        node->AttachLayoutTree(children_context);
-    }
+    for (auto& node : AssignedNodes())
+      node->AttachLayoutTree(children_context);
     if (children_context.previous_in_flow)
       context.previous_in_flow = children_context.previous_in_flow;
   }
