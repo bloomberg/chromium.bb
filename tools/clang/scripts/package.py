@@ -232,7 +232,6 @@ def main():
   want = ['bin/llvm-pdbutil' + exe_ext,
           'bin/llvm-symbolizer' + exe_ext,
           'bin/llvm-undname' + exe_ext,
-          'bin/sancov' + exe_ext,
           # Copy built-in headers (lib/clang/3.x.y/include).
           'lib/clang/*/include/*',
           'lib/clang/*/share/asan_blacklist.txt',
@@ -396,7 +395,6 @@ def main():
                        'llvm-pdbutil',
                        'llvm-symbolizer',
                        'llvm-undname',
-                       'sancov',
                        ]
   if sys.platform.startswith('linux'):
     stripped_binaries.append('lld')
