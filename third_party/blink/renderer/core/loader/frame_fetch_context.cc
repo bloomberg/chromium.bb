@@ -252,6 +252,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(
                        ->Fetcher()
                        ->Archive();
   }
+  init.frame_scheduler = frame.GetFrameScheduler();
   return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
@@ -262,13 +263,15 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   DCHECK(!document->GetFrame());
   auto& frame_or_imported_document =
       *MakeGarbageCollected<FrameOrImportedDocument>(*document);
+  LocalFrame& frame = frame_or_imported_document.GetFrame();
   ResourceFetcherInit init(
       *MakeGarbageCollected<FrameResourceFetcherProperties>(
           frame_or_imported_document),
       MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
       document->GetTaskRunner(blink::TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document),
-      frame_or_imported_document.GetFrame().Console());
+      frame.Console());
+  init.frame_scheduler = frame.GetFrameScheduler();
   return MakeGarbageCollected<ResourceFetcher>(init);
 }
 
@@ -278,12 +281,6 @@ FrameFetchContext::FrameFetchContext(
       save_data_enabled_(
           GetNetworkStateNotifier().SaveDataEnabled() &&
           !GetFrame()->GetSettings()->GetDataSaverHoldbackWebApi()) {}
-
-FrameScheduler* FrameFetchContext::GetFrameScheduler() const {
-  if (GetResourceFetcherProperties().IsDetached())
-    return nullptr;
-  return GetFrame()->GetFrameScheduler();
-}
 
 KURL FrameFetchContext::GetSiteForCookies() const {
   if (GetResourceFetcherProperties().IsDetached())
@@ -426,9 +423,10 @@ void FrameFetchContext::PrepareRequest(
   if (GetResourceFetcherProperties().IsDetached())
     return;
   GetLocalFrameClient()->DispatchWillSendRequest(request);
+  FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler();
   if (redirect_type == FetchContext::RedirectType::kNotForRedirect &&
-      GetFrameScheduler()) {
-    virtual_time_pauser = GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
+      frame_scheduler) {
+    virtual_time_pauser = frame_scheduler->CreateWebScopedVirtualTimePauser(
         request.Url().GetString(),
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   }

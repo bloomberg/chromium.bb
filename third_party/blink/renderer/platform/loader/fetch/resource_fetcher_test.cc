@@ -955,6 +955,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   EXPECT_FALSE(properties.IsDetached());
   EXPECT_FALSE(properties.IsLoadComplete());
   EXPECT_FALSE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
 
   fetcher->ClearContext();
   // ResourceFetcher::GetProperties always returns the same object.
@@ -972,6 +973,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
   EXPECT_TRUE(properties.IsDetached());
   EXPECT_FALSE(properties.IsLoadComplete());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
 }
 
 TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
@@ -998,6 +1000,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   original_properties.SetIsPaused(true);
   original_properties.SetIsLoadComplete(true);
   original_properties.SetShouldBlockLoadingSubResource(true);
+  original_properties.SetFrameStatus(scheduler::FrameStatus::kMainFrameVisible);
 
   const auto& client_settings_object =
       properties.GetFetchClientSettingsObject();
@@ -1010,6 +1013,8 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   EXPECT_FALSE(properties.IsDetached());
   EXPECT_TRUE(properties.IsLoadComplete());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_EQ(scheduler::FrameStatus::kMainFrameVisible,
+            properties.GetFrameStatus());
 
   fetcher->ClearContext();
   // ResourceFetcher::GetProperties always returns the same object.
@@ -1027,6 +1032,7 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
   EXPECT_TRUE(properties.IsDetached());
   EXPECT_TRUE(properties.IsLoadComplete());
   EXPECT_TRUE(properties.ShouldBlockLoadingSubResource());
+  EXPECT_EQ(scheduler::FrameStatus::kNone, properties.GetFrameStatus());
 }
 
 }  // namespace blink

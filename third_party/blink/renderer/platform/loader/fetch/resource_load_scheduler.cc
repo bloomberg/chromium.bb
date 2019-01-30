@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
+#include <memory>
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -11,7 +12,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/aggregated_metric_reporter.h"
@@ -122,7 +122,8 @@ bool IsResourceLoadThrottlingEnabled() {
 // A class to gather throttling and traffic information to report histograms.
 class ResourceLoadScheduler::TrafficMonitor {
  public:
-  explicit TrafficMonitor(FetchContext*);
+  explicit TrafficMonitor(
+      const ResourceFetcherProperties& resource_fetcher_properties);
   ~TrafficMonitor();
 
   // Notified when the ThrottlingState is changed.
@@ -135,9 +136,8 @@ class ResourceLoadScheduler::TrafficMonitor {
   void ReportAll();
 
  private:
-  const bool is_main_frame_;
-
-  const WeakPersistent<FetchContext> context_;  // NOT OWNED
+  const Persistent<const ResourceFetcherProperties>
+      resource_fetcher_properties_;
 
   scheduler::SchedulingLifecycleState current_state_ =
       scheduler::SchedulingLifecycleState::kStopped;
@@ -157,9 +157,9 @@ class ResourceLoadScheduler::TrafficMonitor {
       decoded_kilobytes_per_frame_status_;
 };
 
-ResourceLoadScheduler::TrafficMonitor::TrafficMonitor(FetchContext* context)
-    : is_main_frame_(context->GetResourceFetcherProperties().IsMainFrame()),
-      context_(context),
+ResourceLoadScheduler::TrafficMonitor::TrafficMonitor(
+    const ResourceFetcherProperties& resource_fetcher_properties)
+    : resource_fetcher_properties_(resource_fetcher_properties),
       traffic_kilobytes_per_frame_status_(
           "Blink.ResourceLoadScheduler.TrafficBytes.KBPerFrameStatus",
           &TakeWholeKilobytes),
@@ -192,7 +192,7 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
   switch (current_state_) {
     case scheduler::SchedulingLifecycleState::kThrottled:
     case scheduler::SchedulingLifecycleState::kHidden:
-      if (is_main_frame_) {
+      if (resource_fetcher_properties_->IsMainFrame()) {
         request_count_by_circumstance.Count(
             ToSample(ReportCircumstance::kMainframeThrottled));
       } else {
@@ -204,7 +204,7 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
       total_throttled_decoded_bytes_ += hints.decoded_body_length();
       break;
     case scheduler::SchedulingLifecycleState::kNotThrottled:
-      if (is_main_frame_) {
+      if (resource_fetcher_properties_->IsMainFrame()) {
         request_count_by_circumstance.Count(
             ToSample(ReportCircumstance::kMainframeNotThrottled));
       } else {
@@ -225,13 +225,11 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
 
   if (encoded_kilobytes) {
     traffic_kilobytes_per_frame_status_.RecordTask(
-        scheduler::GetFrameStatus(context_->GetFrameScheduler()),
-        encoded_kilobytes);
+        resource_fetcher_properties_->GetFrameStatus(), encoded_kilobytes);
   }
   if (decoded_kilobytes) {
     decoded_kilobytes_per_frame_status_.RecordTask(
-        scheduler::GetFrameStatus(context_->GetFrameScheduler()),
-        decoded_kilobytes);
+        resource_fetcher_properties_->GetFrameStatus(), decoded_kilobytes);
   }
 }
 
@@ -305,7 +303,7 @@ void ResourceLoadScheduler::TrafficMonitor::ReportAll() {
                       ("Blink.ResourceLoadScheduler.ThrottlingStateChangeCount",
                        0, 100, kReportBucketCount));
 
-  if (is_main_frame_) {
+  if (resource_fetcher_properties_->IsMainFrame()) {
     main_frame_total_throttled_request_count.Count(
         total_throttled_request_count_);
     main_frame_total_not_throttled_request_count.Count(
@@ -349,17 +347,16 @@ constexpr ResourceLoadScheduler::ClientId
 
 ResourceLoadScheduler::ResourceLoadScheduler(
     ThrottlingPolicy initial_throttling_policy,
-    FetchContext* context)
-    : policy_(initial_throttling_policy),
+    const ResourceFetcherProperties& resource_fetcher_properties,
+    FrameScheduler* frame_scheduler)
+    : resource_fetcher_properties_(resource_fetcher_properties),
+      policy_(initial_throttling_policy),
       outstanding_limit_for_throttled_frame_scheduler_(
-          GetOutstandingThrottledLimit(
-              context->GetResourceFetcherProperties())),
-      context_(context) {
-  traffic_monitor_ =
-      std::make_unique<ResourceLoadScheduler::TrafficMonitor>(context_);
+          GetOutstandingThrottledLimit(*resource_fetcher_properties_)) {
+  traffic_monitor_ = std::make_unique<ResourceLoadScheduler::TrafficMonitor>(
+      resource_fetcher_properties);
 
-  auto* scheduler = context->GetFrameScheduler();
-  if (!scheduler)
+  if (!frame_scheduler)
     return;
 
   normal_outstanding_limit_ =
@@ -371,7 +368,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(
                                kTightLimitForRendererSideResourceSchedulerName,
                                kTightLimitForRendererSideResourceScheduler);
 
-  scheduler_observer_handle_ = scheduler->AddLifecycleObserver(
+  scheduler_observer_handle_ = frame_scheduler->AddLifecycleObserver(
       FrameScheduler::ObserverType::kLoader, this);
 }
 
@@ -379,7 +376,7 @@ ResourceLoadScheduler::~ResourceLoadScheduler() = default;
 
 void ResourceLoadScheduler::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_request_map_);
-  visitor->Trace(context_);
+  visitor->Trace(resource_fetcher_properties_);
 }
 
 void ResourceLoadScheduler::LoosenThrottlingPolicy() {
@@ -526,13 +523,13 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
   switch (throttling_history_) {
     case ThrottlingHistory::kInitial:
     case ThrottlingHistory::kNotThrottled:
-      if (context_->GetResourceFetcherProperties().IsMainFrame())
+      if (resource_fetcher_properties_->IsMainFrame())
         main_frame_not_throttled.Count(maximum_running_requests_seen_);
       else
         sub_frame_not_throttled.Count(maximum_running_requests_seen_);
       break;
     case ThrottlingHistory::kThrottled:
-      if (context_->GetResourceFetcherProperties().IsMainFrame())
+      if (resource_fetcher_properties_->IsMainFrame())
         main_frame_throttled.Count(maximum_running_requests_seen_);
       else
         sub_frame_throttled.Count(maximum_running_requests_seen_);

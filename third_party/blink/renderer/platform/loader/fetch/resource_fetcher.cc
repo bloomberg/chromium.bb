@@ -437,6 +437,10 @@ class ResourceFetcher::DetachableProperties final
     // Returns true when detached in order to preserve the existing behavior.
     return properties_ ? properties_->ShouldBlockLoadingSubResource() : true;
   }
+  scheduler::FrameStatus GetFrameStatus() const override {
+    return properties_ ? properties_->GetFrameStatus()
+                       : scheduler::FrameStatus::kNone;
+  }
 
  private:
   // |properties_| is null if and only if detached.
@@ -456,6 +460,10 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       task_runner_(init.task_runner),
       console_logger_(init.console_logger),
       loader_factory_(init.loader_factory),
+      scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
+          init.initial_throttling_policy,
+          *properties_,
+          init.frame_scheduler)),
       archive_(init.archive),
       resource_timing_report_timer_(
           task_runner_,
@@ -471,8 +479,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
   context_->Init(*properties_);
-  scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
-      init.initial_throttling_policy, context_);
 }
 
 ResourceFetcher::~ResourceFetcher() {

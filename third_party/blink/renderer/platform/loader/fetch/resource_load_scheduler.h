@@ -18,7 +18,7 @@
 namespace blink {
 
 class ConsoleLogger;
-class FetchContext;
+class ResourceFetcherProperties;
 
 // Client interface to use the throttling/scheduling functionality that
 // ResourceLoadScheduler provides.
@@ -153,7 +153,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
       std::numeric_limits<size_t>::max();
 
   ResourceLoadScheduler(ThrottlingPolicy initial_throttling_poilcy,
-                        FetchContext*);
+                        const ResourceFetcherProperties&,
+                        FrameScheduler*);
   ~ResourceLoadScheduler() override;
 
   void Trace(blink::Visitor*);
@@ -271,6 +272,8 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   void ShowConsoleMessageIfNeeded();
 
+  const Member<const ResourceFetcherProperties> resource_fetcher_properties_;
+
   // A flag to indicate an internal running state.
   // TODO(toyoshim): We may want to use enum once we start to have more states.
   bool is_shutdown_ = false;
@@ -328,9 +331,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   // Holds an internal class instance to monitor and report traffic.
   std::unique_ptr<TrafficMonitor> traffic_monitor_;
-
-  // Holds FetchContext reference to contact FrameScheduler.
-  Member<FetchContext> context_;
 
   // Handle to throttling observer.
   std::unique_ptr<FrameScheduler::LifecycleObserverHandle>

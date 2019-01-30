@@ -77,6 +77,11 @@ bool FrameResourceFetcherProperties::ShouldBlockLoadingSubResource() const {
   return document_loader != loader.GetDocumentLoader();
 }
 
+scheduler::FrameStatus FrameResourceFetcherProperties::GetFrameStatus() const {
+  return scheduler::GetFrameStatus(
+      frame_or_imported_document_->GetFrame().GetFrameScheduler());
+}
+
 const FetchClientSettingsObject&
 FrameResourceFetcherProperties::CreateFetchClientSettingsObject(
     const FrameOrImportedDocument& frame_or_imported_document) {

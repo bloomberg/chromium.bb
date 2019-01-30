@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -208,10 +207,6 @@ class PLATFORM_EXPORT FetchContext
   PlatformProbeSink* GetPlatformProbeSink() const {
     return platform_probe_sink_;
   }
-
-  // Obtains FrameScheduler instance that is used in the attached frame.
-  // May return nullptr if a frame is not attached or detached.
-  virtual FrameScheduler* GetFrameScheduler() const { return nullptr; }
 
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
