@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
