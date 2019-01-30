@@ -764,16 +764,22 @@ class TestVizClient {
                 const LocalSurfaceId& local_surface_id,
                 const gfx::Rect& bounds)
       : test_(test),
+        manager_(manager),
         frame_sink_id_(frame_sink_id),
         local_surface_id_(local_surface_id),
         bounds_(bounds) {
     constexpr bool is_root = false;
     constexpr bool needs_sync_points = false;
     support_ = std::make_unique<CompositorFrameSinkSupport>(
-        nullptr, manager, frame_sink_id, is_root, needs_sync_points);
+        nullptr, manager_, frame_sink_id, is_root, needs_sync_points);
   }
 
   ~TestVizClient() = default;
+
+  Surface* GetSurface() const {
+    return manager_->surface_manager()->GetSurfaceForId(
+        SurfaceId(frame_sink_id_, local_surface_id_));
+  }
 
   void SubmitCompositorFrame(SkColor bgcolor) {
     using Quad = SurfaceAggregatorValidSurfaceTest::Quad;
@@ -818,6 +824,7 @@ class TestVizClient {
 
  private:
   SurfaceAggregatorValidSurfaceTest* const test_;
+  FrameSinkManagerImpl* const manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   const FrameSinkId frame_sink_id_;
   const LocalSurfaceId local_surface_id_;
@@ -868,8 +875,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfaces) {
   AggregateAndVerify(expected_passes, {root_surface_id, parent.surface_id(),
                                        child.surface_id()});
   // |child| should not be drawn.
-  EXPECT_THAT(aggregator_.undrawn_surfaces(),
-              ::testing::ElementsAre(child.surface_id()));
+  EXPECT_TRUE(child.GetSurface()->HasUndrawnActiveFrame());
+  EXPECT_FALSE(parent.GetSurface()->HasUndrawnActiveFrame());
 
   // Submit another CompositorFrame from |parent|, this time with a DrawQuad for
   // |child|.
@@ -883,7 +890,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfaces) {
   AggregateAndVerify(
       {Pass(expected_quads, SurfaceSize())},
       {root_surface_id, parent.surface_id(), child.surface_id()});
-  EXPECT_THAT(aggregator_.undrawn_surfaces(), ::testing::IsEmpty());
+  EXPECT_FALSE(child.GetSurface()->HasUndrawnActiveFrame());
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfacesWithCopyRequests) {
@@ -929,7 +936,76 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, UndrawnSurfacesWithCopyRequests) {
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
   AggregateAndVerify(expected_passes, {root_surface_id, parent.surface_id(),
                                        child.surface_id()});
-  EXPECT_THAT(aggregator_.undrawn_surfaces(), ::testing::IsEmpty());
+  EXPECT_FALSE(child.GetSurface()->HasUndrawnActiveFrame());
+  EXPECT_FALSE(parent.GetSurface()->HasUndrawnActiveFrame());
+}
+
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       SurfacesWithMultipleEmbeddersBothVisibleAndInvisible) {
+  allocator_.GenerateId();
+  TestVizClient child(
+      this, &manager_, kArbitraryFrameSinkId1,
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      gfx::Rect(10, 10));
+  child.SubmitCompositorFrame(SK_ColorBLUE);
+
+  // First parent submits a CompositorFrame that renfereces |child|, but does
+  // not provide a DrawQuad that embeds it.
+  allocator_.GenerateId();
+  TestVizClient first_parent(
+      this, &manager_, kArbitraryFrameSinkId2,
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      gfx::Rect(15, 15));
+  first_parent.SetEmbeddedClient(&child, false);
+  first_parent.SubmitCompositorFrame(SK_ColorGREEN);
+
+  // Second parent submits a CompositorFrame referencing |child|, and also
+  // includes a draw-quad for it.
+  allocator_.GenerateId();
+  TestVizClient second_parent(
+      this, &manager_, kArbitraryMiddleFrameSinkId,
+      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      gfx::Rect(25, 25));
+  second_parent.SetEmbeddedClient(&child, true);
+  second_parent.SubmitCompositorFrame(SK_ColorYELLOW);
+
+  // Submit a root CompositorFrame that embeds both parents.
+  std::vector<Quad> root_quads = {
+      Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, first_parent.surface_id()),
+                        SK_ColorCYAN, first_parent.bounds(),
+                        /*stretch_content_to_fill_bounds=*/false,
+                        /*ignores_input_event=*/false),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, second_parent.surface_id()),
+                        SK_ColorMAGENTA, second_parent.bounds(),
+                        /*stretch_content_to_fill_bounds=*/false,
+                        /*ignores_input_event=*/false),
+      Quad::SolidColorQuad(SK_ColorBLACK, gfx::Rect(5, 5))};
+  std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+
+  constexpr float device_scale_factor = 1.0f;
+  SubmitCompositorFrame(support_.get(), root_passes, root_local_surface_id_,
+                        device_scale_factor);
+
+  EXPECT_TRUE(child.GetSurface()->HasUndrawnActiveFrame());
+  EXPECT_TRUE(first_parent.GetSurface()->HasUndrawnActiveFrame());
+  EXPECT_TRUE(second_parent.GetSurface()->HasUndrawnActiveFrame());
+
+  std::vector<Quad> expected_quads = {
+      Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
+      Quad::SolidColorQuad(SK_ColorGREEN, first_parent.bounds()),
+      Quad::SolidColorQuad(SK_ColorYELLOW, second_parent.bounds()),
+      Quad::SolidColorQuad(SK_ColorBLUE, gfx::Rect(10, 10)),
+      Quad::SolidColorQuad(SK_ColorBLACK, gfx::Rect(5, 5))};
+  std::vector<Quad> expected_copy_quads = {};
+  std::vector<Pass> expected_passes = {Pass(expected_quads, SurfaceSize())};
+  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
+  AggregateAndVerify(expected_passes,
+                     {root_surface_id, first_parent.surface_id(),
+                      second_parent.surface_id(), child.surface_id()});
+  EXPECT_FALSE(child.GetSurface()->HasUndrawnActiveFrame());
+  EXPECT_FALSE(first_parent.GetSurface()->HasUndrawnActiveFrame());
+  EXPECT_FALSE(second_parent.GetSurface()->HasUndrawnActiveFrame());
 }
 
 // This test verifies that in the absence of a primary Surface,

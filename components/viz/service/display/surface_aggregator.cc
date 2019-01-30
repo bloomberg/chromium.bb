@@ -1112,6 +1112,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
+  DCHECK(contained_surfaces_.empty());
   contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
 
   LocalSurfaceId& local_surface_id =
@@ -1139,6 +1140,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
   damage_ranges_.clear();
+  DCHECK(referenced_surfaces_.empty());
   PrewalkResult prewalk_result;
   root_damage_rect_ =
       PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
@@ -1147,7 +1149,6 @@ CompositorFrame SurfaceAggregator::Aggregate(
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
 
   CopyUndrawnSurfaces(&prewalk_result);
-  undrawn_surfaces_ = std::move(prewalk_result.undrawn_surfaces);
   referenced_surfaces_.insert(surface_id);
   CopyPasses(root_surface_frame, surface);
   // CopyPasses may have mutated container, need to re-query to erase.

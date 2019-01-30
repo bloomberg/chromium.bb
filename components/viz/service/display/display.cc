@@ -381,16 +381,6 @@ bool Display::DrawAndSwap() {
   // Run callbacks early to allow pipelining and collect presented callbacks.
   RunDrawCallbacks();
 
-  // Mark all the drawn surfaces, so that they can start receiving begin-frames.
-  const auto& undrawn_surfaces = aggregator_->undrawn_surfaces();
-  for (const auto& surface_id : aggregator_->previous_contained_surfaces()) {
-    if (undrawn_surfaces.count(surface_id.first))
-      continue;
-    Surface* surface = surface_manager_->GetSurfaceForId(surface_id.first);
-    if (surface)
-      surface->MarkAsDrawn();
-  }
-
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
                                      stored_latency_info_.begin(),
                                      stored_latency_info_.end());
