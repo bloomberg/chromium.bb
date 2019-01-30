@@ -176,17 +176,13 @@ class SequenceBound {
   }
 
   // Post a call to |method| to |impl_task_runner_|.
-  template <typename... Args>
+  template <typename... MethodArgs, typename... Args>
   void Post(const base::Location& from_here,
-            void (T::*method)(Args...),
+            void (T::*method)(MethodArgs...),
             Args&&... args) const {
-    impl_task_runner_->PostTask(
-        from_here, base::BindOnce(
-                       [](void (T::*method)(Args...), T* t, Args... args) {
-                         (t->*method)(std::forward<Args>(args)...);
-                       },
-                       std::move(method), base::Unretained(t_),
-                       std::forward<Args>(args)...));
+    impl_task_runner_->PostTask(from_here,
+                                base::BindOnce(method, base::Unretained(t_),
+                                               std::forward<Args>(args)...));
   }
 
   // TODO(liberato): Add PostOrCall(), to support cases where synchronous calls
