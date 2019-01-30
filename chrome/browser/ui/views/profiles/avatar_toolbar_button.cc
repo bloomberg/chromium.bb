@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/profiles/incognito_window_count_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -71,8 +72,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
         IdentityManagerFactory::GetForProfile(profile_));
   }
 
-  SetInsets();
-
   // Activate on press for left-mouse-button only to mimic other MenuButtons
   // without drag-drop actions (specifically the adjacent browser menu).
   set_notify_action(Button::NOTIFY_ON_PRESS);
@@ -99,6 +98,10 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   SetEnabled(!IsIncognito() || IsIncognitoCounterActive());
 #endif  // !defined(OS_CHROMEOS)
 
+  // The incognito window counter uses left-aligned text.
+  if (IsIncognitoCounterActive())
+    SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
   // Set initial text and tooltip. UpdateIcon() needs to be called from the
   // outside as GetThemeProvider() is not available until the button is added to
   // ToolbarView's hierarchy.
@@ -124,7 +127,6 @@ void AvatarToolbarButton::UpdateText() {
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
     if (incognito_window_count > 1) {
       text = base::IntToString16(incognito_window_count);
-      SetHorizontalAlignment(gfx::ALIGN_LEFT);
       if (GetThemeProvider()) {
         color = GetThemeProvider()->GetColor(
             ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
@@ -138,9 +140,9 @@ void AvatarToolbarButton::UpdateText() {
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
   }
 
+  SetInsets();
   SetHighlightColor(color);
   SetText(text);
-
   SetTooltipText(GetAvatarTooltipText());
 }
 
@@ -375,6 +377,22 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 void AvatarToolbarButton::SetInsets() {
   // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
   // is hard to read for user avatars, so we need to set corresponding insets.
-  SetLayoutInsetDelta(
-      gfx::Insets(ui::MaterialDesignController::touch_ui() ? 0 : -2));
+  gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui() ? 0 : -2);
+
+  // When the incognito counter is displaying, we need to add additional insets
+  // to the icon side because the existing ones don't look balanced.
+  if (IsIncognitoCounterActive()) {
+    const int incognito_window_count =
+        BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
+    if (incognito_window_count > 1) {
+      const int highlight_radius =
+          ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+              views::EMPHASIS_MAXIMUM, size());
+      // These additional insets have been chosen to look reasonably well and
+      // scale with the (touchable or not) UI.
+      layout_insets.set_left(layout_insets.left() + highlight_radius / 4);
+    }
+  }
+
+  SetLayoutInsetDelta(layout_insets);
 }

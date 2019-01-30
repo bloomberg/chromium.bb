@@ -67,6 +67,7 @@ class ToolbarButton : public views::LabelButton,
   bool IsMenuShowing() const;
 
   // views::LabelButton:
+  void SetText(const base::string16& text) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
