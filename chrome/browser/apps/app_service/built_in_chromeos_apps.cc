@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
@@ -35,6 +36,9 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->icon_key = apps::mojom::IconKey::New();
   app->icon_key->icon_type = apps::mojom::IconType::kResource;
   app->icon_key->u_key = static_cast<uint64_t>(internal_app.icon_resource_id);
+
+  app->last_launch_time = base::Time();
+  app->install_time = base::Time();
 
   app->installed_internally = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = internal_app.show_in_launcher

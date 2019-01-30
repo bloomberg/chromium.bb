@@ -66,6 +66,12 @@ class AppUpdate {
   apps::mojom::IconKeyPtr IconKey() const;
   bool IconKeyChanged() const;
 
+  base::Time LastLaunchTime() const;
+  bool LastLaunchTimeChanged() const;
+
+  base::Time InstallTime() const;
+  bool InstallTimeChanged() const;
+
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
   bool PermissionsChanged() const;
 

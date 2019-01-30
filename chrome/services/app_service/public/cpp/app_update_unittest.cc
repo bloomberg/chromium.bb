@@ -23,6 +23,12 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::IconKeyPtr expect_icon_key_;
   bool expect_icon_key_changed_;
 
+  base::Time expect_last_launch_time_;
+  bool expect_last_launch_time_changed_;
+
+  base::Time expect_install_time_;
+  bool expect_install_time_changed_;
+
   std::vector<apps::mojom::PermissionPtr> expect_permissions_;
   bool expect_permissions_changed_;
 
@@ -51,6 +57,8 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_changed_ = false;
     expect_name_changed_ = false;
     expect_icon_key_changed_ = false;
+    expect_last_launch_time_changed_ = false;
+    expect_install_time_changed_ = false;
     expect_permissions_changed_ = false;
     expect_installed_internally_changed_ = false;
     expect_show_in_launcher_changed_ = false;
@@ -66,6 +74,12 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_icon_key_, u.IconKey());
     EXPECT_EQ(expect_icon_key_changed_, u.IconKeyChanged());
+
+    EXPECT_EQ(expect_last_launch_time_, u.LastLaunchTime());
+    EXPECT_EQ(expect_last_launch_time_changed_, u.LastLaunchTimeChanged());
+
+    EXPECT_EQ(expect_install_time_, u.InstallTime());
+    EXPECT_EQ(expect_install_time_changed_, u.InstallTimeChanged());
 
     EXPECT_EQ(expect_permissions_, u.Permissions());
     EXPECT_EQ(expect_permissions_changed_, u.PermissionsChanged());
@@ -91,6 +105,8 @@ class AppUpdateTest : public testing::Test {
     expect_readiness_ = apps::mojom::Readiness::kUnknown;
     expect_name_ = "";
     expect_icon_key_ = nullptr;
+    expect_last_launch_time_ = base::Time();
+    expect_install_time_ = base::Time();
     expect_permissions_.clear();
     expect_installed_internally_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
@@ -157,6 +173,50 @@ class AppUpdateTest : public testing::Test {
       delta->icon_key = x.Clone();
       expect_icon_key_ = x.Clone();
       expect_icon_key_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // LastLaunchTime tests.
+
+    if (state) {
+      state->last_launch_time = base::Time::FromDoubleT(1000.0);
+      expect_last_launch_time_ = base::Time::FromDoubleT(1000.0);
+      expect_last_launch_time_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->last_launch_time = base::Time::FromDoubleT(1001.0);
+      expect_last_launch_time_ = base::Time::FromDoubleT(1001.0);
+      expect_last_launch_time_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // InstallTime tests.
+
+    if (state) {
+      state->install_time = base::Time::FromDoubleT(2000.0);
+      expect_install_time_ = base::Time::FromDoubleT(2000.0);
+      expect_install_time_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->install_time = base::Time::FromDoubleT(2001.0);
+      expect_install_time_ = base::Time::FromDoubleT(2001.0);
+      expect_install_time_changed_ = true;
       CheckExpects(u);
     }
 

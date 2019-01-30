@@ -289,10 +289,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
           this, update.AppId(),
           // TODO(crbug.com/826982): add the "short name" concept to the App
           // Service, and use it here.
-          update.Name(),
-          // TODO(crbug.com/826982): add the "last launch time" and "install
-          // time" concepts to the App Service, and use them here.
-          base::Time(), base::Time(),
+          update.Name(), update.LastLaunchTime(), update.InstallTime(),
           update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
     });
   }
