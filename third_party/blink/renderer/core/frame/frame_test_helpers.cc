@@ -410,6 +410,9 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   // TODO(danakj): Remove this! Make WebViewImpl not need a WebWidgetClient when
   // the main frame is remote.
   web_view_->SetWebWidgetClient(test_web_widget_client_);
+  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
+  web_view_->MainFrameWidget()->SetLayerTreeView(
+      test_web_widget_client_->layer_tree_view());
 
   return web_view_;
 }
@@ -490,7 +493,11 @@ void TestWebFrameClient::BindWidgetClient(
 
 void TestWebFrameClient::FrameDetached(DetachType type) {
   if (frame_->FrameWidget()) {
-    frame_->FrameWidget()->WillCloseLayerTreeView();
+    // TODO(dcheng): This shouldn't exclude the main frame, but it is currently
+    // unsafe to close the LTV for the main frame: that's handled separately by
+    // closing the entire WebView itself.
+    if (frame_->Parent())
+      frame_->FrameWidget()->WillCloseLayerTreeView();
     frame_->FrameWidget()->Close();
   }
 

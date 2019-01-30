@@ -1473,7 +1473,7 @@ void WebViewImpl::ResizeWithBrowserControls(
     ResizeViewWhileAnchored(top_controls_height, bottom_controls_height,
                             browser_controls_shrink_layout);
   }
-  SendResizeEventAndRepaint();
+  SendResizeEventForMainFrame();
 }
 
 void WebViewImpl::Resize(const WebSize& new_size) {
@@ -2506,7 +2506,10 @@ void WebViewImpl::RefreshPageScaleFactor() {
   }
   SetPageScaleFactor(new_page_scale_factor);
 
-  UpdateLayerTreeViewport();
+  // The constraints may have changed above which affects the page scale limits,
+  // so we must update those even though SetPageScaleFactor() may do the same if
+  // the scale factor is changed.
+  UpdateLayerTreeViewPageScale();
 }
 
 void WebViewImpl::UpdatePageDefinedViewportConstraints(
@@ -2762,7 +2765,7 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
-void WebViewImpl::SendResizeEventAndRepaint() {
+void WebViewImpl::SendResizeEventForMainFrame() {
   // FIXME: This is wrong. The LocalFrameView is responsible sending a
   // resizeEvent as part of layout. Layout is also responsible for sending
   // invalidations to the embedder. This method and all callers may be wrong. --
@@ -2772,14 +2775,8 @@ void WebViewImpl::SendResizeEventAndRepaint() {
     MainFrameImpl()->GetFrame()->GetDocument()->EnqueueResizeEvent();
   }
 
-  if (AsWidget().client) {
-    if (layer_tree_view_) {
-      UpdateLayerTreeViewport();
-    } else {
-      WebRect damaged_rect(0, 0, size_.width, size_.height);
-      AsWidget().client->DidInvalidateRect(damaged_rect);
-    }
-  }
+  // A resized main frame can change the page scale limits.
+  UpdateLayerTreeViewPageScale();
 }
 
 void WebViewImpl::ConfigureAutoResizeMode() {
@@ -2993,6 +2990,7 @@ void WebViewImpl::DidCommitLoad(bool is_new_navigation,
 
 void WebViewImpl::ResizeAfterLayout() {
   DCHECK(MainFrameImpl());
+
   if (!AsView().client || !AsView().client->CanUpdateLayout())
     return;
 
@@ -3007,7 +3005,7 @@ void WebViewImpl::ResizeAfterLayout() {
       view->SetInitialViewportSize(size_);
 
       AsView().client->DidAutoResize(size_);
-      SendResizeEventAndRepaint();
+      SendResizeEventForMainFrame();
     }
   }
 
@@ -3044,7 +3042,7 @@ void WebViewImpl::DidChangeContentsSize() {
 
 void WebViewImpl::PageScaleFactorChanged() {
   GetPageScaleConstraintsSet().SetNeedsReset(false);
-  UpdateLayerTreeViewport();
+  UpdateLayerTreeViewPageScale();
   AsView().client->PageScaleFactorChanged();
   dev_tools_emulator_->MainFrameScrollOrScaleChanged();
 }
@@ -3231,12 +3229,9 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 }
 
 void WebViewImpl::InvalidateRect(const IntRect& rect) {
-  if (layer_tree_view_) {
-    UpdateLayerTreeViewport();
-  } else if (AsWidget().client) {
-    // This is only for WebViewPlugin.
+  // This is only for WebViewPlugin.
+  if (!does_composite_ && AsWidget().client)
     AsWidget().client->DidInvalidateRect(rect);
-  }
 }
 
 PaintLayerCompositor* WebViewImpl::Compositor() const {
@@ -3268,6 +3263,10 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
   // WebViewImpl, so don't allow cc to commit any frames Blink might
   // try to create in the meantime.
   scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
+
+  // Any changes to the Page while a main frame was remote need to be propagated
+  // to the widget/compositor for the main frame when it becomes local.
+  UpdateLayerTreeViewPageScale();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
@@ -3362,9 +3361,12 @@ void WebViewImpl::SendScrollEndEventFromImplSide(
     target_node->GetDocument().EnqueueScrollEndEventForNode(target_node);
 }
 
-void WebViewImpl::UpdateLayerTreeViewport() {
-  if (!GetPage() || !layer_tree_view_)
+void WebViewImpl::UpdateLayerTreeViewPageScale() {
+  // Non-composited WebViews can not use page scale factor.
+  if (!does_composite_)
     return;
+  // TODO(danakj): When the main frame is remote the LayerTreeView is not
+  // present. So add early-return here.
 
   layer_tree_view_->SetPageScaleFactorAndLimits(
       PageScaleFactor(), MinimumPageScaleFactor(), MaximumPageScaleFactor());
