@@ -213,14 +213,11 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (gpu_preferences.gpu_startup_dialog)
     WaitForDebugger("Gpu");
 
-#if defined(OS_WIN)
-  if (gpu_preferences.enable_trace_export_events_to_etw)
-    base::trace_event::TraceEventETWExport::EnableETWExport();
-#endif
-
   base::Time start_time = base::Time::Now();
 
 #if defined(OS_WIN)
+  base::trace_event::TraceEventETWExport::EnableETWExport();
+
   // Prevent Windows from displaying a modal dialog on failures like not being
   // able to load a DLL.
   SetErrorMode(

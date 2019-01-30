@@ -3132,7 +3132,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     service_manager::switches::kDisableWin32kLockDown,
     switches::kEnableWin7WebRtcHWH264Decoding,
     switches::kTrySupportedChannelLayouts,
-    switches::kTraceExportEventsToETW,
 #endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,

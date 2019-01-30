@@ -1025,10 +1025,6 @@ const char kPpapiAntialiasedTextEnabled[] = "ppapi-antialiased-text-enabled";
 // processes.
 const char kPpapiSubpixelRenderingSetting[] =
     "ppapi-subpixel-rendering-setting";
-
-// Enables the exporting of the tracing events to ETW. This is only supported on
-// Windows Vista and later.
-const char kTraceExportEventsToETW[] = "trace-export-events-to-etw";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

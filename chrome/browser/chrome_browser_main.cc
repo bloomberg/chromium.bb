@@ -1015,15 +1015,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  // This is needed to enable ETW exporting when requested in about:flags.
-  // Normally, we enable it in ContentMainRunnerImpl::Initialize when the flag
-  // is present on the command line but flags in about:flags are converted only
-  // after this function runs. Note that this starts exporting later which
-  // affects tracing the browser startup. Also, this is only relevant for the
-  // browser process, as other processes will get all the flags on their command
-  // line regardless of the origin (command line or about:flags).
-  if (parsed_command_line().HasSwitch(switches::kTraceExportEventsToETW))
-    base::trace_event::TraceEventETWExport::EnableETWExport();
+  // This is needed to enable ETW exporting. This is only relevant for the
+  // browser process, as other processes enable it separately.
+  base::trace_event::TraceEventETWExport::EnableETWExport();
 #endif  // OS_WIN
 
   // Reset the command line in the crash report details, since we may have

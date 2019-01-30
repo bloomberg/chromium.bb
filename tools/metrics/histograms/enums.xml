@@ -32880,7 +32880,6 @@ from previous Chrome versions.
   <int value="1949908940" label="disable-zip-archiver-unpacker"/>
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1951645673" label="PasswordsKeyboardAccessory:disabled"/>
-  <int value="1955677113" label="trace-export-events-to-etw"/>
   <int value="1957273171" label="PageAlmostIdle:disabled"/>
   <int value="1957358530" label="ContextualSearchSecondTap:enabled"/>
   <int value="1957472162"

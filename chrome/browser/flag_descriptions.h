@@ -1739,9 +1739,6 @@ extern const char kEnableGpuAppcontainerDescription[];
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
 
-extern const char kTraceExportEventsToEtwName[];
-extern const char kTraceExportEventsToEtwDesription[];
-
 extern const char kUseAngleName[];
 extern const char kUseAngleDescription[];
 

@@ -2937,13 +2937,6 @@ const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =
     "Use GDI to print text as simply text";
 
-const char kTraceExportEventsToEtwName[] =
-    "Enable exporting of tracing events to ETW.";
-const char kTraceExportEventsToEtwDesription[] =
-    "If enabled, trace events will be exported to the Event Tracing for "
-    "Windows (ETW) and can then be captured by tools such as UIForETW or "
-    "Xperf.";
-
 const char kUseAngleName[] = "Choose ANGLE graphics backend";
 const char kUseAngleDescription[] =
     "Choose the graphics backend for ANGLE. D3D11 is used on most Windows "

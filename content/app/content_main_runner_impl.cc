@@ -698,9 +698,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
 #endif  // !OS_ANDROID
 
 #if defined(OS_WIN)
-    // Enable exporting of events to ETW if requested on the command line.
-    if (command_line.HasSwitch(switches::kTraceExportEventsToETW))
-      base::trace_event::TraceEventETWExport::EnableETWExport();
+    base::trace_event::TraceEventETWExport::EnableETWExport();
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
