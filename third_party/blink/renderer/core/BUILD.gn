@@ -2186,6 +2186,8 @@ jumbo_source_set("unit_tests") {
     "script/script_runner_test.cc",
     "scroll/scrollable_area_test.cc",
     "scroll/scrollbar_theme_overlay_test.cc",
+    "streams/miscellaneous_operations_test.cc",
+    "streams/queue_with_sizes_test.cc",
     "streams/readable_stream_operations_test.cc",
     "streams/readable_stream_test.cc",
     "streams/test_underlying_source.h",
