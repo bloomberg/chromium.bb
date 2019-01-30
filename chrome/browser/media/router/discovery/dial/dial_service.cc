@@ -23,6 +23,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -33,6 +34,7 @@
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_source.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -150,17 +152,6 @@ net::IPAddressList GetBestBindAddressOnUIThread() {
                "uninitialized NetworkHandler";
   }
   return bind_address_list;
-}
-
-#else
-// Note: This can be called only on a thread that allows IO.
-NetworkInterfaceList GetNetworkList() {
-  NetworkInterfaceList list;
-  bool success =
-      net::GetNetworkList(&list, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
-  if (!success)
-    VLOG(1) << "Could not retrieve network list!";
-  return list;
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -442,21 +433,42 @@ void DialServiceImpl::StartDiscovery() {
     return;
   }
 
-#if defined(OS_CHROMEOS)
   auto task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+
+#if defined(OS_CHROMEOS)
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&GetBestBindAddressOnUIThread),
       base::BindOnce(&DialServiceImpl::DiscoverOnAddresses,
                      base::Unretained(this)));
 #else
-  auto task_runner = base::CreateTaskRunnerWithTraits({base::MayBlock()});
-  task_tracker_.PostTaskAndReplyWithResult(
-      task_runner.get(), FROM_HERE, base::BindOnce(&GetNetworkList),
-      base::BindOnce(&DialServiceImpl::SendNetworkList,
+  task_tracker_.PostTask(
+      task_runner.get(), FROM_HERE,
+      base::BindOnce(&DialServiceImpl::GetNetworkListOnUIThread,
                      base::Unretained(this)));
 #endif
+}
+
+void DialServiceImpl::GetNetworkListOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::GetNetworkService()->GetNetworkList(
+      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+      base::BindOnce(&DialServiceImpl::PostSendNetworkList,
+                     weak_ptr_factory_for_ui_.GetWeakPtr()));
+}
+
+void DialServiceImpl::PostSendNetworkList(
+    const base::Optional<net::NetworkInterfaceList>& networks) {
+  if (!networks.has_value())
+    VLOG(1) << "Could not retrieve network list!";
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &DialServiceImpl::SendNetworkList,
+          weak_ptr_factory_for_io_.GetWeakPtr(),
+          networks.has_value() ? *networks : net::NetworkInterfaceList()));
 }
 
 void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
