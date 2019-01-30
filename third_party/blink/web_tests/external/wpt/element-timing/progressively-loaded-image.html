@@ -6,12 +6,11 @@
 <script src=/resources/testharnessreport.js></script>
 <script src="resources/element-timing-helpers.js"></script>
 <body>
-<img src=/resources/slow-image.php?name=square20.png&mimeType=image&sleep=500>
 <script>
   let beforeRender;
-  // Number of bytes to be read on the initial read, before sleeping.
+  // Number of characters to be read on the initial read, before sleeping.
   // Should be sufficient to do at least a first scan.
-  let numInitial = 300;
+  let numInitial = 75;
   let sleep = 500;
   async_test(function(t) {
     const observer = new PerformanceObserver(
@@ -26,10 +25,11 @@
     observer.observe({entryTypes: ['element']});
 
     const img = document.createElement('img');
-    img.src = '/resources/progressive-image.php?name=square20.jpg&numInitial='
+    img.src = 'resources/progressive-image.py?name=square20.jpg&numInitial='
       + numInitial + '&sleep=' + sleep;
     img.setAttribute('elementtiming', 'my_image');
-    document.body.appendChild(img)
+    document.body.appendChild(img);
     beforeRender = performance.now();
+    t.step_timeout(() => {assert_true(0);}, 2000);
   }, "Element Timing: image render timestamp occurs after it is fully loaded.");
 </script>

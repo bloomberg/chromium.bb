@@ -89,16 +89,16 @@ body {
     // Add the images during onload to be sure that the observer is registered in
     // time to observe the element timing.
     window.onload = () => {
-      addImage(1, '/resources/square100.png');
+      addImage(1, 'resources/square100.png');
       // Use requestAnimationFrame and a timeout to ensure that the images are
       // processed in the order we want.
       requestAnimationFrame( () => {
         t.step_timeout( () => {
           // Set the size equal to that of image3 to make positioning easier.
-          addImage(2, '/resources/square20.gif', 200);
+          addImage(2, 'resources/square20.png', 200);
           requestAnimationFrame( () => {
             t.step_timeout( () => {
-              addImage(3, '/resources/circle.svg');
+              addImage(3, 'resources/circle.svg');
             }, 0);
           });
         }, 0);
