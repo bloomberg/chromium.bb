@@ -209,9 +209,11 @@ class CustomElementRestoreValueCallbackReaction final
     : public CustomElementReaction {
  public:
   CustomElementRestoreValueCallbackReaction(CustomElementDefinition& definition,
-                                            const FileOrUSVString& value)
-      : CustomElementReaction(definition), value_(value) {
+                                            const FileOrUSVString& value,
+                                            const String& mode)
+      : CustomElementReaction(definition), value_(value), mode_(mode) {
     DCHECK(definition.HasRestoreValueCallback());
+    DCHECK(mode == "restore" || mode == "autocomplete");
   }
 
   void Trace(Visitor* visitor) override {
@@ -221,10 +223,11 @@ class CustomElementRestoreValueCallbackReaction final
 
  private:
   void Invoke(Element& element) override {
-    definition_->RunRestoreValueCallback(element, value_);
+    definition_->RunRestoreValueCallback(element, value_, mode_);
   }
 
   FileOrUSVString value_;
+  String mode_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomElementRestoreValueCallbackReaction);
 };
@@ -290,9 +293,10 @@ CustomElementReaction& CustomElementReactionFactory::CreateDisabledStateChanged(
 
 CustomElementReaction& CustomElementReactionFactory::CreateRestoreValue(
     CustomElementDefinition& definition,
-    const FileOrUSVString& value) {
+    const FileOrUSVString& value,
+    const String& mode) {
   return *MakeGarbageCollected<CustomElementRestoreValueCallbackReaction>(
-      definition, value);
+      definition, value, mode);
 }
 
 }  // namespace blink

@@ -95,7 +95,8 @@ class CORE_EXPORT CustomElementDefinition
   virtual void RunDisabledStateChangedCallback(Element& element,
                                                bool is_disabled) = 0;
   virtual void RunRestoreValueCallback(Element& element,
-                                       const FileOrUSVString& value) = 0;
+                                       const FileOrUSVString& value,
+                                       const String& mode) = 0;
 
   void EnqueueUpgradeReaction(Element&,
                               bool upgrade_invisible_elements = false);

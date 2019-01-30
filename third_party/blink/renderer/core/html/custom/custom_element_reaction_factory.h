@@ -47,7 +47,8 @@ class CustomElementReactionFactory {
       bool is_disabled);
   static CustomElementReaction& CreateRestoreValue(
       CustomElementDefinition& definition,
-      const FileOrUSVString& value);
+      const FileOrUSVString& value,
+      const String& mode);
 };
 
 }  // namespace blink

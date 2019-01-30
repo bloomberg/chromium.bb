@@ -12,8 +12,6 @@ class MyControl extends HTMLElement {
     this.internals_ = this.attachInternals();
   }
   get i() { return this.internals_; }
-
-  restoreValueCallback(v) {}
 }
 customElements.define('my-control', MyControl);
 

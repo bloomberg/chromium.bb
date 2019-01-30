@@ -11,8 +11,6 @@ class PreDefined extends HTMLElement {
     this.formHistory_ = [];
   }
 
-  restoreValueCallback(v) {}
-
   formAssociatedCallback(nullableForm) {
     this.formHistory_.push(nullableForm);
   }
@@ -59,28 +57,6 @@ customElements.define('pre-defined', PreDefined);
 
 <script>
 const $ = document.querySelector.bind(document);
-
-test(() => {
-  class MyControl extends HTMLElement {
-    static get formAssociated() { return true; }
-  }
-  assert_throws("TypeMismatchError", () => { customElements.define('my-control', MyControl) });
-  assert_throws("TypeMismatchError", () => { customElements.define('my-control2', class extends MyControl {}); });
-}, 'define() requires restoreValueCallback');
-
-test(() => {
-  class MyControlBase extends HTMLElement {
-    static get formAssociated() { return true; }
-    restoreValueCallback(v) { }
-  }
-  class MyControlDerived extends MyControlBase {}
-
-  try {
-    customElements.define('my-control-derived', MyControlDerived);
-  } catch (exception) {
-    assert_unreached('define() should not throw anything');
-  }
-}, 'define() accepts restoreValueCallback on a base class');
 
 test(() => {
   let controls = $('#form1').elements;
@@ -131,8 +107,6 @@ test(() => {
       this.internals_ = this.attachInternals();
       this.formHistory_ = [];
     }
-
-    restoreValueCallback(v) {}
 
     formAssociatedCallback(nullableForm) {
       this.formHistory_.push(nullableForm);

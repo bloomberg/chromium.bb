@@ -330,7 +330,7 @@ void ElementInternals::RestoreFormControlState(const FormControlState& state) {
       value_ = FileOrUSVString::FromFile(file);
   }
   if (!value_.IsNull())
-    CustomElement::EnqueueRestoreValueCallback(Target(), value_);
+    CustomElement::EnqueueRestoreValueCallback(Target(), value_, "restore");
 }
 
 }  // namespace blink

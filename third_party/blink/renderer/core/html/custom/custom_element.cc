@@ -284,11 +284,12 @@ void CustomElement::EnqueueDisabledStateChangedCallback(Element& element,
 }
 
 void CustomElement::EnqueueRestoreValueCallback(Element& element,
-                                                const FileOrUSVString& value) {
+                                                const FileOrUSVString& value,
+                                                const String& mode) {
   auto& definition = *DefinitionForElementWithoutCheck(element);
   if (definition.HasRestoreValueCallback()) {
     Enqueue(element, CustomElementReactionFactory::CreateRestoreValue(
-                         definition, value));
+                         definition, value, mode));
   }
 }
 
