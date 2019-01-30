@@ -786,28 +786,12 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   }
 
   TransitionKeyframeVector keyframes;
-  double start_keyframe_offset = 0;
-
-  if (timing.start_delay > 0) {
-    timing.iteration_duration.value() +=
-        AnimationTimeDelta::FromSecondsD(timing.start_delay);
-    start_keyframe_offset =
-        timing.start_delay / timing.iteration_duration->InSecondsF();
-    timing.start_delay = 0;
-  }
-
-  TransitionKeyframe* delay_keyframe = TransitionKeyframe::Create(property);
-  delay_keyframe->SetValue(TypedInterpolationValue::Create(
-      *transition_type, start.interpolable_value->Clone(),
-      start.non_interpolable_value));
-  delay_keyframe->SetOffset(0);
-  keyframes.push_back(delay_keyframe);
 
   TransitionKeyframe* start_keyframe = TransitionKeyframe::Create(property);
   start_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
-  start_keyframe->SetOffset(start_keyframe_offset);
+  start_keyframe->SetOffset(0);
   start_keyframe->SetEasing(std::move(timing.timing_function));
   timing.timing_function = LinearTimingFunction::Shared();
   keyframes.push_back(start_keyframe);
@@ -824,7 +808,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
         CSSAnimatableValueFactory::Create(property, state.old_style);
     AnimatableValue* to =
         CSSAnimatableValueFactory::Create(property, state.style);
-    delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);
   }
