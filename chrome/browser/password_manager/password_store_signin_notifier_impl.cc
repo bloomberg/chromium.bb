@@ -28,12 +28,6 @@ void PasswordStoreSigninNotifierImpl::UnsubscribeFromSigninEvents() {
   IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
-void PasswordStoreSigninNotifierImpl::OnPrimaryAccountSetWithPassword(
-    const AccountInfo& account_info,
-    const std::string& password) {
-  NotifySignin(account_info.email, password);
-}
-
 void PasswordStoreSigninNotifierImpl::OnPrimaryAccountCleared(
     const AccountInfo& account_info) {
   NotifySignedOut(account_info.email, /* primary_account= */ true);

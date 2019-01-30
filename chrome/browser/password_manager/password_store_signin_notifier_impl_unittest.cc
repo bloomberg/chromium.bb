@@ -50,11 +50,6 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
 TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-  EXPECT_CALL(
-      *store_,
-      SaveGaiaPasswordHash(
-          "username", base::ASCIIToUTF16("password"),
-          metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN));
   fake_signin_manager_->SignIn("accountid", "username", "password");
   testing::Mock::VerifyAndClearExpectations(store_.get());
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
@@ -68,7 +63,6 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
   notifier.UnsubscribeFromSigninEvents();
-  EXPECT_CALL(*store_, SaveGaiaPasswordHash(_, _, _)).Times(0);
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash()).Times(0);
   fake_signin_manager_->SignIn("accountid", "username", "secret");
   fake_signin_manager_->ForceSignOut();
@@ -79,11 +73,6 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
 TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-  EXPECT_CALL(
-      *store_,
-      SaveGaiaPasswordHash(
-          "username", base::ASCIIToUTF16("password"),
-          metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN));
   fake_signin_manager_->SignIn("primary_accountid", "username", "password");
   testing::Mock::VerifyAndClearExpectations(store_.get());
 

@@ -13,17 +13,6 @@ PasswordStoreSigninNotifier::PasswordStoreSigninNotifier() {}
 
 PasswordStoreSigninNotifier::~PasswordStoreSigninNotifier() {}
 
-void PasswordStoreSigninNotifier::NotifySignin(const std::string& username,
-                                               const std::string& password) {
-  // After the full roll out of DICE, |password| may be empty
-  // if user clicks "Sync as ..." button in the sign-in promotion bubble.
-  if (store_ && !password.empty()) {
-    store_->SaveGaiaPasswordHash(
-        username, base::UTF8ToUTF16(password),
-        metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
-  }
-}
-
 void PasswordStoreSigninNotifier::NotifySignedOut(const std::string& username,
                                                   bool primary_account) {
   if (!store_)
