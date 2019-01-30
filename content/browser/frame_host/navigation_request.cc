@@ -168,7 +168,6 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
 // blink::FrameFetchContext::addAdditionalRequestHeaders.
 void AddAdditionalRequestHeaders(
     net::HttpRequestHeaders* headers,
-    net::HttpRequestHeaders embedder_additional_headers,
     const GURL& url,
     FrameMsg_Navigate_Type::Value navigation_type,
     BrowserContext* browser_context,
@@ -192,9 +191,6 @@ void AddAdditionalRequestHeaders(
     if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context))
       headers->SetHeaderIfMissing("Save-Data", "on");
   }
-
-  // Attach additional request headers specified by embedder.
-  headers->MergeFrom(std::move(embedder_additional_headers));
 
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
@@ -558,13 +554,6 @@ NavigationRequest::NavigationRequest(
   // Only add specific headers when creating a NavigationRequest before the
   // network request is made, not at commit time.
   if (!is_for_commit) {
-    int additional_load_flags = 0;
-    net::HttpRequestHeaders embedder_additional_headers;
-    // TODO(https://crbug.com/919432): Remove this method.
-    GetContentClient()->browser()->NavigationRequestStarted(
-        frame_tree_node->frame_tree_node_id(), common_params_.url,
-        &embedder_additional_headers, &additional_load_flags);
-
     BrowserContext* browser_context =
         frame_tree_node_->navigator()->GetController()->GetBrowserContext();
     if (browser_context->GetClientHintsControllerDelegate()) {
@@ -575,12 +564,9 @@ NavigationRequest::NavigationRequest(
       headers.MergeFrom(client_hints_headers);
     }
 
-    begin_params_->load_flags |= additional_load_flags;
-
     headers.AddHeadersFromString(begin_params_->headers);
     AddAdditionalRequestHeaders(
-        &headers, std::move(embedder_additional_headers), common_params_.url,
-        common_params_.navigation_type,
+        &headers, common_params_.url, common_params_.navigation_type,
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         common_params.method, user_agent_override,
         common_params_.has_user_gesture, common_params.initiator_origin,
