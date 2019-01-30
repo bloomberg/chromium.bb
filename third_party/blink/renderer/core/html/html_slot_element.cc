@@ -291,7 +291,7 @@ void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
     const HeapVector<Member<Node>>& flat_tree_children = assigned_nodes_;
     for (auto& node : flat_tree_children)
-      node->LazyReattachIfAttached();
+      node->DetachLayoutTree(context);
   }
   HTMLElement::DetachLayoutTree(context);
 }

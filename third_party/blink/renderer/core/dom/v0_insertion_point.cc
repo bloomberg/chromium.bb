@@ -121,7 +121,7 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
 
 void V0InsertionPoint::DetachLayoutTree(const AttachContext& context) {
   for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
-    distributed_nodes_.at(i)->LazyReattachIfAttached();
+    distributed_nodes_.at(i)->DetachLayoutTree(context);
 
   HTMLElement::DetachLayoutTree(context);
 }
