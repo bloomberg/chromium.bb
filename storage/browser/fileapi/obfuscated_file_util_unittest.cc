@@ -247,9 +247,11 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   std::unique_ptr<ObfuscatedFileUtil> CreateObfuscatedFileUtil(
       storage::SpecialStoragePolicy* storage_policy) {
+    // TODO(https://crbug.com/93417): Add support for incognito tests.
     return std::unique_ptr<ObfuscatedFileUtil>(
         ObfuscatedFileUtil::CreateForTesting(storage_policy, data_dir_path(),
-                                             nullptr));
+                                             /*env_override=*/nullptr,
+                                             /*is_incognito=*/false));
   }
 
   ObfuscatedFileUtil* ofu() {

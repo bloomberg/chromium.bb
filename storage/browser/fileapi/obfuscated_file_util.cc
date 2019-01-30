@@ -33,6 +33,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
 
 // Example of various paths:
@@ -256,7 +257,8 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
     leveldb::Env* env_override,
     GetTypeStringForURLCallback get_type_string_for_url,
     const std::set<std::string>& known_type_strings,
-    SandboxFileSystemBackendDelegate* sandbox_delegate)
+    SandboxFileSystemBackendDelegate* sandbox_delegate,
+    bool is_incognito)
     : special_storage_policy_(special_storage_policy),
       file_system_directory_(file_system_directory),
       env_override_(env_override),
@@ -266,6 +268,8 @@ ObfuscatedFileUtil::ObfuscatedFileUtil(
       sandbox_delegate_(sandbox_delegate) {
   DCHECK(!get_type_string_for_url_.is_null());
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(!is_incognito ||
+         (env_override && leveldb_chrome::IsMemEnv(env_override)));
 }
 
 ObfuscatedFileUtil::~ObfuscatedFileUtil() {
