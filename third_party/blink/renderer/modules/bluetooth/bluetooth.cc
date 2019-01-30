@@ -331,8 +331,10 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::WebBluetoothScanClientAssociatedPtrInfo client;
-  mojo::BindingId id =
-      client_bindings_.AddBinding(this, mojo::MakeRequest(&client));
+  // See https://bit.ly/2S0zRAS for task types.
+  mojo::BindingId id = client_bindings_.AddBinding(
+      this, mojo::MakeRequest(&client),
+      context->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
   service_->RequestScanningStart(
       std::move(client), std::move(scan_options),
