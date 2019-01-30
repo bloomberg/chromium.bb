@@ -334,10 +334,10 @@ message Study {
   enum ActivationType {
     // The study will be activated when its state is queried by the client.
     // This is recommended for most studies that include client code.
-    ACTIVATION_EXPLICIT  = 0;
+    ACTIVATE_ON_QUERY = 0;
     // The study will be automatically activated when it is created. This
     // is recommended for studies that do not have any client logic.
-    ACTIVATION_AUTO      = 1;
+    ACTIVATE_ON_STARTUP = 1;
   }
 
   // Activation type for this study. Defaults to ACTIVATION_EXPLICIT if omitted.
