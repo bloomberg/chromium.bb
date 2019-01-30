@@ -56,7 +56,7 @@ TEST_P(PaymentDetailsValidationTest, Test) {
   EXPECT_EQ(GetParam().expect_valid, ValidatePaymentDetails(details, &unused));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestCases,
     PaymentDetailsValidationTest,
     ::testing::Values(PaymentDetailsValidationTestCase(R"(
