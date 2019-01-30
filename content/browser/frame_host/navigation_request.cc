@@ -1619,11 +1619,6 @@ void NavigationRequest::OnRedirectChecksComplete(
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 
-  // TODO(https://crbug.com/919432): Remove this method.
-  GetContentClient()->browser()->NavigationRequestRedirected(
-      frame_tree_node_->frame_tree_node_id(), common_params_.url,
-      &modified_headers);
-
   loader_->FollowRedirect(std::move(removed_headers),
                           std::move(modified_headers),
                           common_params_.previews_state);

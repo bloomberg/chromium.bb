@@ -9,15 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/policy_export.h"
 #include "url/gurl.h"
-
-namespace net {
-class HttpRequestHeaders;
-}
 
 namespace policy {
 
@@ -33,10 +30,15 @@ class POLICY_EXPORT PolicyHeaderService : public CloudPolicyStore::Observer {
                       CloudPolicyStore* user_policy_store);
   ~PolicyHeaderService() override;
 
-  // Update |*extra_headers| with the policy header if
-  // |url| matches |server_url_|. Otherwise |*extra_headers| remains unchanged.
-  void AddPolicyHeaders(const GURL& url,
-                        net::HttpRequestHeaders* extra_headers) const;
+  // Update navigation request headers with the policy header if the URL matches
+  // |server_url_|.
+  // Note: To avoid depending on content/public, a callback is used here.
+  // It correspond to NavigationHandle::SetRequestHeader(). It is called
+  // synchronously.
+  using AddHeaderFunction =
+      base::OnceCallback<void(const std::string& /* header_name*/,
+                              const std::string& /* header_value */)>;
+  void AddPolicyHeaders(const GURL& url, AddHeaderFunction add_header) const;
 
   // Overridden CloudPolicyStore::Observer methods:
   void OnStoreLoaded(CloudPolicyStore* store) override;

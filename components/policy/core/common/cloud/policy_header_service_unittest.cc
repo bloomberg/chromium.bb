@@ -53,38 +53,29 @@ class PolicyHeaderServiceTest : public testing::Test {
     service_.reset();
   }
 
-  void ValidateHeader(const net::HttpRequestHeaders& headers,
-                      const std::string& expected) {
-    std::string header;
-    EXPECT_TRUE(headers.GetHeader(kPolicyHeaderName, &header));
-    EXPECT_EQ(header, expected);
-  }
-
-  void ValidateHeader(const net::HttpRequestHeaders& headers,
+  void ValidateHeader(const std::string& header_name,
+                      const std::string& header_value,
                       const std::string& expected_dmtoken,
                       const std::string& expected_policy_token) {
-    if (expected_dmtoken.empty()) {
-      EXPECT_TRUE(headers.IsEmpty());
-    } else {
-      // Read header.
-      std::string header;
-      EXPECT_TRUE(headers.GetHeader(kPolicyHeaderName, &header));
-      // Decode the base64 value into JSON.
-      std::string decoded;
-      base::Base64Decode(header, &decoded);
-      // Parse the JSON.
-      std::unique_ptr<base::Value> value = base::JSONReader::Read(decoded);
-      ASSERT_TRUE(value);
-      base::DictionaryValue* dict;
-      EXPECT_TRUE(value->GetAsDictionary(&dict));
-      // Read the values and verify them vs the expected values.
-      std::string dm_token;
-      dict->GetString("user_dmtoken", &dm_token);
-      EXPECT_EQ(dm_token, expected_dmtoken);
-      std::string policy_token;
-      dict->GetString("user_policy_token", &policy_token);
-      EXPECT_EQ(policy_token, expected_policy_token);
-    }
+    EXPECT_EQ(kPolicyHeaderName, header_name);
+
+    // Decode the base64 value into JSON.
+    std::string decoded;
+    base::Base64Decode(header_value, &decoded);
+
+    // Parse the JSON.
+    std::unique_ptr<base::Value> value = base::JSONReader::Read(decoded);
+    EXPECT_TRUE(value);
+    base::DictionaryValue* dict;
+    EXPECT_TRUE(value->GetAsDictionary(&dict));
+
+    // Read the values and verify them vs the expected values.
+    std::string dm_token;
+    dict->GetString("user_dmtoken", &dm_token);
+    EXPECT_EQ(dm_token, expected_dmtoken);
+    std::string policy_token;
+    dict->GetString("user_policy_token", &policy_token);
+    EXPECT_EQ(policy_token, expected_policy_token);
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -92,6 +83,18 @@ class PolicyHeaderServiceTest : public testing::Test {
   TestCloudPolicyStore user_store_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 };
+
+void AddHeader(std::string* header_name,
+               std::string* header_value,
+               const std::string& name,
+               const std::string& value) {
+  *header_name = name;
+  *header_value = value;
+}
+
+void ExpectNoHeaderAdded(const std::string&, const std::string&) {
+  FAIL();
+}
 
 }  // namespace
 
@@ -109,40 +112,43 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   policy->set_policy_token(expected_policy_token);
   user_store_.SetPolicy(std::move(policy));
   task_runner_->RunUntilIdle();
-
-  net::HttpRequestHeaders extra_headers;
-  service_->AddPolicyHeaders(GURL(kDMServerURL), &extra_headers);
-  ValidateHeader(extra_headers, expected_dmtoken, expected_policy_token);
+  std::string header_name, header_value;
+  service_->AddPolicyHeaders(
+      GURL(kDMServerURL),
+      base::BindOnce(AddHeader, base::Unretained(&header_name),
+                     base::Unretained(&header_value)));
+  ValidateHeader(header_name, header_value, expected_dmtoken,
+                 expected_policy_token);
 
   // Now blow away the policy data.
   user_store_.SetPolicy(std::unique_ptr<PolicyData>());
   task_runner_->RunUntilIdle();
-
-  net::HttpRequestHeaders extra_headers2;
-  service_->AddPolicyHeaders(GURL(kDMServerURL), &extra_headers2);
-  ValidateHeader(extra_headers2, "", "");
+  service_->AddPolicyHeaders(GURL(kDMServerURL),
+                             base::BindOnce(&ExpectNoHeaderAdded));
 }
 
 TEST_F(PolicyHeaderServiceTest, NoHeaderOnNonMatchingURL) {
   service_->SetHeaderForTest("new_header");
-  net::HttpRequestHeaders extra_headers;
-  service_->AddPolicyHeaders(GURL("http://non-matching.com"), &extra_headers);
-  EXPECT_TRUE(extra_headers.IsEmpty());
+  service_->AddPolicyHeaders(GURL("http://non-matching.com"),
+                             base::BindOnce(&ExpectNoHeaderAdded));
 }
 
 TEST_F(PolicyHeaderServiceTest, HeaderChange) {
   std::string new_header = "new_header";
   service_->SetHeaderForTest(new_header);
-  net::HttpRequestHeaders extra_headers;
-  service_->AddPolicyHeaders(GURL(kDMServerURL), &extra_headers);
-  ValidateHeader(extra_headers, new_header);
+  std::string header_name, header_value;
+  service_->AddPolicyHeaders(
+      GURL(kDMServerURL),
+      base::BindOnce(AddHeader, base::Unretained(&header_name),
+                     base::Unretained(&header_value)));
+  EXPECT_EQ(kPolicyHeaderName, header_name);
+  EXPECT_EQ(new_header, header_value);
 }
 
 TEST_F(PolicyHeaderServiceTest, ChangeToNoHeader) {
   service_->SetHeaderForTest("");
-  net::HttpRequestHeaders extra_headers;
-  service_->AddPolicyHeaders(GURL(kDMServerURL), &extra_headers);
-  EXPECT_TRUE(extra_headers.IsEmpty());
+  service_->AddPolicyHeaders(GURL(kDMServerURL),
+                             base::BindOnce(&ExpectNoHeaderAdded));
 }
 
 }  // namespace policy
