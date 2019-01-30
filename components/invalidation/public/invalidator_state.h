@@ -29,7 +29,10 @@ enum InvalidatorState {
   // The subscription to at least one topic has failed.
   SUBSCRIPTION_FAILURE = 4,
 
-  kMaxValue = SUBSCRIPTION_FAILURE
+  // Invalidator was stopped.
+  STOPPED = 5,
+
+  kMaxValue = STOPPED,
 };
 
 INVALIDATION_EXPORT const char* InvalidatorStateToString(

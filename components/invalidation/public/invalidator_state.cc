@@ -20,6 +20,8 @@ const char* InvalidatorStateToString(InvalidatorState state) {
       return "INVALIDATOR_SHUTTING_DOWN";
     case SUBSCRIPTION_FAILURE:
       return "SUBSCRIPTION_FAILURE";
+    case STOPPED:
+      return "STOPPED";
   }
 }
 

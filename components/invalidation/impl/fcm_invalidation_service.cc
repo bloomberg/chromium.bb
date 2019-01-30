@@ -113,7 +113,7 @@ syncer::InvalidatorState FCMInvalidationService::GetInvalidatorState() const {
     return invalidator_->GetInvalidatorState();
   }
   DVLOG(2) << "Invalidator currently stopped";
-  return syncer::TRANSIENT_INVALIDATION_ERROR;
+  return syncer::STOPPED;
 }
 
 std::string FCMInvalidationService::GetInvalidatorClientId() const {
