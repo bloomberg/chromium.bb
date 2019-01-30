@@ -533,14 +533,12 @@ DevicePermissionsManager::GetPermissionMessageStrings(
   return messages;
 }
 
-void DevicePermissionsManager::AllowUsbDevice(const std::string& extension_id,
-                                              scoped_refptr<UsbDevice> device) {
+void DevicePermissionsManager::AllowUsbDevice(
+    const std::string& extension_id,
+    const device::mojom::UsbDeviceInfo& device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DevicePermissions* device_permissions = GetForExtension(extension_id);
-
-  DCHECK(device);
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  auto device_entry = base::MakeRefCounted<DevicePermissionEntry>(*device_info);
+  auto device_entry = base::MakeRefCounted<DevicePermissionEntry>(device_info);
 
   if (device_entry->IsPersistent()) {
     for (const auto& entry : device_permissions->entries()) {
@@ -554,13 +552,12 @@ void DevicePermissionsManager::AllowUsbDevice(const std::string& extension_id,
     device_permissions->entries_.insert(device_entry);
     SaveDevicePermissionEntry(context_, extension_id, device_entry);
   } else if (!ContainsKey(device_permissions->ephemeral_usb_devices_,
-                          device_info->guid)) {
+                          device_info.guid)) {
     // Non-persistent devices cannot be reliably identified when they are
     // reconnected so such devices are only remembered until disconnect.
     // Register an observer here so that this set doesn't grow undefinitely.
     device_permissions->entries_.insert(device_entry);
-    device_permissions->ephemeral_usb_devices_[device_info->guid] =
-        device_entry;
+    device_permissions->ephemeral_usb_devices_[device_info.guid] = device_entry;
 
     // Only start observing when an ephemeral device has been added so that
     // UsbService is not automatically initialized on profile creation (which it
@@ -686,18 +683,21 @@ void DevicePermissionsManager::OnDeviceRemovedCleanup(
   }
 }
 
-void DevicePermissionsManager::RemoveEntryByHidDeviceGUID(
+void DevicePermissionsManager::RemoveEntryByDeviceGUID(
+    DevicePermissionEntry::Type type,
     const std::string& guid) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto& map_entry : extension_id_to_device_permissions_) {
     // An ephemeral device cannot be identified if it is reconnected and so
     // permission to access it is cleared on disconnect.
     DevicePermissions* device_permissions = map_entry.second;
-    const auto& device_entry =
-        device_permissions->ephemeral_hid_devices_.find(guid);
-    if (device_entry != device_permissions->ephemeral_hid_devices_.end()) {
+    auto& devices = (type == DevicePermissionEntry::Type::HID)
+                        ? device_permissions->ephemeral_hid_devices_
+                        : device_permissions->ephemeral_usb_devices_;
+    const auto& device_entry = devices.find(guid);
+    if (device_entry != devices.end()) {
       device_permissions->entries_.erase(device_entry->second);
-      device_permissions->ephemeral_hid_devices_.erase(device_entry);
+      devices.erase(device_entry);
     }
   }
 }

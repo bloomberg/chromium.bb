@@ -154,6 +154,15 @@ void UsbDeviceManager::GetDevice(
                              std::move(device_client));
 }
 
+#if defined(OS_CHROMEOS)
+void UsbDeviceManager::CheckAccess(
+    const std::string& guid,
+    device::mojom::UsbDeviceManager::CheckAccessCallback callback) {
+  EnsureConnectionWithDeviceManager();
+  device_manager_->CheckAccess(guid, std::move(callback));
+}
+#endif  // defined(OS_CHROMEOS)
+
 void UsbDeviceManager::Shutdown() {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {

@@ -693,14 +693,12 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
 }
 
 void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
-    const std::vector<scoped_refptr<UsbDevice>>& devices) {
+    std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   UsbDeviceManager* device_manager = UsbDeviceManager::Get(browser_context());
   for (const auto& device : devices) {
     Device api_device;
-    DCHECK(device);
-    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-    device_manager->GetApiDevice(*device_info, &api_device);
+    device_manager->GetApiDevice(*device, &api_device);
     result->Append(api_device.ToValue());
   }
 

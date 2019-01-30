@@ -16,12 +16,9 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/base/device_client.h"
 #include "device/usb/public/cpp/usb_utils.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_ids.h"
-#include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -37,9 +34,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 using device::HidDeviceFilter;
-using device::UsbDevice;
 using device::mojom::UsbDeviceFilterPtr;
-using device::UsbService;
 
 namespace extensions {
 
@@ -47,27 +42,28 @@ namespace {
 
 class UsbDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {
  public:
-  explicit UsbDeviceInfo(scoped_refptr<UsbDevice> device) : device_(device) {
+  explicit UsbDeviceInfo(device::mojom::UsbDeviceInfoPtr device)
+      : device_(std::move(device)) {
     name_ = DevicePermissionsManager::GetPermissionMessage(
-        device->vendor_id(), device->product_id(),
-        device->manufacturer_string(), device->product_string(),
+        device_->vendor_id, device_->product_id,
+        device_->manufacturer_name.value_or(base::string16()),
+        device_->product_name.value_or(base::string16()),
         base::string16(),  // Serial number is displayed separately.
         true);
-    serial_number_ = device->serial_number();
+    serial_number_ =
+        device_->serial_number ? *(device_->serial_number) : base::string16();
   }
 
   ~UsbDeviceInfo() override {}
 
-  const scoped_refptr<UsbDevice>& device() const { return device_; }
+  device::mojom::UsbDeviceInfoPtr& device() { return device_; }
 
  private:
-  // TODO(reillyg): Convert this to a weak reference when UsbDevice has a
-  // connected flag.
-  scoped_refptr<UsbDevice> device_;
+  device::mojom::UsbDeviceInfoPtr device_;
 };
 
 class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
-                                   public device::UsbService::Observer {
+                                   public UsbDeviceManager::Observer {
  public:
   UsbDevicePermissionsPrompt(
       const Extension* extension,
@@ -78,10 +74,10 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       : Prompt(extension, context, multiple),
         filters_(std::move(filters)),
         callback_(callback),
-        service_observer_(this) {}
+        manager_observer_(this) {}
 
  private:
-  ~UsbDevicePermissionsPrompt() override {}
+  ~UsbDevicePermissionsPrompt() override { manager_observer_.RemoveAll(); }
 
   // DevicePermissionsPrompt::Prompt implementation:
   void SetObserver(
@@ -89,11 +85,11 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     DevicePermissionsPrompt::Prompt::SetObserver(observer);
 
     if (observer) {
-      UsbService* service = device::DeviceClient::Get()->GetUsbService();
-      if (service && !service_observer_.IsObserving(service)) {
-        service->GetDevices(
+      auto* device_manager = UsbDeviceManager::Get(browser_context());
+      if (device_manager && !manager_observer_.IsObserving(device_manager)) {
+        device_manager->GetDevices(
             base::Bind(&UsbDevicePermissionsPrompt::OnDevicesEnumerated, this));
-        service_observer_.Add(service);
+        manager_observer_.Add(device_manager);
       }
     }
   }
@@ -101,39 +97,46 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   void Dismissed() override {
     DevicePermissionsManager* permissions_manager =
         DevicePermissionsManager::Get(browser_context());
-    std::vector<scoped_refptr<UsbDevice>> devices;
+    std::vector<device::mojom::UsbDeviceInfoPtr> devices;
     for (const auto& device : devices_) {
       if (device->granted()) {
-        const UsbDeviceInfo* usb_device =
-            static_cast<const UsbDeviceInfo*>(device.get());
-        devices.push_back(usb_device->device());
+        UsbDeviceInfo* usb_device = static_cast<UsbDeviceInfo*>(device.get());
         if (permissions_manager) {
+          DCHECK(usb_device->device());
           permissions_manager->AllowUsbDevice(extension()->id(),
-                                              usb_device->device());
+                                              *usb_device->device());
         }
+        devices.push_back(std::move(usb_device->device()));
       }
     }
     DCHECK(multiple() || devices.size() <= 1);
-    callback_.Run(devices);
+    callback_.Run(std::move(devices));
     callback_.Reset();
   }
 
-  // device::UsbService::Observer implementation:
-  void OnDeviceAdded(scoped_refptr<UsbDevice> device) override {
-    if (!UsbDeviceFilterMatchesAny(filters_, *device))
+  // extensions::UsbDeviceManager::Observer implementation
+  void OnDeviceAdded(const device::mojom::UsbDeviceInfo& device) override {
+    if (!device::UsbDeviceFilterMatchesAny(filters_, device))
       return;
 
-    std::unique_ptr<DeviceInfo> device_info(new UsbDeviceInfo(device));
-    device->CheckUsbAccess(
-        base::Bind(&UsbDevicePermissionsPrompt::AddCheckedDevice, this,
-                   base::Passed(&device_info)));
+    auto device_info = std::make_unique<UsbDeviceInfo>(device.Clone());
+#if defined(OS_CHROMEOS)
+    auto* device_manager = UsbDeviceManager::Get(browser_context());
+    DCHECK(device_manager);
+    device_manager->CheckAccess(
+        device.guid,
+        base::BindOnce(&UsbDevicePermissionsPrompt::AddCheckedDevice, this,
+                       base::Passed(&device_info)));
+#else
+    AddCheckedDevice(std::move(device_info), true);
+#endif  // defined(OS_CHROMEOS)
   }
 
-  void OnDeviceRemoved(scoped_refptr<UsbDevice> device) override {
+  // extensions::UsbDeviceManager::Observer implementation
+  void OnDeviceRemoved(const device::mojom::UsbDeviceInfo& device) override {
     for (auto it = devices_.begin(); it != devices_.end(); ++it) {
-      const UsbDeviceInfo* entry =
-          static_cast<const UsbDeviceInfo*>((*it).get());
-      if (entry->device() == device) {
+      UsbDeviceInfo* entry = static_cast<UsbDeviceInfo*>((*it).get());
+      if (entry->device()->guid == device.guid) {
         size_t index = it - devices_.begin();
         base::string16 device_name = (*it)->name();
         devices_.erase(it);
@@ -145,15 +148,16 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   }
 
   void OnDevicesEnumerated(
-      const std::vector<scoped_refptr<UsbDevice>>& devices) {
+      std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
     for (const auto& device : devices) {
-      OnDeviceAdded(device);
+      OnDeviceAdded(*device);
     }
   }
 
   std::vector<UsbDeviceFilterPtr> filters_;
   DevicePermissionsPrompt::UsbDevicesCallback callback_;
-  ScopedObserver<UsbService, UsbService::Observer> service_observer_;
+  ScopedObserver<UsbDeviceManager, UsbDeviceManager::Observer>
+      manager_observer_;
 };
 
 class HidDeviceInfo : public DevicePermissionsPrompt::Prompt::DeviceInfo {

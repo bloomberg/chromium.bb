@@ -3547,6 +3547,7 @@ jumbo_split_static_library("ui") {
       "webui/print_preview/sticky_settings.cc",
       "webui/print_preview/sticky_settings.h",
     ]
+    deps += [ "//device/usb/mojo:mojo" ]
 
     if (is_chromeos) {
       sources += [

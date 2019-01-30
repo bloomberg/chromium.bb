@@ -20,6 +20,8 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -219,7 +221,9 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
 
   DevicePermissionsManager* permissions_manager =
       DevicePermissionsManager::Get(profile_);
-  permissions_manager->AllowUsbDevice(extension_id, device);
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  DCHECK(device_info);
+  permissions_manager->AllowUsbDevice(extension_id, *device_info);
 
   GetPrinterProviderAPI(profile_)->DispatchGetUsbPrinterInfoRequested(
       extension_id, device,

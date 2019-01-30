@@ -61,6 +61,12 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
                  device::mojom::UsbDeviceRequest device_request,
                  device::mojom::UsbDeviceClientPtr device_client);
 
+#if defined(OS_CHROMEOS)
+  void CheckAccess(
+      const std::string& guid,
+      device::mojom::UsbDeviceManager::CheckAccessCallback callback);
+#endif  // defined(OS_CHROMEOS)
+
  private:
   friend class BrowserContextKeyedAPIFactory<UsbDeviceManager>;
 
