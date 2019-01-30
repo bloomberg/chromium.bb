@@ -21,14 +21,12 @@
 
 namespace chromecast {
 
-CastWebContentsImpl::CastWebContentsImpl(
-    CastWebContentsImpl::Delegate* delegate,
-    content::WebContents* web_contents,
-    bool enabled_for_dev)
-    : delegate_(delegate),
-      web_contents_(web_contents),
+CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
+                                         const InitParams& init_params)
+    : web_contents_(web_contents),
+      delegate_(init_params.delegate),
       page_state_(PageState::IDLE),
-      enabled_for_dev_(enabled_for_dev),
+      enabled_for_dev_(init_params.enabled_for_dev),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
       closing_(false),
@@ -38,7 +36,6 @@ CastWebContentsImpl::CastWebContentsImpl(
       last_error_(net::OK),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
-  DCHECK(delegate_);
   DCHECK(web_contents_);
   DCHECK(web_contents_->GetController().IsInitialNavigation());
   DCHECK(!web_contents_->IsLoading());
@@ -47,7 +44,6 @@ CastWebContentsImpl::CastWebContentsImpl(
     LOG(INFO) << "Enabling dev console for CastWebContentsImpl";
     remote_debugging_server_->EnableWebContentsForDebugging(web_contents_);
   }
-  delegate_->OnPageStateChanged(this);
 }
 
 CastWebContentsImpl::~CastWebContentsImpl() {
@@ -67,6 +63,13 @@ content::WebContents* CastWebContentsImpl::web_contents() const {
 CastWebContents::PageState CastWebContentsImpl::page_state() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return page_state_;
+}
+
+void CastWebContentsImpl::AddRendererFeatures(
+    std::vector<RendererFeature> features) {
+  for (auto& feature : features) {
+    renderer_features_.push_back({feature.name, feature.value.Clone()});
+  }
 }
 
 void CastWebContentsImpl::LoadUrl(const GURL& url) {
@@ -189,14 +192,19 @@ void CastWebContentsImpl::RenderFrameCreated(
     observer.RenderFrameCreated(render_process_id, render_frame_id);
   }
 
-  // Only the root frame should receive feature configuration messages.
-  if (render_frame_host->GetParent()) {
-    return;
-  }
-
   chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;
   render_frame_host->GetRemoteInterfaces()->GetInterface(&feature_manager_ptr);
-  feature_manager_ptr->ConfigureFeatures(delegate_->GetRendererFeatures());
+  feature_manager_ptr->ConfigureFeatures(GetRendererFeatures());
+}
+
+std::vector<chromecast::shell::mojom::FeaturePtr>
+CastWebContentsImpl::GetRendererFeatures() {
+  std::vector<chromecast::shell::mojom::FeaturePtr> features;
+  for (const auto& feature : renderer_features_) {
+    features.push_back(chromecast::shell::mojom::Feature::New(
+        feature.name, feature.value.Clone()));
+  }
+  return features;
 }
 
 void CastWebContentsImpl::OnInterfaceRequestFromFrame(
@@ -353,6 +361,14 @@ void CastWebContentsImpl::DidFailLoad(
   TracePageLoadEnd(validated_url);
   Stop(error_code);
   DCHECK_EQ(PageState::ERROR, page_state_);
+}
+
+void CastWebContentsImpl::InnerWebContentsCreated(
+    content::WebContents* inner_web_contents) {
+  auto result = inner_contents_.insert(std::make_unique<CastWebContentsImpl>(
+      inner_web_contents, InitParams{nullptr, enabled_for_dev_}));
+  if (delegate_)
+    delegate_->InnerContentsCreated(result.first->get(), this);
 }
 
 void CastWebContentsImpl::WebContentsDestroyed() {

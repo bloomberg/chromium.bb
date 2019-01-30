@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "chromecast/common/mojom/feature_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -17,6 +18,11 @@ class WebContents;
 }  // namespace content
 
 namespace chromecast {
+
+struct RendererFeature {
+  const std::string name;
+  base::Value value;
+};
 
 // Simplified WebContents wrapper class for Cast platforms.
 class CastWebContents {
@@ -40,10 +46,11 @@ class CastWebContents {
     virtual void OnPageStopped(CastWebContents* cast_web_contents,
                                int error_code) = 0;
 
-    // Collects the set of delegate-specific renderer features that needs to be
-    // configured when `CastWebContents::RenderFrameCreated` is invoked.
-    virtual std::vector<chromecast::shell::mojom::FeaturePtr>
-    GetRendererFeatures();
+    // Notify that a inner WebContents was created. |inner_contents| is created
+    // in a default-initialized state with no delegate, and can be safely
+    // initialized by the delegate.
+    virtual void InnerContentsCreated(CastWebContents* inner_contents,
+                                      CastWebContents* outer_contents) {}
 
    protected:
     virtual ~Delegate() {}
@@ -76,6 +83,11 @@ class CastWebContents {
     CastWebContents* cast_web_contents_;
   };
 
+  struct InitParams {
+    Delegate* delegate;
+    bool enabled_for_dev;
+  };
+
   // Page state for the main frame.
   enum class PageState {
     IDLE,       // Main frame has not started yet.
@@ -89,8 +101,27 @@ class CastWebContents {
   CastWebContents() = default;
   virtual ~CastWebContents() = default;
 
+  // TODO(seantopping): Hide this, clients shouldn't use WebContents directly.
   virtual content::WebContents* web_contents() const = 0;
   virtual PageState page_state() const = 0;
+
+  // ===========================================================================
+  // Initialization and Setup
+  // ===========================================================================
+
+  // Set the delegate. SetDelegate(nullptr) can be used to stop notifications.
+  virtual void SetDelegate(Delegate* delegate) = 0;
+
+  // Add a set of features for all renderers in the WebContents. Features are
+  // configured when `CastWebContents::RenderFrameCreated` is invoked.
+  virtual void AddRendererFeatures(std::vector<RendererFeature> features) = 0;
+
+  virtual void AllowWebAndMojoWebUiBindings() = 0;
+  virtual void ClearRenderWidgetHostView() = 0;
+
+  // ===========================================================================
+  // Page Lifetime
+  // ===========================================================================
 
   // Navigates the underlying WebContents to |url|. Delegate will be notified of
   // page progression events via OnPageStateChanged().
@@ -105,12 +136,6 @@ class CastWebContents {
   // reload the page without waiting for page teardown, which may be handled
   // independently.
   virtual void Stop(int error_code) = 0;
-
-  // Set the delegate. SetDelegate(nullptr) can be used to stop notifications.
-  virtual void SetDelegate(Delegate* delegate) = 0;
-
-  virtual void AllowWebAndMojoWebUiBindings() = 0;
-  virtual void ClearRenderWidgetHostView() = 0;
 
   // Used to add or remove |observer| to the ObserverList in the implementation.
   // These functions should only be invoked by CastWebContents::Observer in a

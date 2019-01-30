@@ -6,11 +6,6 @@
 
 namespace chromecast {
 
-std::vector<chromecast::shell::mojom::FeaturePtr>
-CastWebContents::Delegate::GetRendererFeatures() {
-  return std::vector<chromecast::shell::mojom::FeaturePtr>();
-}
-
 CastWebContents::Observer::Observer() : cast_web_contents_(nullptr) {}
 
 CastWebContents::Observer::~Observer() {
