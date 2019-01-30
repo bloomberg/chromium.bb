@@ -4276,14 +4276,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
 // unlike the attached guest, no find requests are sent for the unattached
 // guest. For more context see https://crbug.com/897465.
 // TODO(crbug.com/914098): Address flakiness and reenable.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_NoFindInPageForUnattachedGuest \
-  DISABLED_NoFindInPageForUnattachedGuest
-#else
-#define MAYBE_NoFindInPageForUnattachedGuest NoFindInPageForUnattachedGuest
-#endif
 IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
-                       MAYBE_NoFindInPageForUnattachedGuest) {
+                       DISABLED_NoFindInPageForUnattachedGuest) {
   GURL signin_url{"chrome://chrome-signin"};
   ui_test_utils::NavigateToURL(browser(), signin_url);
   auto* embedder_web_contents =
