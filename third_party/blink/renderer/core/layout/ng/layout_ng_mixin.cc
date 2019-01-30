@@ -397,8 +397,7 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
 template <typename Base>
 void LayoutNGMixin<Base>::SetPaintFragment(
     const NGBlockBreakToken* break_token,
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset offset) {
+    scoped_refptr<const NGPhysicalFragment> fragment) {
   DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
 
   scoped_refptr<NGPaintFragment>* current =
@@ -406,7 +405,7 @@ void LayoutNGMixin<Base>::SetPaintFragment(
   DCHECK(current);
   bool has_old = current->get();
   if (fragment) {
-    *current = NGPaintFragment::Create(std::move(fragment), offset, break_token,
+    *current = NGPaintFragment::Create(std::move(fragment), break_token,
                                        std::move(*current));
   } else {
     *current = nullptr;
@@ -416,23 +415,6 @@ void LayoutNGMixin<Base>::SetPaintFragment(
     // Painting layer needs repaint when a DisplayItemClient is destroyed.
     ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::UpdatePaintFragmentFromCachedLayoutResult(
-    const NGBlockBreakToken* break_token,
-    scoped_refptr<const NGPhysicalFragment> fragment,
-    NGPhysicalOffset fragment_offset) {
-  DCHECK(fragment);
-  DCHECK(fragment->GetLayoutObject() == this);
-  DCHECK(!break_token || break_token->InputNode().GetLayoutBox() == this);
-
-  scoped_refptr<NGPaintFragment>* current =
-      NGPaintFragment::Find(&paint_fragment_, break_token);
-  DCHECK(current);
-  DCHECK(*current);
-  (*current)->UpdateFromCachedLayoutResult(std::move(fragment),
-                                           fragment_offset);
 }
 
 template <typename Base>

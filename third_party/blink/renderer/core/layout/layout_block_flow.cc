@@ -2560,14 +2560,9 @@ bool LayoutBlockFlow::AreCachedLinesValidFor(const NGConstraintSpace&) const {
   return false;
 }
 
-void LayoutBlockFlow::SetPaintFragment(const NGBlockBreakToken*,
-                                       scoped_refptr<const NGPhysicalFragment>,
-                                       NGPhysicalOffset) {}
-
-void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
+void LayoutBlockFlow::SetPaintFragment(
     const NGBlockBreakToken*,
-    scoped_refptr<const NGPhysicalFragment>,
-    NGPhysicalOffset) {}
+    scoped_refptr<const NGPhysicalFragment>) {}
 
 void LayoutBlockFlow::ComputeVisualOverflow(
     bool recompute_floats) {

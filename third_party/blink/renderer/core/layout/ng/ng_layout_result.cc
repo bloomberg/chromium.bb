@@ -24,7 +24,7 @@ NGLayoutResult::NGLayoutResult(
   final_break_after_ = builder->previous_break_after_;
   has_forced_break_ = builder->has_forced_break_;
   DCHECK(physical_fragment) << "Use the other constructor for aborting layout";
-  root_fragment_.fragment_ = std::move(physical_fragment);
+  physical_fragment_ = std::move(physical_fragment);
   oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
 }
 
@@ -32,7 +32,7 @@ NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalFragment> physical_fragment,
     NGLineBoxFragmentBuilder* builder)
     : NGLayoutResult(builder) {
-  root_fragment_.fragment_ = std::move(physical_fragment);
+  physical_fragment_ = std::move(physical_fragment);
   oof_positioned_descendants_ = std::move(builder->oof_positioned_descendants_);
 }
 
@@ -49,7 +49,7 @@ NGLayoutResult::NGLayoutResult(NGLayoutResultStatus status,
 // We can't use =default here because RefCounted can't be copied.
 NGLayoutResult::NGLayoutResult(const NGLayoutResult& other,
                                base::Optional<LayoutUnit> bfc_block_offset)
-    : root_fragment_(other.root_fragment_),
+    : physical_fragment_(other.physical_fragment_),
       oof_positioned_descendants_(other.oof_positioned_descendants_),
       unpositioned_list_marker_(other.unpositioned_list_marker_),
       exclusion_space_(other.exclusion_space_),

@@ -47,17 +47,12 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   static scoped_refptr<NGPaintFragment> Create(
       scoped_refptr<const NGPhysicalFragment>,
-      NGPhysicalOffset offset,
       const NGBlockBreakToken* break_token,
       scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
     return *physical_fragment_;
   }
-
-  void UpdateFromCachedLayoutResult(
-      scoped_refptr<const NGPhysicalFragment> fragment,
-      NGPhysicalOffset offset);
 
   // Next/last fragment for  when this is fragmented.
   const NGPaintFragment* Next() const;
@@ -207,7 +202,10 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return PhysicalFragment().GetLayoutObject();
   }
   const ComputedStyle& Style() const { return PhysicalFragment().Style(); }
-  NGPhysicalOffset Offset() const { return offset_; }
+  NGPhysicalOffset Offset() const {
+    DCHECK(parent_);
+    return offset_;
+  }
   NGPhysicalSize Size() const { return PhysicalFragment().Size(); }
 
   // Converts the given point, relative to the fragment itself, into a position

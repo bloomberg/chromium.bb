@@ -48,10 +48,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   ~NGLayoutResult();
 
   const NGPhysicalFragment* PhysicalFragment() const {
-    return root_fragment_.get();
+    return physical_fragment_.get();
   }
-  NGPhysicalOffset Offset() const { return root_fragment_.Offset(); }
-  void SetOffset(NGPhysicalOffset offset) { root_fragment_.offset_ = offset; }
 
   const Vector<NGOutOfFlowPositionedDescendant>&
   OutOfFlowPositionedDescendants() const {
@@ -76,8 +74,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
   const LayoutUnit IntrinsicBlockSize() const {
-    DCHECK(root_fragment_->Type() == NGPhysicalFragment::kFragmentBox ||
-           root_fragment_->Type() ==
+    DCHECK(physical_fragment_->Type() == NGPhysicalFragment::kFragmentBox ||
+           physical_fragment_->Type() ==
                NGPhysicalFragment::kFragmentRenderedLegend);
     return intrinsic_block_size_;
   }
@@ -139,7 +137,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   static bool DependsOnPercentageBlockSize(const NGContainerFragmentBuilder&);
 
-  NGLink root_fragment_;
+  scoped_refptr<const NGPhysicalFragment> physical_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   NGUnpositionedListMarker unpositioned_list_marker_;

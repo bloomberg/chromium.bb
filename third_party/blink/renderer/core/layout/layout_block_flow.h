@@ -67,7 +67,6 @@ class NGPaintFragment;
 class NGPhysicalFragment;
 
 struct NGInlineNodeData;
-struct NGPhysicalOffset;
 
 enum IndentTextOrNot { kDoNotIndentText, kIndentText };
 
@@ -470,12 +469,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual bool AreCachedLinesValidFor(const NGConstraintSpace&) const;
   virtual void WillCollectInlines() {}
   virtual void SetPaintFragment(const NGBlockBreakToken*,
-                                scoped_refptr<const NGPhysicalFragment>,
-                                NGPhysicalOffset);
-  virtual void UpdatePaintFragmentFromCachedLayoutResult(
-      const NGBlockBreakToken*,
-      scoped_refptr<const NGPhysicalFragment>,
-      NGPhysicalOffset);
+                                scoped_refptr<const NGPhysicalFragment>);
   virtual const NGPhysicalBoxFragment* CurrentFragment() const {
     return nullptr;
   }
