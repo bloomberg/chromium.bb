@@ -340,28 +340,29 @@ void NGPaintFragment::UpdateFromCachedLayoutResult(
   offset_ = offset;
 }
 
-NGPaintFragment* NGPaintFragment::Last(const NGBreakToken& break_token) {
-  for (NGPaintFragment* fragment = this; fragment;
-       fragment = fragment->Next()) {
-    if (fragment->PhysicalFragment().BreakToken() == &break_token)
-      return fragment;
-  }
-  return nullptr;
-}
-
-NGPaintFragment* NGPaintFragment::Next() {
+const NGPaintFragment* NGPaintFragment::Next() const {
   if (!rare_data_)
     return nullptr;
   return rare_data_->next_fragmented_.get();
 }
 
-NGPaintFragment* NGPaintFragment::Last() {
-  for (NGPaintFragment* fragment = this;;) {
-    NGPaintFragment* next = fragment->Next();
+const NGPaintFragment* NGPaintFragment::Last() const {
+  for (const NGPaintFragment* fragment = this;;) {
+    const NGPaintFragment* next = fragment->Next();
     if (!next)
       return fragment;
     fragment = next;
   }
+}
+
+const NGPaintFragment* NGPaintFragment::Last(
+    const NGBreakToken& break_token) const {
+  for (const NGPaintFragment* fragment = this; fragment;
+       fragment = fragment->Next()) {
+    if (fragment->PhysicalFragment().BreakToken() == &break_token)
+      return fragment;
+  }
+  return nullptr;
 }
 
 scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
