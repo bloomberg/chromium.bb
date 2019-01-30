@@ -163,7 +163,9 @@ void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   // Only passes Tab, Shift+Tab, Esc to the widget as it can consume more key
   // events. e.g. Alt+Tab can be consumed as focus traversal by FocusManager.
   ui::KeyboardCode key_code = event->key_code();
-  int flags = event->flags();
+  int flags = event->flags() &
+              (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
+               ui::EF_COMMAND_DOWN | ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN);
   if ((key_code == ui::VKEY_TAB && flags == ui::EF_NONE) ||
       (key_code == ui::VKEY_TAB && flags == ui::EF_SHIFT_DOWN) ||
       (key_code == ui::VKEY_ESCAPE && flags == ui::EF_NONE)) {
