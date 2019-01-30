@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.JsonWriter;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -125,9 +126,10 @@ public class ContactsPickerDialogTest
                 ThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
                     @Override
                     public ContactsPickerDialog call() {
-                        final ContactsPickerDialog dialog = new ContactsPickerDialog(
-                                mActivityTestRule.getActivity(), ContactsPickerDialogTest.this,
-                                multiselect, includeNames, includeEmails, includeTel);
+                        final ContactsPickerDialog dialog =
+                                new ContactsPickerDialog(mActivityTestRule.getActivity(),
+                                        ContactsPickerDialogTest.this, multiselect, includeNames,
+                                        includeEmails, includeTel, "example.com");
                         dialog.show();
                         return dialog;
                     }
@@ -234,6 +236,29 @@ public class ContactsPickerDialogTest
         writer.beginArray();
         writer.endArray();
         writer.endObject();
+    }
+
+    @Test
+    @LargeTest
+    public void testOriginString() throws Throwable {
+        createDialog(/* multiselect = */ true, /* includeNames = */ true,
+                /* includeEmails = */ true,
+                /* includeTel = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+
+        RecyclerView recyclerView = getRecyclerView();
+        RecyclerViewTestUtils.waitForView(recyclerView, 0);
+        View view = recyclerView.getLayoutManager().findViewByPosition(0);
+        Assert.assertNotNull(view);
+        Assert.assertTrue(view instanceof TopView);
+        TopView topView = (TopView) view;
+        Assert.assertNotNull(topView);
+        TextView explanation = (TextView) topView.findViewById(R.id.explanation);
+        Assert.assertNotNull(explanation);
+        Assert.assertEquals(explanation.getText(),
+                "The contacts you select below will be shared with the website example.com.");
+
+        dismissDialog();
     }
 
     @Test

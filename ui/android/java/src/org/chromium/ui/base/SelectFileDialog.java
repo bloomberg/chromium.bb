@@ -243,8 +243,10 @@ public class SelectFileDialog
         Activity activity = mWindowAndroid.getActivity().get();
 
         // Use the new contacts picker, if available.
+        // TODO(finnur): Remove this code path (for opening the Contacts Picker dialog).
         if (shouldUseContactsPicker()
-                && UiUtils.showContactsPicker(activity, this, mAllowMultiple, true, true, true)) {
+                && UiUtils.showContactsPicker(
+                        activity, this, mAllowMultiple, true, true, true, "")) {
             return;
         }
 

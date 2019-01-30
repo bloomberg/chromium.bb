@@ -42,8 +42,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
     }
 
     @CalledByNative
-    private void showDialog(
-            boolean multiple, boolean includeNames, boolean includeEmails, boolean includeTel) {
+    private void showDialog(boolean multiple, boolean includeNames, boolean includeEmails,
+            boolean includeTel, String formattedOrigin) {
         if (mWindowAndroid.getActivity().get() == null) {
             nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
             return;
@@ -51,7 +51,7 @@ public class ContactsDialogHost implements ContactsPickerListener {
 
         if (mWindowAndroid.hasPermission(Manifest.permission.READ_CONTACTS)) {
             if (!UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple,
-                        includeNames, includeEmails, includeTel)) {
+                        includeNames, includeEmails, includeTel, formattedOrigin)) {
                 nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
             }
             return;
@@ -68,7 +68,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
                             && TextUtils.equals(permissions[0], Manifest.permission.READ_CONTACTS)
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         if (!UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this,
-                                    multiple, includeNames, includeEmails, includeTel)) {
+                                    multiple, includeNames, includeEmails, includeTel,
+                                    formattedOrigin)) {
                             nativeEndWithPermissionDenied(mNativeContactsProviderAndroid);
                         }
                     } else {

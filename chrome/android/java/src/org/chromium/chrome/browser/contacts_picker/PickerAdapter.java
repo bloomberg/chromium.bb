@@ -63,6 +63,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     // The view at the top of the RecyclerView (disclaimer and select all functionality).
     private TopView mTopView;
 
+    // The origin the data will be shared with, formatted for display with the scheme omitted.
+    private final String mFormattedOrigin;
+
     // The content resolver to query data from.
     private ContentResolver mContentResolver;
 
@@ -85,10 +88,13 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      * The PickerAdapter constructor.
      * @param categoryView The category view to use to show the contacts.
      * @param contentResolver The content resolver to use to fetch the data.
+     * @param formattedOrigin The origin the data will be shared with.
      */
-    public PickerAdapter(PickerCategoryView categoryView, ContentResolver contentResolver) {
+    public PickerAdapter(PickerCategoryView categoryView, ContentResolver contentResolver,
+            String formattedOrigin) {
         mCategoryView = categoryView;
         mContentResolver = contentResolver;
+        mFormattedOrigin = formattedOrigin;
 
         if (getAllContacts() == null && sTestContacts == null) {
             mWorkerTask = new ContactsFetcherWorkerTask(mContentResolver, this,
@@ -167,6 +173,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             case ViewType.SELECT_ALL_CHECKBOX: {
                 mTopView = (TopView) LayoutInflater.from(parent.getContext())
                                    .inflate(R.layout.top_view, parent, false);
+                mTopView.setSiteString(mFormattedOrigin);
                 mTopView.registerSelectAllCallback(mCategoryView);
                 mTopView.updateCheckboxVisibility(mCategoryView.multiSelectionAllowed());
                 mCategoryView.setTopView(mTopView);
