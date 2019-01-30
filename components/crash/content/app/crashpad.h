@@ -21,6 +21,10 @@
 #include <windows.h>
 #endif
 
+namespace base {
+class Time;
+}
+
 namespace crashpad {
 class CrashpadClient;
 class CrashReportDatabase;
@@ -139,6 +143,9 @@ void CrashWithoutDumping(const std::string& message);
 // Returns the Crashpad database path, only valid in the browser.
 base::FilePath GetCrashpadDatabasePath();
 
+// Deletes any reports that were recorded or uploaded within the time range.
+void ClearReportsBetween(const base::Time& begin, const base::Time& end);
+
 // The implementation function for GetReports.
 void GetReportsImpl(std::vector<Report>* reports);
 
@@ -147,6 +154,9 @@ void RequestSingleCrashUploadImpl(const std::string& local_id);
 
 // The implementation function for GetCrashpadDatabasePath.
 base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
+
+// The implementation function for ClearReportsBetween.
+void ClearReportsBetweenImpl(time_t begin, time_t end);
 
 #if defined(OS_MACOSX)
 // Captures a minidump for the process named by its |task_port| and stores it
