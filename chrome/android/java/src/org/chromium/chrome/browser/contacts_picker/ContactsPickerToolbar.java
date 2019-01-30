@@ -44,6 +44,9 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
     }
 
     @Override
+    protected void setNavigationButton(int navigationButton) {}
+
+    @Override
     protected void showSelectionView(
             List<ContactDetails> selectedItems, boolean wasSelectionEnabled) {
         switchToNumberRollView(selectedItems, wasSelectionEnabled);
