@@ -124,7 +124,8 @@ TEST(ScopedHandleTest, MAYBE_MultiProcess) {
 }
 
 MULTIPROCESS_TEST_MAIN(ActiveVerifierChildProcess) {
-  ScopedNativeLibrary module(FilePath(L"scoped_handle_test_dll.dll"));
+  ScopedNativeLibrary module(
+      FilePath(FILE_PATH_LITERAL("scoped_handle_test_dll.dll")));
 
   if (!module.is_valid())
     return 1;

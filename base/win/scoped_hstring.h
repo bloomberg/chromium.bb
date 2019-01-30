@@ -57,13 +57,13 @@ class BASE_EXPORT ScopedHString
   // Constructs a ScopedHString from an HSTRING, and takes ownership of |hstr|.
   explicit ScopedHString(HSTRING hstr);
 
-  static ScopedHString Create(StringPiece16 str);
+  static ScopedHString Create(WStringPiece str);
   static ScopedHString Create(StringPiece str);
 
   // Loads all required HSTRING functions, available from Win8 and onwards.
   static bool ResolveCoreWinRTStringDelayload();
 
-  StringPiece16 Get() const;
+  WStringPiece Get() const;
   std::string GetAsUTF8() const;
 };
 
