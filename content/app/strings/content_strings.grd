@@ -709,7 +709,7 @@ below:
       </message>
 
       <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="Accessibility help description for video timeline slider">
-        movie time scrubber
+        video time scrubber
       </message>
 
       <message name="IDS_AX_MEDIA_VOLUME_SLIDER_HELP" desc="Accessibility help description for volume slider">
@@ -721,7 +721,7 @@ below:
       </message>
 
       <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="Accessibility help description for time remaining display">
-        number of seconds of movie remaining
+        number of seconds of video remaining
       </message>
 
       <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="Accessibility help description for overflow button.">
