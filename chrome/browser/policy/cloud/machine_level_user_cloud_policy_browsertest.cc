@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyServiceIntegrationTest,
   UploadChromeDesktopReport(&chrome_desktop_report);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MachineLevelUserCloudPolicyServiceIntegrationTestInstance,
     MachineLevelUserCloudPolicyServiceIntegrationTest,
     testing::Values(
@@ -499,10 +499,10 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
 #endif
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MachineLevelUserCloudPolicyEnrollmentTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         MachineLevelUserCloudPolicyEnrollmentTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
 
 }  // namespace policy
