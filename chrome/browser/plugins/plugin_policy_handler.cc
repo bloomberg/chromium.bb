@@ -59,14 +59,14 @@ void PluginPolicyHandler::ProcessPolicy(const policy::PolicyMap& policies,
                             plugin)) &&
         !policies.GetValue(policy::key::kAlwaysOpenPdfExternally)) {
       prefs->SetValue(prefs::kPluginsAlwaysOpenPdfExternally,
-                      std::make_unique<base::Value>(disable_pdf_plugin));
+                      base::Value(disable_pdf_plugin));
     }
     if ((base::MatchPattern(
              PluginMetadata::kAdobeFlashPlayerGroupName, plugin) ||
          base::MatchPattern(content::kFlashPluginName, plugin)) &&
         !policies.GetValue(policy::key::kDefaultPluginsSetting)) {
       prefs->SetValue(prefs::kManagedDefaultPluginsSetting,
-                      std::make_unique<base::Value>(flash_content_setting));
+                      base::Value(flash_content_setting));
     }
   }
 }
