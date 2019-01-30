@@ -28,10 +28,6 @@
 #include "base/test/mock_chrome_application_mac.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "content/browser/media/android/browser_media_player_manager.h"
-#endif
-
 namespace content {
 namespace {
 

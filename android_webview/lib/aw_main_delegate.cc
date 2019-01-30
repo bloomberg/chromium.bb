@@ -40,7 +40,7 @@
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/viz/common/features.h"
-#include "content/public/browser/android/browser_media_player_manager_register.h"
+#include "content/public/browser/android/media_url_interceptor_register.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
