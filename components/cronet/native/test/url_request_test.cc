@@ -993,13 +993,7 @@ TEST_P(UrlRequestTest, PerfTest) {
   cronet::TestServer::ReleaseBigDataURL();
 }
 
-// https://crbug.com/921713 Flaky crash on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_GetStatus DISABLED_GetStatus
-#else
-#define MAYBE_GetStatus GetStatus
-#endif
-TEST_P(UrlRequestTest, MAYBE_GetStatus) {
+TEST_P(UrlRequestTest, GetStatus) {
   Cronet_EnginePtr engine = cronet::test::CreateTestEngine(0);
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
@@ -1050,7 +1044,7 @@ TEST_P(UrlRequestTest, MAYBE_GetStatus) {
     // final callbacks.
     GetRequestStatus(request, &test_callback);
     test_callback.WaitForNextStep();
-  } while (!test_callback.IsDone());
+  } while (!Cronet_UrlRequest_IsDone(request));
 
   EXPECT_EQ(Cronet_UrlRequestStatusListener_Status_INVALID,
             GetRequestStatus(request, &test_callback));
