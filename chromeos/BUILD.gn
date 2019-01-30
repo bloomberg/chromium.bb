@@ -277,10 +277,8 @@ if (is_cros_chrome_sdk) {
   # Tast test sources live in the Chromium OS repository.
   # To diagnose tast failures or disable tests, see go/tast-failures
   tast_test("chrome_all_tast_tests") {
-    tast_disabled_tests = [
-      # Disabled due to flake. https://crbug.com/909736
-      "ui.MashLogin",
-    ]
+    # To disable a specific test, add it the following list.
+    tast_disabled_tests = []
   }
   tast_test("chrome_kevin_tast_tests") {
     # Tests that fail on Kevin devices.
