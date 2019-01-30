@@ -29,7 +29,7 @@ const char kSettingCloudPrintDialog[] = "printWithCloudPrint";
 // Print job setting 'collate'.
 const char kSettingCollate[] = "collate";
 
-// Print out color: true for color, false for grayscale.
+// Print out color. Value is an int from ColorModel enum.
 const char kSettingColor[] = "color";
 
 // Default to color on or not.
@@ -62,7 +62,7 @@ const char kSettingDpiVertical[] = "dpiVertical";
 // Scaling value required to fit the document to page.
 const char kSettingFitToPageScaling[] = "fitToPageScaling";
 
-// Print job duplex mode.
+// Print job duplex mode. Value is an int from DuplexMode enum.
 const char kSettingDuplexMode[] = "duplex";
 
 // Option to fit source page contents to printer paper size: true if
@@ -187,6 +187,9 @@ const char kSettingRasterizePdf[] = "rasterizePDF";
 // Ticket option. Contains the ticket in CJT format.
 const char kSettingTicket[] = "ticket";
 
+// Whether to sent user info to the printer.
+const char kSettingSendUserInfo[] = "sendUserInfo";
+
 // Whether to print CSS backgrounds.
 const char kSettingShouldPrintBackgrounds[] = "shouldPrintBackgrounds";
 
@@ -195,6 +198,9 @@ const char kSettingShouldPrintSelectionOnly[] = "shouldPrintSelectionOnly";
 
 // Whether to print using the system dialog.
 const char kSettingShowSystemDialog[] = "showSystemDialog";
+
+// Username to be sent to printer.
+const char kSettingUsername[] = "username";
 
 // Indices used to represent first preview page and complete preview document.
 const int FIRST_PAGE_INDEX = 0;

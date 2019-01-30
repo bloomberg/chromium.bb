@@ -208,6 +208,18 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
     settings->set_print_text_with_gdi(is_modifiable.value());
 #endif
   }
+
+#if defined(OS_CHROMEOS)
+  bool send_user_info =
+      job_settings.FindBoolKey(kSettingSendUserInfo).value_or(false);
+  settings->set_send_user_info(send_user_info);
+  if (send_user_info) {
+    const std::string* username = job_settings.FindStringKey(kSettingUsername);
+    if (username)
+      settings->set_username(*username);
+  }
+#endif
+
   return true;
 }
 

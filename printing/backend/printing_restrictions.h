@@ -47,7 +47,7 @@ struct PRINTING_EXPORT PrintingRestrictions {
 
 // Dictionary key for printing policies.
 // Must coincide with the name of field in |print_preview.Policies| in
-// chrome/browser/resources/print_preview/native_layer.js
+// chrome/browser/resources/print_preview/data/destination.js
 PRINTING_EXPORT extern const char kAllowedColorModes[];
 PRINTING_EXPORT extern const char kAllowedDuplexModes[];
 PRINTING_EXPORT extern const char kDefaultColorMode[];

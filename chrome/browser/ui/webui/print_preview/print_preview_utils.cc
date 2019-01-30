@@ -204,9 +204,9 @@ void StartLocalPrint(base::Value job_settings,
     std::move(callback).Run(base::Value());
     callback = base::BindOnce(&SystemDialogDone);
   }
-  print_view_manager->PrintForPrintPreview(std::move(job_settings), print_data,
-                                           preview_web_contents->GetMainFrame(),
-                                           std::move(callback));
+  print_view_manager->PrintForPrintPreview(
+      std::move(job_settings), std::move(print_data),
+      preview_web_contents->GetMainFrame(), std::move(callback));
 }
 
 }  // namespace printing
