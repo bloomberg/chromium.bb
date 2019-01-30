@@ -122,7 +122,7 @@ message StartPluginVmRequest {
   uint32 cpus = 3;
 
   // Parameters to pass to the plugin process.
-  string params = 4;
+  repeated string params = 4;
 
   // The IPv4 address to assign to the VM in network-byte order.  Must be in the
   // 100.115.92.128/28 subnet and must not be already assigned to another VM.
