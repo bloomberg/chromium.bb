@@ -4,6 +4,8 @@
 
 #include "components/sync/base/sync_prefs.h"
 
+#include <vector>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -60,6 +62,43 @@ PrefGroupsMap ComputePrefGroups() {
   return pref_groups;
 }
 
+std::vector<std::string> GetObsoleteUserTypePrefs() {
+  return {prefs::kSyncAutofillProfile,
+          prefs::kSyncAutofillWallet,
+          prefs::kSyncAutofillWalletMetadata,
+          prefs::kSyncSearchEngines,
+          prefs::kSyncSessions,
+          prefs::kSyncAppSettings,
+          prefs::kSyncExtensionSettings,
+          prefs::kSyncAppNotifications,
+          prefs::kSyncHistoryDeleteDirectives,
+          prefs::kSyncSyncedNotifications,
+          prefs::kSyncSyncedNotificationAppInfo,
+          prefs::kSyncDictionary,
+          prefs::kSyncFaviconImages,
+          prefs::kSyncFaviconTracking,
+          prefs::kSyncDeviceInfo,
+          prefs::kSyncPriorityPreferences,
+          prefs::kSyncSupervisedUserSettings,
+          prefs::kSyncSupervisedUsers,
+          prefs::kSyncSupervisedUserSharedSettings,
+          prefs::kSyncArticles,
+          prefs::kSyncAppList,
+          prefs::kSyncWifiCredentials,
+          prefs::kSyncSupervisedUserWhitelists,
+          prefs::kSyncArcPackage,
+          prefs::kSyncUserEvents,
+          prefs::kSyncMountainShares,
+          prefs::kSyncUserConsents,
+          prefs::kSyncSendTabToSelf};
+}
+
+void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  for (const std::string& obsolete_pref : GetObsoleteUserTypePrefs()) {
+    registry->RegisterBooleanPref(obsolete_pref, false);
+  }
+}
+
 }  // namespace
 
 CryptoSyncPrefs::~CryptoSyncPrefs() {}
@@ -112,19 +151,12 @@ void SyncPrefs::RegisterProfilePrefs(
   // ProfileSyncService::OnUserChoseDatatypes.
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
 
-  ModelTypeSet user_types = UserTypes();
+  RegisterObsoleteUserTypePrefs(registry);
 
-  // Include proxy types as well, as they can be individually selected,
-  // although they don't have sync representations.
-  user_types.PutAll(ProxyTypes());
-
-  // All types except the always-preferred ones are set to off by default, which
-  // forces a configuration to explicitly enable them. GetPreferredTypes() will
-  // ensure that any new implicit types are enabled when their pref group is, or
-  // via KeepEverythingSynced.
-  for (ModelType type : user_types) {
-    RegisterDataTypePreferredPref(registry, type,
-                                  AlwaysPreferredUserTypes().Has(type));
+  // All types are set to off by default, which forces a configuration to
+  // explicitly enable them.
+  for (ModelType type : UserSelectableTypes()) {
+    RegisterDataTypePreferredPref(registry, type);
   }
 
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
@@ -277,9 +309,10 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     return registered_types;
   }
 
-  ModelTypeSet preferred_types;
-  for (ModelType type : registered_types) {
-    if (GetDataTypePreferred(type)) {
+  ModelTypeSet preferred_types = AlwaysPreferredUserTypes();
+
+  for (ModelType type : Intersection(UserSelectableTypes(), registered_types)) {
+    if (IsDataTypeChosen(type)) {
       preferred_types.Put(type);
     }
   }
@@ -293,19 +326,22 @@ void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
                                           ModelTypeSet registered_types,
                                           ModelTypeSet chosen_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(UserSelectableTypes().HasAll(chosen_types));
+  // TODO(crbug.com/906611): remove |registered_types| parameter. It have no
+  // real usage and needed only to control the absence of behavioral changes
+  // during the landing of the patch. Also consider removal of this parameter
+  // from the getter.
+  DCHECK(registered_types.HasAll(chosen_types));
+
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
 
-  ModelTypeSet preferred_types = ResolvePrefGroups(chosen_types);
-  preferred_types.RetainAll(registered_types);
-
-  for (ModelType type : registered_types) {
-    SetDataTypePreferred(type, preferred_types.Has(type));
+  for (ModelType type : Intersection(UserSelectableTypes(), registered_types)) {
+    SetDataTypeChosen(type, chosen_types.Has(type));
   }
 
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnPreferredDataTypesPrefChange(keep_everything_synced,
-                                            preferred_types);
+    observer.OnPreferredDataTypesPrefChange();
   }
 }
 
@@ -339,6 +375,38 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
   switch (type) {
     case UNSPECIFIED:
     case TOP_LEVEL_FOLDER:
+    case AUTOFILL_PROFILE:
+    case AUTOFILL_WALLET_DATA:
+    case AUTOFILL_WALLET_METADATA:
+    case SEARCH_ENGINES:
+    case APP_SETTINGS:
+    case EXTENSION_SETTINGS:
+    case APP_NOTIFICATIONS:
+    case HISTORY_DELETE_DIRECTIVES:
+    case SYNCED_NOTIFICATIONS:
+    case SYNCED_NOTIFICATION_APP_INFO:
+    case DICTIONARY:
+    case FAVICON_IMAGES:
+    case FAVICON_TRACKING:
+    case DEVICE_INFO:
+    case PRIORITY_PREFERENCES:
+    case SUPERVISED_USER_SETTINGS:
+    case DEPRECATED_SUPERVISED_USERS:
+    case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
+    case DEPRECATED_ARTICLES:
+    case APP_LIST:
+    case DEPRECATED_WIFI_CREDENTIALS:
+    case SUPERVISED_USER_WHITELISTS:
+    case ARC_PACKAGE:
+    case PRINTERS:
+    case USER_EVENTS:
+    case MOUNTAIN_SHARES:
+    case USER_CONSENTS:
+    case SEND_TAB_TO_SELF:
+    case NIGORI:
+    case EXPERIMENTS:
+    case MODEL_TYPE_COUNT:
+    case SESSIONS:
       break;
     case BOOKMARKS:
       return prefs::kSyncBookmarks;
@@ -346,82 +414,20 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncPreferences;
     case PASSWORDS:
       return prefs::kSyncPasswords;
-    case AUTOFILL_PROFILE:
-      return prefs::kSyncAutofillProfile;
     case AUTOFILL:
       return prefs::kSyncAutofill;
-    case AUTOFILL_WALLET_DATA:
-      return prefs::kSyncAutofillWallet;
-    case AUTOFILL_WALLET_METADATA:
-      return prefs::kSyncAutofillWalletMetadata;
     case THEMES:
       return prefs::kSyncThemes;
     case TYPED_URLS:
       return prefs::kSyncTypedUrls;
     case EXTENSIONS:
       return prefs::kSyncExtensions;
-    case SEARCH_ENGINES:
-      return prefs::kSyncSearchEngines;
-    case SESSIONS:
-      return prefs::kSyncSessions;
     case APPS:
       return prefs::kSyncApps;
-    case APP_SETTINGS:
-      return prefs::kSyncAppSettings;
-    case EXTENSION_SETTINGS:
-      return prefs::kSyncExtensionSettings;
-    case APP_NOTIFICATIONS:
-      return prefs::kSyncAppNotifications;
-    case HISTORY_DELETE_DIRECTIVES:
-      return prefs::kSyncHistoryDeleteDirectives;
-    case SYNCED_NOTIFICATIONS:
-      return prefs::kSyncSyncedNotifications;
-    case SYNCED_NOTIFICATION_APP_INFO:
-      return prefs::kSyncSyncedNotificationAppInfo;
-    case DICTIONARY:
-      return prefs::kSyncDictionary;
-    case FAVICON_IMAGES:
-      return prefs::kSyncFaviconImages;
-    case FAVICON_TRACKING:
-      return prefs::kSyncFaviconTracking;
-    case DEVICE_INFO:
-      return prefs::kSyncDeviceInfo;
-    case PRIORITY_PREFERENCES:
-      return prefs::kSyncPriorityPreferences;
-    case SUPERVISED_USER_SETTINGS:
-      return prefs::kSyncSupervisedUserSettings;
-    case DEPRECATED_SUPERVISED_USERS:
-      return prefs::kSyncSupervisedUsers;
-    case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
-      return prefs::kSyncSupervisedUserSharedSettings;
-    case DEPRECATED_ARTICLES:
-      return prefs::kSyncArticles;
-    case APP_LIST:
-      return prefs::kSyncAppList;
-    case DEPRECATED_WIFI_CREDENTIALS:
-      return prefs::kSyncWifiCredentials;
-    case SUPERVISED_USER_WHITELISTS:
-      return prefs::kSyncSupervisedUserWhitelists;
-    case ARC_PACKAGE:
-      return prefs::kSyncArcPackage;
-    case PRINTERS:
-      return prefs::kSyncPrinters;
     case READING_LIST:
       return prefs::kSyncReadingList;
-    case USER_EVENTS:
-      return prefs::kSyncUserEvents;
     case PROXY_TABS:
       return prefs::kSyncTabs;
-    case MOUNTAIN_SHARES:
-      return prefs::kSyncMountainShares;
-    case USER_CONSENTS:
-      return prefs::kSyncUserConsents;
-    case SEND_TAB_TO_SELF:
-      return prefs::kSyncSendTabToSelf;
-    case NIGORI:
-    case EXPERIMENTS:
-    case MODEL_TYPE_COUNT:
-      break;
   }
   NOTREACHED() << "No pref mapping for type " << ModelTypeToString(type);
   return nullptr;
@@ -466,33 +472,28 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
 // static
 void SyncPrefs::RegisterDataTypePreferredPref(
     user_prefs::PrefRegistrySyncable* registry,
-    ModelType type,
-    bool is_preferred) {
+    ModelType type) {
   const char* pref_name = GetPrefNameForDataType(type);
   DCHECK(pref_name);
-  registry->RegisterBooleanPref(pref_name, is_preferred);
+  registry->RegisterBooleanPref(pref_name, false);
 }
 
-bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
+bool SyncPrefs::IsDataTypeChosen(ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const char* pref_name = GetPrefNameForDataType(type);
   DCHECK(pref_name);
-
-  if (AlwaysPreferredUserTypes().Has(type))
-    return true;
+  DCHECK(IsUserSelectableType(type));
 
   return pref_service_->GetBoolean(pref_name);
 }
 
-void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
+void SyncPrefs::SetDataTypeChosen(ModelType type, bool is_chosen) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const char* pref_name = GetPrefNameForDataType(type);
   DCHECK(pref_name);
+  DCHECK(IsUserSelectableType(type));
 
-  if (AlwaysPreferredUserTypes().Has(type))
-    return;
-
-  pref_service_->SetBoolean(pref_name, is_preferred);
+  pref_service_->SetBoolean(pref_name, is_chosen);
 }
 
 // static
@@ -654,6 +655,12 @@ void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service) {
     // default to the session sync preference value.
     bool sessions_pref_value = pref_service->GetBoolean(prefs::kSyncSessions);
     pref_service->SetBoolean(prefs::kSyncTabs, sessions_pref_value);
+  }
+}
+
+void ClearObsoleteUserTypePrefs(PrefService* pref_service) {
+  for (const std::string& obsolete_pref : GetObsoleteUserTypePrefs()) {
+    pref_service->ClearPref(obsolete_pref);
   }
 }
 

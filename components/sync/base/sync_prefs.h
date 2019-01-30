@@ -35,9 +35,7 @@ class SyncPrefObserver {
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) = 0;
   virtual void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) = 0;
   virtual void OnSyncRequestedPrefChange(bool is_sync_requested) = 0;
-  virtual void OnPreferredDataTypesPrefChange(
-      bool sync_everything,
-      syncer::ModelTypeSet preferred_types) = 0;
+  virtual void OnPreferredDataTypesPrefChange() = 0;
 
  protected:
   virtual ~SyncPrefObserver();
@@ -118,6 +116,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   // The returned set is guaranteed to be a subset of |registered_types|.
   // Returns |registered_types| directly if HasKeepEverythingSynced() is true.
+  // Preferred types are derived from chosen types by resolving pref groups.
   ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
 
   // Sets the desired configuration for all data types, including the "keep
@@ -127,10 +126,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   // should be synced. If this is set to true, then GetPreferredDataTypes() will
   // always return all available data types, even if not all of them are
   // individually marked as preferred.
-  // The |chosen_types| should be a subset of the |registered_types|. The
-  // |preferred_types| are derived from |chosen_types| by resolving pref groups.
-  // Then all types in |preferred_types| are marked preferred, and all types in
-  // |registered_types| \ |preferred_types| are marked not preferred.
+  // The |chosen_types| must be a subset of the |registered_types| and
+  // UserSelectableTypes().
   // Changes are still made to the individual data type prefs even if
   // |keep_everything_synced| is true, but won't be visible until it's set to
   // false.
@@ -232,10 +229,12 @@ class SyncPrefs : public CryptoSyncPrefs,
  private:
   static void RegisterDataTypePreferredPref(
       user_prefs::PrefRegistrySyncable* prefs,
-      ModelType type,
-      bool is_preferred);
-  bool GetDataTypePreferred(ModelType type) const;
-  void SetDataTypePreferred(ModelType type, bool is_preferred);
+      ModelType type);
+
+  // Get/set the preference indicating that |type| was chosen. |type| must be
+  // on of UserSelectableTypes().
+  bool IsDataTypeChosen(ModelType type) const;
+  void SetDataTypeChosen(ModelType type, bool is_chosen);
 
   void OnSyncManagedPrefChanged();
   void OnFirstSetupCompletePrefChange();
@@ -262,6 +261,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 };
 
 void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service);
+void ClearObsoleteUserTypePrefs(PrefService* pref_service);
 
 }  // namespace syncer
 

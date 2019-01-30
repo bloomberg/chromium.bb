@@ -328,9 +328,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
   void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) override;
   void OnSyncRequestedPrefChange(bool is_sync_requested) override;
-  void OnPreferredDataTypesPrefChange(
-      bool sync_everything,
-      syncer::ModelTypeSet preferred_types) override;
+  void OnPreferredDataTypesPrefChange() override;
 
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   bool encryption_pending() const;

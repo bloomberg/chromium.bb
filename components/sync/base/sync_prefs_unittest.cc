@@ -76,7 +76,7 @@ class MockSyncPrefObserver : public SyncPrefObserver {
   MOCK_METHOD1(OnSyncManagedPrefChange, void(bool));
   MOCK_METHOD1(OnFirstSetupCompletePrefChange, void(bool));
   MOCK_METHOD1(OnSyncRequestedPrefChange, void(bool));
-  MOCK_METHOD2(OnPreferredDataTypesPrefChange, void(bool, ModelTypeSet));
+  MOCK_METHOD0(OnPreferredDataTypesPrefChange, void());
 };
 
 TEST_F(SyncPrefsTest, ObservedPrefs) {
@@ -182,9 +182,11 @@ TEST_F(SyncPrefsTest, DeleteDirectivesAndProxyTabsMigration) {
   registered_types.Remove(HISTORY_DELETE_DIRECTIVES);
 
   // Enable all other types.
+  ModelTypeSet initial_preferred_types = UserSelectableTypes();
+  initial_preferred_types.RetainAll(registered_types);
   sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
-                                         /*registered_types=*/registered_types,
-                                         /*preferred_types=*/registered_types);
+                                         registered_types,
+                                         initial_preferred_types);
 
   // Manually enable typed urls (to simulate the old world) and perform the
   // migration to check it doesn't affect the proxy tab preference value.
@@ -234,7 +236,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
   sync_prefs_->SetDataTypesConfiguration(
       /*keep_everything_synced=*/false,
       /*registered_types=*/UserTypes(),
-      /*preferred_types=*/AlwaysPreferredUserTypes());
+      /*preferred_types=*/ModelTypeSet());
 
   const ModelTypeSet user_types = UserTypes();
   ASSERT_NE(user_types, sync_prefs_->GetPreferredDataTypes(user_types));
