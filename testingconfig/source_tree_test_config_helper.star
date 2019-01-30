@@ -56,4 +56,4 @@ def gen(ctx):
   ctx.config_set['source_tree_test_config.cfg'] = (
       proto.to_jsonpb(repo_test_config))
 
-core.generator(impl = gen)
+lucicfg.generator(impl = gen)
