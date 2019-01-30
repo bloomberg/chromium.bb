@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/common/util.h"
 #include "services/ws/ids.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
