@@ -2170,7 +2170,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(_downloadManagerCoordinator);
   _downloadManagerCoordinator.webStateList = self.tabModel.webStateList;
   _downloadManagerCoordinator.bottomMarginHeightAnchor =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.view]
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
           .heightAnchor;
 
   self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
@@ -4724,11 +4724,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)sideSwipeViewDismissAnimationDidEnd:(UIView*)sideSwipeView {
   DCHECK(![self canShowTabStrip]);
-  // Update frame incase orientation changed while |contentArea| was out of
-  // the view hierarchy.
-  self.contentArea.frame = sideSwipeView.frame;
-
-  [self.view insertSubview:self.contentArea aboveSubview:_fakeStatusBarView];
   [self updateToolbar];
 
   // Reset horizontal stack view.

@@ -546,9 +546,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     DCHECK([swipeDelegate_ verifyToolbarViewPlacementInView:gesture.view]);
     // Insert above the toolbar.
     [gesture.view addSubview:tabSideSwipeView_];
-
-    // Remove content area so it doesn't receive any pan events.
-    [[swipeDelegate_ sideSwipeContentView] removeFromSuperview];
   }
 
   [tabSideSwipeView_ handleHorizontalPan:gesture];
