@@ -13,92 +13,102 @@ cr.define('cr.ui.pageManager', function() {
    * point, one root Page is visible, and any visible Page can show a child Page
    * as an overlay. The host of the root Page(s) should provide a container div
    * for each nested level to enforce the stack order of overlays.
-   * @constructor
-   * @param {string} name Page name.
-   * @param {string} title Page title, used for history.
-   * @param {string} pageDivName ID of the div corresponding to the page.
-   * @extends {cr.EventTarget}
    */
-  function Page(name, title, pageDivName) {
-    this.name = name;
-    this.title = title;
-    this.pageDivName = pageDivName;
-    this.pageDiv = getRequiredElement(this.pageDivName);
-    // |pageDiv.page| is set to the page object (this) when the page is visible
-    // to track which page is being shown when multiple pages can share the same
-    // underlying div.
-    this.pageDiv.page = null;
-    this.tab = null;
-    this.lastFocusedElement = null;
-    this.hash = '';
-  }
-
-  Page.prototype = {
-    __proto__: cr.EventTarget.prototype,
-
+  class Page extends cr.EventTarget {
     /**
-     * The parent page of this page, or null for root pages.
-     * @type {cr.ui.pageManager.Page}
+     * @param {string} name Page name.
+     * @param {string} title Page title, used for history.
+     * @param {string} pageDivName ID of the div corresponding to the page.
      */
-    parentPage: null,
+    constructor(name, title, pageDivName) {
+      super();
 
-    /**
-     * The section on the parent page that is associated with this page.
-     * Can be null.
-     * @type {Element}
-     */
-    associatedSection: null,
+      this.name = name;
+      this.title = title;
+      this.pageDivName = pageDivName;
+      this.pageDiv = getRequiredElement(this.pageDivName);
+      // |pageDiv.page| is set to the page object (this) when the page is
+      // visible to track which page is being shown when multiple pages can
+      // share the same underlying div.
+      this.pageDiv.page = null;
+      this.tab = null;
+      this.lastFocusedElement = null;
+      this.hash = '';
 
-    /**
-     * An array of controls that are associated with this page. The first
-     * control should be located on a root page.
-     * @type {Array<Element>}
-     */
-    associatedControls: null,
+      /**
+       * The parent page of this page; or null for root pages.
+       * @type {cr.ui.pageManager.Page}
+       */
+      this.parentPage = null;
 
-    /**
-     * If true, this page should always be considered the top-most page when
-     * visible.
-     * @type {boolean}
-     */
-    alwaysOnTop_: false,
+      /**
+       * The section on the parent page that is associated with this page.
+       * Can be null.
+       * @type {Element}
+       */
+      this.associatedSection = null;
+
+      /**
+       * An array of controls that are associated with this page. The first
+       * control should be located on a root page.
+       * @type {Array<Element>}
+       */
+      this.associatedControls = null;
+
+      /**
+       * If true; this page should always be considered the top-most page when
+       * visible.
+       * @private {boolean}
+       */
+      this.alwaysOnTop_ = false;
+
+      /**
+       * Set this to handle cancelling an overlay (and skip some typical steps).
+       * @see {cr.ui.PageManager.prototype.cancelOverlay}
+       * @type {?Function}
+       */
+      this.handleCancel = null;
+
+      /** @type {boolean} */
+      this.isOverlay = false;
+    }
 
     /**
      * Initializes page content.
      */
-    initializePage: function() {},
+    initializePage() {}
 
     /**
      * Called by the PageManager when this.hash changes while the page is
      * already visible. This is analogous to the hashchange DOM event.
      */
-    didChangeHash: function() {},
+    didChangeHash() {}
 
     /**
      * Sets focus on the first focusable element. Override for a custom focus
      * strategy.
      */
-    focus: function() {
+    focus() {
       cr.ui.setInitialFocus(this.pageDiv);
-    },
+    }
 
     /**
      * Reverse any buttons strips in this page (only applies to overlays).
      * @see cr.ui.reverseButtonStrips for an explanation of why this is
      * necessary and when it's done.
      */
-    reverseButtonStrip: function() {
+    reverseButtonStrip() {
       assert(this.isOverlay);
       cr.ui.reverseButtonStrips(this.pageDiv);
-    },
+    }
 
     /**
      * Whether it should be possible to show the page.
      * @return {boolean} True if the page should be shown.
      */
-    canShowPage: function() {
+    canShowPage() {
       return true;
-    },
+    }
 
     /**
      * Updates the hash of the current page. If the page is topmost, the history
@@ -106,36 +116,29 @@ cr.define('cr.ui.pageManager', function() {
      * @param {string} hash The new hash value. Like location.hash, this
      *     should include the leading '#' if not empty.
      */
-    setHash: function(hash) {
+    setHash(hash) {
       if (this.hash == hash) {
         return;
       }
       this.hash = hash;
       PageManager.onPageHashChanged(this);
-    },
+    }
 
     /**
      * Called after the page has been shown.
      */
-    didShowPage: function() {},
-
-    /**
-     * Set this to handle cancelling an overlay (and skip some typical steps).
-     * @see {cr.ui.PageManager.prototype.cancelOverlay}
-     * @type {?Function}
-     */
-    handleCancel: null,
+    didShowPage() {}
 
     /**
      * Called before the page will be hidden, e.g., when a different root page
      * will be shown.
      */
-    willHidePage: function() {},
+    willHidePage() {}
 
     /**
      * Called after the overlay has been closed.
      */
-    didClosePage: function() {},
+    didClosePage() {}
 
     /**
      * Gets the container div for this page if it is an overlay.
@@ -144,7 +147,7 @@ cr.define('cr.ui.pageManager', function() {
     get container() {
       assert(this.isOverlay);
       return this.pageDiv.parentNode;
-    },
+    }
 
     /**
      * Gets page visibility state.
@@ -160,7 +163,7 @@ cr.define('cr.ui.pageManager', function() {
         return false;
       }
       return this.pageDiv.page == this;
-    },
+    }
 
     /**
      * Sets page visibility.
@@ -183,7 +186,7 @@ cr.define('cr.ui.pageManager', function() {
       }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
-    },
+    }
 
     /**
      * Whether the page is considered 'sticky', such that it will remain a root
@@ -192,7 +195,7 @@ cr.define('cr.ui.pageManager', function() {
      */
     get sticky() {
       return false;
-    },
+    }
 
     /**
      * @type {boolean} True if this page should always be considered the
@@ -200,7 +203,7 @@ cr.define('cr.ui.pageManager', function() {
      */
     get alwaysOnTop() {
       return this.alwaysOnTop_;
-    },
+    }
 
     /**
      * @type {boolean} True if this page should always be considered the
@@ -209,14 +212,14 @@ cr.define('cr.ui.pageManager', function() {
     set alwaysOnTop(value) {
       assert(this.isOverlay);
       this.alwaysOnTop_ = value;
-    },
+    }
 
     /**
      * Shows or hides an overlay (including any visible dialog).
      * @param {boolean} visible Whether the overlay should be visible or not.
      * @private
      */
-    setOverlayVisible_: function(visible) {
+    setOverlayVisible_(visible) {
       assert(this.isOverlay);
       const pageDiv = this.pageDiv;
       const container = this.container;
@@ -286,13 +289,13 @@ cr.define('cr.ui.pageManager', function() {
       if (loading) {
         this.fadeCompleted_();
       }
-    },
+    }
 
     /**
      * Called when a container opacity transition finishes.
      * @private
      */
-    fadeCompleted_: function() {
+    fadeCompleted_() {
       if (this.container.classList.contains('transparent')) {
         this.pageDiv.hidden = true;
         this.container.hidden = true;
@@ -303,8 +306,8 @@ cr.define('cr.ui.pageManager', function() {
 
         PageManager.onPageVisibilityChanged(this);
       }
-    },
-  };
+    }
+  }
 
   // Export
   return {Page: Page};

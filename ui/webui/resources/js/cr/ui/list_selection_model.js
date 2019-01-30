@@ -3,28 +3,35 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  /** @const */ const EventTarget = cr.EventTarget;
-
   /**
    * Creates a new selection model that is to be used with lists.
    *
-   * @param {number=} opt_length The number items in the selection.
-   *
-   * @constructor
-   * @extends {cr.EventTarget}
    */
-  function ListSelectionModel(opt_length) {
-    this.length_ = opt_length || 0;
-    // Even though selectedIndexes_ is really a map we use an array here to get
-    // iteration in the order of the indexes.
-    this.selectedIndexes_ = [];
+  class ListSelectionModel extends cr.EventTarget {
+    /**
+     * @param {number=} opt_length The number items in the selection.
+     */
+    constructor(opt_length) {
+      super();
+      this.length_ = opt_length || 0;
+      // Even though selectedIndexes_ is really a map we use an array here to
+      // get iteration in the order of the indexes.
+      this.selectedIndexes_ = [];
 
-    // True if any item could be lead or anchor. False if only selected ones.
-    this.independentLeadItem_ = !cr.isMac && !cr.isChromeOS;
-  }
+      // True if any item could be lead or anchor. False if only selected ones.
+      this.independentLeadItem_ = !cr.isMac && !cr.isChromeOS;
 
-  ListSelectionModel.prototype = {
-    __proto__: EventTarget.prototype,
+      this.leadIndex_ = -1;
+      this.oldLeadIndex_ = null;
+      this.anchorIndex_ = -1;
+      this.oldAnchorIndex_ = null;
+
+      /** @private {?number} */
+      this.changeCount_;
+
+      /** @private {?Object} */
+      this.changedIndexes_;
+    }
 
     /**
      * The number of items in the model.
@@ -32,7 +39,7 @@ cr.define('cr.ui', function() {
      */
     get length() {
       return this.length_;
-    },
+    }
 
     /**
      * The selected indexes.
@@ -41,7 +48,8 @@ cr.define('cr.ui', function() {
      */
     get selectedIndexes() {
       return Object.keys(this.selectedIndexes_).map(Number);
-    },
+    }
+
     set selectedIndexes(selectedIndexes) {
       this.beginChange();
       const unselected = {};
@@ -83,7 +91,7 @@ cr.define('cr.ui', function() {
         this.leadIndex = this.anchorIndex = -1;
       }
       this.endChange();
-    },
+    }
 
     /**
      * Convenience getter which returns the first selected index.
@@ -95,10 +103,11 @@ cr.define('cr.ui', function() {
         return Number(i);
       }
       return -1;
-    },
+    }
+
     set selectedIndex(selectedIndex) {
       this.selectedIndexes = selectedIndex != -1 ? [selectedIndex] : [];
-    },
+    }
 
     /**
      * Returns the nearest selected index or -1 if no item selected.
@@ -106,7 +115,7 @@ cr.define('cr.ui', function() {
      * @return {number}
      * @private
      */
-    getNearestSelectedIndex_: function(index) {
+    getNearestSelectedIndex_(index) {
       if (index == -1) {
         // If no index is provided, pick the first selected index if there is
         // one.
@@ -123,7 +132,7 @@ cr.define('cr.ui', function() {
         }
       }
       return result < this.length ? Number(result) : -1;
-    },
+    }
 
     /**
      * Selects a range of indexes, starting with {@code start} and ends with
@@ -131,7 +140,7 @@ cr.define('cr.ui', function() {
      * @param {number} start The first index to select.
      * @param {number} end The last index to select.
      */
-    selectRange: function(start, end) {
+    selectRange(start, end) {
       // Swap if starts comes after end.
       if (start > end) {
         const tmp = start;
@@ -147,47 +156,47 @@ cr.define('cr.ui', function() {
       this.setIndexSelected(end, true);
 
       this.endChange();
-    },
+    }
 
     /**
      * Selects all indexes.
      */
-    selectAll: function() {
+    selectAll() {
       if (this.length === 0) {
         return;
       }
 
       this.selectRange(0, this.length - 1);
-    },
+    }
 
     /**
      * Clears the selection
      */
-    clear: function() {
+    clear() {
       this.beginChange();
       this.length_ = 0;
       this.anchorIndex = this.leadIndex = -1;
       this.unselectAll();
       this.endChange();
-    },
+    }
 
     /**
      * Unselects all selected items.
      */
-    unselectAll: function() {
+    unselectAll() {
       this.beginChange();
       for (const i in this.selectedIndexes_) {
         this.setIndexSelected(+i, false);
       }
       this.endChange();
-    },
+    }
 
     /**
      * Sets the selected state for an index.
      * @param {number} index The index to set the selected state for.
      * @param {boolean} b Whether to select the index or not.
      */
-    setIndexSelected: function(index, b) {
+    setIndexSelected(index, b) {
       const oldSelected = index in this.selectedIndexes_;
       if (oldSelected == b) {
         return;
@@ -205,22 +214,22 @@ cr.define('cr.ui', function() {
 
       // End change dispatches an event which in turn may update the view.
       this.endChange();
-    },
+    }
 
     /**
      * Whether a given index is selected or not.
      * @param {number} index The index to check.
      * @return {boolean} Whether an index is selected.
      */
-    getIndexSelected: function(index) {
+    getIndexSelected(index) {
       return index in this.selectedIndexes_;
-    },
+    }
 
     /**
      * This is used to begin batching changes. Call {@code endChange} when you
      * are done making changes.
      */
-    beginChange: function() {
+    beginChange() {
       if (!this.changeCount_) {
         this.changeCount_ = 0;
         this.changedIndexes_ = {};
@@ -228,13 +237,13 @@ cr.define('cr.ui', function() {
         this.oldAnchorIndex_ = this.anchorIndex_;
       }
       this.changeCount_++;
-    },
+    }
 
     /**
      * Call this after changes are done and it will dispatch a change event if
      * any changes were actually done.
      */
-    endChange: function() {
+    endChange() {
       this.changeCount_--;
       if (!this.changeCount_) {
         // Calls delayed |dispatchPropertyChange|s, only when |leadIndex| or
@@ -253,7 +262,8 @@ cr.define('cr.ui', function() {
         }
         this.oldAnchorIndex_ = null;
 
-        const indexes = Object.keys(this.changedIndexes_);
+        const indexes = Object.keys(
+            /** @type {!Object} */ (this.changedIndexes_));
         if (indexes.length) {
           const e = new Event('change');
           e.changes = indexes.map(function(index) {
@@ -266,10 +276,7 @@ cr.define('cr.ui', function() {
         }
         this.changedIndexes_ = {};
       }
-    },
-
-    leadIndex_: -1,
-    oldLeadIndex_: null,
+    }
 
     /**
      * The leadIndex is used with multiple selection and it is the index that
@@ -278,7 +285,8 @@ cr.define('cr.ui', function() {
      */
     get leadIndex() {
       return this.leadIndex_;
-    },
+    }
+
     set leadIndex(leadIndex) {
       const oldValue = this.leadIndex_;
       const newValue = this.adjustIndex_(leadIndex);
@@ -287,10 +295,7 @@ cr.define('cr.ui', function() {
       if (!this.changeCount_ && newValue != oldValue) {
         cr.dispatchPropertyChange(this, 'leadIndex', newValue, oldValue);
       }
-    },
-
-    anchorIndex_: -1,
-    oldAnchorIndex_: null,
+    }
 
     /**
      * The anchorIndex is used with multiple selection.
@@ -298,7 +303,8 @@ cr.define('cr.ui', function() {
      */
     get anchorIndex() {
       return this.anchorIndex_;
-    },
+    }
+
     set anchorIndex(anchorIndex) {
       const oldValue = this.anchorIndex_;
       const newValue = this.adjustIndex_(anchorIndex);
@@ -307,7 +313,7 @@ cr.define('cr.ui', function() {
       if (!this.changeCount_ && newValue != oldValue) {
         cr.dispatchPropertyChange(this, 'anchorIndex', newValue, oldValue);
       }
-    },
+    }
 
     /**
      * Helper method that adjustes a value before assiging it to leadIndex or
@@ -315,7 +321,7 @@ cr.define('cr.ui', function() {
      * @param {number} index New value for leadIndex or anchorIndex.
      * @return {number} Corrected value.
      */
-    adjustIndex_: function(index) {
+    adjustIndex_(index) {
       index = Math.max(-1, Math.min(this.length_ - 1, index));
       // On Mac and ChromeOS lead and anchor items are forced to be among
       // selected items. This rule is not enforces until end of batch update.
@@ -325,7 +331,7 @@ cr.define('cr.ui', function() {
         index = index2;
       }
       return index;
-    },
+    }
 
     /**
      * Whether the selection model supports multiple selected items.
@@ -333,13 +339,13 @@ cr.define('cr.ui', function() {
      */
     get multiple() {
       return true;
-    },
+    }
 
     /**
      * Adjusts the selection after reordering of items in the table.
      * @param {!Array<number>} permutation The reordering permutation.
      */
-    adjustToReordering: function(permutation) {
+    adjustToReordering(permutation) {
       this.beginChange();
       const oldLeadIndex = this.leadIndex;
       const oldAnchorIndex = this.anchorIndex;
@@ -376,16 +382,16 @@ cr.define('cr.ui', function() {
       }
 
       this.endChange();
-    },
+    }
 
     /**
      * Adjusts selection model length.
      * @param {number} length New selection model length.
      */
-    adjustLength: function(length) {
+    adjustLength(length) {
       this.length_ = length;
     }
-  };
+  }
 
   return {ListSelectionModel: ListSelectionModel};
 });
