@@ -1,9 +1,9 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// The Google-specific helper for QuicConnection which uses
-// net::EpollAlarm for alarms, and used an int fd_ for writing data.
+
+// The epoll-specific helper for QuicConnection which uses
+// EpollAlarm for alarms, and used an int fd_ for writing data.
 
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_EPOLL_CONNECTION_HELPER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_EPOLL_CONNECTION_HELPER_H_

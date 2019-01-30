@@ -31,9 +31,8 @@ int QuicSimpleDispatcher::GetRstErrorCount(
   auto it = rst_error_map_.find(error_code);
   if (it == rst_error_map_.end()) {
     return 0;
-  } else {
-    return it->second;
   }
+  return it->second;
 }
 
 void QuicSimpleDispatcher::OnRstStreamReceived(

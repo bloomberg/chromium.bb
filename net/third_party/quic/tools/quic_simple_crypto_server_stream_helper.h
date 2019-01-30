@@ -26,7 +26,7 @@ class QuicSimpleCryptoServerStreamHelper
                             const QuicSocketAddress& client_address,
                             const QuicSocketAddress& peer_address,
                             const QuicSocketAddress& self_address,
-                            std::string* error_details) const override;
+                            QuicString* error_details) const override;
 
  private:
   QuicRandom* random_;  // Unowned.

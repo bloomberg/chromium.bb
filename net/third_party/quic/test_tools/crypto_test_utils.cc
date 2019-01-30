@@ -1001,11 +1001,8 @@ QuicString GenerateClientNonceHex(const QuicClock* clock,
   QuicStringPiece orbit;
   CHECK(msg->GetStringPiece(kORBT, &orbit));
   QuicString nonce;
-  CryptoUtils::GenerateNonce(
-      clock->WallNow(), QuicRandom::GetInstance(),
-      QuicStringPiece(reinterpret_cast<const char*>(orbit.data()),
-                      sizeof(orbit.size())),
-      &nonce);
+  CryptoUtils::GenerateNonce(clock->WallNow(), QuicRandom::GetInstance(), orbit,
+                             &nonce);
   return ("#" + QuicTextUtils::HexEncode(nonce));
 }
 

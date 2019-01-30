@@ -4,7 +4,6 @@
 
 #include "net/third_party/quic/core/quic_stream_sequencer_buffer.h"
 
-#include "base/format_macros.h"
 #include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"

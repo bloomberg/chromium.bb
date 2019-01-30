@@ -7,10 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "net/third_party/quic/core/qpack/qpack_constants.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 
 namespace quic {
 
