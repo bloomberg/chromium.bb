@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include <climits>
+#include <limits>
 
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/web_pointer_properties.h"
@@ -537,8 +537,9 @@ TEST_F(PointerEventFactoryTest, OutOfRange) {
                                 mapped_id_start_ + 4, false /* isprimary */,
                                 false /* hovering */);
   CreateAndCheckWebPointerEvent(WebPointerProperties::PointerType::kUnknown,
-                                INT_MAX, mapped_id_start_ + 5,
-                                false /* isprimary */, false /* hovering */);
+                                std::numeric_limits<int>::max(),
+                                mapped_id_start_ + 5, false /* isprimary */,
+                                false /* hovering */);
 
   pointer_event_factory_.Clear();
 
@@ -555,6 +556,12 @@ TEST_F(PointerEventFactoryTest, OutOfRange) {
   }
   CreateAndCheckPointerCancel(WebPointerProperties::PointerType::kMouse, 0,
                               expected_mouse_id_, true);
+
+  EXPECT_EQ(pointer_event_factory_.IsActive(0), false);
+  EXPECT_EQ(pointer_event_factory_.IsActive(-1), false);
+  EXPECT_EQ(
+      pointer_event_factory_.IsActive(std::numeric_limits<PointerId>::max()),
+      false);
 }
 
 TEST_F(PointerEventFactoryTest, LastPointerPosition) {
