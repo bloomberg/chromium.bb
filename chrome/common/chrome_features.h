@@ -191,6 +191,11 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGdiTextPrinting;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGeoLanguage;
 
+#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kGoogleBrandedContextMenu;
+#endif
+
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kGrantNotificationsToDSE;

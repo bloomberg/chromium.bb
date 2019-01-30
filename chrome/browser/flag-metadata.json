@@ -1299,7 +1299,7 @@
   },
   {
     "name": "enable-google-branded-context-menu",
-    // "owners": [ "your-team" ],
+    "owners": [ "edwardjung@chromium.org" ],
     "expiry_milestone": 76
   },
   {
