@@ -105,6 +105,58 @@ infra/tools/luci/led/windows-amd64
 	git_revision:d33358177843fbb274d7fec89bfdda7db02c43c6
 	trhP4VH5MonvFAbJqzQQnR4D7CDBO9jqFFRWIXCfdUQC
 
+infra/tools/luci/lucicfg/linux-386
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	WmyoFrm9ruoCkvJGJIcXJkoHCoU6cAtVj8hRO_RYbbAC
+
+infra/tools/luci/lucicfg/linux-amd64
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	T2yzOZTct7F4xPutn_CdSYQyKu8_Mt4QcfLPyf7PoWcC
+
+infra/tools/luci/lucicfg/linux-arm64
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	oG2uilRgBdRHeLLvdidXlawRw8A36HNM8N9v7NPwjdcC
+
+infra/tools/luci/lucicfg/linux-armv6l
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	CXTlHMGnc31qBlrLVo61oPAl61Z4_-Ksc-pbM992ci0C
+
+infra/tools/luci/lucicfg/linux-mips64
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	t2xJrYroMyrEJu9rSv-6I8W641k4VeJ2SMKRTDRSBoEC
+
+infra/tools/luci/lucicfg/linux-mips64le
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	6lHZ0um1Inkl0V_zJ34qRe-NWoQQqYiBDP6O1yPqENEC
+
+infra/tools/luci/lucicfg/linux-mipsle
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	Ld-3LB6CsWyYA4D6ORkRHiw6sSnCRxMz98Tqb__oNK4C
+
+infra/tools/luci/lucicfg/linux-ppc64
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	Uk6GRJQBAHHJLBAWk7K4P9ZOCbTnydOYxPWWq9YtIjEC
+
+infra/tools/luci/lucicfg/linux-ppc64le
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	YFhhqoA9ZSSVYz_a9-pfy7_DuxYe6IE27KS5jV7t8b8C
+
+infra/tools/luci/lucicfg/linux-s390x
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	ASW55qa9zWJNUTGiTOM3QDqL9S2NB2endfq6yuuYZVoC
+
+infra/tools/luci/lucicfg/mac-amd64
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	eVvyKA7L8aMHDPh82niveY3TslJmMbEmnh-5Kx0GCJAC
+
+infra/tools/luci/lucicfg/windows-386
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	B131BYM6ayWnHyeyvTy-dvu2zE3uVtkGjnkYtuArnw0C
+
+infra/tools/luci/lucicfg/windows-amd64
+	git_revision:5b0cef35a03240bf1d1a72c24dbee7ff01753488
+	O7HYmUQB_ITWg_UkOS3sF1x1WQhexkPJQHq04Ofs_SYC
+
 infra/tools/luci/vpython/linux-386
 	git_revision:96f81e737868d43124b4661cf1c325296ca04944
 	_XghQLpCauYSoYVMyCG2QsGAWPFR40gAI1d6ViNicWYC
