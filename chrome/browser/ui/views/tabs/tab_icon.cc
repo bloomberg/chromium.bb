@@ -312,9 +312,9 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
   if (ShowingLoadingAnimation() || favicon_fade_in_animation_.is_animating()) {
     scoped_canvas = std::make_unique<gfx::ScopedCanvas>(canvas);
 
-    const float kInitialFaviconDiameterDp = gfx::kFaviconSize - 2;
-    // This a full outset circle of the favicon square, the animation ends when
-    // the entire favicon is shown.
+    const float kInitialFaviconDiameterDp = gfx::kFaviconSize - 4;
+    // This a full outset circle of the favicon square. The animation ends with
+    // the entire favicon shown.
     const float kFinalFaviconDiameterDp = sqrt(2) * gfx::kFaviconSize;
 
     SkScalar diameter = kInitialFaviconDiameterDp;
