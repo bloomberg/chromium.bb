@@ -263,9 +263,10 @@ DownloadTargetDeterminer::Result
         content_disposition_header.filename().empty();
     if (should_replace_extension) {
       generated_filename = net::GenerateFileName(
-          download_->GetURL(), download_->GetContentDisposition(),
-          referrer_charset, suggested_filename, download_->GetMimeType(),
-          default_filename, true /* should_replace_extension */);
+          download_->GetURL(), std::string() /* content_disposition */,
+          referrer_charset, std::string() /* suggested_filename */,
+          download_->GetMimeType(), default_filename,
+          true /* should_replace_extension */);
     }
 
     confirmation_reason_ = NeedsConfirmation(generated_filename);
