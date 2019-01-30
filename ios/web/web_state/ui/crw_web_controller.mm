@@ -1718,6 +1718,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (_webUIManager)
     return;
 
+  if (!self.currentNavItem) {
+    // TODO(crbug.com/925304): Pending item (which stores the holder) should be
+    // owned by NavigationContext object. Pending item should never be null.
+    return;
+  }
+
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
 
@@ -2933,7 +2939,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // keep it since it will have a more accurate URL and policy than what can
   // be extracted from the landing page.)
   web::NavigationItem* currentItem = self.currentNavItem;
-  if (!currentItem->GetReferrer().url.is_valid()) {
+
+  // TODO(crbug.com/925304): Pending item (which should be used here) should be
+  // owned by NavigationContext object. Pending item should never be null.
+  if (currentItem && !currentItem->GetReferrer().url.is_valid()) {
     currentItem->SetReferrer(referrer);
   }
 
@@ -4935,15 +4944,21 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   [self commitPendingNavigationInfo];
-  if ([self currentBackForwardListItemHolder]->navigation_type() ==
-      WKNavigationTypeBackForward) {
-    // A fast back/forward won't call decidePolicyForNavigationResponse, so
-    // the MIME type needs to be updated explicitly.
-    NSString* storedMIMEType =
-        [self currentBackForwardListItemHolder]->mime_type();
-    if (storedMIMEType) {
-      self.webStateImpl->SetContentsMimeType(
-          base::SysNSStringToUTF8(storedMIMEType));
+
+  // TODO(crbug.com/925304): Pending item (which is stores
+  // currentBackForwardListItemHolder) should be owned by NavigationContext.
+  // Pending item should never be null.
+  if (self.currentNavItem) {
+    if ([self currentBackForwardListItemHolder]
+        -> navigation_type() == WKNavigationTypeBackForward) {
+      // A fast back/forward won't call decidePolicyForNavigationResponse, so
+      // the MIME type needs to be updated explicitly.
+      NSString* storedMIMEType =
+          [self currentBackForwardListItemHolder] -> mime_type();
+      if (storedMIMEType) {
+        self.webStateImpl->SetContentsMimeType(
+            base::SysNSStringToUTF8(storedMIMEType));
+      }
     }
   }
 
