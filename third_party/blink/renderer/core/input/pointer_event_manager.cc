@@ -702,9 +702,12 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
         mouse_event.pointer_type)] = true;
   }
 
+  // Only calculate mouse target if either mouse compatibility event or click
+  // should be sent.
   if (pointer_event->isPrimary() &&
-      !prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(
-          mouse_event.pointer_type)]) {
+      (!prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(
+           mouse_event.pointer_type)] ||
+       (!skip_click_dispatch && event_type == WebInputEvent::kPointerUp))) {
     Element* mouse_target = effective_target;
     // Event path could be null if the pointer event is not dispatched.
     if (!event_handling_util::IsInDocument(mouse_target) &&
@@ -718,11 +721,14 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
         }
       }
     }
-    result = event_handling_util::MergeEventResult(
-        result,
-        mouse_event_manager_->DispatchMouseEvent(
-            mouse_target, MouseEventNameForPointerEventInputType(event_type),
-            mouse_event, canvas_region_id, &last_mouse_position, nullptr));
+    if (!prevent_mouse_event_for_pointer_type_[ToPointerTypeIndex(
+            mouse_event.pointer_type)]) {
+      result = event_handling_util::MergeEventResult(
+          result,
+          mouse_event_manager_->DispatchMouseEvent(
+              mouse_target, MouseEventNameForPointerEventInputType(event_type),
+              mouse_event, canvas_region_id, &last_mouse_position, nullptr));
+    }
     if (!skip_click_dispatch && mouse_target &&
         event_type == WebInputEvent::kPointerUp) {
       mouse_event_manager_->DispatchMouseClickIfNeeded(
