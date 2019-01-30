@@ -319,6 +319,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>thread_local storage class</td>
+<td><code>thread_local int foo = 1;</code></td>
+<td>Puts variables into thread local storage.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/storage_duration">Storage duration</a></td>
+<td>Allowed only for POD data. (<a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2msN8k3Xzgs">discussion</a>, <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/h7O5BdtWCZw">fork</a>). Use <a href="https://cs.chromium.org/chromium/src/base/threading/sequence_local_storage_slot.h">SequenceLocalStorageSlot</a> for sequence support, and <a href="https://cs.chromium.org/chromium/src/base/threading/thread_local.h">ThreadLocal</a>/<a href="https://cs.chromium.org/chromium/src/base/threading/thread_local_storage.h">ThreadLocalStorage</a> for other cases.</td>
+</tr>
+
+<tr>
 <td>Type Aliases ("using" instead of "typedef")</td>
 <td><code>using <i>new_alias</i> = <i>typename</i></code></td>
 <td>Allows parameterized typedefs</td>
@@ -774,14 +782,6 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td>Allows user-defined literal expressions</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/user_literal">User-defined literals</a></td>
 <td>Banned in the <a href="https://google.github.io/styleguide/cppguide.html#Operator_Overloading">Google Style Guide</a>.</td>
-</tr>
-
-<tr>
-<td>thread_local storage class</td>
-<td><code>thread_local int foo = 1;</code></td>
-<td>Puts variables into thread local storage.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/storage_duration">Storage duration</a></td>
-<td>Some surprising effects on Mac (<a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2msN8k3Xzgs">discussion</a>, <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/h7O5BdtWCZw">fork</a>). Use <a href="https://cs.chromium.org/chromium/src/base/threading/sequence_local_storage_slot.h">SequenceLocalStorageSlot</a> for sequence support, and <a href="https://cs.chromium.org/chromium/src/base/threading/thread_local.h">ThreadLocal</a>/<a href="https://cs.chromium.org/chromium/src/base/threading/thread_local_storage.h">ThreadLocalStorage</a> otherwise.</td>
 </tr>
 
 </tbody>
