@@ -40,6 +40,20 @@ const char kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 // This must be a string which can never be a valid picture URL.
 const char kNoPictureURLFound[] = "NO_PICTURE_URL";
 
+CoreAccountInfo::CoreAccountInfo() = default;
+
+CoreAccountInfo::~CoreAccountInfo() = default;
+
+CoreAccountInfo::CoreAccountInfo(const CoreAccountInfo& other) = default;
+
+CoreAccountInfo::CoreAccountInfo(CoreAccountInfo&& other) noexcept = default;
+
+CoreAccountInfo& CoreAccountInfo::operator=(const CoreAccountInfo& other) =
+    default;
+
+CoreAccountInfo& CoreAccountInfo::operator=(CoreAccountInfo&& other) noexcept =
+    default;
+
 AccountInfo::AccountInfo() = default;
 
 AccountInfo::~AccountInfo() = default;
@@ -86,10 +100,9 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
   return modified;
 }
 
-AccountId AccountIdFromAccountInfo(const AccountInfo& account_info) {
-  if (account_info.IsEmpty())
+AccountId AccountIdFromAccountInfo(const CoreAccountInfo& account_info) {
+  if (account_info.email.empty() || account_info.gaia.empty())
     return EmptyAccountId();
 
-  DCHECK(!account_info.email.empty() && !account_info.gaia.empty());
   return AccountId::FromUserEmailGaiaId(account_info.email, account_info.gaia);
 }
