@@ -19,6 +19,7 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 class UsbChooserContext : public ChooserContextBase,

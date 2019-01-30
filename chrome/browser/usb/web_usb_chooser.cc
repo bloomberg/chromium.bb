@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 
 WebUsbChooser::WebUsbChooser(content::RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {

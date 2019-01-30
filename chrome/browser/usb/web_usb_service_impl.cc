@@ -14,6 +14,8 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "media/mojo/interfaces/remoting_common.mojom.h"
 
 WebUsbServiceImpl::WebUsbServiceImpl(
     content::RenderFrameHost* render_frame_host,
