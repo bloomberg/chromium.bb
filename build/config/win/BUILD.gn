@@ -333,7 +333,7 @@ config("runtime_library") {
 # targets need to manually override it for their compiles.
 config("winver") {
   defines = [
-    "NTDDI_VERSION=0x0A000002",
+    "NTDDI_VERSION=0x0A000003",  # NTDDI_WIN10_RS2
     "_WIN32_WINNT=0x0A00",
     "WINVER=0x0A00",
   ]
