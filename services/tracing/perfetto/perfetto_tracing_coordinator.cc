@@ -142,13 +142,11 @@ void PerfettoTracingCoordinator::BindOnSequence(
                      base::Unretained(this)));
 }
 
-void PerfettoTracingCoordinator::StartTracing(const std::string& config,
-                                              StartTracingCallback callback) {
+void PerfettoTracingCoordinator::StartTracing(const std::string& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   tracing_session_ = std::make_unique<TracingSession>(
       config, base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
                              weak_factory_.GetWeakPtr()));
-  std::move(callback).Run(true);
 }
 
 void PerfettoTracingCoordinator::OnTracingOverCallback() {

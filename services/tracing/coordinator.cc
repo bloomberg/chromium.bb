@@ -37,7 +37,6 @@ namespace {
 const char kMetadataTraceLabel[] = "metadata";
 
 const char kRequestBufferUsageClosureName[] = "RequestBufferUsageClosure";
-const char kStartTracingClosureName[] = "StartTracingClosure";
 
 }  // namespace
 
@@ -299,8 +298,6 @@ void Coordinator::Reset() {
     base::ResetAndReturn(&stop_and_flush_callback_)
         .Run(base::Value(base::Value::Type::DICTIONARY));
   }
-  if (!start_tracing_callback_.is_null())
-    base::ResetAndReturn(&start_tracing_callback_).Run(false);
   if (!request_buffer_usage_callback_.is_null())
     base::ResetAndReturn(&request_buffer_usage_callback_).Run(false, 0, 0);
 
@@ -329,11 +326,8 @@ void Coordinator::BindCoordinatorRequest(
       &Coordinator::OnClientConnectionError, base::Unretained(this)));
 }
 
-void Coordinator::StartTracing(const std::string& config,
-                               StartTracingCallback callback) {
-  bool is_initializing = !start_tracing_callback_.is_null();
-  if (is_initializing || (is_tracing_ && config == config_)) {
-    std::move(callback).Run(config == config_);
+void Coordinator::StartTracing(const std::string& config) {
+  if ((is_tracing_ && config == config_)) {
     return;
   }
 
@@ -344,43 +338,13 @@ void Coordinator::StartTracing(const std::string& config,
       base::BindRepeating(&Coordinator::SendStartTracingToAgent,
                           weak_ptr_factory_.GetWeakPtr()),
       false /* call_on_new_agents_only */);
-
-  // We specifically don't check for the case where there's
-  // no existing connected agents; meaning in that case we
-  // assume at least one *will* connect and we'll wait for
-  // it to do so and start tracing before calling the callback
-  // so that the trace will contain data from at least one agent.
-  start_tracing_callback_ = std::move(callback);
 }
 
 void Coordinator::SendStartTracingToAgent(
     AgentRegistry::AgentEntry* agent_entry) {
-  if (agent_entry->HasDisconnectClosure(&kStartTracingClosureName))
-    return;
   if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
     return;
-  agent_entry->AddDisconnectClosure(
-      &kStartTracingClosureName,
-      base::BindOnce(&Coordinator::OnTracingStarted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     base::Unretained(agent_entry), false));
-  agent_entry->agent()->StartTracing(
-      config_, TRACE_TIME_TICKS_NOW(),
-      base::BindRepeating(&Coordinator::OnTracingStarted,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          base::Unretained(agent_entry)));
-}
-
-void Coordinator::OnTracingStarted(AgentRegistry::AgentEntry* agent_entry,
-                                   bool success) {
-  bool removed =
-      agent_entry->RemoveDisconnectClosure(&kStartTracingClosureName);
-  DCHECK(removed);
-
-  if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName) &&
-      !start_tracing_callback_.is_null()) {
-    std::move(start_tracing_callback_).Run(true);
-  }
+  agent_entry->agent()->StartTracing(config_, TRACE_TIME_TICKS_NOW());
 }
 
 void Coordinator::StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
@@ -408,18 +372,6 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
 }
 
 void Coordinator::StopAndFlushInternal() {
-  if (agent_registry_->HasDisconnectClosure(&kStartTracingClosureName)) {
-    // We received a |StopAndFlush| command before receiving |StartTracing| acks
-    // from all agents. Let's retry after a delay.
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::BindRepeating(&Coordinator::StopAndFlushInternal,
-                            weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(
-            mojom::kStopTracingRetryTimeMilliseconds));
-    return;
-  }
-
   size_t num_initialized_agents =
       agent_registry_->SetAgentInitializationCallback(
           base::BindRepeating(&Coordinator::SendStopTracingToAgent,

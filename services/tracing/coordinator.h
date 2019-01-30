@@ -64,8 +64,7 @@ class Coordinator : public mojom::Coordinator {
   void Reset();
 
   // mojom::Coordinator
-  void StartTracing(const std::string& config,
-                    StartTracingCallback callback) override;
+  void StartTracing(const std::string& config) override;
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
                     StopAndFlushCallback callback) override;
   void StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
@@ -76,7 +75,6 @@ class Coordinator : public mojom::Coordinator {
 
   // Internal methods for collecting events from agents.
   void SendStartTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
-  void OnTracingStarted(AgentRegistry::AgentEntry* agent_entry, bool success);
   void StopAndFlushInternal();
   void SendStopTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
   void SendStopTracingWithNoOpRecorderToAgent(
@@ -99,7 +97,6 @@ class Coordinator : public mojom::Coordinator {
   bool is_tracing_ = false;
 
   std::unique_ptr<TraceStreamer> trace_streamer_;
-  StartTracingCallback start_tracing_callback_;
   StopAndFlushCallback stop_and_flush_callback_;
 
   // For computing trace buffer usage.

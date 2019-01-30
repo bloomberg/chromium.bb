@@ -78,29 +78,7 @@ class CoordinatorTest : public testing::Test,
     return agents_.back().get();
   }
 
-  void StartTracing(std::string config,
-                    bool expected_response,
-                    bool stop_and_flush) {
-    base::RepeatingClosure closure;
-    if (stop_and_flush) {
-      closure = base::BindRepeating(&CoordinatorTest::StopAndFlush,
-                                    base::Unretained(this));
-    }
-
-    coordinator_->StartTracing(
-        config,
-        base::BindRepeating(
-            [](bool expected, base::RepeatingClosure closure, bool actual) {
-              EXPECT_EQ(expected, actual);
-              if (!closure.is_null())
-                closure.Run();
-            },
-            expected_response, closure));
-  }
-
-  void StartTracing(std::string config, bool expected_response) {
-    StartTracing(config, expected_response, false);
-  }
+  void StartTracing(std::string config) { coordinator_->StartTracing(config); }
 
   void StopAndFlush() {
     mojo::DataPipe data_pipe;
@@ -152,7 +130,7 @@ class CoordinatorTest : public testing::Test,
 TEST_F(CoordinatorTest, StartTracingSimple) {
   base::RunLoop run_loop;
   auto* agent = AddArrayAgent();
-  StartTracing("*", true);
+  StartTracing("*");
   run_loop.RunUntilIdle();
 
   // The agent should have received exactly one call from the coordinator.
@@ -163,7 +141,7 @@ TEST_F(CoordinatorTest, StartTracingSimple) {
 TEST_F(CoordinatorTest, StartTracingTwoAgents) {
   base::RunLoop run_loop;
   auto* agent1 = AddArrayAgent();
-  StartTracing("*", true);
+  StartTracing("*");
   auto* agent2 = AddStringAgent();
   run_loop.RunUntilIdle();
 
@@ -178,13 +156,13 @@ TEST_F(CoordinatorTest, StartTracingWithProcessFilter) {
   base::RunLoop run_loop1;
   auto* agent1 = AddArrayAgent(static_cast<base::ProcessId>(1));
   auto* agent2 = AddArrayAgent(static_cast<base::ProcessId>(2));
-  StartTracing("{\"included_process_ids\":[2,4]}", true);
+  StartTracing("{\"included_process_ids\":[2,4]}");
   run_loop1.RunUntilIdle();
 
   base::RunLoop run_loop2;
   auto* agent3 = AddArrayAgent(static_cast<base::ProcessId>(3));
   auto* agent4 = AddArrayAgent(static_cast<base::ProcessId>(4));
-  StartTracing("{\"included_process_ids\":[4,6]}", true);
+  StartTracing("{\"included_process_ids\":[4,6]}");
   run_loop2.RunUntilIdle();
 
   base::RunLoop run_loop3;
@@ -193,38 +171,27 @@ TEST_F(CoordinatorTest, StartTracingWithProcessFilter) {
   run_loop3.RunUntilIdle();
 
   // StartTracing should only be received by agents 2, 4, and 6.
+  // Agent 4 should receive StartTracing twice, as it's
+  // included in both configs.
   EXPECT_EQ(0u, agent1->call_stat().size());
   EXPECT_EQ(1u, agent2->call_stat().size());
   EXPECT_EQ("StartTracing", agent2->call_stat()[0]);
   EXPECT_EQ(0u, agent3->call_stat().size());
-  EXPECT_EQ(1u, agent4->call_stat().size());
+  EXPECT_EQ(2u, agent4->call_stat().size());
   EXPECT_EQ("StartTracing", agent4->call_stat()[0]);
+  EXPECT_EQ("StartTracing", agent4->call_stat()[1]);
   EXPECT_EQ(0u, agent5->call_stat().size());
   EXPECT_EQ(1u, agent6->call_stat().size());
   EXPECT_EQ("StartTracing", agent6->call_stat()[0]);
 }
 
-TEST_F(CoordinatorTest, StartTracingWithDifferentConfigs) {
-  base::RunLoop run_loop;
-  auto* agent = AddArrayAgent();
-  StartTracing("config 1", true);
-  // The 2nd |StartTracing| should return false.
-  StartTracing("config 2", false);
-  run_loop.RunUntilIdle();
-
-  // The agent should have received exactly one call from the coordinator
-  // because the 2nd |StartTracing| was aborted.
-  EXPECT_EQ(1u, agent->call_stat().size());
-  EXPECT_EQ("StartTracing", agent->call_stat()[0]);
-}
-
 TEST_F(CoordinatorTest, StartTracingWithSameConfigs) {
   base::RunLoop run_loop;
   auto* agent = AddArrayAgent();
-  StartTracing("config", true);
-  // The 2nd |StartTracing| should return true when we are not trying to change
+  StartTracing("config");
+  // The 2nd |StartTracing| should succeed when we are not trying to change
   // the config.
-  StartTracing("config", true);
+  StartTracing("config");
   run_loop.RunUntilIdle();
 
   // The agent should have received exactly one call from the coordinator
@@ -241,7 +208,8 @@ TEST_F(CoordinatorTest, StopAndFlushObjectAgent) {
   agent->data_.push_back("\"content\":{\"a\":1}");
   agent->data_.push_back("\"name\":\"etw\"");
 
-  StartTracing("config", true, true);
+  StartTracing("config");
+  StopAndFlush();
   if (!quit_closure_.is_null())
     run_loop.Run();
 
@@ -266,7 +234,8 @@ TEST_F(CoordinatorTest, StopAndFlushTwoArrayAgents) {
   agent2->data_.push_back("e3");
   agent2->data_.push_back("e4");
 
-  StartTracing("config", true, true);
+  StartTracing("config");
+  StopAndFlush();
   if (!quit_closure_.is_null())
     run_loop.Run();
 
@@ -304,7 +273,8 @@ TEST_F(CoordinatorTest, StopAndFlushDifferentTypeAgents) {
   agent2->data_.push_back("e3");
   agent2->data_.push_back("e4");
 
-  StartTracing("config", true, true);
+  StartTracing("config");
+  StopAndFlush();
   if (!quit_closure_.is_null())
     run_loop.Run();
 
@@ -329,7 +299,8 @@ TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
   agent->data_.push_back("event");
   agent->metadata_.SetString("key", "value");
 
-  StartTracing("config", true, true);
+  StartTracing("config");
+  StopAndFlush();
   if (!quit_closure_.is_null())
     run_loop.Run();
 
@@ -344,7 +315,7 @@ TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
 TEST_F(CoordinatorTest, IsTracing) {
   base::RunLoop run_loop;
   AddArrayAgent();
-  StartTracing("config", true);
+  StartTracing("config");
   IsTracing(true);
   run_loop.RunUntilIdle();
 }
@@ -393,7 +364,8 @@ TEST_F(CoordinatorTest, LateAgents) {
   base::RunLoop run_loop1;
   quit_closure_ = run_loop1.QuitClosure();
   auto* agent1 = AddArrayAgent();
-  StartTracing("config", true, true);
+  StartTracing("config");
+  StopAndFlush();
   if (!quit_closure_.is_null())
     run_loop1.Run();
 
