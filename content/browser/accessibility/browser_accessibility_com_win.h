@@ -465,6 +465,8 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
       base::string16* output);
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityTest,
                            TestSanitizeStringAttributeForIA2);
+  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityWinTest,
+                           TestSanitizeStringAttributeForIA2);
 
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
