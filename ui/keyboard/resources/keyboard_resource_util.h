@@ -9,7 +9,7 @@
 
 #include "ui/keyboard/keyboard_export.h"
 
-struct GritResourceMap;
+struct GzippedGritResourceMap;
 
 namespace keyboard {
 
@@ -21,7 +21,7 @@ KEYBOARD_EXPORT extern const char kKeyboardHost[];
 
 // Get the list of keyboard resources. |size| is populated with the number of
 // resources in the returned array.
-KEYBOARD_EXPORT const GritResourceMap* GetKeyboardExtensionResources(
+KEYBOARD_EXPORT const GzippedGritResourceMap* GetKeyboardExtensionResources(
     size_t* size);
 
 // Initializes the keyboard module. This includes adding the necessary pak files

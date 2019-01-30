@@ -12,7 +12,7 @@
     <includes>
       <if expr="chromeos">
         <include name="IDR_INK_LIB_BINARY_JS" file="build/ink_lib_binary.js" type="BINDATA" />
-        <include name="IDR_INK_GLCORE_BASE_WASM" file="build/wasm/glcore_base.wasm" type="BINDATA" />
+        <include name="IDR_INK_GLCORE_BASE_WASM" file="build/wasm/glcore_base.wasm" compress="gzip" type="BINDATA" />
         <include name="IDR_INK_GLCORE_WASM_BOOTSTRAP_COMPILED_JS" file="build/wasm/glcore_wasm_bootstrap_compiled.js" type="BINDATA" />
       </if>
     </includes>

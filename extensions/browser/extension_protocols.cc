@@ -47,6 +47,7 @@
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -869,13 +870,13 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     // Component extension resources may be part of the embedder's resource
     // files, for example component_extension_resources.pak in Chrome.
-    int resource_id = 0;
+    ComponentExtensionResourceInfo resource_info;
     const base::FilePath bundle_resource_path =
         ExtensionsBrowserClient::Get()->GetBundleResourcePath(
-            request, directory_path, &resource_id);
+            request, directory_path, &resource_info);
     if (!bundle_resource_path.empty()) {
       ExtensionsBrowserClient::Get()->LoadResourceFromResourceBundle(
-          request, std::move(loader), bundle_resource_path, resource_id,
+          request, std::move(loader), bundle_resource_path, resource_info,
           content_security_policy, std::move(client), send_cors_header);
       return;
     }
