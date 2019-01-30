@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
+#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#include "ios/chrome/browser/ui/settings/sync_utils/sync_error_infobar_delegate.h"
+#include "ios/chrome/browser/ui/settings/sync/utils/sync_error_infobar_delegate.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_encryption_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
 
 #include <memory>
 
@@ -19,8 +19,8 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
-#import "ios/chrome/browser/ui/settings/sync_create_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_create_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"

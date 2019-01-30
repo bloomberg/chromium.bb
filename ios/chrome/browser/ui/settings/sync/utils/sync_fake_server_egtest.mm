@@ -365,7 +365,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://page1");
   const GURL URL2 = web::test::HttpServer::MakeUrl("http://page2");
   std::map<GURL, std::string> responses = {
-      {URL1, std::string("page 1")}, {URL2, std::string("page 2")},
+      {URL1, std::string("page 1")},
+      {URL2, std::string("page 2")},
   };
   web::test::SetUpSimpleHttpServer(responses);
 

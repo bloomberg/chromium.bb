@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_settings_collection_view_controller.h"
 
 #include <memory>
 
@@ -40,9 +40,9 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_encryption_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -457,8 +457,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+  UICollectionViewCell* cell = [super collectionView:collectionView
+                              cellForItemAtIndexPath:indexPath];
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
 
@@ -779,10 +779,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateCollectionView {
   __weak SyncSettingsCollectionViewController* weakSelf = self;
-  [self.collectionView performBatchUpdates:^{
-    [weakSelf updateCollectionViewInternal];
-  }
-                                completion:nil];
+  [self.collectionView
+      performBatchUpdates:^{
+        [weakSelf updateCollectionViewInternal];
+      }
+               completion:nil];
 }
 
 - (void)updateCollectionViewInternal {
