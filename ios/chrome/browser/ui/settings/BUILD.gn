@@ -179,7 +179,6 @@ source_set("settings") {
     "//url",
   ]
   public_deps = [
-    ":settings_root",
     "//ios/chrome/browser/ui/collection_view/cells",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
