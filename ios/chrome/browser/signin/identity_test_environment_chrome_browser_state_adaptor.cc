@@ -91,7 +91,6 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
                   browser_state)),
           static_cast<FakeSigninManager*>(
               ios::SigninManagerFactory::GetForBrowserState(browser_state)),
-          static_cast<FakeGaiaCookieManagerService*>(
-              ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
-                  browser_state)),
+          ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
+              browser_state),
           IdentityManagerFactory::GetForBrowserState(browser_state)) {}

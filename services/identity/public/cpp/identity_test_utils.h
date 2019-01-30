@@ -10,6 +10,10 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 
+namespace network {
+class TestURLLoaderFactory;
+}
+
 class FakeGaiaCookieManagerService;
 class GoogleServiceAuthError;
 
@@ -61,14 +65,12 @@ void SetRefreshTokenForPrimaryAccount(
 // Sets a special invalid refresh token for the primary account (which must
 // already be set). Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetInvalidRefreshTokenForPrimaryAccount(
-    IdentityManager* identity_manager);
+void SetInvalidRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
 
 // Removes any refresh token for the primary account, if present. Blocks until
 // the refresh token is removed.
 // NOTE: See disclaimer at top of file re: direct usage.
-void RemoveRefreshTokenForPrimaryAccount(
-    IdentityManager* identity_manager);
+void RemoveRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
 
 // Makes the primary account (which must not already be set) available for the
 // given email address, generating a GAIA ID and refresh token that correspond
@@ -77,9 +79,8 @@ void RemoveRefreshTokenForPrimaryAccount(
 // the primary account is available. Returns the AccountInfo of the
 // newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
-AccountInfo MakePrimaryAccountAvailable(
-    IdentityManager* identity_manager,
-    const std::string& email);
+AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
+                                        const std::string& email);
 
 // Clears the primary account if present, with |policy| used to determine
 // whether to keep or remove all accounts. On non-ChromeOS, results in the
@@ -121,7 +122,17 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
 
 // Puts the given accounts into the Gaia cookie, replacing any previous
 // accounts. Blocks until the accounts have been set.
+// |test_url_loader_factory| is used to set a fake ListAccounts response
+// containing the provided |cookie_accounts|, which are then put into
+// the Gaia cookie.
 // NOTE: See disclaimer at top of file re: direct usage.
+void SetCookieAccounts(IdentityManager* identity_manager,
+                       network::TestURLLoaderFactory* test_url_loader_factory,
+                       const std::vector<CookieParams>& cookie_accounts);
+
+// Same as above, but takes a FakeGaiaCookieManagerService.
+// TODO(https://crbug.com/1379770): Delete this overload once FakeGCMS has been
+// eliminated.
 void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
                        IdentityManager* identity_manager,
                        const std::vector<CookieParams>& cookie_accounts);

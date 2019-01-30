@@ -304,7 +304,7 @@ class AccountReconcilorTest : public ::testing::Test {
   DiceTestSigninClient test_signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
-  FakeGaiaCookieManagerService cookie_manager_service_;
+  GaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<MockAccountReconcilor> mock_reconcilor_;
@@ -354,9 +354,15 @@ AccountReconcilorTest::AccountReconcilorTest()
     : account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       test_signin_client_(&pref_service_),
       token_service_(&pref_service_),
-      cookie_manager_service_(&token_service_,
-                              &test_signin_client_,
-                              &test_url_loader_factory_),
+      cookie_manager_service_(
+          &token_service_,
+          &test_signin_client_,
+          base::BindRepeating(
+              [](network::TestURLLoaderFactory* test_url_loader_factory)
+                  -> scoped_refptr<network::SharedURLLoaderFactory> {
+                return test_url_loader_factory->GetSafeWeakWrapper();
+              },
+              &test_url_loader_factory_)),
 #if defined(OS_CHROMEOS)
       signin_manager_(&test_signin_client_, &token_service_, &account_tracker_),
 #else
@@ -368,7 +374,8 @@ AccountReconcilorTest::AccountReconcilorTest()
       identity_test_env_(&account_tracker_,
                          &token_service_,
                          &signin_manager_,
-                         &cookie_manager_service_) {
+                         &cookie_manager_service_,
+                         &test_url_loader_factory_) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());

@@ -93,11 +93,11 @@ class MockAccountReconcilor : public AccountReconcilor {
 };
 
 // Mock GaiaCookieManagerService to catch call to ForceOnCookieChangeProcessing.
-// It isn't an actual mock as it is not desirable to extend a Mock from a Fake.
-class CustomGaiaCookieManagerService : public FakeGaiaCookieManagerService {
+// TODO(https://crbug.com/907782): Update this to use gmock.
+class CustomGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   CustomGaiaCookieManagerService()
-      : FakeGaiaCookieManagerService(nullptr, nullptr),
+      : GaiaCookieManagerService(nullptr, nullptr),
         calls_to_force_on_cookie_change_processing_(0) {}
 
   uint8_t CallsToForceOnCookieChangeProcessing() {
