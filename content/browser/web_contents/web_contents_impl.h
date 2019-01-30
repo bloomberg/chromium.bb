@@ -1319,6 +1319,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // each inner WebContents is attached.
   void FocusOuterAttachmentFrameChain();
 
+  // Convenience method to notify observers that an inner WebContents was
+  // created with |this| WebContents as its owner. This does *not* immediately
+  // guarantee that |inner_web_contents| has been added to the WebContents tree.
+  void InnerWebContentsCreated(WebContents* inner_web_contents);
+
   // Navigation helpers --------------------------------------------------------
   //
   // These functions are helpers for Navigate() and DidNavigate().
