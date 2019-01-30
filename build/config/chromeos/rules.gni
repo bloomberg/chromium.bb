@@ -212,6 +212,8 @@ template("tast_test") {
     foreach(test, tast_disabled_tests) {
       tast_attr_expr += " && !\"name:${test}\""
     }
+  }
+  if (defined(tast_attr_expr)) {
     tast_attr_expr = "( " + tast_attr_expr + " )"
   }
   generate_runner_script(target_name) {
