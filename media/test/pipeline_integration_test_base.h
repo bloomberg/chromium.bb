@@ -159,7 +159,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   bool webaudio_attached_;
   bool mono_output_;
   bool fuzzing_;
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(UNDEFINED_SANITIZER)
   // TODO(https://crbug.com/924030): ASAN causes Run() timeouts to be reached.
   base::RunLoop::ScopedRunTimeoutForTest disable_run_timeout_;
 #endif
