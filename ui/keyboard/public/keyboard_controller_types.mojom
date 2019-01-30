@@ -35,6 +35,10 @@ enum KeyboardEnableFlag {
 
   // Temporarily enable the keyboard; cleared once the keyboard is shown.
   kTemporarilyEnabled,
+
+  // Enabled via the "--enable-virtual-keyboard" command line switch.
+  // Used for development and debugging.
+  kCommandLineEnabled,
 };
 
 // Container types used to set and identify contaner behavior. Used in UMA
