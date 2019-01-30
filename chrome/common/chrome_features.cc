@@ -209,7 +209,7 @@ const base::Feature kDesktopPWAsLinkCapturing{
 // Determines whether out of scope pages in the hosted app will use the
 // custom tab UI.
 const base::Feature kDesktopPWAsCustomTabUI{"DesktopPWAsCustomTabUI",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Determines whether in scope requests are always opened in the same window.
 const base::Feature kDesktopPWAsStayInWindow{"DesktopPWAsStayInWindow",
