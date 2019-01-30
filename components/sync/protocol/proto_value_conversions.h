@@ -71,6 +71,7 @@ class TabNavigation;
 class ThemeSpecifics;
 class TimeRangeDirective;
 class TypedUrlSpecifics;
+class UrlDirective;
 class UserConsentSpecifics;
 class UserEventSpecifics;
 class WalletMaskedCreditCard;
@@ -260,6 +261,9 @@ std::unique_ptr<base::DictionaryValue> TimeRangeDirectiveToValue(
 
 std::unique_ptr<base::DictionaryValue> TypedUrlSpecificsToValue(
     const sync_pb::TypedUrlSpecifics& typed_url_specifics);
+
+std::unique_ptr<base::DictionaryValue> UrlDirectiveToValue(
+    const sync_pb::UrlDirective& time_range_directive);
 
 std::unique_ptr<base::DictionaryValue> UserConsentSpecificsToValue(
     const sync_pb::UserConsentSpecifics& user_consent_specifics);

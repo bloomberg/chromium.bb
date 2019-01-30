@@ -523,6 +523,7 @@ VISIT_PROTO_FIELDS(const sync_pb::GlobalIdDirective& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectiveSpecifics& proto) {
   VISIT(global_id_directive);
   VISIT(time_range_directive);
+  VISIT(url_directive);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectives& proto) {
@@ -910,6 +911,11 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Translation& proto) {
   VISIT(from_language_code);
   VISIT(to_language_code);
   VISIT_ENUM(interaction);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::UrlDirective& proto) {
+  VISIT(url);
+  VISIT(end_time_usec);
 }
 
 // TODO(vitaliii): Delete once UserEventSpecifics::UserConsent is completely
