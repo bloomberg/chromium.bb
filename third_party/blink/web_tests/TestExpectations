@@ -980,6 +980,8 @@ crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-006.html [ Failure Crash ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-007.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-block-sibling-003.xht [ Failure ]
 crbug.com/924142 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
@@ -3086,10 +3088,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/inside-worker/shared-inheritance.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-self-block.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/fetch/api/cors/cors-redirect.any.html [ Timeout ]
@@ -4194,6 +4192,8 @@ crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Fa
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-006.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-007.html [ Failure ]
+crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-009.html [ Failure ]
+crbug.com/926685 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/906385 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
