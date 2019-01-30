@@ -2981,6 +2981,11 @@ crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09E
 crbug.com/893490 [ Win ] external/wpt/css/css-text/white-space/control-chars-09E.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-09F.html [ Failure ]
 
+crbug.com/926670 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Pass Failure ]
+crbug.com/926670 external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Pass Failure ]
+crbug.com/926670 virtual/outofblink-cors/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Pass Failure ]
+crbug.com/926670 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Pass Failure ]
+
 # needs implementation of test_driver_internal.action_sequence
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.html [ Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
