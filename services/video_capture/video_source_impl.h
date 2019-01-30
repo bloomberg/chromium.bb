@@ -40,14 +40,18 @@ class VideoSourceImpl : public mojom::VideoSource {
     kNotStarted,
     kStartingAsynchronously,
     kStarted,
+    kStoppingAsynchronously
   };
 
   void OnClientDisconnected();
+  void StartDeviceWithSettings(
+      const media::VideoCaptureParams& requested_settings);
   void OnCreateDeviceResponse(mojom::DeviceAccessResultCode result_code);
   void OnPushSubscriptionClosedOrDisconnectedOrDiscarded(
       PushVideoStreamSubscriptionImpl* subscription,
       base::OnceClosure done_cb);
-  void StopDevice();
+  void StopDeviceAsynchronously();
+  void OnStopDeviceComplete();
 
   mojom::DeviceFactory* const device_factory_;
   const std::string device_id_;
@@ -63,6 +67,7 @@ class VideoSourceImpl : public mojom::VideoSource {
   DeviceStatus device_status_;
   mojom::DevicePtr device_;
   media::VideoCaptureParams device_start_settings_;
+  bool restart_device_once_when_stop_complete_;
 
   base::WeakPtrFactory<VideoSourceImpl> weak_factory_;
 

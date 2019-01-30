@@ -111,7 +111,7 @@ void DeviceFactoryMediaToMojoAdapter::CreateDevice(
     // Revoke the access and close the device, then bind to the new request.
     ActiveDeviceEntry& device_entry = active_device_iter->second;
     device_entry.binding->Unbind();
-    device_entry.device->Stop();
+    device_entry.device->Stop(base::DoNothing());
     device_entry.binding->Bind(std::move(device_request));
     device_entry.binding->set_connection_error_handler(base::Bind(
         &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
@@ -189,7 +189,7 @@ void DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose(
   video_capture::uma::LogVideoCaptureServiceEvent(
       video_capture::uma::SERVICE_LOST_CONNECTION_TO_BROWSER);
 
-  active_devices_by_id_[device_id].device->Stop();
+  active_devices_by_id_[device_id].device->Stop(base::DoNothing());
   active_devices_by_id_.erase(device_id);
 }
 

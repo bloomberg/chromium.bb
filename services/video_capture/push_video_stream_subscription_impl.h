@@ -28,9 +28,9 @@ class PushVideoStreamSubscriptionImpl
   void SetOnClosedHandler(
       base::OnceCallback<void(base::OnceClosure done_cb)> handler);
 
-  void NotifySubscriberCreateSubscriptionSucceededWithSettings(
+  void OnDeviceStartSucceededWithSettings(
       const media::VideoCaptureParams& settings);
-  void NotifySubscriberCreateSubscriptionFailed();
+  void OnDeviceStartFailed();
 
   // mojom::PushVideoStreamSubscription implementation.
   void Activate() override;
