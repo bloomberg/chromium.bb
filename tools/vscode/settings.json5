@@ -48,13 +48,13 @@
   "annotator.annotationColumnWidth": "24em",
 
   // C++ clang format settings.
-  "C_Cpp.clang_format_path": "${workspaceRoot}/third_party/depot_tools/clang-format",
+  "C_Cpp.clang_format_path": "${workspaceFolder}/third_party/depot_tools/clang-format",
   "C_Cpp.clang_format_sortIncludes": true,
   "C_Cpp.clang_format_formatOnSave": true,
 
   // YouCompleteMe
   "ycmd.path": "<full_path_to_your_home>/.ycmd", // Please replace this path
-  "ycmd.global_extra_config": "${workspaceRoot}/tools/vim/chromium.ycm_extra_conf.py",
+  "ycmd.global_extra_config": "${workspaceFolder}/tools/vim/chromium.ycm_extra_conf.py",
   "ycmd.confirm_extra_conf": false,
 
   // Optional: Highlight current line at the left of the editor.
