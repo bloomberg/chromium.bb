@@ -551,7 +551,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 
 // Test whether the top view's status is correct during various transitions
 // among normal state, browser fullscreen mode, and tab fullscreen mode.
-IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, TopViewStatusChange) {
+// Sheriff: http://crbug.com/925928
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, DISABLED_TopViewStatusChange) {
   ExclusiveAccessContext* context = GetExclusiveAccessManager()->context();
 #if defined(OS_MACOSX)
   // First, set the preference to true so we expect to see the top view in
