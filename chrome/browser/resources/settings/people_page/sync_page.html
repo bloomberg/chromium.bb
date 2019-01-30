@@ -28,7 +28,7 @@
   <template>
     <style include="settings-shared iron-flex">
       h2 {
-        font-size: var(--cr-title-text_-_font-size);
+        @apply --cr-title-text;
       }
 
       #sync-separator {
@@ -77,7 +77,7 @@
       }
 
       .passphrase-reset-icon {
-        margin-right: 8px;
+        margin-inline-end: 8px;
       }
 
       #disabled-by-admin-icon {
