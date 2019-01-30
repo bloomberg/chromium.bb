@@ -111,11 +111,8 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   // ContainerNodes::AttachLayoutTree() via the base class call below.
   if (!DistributedNodesAreFallback()) {
     AttachContext children_context(context);
-    for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i) {
-      Node* child = distributed_nodes_.at(i);
-      if (child->NeedsReattachLayoutTree())
-        child->AttachLayoutTree(children_context);
-    }
+    for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
+      distributed_nodes_.at(i)->AttachLayoutTree(children_context);
     if (children_context.previous_in_flow)
       context.previous_in_flow = children_context.previous_in_flow;
   }
