@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 import android.view.View;
@@ -37,7 +36,7 @@ import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
-import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentShippingType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,13 +57,11 @@ public class AutofillAssistantPaymentRequest {
             (a, b) -> (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
 
     private final WebContents mWebContents;
-    private final PaymentOptions mPaymentOptions;
-    private final String mTitle;
+    private final AssistantPaymentRequestOptions mPaymentOptions;
     private final CardEditor mCardEditor;
     private final AddressEditor mAddressEditor;
     private final Map<String, PaymentMethodData> mMethodData;
     private final Handler mHandler = new Handler();
-    private final String mDefaultEmail;
 
     private PaymentRequestUI mUI;
     private ContactEditor mContactEditor;
@@ -109,12 +106,10 @@ public class AutofillAssistantPaymentRequest {
      * @defaultEmail               Optional email. When provided Profiles with this email will be
      *                             shown on top.
      */
-    public AutofillAssistantPaymentRequest(WebContents webContents, PaymentOptions paymentOptions,
-            String title, String[] supportedBasicCardNetworks, @Nullable String defaultEmail) {
+    public AutofillAssistantPaymentRequest(
+            WebContents webContents, AssistantPaymentRequestOptions paymentOptions) {
         mWebContents = webContents;
         mPaymentOptions = paymentOptions;
-        mTitle = title;
-        mDefaultEmail = defaultEmail;
 
         // This feature should only works in non-incognito mode.
         mAddressEditor = new AddressEditor(/* emailFieldIncluded= */ true, /* saveToDisk= */ true);
@@ -125,6 +120,7 @@ public class AutofillAssistantPaymentRequest {
         methodData.supportedMethod = BASIC_CARD_PAYMENT_METHOD;
 
         // Apply basic-card filter if specified
+        String[] supportedBasicCardNetworks = paymentOptions.mSupportedBasicCardNetworks;
         if (supportedBasicCardNetworks.length > 0) {
             ArrayList<Integer> filteredNetworks = new ArrayList<>();
             Map<String, Integer> networks = getNetworkIdentifiers();
@@ -176,48 +172,48 @@ public class AutofillAssistantPaymentRequest {
         }
 
         List<AutofillProfile> profiles = null;
-        if (mPaymentOptions.requestShipping || mPaymentOptions.requestPayerName
-                || mPaymentOptions.requestPayerPhone || mPaymentOptions.requestPayerEmail) {
+        if (mPaymentOptions.mRequestShipping || mPaymentOptions.mRequestPayerName
+                || mPaymentOptions.mRequestPayerPhone || mPaymentOptions.mRequestPayerEmail) {
             profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
                     /* includeNameInLabel= */ false);
 
-            if (mDefaultEmail != null && profiles != null) {
+            String defaultEmail = mPaymentOptions.mDefaultEmail;
+            if (defaultEmail != null && profiles != null) {
                 // The profile with default email should be shown as first. Following profiles are
                 // sorted in an alphabetic order.
                 Collections.sort(profiles, (a, b) -> {
                     int compareResult = ApiCompatibilityUtils.compareBoolean(
-                            mDefaultEmail.equals(b.getEmailAddress()),
-                            mDefaultEmail.equals(a.getEmailAddress()));
+                            defaultEmail.equals(b.getEmailAddress()),
+                            defaultEmail.equals(a.getEmailAddress()));
                     if (compareResult != 0) return compareResult;
                     return b.getEmailAddress().compareTo(a.getEmailAddress());
                 });
             }
         }
 
-        if (mPaymentOptions.requestShipping) {
+        if (mPaymentOptions.mRequestShipping) {
             createShippingSection(activity, Collections.unmodifiableList(profiles));
         }
 
-        if (mPaymentOptions.requestPayerName || mPaymentOptions.requestPayerPhone
-                || mPaymentOptions.requestPayerEmail) {
-            mContactEditor = new ContactEditor(mPaymentOptions.requestPayerName,
-                    mPaymentOptions.requestPayerPhone, mPaymentOptions.requestPayerEmail,
+        if (mPaymentOptions.mRequestPayerName || mPaymentOptions.mRequestPayerPhone
+                || mPaymentOptions.mRequestPayerEmail) {
+            mContactEditor = new ContactEditor(mPaymentOptions.mRequestPayerName,
+                    mPaymentOptions.mRequestPayerPhone, mPaymentOptions.mRequestPayerEmail,
                     /* saveToDisk= */ true);
             mContactSection = new ContactDetailsSection(activity,
                     Collections.unmodifiableList(profiles), mContactEditor,
                     /* journeyLogger= */ null);
         }
 
-        mUI = new PaymentRequestUI(activity, this, mPaymentOptions.requestShipping,
+        mUI = new PaymentRequestUI(activity, this, mPaymentOptions.mRequestShipping,
                 /* requestShippingOption= */ false,
-                mPaymentOptions.requestPayerName || mPaymentOptions.requestPayerPhone
-                        || mPaymentOptions.requestPayerEmail,
-                /* canAddCards= */ true, /* showDataSource= */ true,
-                mTitle.isEmpty() ? mWebContents.getTitle() : mTitle,
+                mPaymentOptions.mRequestPayerName || mPaymentOptions.mRequestPayerPhone
+                        || mPaymentOptions.mRequestPayerEmail,
+                /* canAddCards= */ true, /* showDataSource= */ true, mWebContents.getTitle(),
                 UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                         mWebContents.getLastCommittedUrl()),
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
-                new ShippingStrings(mPaymentOptions.shippingType));
+                new ShippingStrings(PaymentShippingType.SHIPPING));
         // This payment request is embedded in another flow, so update the 'Pay' button text to
         // 'Confirm'.
         mUI.updatePayButtonText(R.string.autofill_assistant_payment_info_confirm);
@@ -503,12 +499,12 @@ public class AutofillAssistantPaymentRequest {
             selectedPaymentInformation.isTermsAndConditionsAccepted = isTermsAndConditionsAccepted;
             selectedPaymentInformation.card =
                     ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
-            if (mPaymentOptions.requestShipping && selectedShippingAddress != null) {
+            if (mPaymentOptions.mRequestShipping && selectedShippingAddress != null) {
                 selectedPaymentInformation.address =
                         ((AutofillAddress) selectedShippingAddress).getProfile();
             }
-            if (mPaymentOptions.requestPayerName || mPaymentOptions.requestPayerPhone
-                    || mPaymentOptions.requestPayerEmail) {
+            if (mPaymentOptions.mRequestPayerName || mPaymentOptions.mRequestPayerPhone
+                    || mPaymentOptions.mRequestPayerEmail) {
                 EditableOption selectedContact =
                         mContactSection != null ? mContactSection.getSelectedItem() : null;
                 if (selectedContact != null) {

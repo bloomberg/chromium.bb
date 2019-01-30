@@ -93,7 +93,6 @@ class ActionDelegate {
   virtual void GetPaymentInformation(
       payments::mojom::PaymentOptionsPtr payment_options,
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) = 0;
 
   using GetFullCardCallback =

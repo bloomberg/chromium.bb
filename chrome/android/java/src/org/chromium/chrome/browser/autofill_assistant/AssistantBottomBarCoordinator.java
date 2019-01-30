@@ -74,7 +74,8 @@ class AssistantBottomBarCoordinator {
         mHeaderCoordinator =
                 new AssistantHeaderCoordinator(context, mBottomBarView, model.getHeaderModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(context, model.getDetailsModel());
-        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(context, webContents);
+        mPaymentRequestCoordinator = new AssistantPaymentRequestCoordinator(
+                context, webContents, model.getPaymentRequestModel());
         mCarouselCoordinator = new AssistantCarouselCoordinator(context, model.getCarouselModel());
 
         // Add child views to bottom bar.
@@ -121,10 +122,6 @@ class AssistantBottomBarCoordinator {
             mSwipeIndicatorView.setVisibility(View.GONE);
             setBottomBarPaddingTop(mBottomBarWithoutIndicatorPaddingTop);
         }
-    }
-
-    public AssistantPaymentRequestCoordinator getPaymentRequestCoordinator() {
-        return mPaymentRequestCoordinator;
     }
 
     public AssistantCarouselCoordinator getCarouselCoordinator() {
