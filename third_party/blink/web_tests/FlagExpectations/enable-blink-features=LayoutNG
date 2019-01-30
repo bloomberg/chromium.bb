@@ -325,6 +325,8 @@ crbug.com/591099 virtual/display-lock/display-lock/lock-after-append/measure-upd
 crbug.com/591099 virtual/display-lock/display-lock/lock-before-append/acquire-update-measure-remove.html [ Failure ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-before-append/measure-forced-layout.html [ Failure ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-before-append/measure-updated-layout.html [ Failure ]
+crbug.com/926276 virtual/display-lock/display-lock/lock-after-append/nested-update.html [ Timeout ]
+crbug.com/926276 virtual/display-lock/display-lock/lock-after-append/nested-update-and-commit.html [ Timeout ]
 crbug.com/591099 virtual/exotic-color-space/ [ Skip ]
 crbug.com/591099 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass ]
 crbug.com/591099 virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass ]
