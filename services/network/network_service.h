@@ -269,12 +269,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 
+  std::unique_ptr<NetworkChangeManager> network_change_manager_;
+
   // Observer that logs network changes to the NetLog. Must be below the NetLog
   // and the NetworkChangeNotifier (Once this class creates it), so it's
-  // destroyed before them.
+  // destroyed before them. Must be below the |network_change_manager_|, which
+  // it references.
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
-
-  std::unique_ptr<NetworkChangeManager> network_change_manager_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
