@@ -5,6 +5,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_tree_client_test_observer.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -192,6 +194,7 @@ TEST_P(ClientSideWindowMoveHandlerTest, PerformWindowMove) {
   MoveInputBy(10, 10);
   EXPECT_TRUE(observer.in_window_move());
   EXPECT_EQ(HTCAPTION, window_tree()->last_move_hit_test());
+  EXPECT_EQ(HTNOWHERE, window_tree()->last_window_resize_shadow());
   window_tree()->AckAllChanges();
   EXPECT_FALSE(observer.in_window_move());
 }
@@ -205,6 +208,7 @@ TEST_P(ClientSideWindowMoveHandlerTest, WindowResize) {
   MoveInputBy(-10, -10);
   EXPECT_TRUE(observer.in_window_move());
   EXPECT_EQ(HTBOTTOMRIGHT, window_tree()->last_move_hit_test());
+  EXPECT_EQ(HTBOTTOMRIGHT, window_tree()->last_window_resize_shadow());
   window_tree()->AckAllChanges();
   EXPECT_FALSE(observer.in_window_move());
 }
@@ -218,6 +222,37 @@ TEST_P(ClientSideWindowMoveHandlerTest, ClientAreaDontStartMove) {
   MoveInputBy(20, 20);
   EXPECT_FALSE(observer.in_window_move());
   window_tree()->AckAllChanges();
+}
+
+TEST_P(ClientSideWindowMoveHandlerTest, MouseExitDoesNotCancelResize) {
+  // Create another window-tree-host and sets the capture there.
+  auto host2 = std::make_unique<WindowTreeHostMus>(
+      CreateInitParamsForTopLevel(window_tree_client_impl()));
+  host2->InitHost();
+  gfx::Rect host2_bounds = host()->GetBoundsInPixels();
+  host2_bounds.Offset(30, 30);
+  host2->SetBoundsInPixels(host2_bounds);
+  host2->window()->Show();
+
+  test::TestWindowDelegate test_delegate;
+  std::unique_ptr<Window> window2(
+      CreateNormalWindow(12, host2->window(), &test_delegate));
+  window2->SetCapture();
+  window_tree()->AckAllChanges();
+
+  WindowMoveObserver observer(window_tree_client_impl());
+
+  // Makes the mouse event to cause window resize; since |window2| has the
+  // capture, this should cause MOUSE_EXITED on |window2|, but that shouldn't
+  // affect the behavior of resizing on the target window.
+  MoveInputTo(GetWindowBounds().origin() + gfx::Vector2d(1, 1));
+  PressInput();
+  MoveInputBy(-10, -10);
+  EXPECT_TRUE(observer.in_window_move());
+  EXPECT_EQ(HTTOPLEFT, window_tree()->last_move_hit_test());
+  EXPECT_EQ(HTTOPLEFT, window_tree()->last_window_resize_shadow());
+  window_tree()->AckAllChanges();
+  EXPECT_FALSE(observer.in_window_move());
 }
 
 INSTANTIATE_TEST_CASE_P(,
