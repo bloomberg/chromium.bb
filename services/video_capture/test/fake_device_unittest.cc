@@ -134,7 +134,7 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
   wait_for_frames_loop.Run();
 
   base::RunLoop wait_for_buffers_retired_loop;
-  EXPECT_CALL(receiver, OnBufferRetired(_))
+  EXPECT_CALL(receiver, DoOnBufferRetired(_))
       .WillRepeatedly(
           Invoke([&received_buffer_ids,
                   &wait_for_buffers_retired_loop](int32_t buffer_id) {

@@ -5,6 +5,8 @@
 #ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_RECEIVER_H_
 
+#include <vector>
+
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
@@ -26,6 +28,7 @@ class MockReceiver : public mojom::Receiver {
       int32_t frame_feedback_id,
       mojom::ScopedAccessPermissionPtr access_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
+  void OnBufferRetired(int32_t buffer_id) override;
 
   MOCK_METHOD2(DoOnNewBuffer,
                void(int32_t, media::mojom::VideoBufferHandlePtr*));
@@ -34,7 +37,7 @@ class MockReceiver : public mojom::Receiver {
                     int32_t frame_feedback_id,
                     mojom::ScopedAccessPermissionPtr*,
                     media::mojom::VideoFrameInfoPtr*));
-  MOCK_METHOD1(OnBufferRetired, void(int32_t));
+  MOCK_METHOD1(DoOnBufferRetired, void(int32_t));
   MOCK_METHOD1(OnError, void(media::VideoCaptureError));
   MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason));
   MOCK_METHOD1(OnLog, void(const std::string&));
@@ -43,6 +46,7 @@ class MockReceiver : public mojom::Receiver {
 
  private:
   const mojo::Binding<mojom::Receiver> binding_;
+  std::vector<int32_t> known_buffer_ids_;
 };
 
 }  // namespace video_capture
