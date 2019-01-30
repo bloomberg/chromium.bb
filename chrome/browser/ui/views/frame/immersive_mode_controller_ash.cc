@@ -198,7 +198,9 @@ void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
 
   // Don't use immersive mode as long as we are in the locked fullscreen mode
   // since immersive shows browser controls which allow exiting the mode.
-  if (ash::IsWindowTrustedPinned(widget->GetNativeWindow()))
+  aura::Window* window = widget->GetNativeWindow();
+  window = features::IsUsingWindowService() ? window->GetRootWindow() : window;
+  if (ash::IsWindowTrustedPinned(window))
     return;
 
   // Enable immersive mode if the widget is activated. Do not disable immersive
