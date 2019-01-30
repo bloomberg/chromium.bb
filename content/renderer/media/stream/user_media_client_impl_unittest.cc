@@ -899,7 +899,7 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
 
   const AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
-  EXPECT_EQ(EchoCancellationType::kEchoCancellationAec3,
+  EXPECT_EQ(EchoCancellationType::kEchoCancellationAec2,
             properties.echo_cancellation_type);
   EXPECT_FALSE(properties.goog_audio_mirroring);
   EXPECT_TRUE(properties.goog_auto_gain_control);
