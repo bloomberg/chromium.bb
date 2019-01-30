@@ -9,12 +9,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/jni_string.h"
 #include "base/callback.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContactsDialogHost_jni.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/android/window_android.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -28,6 +31,10 @@ ContactsProviderAndroid::ContactsProviderAndroid(
     return;
   if (!web_contents->GetTopLevelNativeWindow())
     return;
+
+  formatted_origin_ = url_formatter::FormatUrlForSecurityDisplay(
+      render_frame_host->GetLastCommittedOrigin().GetURL(),
+      url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 
   dialog_.Reset(Java_ContactsDialogHost_create(
       env, web_contents->GetTopLevelNativeWindow()->GetJavaObject(),
@@ -54,8 +61,9 @@ void ContactsProviderAndroid::Select(
   callback_ = std::move(callback);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContactsDialogHost_showDialog(env, dialog_, multiple, include_names,
-                                     include_emails, include_tel);
+  Java_ContactsDialogHost_showDialog(
+      env, dialog_, multiple, include_names, include_emails, include_tel,
+      base::android::ConvertUTF16ToJavaString(env, formatted_origin_));
 }
 
 void ContactsProviderAndroid::AddContact(

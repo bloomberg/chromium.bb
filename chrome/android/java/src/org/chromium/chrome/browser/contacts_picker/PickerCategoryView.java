@@ -113,7 +113,8 @@ public class PickerCategoryView extends RelativeLayout
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public PickerCategoryView(Context context, boolean multiSelectionAllowed,
-            boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel) {
+            boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
+            String formattedOrigin) {
         super(context);
 
         mActivity = (ChromeActivity) context;
@@ -136,7 +137,7 @@ public class PickerCategoryView extends RelativeLayout
         mSelectableListLayout =
                 (SelectableListLayout<ContactDetails>) root.findViewById(R.id.selectable_list);
 
-        mPickerAdapter = new PickerAdapter(this, context.getContentResolver());
+        mPickerAdapter = new PickerAdapter(this, context.getContentResolver(), formattedOrigin);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
         int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
                                             : R.string.contacts_picker_select_contact;
