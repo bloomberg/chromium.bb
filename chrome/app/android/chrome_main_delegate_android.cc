@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
-#include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
@@ -23,14 +22,6 @@
 
 using safe_browsing::SafeBrowsingApiHandler;
 
-namespace {
-
-content::BrowserMediaPlayerManager* CreateRemoteMediaPlayerManager(
-    content::RenderFrameHost* render_frame_host) {
-  return new remote_media::RemoteMediaPlayerManager(render_frame_host);
-}
-
-} // namespace
 
 // ChromeMainDelegateAndroid is created when the library is loaded. It is always
 // done in the process's main Java thread. But for non browser process, e.g.
@@ -48,8 +39,6 @@ bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
 
   policy::android::AndroidCombinedPolicyProvider::SetShouldWaitForPolicy(true);
   SetChromeSpecificCommandLineFlags();
-  content::BrowserMediaPlayerManager::RegisterFactory(
-      &CreateRemoteMediaPlayerManager);
 
   return ChromeMainDelegate::BasicStartupComplete(exit_code);
 }

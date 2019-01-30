@@ -47,9 +47,6 @@ class MediaObserver;
 class RemotePlaybackClientWrapper;
 class RendererWebMediaPlayerDelegate;
 class WebEncryptedMediaClientImpl;
-#if defined(OS_ANDROID)
-class RendererMediaPlayerManager;
-#endif
 }
 
 namespace service_manager {
@@ -64,10 +61,6 @@ namespace content {
 class RenderFrameImpl;
 class MediaInterfaceFactory;
 class MediaStreamRendererFactory;
-
-#if defined(OS_ANDROID)
-class RendererMediaPlayerManager;
-#endif
 
 // Assist to RenderFrameImpl in creating various media clients.
 class MediaFactory {
@@ -149,10 +142,6 @@ class MediaFactory {
 
   media::DecoderFactory* GetDecoderFactory();
 
-#if defined(OS_ANDROID)
-  RendererMediaPlayerManager* GetMediaPlayerManager();
-#endif
-
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   media::mojom::RemoterFactory* GetRemoterFactory();
 #endif
@@ -177,16 +166,6 @@ class MediaFactory {
   // Lifetime matches that of the owning |render_frame_|. Will always be valid
   // once assigned.
   service_manager::InterfaceProvider* remote_interfaces_ = nullptr;
-
-#if defined(OS_ANDROID)
-  // Manages media players and sessions in this render frame for communicating
-  // with the real media player and sessions in the browser process.
-  // Lifetime is tied to the RenderFrame via the RenderFrameObserver interface.
-  // NOTE: This currently only being used in the case where we are casting. See
-  // also WebMediaPlayerCast (renderer side) and RemoteMediaPlayerManager
-  // (browser side).
-  RendererMediaPlayerManager* media_player_manager_ = nullptr;
-#endif
 
   // Manages play, pause notifications for WebMediaPlayer implementations; its
   // lifetime is tied to the RenderFrame via the RenderFrameObserver interface.
