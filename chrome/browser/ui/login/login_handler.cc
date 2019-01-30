@@ -516,7 +516,8 @@ void LoginHandler::MaybeSetUpLoginPrompt(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The request may have been handled while the WebRequest API was processing.
-  if (!web_contents() || WasAuthHandled() || should_cancel) {
+  if (!web_contents() || !web_contents()->GetDelegate() || WasAuthHandled() ||
+      should_cancel) {
     CancelAuth();
     return;
   }
