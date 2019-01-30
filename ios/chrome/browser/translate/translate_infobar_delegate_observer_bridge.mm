@@ -29,6 +29,6 @@ void TranslateInfobarDelegateObserverBridge::OnTranslateStepChanged(
 }
 
 BOOL TranslateInfobarDelegateObserverBridge::IsDeclinedByUser() {
-  return [owner_
-      translateInfoBarDelegateIsDeclinedByUser:translate_infobar_delegate_];
+  return [owner_ translateInfoBarDelegateDidDismissWithoutInteraction:
+                     translate_infobar_delegate_];
 }

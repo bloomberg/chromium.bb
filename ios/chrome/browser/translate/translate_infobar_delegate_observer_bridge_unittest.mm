@@ -102,7 +102,7 @@ class MockTranslateInfoBarDelegateFactory {
 
 @property(nonatomic) translate::TranslateErrors::Type errorType;
 
-@property(nonatomic) BOOL onIsDeclinedByUserCalled;
+@property(nonatomic) BOOL onDidDismissWithoutInteractionCalled;
 
 @end
 
@@ -118,9 +118,9 @@ class MockTranslateInfoBarDelegateFactory {
   self.errorType = errorType;
 }
 
-- (BOOL)translateInfoBarDelegateIsDeclinedByUser:
+- (BOOL)translateInfoBarDelegateDidDismissWithoutInteraction:
     (translate::TranslateInfoBarDelegate*)delegate {
-  self.onIsDeclinedByUserCalled = YES;
+  self.onDidDismissWithoutInteractionCalled = YES;
   return YES;
 }
 
@@ -176,8 +176,9 @@ TEST_F(TranslateInfobarDelegateObserverBridgeTest, OnTranslateStepChanged) {
 }
 
 // Tests that |IsDeclinedByUser| call is forwarded by the observer bridge.
-TEST_F(TranslateInfobarDelegateObserverBridgeTest, IsDeclinedByUser) {
-  ASSERT_FALSE(GetDelegateObserver().onIsDeclinedByUserCalled);
+TEST_F(TranslateInfobarDelegateObserverBridgeTest,
+       DidDismissWithoutInteraction) {
+  ASSERT_FALSE(GetDelegateObserver().onDidDismissWithoutInteractionCalled);
   GetObserverBridge()->IsDeclinedByUser();
-  EXPECT_TRUE(GetDelegateObserver().onIsDeclinedByUserCalled);
+  EXPECT_TRUE(GetDelegateObserver().onDidDismissWithoutInteractionCalled);
 }
