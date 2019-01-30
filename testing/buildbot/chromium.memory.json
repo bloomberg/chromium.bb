@@ -4251,16 +4251,6 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 31
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=Mash",
           "--disable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
@@ -4276,6 +4266,19 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "non_network_service_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--disable-features=NetworkService",
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-print-test-stdio=always"
@@ -4289,6 +4292,7 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -4301,6 +4305,7 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
@@ -4558,8 +4563,10 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--test-launcher-print-test-stdio=always"
         ],
+        "name": "non_network_service_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -4630,8 +4637,10 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--test-launcher-print-test-stdio=always"
         ],
+        "name": "non_network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -4640,6 +4649,7 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=SingleProcessMash",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -4954,6 +4964,7 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_sync_integration_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5299,22 +5310,6 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 25
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--enable-features=Mash",
           "--disable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
@@ -5336,6 +5331,25 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "non_network_service_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--disable-features=NetworkService",
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-print-test-stdio=always"
@@ -5355,6 +5369,7 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -5373,6 +5388,7 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
@@ -5786,8 +5802,10 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--test-launcher-print-test-stdio=always"
         ],
+        "name": "non_network_service_extensions_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5906,8 +5924,10 @@
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--test-launcher-print-test-stdio=always"
         ],
+        "name": "non_network_service_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -5916,12 +5936,13 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 5
+          "shards": 3
         },
         "test": "interactive_ui_tests"
       },
       {
         "args": [
+          "--disable-features=NetworkService",
           "--enable-features=SingleProcessMash",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -6425,6 +6446,7 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_sync_integration_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
