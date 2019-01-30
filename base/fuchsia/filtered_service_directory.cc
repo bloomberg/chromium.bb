@@ -5,12 +5,11 @@
 #include "base/fuchsia/filtered_service_directory.h"
 
 #include <lib/fdio/util.h>
-#include <lib/zx/channel.h>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 
 namespace base {
 namespace fuchsia {
@@ -18,13 +17,8 @@ namespace fuchsia {
 FilteredServiceDirectory::FilteredServiceDirectory(
     const ServiceDirectoryClient* directory)
     : directory_(directory) {
-  zx::channel server_channel;
-  zx_status_t status =
-      zx::channel::create(0, &server_channel, &outgoing_directory_client_);
-  ZX_CHECK(status == ZX_OK, status) << "zx_channel_create()";
-
-  outgoing_directory_ =
-      std::make_unique<ServiceDirectory>(std::move(server_channel));
+  outgoing_directory_ = std::make_unique<ServiceDirectory>(
+      outgoing_directory_client_.NewRequest());
 }
 
 FilteredServiceDirectory::~FilteredServiceDirectory() {
@@ -38,19 +32,18 @@ void FilteredServiceDirectory::AddService(const char* service_name) {
                           base::Unretained(this), service_name));
 }
 
-zx::channel FilteredServiceDirectory::ConnectClient() {
-  zx::channel server_channel;
-  zx::channel client_channel;
-  zx_status_t status = zx::channel::create(0, &server_channel, &client_channel);
-  ZX_CHECK(status == ZX_OK, status) << "zx_channel_create()";
+fidl::InterfaceHandle<::fuchsia::io::Directory>
+FilteredServiceDirectory::ConnectClient() {
+  fidl::InterfaceHandle<::fuchsia::io::Directory> client;
 
   // ServiceDirectory puts public services under ./public . Connect to that
   // directory and return client handle for the connection,
-  status = fdio_service_connect_at(outgoing_directory_client_.get(), "public",
-                                   server_channel.release());
+  zx_status_t status = fdio_service_connect_at(
+      outgoing_directory_client_.channel().get(), "public",
+      client.NewRequest().TakeChannel().release());
   ZX_CHECK(status == ZX_OK, status) << "fdio_service_connect_at()";
 
-  return client_channel;
+  return client;
 }
 
 void FilteredServiceDirectory::HandleRequest(const char* service_name,

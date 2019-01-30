@@ -5,7 +5,8 @@
 #ifndef SERVICES_SERVICE_MANAGER_SANDBOX_FUCHSIA_SANDBOX_POLICY_FUCHSIA_H_
 #define SERVICES_SERVICE_MANAGER_SANDBOX_FUCHSIA_SANDBOX_POLICY_FUCHSIA_H_
 
-#include <lib/zx/channel.h>
+#include <fuchsia/io/cpp/fidl.h>
+#include <lib/fidl/cpp/interface_handle.h>
 
 #include "base/memory/ref_counted.h"
 #include "services/service_manager/sandbox/export.h"
@@ -32,9 +33,11 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
   // IO thread.
   void Initialize(service_manager::SandboxType type);
 
-  // Sets the service directory that's passed to the child process as /svc. Must
-  // be used only for the web context process.
-  void SetServiceDirectory(zx::channel service_directory_client_channel);
+  // Sets the service directory to pass to the child process when launching it.
+  // This is only supported for SANDBOX_TYPE_WEB_CONTEXT processes.  If this is
+  // not called for a WEB_CONTEXT process then it will receive no services.
+  void SetServiceDirectory(
+      fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client);
 
   // Modifies the process launch |options| to achieve  the level of
   // isolation appropriate for current the sandbox type. The caller may then add
@@ -47,7 +50,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
 
   // Services directory used for the /svc namespace of the child process.
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;
-  zx::channel service_directory_client_channel_;
+  fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client_;
   scoped_refptr<base::SequencedTaskRunner> service_directory_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxPolicyFuchsia);
