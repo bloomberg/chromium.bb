@@ -166,7 +166,8 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
       device_sync::DeviceSyncClient* device_sync_client,
       PrefService* pref_service,
       base::Clock* clock,
-      std::unique_ptr<base::OneShotTimer> timer) override {
+      std::unique_ptr<base::OneShotTimer> retry_timer,
+      std::unique_ptr<base::OneShotTimer> sync_timer) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_host_backend_delegate_factory_->instance(),
               host_backend_delegate);
