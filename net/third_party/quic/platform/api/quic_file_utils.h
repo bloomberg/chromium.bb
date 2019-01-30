@@ -21,6 +21,7 @@ QUIC_EXPORT_PRIVATE std::vector<QuicString> ReadFileContents(
 // Reads the contents of |filename| as a string into |contents|.
 QUIC_EXPORT_PRIVATE void ReadFileContents(QuicStringPiece filename,
                                           QuicString* contents);
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_FILE_UTILS_H_

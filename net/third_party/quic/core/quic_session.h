@@ -201,14 +201,14 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Sends a WINDOW_UPDATE frame.
   virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
 
-  // Create and transmit a STOP_SENDING frame
-  virtual void SendStopSending(uint16_t code, QuicStreamId stream_id);
-
   // Send a MAX_STREAM_ID frame.
   void SendMaxStreamId(QuicStreamId max_allowed_incoming_id);
 
   // Send a STREAM_ID_BLOCKED frame.
   void SendStreamIdBlocked(QuicStreamId max_allowed_outgoing_id);
+
+  // Create and transmit a STOP_SENDING frame
+  virtual void SendStopSending(uint16_t code, QuicStreamId stream_id);
 
   // Removes the stream associated with 'stream_id' from the active stream map.
   virtual void CloseStream(QuicStreamId stream_id);

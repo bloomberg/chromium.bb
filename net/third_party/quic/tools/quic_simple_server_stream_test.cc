@@ -131,8 +131,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     const QuicHeaderList& header_list));
   MOCK_METHOD2(OnStreamHeadersPriority,
                void(QuicStreamId stream_id, spdy::SpdyPriority priority));
-  // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
-  // cannot be mocked directly.
+  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
+  // mocked directly.
   size_t WriteHeaders(QuicStreamId id,
                       spdy::SpdyHeaderBlock headers,
                       bool fin,
@@ -154,7 +154,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     QuicRstStreamErrorCode error,
                     QuicStreamOffset bytes_written));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
-  // Matchers cannot be used on non-copyable types like spdy::SpdyHeaderBlock.
+  // Matchers cannot be used on non-copyable types like SpdyHeaderBlock.
   void PromisePushResources(
       const QuicString& request_url,
       const std::list<QuicBackendResponse::ServerPushInfo>& resources,

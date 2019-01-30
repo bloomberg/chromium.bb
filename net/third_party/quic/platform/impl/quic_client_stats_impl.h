@@ -6,6 +6,7 @@
 #define NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_CLIENT_STATS_IMPL_H_
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace quic {
 

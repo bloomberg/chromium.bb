@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
 #include "net/third_party/quic/core/crypto/cert_compressor.h"
 #include "net/third_party/quic/core/crypto/chacha20_poly1305_encrypter.h"
 #include "net/third_party/quic/core/crypto/channel_id.h"

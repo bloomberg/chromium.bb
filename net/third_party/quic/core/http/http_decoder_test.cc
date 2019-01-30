@@ -341,8 +341,6 @@ TEST_F(HttpDecoderTest, FrameHeaderPartialDelivery) {
   // Send data.
   EXPECT_CALL(visitor_, OnDataFrameStart(Http3FrameLengths(3, 2048)));
   EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece(input)));
-  // EXPECT_CALL(visitor_,
-  //            OnDataFramePayload(QuicStringPiece(QuicString(2048, 'x'))));
   EXPECT_CALL(visitor_, OnDataFrameEnd());
   EXPECT_EQ(2048u, decoder_.ProcessInput(input.data(), 2048));
   EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());

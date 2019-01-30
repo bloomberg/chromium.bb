@@ -53,6 +53,14 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // immediately.
   void WriteOrBufferBlocked(QuicStreamId id);
 
+  // Tries to send a STREAM_ID_BLOCKED Frame. Buffers the frame if it cannot be
+  // sent immediately.
+  void WriteOrBufferStreamIdBlocked(QuicStreamId id);
+
+  // Tries to send a MAX_STREAM_ID Frame. Buffers the frame if it cannot be sent
+  // immediately.
+  void WriteOrBufferMaxStreamId(QuicStreamId id);
+
   // Tries to send a packet with both a RST_STREAM and, if version 99, an
   // IETF-QUIC STOP_SENDING frame. The frames are buffered if they can not
   // be sent immediately.
@@ -63,14 +71,6 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // Tries to send an IETF-QUIC STOP_SENDING frame. The frame is buffered if it
   // can not be sent immediately.
   void WriteOrBufferStopSending(uint16_t code, QuicStreamId stream_id);
-
-  // Tries to send a STREAM_ID_BLOCKED Frame. Buffers the frame if it cannot be
-  // sent immediately.
-  void WriteOrBufferStreamIdBlocked(QuicStreamId id);
-
-  // Tries to send a MAX_STREAM_ID Frame. Buffers the frame if it cannot be sent
-  // immediately.
-  void WriteOrBufferMaxStreamId(QuicStreamId id);
 
   // Sends a PING_FRAME. Do not send PING if there is buffered frames.
   void WritePing();

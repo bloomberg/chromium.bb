@@ -198,6 +198,7 @@ class QuicClientBase {
       writer_.reset(writer);
     }
   }
+
   void reset_writer() { writer_.reset(); }
 
   ProofVerifier* proof_verifier() const;

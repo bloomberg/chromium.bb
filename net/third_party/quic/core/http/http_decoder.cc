@@ -93,8 +93,6 @@ void HttpDecoder::ReadFrameType(QuicDataReader* reader) {
     return;
   }
 
-  QUIC_DVLOG(1) << "CURRENT FRAME TYPE IS " << current_frame_type_;
-
   state_ = STATE_READING_FRAME_PAYLOAD;
 }
 

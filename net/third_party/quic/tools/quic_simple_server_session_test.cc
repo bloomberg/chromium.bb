@@ -147,8 +147,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                                 crypto_config,
                                 compressed_certs_cache,
                                 quic_simple_server_backend) {}
-  // Methods taking non-copyable types like spdy::SpdyHeaderBlock by value
-  // cannot be mocked directly.
+  // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
+  // mocked directly.
   size_t WritePushPromise(QuicStreamId original_stream_id,
                           QuicStreamId promised_stream_id,
                           spdy::SpdyHeaderBlock headers) override {
