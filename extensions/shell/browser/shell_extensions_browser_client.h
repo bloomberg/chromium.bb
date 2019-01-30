@@ -62,12 +62,12 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   base::FilePath GetBundleResourcePath(
       const network::ResourceRequest& request,
       const base::FilePath& extension_resources_path,
-      int* resource_id) const override;
+      ComponentExtensionResourceInfo* resource_info) const override;
   void LoadResourceFromResourceBundle(
       const network::ResourceRequest& request,
       network::mojom::URLLoaderRequest loader,
       const base::FilePath& resource_relative_path,
-      int resource_id,
+      const ComponentExtensionResourceInfo& resource_info,
       const std::string& content_security_policy,
       network::mojom::URLLoaderClientPtr client,
       bool send_cors_header) override;

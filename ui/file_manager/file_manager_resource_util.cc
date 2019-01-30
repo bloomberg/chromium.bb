@@ -9,7 +9,7 @@
 
 namespace file_manager {
 
-const GritResourceMap* GetFileManagerResources(size_t* size) {
+const GzippedGritResourceMap* GetFileManagerResources(size_t* size) {
   DCHECK(size);
   *size = kFileManagerResourcesSize;
   return kFileManagerResources;

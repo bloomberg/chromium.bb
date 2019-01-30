@@ -57,6 +57,7 @@ class UpdateClient;
 
 namespace extensions {
 
+struct ComponentExtensionResourceInfo;
 class ComponentExtensionResourceManager;
 class Extension;
 class ExtensionCache;
@@ -169,7 +170,7 @@ class ExtensionsBrowserClient {
   virtual base::FilePath GetBundleResourcePath(
       const network::ResourceRequest& request,
       const base::FilePath& extension_resources_path,
-      int* resource_id) const = 0;
+      ComponentExtensionResourceInfo* resource_info) const = 0;
 
   // Creates and starts a URLLoader to load an extension resource from the
   // embedder's resource bundle (.pak) files. Used for component extensions.
@@ -177,7 +178,7 @@ class ExtensionsBrowserClient {
       const network::ResourceRequest& request,
       network::mojom::URLLoaderRequest loader,
       const base::FilePath& resource_relative_path,
-      int resource_id,
+      const ComponentExtensionResourceInfo& resource_info,
       const std::string& content_security_policy,
       network::mojom::URLLoaderClientPtr client,
       bool send_cors_header) = 0;
