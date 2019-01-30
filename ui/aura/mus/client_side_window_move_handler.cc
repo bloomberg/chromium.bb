@@ -94,10 +94,14 @@ void ClientSideWindowMoveHandler::OnMouseEvent(ui::MouseEvent* event) {
   }
   switch (event->type()) {
     case ui::ET_MOUSE_EXITED:
-      if (last_component_ != HTNOWHERE &&
-          !last_shadow_target_.windows().empty()) {
-        client_->SetWindowResizeShadow(last_shadow_target_.Pop(), HTNOWHERE);
+      if (!last_shadow_target_.Contains(
+              static_cast<Window*>(event->target())) ||
+          last_component_ == HTNOWHERE) {
+        return;
       }
+
+      client_->SetWindowResizeShadow(last_shadow_target_.Pop()->GetRootWindow(),
+                                     HTNOWHERE);
       last_component_ = HTNOWHERE;
       break;
 
@@ -114,7 +118,7 @@ void ClientSideWindowMoveHandler::OnMouseEvent(ui::MouseEvent* event) {
       last_component_ = component;
       client_->SetWindowResizeShadow(window->GetRootWindow(), last_component_);
       last_shadow_target_.RemoveAll();
-      last_shadow_target_.Add(window->GetRootWindow());
+      last_shadow_target_.Add(window);
       break;
     }
 
