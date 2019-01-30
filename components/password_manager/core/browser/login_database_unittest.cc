@@ -1874,7 +1874,7 @@ TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
 
 TEST_F(LoginDatabaseTest, NoMetadata) {
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
-      db().GetAllSyncMetadataForTesting();
+      db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
   EXPECT_EQ(0u, metadata_batch->TakeAllMetadata().size());
   EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),
@@ -1901,7 +1901,7 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
       db().UpdateSyncMetadata(syncer::PASSWORDS, kStorageKey2, metadata));
 
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
-      db().GetAllSyncMetadataForTesting();
+      db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
 
   EXPECT_TRUE(metadata_batch->GetModelTypeState().initial_sync_done());
@@ -1917,7 +1917,7 @@ TEST_F(LoginDatabaseTest, GetAllSyncMetadata) {
   model_type_state.set_initial_sync_done(false);
   EXPECT_TRUE(db().UpdateModelTypeState(syncer::PASSWORDS, model_type_state));
 
-  metadata_batch = db().GetAllSyncMetadataForTesting();
+  metadata_batch = db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
   EXPECT_FALSE(metadata_batch->GetModelTypeState().initial_sync_done());
 }
@@ -1939,7 +1939,7 @@ TEST_F(LoginDatabaseTest, WriteThenDeleteSyncMetadata) {
   EXPECT_TRUE(db().ClearSyncMetadata(syncer::PASSWORDS, kStorageKey));
 
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
-      db().GetAllSyncMetadataForTesting();
+      db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
 
   // It shouldn't be there any more.
@@ -1949,7 +1949,7 @@ TEST_F(LoginDatabaseTest, WriteThenDeleteSyncMetadata) {
 
   // Now delete the model type state.
   EXPECT_TRUE(db().ClearModelTypeState(syncer::PASSWORDS));
-  metadata_batch = db().GetAllSyncMetadataForTesting();
+  metadata_batch = db().GetAllSyncMetadata();
   ASSERT_THAT(metadata_batch, testing::NotNull());
 
   EXPECT_EQ(sync_pb::ModelTypeState().SerializeAsString(),

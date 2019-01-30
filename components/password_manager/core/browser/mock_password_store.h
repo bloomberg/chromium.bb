@@ -92,7 +92,7 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD0(CommitTransaction, bool());
   MOCK_METHOD1(ReadAllLogins, bool(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
-  MOCK_METHOD0(GetMetadataStore, syncer::SyncMetadataStore*());
+  MOCK_METHOD0(GetMetadataStore, PasswordStoreSync::MetadataStore*());
 
   PasswordStoreSync* GetSyncInterface() { return this; }
 

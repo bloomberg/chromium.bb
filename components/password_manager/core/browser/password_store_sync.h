@@ -12,13 +12,14 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/sync/model/sync_metadata_store.h"
 
 namespace autofill {
 struct PasswordForm;
 }
 
 namespace syncer {
-class SyncMetadataStore;
+class MetadataBatch;
 }
 
 namespace password_manager {
@@ -41,6 +42,13 @@ enum class DatabaseCleanupResult {
 // thread only.
 class PasswordStoreSync {
  public:
+  class MetadataStore : public syncer::SyncMetadataStore {
+   public:
+    // Read all the stored metadata for passwords and fill |metadata_batch|
+    // with it.
+    virtual std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() = 0;
+  };
+
   PasswordStoreSync();
 
   // TODO(http://crbug.com/925307) Move the following 2 APIs to PasswordStore
@@ -95,7 +103,7 @@ class PasswordStoreSync {
 
   // Returns a SyncMetadataStore that sync machinery would use to persist the
   // sync metadata.
-  virtual syncer::SyncMetadataStore* GetMetadataStore() = 0;
+  virtual MetadataStore* GetMetadataStore() = 0;
 
  protected:
   virtual ~PasswordStoreSync();

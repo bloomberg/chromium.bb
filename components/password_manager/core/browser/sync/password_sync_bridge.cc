@@ -135,10 +135,15 @@ PasswordSyncBridge::PasswordSyncBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       password_store_sync_(password_store_sync) {
   DCHECK(password_store_sync_);
-  // TODO(crbug.com/902349): Read the actual metadata from the PasswordStoreSync
-  // be introducing a new API to read them.
-  this->change_processor()->ModelReadyToSync(
-      std::make_unique<syncer::MetadataBatch>());
+  DCHECK(password_store_sync_->GetMetadataStore());
+  std::unique_ptr<syncer::MetadataBatch> batch =
+      password_store_sync_->GetMetadataStore()->GetAllSyncMetadata();
+  if (!batch) {
+    this->change_processor()->ReportError(
+        {FROM_HERE, "Failed reading passwords metadata from password store."});
+    return;
+  }
+  this->change_processor()->ModelReadyToSync(std::move(batch));
 }
 
 PasswordSyncBridge::~PasswordSyncBridge() = default;

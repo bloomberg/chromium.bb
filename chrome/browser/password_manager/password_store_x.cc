@@ -570,7 +570,8 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginByPrimaryKeySync(
   return PasswordStoreDefault::RemoveLoginByPrimaryKeySync(primary_key);
 }
 
-syncer::SyncMetadataStore* PasswordStoreX::GetMetadataStore() {
+password_manager::PasswordStoreSync::MetadataStore*
+PasswordStoreX::GetMetadataStore() {
   // This method is called from the PasswordSyncBridge which supports only
   // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
   // client is using LogainDatabase instead of the NativeBackend's. It's the
