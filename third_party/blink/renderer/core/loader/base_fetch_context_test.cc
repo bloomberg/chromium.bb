@@ -92,10 +92,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   const SecurityOrigin* GetParentSecurityOrigin() const override {
     return nullptr;
   }
-  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override {
-    return base::make_optional(
-        execution_context_->GetSecurityContext().AddressSpace());
-  }
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override {
     return execution_context_->GetContentSecurityPolicy();
   }
@@ -120,11 +116,12 @@ class BaseFetchContextTest : public testing::Test {
         ->SetUpSecurityContext();
     fetch_context_ =
         MakeGarbageCollected<MockBaseFetchContext>(execution_context_);
-    auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
-        *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-            *execution_context_));
+    resource_fetcher_properties_ =
+        MakeGarbageCollected<TestResourceFetcherProperties>(
+            *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+                *execution_context_));
     resource_fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, fetch_context_,
+        ResourceFetcherInit(*resource_fetcher_properties_, fetch_context_,
                             base::MakeRefCounted<scheduler::FakeTaskRunner>()));
   }
 
@@ -138,6 +135,7 @@ class BaseFetchContextTest : public testing::Test {
   Persistent<ExecutionContext> execution_context_;
   Persistent<MockBaseFetchContext> fetch_context_;
   Persistent<ResourceFetcher> resource_fetcher_;
+  Persistent<TestResourceFetcherProperties> resource_fetcher_properties_;
 };
 
 TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {

@@ -7,7 +7,6 @@
 
 #include "base/optional.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -85,7 +84,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                                                          const KURL&) const = 0;
   virtual const KURL& Url() const = 0;
   virtual const SecurityOrigin* GetParentSecurityOrigin() const = 0;
-  virtual base::Optional<mojom::IPAddressSpace> GetAddressSpace() const = 0;
   virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
   // TODO(yhirano): Remove this.

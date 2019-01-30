@@ -193,7 +193,6 @@ struct FrameFetchContext::FrozenState final
     : GarbageCollectedFinalized<FrozenState> {
   FrozenState(const KURL& url,
               scoped_refptr<const SecurityOrigin> parent_security_origin,
-              const base::Optional<mojom::IPAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
               KURL site_for_cookies,
               scoped_refptr<const SecurityOrigin> top_frame_origin,
@@ -203,7 +202,6 @@ struct FrameFetchContext::FrozenState final
               bool is_svg_image_chrome_client)
       : url(url),
         parent_security_origin(std::move(parent_security_origin)),
-        address_space(address_space),
         content_security_policy(content_security_policy),
         site_for_cookies(site_for_cookies),
         top_frame_origin(std::move(top_frame_origin)),
@@ -214,7 +212,6 @@ struct FrameFetchContext::FrozenState final
 
   const KURL url;
   const scoped_refptr<const SecurityOrigin> parent_security_origin;
-  const base::Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
   const scoped_refptr<const SecurityOrigin> top_frame_origin;
@@ -1074,16 +1071,6 @@ const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
   return parent->GetSecurityContext()->GetSecurityOrigin();
 }
 
-base::Optional<mojom::IPAddressSpace> FrameFetchContext::GetAddressSpace()
-    const {
-  if (GetResourceFetcherProperties().IsDetached())
-    return frozen_state_->address_space;
-  if (!frame_or_imported_document_->GetDocument())
-    return base::nullopt;
-  ExecutionContext* context = frame_or_imported_document_->GetDocument();
-  return base::make_optional(context->GetSecurityContext().AddressSpace());
-}
-
 const ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicy()
     const {
   if (GetResourceFetcherProperties().IsDetached())
@@ -1201,17 +1188,15 @@ FetchContext* FrameFetchContext::Detach() {
 
   if (frame_or_imported_document_->GetDocument()) {
     frozen_state_ = MakeGarbageCollected<FrozenState>(
-        Url(), GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
-        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsSVGImageChromeClient());
+        Url(), GetParentSecurityOrigin(), GetContentSecurityPolicy(),
+        GetSiteForCookies(), GetTopFrameOrigin(), GetClientHintsPreferences(),
+        GetDevicePixelRatio(), GetUserAgent(), IsSVGImageChromeClient());
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = MakeGarbageCollected<FrozenState>(
-        NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
-        GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsSVGImageChromeClient());
+        NullURL(), GetParentSecurityOrigin(), GetContentSecurityPolicy(),
+        GetSiteForCookies(), GetTopFrameOrigin(), GetClientHintsPreferences(),
+        GetDevicePixelRatio(), GetUserAgent(), IsSVGImageChromeClient());
   }
 
   frame_or_imported_document_ = nullptr;

@@ -934,7 +934,8 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithDefaultValues) {
           SecurityOrigin::Create(KURL("https://example.com/")),
           network::mojom::ReferrerPolicy::kDefault,
           "https://example.com/foo.html", HttpsState::kModern,
-          AllowedByNosniff::MimeTypeCheck::kStrict);
+          AllowedByNosniff::MimeTypeCheck::kStrict,
+          mojom::IPAddressSpace::kPublic);
   const auto& original_properties =
       *MakeGarbageCollected<TestResourceFetcherProperties>(
           original_client_settings_object);
@@ -980,7 +981,8 @@ TEST_F(ResourceFetcherTest, DetachedPropertiesWithNonDefaultValues) {
           SecurityOrigin::Create(KURL("https://example.com/")),
           network::mojom::ReferrerPolicy::kDefault,
           "https://example.com/foo.html", HttpsState::kModern,
-          AllowedByNosniff::MimeTypeCheck::kStrict);
+          AllowedByNosniff::MimeTypeCheck::kStrict,
+          mojom::IPAddressSpace::kPublic);
   auto& original_properties =
       *MakeGarbageCollected<TestResourceFetcherProperties>(
           original_client_settings_object);

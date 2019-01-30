@@ -33,14 +33,16 @@ struct CrossThreadFetchClientSettingsObjectData {
       network::mojom::ReferrerPolicy referrer_policy,
       String outgoing_referrer,
       HttpsState https_state,
-      AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script)
+      AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
+      base::Optional<mojom::IPAddressSpace> address_space)
       : base_url(std::move(base_url)),
         security_origin(std::move(security_origin)),
         referrer_policy(referrer_policy),
         outgoing_referrer(std::move(outgoing_referrer)),
         https_state(https_state),
         mime_type_check_for_classic_worker_script(
-            mime_type_check_for_classic_worker_script) {}
+            mime_type_check_for_classic_worker_script),
+        address_space(address_space) {}
 
   const KURL base_url;
   const scoped_refptr<const SecurityOrigin> security_origin;
@@ -49,6 +51,7 @@ struct CrossThreadFetchClientSettingsObjectData {
   const HttpsState https_state;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script;
+  const base::Optional<mojom::IPAddressSpace> address_space;
 };
 
 // This takes a partial snapshot of the execution context's states so that an
@@ -73,7 +76,8 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       network::mojom::ReferrerPolicy referrer_policy,
       const String& outgoing_referrer,
       HttpsState https_state,
-      AllowedByNosniff::MimeTypeCheck);
+      AllowedByNosniff::MimeTypeCheck,
+      base::Optional<mojom::IPAddressSpace> address_space);
 
   ~FetchClientSettingsObjectSnapshot() override = default;
 
@@ -89,6 +93,10 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   }
   HttpsState GetHttpsState() const override { return https_state_; }
 
+  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override {
+    return address_space_;
+  }
+
   AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
       const override {
     return mime_type_check_for_classic_worker_script_;
@@ -99,7 +107,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
     return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
         base_url_.Copy(), security_origin_->IsolatedCopy(), referrer_policy_,
         outgoing_referrer_.IsolatedCopy(), https_state_,
-        mime_type_check_for_classic_worker_script_);
+        mime_type_check_for_classic_worker_script_, address_space_);
   }
 
  private:
@@ -110,6 +118,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const HttpsState https_state_;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script_;
+  const base::Optional<mojom::IPAddressSpace> address_space_;
 };
 
 }  // namespace blink
