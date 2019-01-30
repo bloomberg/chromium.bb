@@ -1199,7 +1199,7 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
 }
 
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceEGL:RealSwapBuffers",
       "width", GetSize().width(),
       "height", GetSize().height());
@@ -1219,7 +1219,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers(
     new_frame_id = -1;
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback, new_frame_id);
+      presentation_helper_.get(), std::move(callback), new_frame_id);
 
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
     DVLOG(1) << "eglSwapBuffers failed with error "
@@ -1500,7 +1500,7 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
 
 gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
     const std::vector<int>& rects,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   DCHECK(supports_swap_buffer_with_damage_);
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
@@ -1508,7 +1508,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffersWithDamage(
   }
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
   if (!eglSwapBuffersWithDamageKHR(GetDisplay(), surface_,
                                    const_cast<EGLint*>(rects.data()),
                                    static_cast<EGLint>(rects.size() / 4))) {
@@ -1524,7 +1524,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   DCHECK(supports_post_sub_buffer_);
   if (!CommitAndClearPendingOverlays()) {
     DVLOG(1) << "Failed to commit pending overlay planes.";
@@ -1538,7 +1538,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(
   }
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
     DVLOG(1) << "eglPostSubBufferNV failed with error "
              << GetLastEGLErrorString();
@@ -1556,13 +1556,13 @@ bool NativeViewGLSurfaceEGL::SupportsCommitOverlayPlanes() {
 }
 
 gfx::SwapResult NativeViewGLSurfaceEGL::CommitOverlayPlanes(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   DCHECK(SupportsCommitOverlayPlanes());
   // Here we assume that the overlays scheduled on this surface will display
   // themselves to the screen right away in |CommitAndClearPendingOverlays|,
   // rather than being queued and waiting for a "swap" signal.
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
   if (!CommitAndClearPendingOverlays())
     scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
   return scoped_swap_buffers.result();
@@ -1697,7 +1697,7 @@ bool PbufferGLSurfaceEGL::IsOffscreen() {
 }
 
 gfx::SwapResult PbufferGLSurfaceEGL::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   NOTREACHED() << "Attempted to call SwapBuffers on a PbufferGLSurfaceEGL.";
   return gfx::SwapResult::SWAP_FAILED;
 }
@@ -1773,8 +1773,7 @@ bool SurfacelessEGL::IsSurfaceless() const {
   return true;
 }
 
-gfx::SwapResult SurfacelessEGL::SwapBuffers(
-    const PresentationCallback& callback) {
+gfx::SwapResult SurfacelessEGL::SwapBuffers(PresentationCallback callback) {
   LOG(ERROR) << "Attempted to call SwapBuffers with SurfacelessEGL.";
   return gfx::SwapResult::SWAP_FAILED;
 }

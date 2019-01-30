@@ -45,12 +45,12 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
               ColorSpace color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
                                 int height,
-                                const PresentationCallback& callback) override;
+                                PresentationCallback callback) override;
   bool SupportsPostSubBuffer() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
@@ -76,9 +76,9 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   ~ImageTransportSurfaceOverlayMac() override;
 
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect,
-                                      const PresentationCallback& callback);
+                                      PresentationCallback callback);
   void ApplyBackpressure();
-  void BufferPresented(const PresentationCallback& callback,
+  void BufferPresented(PresentationCallback callback,
                        const gfx::PresentationFeedback& feedback);
 
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;

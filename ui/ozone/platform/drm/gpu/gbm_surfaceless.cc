@@ -56,8 +56,7 @@ bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
   return true;
 }
 
-gfx::SwapResult GbmSurfaceless::SwapBuffers(
-    const PresentationCallback& callback) {
+gfx::SwapResult GbmSurfaceless::SwapBuffers(PresentationCallback callback) {
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
@@ -96,26 +95,25 @@ bool GbmSurfaceless::SupportsPlaneGpuFences() const {
   return supports_plane_gpu_fences_;
 }
 
-gfx::SwapResult GbmSurfaceless::PostSubBuffer(
-    int x,
-    int y,
-    int width,
-    int height,
-    const PresentationCallback& callback) {
+gfx::SwapResult GbmSurfaceless::PostSubBuffer(int x,
+                                              int y,
+                                              int width,
+                                              int height,
+                                              PresentationCallback callback) {
   // The actual sub buffer handling is handled at higher layers.
   NOTREACHED();
   return gfx::SwapResult::SWAP_FAILED;
 }
 
 void GbmSurfaceless::SwapBuffersAsync(
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
   TRACE_EVENT0("drm", "GbmSurfaceless::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
-    completion_callback.Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
     // Notify the caller, the buffer is never presented on a screen.
-    presentation_callback.Run(gfx::PresentationFeedback::Failure());
+    std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
 
@@ -125,8 +123,8 @@ void GbmSurfaceless::SwapBuffersAsync(
   unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
-  frame->completion_callback = completion_callback;
-  frame->presentation_callback = presentation_callback;
+  frame->completion_callback = std::move(completion_callback);
+  frame->presentation_callback = std::move(presentation_callback);
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 
   // TODO(dcastagna): Remove the following workaround once we get explicit sync
@@ -167,10 +165,11 @@ void GbmSurfaceless::PostSubBufferAsync(
     int y,
     int width,
     int height,
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
   // The actual sub buffer handling is handled at higher layers.
-  SwapBuffersAsync(completion_callback, presentation_callback);
+  SwapBuffersAsync(std::move(completion_callback),
+                   std::move(presentation_callback));
 }
 
 EGLConfig GbmSurfaceless::GetConfig() {

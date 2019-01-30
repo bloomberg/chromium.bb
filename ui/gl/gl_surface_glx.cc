@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_surface_glx.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -675,11 +675,11 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 gfx::SwapResult NativeViewGLSurfaceGLX::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   TRACE_EVENT2("gpu", "NativeViewGLSurfaceGLX:RealSwapBuffers", "width",
                GetSize().width(), "height", GetSize().height());
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
 
   XDisplay* display = gfx::GetXDisplay();
   glXSwapBuffers(display, GetDrawableHandle());
@@ -731,11 +731,11 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
 
   GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
   glXCopySubBufferMESA(gfx::GetXDisplay(), GetDrawableHandle(), x, y, width,
                        height);
   return scoped_swap_buffers.result();
@@ -837,7 +837,7 @@ bool UnmappedNativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 gfx::SwapResult UnmappedNativeViewGLSurfaceGLX::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   NOTREACHED() << "Attempted to call SwapBuffers on an unmapped window.";
   return gfx::SwapResult::SWAP_FAILED;
 }

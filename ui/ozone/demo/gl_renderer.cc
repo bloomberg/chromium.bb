@@ -55,14 +55,14 @@ void GlRenderer::RenderFrame() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (surface_->SupportsAsyncSwap()) {
-    surface_->SwapBuffersAsync(base::Bind(&GlRenderer::PostRenderFrameTask,
-                                          weak_ptr_factory_.GetWeakPtr()),
-                               base::Bind(&GlRenderer::OnPresentation,
-                                          weak_ptr_factory_.GetWeakPtr()));
+    surface_->SwapBuffersAsync(base::BindOnce(&GlRenderer::PostRenderFrameTask,
+                                              weak_ptr_factory_.GetWeakPtr()),
+                               base::BindOnce(&GlRenderer::OnPresentation,
+                                              weak_ptr_factory_.GetWeakPtr()));
   } else {
     PostRenderFrameTask(
-        surface_->SwapBuffers(base::Bind(&GlRenderer::OnPresentation,
-                                         weak_ptr_factory_.GetWeakPtr())),
+        surface_->SwapBuffers(base::BindOnce(&GlRenderer::OnPresentation,
+                                             weak_ptr_factory_.GetWeakPtr())),
         nullptr);
   }
 }

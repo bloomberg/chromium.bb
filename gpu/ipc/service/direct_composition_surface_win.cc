@@ -8,6 +8,8 @@
 #include <dcomptypes.h>
 #include <dxgi1_6.h>
 
+#include <utility>
+
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
@@ -1871,9 +1873,9 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
 }
 
 gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   gl::GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
-      presentation_helper_.get(), callback);
+      presentation_helper_.get(), std::move(callback));
 
   bool succeeded = true;
   if (root_surface_->SwapBuffers(PresentationCallback()) ==
@@ -1900,10 +1902,10 @@ gfx::SwapResult DirectCompositionSurfaceWin::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   // The arguments are ignored because SetDrawRectangle specified the area to
   // be swapped.
-  return SwapBuffers(callback);
+  return SwapBuffers(std::move(callback));
 }
 
 gfx::VSyncProvider* DirectCompositionSurfaceWin::GetVSyncProvider() {

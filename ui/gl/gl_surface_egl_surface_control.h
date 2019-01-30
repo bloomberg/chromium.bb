@@ -41,15 +41,13 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
               ColorSpace color_space,
               bool has_alpha) override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
-  void SwapBuffersAsync(
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
-  gfx::SwapResult CommitOverlayPlanes(
-      const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
+  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
+                        PresentationCallback presentation_callback) override;
+  gfx::SwapResult CommitOverlayPlanes(PresentationCallback callback) override;
   void CommitOverlayPlanesAsync(
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
+      SwapCompletionCallback completion_callback,
+      PresentationCallback presentation_callback) override;
   gfx::Size GetSize() override;
   bool OnMakeCurrent(GLContext* context) override;
   bool ScheduleOverlayPlane(int z_order,
@@ -101,9 +99,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   };
   using ResourceRefs = base::flat_map<ASurfaceControl*, ResourceRef>;
 
-  void CommitPendingTransaction(
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& callback);
+  void CommitPendingTransaction(SwapCompletionCallback completion_callback,
+                                PresentationCallback callback);
 
   // Called on the |gpu_task_runner_| when a transaction is acked by the
   // framework.

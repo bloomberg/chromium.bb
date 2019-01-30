@@ -4,6 +4,8 @@
 
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -51,20 +53,20 @@ bool PassThroughImageTransportSurface::Initialize(gl::GLSurfaceFormat format) {
 }
 
 gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
   gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffers(
-      base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   response.result = result;
   FinishSwapBuffers(std::move(response));
   return result;
 }
 
 void PassThroughImageTransportSurface::SwapBuffersAsync(
-    const SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
 
@@ -73,21 +75,23 @@ void PassThroughImageTransportSurface::SwapBuffersAsync(
   // is destroyed. However, this also means that the callback can be run on
   // the calling thread only.
   gl::GLSurfaceAdapter::SwapBuffersAsync(
-      base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
-                 weak_ptr_factory_.GetWeakPtr(), completion_callback,
-                 base::Passed(&response)),
-      base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
+      base::BindOnce(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(completion_callback), std::move(response)),
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(presentation_callback)));
 }
 
 gfx::SwapResult PassThroughImageTransportSurface::SwapBuffersWithBounds(
     const std::vector<gfx::Rect>& rects,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
   gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffersWithBounds(
-      rects, base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                        weak_ptr_factory_.GetWeakPtr(), callback));
+      rects,
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   response.result = result;
   FinishSwapBuffers(std::move(response));
   return result;
@@ -98,13 +102,13 @@ gfx::SwapResult PassThroughImageTransportSurface::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
   gfx::SwapResult result = gl::GLSurfaceAdapter::PostSubBuffer(
       x, y, width, height,
-      base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   response.result = result;
   FinishSwapBuffers(std::move(response));
 
@@ -116,42 +120,44 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
     int y,
     int width,
     int height,
-    const GLSurface::SwapCompletionCallback& completion_callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback completion_callback,
+    PresentationCallback presentation_callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
   gl::GLSurfaceAdapter::PostSubBufferAsync(
       x, y, width, height,
-      base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
-                 weak_ptr_factory_.GetWeakPtr(), completion_callback,
-                 base::Passed(&response)),
-      base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
+      base::BindOnce(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(completion_callback), std::move(response)),
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(presentation_callback)));
 }
 
 gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
   gfx::SwapResult result = gl::GLSurfaceAdapter::CommitOverlayPlanes(
-      base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   response.result = result;
   FinishSwapBuffers(std::move(response));
   return result;
 }
 
 void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
-    const GLSurface::SwapCompletionCallback& callback,
-    const PresentationCallback& presentation_callback) {
+    SwapCompletionCallback callback,
+    PresentationCallback presentation_callback) {
   gfx::SwapResponse response;
   StartSwapBuffers(&response);
   gl::GLSurfaceAdapter::CommitOverlayPlanesAsync(
-      base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
-                 weak_ptr_factory_.GetWeakPtr(), callback,
-                 base::Passed(&response)),
-      base::Bind(&PassThroughImageTransportSurface::BufferPresented,
-                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
+      base::BindOnce(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(response)),
+      base::BindOnce(&PassThroughImageTransportSurface::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(presentation_callback)));
 }
 
 void PassThroughImageTransportSurface::SetVSyncEnabled(bool enabled) {
@@ -218,7 +224,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
 }
 
 void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
-    GLSurface::SwapCompletionCallback callback,
+    SwapCompletionCallback callback,
     gfx::SwapResponse response,
     gfx::SwapResult result,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
@@ -230,14 +236,14 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
     gpu_fence->Wait();
   response.result = result;
   FinishSwapBuffers(std::move(response));
-  callback.Run(result, nullptr);
+  std::move(callback).Run(result, nullptr);
 }
 
 void PassThroughImageTransportSurface::BufferPresented(
-    const GLSurface::PresentationCallback& callback,
+    GLSurface::PresentationCallback callback,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(allow_running_presentation_callback_);
-  callback.Run(feedback);
+  std::move(callback).Run(feedback);
   if (delegate_)
     delegate_->BufferPresented(feedback);
 }

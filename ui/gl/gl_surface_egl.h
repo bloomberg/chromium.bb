@@ -122,7 +122,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
               bool has_alpha) override;
   bool Recreate() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::Size GetSize() override;
   EGLSurface GetHandle() override;
   bool SupportsPostSubBuffer() override;
@@ -130,10 +130,9 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
                                 int y,
                                 int width,
                                 int height,
-                                const PresentationCallback& callback) override;
+                                PresentationCallback callback) override;
   bool SupportsCommitOverlayPlanes() override;
-  gfx::SwapResult CommitOverlayPlanes(
-      const PresentationCallback& callback) override;
+  gfx::SwapResult CommitOverlayPlanes(PresentationCallback callback) override;
   bool OnMakeCurrent(GLContext* context) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   void SetVSyncEnabled(bool enabled) override;
@@ -166,7 +165,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
   bool enable_fixed_size_angle_ = true;
 
   gfx::SwapResult SwapBuffersWithDamage(const std::vector<int>& rects,
-                                        const PresentationCallback& callback);
+                                        PresentationCallback callback);
 
  private:
   struct SwapInfo {
@@ -221,7 +220,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   bool Initialize(GLSurfaceFormat format) override;
   void Destroy() override;
   bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -252,7 +251,7 @@ class GL_EXPORT SurfacelessEGL : public GLSurfaceEGL {
   void Destroy() override;
   bool IsOffscreen() override;
   bool IsSurfaceless() const override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
   gfx::Size GetSize() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,

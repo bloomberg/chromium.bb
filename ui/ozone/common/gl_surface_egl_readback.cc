@@ -42,7 +42,7 @@ bool GLSurfaceEglReadback::IsOffscreen() {
 }
 
 gfx::SwapResult GLSurfaceEglReadback::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   const gfx::Size size = GetSize();
   glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE,
                pixels_.get());
