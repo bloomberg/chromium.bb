@@ -82,14 +82,6 @@ source_set("interactive_ui_tests_filters") {
   ]
 }
 
-source_set("sync_integration_tests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/mojo.fyi.chromeos.network_sync_integration_tests.filter",
-  ]
-}
-
 source_set("webview_cts_tests_filters") {
   testonly = true
 
