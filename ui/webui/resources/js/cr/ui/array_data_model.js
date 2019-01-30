@@ -15,27 +15,27 @@
 // <include src="../../assert.js">
 
 cr.define('cr.ui', function() {
-  /** @const */ const EventTarget = cr.EventTarget;
-
   /**
    * A data model that wraps a simple array and supports sorting by storing
    * initial indexes of elements for each position in sorted array.
-   * @param {!Array} array The underlying array.
-   * @constructor
-   * @extends {cr.EventTarget}
    */
-  function ArrayDataModel(array) {
-    this.array_ = array;
-    this.indexes_ = [];
-    this.compareFunctions_ = {};
+  class ArrayDataModel extends cr.EventTarget {
+    /**
+     * @param {!Array} array The underlying array.
+     */
+    constructor(array) {
+      super();
+      this.array_ = array;
+      this.indexes_ = [];
+      this.compareFunctions_ = {};
 
-    for (let i = 0; i < array.length; i++) {
-      this.indexes_.push(i);
+      /** @type {?Object} */
+      this.sortStatus_;
+
+      for (let i = 0; i < array.length; i++) {
+        this.indexes_.push(i);
+      }
     }
-  }
-
-  ArrayDataModel.prototype = {
-    __proto__: EventTarget.prototype,
 
     /**
      * The length of the data model.
@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
      */
     get length() {
       return this.array_.length;
-    },
+    }
 
     /**
      * Returns the item at the given index.
@@ -52,21 +52,21 @@ cr.define('cr.ui', function() {
      * @param {number} index The index of the element to get.
      * @return {*} The element at the given index.
      */
-    item: function(index) {
+    item(index) {
       if (index >= 0 && index < this.length) {
         return this.array_[this.indexes_[index]];
       }
       return undefined;
-    },
+    }
 
     /**
      * Returns compare function set for given field.
      * @param {string} field The field to get compare function for.
      * @return {function(*, *): number} Compare function set for given field.
      */
-    compareFunction: function(field) {
+    compareFunction(field) {
       return this.compareFunctions_[field];
-    },
+    }
 
     /**
      * Sets compare function for given field.
@@ -74,21 +74,21 @@ cr.define('cr.ui', function() {
      * @param {function(*, *): number} compareFunction Compare function to set
      *     for given field.
      */
-    setCompareFunction: function(field, compareFunction) {
+    setCompareFunction(field, compareFunction) {
       if (!this.compareFunctions_) {
         this.compareFunctions_ = {};
       }
       this.compareFunctions_[field] = compareFunction;
-    },
+    }
 
     /**
      * Returns true if the field has a compare function.
      * @param {string} field The field to check.
      * @return {boolean} True if the field is sortable.
      */
-    isSortable: function(field) {
+    isSortable(field) {
       return this.compareFunctions_ && field in this.compareFunctions_;
-    },
+    }
 
     /**
      * Returns current sort status.
@@ -101,7 +101,7 @@ cr.define('cr.ui', function() {
       } else {
         return this.createSortStatus(null, null);
       }
-    },
+    }
 
     /**
      * Returns the first matching item.
@@ -110,14 +110,14 @@ cr.define('cr.ui', function() {
      *     the {@code opt_fromIndex}.
      * @return {number} The index of the first found element or -1 if not found.
      */
-    indexOf: function(item, opt_fromIndex) {
+    indexOf(item, opt_fromIndex) {
       for (let i = opt_fromIndex || 0; i < this.indexes_.length; i++) {
         if (item === this.item(i)) {
           return i;
         }
       }
       return -1;
-    },
+    }
 
     /**
      * Returns an array of elements in a selected range.
@@ -125,12 +125,12 @@ cr.define('cr.ui', function() {
      * @param {number=} opt_to The ending index of selected range.
      * @return {Array} An array of elements in the selected range.
      */
-    slice: function(opt_from, opt_to) {
+    slice(opt_from, opt_to) {
       const arr = this.array_;
       return this.indexes_.slice(opt_from, opt_to).map(function(index) {
         return arr[index];
       });
-    },
+    }
 
     /**
      * This removes and adds items to the model.
@@ -142,7 +142,7 @@ cr.define('cr.ui', function() {
      * @param {...*} var_args The items to add.
      * @return {!Array} An array with the removed items.
      */
-    splice: function(index, deleteCount, var_args) {
+    splice(index, deleteCount, var_args) {
       const addCount = arguments.length - 2;
       const newIndexes = [];
       const deletePermutation = [];
@@ -209,7 +209,7 @@ cr.define('cr.ui', function() {
       }
 
       return deletedItems;
-    },
+    }
 
     /**
      * Appends items to the end of the model.
@@ -219,12 +219,12 @@ cr.define('cr.ui', function() {
      * @param {...*} var_args The items to append.
      * @return {number} The new length of the model.
      */
-    push: function(var_args) {
+    push(var_args) {
       const args = Array.prototype.slice.call(arguments);
       args.unshift(this.length, 0);
       this.splice.apply(this, args);
       return this.length;
-    },
+    }
 
     /**
      * Updates the existing item with the new item.
@@ -236,14 +236,14 @@ cr.define('cr.ui', function() {
      *     is not found in the model, the method call is just ignored.
      * @param {*} newItem New item.
      */
-    replaceItem: function(oldItem, newItem) {
+    replaceItem(oldItem, newItem) {
       const index = this.indexOf(oldItem);
       if (index < 0) {
         return;
       }
       this.array_[this.indexes_[index]] = newItem;
       this.updateIndex(index);
-    },
+    }
 
     /**
      * Use this to update a given item in the array. This does not remove and
@@ -252,9 +252,9 @@ cr.define('cr.ui', function() {
      * This runs sort after updating.
      * @param {number} index The index of the item to update.
      */
-    updateIndex: function(index) {
+    updateIndex(index) {
       this.updateIndexes([index]);
-    },
+    }
 
     /**
      * Notifies of update of the items in the array. This does not remove and
@@ -263,7 +263,7 @@ cr.define('cr.ui', function() {
      * This runs sort after updating.
      * @param {Array<number>} indexes The index list of items to update.
      */
-    updateIndexes: function(indexes) {
+    updateIndexes(indexes) {
       indexes.forEach(function(index) {
         assert(index >= 0 && index < this.length, 'Invalid index');
       }, this);
@@ -286,7 +286,7 @@ cr.define('cr.ui', function() {
         // list will not go to inconsistent state.
         this.delayedSort_(status.field, status.direction);
       }
-    },
+    }
 
     /**
      * Creates sort status with given field and direction.
@@ -294,9 +294,9 @@ cr.define('cr.ui', function() {
      * @param {?string} direction Sort direction.
      * @return {!Object} Created sort status.
      */
-    createSortStatus: function(field, direction) {
+    createSortStatus(field, direction) {
       return {field: field, direction: direction};
-    },
+    }
 
     /**
      * Called before a sort happens so that you may fetch additional data
@@ -306,9 +306,9 @@ cr.define('cr.ui', function() {
      * @param {function()} callback The function to invoke when preparation
      *     is complete.
      */
-    prepareSort: function(field, callback) {
+    prepareSort(field, callback) {
       callback();
-    },
+    }
 
     /**
      * Sorts data model according to given field and direction and dispathes
@@ -317,7 +317,7 @@ cr.define('cr.ui', function() {
      * @param {string} direction Sort direction.
      * @private
      */
-    delayedSort_: function(field, direction) {
+    delayedSort_(field, direction) {
       const self = this;
       setTimeout(function() {
         // If the sort status has been changed, sorting has already done
@@ -327,7 +327,7 @@ cr.define('cr.ui', function() {
           self.sort(field, direction);
         }
       }, 0);
-    },
+    }
 
     /**
      * Sorts data model according to given field and direction and dispathes
@@ -335,7 +335,7 @@ cr.define('cr.ui', function() {
      * @param {string} field Sort field.
      * @param {string} direction Sort direction.
      */
-    sort: function(field, direction) {
+    sort(field, direction) {
       const self = this;
 
       this.prepareSort(field, function() {
@@ -345,7 +345,7 @@ cr.define('cr.ui', function() {
         }
         self.dispatchSortEvent_();
       });
-    },
+    }
 
     /**
      * Sorts data model according to given field and direction.
@@ -353,7 +353,7 @@ cr.define('cr.ui', function() {
      * @param {string} direction Sort direction.
      * @private
      */
-    doSort_: function(field, direction) {
+    doSort_(field, direction) {
       const compareFunction = this.sortFunction_(field, direction);
       const positions = [];
       for (let i = 0; i < this.length; i++) {
@@ -378,19 +378,19 @@ cr.define('cr.ui', function() {
         return sortPermutation;
       }
       return null;
-    },
+    }
 
-    dispatchSortEvent_: function() {
+    dispatchSortEvent_() {
       const e = new Event('sorted');
       this.dispatchEvent(e);
-    },
+    }
 
-    dispatchPermutedEvent_: function(permutation) {
+    dispatchPermutedEvent_(permutation) {
       const e = new Event('permuted');
       e.permutation = permutation;
       e.newLength = this.length;
       this.dispatchEvent(e);
-    },
+    }
 
     /**
      * Creates compare function for the field.
@@ -400,7 +400,7 @@ cr.define('cr.ui', function() {
      * @return {function(*, *): number} Compare function.
      * @private
      */
-    createCompareFunction_: function(field) {
+    createCompareFunction_(field) {
       const compareFunction =
           this.compareFunctions_ ? this.compareFunctions_[field] : null;
       const defaultValuesCompareFunction = this.defaultValuesCompareFunction;
@@ -411,7 +411,7 @@ cr.define('cr.ui', function() {
           return defaultValuesCompareFunction.call(null, a[field], b[field]);
         };
       }
-    },
+    }
 
     /**
      * Creates compare function for given field and direction.
@@ -419,7 +419,7 @@ cr.define('cr.ui', function() {
      * @param {string} direction Sort direction.
      * @private
      */
-    sortFunction_: function(field, direction) {
+    sortFunction_(field, direction) {
       let compareFunction = null;
       if (field !== null) {
         compareFunction = this.createCompareFunction_(field);
@@ -440,12 +440,12 @@ cr.define('cr.ui', function() {
         return dirMultiplier *
             this.defaultValuesCompareFunction(index1, index2);
       }.bind(this);
-    },
+    }
 
     /**
      * Default compare function.
      */
-    defaultValuesCompareFunction: function(a, b) {
+    defaultValuesCompareFunction(a, b) {
       // We could insert i18n comparisons here.
       if (a < b) {
         return -1;
@@ -455,7 +455,7 @@ cr.define('cr.ui', function() {
       }
       return 0;
     }
-  };
+  }
 
   return {ArrayDataModel: ArrayDataModel};
 });
