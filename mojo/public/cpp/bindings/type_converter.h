@@ -109,7 +109,7 @@ struct TypeConverter<std::vector<T>, Container> {
 template <typename T, typename U>
 inline T ConvertTo(const U& obj) {
   return TypeConverter<T, U>::Convert(obj);
-};
+}
 
 }  // namespace mojo
 

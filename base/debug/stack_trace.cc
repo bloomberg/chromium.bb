@@ -78,7 +78,7 @@ bool IsStackFrameValid(uintptr_t fp, uintptr_t prev_fp, uintptr_t stack_end) {
   }
 
   return true;
-};
+}
 
 // ScanStackForNextFrame() scans the stack for a valid frame to allow unwinding
 // past system libraries. Only supported on Linux where system libraries are

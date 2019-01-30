@@ -105,6 +105,6 @@ template <TransferCacheEntryType EntryType>
 using ServiceTransferCacheEntryBase =
     TransferCacheEntryBase<ServiceTransferCacheEntry, EntryType>;
 
-};  // namespace cc
+}  // namespace cc
 
 #endif  // CC_PAINT_TRANSFER_CACHE_ENTRY_H_

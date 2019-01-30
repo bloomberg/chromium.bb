@@ -128,7 +128,7 @@ BASE_EXPORT FilePath GetUserLibraryPath();
 BASE_EXPORT FilePath GetAppBundlePath(const FilePath& exec_name);
 
 #define TYPE_NAME_FOR_CF_TYPE_DECL(TypeCF) \
-BASE_EXPORT std::string TypeNameForCFType(TypeCF##Ref);
+  BASE_EXPORT std::string TypeNameForCFType(TypeCF##Ref)
 
 TYPE_NAME_FOR_CF_TYPE_DECL(CFArray);
 TYPE_NAME_FOR_CF_TYPE_DECL(CFBag);
@@ -232,28 +232,28 @@ BASE_EXPORT CFMutable##name##Ref NSToCFCast(NSMutable##name* ns_val); \
 // List of toll-free bridged types taken from:
 // http://www.cocoadev.com/index.pl?TollFreeBridged
 
-CF_TO_NS_MUTABLE_CAST_DECL(Array);
-CF_TO_NS_MUTABLE_CAST_DECL(AttributedString);
-CF_TO_NS_CAST_DECL(CFCalendar, NSCalendar);
-CF_TO_NS_MUTABLE_CAST_DECL(CharacterSet);
-CF_TO_NS_MUTABLE_CAST_DECL(Data);
-CF_TO_NS_CAST_DECL(CFDate, NSDate);
-CF_TO_NS_MUTABLE_CAST_DECL(Dictionary);
-CF_TO_NS_CAST_DECL(CFError, NSError);
-CF_TO_NS_CAST_DECL(CFLocale, NSLocale);
-CF_TO_NS_CAST_DECL(CFNumber, NSNumber);
-CF_TO_NS_CAST_DECL(CFRunLoopTimer, NSTimer);
-CF_TO_NS_CAST_DECL(CFTimeZone, NSTimeZone);
-CF_TO_NS_MUTABLE_CAST_DECL(Set);
-CF_TO_NS_CAST_DECL(CFReadStream, NSInputStream);
-CF_TO_NS_CAST_DECL(CFWriteStream, NSOutputStream);
-CF_TO_NS_MUTABLE_CAST_DECL(String);
-CF_TO_NS_CAST_DECL(CFURL, NSURL);
+CF_TO_NS_MUTABLE_CAST_DECL(Array)
+CF_TO_NS_MUTABLE_CAST_DECL(AttributedString)
+CF_TO_NS_CAST_DECL(CFCalendar, NSCalendar)
+CF_TO_NS_MUTABLE_CAST_DECL(CharacterSet)
+CF_TO_NS_MUTABLE_CAST_DECL(Data)
+CF_TO_NS_CAST_DECL(CFDate, NSDate)
+CF_TO_NS_MUTABLE_CAST_DECL(Dictionary)
+CF_TO_NS_CAST_DECL(CFError, NSError)
+CF_TO_NS_CAST_DECL(CFLocale, NSLocale)
+CF_TO_NS_CAST_DECL(CFNumber, NSNumber)
+CF_TO_NS_CAST_DECL(CFRunLoopTimer, NSTimer)
+CF_TO_NS_CAST_DECL(CFTimeZone, NSTimeZone)
+CF_TO_NS_MUTABLE_CAST_DECL(Set)
+CF_TO_NS_CAST_DECL(CFReadStream, NSInputStream)
+CF_TO_NS_CAST_DECL(CFWriteStream, NSOutputStream)
+CF_TO_NS_MUTABLE_CAST_DECL(String)
+CF_TO_NS_CAST_DECL(CFURL, NSURL)
 
 #if defined(OS_IOS)
-CF_TO_NS_CAST_DECL(CTFont, UIFont);
+CF_TO_NS_CAST_DECL(CTFont, UIFont)
 #else
-CF_TO_NS_CAST_DECL(CTFont, NSFont);
+CF_TO_NS_CAST_DECL(CTFont, NSFont)
 #endif
 
 #undef CF_TO_NS_CAST_DECL
