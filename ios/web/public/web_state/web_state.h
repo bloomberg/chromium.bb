@@ -225,10 +225,6 @@ class WebState : public base::SupportsUserData {
   // See http://crbug.com/457679
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;
 
-  // Resizes |content_view| to the content area's size and adds it to the
-  // hierarchy.  A navigation will remove the view from the hierarchy.
-  virtual void ShowTransientContentView(CRWContentView* content_view) = 0;
-
   // Returns true if a WebInterstitial is currently displayed.
   virtual bool IsShowingWebInterstitial() const = 0;
 
