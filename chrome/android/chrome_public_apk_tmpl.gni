@@ -276,10 +276,12 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that
         # Chrome runs in.
-        if (android_64bit_browser) {
-          shared_libraries = [ "//chrome/android:monochrome${_suffix}" ]
-          if (build_apk_secondary_abi) {
-            secondary_abi_shared_libraries = [ "//android_webview:monochrome${_suffix}($android_secondary_abi_toolchain)" ]
+        if ((defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) ||
+            android_64bit_browser) {
+          shared_libraries = [ "//chrome/android:monochrome_64${_suffix}" ]
+          if ((build_apk_secondary_abi && invoker.include_32_bit_webview) ||
+              android_64bit_browser) {
+            secondary_abi_shared_libraries = [ "//android_webview:monochrome_64${_suffix}($android_secondary_abi_toolchain)" ]
           }
         } else {
           shared_libraries = [ "//android_webview:monochrome${_suffix}" ]
@@ -331,7 +333,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     # Configrations to make android load shared library from APK.
     uncompress_shared_libraries = true
 
-    forward_variables_from(invoker, "*")
+    forward_variables_from(invoker, "*", [ "include_32_bit_webview" ])
 
     # Android N+ better supports multiple locales (https://crbug.com/780847).
     support_zh_hk = false
