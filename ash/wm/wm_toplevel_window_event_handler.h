@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -38,7 +39,8 @@ namespace wm {
 // EventHandler.
 class ASH_EXPORT WmToplevelWindowEventHandler
     : public WindowTreeHostManager::Observer,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public display::DisplayObserver {
  public:
   // Describes what triggered ending the drag.
   enum class DragResult {
@@ -54,6 +56,10 @@ class ASH_EXPORT WmToplevelWindowEventHandler
 
   WmToplevelWindowEventHandler();
   ~WmToplevelWindowEventHandler() override;
+
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
 
   void OnKeyEvent(ui::KeyEvent* event);
   void OnMouseEvent(ui::MouseEvent* event, aura::Window* target);

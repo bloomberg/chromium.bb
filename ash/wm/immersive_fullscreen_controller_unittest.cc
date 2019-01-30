@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 
+#include "ash/frame/header_view.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
@@ -117,6 +119,10 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   bool CanResize() const override { return true; }
   bool CanMaximize() const override { return true; }
   bool CanActivate() const override { return true; }
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override {
+    return new NonClientFrameViewAsh(widget);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
@@ -130,35 +136,41 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     MODALITY_GESTURE_SCROLL
   };
 
-  ImmersiveFullscreenControllerTest()
-      : widget_(nullptr), top_container_(nullptr), content_view_(nullptr) {}
+  ImmersiveFullscreenControllerTest() = default;
   ~ImmersiveFullscreenControllerTest() override = default;
 
-  ImmersiveFullscreenController* controller() { return controller_.get(); }
+  ImmersiveFullscreenController* controller() {
+    return ImmersiveFullscreenController::GetForTest(widget());
+  }
 
   views::NativeViewHost* content_view() { return content_view_; }
 
-  views::View* top_container() { return top_container_; }
+  views::View* top_container() {
+    return NonClientFrameViewAsh::Get(window())->GetHeaderView();
+  }
 
   views::Widget* widget() { return widget_; }
 
   aura::Window* window() { return widget_->GetNativeWindow(); }
 
-  MockImmersiveFullscreenControllerDelegate* delegate() {
-    return delegate_.get();
+  HeaderView* immersive_delegate() {
+    return NonClientFrameViewAsh::Get(window())->GetHeaderView();
   }
 
   // Access to private data from the controller.
-  bool top_edge_hover_timer_running() const {
-    return controller_->top_edge_hover_timer_.IsRunning();
+  bool top_edge_hover_timer_running() {
+    return controller()->top_edge_hover_timer_.IsRunning();
   }
-  int mouse_x_when_hit_top() const {
-    return controller_->mouse_x_when_hit_top_in_screen_;
+  int mouse_x_when_hit_top() {
+    return controller()->mouse_x_when_hit_top_in_screen_;
   }
 
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+
+    test_api_animation_disabler_ = std::make_unique<
+        ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler>();
 
     widget_ = new views::Widget();
     views::Widget::InitParams params;
@@ -173,20 +185,9 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     content_view_->SetBounds(0, 0, window_size.width(), window_size.height());
     widget_->GetContentsView()->AddChildView(content_view_);
 
-    top_container_ = new views::View();
-    top_container_->SetBounds(0, 0, window_size.width(), 100);
-    top_container_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    widget_->GetContentsView()->AddChildView(top_container_);
-
-    delegate_ = std::make_unique<MockImmersiveFullscreenControllerDelegate>(
-        top_container_);
-    controller_ = std::make_unique<ImmersiveFullscreenController>(
-        Shell::Get()->immersive_context());
-    controller_->Init(delegate_.get(), widget_, top_container_);
-    ImmersiveFullscreenControllerTestApi(controller_.get()).SetupForTest();
-
-    // The mouse is moved so that it is not over |top_container_| by
-    // AshTestBase.
+    test_api_ =
+        std::make_unique<ImmersiveFullscreenControllerTestApi>(controller());
+    test_api_->SetupForTest();
   }
 
   // Enables / disables immersive fullscreen.
@@ -211,14 +212,14 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
   // SetHovered(true) moves the mouse over the |top_container_| but does not
   // move it to the top of the screen so will not initiate a reveal.
   void SetHovered(bool is_mouse_hovered) {
-    MoveMouse(0, is_mouse_hovered ? 10 : top_container_->height() + 100);
+    MoveMouse(0, is_mouse_hovered ? 10 : top_container()->height() + 100);
   }
 
   // Move the mouse to the given coordinates. The coordinates should be in
   // |top_container_| coordinates.
   void MoveMouse(int x, int y) {
     gfx::Point screen_position(x, y);
-    views::View::ConvertPointToScreen(top_container_, &screen_position);
+    views::View::ConvertPointToScreen(top_container(), &screen_position);
     GetEventGenerator()->MoveMouseTo(screen_position.x(), screen_position.y());
 
     // If the top edge timer started running as a result of the mouse move, run
@@ -243,8 +244,9 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
  private:
   // Attempt to change the revealed state to |revealed| via |modality|.
   void AttemptRevealStateChange(bool revealed, Modality modality) {
-    // Compute the event position in |top_container_| coordinates.
-    gfx::Point event_position(0, revealed ? 0 : top_container_->height() + 100);
+    // Compute the event position in |top_container()| coordinates.
+    gfx::Point event_position(0,
+                              revealed ? 0 : top_container()->height() + 100);
     switch (modality) {
       case MODALITY_MOUSE: {
         MoveMouse(event_position.x(), event_position.y());
@@ -252,7 +254,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
       }
       case MODALITY_GESTURE_TAP: {
         gfx::Point screen_position = event_position;
-        views::View::ConvertPointToScreen(top_container_, &screen_position);
+        views::View::ConvertPointToScreen(top_container(), &screen_position);
         ui::test::EventGenerator* event_generator = GetEventGenerator();
         event_generator->MoveTouch(event_position);
         event_generator->PressTouch();
@@ -260,11 +262,11 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
         break;
       }
       case MODALITY_GESTURE_SCROLL: {
-        gfx::Point start(0, revealed ? 0 : top_container_->height() - 2);
+        gfx::Point start(0, revealed ? 0 : 2);
         gfx::Vector2d scroll_delta(0, 40);
         gfx::Point end = revealed ? start + scroll_delta : start - scroll_delta;
-        views::View::ConvertPointToScreen(top_container_, &start);
-        views::View::ConvertPointToScreen(top_container_, &end);
+        views::View::ConvertPointToScreen(top_container(), &start);
+        views::View::ConvertPointToScreen(top_container(), &end);
         ui::test::EventGenerator* event_generator = GetEventGenerator();
         event_generator->GestureScrollSequence(
             start, end, base::TimeDelta::FromMilliseconds(30), 1);
@@ -273,11 +275,12 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     }
   }
 
-  std::unique_ptr<ImmersiveFullscreenController> controller_;
-  std::unique_ptr<MockImmersiveFullscreenControllerDelegate> delegate_;
-  views::Widget* widget_;                // Owned by the native widget.
-  views::View* top_container_;           // Owned by |widget_|'s root-view.
-  views::NativeViewHost* content_view_;  // Owned by |widget_|'s root-view.
+  std::unique_ptr<ImmersiveFullscreenControllerTestApi::GlobalAnimationDisabler>
+      test_api_animation_disabler_;
+  views::Widget* widget_ = nullptr;  // Owned by the native widget.
+  views::NativeViewHost* content_view_ =
+      nullptr;  // Owned by |widget_|'s root-view.
+  std::unique_ptr<ImmersiveFullscreenControllerTestApi> test_api_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -287,34 +290,38 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
 // Test the initial state and that the delegate gets notified of the
 // top-of-window views getting hidden and revealed.
 TEST_F(ImmersiveFullscreenControllerTest, Delegate) {
+  SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
+
   // Initial state.
   EXPECT_FALSE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
-  EXPECT_FALSE(delegate()->is_enabled());
+  EXPECT_FALSE(immersive_delegate()->in_immersive_mode());
 
   // Enabling initially hides the top views.
   SetEnabled(true);
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
-  EXPECT_TRUE(delegate()->is_enabled());
-  EXPECT_EQ(0, delegate()->visible_fraction());
+  EXPECT_TRUE(immersive_delegate()->in_immersive_mode());
+  EXPECT_FALSE(immersive_delegate()->is_revealed());
 
   // Revealing shows the top views.
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_TRUE(controller()->IsRevealed());
-  EXPECT_TRUE(delegate()->is_enabled());
-  EXPECT_EQ(1, delegate()->visible_fraction());
+  EXPECT_TRUE(immersive_delegate()->in_immersive_mode());
+  EXPECT_TRUE(immersive_delegate()->is_revealed());
 
   // Disabling ends the immersive reveal.
   SetEnabled(false);
   EXPECT_FALSE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
-  EXPECT_FALSE(delegate()->is_enabled());
+  EXPECT_FALSE(immersive_delegate()->in_immersive_mode());
 }
 
 // GetRevealedLock() specific tests.
 TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
+  SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
+
   std::unique_ptr<ImmersiveRevealedLock> lock1;
   std::unique_ptr<ImmersiveRevealedLock> lock2;
 
@@ -353,6 +360,10 @@ TEST_F(ImmersiveFullscreenControllerTest, RevealedLock) {
   lock1.reset(controller()->GetRevealedLock(
       ImmersiveFullscreenController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(controller()->IsRevealed());
+
+  // Move the mouse below the top container bounds so the hover doesn't make the
+  // reveal persist.
+  MoveMouse(0, top_container()->GetBoundsInScreen().bottom() + 10);
 
   // 3) Test that the top-of-window views are only hidden when all of the locks
   // are released.
@@ -690,18 +701,17 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
 // Tests the top-of-window views for maximized/full-screened/snapped windows in
 // tablet mode.
 TEST_F(ImmersiveFullscreenControllerTest, WindowsInTabletMode) {
-  SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
   EnableTabletMode(true);
   SetEnabled(true);
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
 
   // Top-of-window views will not be revealed through gesture scroll for
-  // maximized window in tablet mode.
+  // fullscreen window in tablet mode. (Instead, the window is dragged.)
   AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // Top-of-window views will be revealed for maximized window not in tablet
+  // Top-of-window views will be revealed for fullscreen windows not in tablet
   // mode.
   EnableTabletMode(false);
   AttemptReveal(MODALITY_GESTURE_SCROLL);
@@ -826,6 +836,7 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
 // Check that the window state gets properly marked for immersive fullscreen.
 TEST_F(ImmersiveFullscreenControllerTest, WindowStateImmersiveFullscreen) {
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window());
+  SetWindowShowState(ui::SHOW_STATE_NORMAL);
 
   EXPECT_FALSE(window_state->IsInImmersiveFullscreen());
   SetEnabled(true);
@@ -869,17 +880,18 @@ TEST_F(ImmersiveFullscreenControllerTest, Focus) {
   EXPECT_FALSE(controller()->IsRevealed());
 
   // 2) Test that focusing |unrelated_view| hides the top-of-window views.
-  // Note: In this test we can cheat and trigger a reveal via focus because
-  // the top container does not hide when the top-of-window views are not
-  // revealed.
+  AttemptReveal(MODALITY_MOUSE);
   child_view->RequestFocus();
+  SetHovered(false);
   EXPECT_TRUE(controller()->IsRevealed());
   unrelated_view->RequestFocus();
   EXPECT_FALSE(controller()->IsRevealed());
 
   // 3) Test that a loss of focus of |child_view| to |unrelated_view|
   // while immersive mode is disabled is properly registered.
+  AttemptReveal(MODALITY_MOUSE);
   child_view->RequestFocus();
+  SetHovered(false);
   EXPECT_TRUE(controller()->IsRevealed());
   SetEnabled(false);
   EXPECT_FALSE(controller()->IsRevealed());
@@ -889,7 +901,9 @@ TEST_F(ImmersiveFullscreenControllerTest, Focus) {
 
   // Repeat test but with a revealed lock acquired when immersive mode is
   // disabled because the code path is different.
+  AttemptReveal(MODALITY_MOUSE);
   child_view->RequestFocus();
+  SetHovered(false);
   EXPECT_TRUE(controller()->IsRevealed());
   SetEnabled(false);
   std::unique_ptr<ImmersiveRevealedLock> lock(controller()->GetRevealedLock(

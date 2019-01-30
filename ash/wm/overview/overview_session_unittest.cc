@@ -31,8 +31,10 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
-#include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -2499,8 +2501,9 @@ TEST_F(OverviewSessionTest, PositionWindows) {
   EXPECT_NE(bounds3, item3->target_bounds());
 }
 
-// Tests that overview mode is entered with kWindowDragged mode when an app is
-// dragged from the top of the screen.
+// Tests that overview mode is entered with kWindowDragged mode when a window is
+// dragged from the top of the screen. For the purposes of this test, we use a
+// browser window.
 TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
   EnterTabletMode();
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
@@ -2508,12 +2511,16 @@ TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
   widget->GetNativeWindow()->SetProperty(aura::client::kTopViewInset, 20);
 
   // Drag from the the top of the app to enter overview.
-  auto drag_controller = std::make_unique<TabletModeAppWindowDragController>();
   ui::GestureEvent event(0, 0, 0, base::TimeTicks(),
                          ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+  wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeWindow());
+  window_state->CreateDragDetails(event.location(), HTCAPTION,
+                                  ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+  auto drag_controller = std::make_unique<TabletModeWindowDragController>(
+      window_state, std::make_unique<TabletModeBrowserWindowDragDelegate>());
   ui::Event::DispatcherApi dispatch_helper(&event);
   dispatch_helper.set_target(widget->GetNativeWindow());
-  drag_controller->DragWindowFromTop(&event);
+  drag_controller->Drag(event.location(), event.flags());
 
   ASSERT_TRUE(IsSelecting());
   EXPECT_EQ(OverviewSession::EnterExitOverviewType::kWindowDragged,

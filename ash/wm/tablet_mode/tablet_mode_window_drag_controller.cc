@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
 
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
@@ -12,14 +12,12 @@
 
 namespace ash {
 
-TabletModeBrowserWindowDragController::TabletModeBrowserWindowDragController(
-    wm::WindowState* window_state)
+TabletModeWindowDragController::TabletModeWindowDragController(
+    wm::WindowState* window_state,
+    std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate)
     : WindowResizer(window_state),
-      drag_delegate_(std::make_unique<TabletModeBrowserWindowDragDelegate>()),
+      drag_delegate_(std::move(drag_delegate)),
       weak_ptr_factory_(this) {
-  DCHECK(details().is_resizable);
-  DCHECK(!window_state->allow_set_bounds_direct());
-
   if (details().source != ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
     Shell::Get()->cursor_manager()->LockCursor();
     did_lock_cursor_ = true;
@@ -32,15 +30,13 @@ TabletModeBrowserWindowDragController::TabletModeBrowserWindowDragController(
   drag_delegate_->StartWindowDrag(GetTarget(), previous_location_in_screen_);
 }
 
-TabletModeBrowserWindowDragController::
-    ~TabletModeBrowserWindowDragController() {
+TabletModeWindowDragController::~TabletModeWindowDragController() {
   if (did_lock_cursor_)
     Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
-void TabletModeBrowserWindowDragController::Drag(
-    const gfx::Point& location_in_parent,
-    int event_flags) {
+void TabletModeWindowDragController::Drag(const gfx::Point& location_in_parent,
+                                          int event_flags) {
   gfx::Point location_in_screen = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
   previous_location_in_screen_ = location_in_screen;
@@ -49,7 +45,7 @@ void TabletModeBrowserWindowDragController::Drag(
   // source window position, blurred background, etc, if necessary.
   if (wm::IsDraggingTabs(GetTarget())) {
     // Update the dragged window's bounds if it's tab-dragging.
-    base::WeakPtr<TabletModeBrowserWindowDragController> resizer(
+    base::WeakPtr<TabletModeWindowDragController> resizer(
         weak_ptr_factory_.GetWeakPtr());
     drag_delegate_->ContinueWindowDrag(
         location_in_screen,
@@ -66,20 +62,19 @@ void TabletModeBrowserWindowDragController::Drag(
   }
 }
 
-void TabletModeBrowserWindowDragController::CompleteDrag() {
+void TabletModeWindowDragController::CompleteDrag() {
   drag_delegate_->EndWindowDrag(
       wm::WmToplevelWindowEventHandler::DragResult::SUCCESS,
       previous_location_in_screen_);
 }
 
-void TabletModeBrowserWindowDragController::RevertDrag() {
+void TabletModeWindowDragController::RevertDrag() {
   drag_delegate_->EndWindowDrag(
       wm::WmToplevelWindowEventHandler::DragResult::REVERT,
       previous_location_in_screen_);
 }
 
-void TabletModeBrowserWindowDragController::FlingOrSwipe(
-    ui::GestureEvent* event) {
+void TabletModeWindowDragController::FlingOrSwipe(ui::GestureEvent* event) {
   drag_delegate_->FlingOrSwipe(event);
 }
 

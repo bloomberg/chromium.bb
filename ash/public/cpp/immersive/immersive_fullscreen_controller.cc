@@ -26,7 +26,13 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ImmersiveFullscreenController*);
+
 namespace ash {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(ImmersiveFullscreenController*,
+                             kImmersiveFullscreenControllerKey,
+                             nullptr);
 
 namespace {
 
@@ -109,6 +115,15 @@ void ImmersiveFullscreenController::Init(
   delegate_ = delegate;
   top_container_ = top_container;
   widget_ = widget;
+
+  // A widget can have more than one ImmersiveFullscreenController
+  // (WideFrameView does this), so this key only tracks the first
+  // ImmersiveFullscreenController.
+  if (nullptr == widget->GetNativeWindow()->GetProperty(
+                     kImmersiveFullscreenControllerKey)) {
+    widget->GetNativeWindow()->SetProperty(kImmersiveFullscreenControllerKey,
+                                           this);
+  }
 
   EnableWindowObservers(true);
 }
@@ -270,6 +285,13 @@ void ImmersiveFullscreenController::EnableForWidget(views::Widget* widget,
   auto* window = widget->GetNativeWindow();
   if (window->GetProperty(kImmersiveIsActive) != enabled)
     widget->GetNativeWindow()->SetProperty(kImmersiveIsActive, enabled);
+}
+
+// static
+ImmersiveFullscreenController* ImmersiveFullscreenController::GetForTest(
+    views::Widget* widget) {
+  return widget->GetNativeWindow()->GetProperty(
+      kImmersiveFullscreenControllerKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

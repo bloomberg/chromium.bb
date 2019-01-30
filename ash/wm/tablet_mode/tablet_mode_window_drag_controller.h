@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_BROWSER_WINDOW_DRAG_CONTROLLER_H_
-#define ASH_WM_TABLET_MODE_TABLET_MODE_BROWSER_WINDOW_DRAG_CONTROLLER_H_
+#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_DRAG_CONTROLLER_H_
+#define ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_DRAG_CONTROLLER_H_
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/macros.h"
@@ -19,16 +20,18 @@ namespace wm {
 class WindowState;
 }  // namespace wm
 
-// WindowResizer implementation for browser windows in tablet mode. Currently we
+// WindowResizer implementation for windows in tablet mode. Currently we
 // don't allow any resizing and any dragging happening on the area other than
-// the caption tabs area in tablet mode. Only browser windows with tabs are
-// allowed to be dragged. Depending on the event position, the dragged window
-// may be 1) maximized, or 2) snapped in splitscreen, or 3) merged to an
-// existing window.
-class TabletModeBrowserWindowDragController : public WindowResizer {
+// the caption tabs area in tablet mode, or the top few client pixels for app
+// windows without caption areas. Depending on the event position, the dragged
+// window may be 1) maximized, or 2) snapped in splitscreen, or 3) merged to an
+// existing window (in the case of a browser window).
+class ASH_EXPORT TabletModeWindowDragController : public WindowResizer {
  public:
-  explicit TabletModeBrowserWindowDragController(wm::WindowState* window_state);
-  ~TabletModeBrowserWindowDragController() override;
+  TabletModeWindowDragController(
+      wm::WindowState* window_state,
+      std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate);
+  ~TabletModeWindowDragController() override;
 
   // WindowResizer:
   void Drag(const gfx::Point& location_in_parent, int event_flags) override;
@@ -51,11 +54,11 @@ class TabletModeBrowserWindowDragController : public WindowResizer {
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.
-  base::WeakPtrFactory<TabletModeBrowserWindowDragController> weak_ptr_factory_;
+  base::WeakPtrFactory<TabletModeWindowDragController> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabletModeBrowserWindowDragController);
+  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowDragController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_BROWSER_WINDOW_DRAG_CONTROLLER_H_
+#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_WINDOW_DRAG_CONTROLLER_H_

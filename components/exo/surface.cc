@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
@@ -128,6 +129,15 @@ class CustomWindowDelegate : public aura::WindowDelegate {
     return ui::CursorType::kNull;
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
+    views::Widget* widget =
+        views::Widget::GetTopLevelWidgetForNativeView(surface_->window());
+    if (widget &&
+        widget->GetNativeView()->parent()->id() ==
+            ash::kShellWindowId_DefaultContainer &&
+        surface_->HitTest(point)) {
+      return HTCLIENT;
+    }
+
     return HTNOWHERE;
   }
   bool ShouldDescendIntoChildForEventHandling(
