@@ -37,15 +37,18 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
   void ProcessRequest(
       const content::DesktopMediaID& fake_desktop_media_id_response,
       blink::MediaStreamRequestResult* request_result,
-      blink::MediaStreamDevices* devices_result) {
+      blink::MediaStreamDevices* devices_result,
+      bool request_audio) {
     FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
         {true /* expect_screens */, true /* expect_windows*/,
-         true /* expect_tabs */, false /* expect_audio */,
+         true /* expect_tabs */, request_audio,
          fake_desktop_media_id_response /* selected_source */}};
     picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
     content::MediaStreamRequest request(
         0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
-        std::string(), std::string(), blink::MEDIA_NO_SERVICE,
+        std::string(), std::string(),
+        request_audio ? blink::MEDIA_DISPLAY_AUDIO_CAPTURE
+                      : blink::MEDIA_NO_SERVICE,
         blink::MEDIA_DISPLAY_VIDEO_CAPTURE, false);
 
     base::RunLoop wait_loop;
@@ -91,17 +94,33 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   blink::MediaStreamDevices devices;
   ProcessRequest(content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId),
-                 &result, &devices);
+                 &result, &devices, false /* request_audio */);
   EXPECT_EQ(blink::MEDIA_DEVICE_OK, result);
   EXPECT_EQ(1u, devices.size());
   EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
   EXPECT_TRUE(devices[0].display_media_info.has_value());
 }
 
+TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
+  blink::MediaStreamRequestResult result;
+  blink::MediaStreamDevices devices;
+  content::DesktopMediaID fake_media_id(content::DesktopMediaID::TYPE_SCREEN,
+                                        content::DesktopMediaID::kFakeId,
+                                        true /* audio_share */);
+  ProcessRequest(fake_media_id, &result, &devices, true /* request_audio */);
+  EXPECT_EQ(blink::MEDIA_DEVICE_OK, result);
+  EXPECT_EQ(2u, devices.size());
+  EXPECT_EQ(blink::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_TRUE(devices[0].display_media_info.has_value());
+  EXPECT_EQ(blink::MEDIA_DISPLAY_AUDIO_CAPTURE, devices[1].type);
+  EXPECT_TRUE(devices[1].input.IsValid());
+}
+
 TEST_F(DisplayMediaAccessHandlerTest, PermissionDenied) {
   blink::MediaStreamRequestResult result;
   blink::MediaStreamDevices devices;
-  ProcessRequest(content::DesktopMediaID(), &result, &devices);
+  ProcessRequest(content::DesktopMediaID(), &result, &devices,
+                 true /* request_audio */);
   EXPECT_EQ(blink::MEDIA_DEVICE_PERMISSION_DENIED, result);
   EXPECT_EQ(0u, devices.size());
 }
@@ -110,16 +129,19 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   const int render_process_id = 0;
   const int render_frame_id = 0;
   const int page_request_id = 0;
-  const blink::MediaStreamType stream_type = blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
+  const blink::MediaStreamType video_stream_type =
+      blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
+  const blink::MediaStreamType audio_stream_type =
+      blink::MEDIA_DISPLAY_AUDIO_CAPTURE;
   FakeDesktopMediaPickerFactory::TestFlags test_flags[] = {
       {true /* expect_screens */, true /* expect_windows*/,
-       true /* expect_tabs */, false /* expect_audio */,
+       true /* expect_tabs */, true /* expect_audio */,
        content::DesktopMediaID(), true /* cancelled */}};
   picker_factory_->SetTestFlags(test_flags, base::size(test_flags));
   content::MediaStreamRequest request(
       render_process_id, render_frame_id, page_request_id,
       GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
-      std::string(), std::string(), blink::MEDIA_NO_SERVICE, stream_type,
+      std::string(), std::string(), audio_stream_type, video_stream_type,
       false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
@@ -131,7 +153,7 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   EXPECT_EQ(1u, queue_it->second.size());
 
   access_handler_->UpdateMediaRequestState(
-      render_process_id, render_frame_id, page_request_id, stream_type,
+      render_process_id, render_frame_id, page_request_id, video_stream_type,
       content::MEDIA_REQUEST_STATE_CLOSING);
   EXPECT_EQ(1u, GetRequestQueues().size());
   queue_it = GetRequestQueues().find(web_contents());

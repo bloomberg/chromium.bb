@@ -60,6 +60,11 @@ bool DisplayMediaAccessHandler::SupportsStreamType(
     const blink::MediaStreamType stream_type,
     const extensions::Extension* extension) {
   return stream_type == blink::MEDIA_DISPLAY_VIDEO_CAPTURE;
+  // This class handles MEDIA_DISPLAY_AUDIO_CAPTURE as well, but only if it is
+  // accompanied by MEDIA_DISPLAY_VIDEO_CAPTURE request as per spec.
+  // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
+  // 5.1 MediaDevices Additions
+  // "The user agent MUST reject audio-only requests."
 }
 
 bool DisplayMediaAccessHandler::CheckMediaAccessPermission(
@@ -157,7 +162,8 @@ void DisplayMediaAccessHandler::ProcessQueuedAccessRequest(
       web_contents->GetLastCommittedURL(),
       url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   picker_params.target_name = picker_params.app_name;
-  picker_params.request_audio = false;
+  picker_params.request_audio =
+      pending_request.request.audio_type == blink::MEDIA_DISPLAY_AUDIO_CAPTURE;
   pending_request.picker->Show(picker_params, std::move(source_lists),
                                done_callback);
 }
@@ -192,7 +198,7 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
         url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
     ui = GetDevicesForDesktopCapture(
         web_contents, &devices, media_id, blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
-        blink::MEDIA_NO_SERVICE, false /* capture_audio */,
+        blink::MEDIA_DISPLAY_AUDIO_CAPTURE, media_id.audio_share,
         false /* disable_local_echo */, display_notification_, visible_url,
         visible_url);
   }

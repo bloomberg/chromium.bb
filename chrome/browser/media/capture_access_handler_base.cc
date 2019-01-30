@@ -76,8 +76,10 @@ void CaptureAccessHandlerBase::UpdateMediaRequestState(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((stream_type != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) &&
       (stream_type != blink::MEDIA_GUM_TAB_VIDEO_CAPTURE) &&
-      (stream_type != blink::MEDIA_DISPLAY_VIDEO_CAPTURE))
+      (stream_type != blink::MEDIA_DISPLAY_VIDEO_CAPTURE) &&
+      (stream_type != blink::MEDIA_DISPLAY_AUDIO_CAPTURE)) {
     return;
+  }
 
   if (state == content::MEDIA_REQUEST_STATE_DONE) {
     if (FindSession(render_process_id, render_frame_id, page_request_id) ==
