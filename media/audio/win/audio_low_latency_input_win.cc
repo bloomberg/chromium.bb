@@ -85,27 +85,42 @@ WASAPIAudioInputStream::WASAPIAudioInputStream(
 
   const SampleFormat kSampleFormat = kSampleFormatS16;
 
-  // Set up the desired output format specified by the client.
+  // The clients asks for an input stream specified by |params|. Start by
+  // setting up an input device format according to the same specification.
+  // If all goes well during the upcoming initialization, this format will not
+  // change. However, under some circumstances, minor changes can be required
+  // to fit the current input audio device. If so, a FIFO and/or and audio
+  // converter might be needed to ensure that the output format of this stream
+  // matches what the client asks for.
   DVLOG(1) << params.AsHumanReadableString();
-  WAVEFORMATEX* format = &output_format_.Format;
+  WAVEFORMATEX* format = &input_format_.Format;
   format->wFormatTag = WAVE_FORMAT_EXTENSIBLE;
   format->nChannels = params.channels();
   format->nSamplesPerSec = params.sample_rate();
   format->wBitsPerSample = SampleFormatToBitsPerChannel(kSampleFormat);
   format->nBlockAlign = (format->wBitsPerSample / 8) * format->nChannels;
   format->nAvgBytesPerSec = format->nSamplesPerSec * format->nBlockAlign;
+
+  // Add the parts which are unique to WAVE_FORMAT_EXTENSIBLE which can be
+  // required in combination with e.g. multi-channel microphone arrays.
   format->cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
-
-  // Add the parts which are unique to WAVE_FORMAT_EXTENSIBLE.
-  output_format_.Samples.wValidBitsPerSample = format->wBitsPerSample;
-  output_format_.dwChannelMask =
+  input_format_.Samples.wValidBitsPerSample = format->wBitsPerSample;
+  input_format_.dwChannelMask =
       CoreAudioUtil::GetChannelConfig(device_id, eCapture);
-  output_format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+  input_format_.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
 
-  // Set the input (capture) format to the desired output format. In most cases,
-  // it will be used unchanged.
-  input_format_ = output_format_;
-  DVLOG(1) << CoreAudioUtil::WaveFormatToString(&input_format_);
+  // Set up the fixed output format based on |params|. Will not be changed and
+  // does not required an extended wave format structure since any multi-channel
+  // input will be converted to stereo.
+  output_format_.wFormatTag = WAVE_FORMAT_PCM;
+  output_format_.nChannels = format->nChannels;
+  ;
+  output_format_.nSamplesPerSec = format->nSamplesPerSec;
+  output_format_.wBitsPerSample = format->wBitsPerSample;
+  output_format_.nBlockAlign = format->nBlockAlign;
+  output_format_.nAvgBytesPerSec = format->nAvgBytesPerSec;
+  output_format_.cbSize = 0;
+  DVLOG(1) << CoreAudioUtil::WaveFormatToString(&output_format_);
 
   // Size in bytes of each audio frame.
   frame_size_bytes_ = format->nBlockAlign;
@@ -572,7 +587,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
 
         // Move the capture time forward for each vended block.
         capture_time += AudioTimestampHelper::FramesToTime(
-            convert_bus_->frames(), output_format_.Format.nSamplesPerSec);
+            convert_bus_->frames(), output_format_.nSamplesPerSec);
       } else {
         sink_->OnData(fifo_->Consume(), capture_time, volume);
 
@@ -732,24 +747,23 @@ void WASAPIAudioInputStream::SetupConverterAndStoreFormatInfo() {
   // Ideally, we want a 1:1 ratio between the buffers we get and the buffers
   // we give to OnData so that each buffer we receive from the OS can be
   // directly converted to a buffer that matches with what was asked for.
-  const double buffer_ratio = output_format_.Format.nSamplesPerSec /
-                              static_cast<double>(packet_size_frames_);
+  const double buffer_ratio =
+      output_format_.nSamplesPerSec / static_cast<double>(packet_size_frames_);
   double new_frames_per_buffer =
       input_format_.Format.nSamplesPerSec / buffer_ratio;
 
   const auto input_layout = GuessChannelLayout(input_format_.Format.nChannels);
   DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, input_layout);
-  const auto output_layout =
-      GuessChannelLayout(output_format_.Format.nChannels);
+  const auto output_layout = GuessChannelLayout(output_format_.nChannels);
   DCHECK_NE(CHANNEL_LAYOUT_UNSUPPORTED, output_layout);
 
   const AudioParameters input(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                               input_layout, input_format_.Format.nSamplesPerSec,
                               static_cast<int>(new_frames_per_buffer));
 
-  const AudioParameters output(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, output_layout,
-      output_format_.Format.nSamplesPerSec, packet_size_frames_);
+  const AudioParameters output(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                               output_layout, output_format_.nSamplesPerSec,
+                               packet_size_frames_);
 
   converter_.reset(new AudioConverter(input, output, false));
   converter_->AddInput(this);
@@ -940,12 +954,12 @@ void WASAPIAudioInputStream::ReportOpenResult(HRESULT hr) const {
         input_format_.Format.wBitsPerSample,
         input_format_.Format.nBlockAlign, input_format_.Format.nAvgBytesPerSec,
         input_format_.Format.cbSize,
-        output_format_.Format.wFormatTag, output_format_.Format.nChannels,
-        output_format_.Format.nSamplesPerSec,
-        output_format_.Format.wBitsPerSample,
-        output_format_.Format.nBlockAlign,
-        output_format_.Format.nAvgBytesPerSec,
-        output_format_.Format.cbSize));
+        output_format_.wFormatTag, output_format_.nChannels,
+        output_format_.nSamplesPerSec,
+        output_format_.wBitsPerSample,
+        output_format_.nBlockAlign,
+        output_format_.nAvgBytesPerSec,
+        output_format_.cbSize));
     // clang-format on
   }
 }

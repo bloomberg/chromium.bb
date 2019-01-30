@@ -186,16 +186,18 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // All OnData() callbacks will be called from this thread.
   std::unique_ptr<base::DelegateSimpleThread> capture_thread_;
 
-  // Contains the desired output audio format which is set up at construction,
-  // that is the audio format this class should output data to the sink in, that
-  // is the format after the converter.
-  WAVEFORMATEXTENSIBLE output_format_;
+  // Contains the desired output audio format which is set up at construction
+  // and then never modified. It is the audio format this class will output
+  // data to the sink in, or equivalently, the format after the converter if
+  // such is needed. Does not need the extended version since we only support
+  // max stereo at this stage.
+  WAVEFORMATEX output_format_;
 
-  // Contains the audio format we get data from the audio engine in. Set to
-  // |output_format_| at construction and might be changed to a close match if
-  // the audio engine doesn't support the originally set format. Note that this
-  // is also the format after the fifo, i.e. the input format to the converter
-  // if any.
+  // Contains the audio format we get data from the audio engine in. Initially
+  // set to |output_format_| at construction but it might be changed to a close
+  // match if the audio engine doesn't support the originally set format. Note
+  // that, this is also the format after the FIFO, i.e. the input format to the
+  // converter if any.
   WAVEFORMATEXTENSIBLE input_format_;
 
   bool opened_ = false;
