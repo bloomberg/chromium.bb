@@ -53,10 +53,8 @@ namespace blink {
 namespace {
 constexpr float kmax_oversize_ratio = 2.0f;
 
-void CheckForOptimizedImagePolicy(const Document& document,
-                                  ImageResourceContent* new_image,
-                                  bool* is_legacy_format,
-                                  bool* is_unoptimized_image) {
+bool CheckForOptimizedImagePolicy(const Document& document,
+                                  ImageResourceContent* new_image) {
   // Render the image as a placeholder image if the document does not have the
   // 'legacy-image-formats' feature enabled, and the image is not one of the
   // allowed formats.
@@ -65,8 +63,10 @@ void CheckForOptimizedImagePolicy(const Document& document,
         mojom::FeaturePolicyFeature::kLegacyImageFormats);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
         !document.IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kLegacyImageFormats))
-      *is_legacy_format = true;
+            mojom::FeaturePolicyFeature::kLegacyImageFormats,
+            ReportOptions::kReportOnFailure)) {
+      return true;
+    }
   }
   // Render the image as a placeholder image if the document does not have the
   // 'unoptimized-images' feature enabled and the image is not
@@ -76,9 +76,12 @@ void CheckForOptimizedImagePolicy(const Document& document,
         mojom::FeaturePolicyFeature::kUnoptimizedImages);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
         !document.IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kUnoptimizedImages))
-      *is_unoptimized_image = true;
+            mojom::FeaturePolicyFeature::kUnoptimizedImages,
+            ReportOptions::kReportOnFailure)) {
+      return true;
+    }
   }
+  return false;
 }
 
 bool CheckForOversizedImagesPolicy(const Document& document,
@@ -118,8 +121,7 @@ LayoutImage::LayoutImage(Element* element)
       did_increment_visually_non_empty_pixel_count_(false),
       is_generated_content_(false),
       image_device_pixel_ratio_(1.0f),
-      is_legacy_format_(false),
-      is_unoptimized_image_(false),
+      is_legacy_format_or_unoptimized_image_(false),
       is_oversized_image_(false) {}
 
 LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
@@ -491,47 +493,15 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
 }
 
 bool LayoutImage::IsImagePolicyViolated() const {
-  return is_oversized_image_ || is_legacy_format_ || is_unoptimized_image_;
-}
-
-void LayoutImage::ReportImagePolicyViolation() const {
-  if (is_oversized_image_) {
-    auto state = GetDocument().GetFeatureEnabledState(
-        mojom::FeaturePolicyFeature::kOversizedImages);
-    GetDocument().ReportFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kOversizedImages,
-        state == FeatureEnabledState::kReportOnly
-            ? mojom::FeaturePolicyDisposition::kReport
-            : mojom::FeaturePolicyDisposition::kEnforce);
-  }
-
-  if (is_unoptimized_image_) {
-    auto state = GetDocument().GetFeatureEnabledState(
-        mojom::FeaturePolicyFeature::kUnoptimizedImages);
-    GetDocument().ReportFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kUnoptimizedImages,
-        state == FeatureEnabledState::kReportOnly
-            ? mojom::FeaturePolicyDisposition::kReport
-            : mojom::FeaturePolicyDisposition::kEnforce);
-  }
-
-  if (is_legacy_format_) {
-    auto state = GetDocument().GetFeatureEnabledState(
-        mojom::FeaturePolicyFeature::kLegacyImageFormats);
-    GetDocument().ReportFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kLegacyImageFormats,
-        state == FeatureEnabledState::kReportOnly
-            ? mojom::FeaturePolicyDisposition::kReport
-            : mojom::FeaturePolicyDisposition::kEnforce);
-  }
+  return is_oversized_image_ || is_legacy_format_or_unoptimized_image_;
 }
 
 void LayoutImage::ValidateImagePolicies() {
   if (image_resource_ && image_resource_->CachedImage()) {
     is_oversized_image_ = CheckForOversizedImagesPolicy(
         GetDocument(), image_resource_->CachedImage(), this);
-    CheckForOptimizedImagePolicy(GetDocument(), image_resource_->CachedImage(),
-                                 &is_legacy_format_, &is_unoptimized_image_);
+    is_legacy_format_or_unoptimized_image_ = CheckForOptimizedImagePolicy(
+        GetDocument(), image_resource_->CachedImage());
   }
 }
 
