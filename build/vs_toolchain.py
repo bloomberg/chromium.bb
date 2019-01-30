@@ -42,7 +42,10 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   if ((sys.platform in ('win32', 'cygwin') or os.path.exists(json_data_file))
       and depot_tools_win_toolchain):
     if ShouldUpdateToolchain():
-      update_result = Update()
+      if len(sys.argv) > 1 and sys.argv[1] == 'update':
+        update_result = Update()
+      else:
+        update_result = Update(no_download=True)
       if update_result != 0:
         raise Exception('Failed to update, error code %d.' % update_result)
     with open(json_data_file, 'r') as tempf:
@@ -387,10 +390,12 @@ def ShouldUpdateToolchain():
   return version != env_version
 
 
-def Update(force=False):
+def Update(force=False, no_download=False):
   """Requests an update of the toolchain to the specific hashes we have at
   this revision. The update outputs a .json of the various configuration
   information required to pass to gyp which we use in |GetToolchainDir()|.
+  If no_download is true then the toolchain will be configured if present but
+  will not be downloaded.
   """
   if force != False and force != '--force':
     print >>sys.stderr, 'Unknown parameter "%s"' % force
@@ -441,6 +446,8 @@ def Update(force=False):
       ] + _GetDesiredVsToolchainHashes()
     if force:
       get_toolchain_args.append('--force')
+    if no_download:
+      get_toolchain_args.append('--no-download')
     subprocess.check_call(get_toolchain_args)
 
   return 0
