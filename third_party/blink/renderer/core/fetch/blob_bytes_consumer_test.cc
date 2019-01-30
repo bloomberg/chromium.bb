@@ -7,7 +7,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
-#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -23,9 +22,7 @@ namespace blink {
 
 namespace {
 
-using DataConsumerCommand = DataConsumerHandleTestUtil::Command;
 using PublicState = BytesConsumer::PublicState;
-using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using Result = BytesConsumer::Result;
 
 class BlobBytesConsumerTestClient final

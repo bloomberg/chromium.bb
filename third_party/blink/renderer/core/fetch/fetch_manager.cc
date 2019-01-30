@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/buffering_bytes_consumer.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -537,7 +537,8 @@ void FetchManager::Loader::DidReceiveResponse(
   if (fetch_request_data_->Integrity().IsEmpty()) {
     BytesConsumer* bytes_consumer =
         MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-            GetExecutionContext(), std::move(handle));
+            GetExecutionContext()->GetTaskRunner(TaskType::kNetworking),
+            std::move(handle));
     if (!response.CacheControlContainsNoStore()) {
       // BufferingBytesConsumer reads chunks from |bytes_consumer| as soon as
       // they get available to relieve backpressure.

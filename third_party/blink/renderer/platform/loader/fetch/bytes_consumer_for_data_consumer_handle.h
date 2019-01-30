@@ -2,31 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BYTES_CONSUMER_FOR_DATA_CONSUMER_HANDLE_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BYTES_CONSUMER_FOR_DATA_CONSUMER_HANDLE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_FOR_DATA_CONSUMER_HANDLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_FOR_DATA_CONSUMER_HANDLE_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace blink {
 
-class ExecutionContext;
-
-class CORE_EXPORT BytesConsumerForDataConsumerHandle final
+class PLATFORM_EXPORT BytesConsumerForDataConsumerHandle final
     : public BytesConsumer,
       public WebDataConsumerHandle::Client {
   EAGERLY_FINALIZE();
   DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 
  public:
-  BytesConsumerForDataConsumerHandle(ExecutionContext*,
-                                     std::unique_ptr<WebDataConsumerHandle>);
+  BytesConsumerForDataConsumerHandle(
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      std::unique_ptr<WebDataConsumerHandle>);
   ~BytesConsumerForDataConsumerHandle() override;
 
   Result BeginRead(const char** buffer, size_t* available) override;
@@ -54,7 +57,7 @@ class CORE_EXPORT BytesConsumerForDataConsumerHandle final
   void SetError();
   void Notify();
 
-  Member<ExecutionContext> execution_context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
   Member<BytesConsumer::Client> client_;
   InternalState state_ = InternalState::kWaiting;
@@ -65,4 +68,4 @@ class CORE_EXPORT BytesConsumerForDataConsumerHandle final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BYTES_CONSUMER_FOR_DATA_CONSUMER_HANDLE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_FOR_DATA_CONSUMER_HANDLE_H_

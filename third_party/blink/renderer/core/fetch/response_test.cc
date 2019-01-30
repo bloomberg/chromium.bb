@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
-#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"

@@ -1,19 +1,17 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
+#include "third_party/blink/renderer/platform/loader/testing/replaying_web_data_consumer_handle.h"
 
-#include <memory>
-#include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include <utility>
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 
-class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
-    : public Reader {
+class ReplayingWebDataConsumerHandle::ReaderImpl final : public Reader {
  public:
   ReaderImpl(scoped_refptr<Context> context, Client* client)
       : context_(std::move(context)) {
@@ -34,13 +32,12 @@ class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
   scoped_refptr<Context> context_;
 };
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::Add(
-    const Command& command) {
+void ReplayingWebDataConsumerHandle::Context::Add(const Command& command) {
   MutexLocker locker(mutex_);
   commands_.push_back(command);
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::AttachReader(
+void ReplayingWebDataConsumerHandle::Context::AttachReader(
     WebDataConsumerHandle::Client* client) {
   MutexLocker locker(mutex_);
   DCHECK(!reader_thread_);
@@ -52,7 +49,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::AttachReader(
     Notify();
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::DetachReader() {
+void ReplayingWebDataConsumerHandle::Context::DetachReader() {
   MutexLocker locker(mutex_);
   DCHECK(reader_thread_ && reader_thread_->IsCurrentThread());
   reader_thread_ = nullptr;
@@ -61,7 +58,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::DetachReader() {
     detached_->Signal();
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::DetachHandle() {
+void ReplayingWebDataConsumerHandle::Context::DetachHandle() {
   MutexLocker locker(mutex_);
   is_handle_attached_ = false;
   if (!reader_thread_)
@@ -69,10 +66,9 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::DetachHandle() {
 }
 
 WebDataConsumerHandle::Result
-DataConsumerHandleTestUtil::ReplayingHandle::Context::BeginRead(
-    const void** buffer,
-    Flags,
-    size_t* available) {
+ReplayingWebDataConsumerHandle::Context::BeginRead(const void** buffer,
+                                                   Flags,
+                                                   size_t* available) {
   MutexLocker locker(mutex_);
   *buffer = nullptr;
   *available = 0;
@@ -106,15 +102,14 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::BeginRead(
   return result;
 }
 
-WebDataConsumerHandle::Result
-DataConsumerHandleTestUtil::ReplayingHandle::Context::EndRead(
+WebDataConsumerHandle::Result ReplayingWebDataConsumerHandle::Context::EndRead(
     size_t read_size) {
   MutexLocker locker(mutex_);
   Consume(read_size);
   return kOk;
 }
 
-DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
+ReplayingWebDataConsumerHandle::Context::Context()
     : offset_(0),
       reader_thread_(nullptr),
       client_(nullptr),
@@ -122,14 +117,13 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
       is_handle_attached_(true),
       detached_(std::make_unique<WaitableEvent>()) {}
 
-const DataConsumerHandleTestUtil::Command&
-DataConsumerHandleTestUtil::ReplayingHandle::Context::Top() {
+const ReplayingWebDataConsumerHandle::Command&
+ReplayingWebDataConsumerHandle::Context::Top() {
   DCHECK(!IsEmpty());
   return commands_.front();
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::Consume(
-    size_t size) {
+void ReplayingWebDataConsumerHandle::Context::Consume(size_t size) {
   DCHECK(!IsEmpty());
   DCHECK(size + offset_ <= Top().Body().size());
   bool fully_consumed = (size + offset_ >= Top().Body().size());
@@ -141,7 +135,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::Consume(
   }
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::Notify() {
+void ReplayingWebDataConsumerHandle::Context::Notify() {
   if (!client_)
     return;
   DCHECK(reader_thread_);
@@ -150,7 +144,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::Notify() {
       CrossThreadBind(&Context::NotifyInternal, WrapRefCounted(this)));
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Context::NotifyInternal() {
+void ReplayingWebDataConsumerHandle::Context::NotifyInternal() {
   {
     MutexLocker locker(mutex_);
     if (!client_ || !reader_thread_->IsCurrentThread()) {
@@ -162,21 +156,21 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::NotifyInternal() {
   client_->DidGetReadable();
 }
 
-DataConsumerHandleTestUtil::ReplayingHandle::ReplayingHandle()
+ReplayingWebDataConsumerHandle::ReplayingWebDataConsumerHandle()
     : context_(Context::Create()) {}
 
-DataConsumerHandleTestUtil::ReplayingHandle::~ReplayingHandle() {
+ReplayingWebDataConsumerHandle::~ReplayingWebDataConsumerHandle() {
   context_->DetachHandle();
 }
 
 std::unique_ptr<WebDataConsumerHandle::Reader>
-DataConsumerHandleTestUtil::ReplayingHandle::ObtainReader(
+ReplayingWebDataConsumerHandle::ObtainReader(
     Client* client,
     scoped_refptr<base::SingleThreadTaskRunner>) {
   return std::make_unique<ReaderImpl>(context_, client);
 }
 
-void DataConsumerHandleTestUtil::ReplayingHandle::Add(const Command& command) {
+void ReplayingWebDataConsumerHandle::Add(const Command& command) {
   context_->Add(command);
 }
 

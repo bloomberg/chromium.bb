@@ -2,25 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
 
 #include <algorithm>
 
 #include "base/location.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 BytesConsumerForDataConsumerHandle::BytesConsumerForDataConsumerHandle(
-    ExecutionContext* execution_context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<WebDataConsumerHandle> handle)
-    : execution_context_(execution_context),
-      reader_(handle->ObtainReader(
-          this,
-          execution_context->GetTaskRunner(TaskType::kNetworking))) {}
+    : task_runner_(std::move(task_runner)),
+      reader_(handle->ObtainReader(this, task_runner_)) {}
 
 BytesConsumerForDataConsumerHandle::~BytesConsumerForDataConsumerHandle() {}
 
@@ -70,9 +67,8 @@ BytesConsumer::Result BytesConsumerForDataConsumerHandle::EndRead(size_t read) {
   }
   if (has_pending_notification_) {
     has_pending_notification_ = false;
-    execution_context_->GetTaskRunner(TaskType::kNetworking)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&BytesConsumerForDataConsumerHandle::Notify,
+    task_runner_->PostTask(
+        FROM_HERE, WTF::Bind(&BytesConsumerForDataConsumerHandle::Notify,
                              WrapPersistent(this)));
   }
   return Result::kOk;
@@ -141,7 +137,6 @@ void BytesConsumerForDataConsumerHandle::DidGetReadable() {
 }
 
 void BytesConsumerForDataConsumerHandle::Trace(blink::Visitor* visitor) {
-  visitor->Trace(execution_context_);
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);
 }
