@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 
+#include <utility>
+#include "mojo/public/c/system/data_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -195,6 +197,70 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     loader->DidReceiveResponse(WrappedResourceResponse(response));
     EXPECT_EQ(test.expectation, resource->GetResponse().GetType());
   }
+}
+
+TEST_F(ResourceLoaderTest, LoadResponseBody) {
+  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  FetchContext* context = MakeGarbageCollected<MockFetchContext>();
+  auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(*properties, context, CreateTaskRunner(),
+                          MakeGarbageCollected<NoopLoaderFactory>()));
+
+  KURL url("https://www.example.com/");
+  ResourceRequest request(url);
+  request.SetRequestContext(mojom::RequestContextType::FETCH);
+
+  FetchParameters params(request);
+  Resource* resource = RawResource::Fetch(params, fetcher, nullptr);
+  ResourceLoader* loader = resource->Loader();
+
+  ResourceResponse response(url);
+  response.SetHTTPStatusCode(200);
+
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = 3;
+
+  MojoResult result = CreateDataPipe(&options, &producer, &consumer);
+  ASSERT_EQ(result, MOJO_RESULT_OK);
+
+  loader->DidReceiveResponse(WrappedResourceResponse(response));
+  loader->DidStartLoadingResponseBody(std::move(consumer));
+  loader->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false, {});
+
+  uint32_t num_bytes = 2;
+  result = producer->WriteData("he", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(result, MOJO_RESULT_OK);
+  ASSERT_EQ(num_bytes, 2u);
+
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+
+  num_bytes = 3;
+  result = producer->WriteData("llo", &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(result, MOJO_RESULT_OK);
+  ASSERT_EQ(num_bytes, 3u);
+
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
+
+  producer.reset();
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+
+  EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
+  scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
+  String data;
+  for (const auto& span : *buffer) {
+    data.append(String(span.data(), span.size()));
+  }
+  EXPECT_EQ(data, "hello");
 }
 
 class ResourceLoaderIsolatedCodeCacheTest : public ResourceLoaderTest {
