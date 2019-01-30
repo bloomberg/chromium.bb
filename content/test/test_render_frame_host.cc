@@ -70,7 +70,6 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                           false),
       child_creation_observer_(delegate ? delegate->GetAsWebContents()
                                         : nullptr),
-      contents_mime_type_("text/html"),
       simulate_history_list_was_cleared_(false),
       last_commit_was_error_page_(false) {}
 
@@ -161,7 +160,7 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   params.should_update_history = true;
   params.did_create_new_entry = !is_auto_subframe;
   params.gesture = NavigationGestureUser;
-  params.contents_mime_type = contents_mime_type_;
+  params.contents_mime_type = "text/html";
   params.method = "GET";
   params.http_status_code = 200;
   params.socket_address.set_host("2001:db8::1");
@@ -193,10 +192,6 @@ void TestRenderFrameHost::SimulateNavigationStop() {
     // ongoing navigation in the FrameTreeNode. Cancel this one as well.
     frame_tree_node()->ResetNavigationRequest(false, true);
   }
-}
-
-void TestRenderFrameHost::SetContentsMimeType(const std::string& mime_type) {
-  contents_mime_type_ = mime_type;
 }
 
 void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
@@ -303,7 +298,7 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
     response_headers->AddHeader(std::string("Content-Type: ") +
-                                contents_mime_type_);
+                                params->contents_mime_type);
     GetNavigationHandle()->set_response_headers_for_testing(response_headers);
   }
 
@@ -565,7 +560,7 @@ TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
   params->did_create_new_entry = did_create_new_entry;
   params->should_replace_current_entry = should_replace_entry;
   params->gesture = NavigationGestureUser;
-  params->contents_mime_type = contents_mime_type_;
+  params->contents_mime_type = "text/html";
   params->method = "GET";
   params->http_status_code = response_code;
   params->socket_address.set_host("2001:db8::1");
