@@ -31,6 +31,7 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/loader_util.h"
@@ -198,9 +199,10 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   }
 
   // Set Fetch metadata headers if necessary.
-  if (base::FeatureList::IsEnabled(features::kSecMetadata) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  if ((base::FeatureList::IsEnabled(features::kSecMetadata) ||
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableExperimentalWebPlatformFeatures)) &&
+      IsOriginSecure(resource_request->url)) {
     // The worker's origin can be different from the constructor's origin, for
     // example, when the worker created from the extension.
     // TODO(hiroshige): Add DCHECK to make sure the same-originness once the

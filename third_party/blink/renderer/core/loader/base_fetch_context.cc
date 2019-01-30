@@ -125,7 +125,10 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
   if (address_space)
     request.SetExternalRequestStateFromRequestorAddressSpace(*address_space);
 
-  if (blink::RuntimeEnabledFeatures::SecMetadataEnabled()) {
+  scoped_refptr<SecurityOrigin> url_origin =
+      SecurityOrigin::Create(request.Url());
+  if (blink::RuntimeEnabledFeatures::SecMetadataEnabled() &&
+      url_origin->IsPotentiallyTrustworthy()) {
     const char* destination_value =
         GetDestinationFromContext(request.GetRequestContext());
 
@@ -138,9 +141,8 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     if (strncmp(destination_value, "document", 8) != 0 &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
       const char* site_value = "cross-site";
-      if (SecurityOrigin::Create(request.Url())
-              ->IsSameSchemeHostPort(
-                  fetch_client_settings_object.GetSecurityOrigin())) {
+      if (url_origin->IsSameSchemeHostPort(
+              fetch_client_settings_object.GetSecurityOrigin())) {
         site_value = "same-origin";
       } else {
         OriginAccessEntry access_entry(
