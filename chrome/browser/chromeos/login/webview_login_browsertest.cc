@@ -729,15 +729,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // matching certificate.
 //
 // Disabled due to flaky timeouts: https://crbug.com/830337.
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_SigninFrameAuthorityGivenNoMatchingCert \
-  DISABLED_SigninFrameAuthorityGivenNoMatchingCert
-#else
-#define MAYBE_SigninFrameAuthorityGivenNoMatchingCert \
-  SigninFrameAuthorityGivenNoMatchingCert
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       MAYBE_SigninFrameAuthorityGivenNoMatchingCert) {
+                       DISABLED_SigninFrameAuthorityGivenNoMatchingCert) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
