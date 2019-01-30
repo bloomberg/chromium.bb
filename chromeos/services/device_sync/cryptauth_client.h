@@ -30,6 +30,13 @@ class FindEligibleForPromotionRequest;
 class FindEligibleForPromotionResponse;
 }  // namespace cryptauth
 
+namespace cryptauthv2 {
+class SyncKeysRequest;
+class SyncKeysResponse;
+class EnrollKeysRequest;
+class EnrollKeysResponse;
+}  // namespace cryptauthv2
+
 namespace chromeos {
 
 namespace device_sync {
@@ -105,6 +112,20 @@ class CryptAuthClient {
       const cryptauth::FinishEnrollmentRequest& request,
       const FinishEnrollmentCallback& callback,
       const ErrorCallback& error_callback) = 0;
+
+  // SyncKeys (CryptAuth v2 Enrollment)
+  typedef base::Callback<void(const cryptauthv2::SyncKeysResponse&)>
+      SyncKeysCallback;
+  virtual void SyncKeys(const cryptauthv2::SyncKeysRequest& request,
+                        const SyncKeysCallback& callback,
+                        const ErrorCallback& error_callback) = 0;
+
+  // EnrollKeys (CryptAuth v2 Enrollment)
+  typedef base::Callback<void(const cryptauthv2::EnrollKeysResponse&)>
+      EnrollKeysCallback;
+  virtual void EnrollKeys(const cryptauthv2::EnrollKeysRequest& request,
+                          const EnrollKeysCallback& callback,
+                          const ErrorCallback& error_callback) = 0;
 
   // Returns the access token used to make the request. If no request has been
   // made yet, this function will return an empty string.

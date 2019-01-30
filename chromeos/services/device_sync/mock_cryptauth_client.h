@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_enrollment.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -52,6 +53,14 @@ class MockCryptAuthClient : public CryptAuthClient {
   MOCK_METHOD3(FinishEnrollment,
                void(const cryptauth::FinishEnrollmentRequest& request,
                     const FinishEnrollmentCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(SyncKeys,
+               void(const cryptauthv2::SyncKeysRequest& request,
+                    const SyncKeysCallback& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD3(EnrollKeys,
+               void(const cryptauthv2::EnrollKeysRequest& request,
+                    const EnrollKeysCallback& callback,
                     const ErrorCallback& error_callback));
   MOCK_METHOD0(GetAccessTokenUsed, std::string());
 

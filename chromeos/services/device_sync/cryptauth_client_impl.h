@@ -36,6 +36,8 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // Creates the client using |url_request_context| to make the HTTP request
   // through |api_call_flow|. The |device_classifier| argument contains basic
   // device information of the caller (e.g. version and device type).
+  // TODO(nohle): Remove the |device_classifier| argument when the CryptAuth v1
+  // methods are no longer needed.
   CryptAuthClientImpl(
       std::unique_ptr<CryptAuthApiCallFlow> api_call_flow,
       identity::IdentityManager* identity_manager,
@@ -72,15 +74,21 @@ class CryptAuthClientImpl : public CryptAuthClient {
   void FinishEnrollment(const cryptauth::FinishEnrollmentRequest& request,
                         const FinishEnrollmentCallback& callback,
                         const ErrorCallback& error_callback) override;
+  void SyncKeys(const cryptauthv2::SyncKeysRequest& request,
+                const SyncKeysCallback& callback,
+                const ErrorCallback& error_callback) override;
+  void EnrollKeys(const cryptauthv2::EnrollKeysRequest& request,
+                  const EnrollKeysCallback& callback,
+                  const ErrorCallback& error_callback) override;
   std::string GetAccessTokenUsed() override;
 
  private:
-  // Starts a call to the API given by |request_path|, with the templated
+  // Starts a call to the API given by |request_url|, with the templated
   // request and response types. The client first fetches the access token and
   // then makes the HTTP request.
   template <class RequestProto, class ResponseProto>
   void MakeApiCall(
-      const std::string& request_path,
+      const GURL& request_url,
       const RequestProto& request_proto,
       const base::Callback<void(const ResponseProto&)>& response_callback,
       const ErrorCallback& error_callback,
@@ -105,6 +113,11 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // Called when the current API call fails at any step.
   void OnApiCallFailed(NetworkRequestError error);
 
+  // Returns a copy of the input request with the device classifier field set.
+  // Only used for CryptAuth v1 protos.
+  template <class RequestProto>
+  RequestProto RequestWithDeviceClassifierSet(const RequestProto& request);
+
   // Constructs and executes the actual HTTP request.
   std::unique_ptr<CryptAuthApiCallFlow> api_call_flow_;
 
@@ -125,8 +138,8 @@ class CryptAuthClientImpl : public CryptAuthClient {
   // completes.
   bool has_call_started_;
 
-  // URL path of the current request.
-  std::string request_path_;
+  // URL of the current request.
+  GURL request_url_;
 
   // The access token fetched by |access_token_fetcher_|.
   std::string access_token_used_;
