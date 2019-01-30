@@ -98,6 +98,9 @@ public class LifetimeAssertTest {
 
     @Test
     public void testAssertAllInstancesDestroyedForTesting() {
+        if (!BuildConfig.DCHECK_IS_ON) {
+            return;
+        }
         try {
             LifetimeAssert.assertAllInstancesDestroyedForTesting();
             Assert.fail();
