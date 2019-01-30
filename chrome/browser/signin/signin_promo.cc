@@ -10,7 +10,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/common/chrome_features.h"
@@ -208,17 +207,24 @@ GURL GetEmbeddedReauthURLWithEmail(signin_metrics::AccessPoint access_point,
   return GetEmbeddedReauthURLInternal(access_point, reason, email);
 }
 
-GURL GetSigninURLForDice(Profile* profile, const std::string& email) {
-  DCHECK(signin::DiceMethodGreaterOrEqual(
-      AccountConsistencyModeManager::GetMethodForProfile(profile),
-      signin::AccountConsistencyMethod::kDiceMigration));
+GURL GetChromeSyncURLForDice(const std::string& email,
+                             const std::string& continue_url) {
   GURL url = GaiaUrls::GetInstance()->signin_chrome_sync_dice();
   if (!email.empty())
     url = net::AppendQueryParameter(url, "email_hint", email);
-  // Pass www.gooogle.com as the continue URL as otherwise Gaia navigates to
-  // myaccount which may be very confusing for the user.
-  return net::AppendQueryParameter(
-      url, "continue", UIThreadSearchTermsData(profile).GoogleBaseURLValue());
+  if (!continue_url.empty())
+    url = net::AppendQueryParameter(url, "continue", continue_url);
+  return url;
+}
+
+GURL GetAddAccountURLForDice(const std::string& email,
+                             const std::string& continue_url) {
+  GURL url = GaiaUrls::GetInstance()->add_account_url();
+  if (!email.empty())
+    url = net::AppendQueryParameter(url, "Email", email);
+  if (!continue_url.empty())
+    url = net::AppendQueryParameter(url, "continue", continue_url);
+  return url;
 }
 
 GURL GetSigninPartitionURL() {

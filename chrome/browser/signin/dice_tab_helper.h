@@ -14,24 +14,25 @@ namespace content {
 class NavigationHandle;
 }
 
-// Tab helper used for DICE to mark that sync should start after a web sign-in
-// with a Google account.
+// Tab helper used for DICE to tag signin tabs. Signin tabs can be reused.
 class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
                       public content::WebContentsObserver {
  public:
   ~DiceTabHelper() override;
 
-  signin_metrics::AccessPoint signin_access_point() {
+  signin_metrics::AccessPoint signin_access_point() const {
     return signin_access_point_;
   }
 
-  signin_metrics::PromoAction signin_promo_action() {
+  signin_metrics::PromoAction signin_promo_action() const {
     return signin_promo_action_;
   }
 
-  signin_metrics::Reason signin_reason() { return signin_reason_; }
+  signin_metrics::Reason signin_reason() const { return signin_reason_; }
 
-  GURL redirect_url() { return redirect_url_; }
+  const GURL& redirect_url() const { return redirect_url_; }
+
+  const GURL& signin_url() const { return signin_url_; }
 
   // Initializes the DiceTabHelper for a new signin flow. Must be called once
   // per signin flow happening in the tab, when the signin URL is being loaded.

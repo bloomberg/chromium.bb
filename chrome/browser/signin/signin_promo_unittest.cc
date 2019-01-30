@@ -9,7 +9,7 @@
 
 namespace signin {
 
-TEST(SigninPromoTest, TestForceSigninURL) {
+TEST(SigninPromoTest, TestPromoURL) {
   GURL expected_url_1(
       "chrome://chrome-signin/?access_point=0&reason=0&auto_close=1");
   EXPECT_EQ(expected_url_1,
@@ -51,6 +51,17 @@ TEST(SigninPromoTest, TestLandingURL) {
       "success.html?access_point=3&source=3");
   EXPECT_EQ(expected_url_3,
             GetLandingURL(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS));
+}
+
+TEST(SigninPromoTest, SigninURLForDice) {
+  EXPECT_EQ(
+      "https://accounts.google.com/signin/chrome/sync?ssp=1&"
+      "email_hint=email%40gmail.com&continue=https%3A%2F%2Fcontinue_url%2F",
+      GetChromeSyncURLForDice("email@gmail.com", "https://continue_url/"));
+  EXPECT_EQ(
+      "https://accounts.google.com/AddSession?"
+      "Email=email%40gmail.com&continue=https%3A%2F%2Fcontinue_url%2F",
+      GetAddAccountURLForDice("email@gmail.com", "https://continue_url/"));
 }
 
 }  // namespace signin
