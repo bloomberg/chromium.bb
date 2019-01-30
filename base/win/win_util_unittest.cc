@@ -59,9 +59,9 @@ TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
   ASSERT_GT(original_snapshot_size, 0u);
   snapshot.clear();
 
-  // Load in a new module. Pick msvidc32.dll as it is present from WinXP to
-  // Win10 and yet rarely used.
-  const wchar_t dll_name[] = L"msvidc32.dll";
+  // Load in a new module. Pick zipfldr.dll as it is present from WinXP to
+  // Win10, including ARM64 Win10, and yet rarely used.
+  const wchar_t dll_name[] = L"zipfldr.dll";
   ASSERT_EQ(NULL, ::GetModuleHandle(dll_name));
 
   base::ScopedNativeLibrary new_dll((base::FilePath(dll_name)));
