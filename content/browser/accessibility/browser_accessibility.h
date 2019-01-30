@@ -323,11 +323,18 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Get text to announce for a live region change if AT does not implement.
   std::string GetLiveRegionText() const;
 
-  // Creates a text position rooted at this object.
+  // Creates a text position rooted at this object. Does not conver to a
+  // leaf text position - see CreatePositionForSelectionAt, below.
   BrowserAccessibilityPosition::AXPositionInstance CreatePositionAt(
       int offset,
       ax::mojom::TextAffinity affinity =
           ax::mojom::TextAffinity::kDownstream) const;
+
+  // |offset| could either be a text character or a child index in case of
+  // non-text objects. Converts to a leaf text position if you pass a
+  // character offset on a container node.
+  BrowserAccessibilityPosition::AXPositionInstance CreatePositionForSelectionAt(
+      int offset) const;
 
   // Gets the text offsets where new lines start.
   std::vector<int> GetLineStartOffsets() const;

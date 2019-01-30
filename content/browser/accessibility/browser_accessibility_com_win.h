@@ -391,11 +391,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // embedded child objects.
   CONTENT_EXPORT void ComputeStylesIfNeeded();
 
-  // |offset| could either be a text character or a child index in case of
-  // non-text objects.
-  BrowserAccessibilityPosition::AXPositionInstance CreatePositionForSelectionAt(
-      int offset) const;
-
   // Public accessors (these do not have COM accessible accessors)
   const base::string16& role_name() const { return win_attributes_->role_name; }
   const std::map<int, std::vector<base::string16>>& offset_to_text_attributes()

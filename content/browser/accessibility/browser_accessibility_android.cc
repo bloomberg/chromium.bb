@@ -1335,14 +1335,45 @@ base::string16 BrowserAccessibilityAndroid::GetTextChangeBeforeText() const {
 
 int BrowserAccessibilityAndroid::GetSelectionStart() const {
   int sel_start = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &sel_start);
-  return sel_start;
+  if (IsPlainTextField() &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &sel_start)) {
+    return sel_start;
+  }
+
+  int32_t anchor_id = manager()->GetTreeData().sel_anchor_object_id;
+  BrowserAccessibility* anchor_object = manager()->GetFromID(anchor_id);
+  if (!anchor_object) {
+    return 0;
+  }
+
+  auto position = anchor_object->CreatePositionAt(
+      manager()->GetTreeData().sel_anchor_offset,
+      manager()->GetTreeData().sel_anchor_affinity);
+  while (position->GetAnchor() && position->GetAnchor() != this)
+    position = position->CreateParentPosition();
+
+  return !position->IsNullPosition() ? position->text_offset() : 0;
 }
 
 int BrowserAccessibilityAndroid::GetSelectionEnd() const {
   int sel_end = 0;
-  GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &sel_end);
-  return sel_end;
+  if (IsPlainTextField() &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &sel_end)) {
+    return sel_end;
+  }
+
+  int32_t focus_id = manager()->GetTreeData().sel_focus_object_id;
+  BrowserAccessibility* focus_object = manager()->GetFromID(focus_id);
+  if (!focus_object)
+    return 0;
+
+  auto position = focus_object->CreatePositionAt(
+      manager()->GetTreeData().sel_focus_offset,
+      manager()->GetTreeData().sel_focus_affinity);
+  while (position->GetAnchor() && position->GetAnchor() != this)
+    position = position->CreateParentPosition();
+
+  return !position->IsNullPosition() ? position->text_offset() : 0;
 }
 
 int BrowserAccessibilityAndroid::GetEditableTextLength() const {
@@ -1647,7 +1678,7 @@ bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
       break;
   }
 
-  if (HasState(ax::mojom::State::kEditable))
+  if (IsPlainTextField() || IsRichTextField())
     return true;
 
   base::string16 value = GetValue();

@@ -19,5 +19,5 @@ android.webkit.WebView focusable focused scrollable
 ++android.widget.EditText role_description='spin button' name='Readonly spinbutton'
 ++android.view.MenuItem role_description='checkbox' checkable clickable name='Readonly menuitemcheckbox'
 ++android.view.MenuItem role_description='radio button' checkable clickable name='Readonly menuitemradio'
-++android.widget.EditText role_description='search text field' clickable editable_text name='Readonly searchbox'
+++android.widget.EditText role_description='search text field' clickable editable_text hint='Readonly searchbox'
 ++android.widget.CheckBox role_description='switch' checkable clickable name='Readonly switch'
