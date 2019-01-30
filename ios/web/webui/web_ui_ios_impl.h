@@ -38,21 +38,6 @@ class WebUIIOSImpl : public web::WebUIIOS,
   void ProcessWebUIIOSMessage(const GURL& source_url,
                               const std::string& message,
                               const base::ListValue& args) override;
-  void CallJavascriptFunction(const std::string& function_name) override;
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg) override;
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2) override;
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2,
-                              const base::Value& arg3) override;
-  void CallJavascriptFunction(const std::string& function_name,
-                              const base::Value& arg1,
-                              const base::Value& arg2,
-                              const base::Value& arg3,
-                              const base::Value& arg4) override;
   void CallJavascriptFunction(
       const std::string& function_name,
       const std::vector<const base::Value*>& args) override;
