@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class GoogleServicesNavigationCoordinator;
 
 // GoogleServicesNavigationCoordinator delegate.
-@protocol GoogleServicesNavigationCoordinatorDelegate<NSObject>
+@protocol GoogleServicesNavigationCoordinatorDelegate <NSObject>
 
 // Called when the user closed GoogleServicesNavigationCoordinator.
 - (void)googleServicesNavigationCoordinatorDidClose:
@@ -27,4 +27,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_NAVIGATION_COORDINATOR_H_
