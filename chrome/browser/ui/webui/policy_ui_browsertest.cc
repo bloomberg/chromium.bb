@@ -396,6 +396,10 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   // such policies.
   expected_values.SetDictionary("extensionPolicies",
                                 std::make_unique<base::DictionaryValue>());
+#if defined(OS_CHROMEOS)
+  expected_values.SetDictionary("deviceLocalAccountPolicies",
+                                std::make_unique<base::DictionaryValue>());
+#endif  // defined(OS_CHROMEOS)
 
   provider_.UpdateChromePolicy(values);
 
