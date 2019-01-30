@@ -282,7 +282,14 @@ WebMediaConfiguration ToWebMediaConfiguration(
     const MediaEncodingConfiguration* configuration) {
   WebMediaConfiguration web_configuration;
 
-  // TODO(mcasas): parse and set the type for encoding.
+  // |type| is required.
+  DCHECK(configuration->hasType());
+  if (configuration->type() == "record")
+    web_configuration.type = MediaConfigurationType::kRecord;
+  else if (configuration->type() == "transmission")
+    web_configuration.type = MediaConfigurationType::kTransmission;
+  else
+    NOTREACHED();
 
   if (configuration->hasAudio()) {
     web_configuration.audio_configuration =
@@ -383,6 +390,14 @@ ScriptPromise MediaCapabilities::encodingInfo(
     resolver->Reject(V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         "The audio configuration dictionary is not valid."));
+    return promise;
+  }
+
+  // TODO(crbug.com/817382): Add "transmission" type support.
+  if (configuration->type() == "transmission") {
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                             "\"transmission\" type is not implemented yet."));
     return promise;
   }
 

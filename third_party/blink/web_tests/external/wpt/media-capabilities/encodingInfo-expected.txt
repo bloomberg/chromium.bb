@@ -23,7 +23,8 @@ PASS Test that encodingInfo rejects if the audio configuration contenType doesn'
 PASS Test that encodingInfo rejects if the audio configuration contentType isn't of type audio
 PASS Test that encodingInfo rejects if the audio configuration contentType has more than one parameters
 PASS Test that encodingInfo rejects if the audio configuration contentType has one parameter that isn't codecs
-PASS Test that encodingInfo returns a valid MediaCapabilitiesInfo objects
+PASS Test that encodingInfo returns a valid MediaCapabilitiesInfo objects for record type
+FAIL Test that encodingInfo returns a valid MediaCapabilitiesInfo objects for transmission type promise_test: Unhandled rejection with value: object "NotSupportedError: "transmission" type is not implemented yet."
 FAIL Test that encodingInfo rejects if the MediaConfiguration does not have a valid type assert_unreached: Promise.all should not reject for valid types Reached unreachable code
 Harness: the test ran to completion.
 
