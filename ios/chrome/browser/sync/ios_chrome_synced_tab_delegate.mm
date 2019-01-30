@@ -81,7 +81,7 @@ GURL IOSChromeSyncedTabDelegate::GetVirtualURLAtIndex(int i) const {
 GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
   DCHECK_GE(i, 0);
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
-  return (item->GetFavicon().valid ? item->GetFavicon().url : GURL());
+  return (item && item->GetFavicon().valid ? item->GetFavicon().url : GURL());
 }
 
 ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(

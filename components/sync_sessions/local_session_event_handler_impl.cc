@@ -304,7 +304,7 @@ void LocalSessionEventHandlerImpl::AssociateTab(
 
   int current_index = tab_delegate->GetCurrentEntryIndex();
   const GURL new_url = tab_delegate->GetVirtualURLAtIndex(current_index);
-  if (new_url != old_url) {
+  if (current_index >= 0 && new_url != old_url) {
     delegate_->OnFaviconVisited(
         new_url, tab_delegate->GetFaviconURLAtIndex(current_index));
   }
