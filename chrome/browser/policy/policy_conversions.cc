@@ -42,6 +42,10 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 using base::Value;
@@ -235,6 +239,67 @@ void GetChromePolicyValues(content::BrowserContext* context,
                   GetKnownPolicies(schema_map, policy_namespace), values);
 }
 
+#if defined(OS_CHROMEOS)
+void GetDeviceLocalAccountPolicies(bool convert_values, Value* values) {
+  // DeviceLocalAccount policies are not available for not affiliated users
+  if (!user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated())
+    return;
+  BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  DCHECK(connector);  // always not-null
+
+  auto* device_local_account_policy_service =
+      connector->GetDeviceLocalAccountPolicyService();
+  DCHECK(device_local_account_policy_service);  // always non null for
+                                                // affiliated users
+  std::vector<DeviceLocalAccount> device_local_accounts =
+      GetDeviceLocalAccounts(chromeos::CrosSettings::Get());
+  for (const auto& account : device_local_accounts) {
+    std::string user_id = account.user_id;
+    Value current_account_policies(Value::Type::DICTIONARY);
+
+    auto* device_local_account_policy_broker =
+        device_local_account_policy_service->GetBrokerForUser(user_id);
+    if (!device_local_account_policy_broker) {
+      LOG(ERROR)
+          << "Can not get policy broker for device local account with user id: "
+          << user_id;
+      continue;
+    }
+
+    auto* cloud_policy_core = device_local_account_policy_broker->core();
+    DCHECK(cloud_policy_core);
+    auto* cloud_policy_store = cloud_policy_core->store();
+    DCHECK(cloud_policy_store);
+
+    const scoped_refptr<policy::SchemaMap> schema_map =
+        device_local_account_policy_broker->schema_registry()->schema_map();
+
+    PolicyNamespace policy_namespace =
+        PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+
+    // Make a copy that can be modified, since some policy values are modified
+    // before being displayed.
+    PolicyMap map;
+    map.CopyFrom(cloud_policy_store->policy_map());
+
+    // Get a list of all the errors in the policy values.
+    const policy::ConfigurationPolicyHandlerList* handler_list =
+        connector->GetHandlerList();
+    policy::PolicyErrorMap errors;
+    handler_list->ApplyPolicySettings(map, NULL, &errors);
+
+    // Convert dictionary values to strings for display.
+    handler_list->PrepareForDisplaying(&map);
+
+    GetPolicyValues(map, &errors, true, convert_values,
+                    GetKnownPolicies(schema_map, policy_namespace),
+                    &current_account_policies);
+    values->SetKey(user_id, std::move(current_account_policies));
+  }
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
@@ -290,6 +355,14 @@ Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
   }
   all_policies.SetKey("extensionPolicies", std::move(extension_values));
 #endif
+
+#if defined(OS_CHROMEOS)
+  Value device_local_account_policies(Value::Type::DICTIONARY);
+  GetDeviceLocalAccountPolicies(convert_values, &device_local_account_policies);
+  all_policies.SetKey("deviceLocalAccountPolicies",
+                      std::move(device_local_account_policies));
+#endif  // defined(OS_CHROMEOS)
+
   return all_policies;
 }
 
