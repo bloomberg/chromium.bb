@@ -84,6 +84,8 @@ class VotesUploader {
   void GeneratePasswordAttributesVote(const base::string16& password_value,
                                       autofill::FormStructure* form_structure);
 
+  bool operator==(const VotesUploader& other) const;
+
   bool get_generation_popup_was_shown() const {
     return generation_popup_was_shown_;
   }

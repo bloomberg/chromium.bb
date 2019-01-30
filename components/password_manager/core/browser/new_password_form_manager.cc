@@ -501,6 +501,7 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   result->password_overridden_ = password_overridden_;
   result->retry_password_form_password_update_ =
       retry_password_form_password_update_;
+  result->likely_form_filling_ = likely_form_filling_;
   result->is_submitted_ = is_submitted_;
 
   return result;

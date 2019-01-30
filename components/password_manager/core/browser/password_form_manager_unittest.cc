@@ -4117,6 +4117,41 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
   EXPECT_EQ(pending, passed);
 }
 
+// Check that a cloned PasswordFormManager correctly copies the data.
+TEST_F(PasswordFormManagerTest, Clone_DataIsCopied) {
+  // Construct some non-default data.
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  form_manager()->ProvisionallySave(*observed_form());
+
+  EXPECT_NE(autofill::PasswordForm(), form_manager()->pending_credentials_);
+  auto flip_bool = [](bool& b) { b = !b; };
+  flip_bool(form_manager()->is_new_login_);
+  flip_bool(form_manager()->has_generated_password_);
+  form_manager()->generated_password_.push_back('c');
+  flip_bool(form_manager()->password_overridden_);
+  flip_bool(form_manager()->retry_password_form_password_update_);
+  flip_bool(form_manager()->is_possible_change_password_form_without_username_);
+  form_manager()->votes_uploader_.set_is_manual_generation(
+      !form_manager()->votes_uploader_.is_manual_generation());
+  EXPECT_NE(LikelyFormFilling::kNoFilling,
+            form_manager()->likely_form_filling_);
+
+  // Clone the manager and make sure the copied data matches.
+  std::unique_ptr<const PasswordFormManager> clone = form_manager()->Clone();
+  EXPECT_EQ(form_manager()->pending_credentials_, clone->pending_credentials_);
+  EXPECT_EQ(form_manager()->is_new_login_, clone->is_new_login_);
+  EXPECT_EQ(form_manager()->has_generated_password_,
+            clone->has_generated_password_);
+  EXPECT_EQ(form_manager()->generated_password_, clone->generated_password_);
+  EXPECT_EQ(form_manager()->password_overridden_, clone->password_overridden_);
+  EXPECT_EQ(form_manager()->retry_password_form_password_update_,
+            clone->retry_password_form_password_update_);
+  EXPECT_EQ(form_manager()->is_possible_change_password_form_without_username_,
+            clone->is_possible_change_password_form_without_username_);
+  EXPECT_EQ(form_manager()->votes_uploader_, clone->votes_uploader_);
+  EXPECT_EQ(form_manager()->likely_form_filling_, clone->likely_form_filling_);
+}
+
 // Verifies that URL keyed metrics are recorded for the filling of passwords
 // into forms and HTTP Basic auth.
 TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
