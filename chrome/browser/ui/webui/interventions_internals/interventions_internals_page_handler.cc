@@ -150,7 +150,10 @@ void InterventionsInternalsPageHandler::OnEffectiveConnectionTypeChanged(
     return;
   }
   std::string ect_name = net::GetNameForEffectiveConnectionType(type);
-  page_->OnEffectiveConnectionTypeChanged(ect_name);
+  std::string max_intervention_ect_name =
+      net::GetNameForEffectiveConnectionType(
+          previews::params::GetSessionMaxECTThreshold());
+  page_->UpdateEffectiveConnectionType(ect_name, max_intervention_ect_name);
 
   // Log change ECT event.
   previews::PreviewsLogger::MessageLog message(

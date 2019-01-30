@@ -158,7 +158,9 @@ class TestInterventionsInternalsPage
   void OnBlacklistCleared(int64_t time) override {
     blacklist_cleared_time_ = time;
   }
-  void OnEffectiveConnectionTypeChanged(const std::string& type) override {
+  void UpdateEffectiveConnectionType(
+      const std::string& type,
+      const std::string& max_intervention_type) override {
     // Ignore.
     // TODO(thanhdle): Add integration test to test behavior of the pipeline end
     // to end. crbug.com/777936

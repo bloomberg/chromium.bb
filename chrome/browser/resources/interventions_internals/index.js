@@ -555,11 +555,17 @@ InterventionsInternalPageImpl.prototype = {
    *
    * @override
    * @param {string} type The string representation of estimated ECT.
+   * @param {string} maxInterventionType The string representation of the
+   * session's maximum ECT threshold for interventions.
    */
-  onEffectiveConnectionTypeChanged: function(type) {
+  updateEffectiveConnectionType: function(type, maxInterventionType) {
     // Change the current ECT.
     const ectType = $('nqe-type');
     ectType.textContent = type;
+
+    // Set the session maximum ECT for interventions.
+    const maxInterventionEctType = $('max-intervention-type');
+    maxInterventionEctType.textContent = maxInterventionType;
 
     const now = getTimeFormat(Date.now());
 
