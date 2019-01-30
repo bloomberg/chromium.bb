@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/feature_flags.h"

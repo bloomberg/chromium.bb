@@ -9,6 +9,7 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
