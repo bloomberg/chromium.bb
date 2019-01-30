@@ -205,7 +205,7 @@ void AddAdditionalRequestHeaders(
 
   // TODO(mkwst): Extract this logic out somewhere that can be shared between
   // Blink and //content.
-  if (IsSecMetadataEnabled()) {
+  if (IsSecMetadataEnabled() && IsOriginSecure(url)) {
     std::string site_value = "cross-site";
     if (initiator_origin) {
       url::Origin target_origin = url::Origin::Create(url);
