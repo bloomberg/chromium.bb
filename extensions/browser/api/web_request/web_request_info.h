@@ -121,8 +121,9 @@ struct WebRequestInfo {
 
   // Extension API frame data corresponding to details of the frame which
   // initiate this request. May be null for renderer-initiated requests where
-  // some frame details are not known at WebRequestInfo construction time.
-  base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
+  // some frame details are not known at WebRequestInfo construction time. This
+  // is mutable since it can be updated through WebRequestApi::DispatchEvent.
+  mutable base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
 
   // The type of the request (e.g. main frame, subresource, XHR, etc). May have
   // no value if the request did not originate from a ResourceDispatcher.

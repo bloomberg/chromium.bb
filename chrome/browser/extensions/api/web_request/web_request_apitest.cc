@@ -445,9 +445,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
 #define MAYBE_WebRequestTypes WebRequestTypes
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestTypes) {
-  // TODO(crbug.com/914232): flaky.
-  if (features::IsSingleProcessMash())
-    return;
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_types.html")) << message_;
 }

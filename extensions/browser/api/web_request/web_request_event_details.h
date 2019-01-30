@@ -108,21 +108,6 @@ class WebRequestEventDetails {
   // This must be called from the UI thread.
   void DetermineFrameDataOnUI();
 
-  // Sets the following keys using information from constructor.
-  // - tabId
-  // - frameId
-  // - parentFrameId
-  //
-  // This method is more expensive than DetermineFrameDataOnUI because it may
-  // involve thread hops, so prefer using DetermineFrameDataOnUI() if possible.
-  // The callback is called as soon as these IDs are determined, which can be
-  // synchronous or asynchronous.
-  //
-  // The caller must not use or delete this WebRequestEventDetails instance
-  // after calling this method. Ownership of this instance is transferred to
-  // |callback|.
-  void DetermineFrameDataOnIO(const DeterminedFrameDataCallback& callback);
-
   // Create an event dictionary that contains all required keys, and also the
   // extra keys as specified by the |extra_info_spec| filter. If the listener
   // this event will be dispatched to doesn't have permission for the initiator
@@ -147,11 +132,6 @@ class WebRequestEventDetails {
 
   // Empty constructor used in unittests.
   WebRequestEventDetails();
-
-  void OnDeterminedFrameData(
-      std::unique_ptr<WebRequestEventDetails> self,
-      const DeterminedFrameDataCallback& callback,
-      const ExtensionApiFrameIdMap::FrameData& frame_data);
 
   // The details that are always included in a webRequest event object.
   base::DictionaryValue dict_;

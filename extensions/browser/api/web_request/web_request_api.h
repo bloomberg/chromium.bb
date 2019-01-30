@@ -588,6 +588,14 @@ class ExtensionWebRequestEventRouter {
                      const RawListeners& listener_ids,
                      std::unique_ptr<WebRequestEventDetails> event_details);
 
+  void OnFrameDataReceived(
+      void* browser_context,
+      const WebRequestInfo* request,
+      std::unique_ptr<WebRequestEventDetails> event_details,
+      const InfoMap* extension_info_map,
+      std::unique_ptr<ListenerIDs> listener_ids,
+      const ExtensionApiFrameIdMap::FrameData& frame_data);
+
   void DispatchEventToListeners(
       void* browser_context,
       const InfoMap* extension_info_map,
@@ -713,6 +721,10 @@ class ExtensionWebRequestEventRouter {
   // Keeps track of time spent waiting on extensions using the blocking
   // webRequest API.
   std::unique_ptr<ExtensionWebRequestTimeTracker> request_time_tracker_;
+
+  // The set of requests for which we are querying the frame data over the UI
+  // thread.
+  std::set<const WebRequestInfo*> pending_requests_for_frame_data_;
 
   CallbacksForPageLoad callbacks_for_page_load_;
 
