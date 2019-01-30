@@ -12,6 +12,6 @@ interface CastChannel {
   /// The new Cast Channel's message port is returned asynchronously once
   /// opened by the webpage. The port is disconnected when the peer's Cast
   /// Channel is closed.
-  1: Connect() -> (chromium.web.MessagePort channel);
+  Connect() -> (chromium.web.MessagePort channel);
 };
 

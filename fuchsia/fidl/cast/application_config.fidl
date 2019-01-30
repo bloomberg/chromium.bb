@@ -20,5 +20,5 @@ struct ApplicationConfig {
 [Discoverable]
 interface ApplicationConfigManager {
   /// Returns the ApplicationConfig for the specified application Id.
-  1: GetConfig(string id) -> (ApplicationConfig? config);
+  GetConfig(string id) -> (ApplicationConfig? config);
 };
