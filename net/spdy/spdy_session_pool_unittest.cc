@@ -29,6 +29,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,6 +71,7 @@ class SpdySessionPoolTest : public TestWithScopedTaskEnvironment {
   }
 
   void RunIPPoolingTest(SpdyPoolCloseSessionsType close_sessions_type);
+  void RunIPPoolingDisabledTest(SSLSocketDataProvider* ssl);
 
   size_t num_active_streams(base::WeakPtr<SpdySession> session) {
     return session->active_streams_.size();
@@ -519,6 +521,58 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, test_hosts[2].key));
 }
 
+void SpdySessionPoolTest::RunIPPoolingDisabledTest(SSLSocketDataProvider* ssl) {
+  const int kTestPort = 80;
+  struct TestHosts {
+    std::string name;
+    std::string iplist;
+    SpdySessionKey key;
+    AddressList addresses;
+  } test_hosts[] = {
+      {"www.webkit.org", "192.0.2.33,192.168.0.1,192.168.0.5"},
+      {"js.webkit.com", "192.168.0.4,192.168.0.1,192.0.2.33"},
+  };
+
+  session_deps_.host_resolver->set_synchronous_mode(true);
+  for (size_t i = 0; i < base::size(test_hosts); i++) {
+    session_deps_.host_resolver->rules()->AddIPLiteralRule(
+        test_hosts[i].name, test_hosts[i].iplist, std::string());
+
+    // This test requires that the HostResolver cache be populated.  Normal
+    // code would have done this already, but we do it manually.
+    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
+    std::unique_ptr<HostResolver::Request> request;
+    int rv = session_deps_.host_resolver->Resolve(
+        info, DEFAULT_PRIORITY, &test_hosts[i].addresses,
+        CompletionOnceCallback(), &request, NetLogWithSource());
+    EXPECT_THAT(rv, IsOk());
+
+    // Setup a SpdySessionKey
+    test_hosts[i].key =
+        SpdySessionKey(HostPortPair(test_hosts[i].name, kTestPort),
+                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  }
+
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING),
+  };
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl);
+
+  CreateNetworkSession();
+
+  base::WeakPtr<SpdySession> spdy_session = CreateSpdySession(
+      http_session_.get(), test_hosts[0].key, NetLogWithSource());
+  EXPECT_TRUE(
+      HasSpdySession(http_session_->spdy_session_pool(), test_hosts[0].key));
+  EXPECT_FALSE(
+      HasSpdySession(http_session_->spdy_session_pool(), test_hosts[1].key));
+
+  http_session_->spdy_session_pool()->CloseAllSessions();
+}
+
 TEST_F(SpdySessionPoolTest, IPPooling) {
   RunIPPoolingTest(SPDY_POOL_CLOSE_SESSIONS_MANUALLY);
 }
@@ -686,6 +740,26 @@ TEST_F(SpdySessionPoolTest, IPPoolingDisabled) {
       http_session_.get(), test_hosts[1].key, NetLogWithSource());
   EXPECT_TRUE(session1);
   EXPECT_NE(session0.get(), session1.get());
+}
+
+// Verifies that an SSL connection with client authentication disables SPDY IP
+// pooling.
+TEST_F(SpdySessionPoolTest, IPPoolingClientCert) {
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.ssl_info.cert = X509Certificate::CreateFromBytes(
+      reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der));
+  ASSERT_TRUE(ssl.ssl_info.cert);
+  ssl.ssl_info.client_cert_sent = true;
+  ssl.next_proto = kProtoHTTP2;
+  RunIPPoolingDisabledTest(&ssl);
+}
+
+// Verifies that an SSL connection with channel ID disables SPDY IP pooling.
+TEST_F(SpdySessionPoolTest, IPPoolingChannelID) {
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.ssl_info.channel_id_sent = true;
+  ssl.next_proto = kProtoHTTP2;
+  RunIPPoolingDisabledTest(&ssl);
 }
 
 // Construct a Pool with SpdySessions in various availability states. Simulate
