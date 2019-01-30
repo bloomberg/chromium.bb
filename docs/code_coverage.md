@@ -8,8 +8,7 @@ Table of contents:
   * [Coverage Builders](#coverage-builders)
   * [Coverage Service](#coverage-service)
   * [Coverage Clients](#coverage-clients)
-- [Coverage Script](#coverage-script)
-- [Workflow](#workflow)
+- [Local Coverage Script](#local-coverage-script)
   * [Step 0 Download Tooling](#step-0-download-tooling)
   * [Step 1 Build](#step-1-build)
   * [Step 2 Create Raw Profiles](#step-2-create-raw-profiles)
@@ -115,7 +114,7 @@ that allows gerrit to display code coverage information generated for a given CL
 by CQ bot. Or see this
 [15-second video tutorial](https://www.youtube.com/watch?v=cxXlYcSgIPE)
 
-## Coverage Script
+## Local Coverage Script
 The [coverage script] automates the process described below and provides a
 one-stop service to generate code coverage reports locally in just one command.
 
