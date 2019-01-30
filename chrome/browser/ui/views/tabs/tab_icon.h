@@ -14,6 +14,10 @@
 #include "ui/gfx/paint_throbber.h"
 #include "ui/views/view.h"
 
+namespace base {
+class TickClock;
+}
+
 class GURL;
 struct TabRendererData;
 

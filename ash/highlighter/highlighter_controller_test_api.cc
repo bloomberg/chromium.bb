@@ -7,6 +7,7 @@
 #include "ash/components/fast_ink/fast_ink_points.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_view.h"
+#include "base/timer/timer.h"
 
 namespace ash {
 

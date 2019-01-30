@@ -24,7 +24,6 @@
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/trace_arguments.h"
 #include "base/trace_event/trace_category.h"
-#include "base/trace_event/trace_event_system_stats_monitor.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 

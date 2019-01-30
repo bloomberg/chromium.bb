@@ -15,6 +15,10 @@ namespace aura {
 class Window;
 }
 
+namespace base {
+class OneShotTimer;
+}
+
 namespace gfx {
 class PointF;
 }

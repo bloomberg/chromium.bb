@@ -16,6 +16,10 @@
 #include "cc/scheduler/scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace cc {
 
 class RenderingStatsInstrumentation;
