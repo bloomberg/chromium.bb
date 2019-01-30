@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -266,7 +267,8 @@ void HidDeviceManager::DeviceRemoved(device::mojom::HidDeviceInfoPtr device) {
   DevicePermissionsManager* permissions_manager =
       DevicePermissionsManager::Get(browser_context_);
   DCHECK(permissions_manager);
-  permissions_manager->RemoveEntryByHidDeviceGUID(device->guid);
+  permissions_manager->RemoveEntryByDeviceGUID(DevicePermissionEntry::Type::HID,
+                                               device->guid);
 }
 
 void HidDeviceManager::LazyInitialize() {

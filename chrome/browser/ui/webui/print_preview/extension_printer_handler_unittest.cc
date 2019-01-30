@@ -31,6 +31,8 @@
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_service.h"
+#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
@@ -544,10 +546,10 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
-  auto device0 =
+  scoped_refptr<device::UsbDevice> device0 =
       base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
   usb_service().AddDevice(device0);
-  auto device1 =
+  scoped_refptr<device::UsbDevice> device1 =
       base::MakeRefCounted<MockUsbDevice>(0, 1, "Google", "USB Printer", "");
   usb_service().AddDevice(device1);
 
@@ -558,7 +560,9 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
 
   extensions::DevicePermissionsManager* permissions_manager =
       extensions::DevicePermissionsManager::Get(env_.profile());
-  permissions_manager->AllowUsbDevice(extension_2->id(), device0);
+  auto device_info_0 = device::mojom::UsbDeviceInfo::From(*device0);
+  DCHECK(device_info_0);
+  permissions_manager->AllowUsbDevice(extension_2->id(), *device_info_0);
 
   size_t call_count = 0;
   std::unique_ptr<base::ListValue> printers;

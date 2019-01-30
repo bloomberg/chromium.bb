@@ -158,7 +158,7 @@ class DevicePermissionsManager : public KeyedService,
       const std::string& extension_id) const;
 
   void AllowUsbDevice(const std::string& extension_id,
-                      scoped_refptr<device::UsbDevice> device);
+                      const device::mojom::UsbDeviceInfo& device_info);
   void AllowHidDevice(const std::string& extension_id,
                       const device::mojom::HidDeviceInfo& device);
 
@@ -171,9 +171,9 @@ class DevicePermissionsManager : public KeyedService,
   void RemoveEntry(const std::string& extension_id,
                    scoped_refptr<DevicePermissionEntry> entry);
 
-  // Revokes permission for an ephemeral hid device by its guid.
-
-  void RemoveEntryByHidDeviceGUID(const std::string& guid);
+  // Revokes permission for an ephemeral hid/USB device by its guid.
+  void RemoveEntryByDeviceGUID(DevicePermissionEntry::Type type,
+                               const std::string& guid);
 
   // Revokes permission for the extension to access all allowed devices.
   void Clear(const std::string& extension_id);
