@@ -10,6 +10,8 @@ doodles.lastDdllogResponse = '';
 
 doodles.onDdllogResponse = null;
 
+doodles.ei = null;
+
 
 /**
  * Enum for classnames.
@@ -210,30 +212,39 @@ doodles.loadDoodle = function(v, onload) {
 
 /**
  * Handles the response of a doodle impression ping, i.e. stores the
- * appropriate interactionLogUrl or onClickUrlExtraParams.
+ * appropriate interactionLogUrl or onClickUrlExtraParams. Also stores
+ * the event id to be used for logging sharing events.
  *
  * @param {!Object} ddllog Response object from the ddllog ping.
  * @param {!boolean} isAnimated
  */
 doodles.handleDdllogResponse = function(ddllog, isAnimated) {
-  if (ddllog && ddllog.interaction_log_url) {
-    let interactionLogUrl =
-        new URL(ddllog.interaction_log_url, configData.googleBaseUrl);
-    if (isAnimated) {
-      doodles.targetDoodle.animatedInteractionLogUrl = interactionLogUrl;
-    } else {
-      doodles.targetDoodle.staticInteractionLogUrl = interactionLogUrl;
+  if (ddllog) {
+    if (ddllog.encoded_ei) {
+      doodles.ei = ddllog.encoded_ei;
     }
-    doodles.lastDdllogResponse =
-        'interaction_log_url ' + ddllog.interaction_log_url;
-  } else if (ddllog && ddllog.target_url_params) {
-    doodles.targetDoodle.onClickUrlExtraParams =
-        new URLSearchParams(ddllog.target_url_params);
-    doodles.lastDdllogResponse =
-        'target_url_params ' + ddllog.target_url_params;
+    if (ddllog.interaction_log_url) {
+      let interactionLogUrl =
+          new URL(ddllog.interaction_log_url, configData.googleBaseUrl);
+      if (isAnimated) {
+        doodles.targetDoodle.animatedInteractionLogUrl = interactionLogUrl;
+      } else {
+        doodles.targetDoodle.staticInteractionLogUrl = interactionLogUrl;
+      }
+      doodles.lastDdllogResponse =
+          'interaction_log_url ' + ddllog.interaction_log_url;
+
+    } else if (ddllog.target_url_params) {
+      doodles.targetDoodle.onClickUrlExtraParams =
+          new URLSearchParams(ddllog.target_url_params);
+      doodles.lastDdllogResponse =
+          'target_url_params ' + ddllog.target_url_params;
+    } else {
+      console.log('Invalid ddllog response:');
+      console.log(ddllog);
+    }
   } else {
-    console.log('Invalid or missing ddllog response:');
-    console.log(ddllog);
+    console.log('Missing ddllog response.');
   }
 };
 
@@ -280,7 +291,7 @@ doodles.logDoodleImpression = function(logUrl, isAnimated) {
 
 
 /**
- * TODO(896461): Add more click tracking parameters.
+ * TODO(896461): Add more click tracking parameters and testing.
  * Logs a doodle sharing event.
  * Uses the ct param provided in metadata.onClickUrl to track the doodle.
  *
@@ -296,6 +307,9 @@ doodles.logDoodleShare = function(platform) {
       url.searchParams.append('ct', 'doodle');
       url.searchParams.append('cad', 'sh,' + platform + ',ct:' + ct);
       url.searchParams.append('ntp', 1);
+      if (doodles.ei && doodles.ei != '') {
+        url.searchParams.append('ei', doodles.ei);
+      }
       navigator.sendBeacon(url.toString());
     }
   }
