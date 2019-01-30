@@ -631,7 +631,7 @@ jint WebContentsAccessibilityAndroid::GetEditableTextSelectionStart(
   if (!node)
     return false;
 
-  return node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart);
+  return node->GetSelectionStart();
 }
 
 jint WebContentsAccessibilityAndroid::GetEditableTextSelectionEnd(
@@ -642,7 +642,7 @@ jint WebContentsAccessibilityAndroid::GetEditableTextSelectionEnd(
   if (!node)
     return false;
 
-  return node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd);
+  return node->GetSelectionEnd();
 }
 
 jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
@@ -877,8 +877,9 @@ void WebContentsAccessibilityAndroid::SetSelection(
 
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (node) {
-    node->manager()->SetSelection(AXPlatformRange(node->CreatePositionAt(start),
-                                                  node->CreatePositionAt(end)));
+    node->manager()->SetSelection(
+        AXPlatformRange(node->CreatePositionForSelectionAt(start),
+                        node->CreatePositionForSelectionAt(end)));
   }
 }
 

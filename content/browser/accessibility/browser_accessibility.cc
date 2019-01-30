@@ -860,6 +860,23 @@ BrowserAccessibility::CreatePositionAt(int offset,
       manager_->ax_tree_id(), GetId(), offset, affinity);
 }
 
+// |offset| could either be a text character or a child index in case of
+// non-text objects.
+// Currently, to be safe, we convert to text leaf equivalents and we don't use
+// tree positions.
+// TODO(nektar): Remove this function once selection fixes in Blink are
+// thoroughly tested and convert to tree positions.
+BrowserAccessibilityPosition::AXPositionInstance
+BrowserAccessibility::CreatePositionForSelectionAt(int offset) const {
+  BrowserAccessibilityPositionInstance position =
+      CreatePositionAt(offset)->AsLeafTextPosition();
+  if (position->GetAnchor() &&
+      position->GetAnchor()->GetRole() == ax::mojom::Role::kInlineTextBox) {
+    return position->CreateParentPosition();
+  }
+  return position;
+}
+
 base::string16 BrowserAccessibility::GetInnerText() const {
   if (IsTextOnlyObject())
     return GetString16Attribute(ax::mojom::StringAttribute::kName);

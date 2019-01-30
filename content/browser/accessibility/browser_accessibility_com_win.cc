@@ -1670,23 +1670,6 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
   win_attributes_->offset_to_text_attributes.swap(attributes_map);
 }
 
-// |offset| could either be a text character or a child index in case of
-// non-text objects.
-// Currently, to be safe, we convert to text leaf equivalents and we don't use
-// tree positions.
-// TODO(nektar): Remove this function once selection fixes in Blink are
-// thoroughly tested and convert to tree positions.
-BrowserAccessibilityPosition::AXPositionInstance
-BrowserAccessibilityComWin::CreatePositionForSelectionAt(int offset) const {
-  BrowserAccessibilityPositionInstance position =
-      owner()->CreatePositionAt(offset)->AsLeafTextPosition();
-  if (position->GetAnchor() &&
-      position->GetAnchor()->GetRole() == ax::mojom::Role::kInlineTextBox) {
-    return position->CreateParentPosition();
-    }
-    return position;
-}
-
 //
 // Private methods.
 //
@@ -2182,9 +2165,9 @@ void BrowserAccessibilityComWin::SetIA2HypertextSelection(LONG start_offset,
   HandleSpecialTextOffset(&start_offset);
   HandleSpecialTextOffset(&end_offset);
   BrowserAccessibilityPositionInstance start_position =
-      CreatePositionForSelectionAt(static_cast<int>(start_offset));
+      owner()->CreatePositionForSelectionAt(static_cast<int>(start_offset));
   BrowserAccessibilityPositionInstance end_position =
-      CreatePositionForSelectionAt(static_cast<int>(end_offset));
+      owner()->CreatePositionForSelectionAt(static_cast<int>(end_offset));
   Manager()->SetSelection(
       AXPlatformRange(std::move(start_position), std::move(end_position)));
 }
