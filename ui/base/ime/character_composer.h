@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
-#define UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
+#ifndef UI_BASE_IME_CHARACTER_COMPOSER_H_
+#define UI_BASE_IME_CHARACTER_COMPOSER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -102,6 +102,7 @@ class ComposeChecker {
   virtual CheckSequenceResult CheckSequence(
       const ui::CharacterComposer::ComposeBuffer& sequence,
       uint32_t* composed_character) const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ComposeChecker);
 };
@@ -115,7 +116,7 @@ class TreeComposeChecker : public ComposeChecker {
     const uint16_t* tree;
   };
 
-  TreeComposeChecker(const CompositionData& data) : data_(data) {}
+  explicit TreeComposeChecker(const CompositionData& data) : data_(data) {}
   CheckSequenceResult CheckSequence(
       const ui::CharacterComposer::ComposeBuffer& sequence,
       uint32_t* composed_character) const override;
@@ -127,4 +128,4 @@ class TreeComposeChecker : public ComposeChecker {
 
 }  // namespace ui
 
-#endif  // UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
+#endif  // UI_BASE_IME_CHARACTER_COMPOSER_H_

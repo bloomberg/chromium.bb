@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/chromeos/character_composer.h"
+#include "ui/base/ime/character_composer.h"
 
 #include <algorithm>
 #include <iterator>
+#include <string>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -18,7 +19,7 @@
 
 namespace {
 
-#include "ui/base/ime/chromeos/character_composer_data.h"
+#include "ui/base/ime/character_composer_data.h"
 
 bool CheckCharacterComposeTable(
     const ui::CharacterComposer::ComposeBuffer& compose_sequence,
@@ -58,11 +59,9 @@ int KeycodeToHexDigit(unsigned int keycode) {
 
 namespace ui {
 
-CharacterComposer::CharacterComposer() : composition_mode_(KEY_SEQUENCE_MODE) {
-}
+CharacterComposer::CharacterComposer() : composition_mode_(KEY_SEQUENCE_MODE) {}
 
-CharacterComposer::~CharacterComposer() {
-}
+CharacterComposer::~CharacterComposer() {}
 
 void CharacterComposer::Reset() {
   compose_buffer_.clear();

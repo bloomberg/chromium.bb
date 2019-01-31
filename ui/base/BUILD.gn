@@ -848,7 +848,6 @@ test("ui_base_unittests") {
   if (build_ime) {
     sources += [
       "ime/candidate_window_unittest.cc",
-      "ime/chromeos/character_composer_unittest.cc",
       "ime/chromeos/extension_ime_util_unittest.cc",
       "ime/chromeos/ime_keyboard_unittest.cc",
       "ime/chromeos/input_method_util_unittest.cc",
@@ -869,6 +868,11 @@ test("ui_base_unittests") {
     }
     if (use_x11) {
       sources += [ "ime/composition_text_util_pango_unittest.cc" ]
+    }
+    if (is_chromeos || use_ozone) {
+      sources += [
+        "ime/character_composer_unittest.cc",
+      ]
     }
   }
 
