@@ -246,7 +246,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
       const std::string& update_version,
       int64_t update_size,
       const UpdateOverCellularOneTimePermissionCallback& callback) override {
-    // TODO(weidongg): Change 'kSetUpdateOverCellularTarget' to
+    // TODO(https://crbug.com/927439): Change 'kSetUpdateOverCellularTarget' to
     // 'kSetUpdateOverCellularOneTimePermission'
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kSetUpdateOverCellularTarget);
