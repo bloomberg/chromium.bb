@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

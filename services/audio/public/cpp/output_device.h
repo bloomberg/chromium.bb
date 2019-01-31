@@ -10,6 +10,7 @@
 
 #include "media/base/audio_renderer_sink.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
