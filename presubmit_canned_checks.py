@@ -1432,3 +1432,37 @@ def CheckChangedLUCIConfigs(input_api, output_api):
         out_f = output_api.PresubmitNotifyResult
       outputs.append(out_f('Config validation: %s' % msg['text']))
   return outputs
+
+
+def CheckLucicfgGenOutput(input_api, output_api, entry_script):
+  """Verifies configs produced by `lucicfg` are up-to-date and pass validation.
+
+  Runs the check unconditionally, regardless of what files are modified. Examine
+  input_api.AffectedFiles() yourself before using CheckLucicfgGenOutput if this
+  is a concern.
+
+  Assumes `lucicfg` binary is in PATH and the user is logged in.
+
+  Args:
+    entry_script: path to the entry-point *.star script responsible for
+        generating a single config set. Either absolute or relative to the
+        currently running PRESUBMIT.py script.
+
+  Returns:
+    A list of input_api.Command objects containing verification commands.
+  """
+  return [
+      input_api.Command(
+        'lucicfg validate "%s"' % entry_script,
+        [
+            'lucicfg' if not input_api.is_windows else 'lucicfg.bat',
+            'validate', entry_script,
+            '-log-level', 'debug' if input_api.verbose else 'warning',
+        ],
+        {
+          'stderr': input_api.subprocess.STDOUT,
+          'shell': input_api.is_windows,  # to resolve *.bat
+          'cwd': input_api.PresubmitLocalPath(),
+        },
+        output_api.PresubmitError)
+  ]
