@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -26,8 +27,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
@@ -2024,6 +2027,31 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 }
 
+namespace {
+
+class ChromeContentBrowserClientOverrideWebAppScope
+    : public ChromeContentBrowserClient {
+ public:
+  ChromeContentBrowserClientOverrideWebAppScope() = default;
+  ~ChromeContentBrowserClientOverrideWebAppScope() override = default;
+
+  void OverrideWebkitPrefs(content::RenderViewHost* rvh,
+                           content::WebPreferences* web_prefs) override {
+    ChromeContentBrowserClient::OverrideWebkitPrefs(rvh, web_prefs);
+
+    web_prefs->web_app_scope = web_app_scope_;
+  }
+
+  void set_web_app_scope(const GURL& web_app_scope) {
+    web_app_scope_ = web_app_scope;
+  }
+
+ private:
+  GURL web_app_scope_;
+};
+
+}  // namespace
+
 class WebAppPictureInPictureWindowControllerBrowserTest
     : public extensions::ExtensionBrowserTest {
  public:
@@ -2060,6 +2088,20 @@ class WebAppPictureInPictureWindowControllerBrowserTest
     web_contents_ = app_browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::WaitForLoadStop(web_contents_));
     ASSERT_NE(nullptr, web_contents_);
+
+    SetWebAppScope(app_url.GetOrigin());
+  }
+
+  void SetWebAppScope(const GURL web_app_scope) {
+    ChromeContentBrowserClientOverrideWebAppScope browser_client_;
+    browser_client_.set_web_app_scope(web_app_scope);
+
+    content::ContentBrowserClient* original_browser_client_ =
+        content::SetBrowserClientForTesting(&browser_client_);
+
+    web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
+
+    content::SetBrowserClientForTesting(original_browser_client_);
   }
 
   content::WebContents* web_contents() { return web_contents_; }
@@ -2095,6 +2137,34 @@ IN_PROC_BROWSER_TEST_F(WebAppPictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(
       expected_title,
       content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
+}
+
+// Show pwa page and check that Auto Picture-in-Picture is not triggered if
+// document is not inside the scope specified in the Web App Manifest.
+IN_PROC_BROWSER_TEST_F(
+    WebAppPictureInPictureWindowControllerBrowserTest,
+    AutoPictureInPictureNotTriggeredIfDocumentNotInWebAppScope) {
+  InstallAndLaunchPWA();
+  SetWebAppScope(GURL("http://www.foobar.com"));
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(),
+                                                   "playVideo();", &result));
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(content::ExecuteScript(web_contents(),
+                                     "video.autoPictureInPicture = true;"));
+
+  // Hide page and check that the video did not entered
+  // Picture-in-Picture automatically.
+  web_contents()->WasHidden();
+  base::string16 expected_title = base::ASCIIToUTF16("hidden");
+  EXPECT_EQ(
+      expected_title,
+      content::TitleWatcher(web_contents(), expected_title).WaitAndGetTitle());
+
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(), "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_FALSE(in_picture_in_picture);
 }
 
 // Show pwa page and check that Auto Picture-in-Picture is not triggered if

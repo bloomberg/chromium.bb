@@ -242,13 +242,16 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   DCHECK(GetSupplementable());
 
   // Auto Picture-in-Picture is allowed only in a PWA window.
-  // TODO(crbug.com/922884) It should apply in the scope of the manifest.
   if (!GetSupplementable()->GetFrame() ||
       !GetSupplementable()->GetFrame()->View() ||
       GetSupplementable()->GetFrame()->View()->DisplayMode() ==
           WebDisplayMode::kWebDisplayModeBrowser) {
     return;
   }
+
+  // Auto Picture-in-Picture is allowed only in the scope of a PWA.
+  if (!GetSupplementable()->IsInWebAppScope())
+    return;
 
   // If page becomes visible and Picture-in-Picture element has entered
   // automatically Picture-in-Picture and is still eligible to Auto

@@ -1524,6 +1524,11 @@ class CORE_EXPORT Document : public ContainerNode,
   void RemoveLockedDisplayLock();
   int LockedDisplayLockCount() const;
 
+  // Returns whether the document is inside the scope specified in the Web App
+  // Manifest. If the document doesn't run in a context of a Web App or has no
+  // associated Web App Manifest, it will return false.
+  bool IsInWebAppScope() const;
+
  protected:
   void DidUpdateSecurityOrigin() final;
 
