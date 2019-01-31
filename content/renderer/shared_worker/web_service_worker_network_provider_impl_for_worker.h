@@ -5,37 +5,77 @@
 #ifndef CONTENT_RENDERER_SHARED_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
 #define CONTENT_RENDERER_SHARED_WORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_IMPL_FOR_WORKER_H_
 
-#include "content/renderer/service_worker/web_service_worker_network_provider_base_impl.h"
+#include <memory>
+
+#include "base/memory/ref_counted.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 
 namespace content {
 
-class ServiceWorkerNetworkProvider;
 struct NavigationResponseOverrideParameters;
 
-// This is the implementation of WebServiceWorkerNetworkProvider used for
-// shared workers and owned by Blink. All functions are called on the main
-// thread only.
+// The WebServiceWorkerNetworkProvider implementation used for shared
+// workers.
 class WebServiceWorkerNetworkProviderImplForWorker final
-    : public WebServiceWorkerNetworkProviderBaseImpl {
+    : public blink::WebServiceWorkerNetworkProvider {
  public:
+  // Creates a new instance. Some params might only be used in S13nServiceWorker
+  // or PlzSharedWorker.
+  // - |info|: provider info from the browser
+  // - |script_loader_factory_info|: the factory for loading the worker's
+  //   scripts
+  // - |controller_info|: info about controller service worker
+  // - |fallback_loader_factory|: the factory to use when a service worker falls
+  //   back to network (unlike the default factory of this renderer, it skips
+  //   AppCache)
+  // - |is_secure_context|: whether this context is secure
+  // - |response_override|: the main script response
+  static std::unique_ptr<WebServiceWorkerNetworkProviderImplForWorker> Create(
+      blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo
+          script_loader_factory_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
+      scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
+      bool is_secure_context,
+      std::unique_ptr<NavigationResponseOverrideParameters> response_override);
+
   WebServiceWorkerNetworkProviderImplForWorker(
-      std::unique_ptr<ServiceWorkerNetworkProvider> provider,
       bool is_secure_context,
       std::unique_ptr<NavigationResponseOverrideParameters> response_override);
   ~WebServiceWorkerNetworkProviderImplForWorker() override;
 
+  // Implements WebServiceWorkerNetworkProvider.
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
   void WillSendRequest(blink::WebURLRequest& request) override;
-
+  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+      override;
+  int64_t ControllerServiceWorkerID() override;
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override;
 
+  int provider_id() const;
+  ServiceWorkerProviderContext* context() { return context_.get(); }
+
  private:
   const bool is_secure_context_;
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
+
+  // |context_| is null if |this| is an invalid instance, in which case there is
+  // no connection to the browser process.
+  scoped_refptr<ServiceWorkerProviderContext> context_;
+
+  // Used in non-s13nsw.
+  blink::mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
+
+  // The URL loader factory for loading the worker's scripts.
+  network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
 };
 
 }  // namespace content

@@ -541,7 +541,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
-  // corresponding ServiceWorkerNetworkProvider is created in the renderer.
+  // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   // Manages the lifetime of a pre-created AppCacheHost until a browser side

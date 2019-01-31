@@ -132,7 +132,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   using ExecutionReadyCallback = base::OnceClosure;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
-  // ServiceWorkerNetworkProvider will later be created in the renderer, should
+  // ServiceWorkerProviderContext will later be created in the renderer, should
   // the navigation succeed. |are_ancestors_secure| should be true for main
   // frames. Otherwise it is true iff all ancestor frames of this frame have a
   // secure origin. |web_contents_getter| indicates the tab where the navigation
@@ -197,10 +197,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
-  // Analogous to Blink's Document::isSecureContext. Because of how service
+  // Analogous to Blink's Document::IsSecureContext. Because of how service
   // worker intercepts main resource requests, this check must be done
   // browser-side once the URL is known (see comments in
-  // ServiceWorkerNetworkProvider::CreateForNavigation). This function uses
+  // WebServiceWorkerNetworkProviderImplForFrame::Create). This function uses
   // |url_| and |is_parent_frame_secure_| to determine context security, so they
   // must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;

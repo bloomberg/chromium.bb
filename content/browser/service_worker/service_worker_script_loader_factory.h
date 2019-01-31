@@ -21,10 +21,11 @@ class ServiceWorkerProviderHost;
 
 // S13nServiceWorker:
 // Created per one running service worker for loading its scripts. This is kept
-// alive while ServiceWorkerNetworkProvider in the renderer process is alive.
+// alive while the WebServiceWorkerNetworkProvider in the renderer process is
+// alive.
 //
-// This factory handles requests for scripts from service workers that were
-// new (non-installed) when they started. For service workers that were already
+// This factory handles requests for scripts from service workers that were new
+// (non-installed) when they started. For service workers that were already
 // installed when they started, ServiceWorkerInstalledScriptsManager is used
 // instead.
 //

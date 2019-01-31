@@ -51,7 +51,7 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
+#include "content/renderer/service_worker/web_service_worker_network_provider_impl_for_frame.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/fake_compositor_dependencies.h"
@@ -2159,30 +2159,23 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   // Service workers require https.
   GURL example_url("https://example.com");
 
-  blink::WebServiceWorkerNetworkProvider* webprovider = nullptr;
-  ServiceWorkerNetworkProvider* provider = nullptr;
+  WebServiceWorkerNetworkProviderImplForFrame* provider = nullptr;
   RequestExtraData* extra_data = nullptr;
 
   // Make sure each new document has a new provider and
   // that the main request is tagged with the provider's id.
   LoadHTMLWithUrlOverride("<b>A Document</b>", example_url.spec().c_str());
   ASSERT_TRUE(GetMainFrame()->GetDocumentLoader());
-  webprovider =
-      GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
-  ASSERT_TRUE(webprovider);
-  provider = ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-      webprovider);
+  provider = static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(
+      GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   ASSERT_TRUE(provider);
   int provider1_id = provider->provider_id();
 
   LoadHTMLWithUrlOverride("<b>New Document B Goes Here</b>",
                           example_url.spec().c_str());
   ASSERT_TRUE(GetMainFrame()->GetDocumentLoader());
-  webprovider =
-      GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
-  ASSERT_TRUE(provider);
-  provider = ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-      webprovider);
+  provider = static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(
+      GetMainFrame()->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   ASSERT_TRUE(provider);
   EXPECT_NE(provider1_id, provider->provider_id());
 
@@ -2191,7 +2184,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.SetRequestContext(blink::mojom::RequestContextType::SUBRESOURCE);
   blink::WebURLResponse redirect_response;
-  webprovider->WillSendRequest(request);
+  provider->WillSendRequest(request);
   extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(), provider->provider_id());

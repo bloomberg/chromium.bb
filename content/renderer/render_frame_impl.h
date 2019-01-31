@@ -1237,9 +1237,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void ShowDeferredContextMenu(const ContextMenuParams& params);
 
-  // Whether the frame is controlled by a service worker.
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker();
-
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type,

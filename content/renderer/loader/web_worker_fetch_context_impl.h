@@ -36,7 +36,7 @@ namespace content {
 
 class FrameRequestBlocker;
 class ResourceDispatcher;
-class ServiceWorkerNetworkProvider;
+class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
@@ -52,8 +52,8 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
  public:
   // Creates a new fetch context for a worker.
   //
-  // |network_provider| is the ServiceWorkerNetworkProvider of the worker and is
-  // used to route requests to its controller service worker.
+  // |provider_context| is used to route requests to the worker's controller
+  // service worker.
   // |loader_factory_info| is used for regular loading by the worker.
   //
   // S13nServiceWorker:
@@ -69,7 +69,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // because it might additionally support non-NetworkService schemes (e.g.,
   // chrome-extension://).
   static scoped_refptr<WebWorkerFetchContextImpl> Create(
-      ServiceWorkerNetworkProvider* network_provider,
+      ServiceWorkerProviderContext* provider_context,
       blink::mojom::RendererPreferences renderer_preferences,
       blink::mojom::RendererPreferenceWatcherRequest watcher_request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,

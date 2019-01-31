@@ -61,7 +61,8 @@ interface SharedWorkerFactory {
       //
       // TODO(leonhsl): It doesn't really need to be associated. Make it
       // non-associated and update
-      // ServiceWorkerNetworkProvider::script_loader_factory_ as well.
+      // WebServiceWorkerNetworkProviderImplForWorker::script_loader_factory_
+      // as well.
       associated network.mojom.URLLoaderFactory? main_script_loader_factory,
 
       // NetworkService (PlzWorker):

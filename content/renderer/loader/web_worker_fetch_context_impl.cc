@@ -28,9 +28,9 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
+#include "content/renderer/shared_worker/web_service_worker_network_provider_impl_for_worker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -119,8 +119,8 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
  private:
   bool CanCreateServiceWorkerURLLoader(const blink::WebURLRequest& request) {
     // TODO(horo): Unify this code path with
-    // ServiceWorkerNetworkProvider::CreateURLLoader that is used for document
-    // cases.
+    // WebServiceWorkerNetworkProviderImplForFrame::CreateURLLoader that is used
+    // for document cases.
 
     // We need the service worker loader factory populated in order to create
     // our own URLLoader for subresource loading via a service worker.
@@ -153,13 +153,12 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
 };
 
 scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
-    ServiceWorkerNetworkProvider* network_provider,
+    ServiceWorkerProviderContext* provider_context,
     blink::mojom::RendererPreferences renderer_preferences,
     blink::mojom::RendererPreferenceWatcherRequest watcher_request,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         fallback_factory_info) {
-  DCHECK(network_provider);
   blink::mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
   blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;
@@ -167,7 +166,6 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
 
   // Some sandboxed iframes are not allowed to use service worker so don't have
   // a real service worker provider, so the provider context is null.
-  ServiceWorkerProviderContext* provider_context = network_provider->context();
   if (provider_context) {
     provider_context->CloneWorkerClientRegistry(
         mojo::MakeRequest(&service_worker_worker_client_registry_ptr_info));
@@ -194,12 +192,18 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
               ->CreateWebSocketHandshakeThrottleProvider(),
           ChildThreadImpl::current()->thread_safe_sender(),
           ChildThreadImpl::current()->GetConnector()->Clone()));
-  worker_fetch_context->set_service_worker_provider_id(
-      network_provider->provider_id());
-  worker_fetch_context->set_is_controlled_by_service_worker(
-      network_provider->IsControlledByServiceWorker());
-  if (provider_context)
+  if (provider_context) {
+    worker_fetch_context->set_service_worker_provider_id(
+        provider_context->provider_id());
+    worker_fetch_context->set_is_controlled_by_service_worker(
+        provider_context->IsControlledByServiceWorker());
     worker_fetch_context->set_client_id(provider_context->client_id());
+  } else {
+    worker_fetch_context->set_service_worker_provider_id(
+        kInvalidServiceWorkerProviderId);
+    worker_fetch_context->set_is_controlled_by_service_worker(
+        blink::mojom::ControllerServiceWorkerMode::kNoController);
+  }
   return worker_fetch_context;
 }
 
