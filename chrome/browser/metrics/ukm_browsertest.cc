@@ -341,8 +341,8 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
     // This is required to support (fake) secondary-account-signin (based on
     // cookies) in tests. Without this, the real GaiaCookieManagerService would
     // try talking to Google servers which of course wouldn't work in tests.
-    fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService(
+    test_gaia_cookie_manager_factory_ =
+        secondary_account_helper::SetUpGaiaCookieManagerService(
             &test_url_loader_factory_);
     UkmBrowserTest::SetUpInProcessBrowserTestFixture();
   }
@@ -357,8 +357,8 @@ class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
  private:
   base::test::ScopedFeatureList features_;
 
-  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
-      fake_gaia_cookie_manager_factory_;
+  secondary_account_helper::ScopedGaiaCookieManagerServiceFactory
+      test_gaia_cookie_manager_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestWithSyncTransport);
 };
@@ -1174,8 +1174,8 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithSyncTransport,
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  secondary_account_helper::SignInSecondaryAccount(profile,
-                                                   "secondary_user@email.com");
+  secondary_account_helper::SignInSecondaryAccount(
+      profile, &test_url_loader_factory_, "secondary_user@email.com");
   ASSERT_NE(syncer::SyncService::TransportState::DISABLED,
             sync_service->GetTransportState());
   ASSERT_TRUE(harness->AwaitSyncTransportActive());
