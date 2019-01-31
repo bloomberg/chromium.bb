@@ -164,6 +164,11 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
   static void Done(void* texture_context) {
     DCHECK(texture_context);
     auto* helper = static_cast<PromiseTextureHelper*>(texture_context);
+    if (helper->shared_image_) {
+      DCHECK(helper->impl_on_gpu_);
+      if (helper->impl_on_gpu_->was_context_lost())
+        helper->shared_image_->OnContextLost();
+    }
     delete helper;
   }
 
