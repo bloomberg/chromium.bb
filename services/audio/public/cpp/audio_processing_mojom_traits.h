@@ -5,7 +5,7 @@
 #ifndef SERVICES_AUDIO_PUBLIC_CPP_AUDIO_PROCESSING_MOJOM_TRAITS_H_
 #define SERVICES_AUDIO_PUBLIC_CPP_AUDIO_PROCESSING_MOJOM_TRAITS_H_
 
-#include "media/audio/audio_processing.h"
+#include "media/base/audio_processing.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 

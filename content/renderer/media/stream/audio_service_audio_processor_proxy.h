@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/aec_dump_message_filter.h"
-#include "media/audio/audio_processing.h"
+#include "media/base/audio_processing.h"
 #include "media/webrtc/audio_processor_controls.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"

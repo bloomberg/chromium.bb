@@ -4,7 +4,7 @@
 
 mojom = "//services/audio/public/mojom/audio_processing.mojom"
 public_headers = [
-  "//media/audio/audio_processing.h",
+  "//media/base/audio_processing.h",
   "//third_party/webrtc/api/media_stream_interface.h",
 ]
 traits_headers =

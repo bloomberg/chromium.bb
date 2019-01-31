@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_AUDIO_PROCESSING_H_
-#define MEDIA_AUDIO_AUDIO_PROCESSING_H_
+#ifndef MEDIA_BASE_AUDIO_PROCESSING_H_
+#define MEDIA_BASE_AUDIO_PROCESSING_H_
 
 #include <string>
 
@@ -56,4 +56,4 @@ struct MEDIA_EXPORT AudioProcessingSettings {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_AUDIO_PROCESSING_H_
+#endif  // MEDIA_BASE_AUDIO_PROCESSING_H_
