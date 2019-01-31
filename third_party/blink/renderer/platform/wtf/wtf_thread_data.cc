@@ -37,7 +37,7 @@ ThreadSpecific<WTFThreadData>* WTFThreadData::static_data_;
 WTFThreadData::WTFThreadData()
     : atomic_string_table_(new AtomicStringTable),
       cached_converter_icu_(new ICUConverterWrapper),
-      thread_id_(internal::CurrentThreadSyscall()) {}
+      thread_id_(WTF::CurrentThread()) {}
 
 WTFThreadData::~WTFThreadData() = default;
 
