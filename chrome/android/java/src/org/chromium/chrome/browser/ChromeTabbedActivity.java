@@ -372,14 +372,15 @@ public class ChromeTabbedActivity
     }
 
     /**
-     * Return whether the passed in class name matches any of the supported tabbed mode activities.
+     * Return whether the passed in component name matches any of the supported tabbed mode
+     * activities.
      */
     public static boolean isTabbedModeComponentName(String componentName) {
         return TextUtils.equals(componentName, ChromeTabbedActivity.class.getName())
                 || TextUtils.equals(
                         componentName, MultiInstanceChromeTabbedActivity.class.getName())
                 || TextUtils.equals(componentName, ChromeTabbedActivity2.class.getName())
-                || TextUtils.equals(componentName, BuildInfo.getInstance().packageName + ".Main");
+                || TextUtils.equals(componentName, "com.google.android.apps.chrome.Main");
     }
 
     /**
