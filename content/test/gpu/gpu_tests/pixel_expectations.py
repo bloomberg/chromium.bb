@@ -127,8 +127,14 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_2DCanvasWebGL', bug=836884)
     self.Fail('Pixel_CSS3DBlueBox', bug=836884)
 
+    # We do not have software H.264 decoding on Android, so it can't survive a
+    # context loss which results in hardware decoder loss.
+    self.Skip('Pixel_Video_Context_Loss_MP4', ['android'], bug=580386)
+
     # Fails on Mac Pro FYI Release (AMD)
     self.Fail('Pixel_Video_MP4',
+        ['mac', ('amd', 0x679e)], bug=925744)
+    self.Fail('Pixel_Video_Context_Loss_MP4',
         ['mac', ('amd', 0x679e)], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3',
         ['mac', ('amd', 0x679e)], bug=911413)
@@ -139,10 +145,11 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
 
-    # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV
+    # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV.
     self.Fail('Pixel_Video_MP4', ['android'], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3', ['android'], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_180', ['android'], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270', ['android'], bug=925744)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=925744)
     self.Fail('Pixel_Video_VP9', ['android'], bug=925744)
+    self.Fail('Pixel_Video_Context_Loss_VP9', ['android'], bug=925744)
