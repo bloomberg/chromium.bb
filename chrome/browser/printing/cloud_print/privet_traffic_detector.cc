@@ -29,18 +29,15 @@ namespace {
 
 const int kMaxRestartAttempts = 10;
 
-void GetNetworkListInBackground(
-    base::OnceCallback<void(net::NetworkInterfaceList)> callback) {
-  net::NetworkInterfaceList networks;
-  {
-    base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
-    if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
-      return;
-  }
+void OnGetNetworkList(
+    base::OnceCallback<void(net::NetworkInterfaceList)> callback,
+    const base::Optional<net::NetworkInterfaceList>& networks) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!networks.has_value())
+    return;
 
   net::NetworkInterfaceList ip4_networks;
-  for (const auto& network : networks) {
+  for (const auto& network : networks.value()) {
     net::AddressFamily address_family = net::GetAddressFamily(network.address);
     if (address_family == net::ADDRESS_FAMILY_IPV4 &&
         network.prefix_length >= 24) {
@@ -49,17 +46,21 @@ void GetNetworkListInBackground(
   }
 
   net::IPAddress localhost_prefix(127, 0, 0, 0);
-  ip4_networks.push_back(
-      net::NetworkInterface("lo",
-                            "lo",
-                            0,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            localhost_prefix,
-                            8,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
+  ip4_networks.push_back(net::NetworkInterface(
+      "lo", "lo", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+      localhost_prefix, 8, net::IP_ADDRESS_ATTRIBUTE_NONE));
+
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(std::move(callback), std::move(ip4_networks)));
+}
+
+void GetNetworkListOnUIThread(
+    base::OnceCallback<void(net::NetworkInterfaceList)> callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::GetNetworkService()->GetNetworkList(
+      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+      base::BindOnce(&OnGetNetworkList, std::move(callback)));
 }
 
 void CreateUDPSocketOnUIThread(
@@ -134,9 +135,9 @@ void PrivetTrafficDetector::Helper::ScheduleRestart() {
   ResetConnection();
   weak_ptr_factory_.InvalidateWeakPtrs();
   base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
-          &GetNetworkListInBackground,
+          &GetNetworkListOnUIThread,
           base::BindOnce(&Helper::Restart, weak_ptr_factory_.GetWeakPtr())),
       base::TimeDelta::FromSeconds(3));
 }
