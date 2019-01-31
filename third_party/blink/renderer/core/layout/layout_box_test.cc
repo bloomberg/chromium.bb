@@ -39,9 +39,8 @@ TEST_P(LayoutBoxTest, BackgroundObscuredInRect) {
     <div class='column'> <div> <div id='target' class='white-background'>
     <div class='black-background'></div> </div> </div> </div>
   )HTML");
-  LayoutObject* layout_object = GetLayoutObjectByElementId("target");
-  ASSERT_TRUE(layout_object);
-  ASSERT_TRUE(layout_object->BackgroundIsKnownToBeObscured());
+  const auto* target = GetLayoutBoxByElementId("target");
+  EXPECT_TRUE(target->BackgroundIsKnownToBeObscured());
 }
 
 TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
@@ -66,10 +65,10 @@ TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
       <div id="child"></div>
     </div>
   )HTML");
-  auto* child = GetLayoutObjectByElementId("child");
+  auto* child = GetLayoutBoxByElementId("child");
   EXPECT_FALSE(child->BackgroundIsKnownToBeObscured());
 
-  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* parent = GetLayoutBoxByElementId("parent");
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
 }
 
@@ -102,13 +101,13 @@ TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
       </div>
     </div>
   )HTML");
-  auto* grandchild = GetLayoutObjectByElementId("grandchild");
+  auto* grandchild = GetLayoutBoxByElementId("grandchild");
   EXPECT_FALSE(grandchild->BackgroundIsKnownToBeObscured());
 
-  auto* child = GetLayoutObjectByElementId("child");
+  auto* child = GetLayoutBoxByElementId("child");
   EXPECT_FALSE(child->BackgroundIsKnownToBeObscured());
 
-  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* parent = GetLayoutBoxByElementId("parent");
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
 }
 
