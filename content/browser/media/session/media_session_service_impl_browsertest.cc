@@ -179,13 +179,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 // TODO(crbug.com/850870) Plug the leaks.
 #define MAYBE_DontResetServiceForSameDocumentNavigation \
   DISABLED_DontResetServiceForSameDocumentNavigation
-#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
+#else
 // crbug.com/927234.
 #define MAYBE_DontResetServiceForSameDocumentNavigation \
   DISABLED_DontResetServiceForSameDocumentNavigation
-#else
-#define MAYBE_DontResetServiceForSameDocumentNavigation \
-  DontResetServiceForSameDocumentNavigation
 #endif
 IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
                        MAYBE_DontResetServiceForSameDocumentNavigation) {
