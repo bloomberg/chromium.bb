@@ -67,6 +67,9 @@ extern const char kAndroidMessagesIntegrationDescription[];
 extern const char kUseMessagesGoogleComDomainName[];
 extern const char kUseMessagesGoogleComDomainDescription[];
 
+extern const char kUseMessagesStagingUrlName[];
+extern const char kUseMessagesStagingUrlDescription[];
+
 extern const char kEnableMessagesWebPushName[];
 extern const char kEnableMessagesWebPushDescription[];
 
