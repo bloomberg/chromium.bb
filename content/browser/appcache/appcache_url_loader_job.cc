@@ -67,7 +67,8 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
 
   // We signal our caller with an empy callback that it needs to perform
   // the network load.
-  DCHECK(loader_callback_ && !binding_.is_bound());
+  DCHECK(loader_callback_);
+  DCHECK(!binding_.is_bound());
   std::move(loader_callback_).Run({});
   DeleteSoon();
 }
