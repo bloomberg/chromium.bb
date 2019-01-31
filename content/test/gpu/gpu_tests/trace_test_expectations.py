@@ -16,3 +16,8 @@ class TraceTestExpectations(GpuTestExpectations):
 
     # Device traces are not supported on all machines.
     self.Skip('DeviceTraceTest_*')
+
+    # We do not have software H.264 decoding on Android, so it can't survive a
+    # context loss which results in hardware decoder loss.
+    self.Skip('*_Video_Context_Loss_MP4', ['android'], bug=580386)
+

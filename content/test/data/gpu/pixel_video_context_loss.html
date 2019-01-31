@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+
+<!-- READ BEFORE UPDATING:
+If this test is updated make sure to increment the "revision" value of the
+associated test in content/test/gpu/page_sets/pixel_tests.py. This will ensure
+that the baseline images are regenerated on the next run.
+-->
+
+<html>
+<head>
+<title>Video Context Loss Test</title>
+<style type="text/css">
+.nomargin {
+  margin: 0px auto;
+}
+</style>
+<script>
+var video;
+
+var QueryString = function() {
+  // Allows access to query parameters on the URL; e.g., given a URL like:
+  //    http://<server>/my.html?test=123&bob=123
+  // Parameters can then be accessed via QueryString.test or QueryString.bob.
+  var params = {};
+  // RegEx to split out values by &.
+  var r = /([^&=]+)=?([^&]*)/g;
+  // Lambda function for decoding extracted match values. Replaces '+' with
+  // space so decodeURIComponent functions properly.
+  function d(s) { return decodeURIComponent(s.replace(/\+/g, ' ')); }
+  var match;
+  while (match = r.exec(window.location.search.substring(1)))
+    params[d(match[1])] = d(match[2]);
+  return params;
+}();
+
+function CrashGpuProcess() {
+  // Create a canvas element and webgl context.
+  var canvas = document.createElement('canvas');
+  var gl = canvas.getContext('webgl');
+
+  // Now wait for the context loss before starting video playback.
+  canvas.addEventListener('webglcontextlost', function(e) {
+    // Now wait for the video to playback to play until the end end, by which
+    // point a frame should be visible onscreen.
+    video.addEventListener('ended', function(e) {
+      domAutomationController.send("SUCCESS");
+    }, false);
+    video.play();
+  }, false);
+
+  // Essentially invokes chrome://gpucrash.
+  chrome.gpuBenchmarking.crashGpuProcess();
+}
+
+function Main() {
+  video = document.getElementById("video");
+
+  // Wait until we're sure a frame has been displayed before crashing GPU.
+  video.addEventListener('canplaythrough', CrashGpuProcess, false);
+
+  // src needs to be set after listener is added.
+  video.src = QueryString.src;
+}
+</script>
+</head>
+<body onload="Main()">
+<div id="container" style="position:absolute; top:0px; left:0px">
+<video class="nomargin" id="video" width="240" height="135">
+<source type="video/mp4">
+</video>
+</div>
+</body>
+</html>

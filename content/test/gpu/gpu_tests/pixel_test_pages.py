@@ -464,6 +464,80 @@ def DefaultPages(base_name):
         }
       ]),
 
+    # The MP4 contains H.264 which is primarily hardware decoded on bots.
+    PixelTestPage(
+      'pixel_video_context_loss.html?src=/media/test/data/four-colors.mp4',
+      base_name + '_Video_Context_Loss_MP4',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      expected_colors=[
+        {
+          'comment': 'top left video, yellow',
+          'location': [5, 5],
+          'size': [110, 57],
+          'color': [255, 255, 15],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [125, 5],
+          'size': [110, 57],
+          'color': [255, 17, 24],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [5, 72],
+          'size': [110, 57],
+          'color': [12, 12, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [125, 72],
+          'size': [110, 57],
+          'color': [44, 255, 16],
+          'tolerance': tolerance
+        }
+      ]),
+
+    # The VP9 test clip is primarily software decoded on bots.
+    PixelTestPage(
+      'pixel_video_context_loss.html?src=/media/test/data/four-colors-vp9.webm',
+      base_name + '_Video_Context_Loss_VP9',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # Golden image revision is not used
+      expected_colors=[
+        {
+          'comment': 'top left video, yellow',
+          'location': [5, 5],
+          'size': [110, 57],
+          'color': [255, 255, 15],
+          'tolerance': tolerance_vp9
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [125, 5],
+          'size': [110, 57],
+          'color': [255, 17, 24],
+          'tolerance': tolerance_vp9
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [5, 72],
+          'size': [110, 57],
+          'color': [12, 12, 255],
+          'tolerance': tolerance_vp9
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [125, 72],
+          'size': [110, 57],
+          'color': [44, 255, 16],
+          'tolerance': tolerance_vp9
+        }
+      ]),
+
     PixelTestPage(
       'pixel_webgl_premultiplied_alpha_false.html',
       base_name + '_WebGL_PremultipliedAlpha_False',
