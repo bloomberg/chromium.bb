@@ -114,9 +114,6 @@ class MarkupFormatter final {
 
  private:
   String ResolveURLIfNeeded(const Element&, const String&) const;
-  void AppendQuotedURLAttributeValue(StringBuilder&,
-                                     const Element&,
-                                     const Attribute&);
 
   const EAbsoluteURLs resolve_urls_method_;
   SerializationType serialization_type_;
