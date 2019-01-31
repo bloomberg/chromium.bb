@@ -117,7 +117,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.blizzard.com',
       'https://ign.com/',
       'https://www.yelp.com/',
-      'https://gizmodo.com/',
+      # Times out waiting for HasReachedQuiescence - crbug.com/927427
+      # 'https://gizmodo.com/',
       'https://www.gsmarena.com/',
       'https://www.theverge.com/',
       'https://www.nlm.nih.gov/',
