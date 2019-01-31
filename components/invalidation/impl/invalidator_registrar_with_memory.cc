@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <iterator>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -77,6 +78,26 @@ TopicSet InvalidatorRegistrarWithMemory::GetAllRegisteredIds() const {
                              handler_to_topic.second.end());
   }
   return registered_topics;
+}
+
+void InvalidatorRegistrarWithMemory::RequestDetailedStatus(
+    base::RepeatingCallback<void(const base::DictionaryValue&)> callback)
+    const {
+  callback.Run(CollectDebugData());
+}
+
+base::DictionaryValue InvalidatorRegistrarWithMemory::CollectDebugData() const {
+  base::DictionaryValue return_value;
+  return_value.SetInteger("InvalidatorRegistrarWithMemory.Handlers",
+                          handler_name_to_topics_map_.size());
+  for (const auto& handler_to_topics : handler_name_to_topics_map_) {
+    const std::string& handler = handler_to_topics.first;
+    for (const auto& topic : handler_to_topics.second) {
+      return_value.SetString("InvalidatorRegistrarWithMemory." + topic,
+                             handler);
+    }
+  }
+  return return_value;
 }
 
 }  // namespace syncer
