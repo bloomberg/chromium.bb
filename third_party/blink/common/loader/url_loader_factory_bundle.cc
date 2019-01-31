@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {

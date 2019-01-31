@@ -13,6 +13,7 @@ include_rules = [
     "+mojo",
     "+services/metrics/public/cpp",
     "+services/network/public/cpp",
+    "+services/network/public/mojom/url_loader.mojom.h",
     "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
