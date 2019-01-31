@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
 
 namespace blink {
 
