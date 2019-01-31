@@ -1342,13 +1342,22 @@ TEST_F(AppListViewTest, ShowPeekingByDefault) {
   ASSERT_EQ(AppListViewState::PEEKING, view_->app_list_state());
 }
 
-// Tests that in side shelf mode, the app list opens in fullscreen by default.
+// Tests that in side shelf mode, the app list opens in fullscreen by default
+// and verifies that the top rounded corners of the app list background are
+// hidden (see https://crbug.com/920082).
 TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   Initialize(0, false, true);
 
   Show();
 
-  ASSERT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+
+  // Get the end point of the rounded corner and transform it into screen
+  // coordinates. It should be on the screen's bottom line.
+  gfx::PointF end_of_rounded_corner(0, view_->get_background_radius_for_test());
+  view_->GetAppListBackgroundShieldForTest()->GetTransform().TransformPoint(
+      &end_of_rounded_corner);
+  EXPECT_EQ(0.0f, end_of_rounded_corner.y());
 }
 
 // Tests that in tablet mode, the app list opens in fullscreen by default.
