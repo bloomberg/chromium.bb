@@ -55,6 +55,8 @@ const char kFilterArgsParam[] = "filter_args";
 // String parameter used to parse process filter.
 const char kIncludedProcessesParam[] = "included_process_ids";
 
+const char kHistogramNamesParam[] = "histogram_names";
+
 class ConvertableTraceConfigToTraceFormat
     : public base::trace_event::ConvertableToTraceFormat {
  public:
@@ -295,6 +297,7 @@ TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
   process_filter_config_ = rhs.process_filter_config_;
   memory_dump_config_ = rhs.memory_dump_config_;
   event_filters_ = rhs.event_filters_;
+  histogram_names_ = rhs.histogram_names_;
   return *this;
 }
 
@@ -337,6 +340,8 @@ void TraceConfig::Merge(const TraceConfig& config) {
 
   event_filters_.insert(event_filters_.end(), config.event_filters().begin(),
                         config.event_filters().end());
+  histogram_names_.insert(config.histogram_names().begin(),
+                          config.histogram_names().end());
 }
 
 void TraceConfig::Clear() {
@@ -348,6 +353,7 @@ void TraceConfig::Clear() {
   memory_dump_config_.Clear();
   process_filter_config_.Clear();
   event_filters_.clear();
+  histogram_names_.clear();
 }
 
 void TraceConfig::InitializeDefault() {
@@ -386,6 +392,9 @@ void TraceConfig::InitializeFromConfigDict(const DictionaryValue& dict) {
   const base::ListValue* category_event_filters = nullptr;
   if (dict.GetList(kEventFiltersParam, &category_event_filters))
     SetEventFiltersFromConfigList(*category_event_filters);
+  const base::ListValue* histogram_names = nullptr;
+  if (dict.GetList(kHistogramNamesParam, &histogram_names))
+    SetHistogramNamesFromConfigList(*histogram_names);
 
   if (category_filter_.IsCategoryEnabled(MemoryDumpManager::kTraceCategory)) {
     // If dump triggers not set, the client is using the legacy with just
@@ -517,6 +526,13 @@ void TraceConfig::SetProcessFilterConfig(const ProcessFilterConfig& config) {
   process_filter_config_ = config;
 }
 
+void TraceConfig::SetHistogramNamesFromConfigList(
+    const base::ListValue& histogram_names) {
+  histogram_names_.clear();
+  for (const Value& value : histogram_names.GetList())
+    histogram_names_.insert(value.GetString());
+}
+
 void TraceConfig::SetEventFiltersFromConfigList(
     const base::ListValue& category_event_filters) {
   event_filters_.clear();
@@ -598,7 +614,19 @@ std::unique_ptr<DictionaryValue> TraceConfig::ToDict() const {
     }
     dict->Set(kMemoryDumpConfigParam, std::move(memory_dump_config));
   }
+
+  if (!histogram_names_.empty()) {
+    std::unique_ptr<base::ListValue> histogram_names(new base::ListValue());
+    for (const std::string& histogram_name : histogram_names_)
+      histogram_names->AppendString(histogram_name);
+    dict->Set(kHistogramNamesParam, std::move(histogram_names));
+  }
+
   return dict;
+}
+
+void TraceConfig::EnableHistogram(const std::string& histogram_name) {
+  histogram_names_.insert(histogram_name);
 }
 
 std::string TraceConfig::ToTraceOptionsString() const {
