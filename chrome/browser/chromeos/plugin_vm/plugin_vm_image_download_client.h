@@ -13,14 +13,23 @@ struct CompletionInfo;
 struct DownloadMetaData;
 }  // namespace download
 
+class Profile;
+
 namespace plugin_vm {
+
+class PluginVmImageManager;
 
 class PluginVmImageDownloadClient : public download::Client {
  public:
-  PluginVmImageDownloadClient();
+  explicit PluginVmImageDownloadClient(Profile* profile);
   ~PluginVmImageDownloadClient() override;
 
  private:
+  Profile* profile_ = nullptr;
+  int64_t content_length_ = -1;
+
+  PluginVmImageManager* GetManager();
+
   // download::Client implementation.
   void OnServiceInitialized(
       bool state_lost,
@@ -43,6 +52,8 @@ class PluginVmImageDownloadClient : public download::Client {
                                       bool force_delete) override;
   void GetUploadData(const std::string& guid,
                      download::GetUploadDataCallback callback) override;
+
+  base::Optional<double> GetFractionComplete(int64_t bytes_downloaded);
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmImageDownloadClient);
 };
