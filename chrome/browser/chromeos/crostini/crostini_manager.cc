@@ -46,6 +46,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "dbus/message.h"
+#include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
 #include "net/base/network_change_notifier.h"

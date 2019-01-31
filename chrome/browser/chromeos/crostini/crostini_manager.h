@@ -24,6 +24,7 @@
 #include "chromeos/dbus/concierge_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 class Profile;
