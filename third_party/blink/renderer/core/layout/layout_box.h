@@ -1562,6 +1562,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const;
 
+  // Make it public.
+  using LayoutObject::BackgroundIsKnownToBeObscured;
+
  protected:
   ~LayoutBox() override;
 
@@ -1590,13 +1593,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Returns false if it could not cheaply compute the extent (e.g. fixed
   // background), in which case the returned rect may be incorrect.
-  // FIXME: make this a const method once the LayoutBox reference in BoxPainter
-  // is const.
   bool GetBackgroundPaintedExtent(LayoutRect&) const;
   virtual bool ForegroundIsKnownToBeOpaqueInRect(
       const LayoutRect& local_rect,
       unsigned max_depth_to_test) const;
-  bool ComputeBackgroundIsKnownToBeObscured() const override;
+  virtual bool ComputeBackgroundIsKnownToBeObscured() const;
 
   virtual void ComputePositionedLogicalWidth(
       LogicalExtentComputedValues&) const;

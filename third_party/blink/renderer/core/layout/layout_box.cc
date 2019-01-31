@@ -301,21 +301,6 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     }
   }
 
-  // Our opaqueness might have changed without triggering layout.
-  if (diff.NeedsFullPaintInvalidation()) {
-    // Invalidate self.
-    InvalidateBackgroundObscurationStatus();
-    LayoutObject* parent_to_invalidate = Parent();
-    // Also invalidate up to kBackgroundObscurationTestMaxDepth parents.
-    // This constant corresponds to a descendant walk of the same depth;
-    // see ComputeBackgroundIsKnownToBeObscured.
-    for (unsigned i = 0;
-         i < kBackgroundObscurationTestMaxDepth && parent_to_invalidate; ++i) {
-      parent_to_invalidate->InvalidateBackgroundObscurationStatus();
-      parent_to_invalidate = parent_to_invalidate->Parent();
-    }
-  }
-
   UpdateShapeOutsideInfoAfterStyleChange(*Style(), old_style);
   UpdateGridPositionAfterStyleChange(old_style);
 
@@ -752,8 +737,6 @@ FloatRect LayoutBox::LocalBoundingBoxRectForAccessibility() const {
 }
 
 void LayoutBox::UpdateAfterLayout() {
-  InvalidateBackgroundObscurationStatus();
-
   // Transform-origin depends on box size, so we need to update the layer
   // transform after layout.
   if (HasLayer()) {
@@ -1892,7 +1875,6 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
     for (const FillLayer* layer = &StyleRef().BackgroundLayers(); layer;
          layer = layer->Next()) {
       if (layer->GetImage() && image == layer->GetImage()->Data()) {
-        InvalidateBackgroundObscurationStatus();
         bool maybe_animated =
             layer->GetImage()->CachedImage() &&
             layer->GetImage()->CachedImage()->GetImage() &&
@@ -1976,6 +1958,12 @@ bool LayoutBox::IntersectsVisibleViewport() const {
 
 void LayoutBox::EnsureIsReadyForPaintInvalidation() {
   LayoutBoxModelObject::EnsureIsReadyForPaintInvalidation();
+
+  bool new_obscured = ComputeBackgroundIsKnownToBeObscured();
+  if (BackgroundIsKnownToBeObscured() != new_obscured) {
+    SetBackgroundIsKnownToBeObscured(new_obscured);
+    SetBackgroundNeedsFullPaintInvalidation();
+  }
 
   if (MayNeedPaintInvalidationAnimatedBackgroundImage() &&
       !BackgroundIsKnownToBeObscured()) {

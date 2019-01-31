@@ -218,21 +218,12 @@ PaintInvalidationReason
 ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
   // This is before any early return to ensure the background obscuration status
   // is saved.
-  bool background_obscuration_changed = false;
-  bool background_obscured = object_.BackgroundIsKnownToBeObscured();
-  if (background_obscured != object_.PreviousBackgroundObscured()) {
-    object_.GetMutableForPainting().SetPreviousBackgroundObscured(
-        background_obscured);
-    background_obscuration_changed = true;
-  }
-
   if (!object_.ShouldCheckForPaintInvalidation() &&
       (!context_.subtree_flags ||
        context_.subtree_flags ==
            PaintInvalidatorContext::kSubtreeVisualRectUpdate)) {
     // No paint invalidation flag, or just kSubtreeVisualRectUpdate (which has
     // been handled in PaintInvalidator). No paint invalidation is needed.
-    DCHECK(!background_obscuration_changed);
     return PaintInvalidationReason::kNone;
   }
 
@@ -248,9 +239,6 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
       context_.old_visual_rect.IsEmpty() &&
       context_.fragment_data->VisualRect().IsEmpty())
     return PaintInvalidationReason::kNone;
-
-  if (background_obscuration_changed)
-    return PaintInvalidationReason::kBackground;
 
   if (object_.PaintedOutputOfObjectHasNoEffectRegardlessOfSize())
     return PaintInvalidationReason::kNone;

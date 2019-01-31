@@ -278,8 +278,6 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
   if (DocumentBeingDestroyed())
     return;
 
-  InvalidateBackgroundObscurationStatus();
-
   // Check for optimized image policies.
   if (IsHTMLImageElement(GetNode()))
     ValidateImagePolicies();

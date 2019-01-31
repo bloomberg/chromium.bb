@@ -901,8 +901,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.HasBoxDecorationBackground();
   }
 
-  bool BackgroundIsKnownToBeObscured() const;
-
   bool NeedsLayout() const {
     return bitfields_.SelfNeedsLayout() ||
            bitfields_.NormalChildNeedsLayout() ||
@@ -1207,14 +1205,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual void SetFirstInlineFragment(NGPaintFragment*) {}
 
   void SetHasBoxDecorationBackground(bool);
-
-  enum BackgroundObscurationState {
-    kBackgroundObscurationStatusInvalid,
-    kBackgroundKnownToBeObscured,
-    kBackgroundMayBeVisible,
-  };
-  void InvalidateBackgroundObscurationStatus();
-  virtual bool ComputeBackgroundIsKnownToBeObscured() const { return false; }
 
   void SetIsText() { bitfields_.SetIsText(true); }
   void SetIsBox() { bitfields_.SetIsBox(true); }
@@ -2018,9 +2008,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.fragment_.SetSelectionVisualRect(r);
     }
 
-    void SetPreviousBackgroundObscured(bool b) {
-      layout_object_.bitfields_.SetPreviousBackgroundObscured(b);
-    }
     void SetPreviousBackgroundPaintLocation(BackgroundPaintLocation location) {
       layout_object_.bitfields_.SetPreviousBackgroundPaintLocation(location);
     }
@@ -2134,9 +2121,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool CompositedScrollsWithRespectTo(
       const LayoutBoxModelObject& paint_invalidation_container) const;
 
-  bool PreviousBackgroundObscured() const {
-    return bitfields_.PreviousBackgroundObscured();
-  }
   BackgroundPaintLocation PreviousBackgroundPaintLocation() const {
     return bitfields_.PreviousBackgroundPaintLocation();
   }
@@ -2401,6 +2385,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return ToElement(GetNode())->GetDisplayLockContext();
   }
 
+  bool BackgroundIsKnownToBeObscured() const {
+    DCHECK_GE(GetDocument().Lifecycle().GetState(),
+              DocumentLifecycle::kInPrePaint);
+    return bitfields_.BackgroundIsKnownToBeObscured();
+  }
+  void SetBackgroundIsKnownToBeObscured(bool b) {
+    DCHECK_EQ(GetDocument().Lifecycle().GetState(),
+              DocumentLifecycle::kInPrePaint);
+    bitfields_.SetBackgroundIsKnownToBeObscured(b);
+  }
+
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
   // given new style, without accessing the cache.
@@ -2588,7 +2583,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           children_inline_(false),
           contains_inline_with_outline_and_continuation_(false),
           always_create_line_boxes_for_layout_inline_(false),
-          previous_background_obscured_(false),
+          background_is_known_to_be_obscured_(false),
           is_background_attachment_fixed_object_(false),
           is_scroll_anchor_object_(false),
           scroll_anchor_disabling_style_changed_(false),
@@ -2605,7 +2600,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           pending_update_first_line_image_observers_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
-          background_obscuration_state_(kBackgroundObscurationStatusInvalid),
           subtree_paint_property_update_reasons_(
               static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone)),
           previous_background_paint_location_(0) {}
@@ -2783,9 +2777,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(always_create_line_boxes_for_layout_inline_,
                          AlwaysCreateLineBoxesForLayoutInline);
 
-    // Background obscuration status of the previous frame.
-    ADD_BOOLEAN_BITFIELD(previous_background_obscured_,
-                         PreviousBackgroundObscured);
+    // For LayoutBox to cache the result of LayoutBox::
+    // ComputeBackgroundIsKnownToBeObscured(). It's updated during PrePaint.
+    ADD_BOOLEAN_BITFIELD(background_is_known_to_be_obscured_,
+                         BackgroundIsKnownToBeObscured);
 
     ADD_BOOLEAN_BITFIELD(is_background_attachment_fixed_object_,
                          IsBackgroundAttachmentFixedObject);
@@ -2850,9 +2845,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // (see ComputedStyle::position).
     unsigned positioned_state_ : 2;  // PositionedState
     unsigned selection_state_ : 3;   // SelectionState
-    // Mutable for getter which lazily update this field.
-    mutable unsigned
-        background_obscuration_state_ : 2;  // BackgroundObscurationState
 
     // Reasons for the full subtree invalidation.
     unsigned subtree_paint_property_update_reasons_
@@ -2924,16 +2916,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ALWAYS_INLINE void ResetSubtreePaintPropertyUpdateReasons() {
       subtree_paint_property_update_reasons_ =
           static_cast<unsigned>(SubtreePaintPropertyUpdateReason::kNone);
-    }
-
-    ALWAYS_INLINE BackgroundObscurationState
-    GetBackgroundObscurationState() const {
-      return static_cast<BackgroundObscurationState>(
-          background_obscuration_state_);
-    }
-    ALWAYS_INLINE void SetBackgroundObscurationState(
-        BackgroundObscurationState s) const {
-      background_obscuration_state_ = s;
     }
 
     ALWAYS_INLINE BackgroundPaintLocation
@@ -3098,24 +3080,6 @@ inline void LayoutObject::SetHasBoxDecorationBackground(bool b) {
     return;
 
   bitfields_.SetHasBoxDecorationBackground(b);
-  InvalidateBackgroundObscurationStatus();
-}
-
-inline void LayoutObject::InvalidateBackgroundObscurationStatus() {
-  bitfields_.SetBackgroundObscurationState(kBackgroundObscurationStatusInvalid);
-}
-
-DISABLE_CFI_PERF
-inline bool LayoutObject::BackgroundIsKnownToBeObscured() const {
-  if (bitfields_.GetBackgroundObscurationState() ==
-      kBackgroundObscurationStatusInvalid) {
-    BackgroundObscurationState state = ComputeBackgroundIsKnownToBeObscured()
-                                           ? kBackgroundKnownToBeObscured
-                                           : kBackgroundMayBeVisible;
-    bitfields_.SetBackgroundObscurationState(state);
-  }
-  return bitfields_.GetBackgroundObscurationState() ==
-         kBackgroundKnownToBeObscured;
 }
 
 inline void MakeMatrixRenderable(TransformationMatrix& matrix,
