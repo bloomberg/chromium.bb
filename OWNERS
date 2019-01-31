@@ -13,7 +13,6 @@ per-file .vpython=dnj@chromium.org
 per-file .vpython=dpranke@chromium.org
 per-file .vpython=iannucci@chromium.org
 per-file .vpython=jbudorick@chromium.org
-per-file .vpython=nednguyen@chromium.org
 per-file AUTHORS=*
 per-file BUILD.gn=file://build/OWNERS
 per-file codereview.settings=agable@chromium.org

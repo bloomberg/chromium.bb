@@ -39,7 +39,7 @@ class _DummyBenchmark(perf_benchmark.PerfBenchmark):
   page_set = dummy_story_set.DummyStorySet
 
 
-@benchmark.Info(emails=['nednguyen@google.com'], component='Speed>Telemetry')
+@benchmark.Info(emails=['crouleau@chromium.org'], component='Speed>Telemetry')
 class DummyBenchmarkOne(_DummyBenchmark):
   """A low noise benchmark with mean=100 & std=1."""
 
@@ -51,7 +51,7 @@ class DummyBenchmarkOne(_DummyBenchmark):
     return 'dummy_benchmark.stable_benchmark_1'
 
 
-@benchmark.Info(emails=['nednguyen@google.com'], component='Speed>Telemetry')
+@benchmark.Info(emails=['crouleau@chromium.org'], component='Speed>Telemetry')
 class DummyBenchmarkTwo(_DummyBenchmark):
   """A noisy benchmark with mean=50 & std=20."""
 
