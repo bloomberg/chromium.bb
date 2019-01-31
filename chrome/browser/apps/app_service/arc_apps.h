@@ -73,8 +73,6 @@ class ArcApps : public KeyedService,
                         const std::string& name) override;
   void OnAppLastLaunchTimeUpdated(const std::string& app_id) override;
 
-  void ObservePrefs();
-
   const base::FilePath GetCachedIconFilePath(const std::string& app_id,
                                              int32_t size_hint_in_dip);
   void LoadIconFromVM(const std::string icon_key_s_key,
