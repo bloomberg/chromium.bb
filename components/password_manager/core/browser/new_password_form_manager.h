@@ -152,14 +152,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   }
 
   FormSaver* form_saver() { return form_saver_.get(); }
-
-  const VotesUploader& votes_uploader() const { return votes_uploader_; }
-
-  LikelyFormFilling likely_form_filling() const { return likely_form_filling_; }
-
-  void set_likely_form_filling(LikelyFormFilling likely_form_filling) {
-    likely_form_filling_ = likely_form_filling;
-  }
 #endif
 
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is

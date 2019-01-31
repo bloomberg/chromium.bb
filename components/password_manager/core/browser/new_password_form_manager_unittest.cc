@@ -1143,14 +1143,10 @@ TEST_F(NewPasswordFormManagerTest, PermanentlyBlacklist) {
 TEST_F(NewPasswordFormManagerTest, Clone) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   fetcher_->SetNonFederated({}, 0u);
+
   // Provisionally save in order to create pending credentials.
   ASSERT_TRUE(
       form_manager_->ProvisionallySaveIfIsManaged(submitted_form_, &driver_));
-
-  // Make sure likely_form_filling is not in the default state anymore.
-  EXPECT_EQ(LikelyFormFilling::kNoFilling,
-            form_manager_->likely_form_filling());
-  form_manager_->set_likely_form_filling(LikelyFormFilling::kFillOnPageLoad);
 
   std::unique_ptr<NewPasswordFormManager> cloned_manager =
       form_manager_->Clone();
@@ -1163,15 +1159,12 @@ TEST_F(NewPasswordFormManagerTest, Clone) {
   EXPECT_EQ(form_manager_->metrics_recorder(),
             cloned_manager->metrics_recorder());
 
-  EXPECT_EQ(form_manager_->votes_uploader(), cloned_manager->votes_uploader());
   EXPECT_EQ(form_manager_->GetPendingCredentials(),
             cloned_manager->GetPendingCredentials());
   ASSERT_TRUE(cloned_manager->GetSubmittedForm());
   EXPECT_EQ(*form_manager_->GetSubmittedForm(),
             *cloned_manager->GetSubmittedForm());
   EXPECT_TRUE(cloned_manager->is_submitted());
-  EXPECT_EQ(form_manager_->likely_form_filling(),
-            cloned_manager->likely_form_filling());
 }
 
 // Extracts the information whether parsing was successful from a metric

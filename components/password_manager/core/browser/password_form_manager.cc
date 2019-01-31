@@ -1036,7 +1036,6 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   result->is_possible_change_password_form_without_username_ =
       is_possible_change_password_form_without_username_;
   result->votes_uploader_ = votes_uploader_;
-  result->likely_form_filling_ = likely_form_filling_;
 
   return result;
 }
