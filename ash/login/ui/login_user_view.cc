@@ -422,16 +422,25 @@ LoginUserView::LoginUserView(
       this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
 }
 
-LoginUserView::~LoginUserView() {
-  if (menu_) {
-    menu_->GetWidget()->Close();
-    menu_ = nullptr;
-  }
-}
+LoginUserView::~LoginUserView() = default;
 
 void LoginUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user,
                                   bool animate) {
   current_user_ = user->Clone();
+
+  if (menu_ && menu_->parent()) {
+    menu_->parent()->RemoveChildView(menu_);
+    delete menu_;
+  }
+
+  menu_ = new LoginUserMenuView(
+      base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
+      base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
+      current_user_->basic_user_info->type, current_user_->is_device_owner,
+      dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
+      current_user_->can_remove /*show_remove_user*/, on_remove_warning_shown_,
+      on_remove_);
+  menu_->SetVisible(false);
 
   if (animate) {
     // Stop any existing animation.
@@ -529,29 +538,19 @@ void LoginUserView::ButtonPressed(views::Button* sender,
   // Handle click on the dropdown arrow.
   if (sender == dropdown_) {
     DCHECK(dropdown_);
+    DCHECK(menu_);
 
     // If menu is showing, just close it
-    if (menu_ && menu_->IsVisible()) {
+    if (menu_->visible()) {
       menu_->Hide();
       return;
     }
 
-    // If the menu exists but is hidden, delete it and create a new menu.
-    if (menu_) {
-      menu_->GetWidget()->Close();
-      menu_ = nullptr;
-    }
-
-    menu_ = new LoginUserMenuView(
-        base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
-        base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
-        current_user_->basic_user_info->type, current_user_->is_device_owner,
-        dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
-        current_user_->can_remove /*show_remove_user*/,
-        on_remove_warning_shown_, on_remove_);
-
     bool opener_focused =
         menu_->GetBubbleOpener() && menu_->GetBubbleOpener()->HasFocus();
+
+    if (!menu_->parent())
+      login_views_utils::GetTopLevelParentView(this)->AddChildView(menu_);
 
     menu_->Show();
 
@@ -644,6 +643,7 @@ void LoginUserView::SetLargeLayout() {
   AddChildView(tap_button_);
   if (dropdown_)
     AddChildView(dropdown_);
+
   if (user_domain_)
     AddChildView(user_domain_);
 

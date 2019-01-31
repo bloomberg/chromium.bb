@@ -339,10 +339,6 @@ class ASH_EXPORT LockContentsView
   // Performs the specified accelerator action.
   void PerformAction(AcceleratorAction action);
 
-  // Deletes the various bubbles, either by Close()-ing the hosting widget or
-  // deleting any orphaned views.
-  void CleanupBubbles();
-
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -377,8 +373,9 @@ class ASH_EXPORT LockContentsView
       this};
   ScopedSessionObserver session_observer_{this};
 
-  // Error bubbles are owned by LockContentsView, or by the Ash menu container
-  // if they have been shown. Bubble for displaying authentication error.
+  // All error bubbles and the tooltip view are child views of LockContentsView,
+  // and will be torn down when LockContentsView is torn down.
+  // Bubble for displaying authentication error.
   LoginErrorBubble* auth_error_bubble_;
   // Bubble for displaying detachable base errors.
   LoginErrorBubble* detachable_base_error_bubble_;

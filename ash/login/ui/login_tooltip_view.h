@@ -21,6 +21,9 @@ class LoginTooltipView : public LoginBaseBubbleView {
   // LoginBaseBubbleView:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginTooltipView);
 };

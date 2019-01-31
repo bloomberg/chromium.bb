@@ -13,14 +13,9 @@ namespace ash {
 
 class ASH_EXPORT LoginErrorBubble : public LoginBaseBubbleView {
  public:
-  // Factory method to create a non-persistent error bubble in the Ash menu
-  // container. The caller should manually Close() or delete the bubble, or
-  // else it will persist for the full lifetime of the Ash menu container.
-  static LoginErrorBubble* CreateDefault();
-
+  LoginErrorBubble();
   LoginErrorBubble(views::View* content,
                    views::View* anchor_view,
-                   aura::Window* parent_container,
                    bool is_persistent);
   ~LoginErrorBubble() override;
 
@@ -31,6 +26,7 @@ class ASH_EXPORT LoginErrorBubble : public LoginBaseBubbleView {
   void SetPersistent(bool persistent) override;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 

@@ -162,14 +162,14 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
   views::View* link_view = styled_label_test.link_targets().begin()->first;
   TapOnView(link_view);
   EXPECT_NE(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(test_api.warning_dialog()->IsVisible());
+  EXPECT_TRUE(test_api.warning_dialog()->visible());
 
   // When warning dialog is shown, tap outside of public account expanded view
   // should not hide it.
   TapOnView(other_view_);
   EXPECT_TRUE(public_account_->visible());
   EXPECT_NE(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(test_api.warning_dialog()->IsVisible());
+  EXPECT_TRUE(test_api.warning_dialog()->visible());
 
   // If the warning dialog is shown, escape key should close the waring dialog,
   // but not the public account view.
@@ -222,10 +222,8 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   EXPECT_TRUE(test_api.advanced_view()->visible());
 
   // Tap on language selection button should bring up the language menu.
-  // Before the first show, language_menu_view is not initialized to anything.
-  EXPECT_EQ(nullptr, test_api.language_menu_view());
   TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu_view()->IsVisible());
+  EXPECT_TRUE(test_api.language_menu_view()->visible());
 
   // First language item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
@@ -235,13 +233,11 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
 
   // Select language item should close the language menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_EQ(nullptr, test_api.language_menu_view());
+  EXPECT_FALSE(test_api.language_menu_view()->visible());
 
   // Tap on keyboard selection button should bring up the keyboard menu.
-  // Before the first show, keyboard_menu_view is not initialized to anything.
-  EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
   TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu_view()->IsVisible());
+  EXPECT_TRUE(test_api.keyboard_menu_view()->visible());
 
   // Second keyboard item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
@@ -251,7 +247,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
 
   // Select keyboard item should close the keyboard menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
+  EXPECT_FALSE(test_api.keyboard_menu_view()->visible());
 }
 
 TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
@@ -263,7 +259,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   // Try to change language selection.
   // Open language menu.
   TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu_view()->IsVisible());
+  EXPECT_TRUE(test_api.language_menu_view()->visible());
 
   // Select second language item:
   // 1. Language menu will be closed automatically.
@@ -278,14 +274,14 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
   TapOnView(language_test_api.contents()->child_at(1));
-  EXPECT_EQ(nullptr, test_api.language_menu_view());
+  EXPECT_FALSE(test_api.language_menu_view()->visible());
   EXPECT_EQ(test_api.selected_language_item().value, kFrenchLanguageCode);
   base::RunLoop().RunUntilIdle();
 
   // Try to change keyboard selection.
   // Open keyboard menu.
   TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu_view()->IsVisible());
+  EXPECT_TRUE(test_api.keyboard_menu_view()->visible());
 
   // Select first keyboard item:
   // 1. Keyboard menu will be closed automatically.
@@ -293,7 +289,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
   LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
   TapOnView(keyboard_test_api.contents()->child_at(0));
-  EXPECT_EQ(nullptr, test_api.keyboard_menu_view());
+  EXPECT_FALSE(test_api.keyboard_menu_view()->visible());
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
 }
 

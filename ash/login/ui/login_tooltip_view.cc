@@ -13,8 +13,6 @@ namespace ash {
 LoginTooltipView::LoginTooltipView(const base::string16& message,
                                    views::View* anchor_view)
     : LoginBaseBubbleView(anchor_view) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   SetText(message);
 }
 
@@ -30,6 +28,16 @@ void LoginTooltipView::SetText(const base::string16& message) {
 
 void LoginTooltipView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTooltip;
+}
+
+gfx::Size LoginTooltipView::CalculatePreferredSize() const {
+  gfx::Size size;
+
+  if (GetAnchorView())
+    size.set_width(GetAnchorView()->width());
+
+  size.set_height(GetHeightForWidth(size.width()));
+  return size;
 }
 
 }  // namespace ash

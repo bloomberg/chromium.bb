@@ -38,9 +38,11 @@ TEST_F(LoginUserMenuViewTest, RemoveUserRequiresTwoActivations) {
                           &remove_warning_called),
       base::BindRepeating([](bool* remove_called) { *remove_called = true; },
                           &remove_called));
+  anchor->AddChildView(bubble);
+
   bubble->Show();
 
-  EXPECT_TRUE(bubble->IsVisible());
+  EXPECT_TRUE(bubble->visible());
 
   // Focus the remove user button (the menu should forward focus to the remove
   // button).
@@ -72,9 +74,10 @@ TEST_F(LoginUserMenuViewTest, LongUserNameAndEmailLaidOutCorrectly) {
       nullptr /*bubble_opener*/, true /*show_remove_user*/, base::DoNothing(),
       base::DoNothing());
 
+  anchor->AddChildView(bubble);
   bubble->Show();
 
-  EXPECT_TRUE(bubble->IsVisible());
+  EXPECT_TRUE(bubble->visible());
 
   LoginUserMenuView::TestApi test_api(bubble);
   views::View* remove_user_button = test_api.remove_user_button();
@@ -122,15 +125,17 @@ TEST_F(LoginUserMenuViewTest, LoginButtonRipple) {
       false /*is_owner*/, container /*anchor*/, bubble_opener,
       true /*show_remove_user*/, base::DoNothing(), base::DoNothing());
 
+  container->AddChildView(bubble);
+
   bubble->Show();
-  EXPECT_TRUE(bubble->IsVisible());
+  EXPECT_TRUE(bubble->visible());
   EXPECT_TRUE(ink_drop_api.HasInkDrop());
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
             views::InkDropState::ACTIVATED);
   EXPECT_TRUE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
 
   bubble->Hide();
-  EXPECT_FALSE(bubble->IsVisible());
+  EXPECT_FALSE(bubble->visible());
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
             views::InkDropState::HIDDEN);
   EXPECT_FALSE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
