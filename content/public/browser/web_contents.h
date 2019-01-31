@@ -27,7 +27,6 @@
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/visibility.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -879,9 +878,6 @@ class WebContents : public PageNavigator,
 
   virtual int GetCurrentlyPlayingVideoCount() = 0;
 
-  // Returns a map containing the sizes of all currently playing videos.
-  using VideoSizeMap =
-      base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>;
   virtual base::Optional<gfx::Size> GetFullscreenVideoSize() = 0;
   virtual bool IsFullscreen() = 0;
 

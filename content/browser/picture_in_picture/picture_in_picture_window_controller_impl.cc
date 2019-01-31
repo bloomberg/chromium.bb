@@ -13,6 +13,7 @@
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 #include "media/base/media_switches.h"
 

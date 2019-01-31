@@ -4,12 +4,13 @@
 
 #include "chrome/browser/android/webapk/webapk_post_share_target_navigator.h"
 
-#include <sstream>
-
 #include <jni.h>
+
+#include <sstream>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/WebApkPostShareTargetNavigator_jni.h"

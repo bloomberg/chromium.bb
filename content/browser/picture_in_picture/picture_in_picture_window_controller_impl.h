@@ -8,14 +8,17 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
+
 class OverlaySurfaceEmbedder;
 class WebContents;
+class WebContentsImpl;
 class MediaWebContentsObserver;
 
 // TODO(thakis,mlamouri): PictureInPictureWindowControllerImpl isn't
