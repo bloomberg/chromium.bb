@@ -331,6 +331,10 @@ std::string HostedAppBrowserController::GetAppShortName() const {
   return GetExtension()->short_name();
 }
 
+std::string HostedAppBrowserController::GetExtensionId() const {
+  return extension_id_;
+}
+
 base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
   return FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
 }

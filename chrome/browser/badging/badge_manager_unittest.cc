@@ -4,6 +4,7 @@
 
 #include "chrome/browser/badging/badge_manager.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -36,11 +37,12 @@ namespace badging {
 // Testing delegate that records badge changes.
 class TestBadgeManagerDelegate : public BadgeManagerDelegate {
  public:
-  TestBadgeManagerDelegate() = default;
+  TestBadgeManagerDelegate() : BadgeManagerDelegate(nullptr) {}
+
   ~TestBadgeManagerDelegate() override = default;
 
   void OnBadgeSet(const std::string& app_id,
-                  base::Optional<int> contents) override {
+                  base::Optional<uint64_t> contents) override {
     set_badges_.push_back(std::make_pair(app_id, contents));
   }
 
@@ -63,20 +65,23 @@ class BadgeManagerUnittest : public ::testing::Test {
 
   void SetUp() override {
     profile_.reset(new TestingProfile());
-    delegate_ = std::make_unique<TestBadgeManagerDelegate>();
+
+    // Delegate lifetime is managed by BadgeManager
+    auto owned_delegate = std::make_unique<TestBadgeManagerDelegate>();
+    delegate_ = owned_delegate.get();
     badge_manager_ =
         BadgeManagerFactory::GetInstance()->GetForProfile(profile_.get());
-    badge_manager_->SetDelegate(delegate_.get());
+    badge_manager_->SetDelegate(std::move(owned_delegate));
   }
 
   void TearDown() override { profile_.reset(); }
 
-  TestBadgeManagerDelegate* delegate() const { return delegate_.get(); }
+  TestBadgeManagerDelegate* delegate() { return delegate_; }
 
   BadgeManager* badge_manager() const { return badge_manager_; }
 
  private:
-  std::unique_ptr<TestBadgeManagerDelegate> delegate_;
+  TestBadgeManagerDelegate* delegate_;
   BadgeManager* badge_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
@@ -93,15 +98,6 @@ TEST_F(BadgeManagerUnittest, SetFlagBadgeForApp) {
 }
 
 TEST_F(BadgeManagerUnittest, SetBadgeForApp) {
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
-
-  EXPECT_EQ(1UL, delegate()->set_badges().size());
-  EXPECT_EQ(kExtensionId, delegate()->set_badges().front().first);
-  EXPECT_EQ(kBadgeContents, delegate()->set_badges().front().second);
-}
-
-TEST_F(BadgeManagerUnittest, SetBadgeForAppWithNoBadgeChange) {
-  badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
   badge_manager()->UpdateBadge(kExtensionId, kBadgeContents);
 
   EXPECT_EQ(1UL, delegate()->set_badges().size());
@@ -148,17 +144,14 @@ TEST_F(BadgeManagerUnittest, ClearBadgeForBadgedApp) {
   EXPECT_EQ(kExtensionId, delegate()->cleared_badges().front());
 }
 
-TEST_F(BadgeManagerUnittest, ClearBadgeForNonBadgedApp) {
-  badge_manager()->ClearBadge(kExtensionId);
-  EXPECT_EQ(0UL, delegate()->cleared_badges().size());
-}
-
 TEST_F(BadgeManagerUnittest, BadgingMultipleProfiles) {
   std::unique_ptr<Profile> other_profile = std::make_unique<TestingProfile>();
   auto* other_badge_manager =
       BadgeManagerFactory::GetInstance()->GetForProfile(other_profile.get());
-  auto other_delegate = std::make_unique<TestBadgeManagerDelegate>();
-  other_badge_manager->SetDelegate(other_delegate.get());
+
+  auto owned_other_delegate = std::make_unique<TestBadgeManagerDelegate>();
+  auto* other_delegate = owned_other_delegate.get();
+  other_badge_manager->SetDelegate(std::move(owned_other_delegate));
 
   other_badge_manager->UpdateBadge(kExtensionId, base::nullopt);
   other_badge_manager->UpdateBadge(kExtensionId, kBadgeContents);
@@ -171,7 +164,7 @@ TEST_F(BadgeManagerUnittest, BadgingMultipleProfiles) {
   EXPECT_EQ(0UL, delegate()->set_badges().size());
 
   EXPECT_EQ(1UL, other_delegate->cleared_badges().size());
-  EXPECT_EQ(0UL, delegate()->cleared_badges().size());
+  EXPECT_EQ(1UL, delegate()->cleared_badges().size());
 
   EXPECT_EQ(kExtensionId, other_delegate->set_badges().back().first);
   EXPECT_EQ(base::nullopt, other_delegate->set_badges().back().second);

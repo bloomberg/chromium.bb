@@ -89,10 +89,6 @@ enum class ShowTranslateBubbleResult {
   EDITABLE_FIELD_IS_ACTIVE,
 };
 
-#if !defined(OS_CHROMEOS)
-class BadgeServiceDelegate;
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
@@ -316,9 +312,6 @@ class BrowserWindow : public ui::BaseWindow {
       bool disable_stay_in_chrome,
       IntentPickerResponse callback) = 0;
   virtual void SetIntentPickerViewVisibility(bool visible) = 0;
-#else   // !defined(OS_CHROMEOS)
-  // Returns the badge service delegate.
-  virtual BadgeServiceDelegate* GetBadgeServiceDelegate() const = 0;
 #endif  // defined(OS_CHROMEOS)
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,

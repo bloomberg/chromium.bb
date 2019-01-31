@@ -19,11 +19,9 @@ namespace extensions {
 class Extension;
 }
 
-#if defined(OS_CHROMEOS)
 namespace badging {
 class BadgeManager;
 }
-#endif
 
 // Desktop implementation of the BadgeService mojo service.
 class BadgeServiceImpl
@@ -49,9 +47,7 @@ class BadgeServiceImpl
   content::RenderFrameHost* render_frame_host_;
   content::BrowserContext* browser_context_;
   content::WebContents* web_contents_;
-#if defined(OS_CHROMEOS)
   badging::BadgeManager* badge_manager_;
-#endif
 };
 
 #endif  // CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_

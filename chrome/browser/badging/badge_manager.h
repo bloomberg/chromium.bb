@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BADGING_BADGE_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -15,30 +16,35 @@
 #include "extensions/common/extension_id.h"
 
 class KeyedService;
+class Profile;
 
 namespace badging {
+
+// Determines the text to put on the badge based on some badge_content.
+std::string GetBadgeString(base::Optional<uint64_t> badge_content);
 
 // Maintains a record of badge contents and dispatches badge changes to a
 // delegate.
 class BadgeManager : public KeyedService {
  public:
-  BadgeManager();
+  explicit BadgeManager(Profile* profile);
   ~BadgeManager() override;
 
   // Records badge contents for an app and notifies the delegate if the badge
   // contents have changed.
-  void UpdateBadge(const extensions::ExtensionId&, base::Optional<int>);
+  void UpdateBadge(const extensions::ExtensionId&, base::Optional<uint64_t>);
 
   // Clears badge contents for an app (if existing) and notifies the delegate.
   void ClearBadge(const extensions::ExtensionId&);
 
-  void SetDelegate(BadgeManagerDelegate*);
+  // Sets the delegate used for setting/clearing badges.
+  void SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate);
 
  private:
-  BadgeManagerDelegate* delegate_ = nullptr;
+  std::unique_ptr<BadgeManagerDelegate> delegate_;
 
   // Maps extension id to badge contents.
-  std::map<extensions::ExtensionId, base::Optional<int>> badged_apps_;
+  std::map<extensions::ExtensionId, base::Optional<uint64_t>> badged_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(BadgeManager);
 };
