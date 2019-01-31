@@ -5,12 +5,16 @@
 #include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 
 #include "base/bind.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -28,8 +32,6 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
     testing_profile_.reset(builder.Build().release());
     fake_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(testing_profile_.get()));
-    account_tracker_service_ =
-        AccountTrackerServiceFactory::GetForProfile(testing_profile_.get());
     store_ = new MockPasswordStore();
   }
 
@@ -41,7 +43,6 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<TestingProfile> testing_profile_;
   FakeSigninManagerForTesting* fake_signin_manager_;  // Weak
-  AccountTrackerService* account_tracker_service_;    // Weak
   scoped_refptr<MockPasswordStore> store_;
 };
 
@@ -73,17 +74,44 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
 TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-  fake_signin_manager_->SignIn("primary_accountid", "username", "password");
+
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(testing_profile_.get());
+  identity::PrimaryAccountMutator* primary_account_mutator =
+      identity_manager->GetPrimaryAccountMutator();
+  DCHECK(primary_account_mutator);
+  primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
+      /*refresh_token=*/"refresh_token",
+      /*gaia_id=*/"primary_account_id",
+      /*username=*/"username",
+      /*password=*/"password", base::OnceCallback<void(const std::string&)>());
+  primary_account_mutator->LegacyCompletePendingPrimaryAccountSignin();
+
   testing::Mock::VerifyAndClearExpectations(store_.get());
 
   EXPECT_CALL(*store_, ClearGaiaPasswordHash("username2"));
-  account_tracker_service_->SeedAccountInfo("secondary_account_id",
-                                            "username2");
-  account_tracker_service_->RemoveAccount("secondary_account_id");
+
+  AccountFetcherService* account_fetcher_service =
+      AccountFetcherServiceFactory::GetForProfile(testing_profile_.get());
+  // This call is necessary to ensure that the account removal is fully
+  // processed in this testing context.
+  account_fetcher_service->EnableNetworkFetchesForTest();
+  identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
+      /*gaia_id=*/"secondary_account_id",
+      /*email=*/"username2",
+      /*refresh_token=*/"refresh_token",
+      /*is_under_advanced_protection=*/false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+  identity_manager->GetAccountsMutator()->RemoveAccount(
+      "secondary_account_id",
+      signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);
   testing::Mock::VerifyAndClearExpectations(store_.get());
 
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
-  fake_signin_manager_->ForceSignOut();
+  primary_account_mutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+      signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
   notifier.UnsubscribeFromSigninEvents();
 }
 
