@@ -98,6 +98,8 @@ class ChromeBrowserState;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  self.styler.tableViewBackgroundColor = UIColor.whiteColor;
+  self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
   // TableView configuration
   self.tableView.estimatedRowHeight = 56;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
@@ -135,7 +137,7 @@ class ChromeBrowserState;
 
 - (void)dismiss {
   [self prepareForDismissal];
-  [self.localDispatcher dismissClearBrowsingDataWithCompletion:nil];
+  [self.localDispatcher dismissClearBrowsingData];
 }
 
 #pragma mark - Public Methods

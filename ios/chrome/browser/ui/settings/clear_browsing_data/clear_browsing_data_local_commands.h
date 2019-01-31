@@ -15,8 +15,7 @@ class GURL;
 // view.
 - (void)openURL:(const GURL&)URL;
 // Notifies the coordinator that Clear Browsing Data should be dismissed.
-- (void)dismissClearBrowsingDataWithCompletion:
-    (ProceduralBlock)completionHandler;
+- (void)dismissClearBrowsingData;
 
 @end
 

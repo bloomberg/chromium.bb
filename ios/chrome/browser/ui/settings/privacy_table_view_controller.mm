@@ -22,11 +22,14 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_table_view_controller.h"
@@ -72,8 +75,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface PrivacyTableViewController ()<BooleanObserver,
-                                         PrefObserverDelegate> {
+@interface PrivacyTableViewController () <BooleanObserver,
+                                          ClearBrowsingDataLocalCommands,
+                                          PrefObserverDelegate> {
   ios::ChromeBrowserState* _browserState;  // weak
   PrefBackedBoolean* _suggestionsEnabled;
   // The item related to the switch for the show suggestions setting.
@@ -350,8 +354,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
                             IDS_IOS_OPTIONS_SEND_USAGE_DATA)];
       break;
     case ItemTypeClearBrowsingDataClear:
-      controller = [[ClearBrowsingDataCollectionViewController alloc]
-          initWithBrowserState:_browserState];
+      if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+        ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
+            [[ClearBrowsingDataTableViewController alloc]
+                initWithBrowserState:_browserState];
+        clearBrowsingDataViewController.localDispatcher = self;
+        controller = clearBrowsingDataViewController;
+      } else {
+        controller = [[ClearBrowsingDataCollectionViewController alloc]
+            initWithBrowserState:_browserState];
+      }
       break;
     case ItemTypeCanMakePaymentSwitch:
     case ItemTypeWebServicesShowSuggestions:
@@ -377,6 +389,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Update the cell.
   [self reconfigureCellsForItems:@[ _showSuggestionsItem ]];
+}
+
+#pragma mark - ClearBrowsingDataLocalCommands
+
+- (void)openURL:(const GURL&)URL {
+  DCHECK(self.dispatcher);
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:URL];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
+}
+
+- (void)dismissClearBrowsingData {
+  SettingsNavigationController* navigationController =
+      base::mac::ObjCCastStrict<SettingsNavigationController>(
+          self.navigationController);
+  [navigationController closeSettings];
 }
 
 #pragma mark - Actions

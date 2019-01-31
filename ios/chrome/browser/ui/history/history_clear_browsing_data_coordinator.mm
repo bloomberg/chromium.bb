@@ -72,7 +72,24 @@
 
 - (void)stopWithCompletion:(ProceduralBlock)completionHandler {
   if (self.historyClearBrowsingDataNavigationController) {
-    [self dismissClearBrowsingDataWithCompletion:completionHandler];
+    [self.clearBrowsingDataTableViewController prepareForDismissal];
+    [self.historyClearBrowsingDataNavigationController
+        dismissViewControllerAnimated:YES
+                           completion:^() {
+                             // completionHandler might trigger
+                             // dismissHistoryWithCompletion, which will call
+                             // stopWithCompletion:, so
+                             // historyClearBrowsingDataNavigationController
+                             // needs to be nil, otherwise stopWithCompletion:
+                             // will call dismiss with nothing to dismiss and
+                             // therefore not trigger its own completionHandler.
+                             self.clearBrowsingDataTableViewController = nil;
+                             self.historyClearBrowsingDataNavigationController =
+                                 nil;
+                             if (completionHandler) {
+                               completionHandler();
+                             }
+                           }];
   } else if (completionHandler) {
     completionHandler();
   }
@@ -81,13 +98,14 @@
 #pragma mark - ClearBrowsingDataLocalCommands
 
 - (void)openURL:(const GURL&)URL {
+  DCHECK(self.historyClearBrowsingDataNavigationController);
   OpenNewTabCommand* command =
       [[OpenNewTabCommand alloc] initWithURL:URL
                                     referrer:web::Referrer()
                                  inIncognito:NO
                                 inBackground:NO
                                     appendTo:kLastTab];
-  [self dismissClearBrowsingDataWithCompletion:^() {
+  [self stopWithCompletion:^() {
     [self.localDispatcher dismissHistoryWithCompletion:^{
       [self.loader webPageOrderedOpen:command];
       [self.presentationDelegate showActiveRegularTabFromHistory];
@@ -95,27 +113,9 @@
   }];
 }
 
-- (void)dismissClearBrowsingDataWithCompletion:
-    (ProceduralBlock)completionHandler {
+- (void)dismissClearBrowsingData {
   DCHECK(self.historyClearBrowsingDataNavigationController);
-  [self.clearBrowsingDataTableViewController prepareForDismissal];
-  [self.historyClearBrowsingDataNavigationController
-      dismissViewControllerAnimated:YES
-                         completion:^() {
-                           // completionHandler might trigger
-                           // dismissHistoryWithCompletion, which will call
-                           // stopWithCompletion:, so
-                           // historyClearBrowsingDataNavigationController needs
-                           // to be nil, otherwise stopWithCompletion: will call
-                           // dismiss with nothing to dismiss and therefore not
-                           // trigger its own completionHandler.
-                           self.clearBrowsingDataTableViewController = nil;
-                           self.historyClearBrowsingDataNavigationController =
-                               nil;
-                           if (completionHandler) {
-                             completionHandler();
-                           }
-                         }];
+  [self stopWithCompletion:nil];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
