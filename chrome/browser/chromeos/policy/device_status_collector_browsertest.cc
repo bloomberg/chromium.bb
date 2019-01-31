@@ -2707,6 +2707,8 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest,
 TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
   EXPECT_TRUE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
+  base::Time initial_time = base::Time::Now() + kHour;
+  status_collector_->SetBaselineTime(initial_time);
 
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
@@ -2732,6 +2734,7 @@ TEST_F(ConsumerDeviceStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
                          base::BindRepeating(&GetEmptyCPUTempInfo),
                          base::BindRepeating(&GetEmptyAndroidStatus),
                          base::BindRepeating(&GetEmptyTpmStatus));
+  status_collector_->SetBaselineTime(initial_time);
   SimulateStateChanges(test_states,
                        sizeof(test_states) / sizeof(DeviceStateTransitions));
 
