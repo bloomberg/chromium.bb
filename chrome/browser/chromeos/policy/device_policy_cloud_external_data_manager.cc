@@ -19,8 +19,11 @@ namespace {
 
 const char kCacheKey[] = "device_policy_external_data";
 
-// Maximum size of the device policy external data cache directory set to 10MB.
-const int64_t kCacheMaxSize = 10 * 1024 * 1024;
+// The maximum size of the device policy external data cache directory is set to
+// 21 MiB. It's calculated as the sum of the maximum allowed sizes for each of
+// the external data type device policies. At the moment, we have two of them:
+// DeviceWallpaperImage (16 MiB) and DeviceNativePrinters (5 MiB).
+const int64_t kCacheMaxSize = 21 * 1024 * 1024;
 // Only used for tests.
 int64_t g_cache_max_size_override = 0;
 

@@ -1562,6 +1562,8 @@ source_set("chromeos") {
     "policy/device_policy_remover.h",
     "policy/device_status_collector.cc",
     "policy/device_status_collector.h",
+    "policy/device_wallpaper_image_handler.cc",
+    "policy/device_wallpaper_image_handler.h",
     "policy/display_resolution_handler.cc",
     "policy/display_resolution_handler.h",
     "policy/display_rotation_default_handler.cc",

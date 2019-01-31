@@ -1232,14 +1232,14 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
 
+    // Initialize the rest.
+    ChromeLauncherControllerTest::SetUp();
+
     // Initialize WallpaperControllerClient.
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(
         test_wallpaper_controller_.CreateInterfacePtr());
-
-    // Initialize the rest.
-    ChromeLauncherControllerTest::SetUp();
 
     // AvatarMenu and multiple profiles works after user logged in.
     profile_manager()->SetLoggedIn(true);

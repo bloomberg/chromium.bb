@@ -218,8 +218,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
             const base::FilePath& user_data_path,
             const base::FilePath& chromeos_wallpapers_path,
             const base::FilePath& chromeos_custom_wallpapers_path,
-            const base::FilePath& device_policy_wallpaper_path,
-            bool is_device_wallpaper_policy_enforced) override;
+            const base::FilePath& device_policy_wallpaper_path) override;
   void SetCustomWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
@@ -248,7 +247,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void SetPolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
-  void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void SetDevicePolicyWallpaperPath(
+      const base::FilePath& device_policy_wallpaper_path) override;
   void SetThirdPartyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                               const std::string& wallpaper_files_id,
                               const std::string& file_name,
@@ -597,8 +597,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // The wallpaper animation duration. An empty value disables the animation.
   base::TimeDelta animation_duration_;
 
-  // Whether the device wallpaper policy is enforced on this device.
-  bool is_device_wallpaper_policy_enforced_ = false;
+  base::FilePath device_policy_wallpaper_path_;
 
   // Whether the current wallpaper (if any) is the first wallpaper since the
   // controller initialization. Empty wallpapers for testing don't count.

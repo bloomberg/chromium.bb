@@ -5,16 +5,18 @@
 #ifndef CHROME_BROWSER_UI_ASH_WALLPAPER_CONTROLLER_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_WALLPAPER_CONTROLLER_CLIENT_H_
 
+#include <memory>
+
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/wallpaper_policy_handler.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 // Handles method calls sent from ash to chrome. Also sends messages from chrome
 // to ash.
-class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
-                                  public WallpaperPolicyHandler::Delegate {
+class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient {
  public:
   WallpaperControllerClient();
   ~WallpaperControllerClient() override;
@@ -97,11 +99,6 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
       ash::mojom::WallpaperController::ShouldShowWallpaperSettingCallback
           callback);
 
-  // chromeos::WallpaperPolicyHandler::Delegate:
-  void OnDeviceWallpaperChanged() override;
-  void OnDeviceWallpaperPolicyCleared() override;
-  void OnShowUserNamesOnLoginPolicyChanged() override;
-
   // Flushes the mojo pipe to ash.
   void FlushForTesting();
 
@@ -123,10 +120,27 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void OnReadyToSetWallpaper() override;
   void OnFirstWallpaperAnimationFinished() override;
 
+  void DeviceWallpaperImageFilePathChanged();
+
+  // Returns true if user names should be shown on the login screen.
+  bool ShouldShowUserNamesOnLogin() const;
+
+  base::FilePath GetDeviceWallpaperImageFilePath();
+
   // WallpaperController interface in ash.
   ash::mojom::WallpaperControllerPtr wallpaper_controller_;
 
-  WallpaperPolicyHandler policy_handler_;
+  PrefService* local_state_;
+
+  // The registrar used to watch DeviceWallpaperImageFilePath pref changes.
+  PrefChangeRegistrar pref_registrar_;
+
+  // Observes if user names should be shown on the login screen, which
+  // determines whether a user wallpaper or a default wallpaper should be shown.
+  // TODO(wzang|784495): Views-based login should observe this and send
+  // different requests accordingly.
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      show_user_names_on_signin_subscription_;
 
   // Binds to the client interface.
   mojo::Binding<ash::mojom::WallpaperControllerClient> binding_;

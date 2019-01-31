@@ -261,6 +261,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/device_wallpaper_image_handler.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
@@ -533,6 +534,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);
+  policy::DeviceWallpaperImageHandler::RegisterPrefs(registry);
   policy::DMTokenStorage::RegisterPrefs(registry);
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);

@@ -185,6 +185,11 @@ class WallpaperPolicyTest : public LoginManagerTest,
 
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
+
+    // Set some fake state keys to make sure they are not empty.
+    std::vector<std::string> state_keys;
+    state_keys.push_back("1");
+    fake_session_manager_client_->set_server_backed_state_keys(state_keys);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

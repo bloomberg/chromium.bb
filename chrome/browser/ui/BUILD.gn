@@ -1460,8 +1460,6 @@ jumbo_split_static_library("ui") {
       "ash/vpn_list_forwarder.h",
       "ash/wallpaper_controller_client.cc",
       "ash/wallpaper_controller_client.h",
-      "ash/wallpaper_policy_handler.cc",
-      "ash/wallpaper_policy_handler.h",
       "ash/window_properties.cc",
       "ash/window_properties.h",
       "browser_commands_chromeos.cc",
