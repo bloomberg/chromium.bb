@@ -54,9 +54,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual std::unique_ptr<WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle() = 0;
 
-  bool IsAdResource(const KURL&,
-                    ResourceType,
-                    mojom::RequestContextType) const override;
+  bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
+                                ResourceType type) override;
 
  protected:
   BaseFetchContext() = default;

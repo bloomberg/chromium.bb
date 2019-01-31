@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -1252,6 +1253,24 @@ ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
   if (priority >= ResourceLoadPriority::kHigh)
     return ResourceLoadPriority::kLow;
   return ResourceLoadPriority::kLowest;
+}
+
+bool FrameFetchContext::CalculateIfAdSubresource(
+    const ResourceRequest& resource_request,
+    ResourceType type) {
+  // Mark the resource as an Ad if the SubresourceFilter thinks it's an ad.
+  bool known_ad =
+      BaseFetchContext::CalculateIfAdSubresource(resource_request, type);
+  if (GetResourceFetcherProperties().IsDetached() ||
+      !GetFrame()->GetAdTracker()) {
+    return known_ad;
+  }
+
+  // The AdTracker needs to know about the request as well, and may also mark it
+  // as an ad.
+  return GetFrame()->GetAdTracker()->CalculateIfAdSubresource(
+      frame_or_imported_document_->GetDocument(), resource_request, type,
+      known_ad);
 }
 
 void FrameFetchContext::DispatchNetworkQuiet() {

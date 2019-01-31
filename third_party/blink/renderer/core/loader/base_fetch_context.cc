@@ -181,17 +181,15 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
   return blocked_reason;
 }
 
-bool BaseFetchContext::IsAdResource(
-    const KURL& resource_url,
-    ResourceType type,
-    mojom::RequestContextType request_context) const {
+bool BaseFetchContext::CalculateIfAdSubresource(const ResourceRequest& request,
+                                                ResourceType type) {
+  // A base class should override this is they have more signals than just the
+  // SubresourceFilter.
   SubresourceFilter* filter = GetSubresourceFilter();
 
-  // We do not need main document tagging currently so skipping main resources.
-  if (filter)
-    return filter->IsAdResource(resource_url, request_context);
-
-  return false;
+  return request.IsAdResource() ||
+         (filter &&
+          filter->IsAdResource(request.Url(), request.GetRequestContext()));
 }
 
 void BaseFetchContext::PrintAccessDeniedMessage(const KURL& url) const {

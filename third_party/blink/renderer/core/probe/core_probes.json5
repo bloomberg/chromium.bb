@@ -20,7 +20,6 @@
       probes: [
         "CallFunction",
         "ExecuteScript",
-        "willSendRequest",
       ]
     },
     InspectorAnimationAgent: {

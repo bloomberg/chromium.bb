@@ -226,10 +226,10 @@ class PLATFORM_EXPORT FetchContext
     return priority;
   }
 
-  // Returns if the |resource_url| is identified as ad.
-  virtual bool IsAdResource(const KURL& resource_url,
-                            ResourceType type,
-                            mojom::RequestContextType request_context) const {
+  // Determine if the request is on behalf of an advertisement. If so, return
+  // true.
+  virtual bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
+                                        ResourceType type) {
     return false;
   }
 
