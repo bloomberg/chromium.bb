@@ -11,8 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
@@ -27,9 +25,6 @@ class SyncPromoUITest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     profile_ = builder.Build();
   }
 
