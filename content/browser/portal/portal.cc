@@ -4,6 +4,8 @@
 
 #include "content/browser/portal/portal.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -101,41 +103,24 @@ void Portal::Navigate(const GURL& url) {
   portal_contents_impl_->GetController().LoadURLWithParams(load_url_params);
 }
 
-void Portal::Activate(
-    base::OnceCallback<void(blink::mojom::PortalActivationStatus)> callback) {
+void Portal::Activate(base::OnceCallback<void()> callback) {
   WebContents* outer_contents =
       WebContents::FromRenderFrameHost(owner_render_frame_host_);
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
-  if (delegate) {
-    FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
-        portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
-    bool is_loading = portal_contents_impl_->IsLoading();
-    std::unique_ptr<WebContents> portal_contents =
-        portal_contents_impl_->DetachFromOuterWebContents();
-    // TODO(lfg): If there are nested portals, this would replace the entire tab
-    // upon a nested portal's activation. We should handle that case so that it
-    // would only replace the nested portal's contents.
-    std::unique_ptr<WebContents> contents = delegate->SwapWebContents(
-        outer_contents, std::move(portal_contents), true, is_loading);
-
-    if (contents.get() == outer_contents) {
-      // TODO(lfg): The old WebContents is currently discarded, but should be
-      // kept and passed to the new page.
-      portal_contents_impl_->set_portal(nullptr);
-      portal_contents_impl_->GetMainFrame()->OnPortalActivated();
-      std::move(callback).Run(blink::mojom::PortalActivationStatus::kSuccess);
-    } else {
-      DCHECK_EQ(portal_contents_impl_, contents.get());
-      portal_contents_impl_->AttachToOuterWebContentsFrame(
-          std::move(contents), outer_node->current_frame_host());
-      std::move(callback).Run(
-          blink::mojom::PortalActivationStatus::kNotSupported);
-    }
-
-    return;
-  }
-
-  std::move(callback).Run(blink::mojom::PortalActivationStatus::kNotSupported);
+  bool is_loading = portal_contents_impl_->IsLoading();
+  std::unique_ptr<WebContents> portal_contents =
+      portal_contents_impl_->DetachFromOuterWebContents();
+  // TODO(lfg): If there are nested portals, this would replace the entire tab
+  // upon a nested portal's activation. We should handle that case so that it
+  // would only replace the nested portal's contents. https://crbug.com/919110
+  std::unique_ptr<WebContents> contents = delegate->SwapWebContents(
+      outer_contents, std::move(portal_contents), true, is_loading);
+  CHECK_EQ(contents.get(), outer_contents);
+  // TODO(lfg): The old WebContents is currently discarded, but should be
+  // kept and passed to the new page. https://crbug.com/914122
+  portal_contents_impl_->set_portal(nullptr);
+  portal_contents_impl_->GetMainFrame()->OnPortalActivated();
+  std::move(callback).Run();
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
