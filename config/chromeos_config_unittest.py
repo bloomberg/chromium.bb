@@ -722,6 +722,33 @@ class CBuildBotTest(ChromeosConfigTestBase):
                          for name in pre_cq_configs])
     self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
 
+  def testCqHasPrebuilts(self):
+    """Make sure every master has a sane list of slaves"""
+    cq = set()
+    for builder in set(self.site_config['master-paladin'].slave_configs):
+      if self.site_config[builder].important:
+        cq.update(self.site_config[builder].boards)
+
+    postsubmit = set()
+    for builder in set(self.site_config['master-postsubmit'].slave_configs):
+      postsubmit.update(self.site_config[builder].boards)
+
+    without_postsubmit = cq.difference(postsubmit)
+    self.assertFalse(without_postsubmit)
+
+  def testPreCqHasPrebuilts(self):
+    """Make sure every master has a sane list of slaves"""
+    precq = set()
+    for builder in set(constants.PRE_CQ_DEFAULT_CONFIGS):
+      precq.update(self.site_config[builder].boards)
+
+    postsubmit = set()
+    for builder in set(self.site_config['master-postsubmit'].slave_configs):
+      postsubmit.update(self.site_config[builder].boards)
+
+    without_postsubmit = precq.difference(postsubmit)
+    self.assertFalse(without_postsubmit)
+
   def testPfqsHavePaladins(self):
     """Make sure that every active PFQ has an associated Paladin.
 

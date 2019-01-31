@@ -2262,7 +2262,16 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
   for child_name in site_config['master-release'].slave_configs:
     child_config = site_config[child_name]
     if child_config.important:
-      postsubmit_boards |= set(child_config.boards)
+      postsubmit_boards.update(child_config.boards)
+
+  for child_name in site_config['master-paladin'].slave_configs:
+    child_config = site_config[child_name]
+    if child_config.important:
+      postsubmit_boards.update(child_config.boards)
+
+  for child_name in constants.PRE_CQ_DEFAULT_CONFIGS:
+    config = site_config[child_name]
+    postsubmit_boards.update(config.boards)
 
   site_config.AddTemplate(
       'postsubmit',
