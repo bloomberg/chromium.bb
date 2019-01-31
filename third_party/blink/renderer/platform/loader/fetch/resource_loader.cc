@@ -639,10 +639,8 @@ bool ResourceLoader::WillFollowRedirect(
             resource_type, *new_request, new_url, options, reporting_policy,
             ResourceRequest::RedirectStatus::kFollowedRedirect);
 
-    if (Context().IsAdResource(new_url, resource_type,
-                               new_request->GetRequestContext())) {
+    if (Context().CalculateIfAdSubresource(*new_request, resource_type))
       new_request->SetIsAdResource();
-    }
 
     if (blocked_reason) {
       CancelForRedirectAccessCheckError(new_url, blocked_reason.value());

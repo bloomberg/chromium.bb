@@ -146,6 +146,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   ResourceLoadPriority ModifyPriorityForExperiments(
       ResourceLoadPriority) const override;
+
+  bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
+                                ResourceType type) override;
+
   void DispatchNetworkQuiet() override;
 
  private:
