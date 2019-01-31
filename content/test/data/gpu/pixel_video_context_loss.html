@@ -34,40 +34,45 @@ var QueryString = function() {
 }();
 
 function CrashGpuProcess() {
-  // Create a canvas element and webgl context.
+  // Create a canvas element and webgl context -- without a context, we won't
+  // get a webglcontextlost event.
   var canvas = document.createElement('canvas');
   var gl = canvas.getContext('webgl');
 
   // Now wait for the context loss before starting video playback.
   canvas.addEventListener('webglcontextlost', function(e) {
-    // Now wait for the video to playback to play until the end end, by which
-    // point a frame should be visible onscreen.
+    // Now wait for the video to play until the end, by which point a frame
+    // should be visible on screen.
     video.addEventListener('ended', function(e) {
-      domAutomationController.send("SUCCESS");
+      domAutomationController.send('SUCCESS');
     }, false);
     video.play();
   }, false);
 
-  // Essentially invokes chrome://gpucrash.
+  // Invokes chrome://gpucrash, which triggers a webglcontextlost event above.
   chrome.gpuBenchmarking.crashGpuProcess();
 }
 
 function Main() {
-  video = document.getElementById("video");
+  video = document.getElementById('video');
 
   // Wait until we're sure a frame has been displayed before crashing GPU.
   video.addEventListener('canplaythrough', CrashGpuProcess, false);
 
-  // src needs to be set after listener is added.
+  // Add an error listener to avoid timeouts if playback fails.
+  video.addEventListener('error', function(e) {
+    console.log('Video playback failed: ' + e.code + ', "' + e.message + '"');
+    domAutomationController.send('ERROR');
+  }, false);
+
+  // src needs to be set after listeners are added.
   video.src = QueryString.src;
 }
 </script>
 </head>
 <body onload="Main()">
 <div id="container" style="position:absolute; top:0px; left:0px">
-<video class="nomargin" id="video" width="240" height="135">
-<source type="video/mp4">
-</video>
+<video class="nomargin" id="video" width="240" height="135"></video>
 </div>
 </body>
 </html>
