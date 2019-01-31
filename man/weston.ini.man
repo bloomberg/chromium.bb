@@ -194,7 +194,7 @@ specifies a plugin for remote output to load (string). This can be used to load
 your own implemented remoting plugin or one with Weston as default. Available
 remoting plugins in the
 .IR "__libweston_modules_dir__"
-directroy are:
+directory are:
 .PP
 .RS 10
 .nf
