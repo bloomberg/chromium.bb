@@ -38,29 +38,19 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 
     ChromeTestSuite::Initialize();
 
-    // Only allow ui_controls to be used in interactive_ui_tests, since they
-    // depend on focus and can't be sharded.
-    ui_controls::EnableUIControls();
-
 #if defined(OS_CHROMEOS)
     // Do not InstallUIControlsAura in ChromeOS, it will be installed in
     // InProcessBrowserTest::PreRunTestOnMainThread().
-#elif defined(USE_AURA)
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
-#endif
-
-#if defined(OS_LINUX)
-#if defined(USE_OZONE)
-    NOTIMPLEMENTED();
-#else
+    ui_controls::InstallUIControlsAura(
+        aura::test::CreateUIControlsAura(nullptr));
+#elif defined(OS_LINUX) && !defined(USE_OZONE)
     ui_controls::InstallUIControlsAura(
         views::test::CreateUIControlsDesktopAura());
-#endif  // defined(USE_OZONE)
 #else
-    ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
-#endif  // defined(OS_LINUX)
-#endif  // defined(USE_AURA)
+    ui_controls::EnableUIControls();
+#endif
   }
 
   void Shutdown() override {
