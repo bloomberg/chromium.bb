@@ -23,6 +23,7 @@
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/ws/common/util.h"
 #include "services/ws/public/cpp/gpu/gpu.h"
 #include "services/ws/public/cpp/property_type_converters.h"
