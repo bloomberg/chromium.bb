@@ -104,6 +104,15 @@ bool ConstantSourceHandler::PropagatesSilence() const {
   return !IsPlayingOrScheduled() || HasFinished();
 }
 
+void ConstantSourceHandler::HandleStoppableSourceNode() {
+  double now = Context()->currentTime();
+
+  if (end_time_ != kUnknownTime && IsPlayingOrScheduled() &&
+      now >= end_time_ + kExtraStopFrames / Context()->sampleRate()) {
+    Finish();
+  }
+}
+
 // ----------------------------------------------------------------
 ConstantSourceNode::ConstantSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),

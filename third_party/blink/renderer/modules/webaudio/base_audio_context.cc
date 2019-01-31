@@ -785,13 +785,20 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
   }
 
   if (active_source_nodes_.size()) {
-    // Find AudioBufferSourceNodes to see if we can stop playing them.
+    // Find source nodes and see if we can stop playing them.
     for (AudioNode* node : active_source_nodes_) {
-      if (node->Handler().GetNodeType() ==
-          AudioHandler::kNodeTypeAudioBufferSource) {
-        AudioBufferSourceNode* source_node =
-            static_cast<AudioBufferSourceNode*>(node);
-        source_node->GetAudioBufferSourceHandler().HandleStoppableSourceNode();
+      switch (node->Handler().GetNodeType()) {
+        case AudioHandler::kNodeTypeAudioBufferSource:
+        case AudioHandler::kNodeTypeOscillator:
+        case AudioHandler::kNodeTypeConstantSource: {
+          AudioScheduledSourceNode* source_node =
+              static_cast<AudioScheduledSourceNode*>(node);
+          source_node->GetAudioScheduledSourceHandler()
+              .HandleStoppableSourceNode();
+          break;
+        }
+        default:
+          break;
       }
     }
 
