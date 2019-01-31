@@ -24,12 +24,12 @@ namespace send_tab_to_self {
 
 SendTabToSelfBridge::SendTabToSelfBridge(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider,
+    const syncer::LocalDeviceInfoProvider* device_info_provider,
     base::Clock* clock)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      local_device_info_provider_(local_device_info_provider),
+      local_device_info_provider_(device_info_provider),
       clock_(clock) {
-  DCHECK(local_device_info_provider_);
+  DCHECK(device_info_provider);
   DCHECK(clock_);
   auto batch = std::make_unique<syncer::MetadataBatch>();
   this->change_processor()->ModelReadyToSync(std::move(batch));
@@ -173,7 +173,11 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
 
   change_processor()->Put(guid, std::move(entity_data), &metadata_change_list);
 
-  return entries_.emplace(guid, std::move(entry)).first->second.get();
+  const SendTabToSelfEntry* result =
+      entries_.emplace(guid, std::move(entry)).first->second.get();
+  NotifySendTabToSelfModelChanged();
+
+  return result;
 }
 
 void SendTabToSelfBridge::NotifySendTabToSelfModelChanged() {

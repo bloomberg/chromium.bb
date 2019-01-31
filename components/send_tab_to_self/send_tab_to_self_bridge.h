@@ -37,7 +37,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // |clock| must not be null and must outlive this object.
   SendTabToSelfBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider,
+      const syncer::LocalDeviceInfoProvider* local_device_info_provider,
       base::Clock* clock);
   ~SendTabToSelfBridge() override;
 

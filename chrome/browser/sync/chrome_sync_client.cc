@@ -30,6 +30,7 @@
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -63,10 +64,12 @@
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/search_engines/search_engine_model_type_controller.h"
+#include "components/send_tab_to_self/send_tab_to_self_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/async_directory_type_controller.h"
+#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_util.h"
@@ -75,6 +78,7 @@
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
 #include "components/sync/model/model_type_store_service.h"
+#include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -454,6 +458,16 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   }
 #endif  // defined(OS_CHROMEOS)
 
+  if (!disabled_types.Has(syncer::SEND_TAB_TO_SELF) &&
+      base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf)) {
+    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+        syncer::SEND_TAB_TO_SELF,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            SendTabToSelfSyncServiceFactory::GetForProfile(profile_)
+                ->GetControllerDelegate()
+                .get())));
+  }
+
   return controllers;
 }
 
@@ -620,6 +634,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::AUTOFILL_WALLET_METADATA:
     case syncer::BOOKMARKS:
     case syncer::DEVICE_INFO:
+    case syncer::SEND_TAB_TO_SELF:
     case syncer::SESSIONS:
     case syncer::TYPED_URLS:
       NOTREACHED();

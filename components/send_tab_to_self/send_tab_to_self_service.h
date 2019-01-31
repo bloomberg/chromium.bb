@@ -26,7 +26,7 @@ class SendTabToSelfService : public KeyedService {
  public:
   SendTabToSelfService(
       version_info::Channel channel,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider);
+      const syncer::LocalDeviceInfoProvider* local_device_info_provider);
   ~SendTabToSelfService() override;
 
   SendTabToSelfModel* GetSendTabToSelfModel();
