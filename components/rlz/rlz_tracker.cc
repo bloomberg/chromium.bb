@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/syslog_logging.h"
