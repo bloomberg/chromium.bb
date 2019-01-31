@@ -98,6 +98,14 @@ void JourneyLogger::SetCanMakePaymentValue(bool value) {
                          : EVENT_CAN_MAKE_PAYMENT_FALSE);
 }
 
+void JourneyLogger::SetHasEnrolledInstrumentValue(bool value) {
+  if (is_incognito_)
+    return;
+
+  SetEventOccurred(value ? EVENT_HAS_ENROLLED_INSTRUMENT_TRUE
+                         : EVENT_HAS_ENROLLED_INSTRUMENT_FALSE);
+}
+
 void JourneyLogger::SetEventOccurred(Event event) {
   events_ |= event;
 }

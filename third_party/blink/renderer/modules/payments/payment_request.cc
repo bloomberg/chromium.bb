@@ -88,6 +88,9 @@ using ::payments::mojom::blink::PaymentShippingType;
 using ::payments::mojom::blink::PaymentValidationErrors;
 using ::payments::mojom::blink::PaymentValidationErrorsPtr;
 
+const char kCanMakePaymentDebugName[] = "canMakePayment";
+const char kHasEnrolledInstrumentDebugName[] = "hasEnrolledInstrument";
+
 }  // namespace
 
 namespace mojo {
@@ -767,12 +770,15 @@ bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(
-    ExecutionContext& execution_context) {
-  execution_context.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, kWarningMessageLevel,
-      "Quota reached for PaymentRequest.canMakePayment(). This would normally "
+    ExecutionContext& execution_context,
+    const char* method_name) {
+  const String& error = String::Format(
+      "Quota reached for PaymentRequest.%s(). This would normally "
       "reject the promise, but allowing continued usage on localhost and "
-      "file:// scheme origins."));
+      "file:// scheme origins.",
+      method_name);
+  execution_context.AddConsoleMessage(
+      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, error));
 }
 
 }  // namespace
@@ -864,12 +870,6 @@ ScriptPromise PaymentRequest::abort(ScriptState* script_state) {
 }
 
 ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
-  if (!RuntimeEnabledFeatures::PaymentRequestHasEnrolledInstrumentEnabled()) {
-    // Fallback to backward-compatible definition of canMakePayment, which is
-    // now implemented as hasEnrolledInstrument.
-    return hasEnrolledInstrument(script_state);
-  }
-
   if (!payment_provider_.is_bound() || GetPendingAcceptPromiseResolver() ||
       can_make_payment_resolver_ || !script_state->ContextIsValid()) {
     return ScriptPromise::RejectWithDOMException(
@@ -877,7 +877,9 @@ ScriptPromise PaymentRequest::canMakePayment(ScriptState* script_state) {
                                            "Cannot query payment request"));
   }
 
-  payment_provider_->CanMakePayment();
+  bool legacy_mode =
+      !RuntimeEnabledFeatures::PaymentRequestHasEnrolledInstrumentEnabled();
+  payment_provider_->CanMakePayment(legacy_mode);
 
   can_make_payment_resolver_ = ScriptPromiseResolver::Create(script_state);
   return can_make_payment_resolver_->Promise();
@@ -1444,15 +1446,30 @@ void PaymentRequest::OnAbort(bool aborted_successfully) {
 }
 
 void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
+  // TODO(https://crbug.com/891371): Understand how the resolver could be null
+  // here and prevent it.
   if (!can_make_payment_resolver_)
     return;
 
   switch (result) {
+    case CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT:
+      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
+                                              kCanMakePaymentDebugName);
+      FALLTHROUGH;
     case CanMakePaymentQueryResult::CAN_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(true);
       break;
+    case CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT:
+      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
+                                              kCanMakePaymentDebugName);
+      FALLTHROUGH;
     case CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT:
       can_make_payment_resolver_->Resolve(false);
+      break;
+    case CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
+      can_make_payment_resolver_->Reject(DOMException::Create(
+          DOMExceptionCode::kNotAllowedError,
+          "Not allowed to check whether can make payment"));
       break;
   }
 
@@ -1468,13 +1485,15 @@ void PaymentRequest::OnHasEnrolledInstrument(
 
   switch (result) {
     case HasEnrolledInstrumentQueryResult::WARNING_HAS_ENROLLED_INSTRUMENT:
-      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
+      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
+                                              kHasEnrolledInstrumentDebugName);
       FALLTHROUGH;
     case HasEnrolledInstrumentQueryResult::HAS_ENROLLED_INSTRUMENT:
       has_enrolled_instrument_resolver_->Resolve(true);
       break;
     case HasEnrolledInstrumentQueryResult::WARNING_HAS_NO_ENROLLED_INSTRUMENT:
-      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext());
+      WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
+                                              kHasEnrolledInstrumentDebugName);
       FALLTHROUGH;
     case HasEnrolledInstrumentQueryResult::HAS_NO_ENROLLED_INSTRUMENT:
       has_enrolled_instrument_resolver_->Resolve(false);
@@ -1482,7 +1501,7 @@ void PaymentRequest::OnHasEnrolledInstrument(
     case HasEnrolledInstrumentQueryResult::QUERY_QUOTA_EXCEEDED:
       has_enrolled_instrument_resolver_->Reject(DOMException::Create(
           DOMExceptionCode::kNotAllowedError,
-          "Not allowed to check whether can make payment"));
+          "Exceeded query quota for hasEnrolledInstrument"));
       break;
   }
 

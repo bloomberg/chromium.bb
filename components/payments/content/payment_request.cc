@@ -32,6 +32,7 @@
 
 namespace {
 
+using ::payments::mojom::CanMakePaymentQueryResult;
 using ::payments::mojom::HasEnrolledInstrumentQueryResult;
 
 }  // namespace
@@ -357,7 +358,7 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
   }
 }
 
-void PaymentRequest::CanMakePayment() {
+void PaymentRequest::CanMakePayment(bool legacy_mode) {
   if (!IsInitialized()) {
     log_.Error("Attempted canMakePayment without initialization");
     OnConnectionTerminated();
@@ -371,11 +372,12 @@ void PaymentRequest::CanMakePayment() {
 
   if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
       !state_) {
-    CanMakePaymentCallback(/*can_make_payment=*/false);
+    CanMakePaymentCallback(legacy_mode, /*can_make_payment=*/false);
   } else {
     state_->CanMakePayment(
+        legacy_mode,
         base::BindOnce(&PaymentRequest::CanMakePaymentCallback,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr(), legacy_mode));
   }
 }
 
@@ -556,13 +558,33 @@ void PaymentRequest::RecordFirstAbortReason(
   }
 }
 
-void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
-  client_->OnCanMakePayment(
-      can_make_payment ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
-                       : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+void PaymentRequest::CanMakePaymentCallback(bool legacy_mode,
+                                            bool can_make_payment) {
+  // Only need to enforce query quota in legacy mode. Per-method quota not
+  // supported.
+  if (legacy_mode && spec_ &&
+      !CanMakePaymentQueryFactory::GetInstance()
+           ->GetForContext(web_contents_->GetBrowserContext())
+           ->CanQuery(top_level_origin_, frame_origin_,
+                      spec_->stringified_method_data(),
+                      /*per_method_quota=*/false)) {
+    if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
+      client_->OnCanMakePayment(
+          can_make_payment
+              ? CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
+              : CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT);
+    } else {
+      client_->OnCanMakePayment(
+          CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
+    }
+  } else {
+    client_->OnCanMakePayment(
+        can_make_payment
+            ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
+            : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
+  }
 
-  // TODO(https://crbug.com/915907): emit JourneyLogger event once the event
-  // names are updated.
+  journey_logger_.SetCanMakePaymentValue(can_make_payment);
 
   if (observer_for_testing_)
     observer_for_testing_->OnCanMakePaymentReturned();
@@ -604,7 +626,7 @@ void PaymentRequest::RespondToHasEnrolledInstrumentQuery(
 
   client_->OnHasEnrolledInstrument(has_enrolled_instrument ? positive
                                                            : negative);
-  journey_logger_.SetCanMakePaymentValue(has_enrolled_instrument);
+  journey_logger_.SetHasEnrolledInstrumentValue(has_enrolled_instrument);
 }
 
 }  // namespace payments

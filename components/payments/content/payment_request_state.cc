@@ -149,8 +149,10 @@ void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   NotifyOnGetAllPaymentInstrumentsFinished();
 
   // Fulfill the pending CanMakePayment call.
-  if (can_make_payment_callback_)
-    CheckCanMakePayment(std::move(can_make_payment_callback_));
+  if (can_make_payment_callback_) {
+    CheckCanMakePayment(can_make_payment_legacy_mode_,
+                        std::move(can_make_payment_callback_));
+  }
 
   // Fulfill the pending HasEnrolledInstrument call.
   if (has_enrolled_instrument_callback_)
@@ -200,22 +202,38 @@ void PaymentRequestState::OnSpecUpdated() {
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
-void PaymentRequestState::CanMakePayment(StatusCallback callback) {
+void PaymentRequestState::CanMakePayment(bool legacy_mode,
+                                         StatusCallback callback) {
   if (!get_all_instruments_finished_) {
     DCHECK(!can_make_payment_callback_);
     can_make_payment_callback_ = std::move(callback);
+    can_make_payment_legacy_mode_ = legacy_mode;
     return;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PaymentRequestState::CheckCanMakePayment,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      FROM_HERE, base::BindOnce(&PaymentRequestState::CheckCanMakePayment,
+                                weak_ptr_factory_.GetWeakPtr(), legacy_mode,
+                                std::move(callback)));
 }
 
-void PaymentRequestState::CheckCanMakePayment(StatusCallback callback) {
+void PaymentRequestState::CheckCanMakePayment(bool legacy_mode,
+                                              StatusCallback callback) {
   DCHECK(get_all_instruments_finished_);
-  std::move(callback).Run(are_requested_methods_supported_);
+  if (!legacy_mode) {
+    std::move(callback).Run(are_requested_methods_supported_);
+    return;
+  }
+
+  // Legacy mode: fall back to also checking if an instrument is enrolled.
+  bool can_make_payment_value = false;
+  for (const auto& instrument : available_instruments_) {
+    if (instrument->IsValidForCanMakePayment()) {
+      can_make_payment_value = true;
+      break;
+    }
+  }
+  std::move(callback).Run(can_make_payment_value);
 }
 
 void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
@@ -232,14 +250,8 @@ void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
 }
 
 void PaymentRequestState::CheckHasEnrolledInstrument(StatusCallback callback) {
-  bool has_enrolled_instrument_value = false;
-  for (const auto& instrument : available_instruments_) {
-    if (instrument->IsValidForCanMakePayment()) {
-      has_enrolled_instrument_value = true;
-      break;
-    }
-  }
-  std::move(callback).Run(has_enrolled_instrument_value);
+  // TODO(https://crbug.com/915907): Implement hasEnrolledInstrument.
+  NOTREACHED();
 }
 
 void PaymentRequestState::AreRequestedMethodsSupported(

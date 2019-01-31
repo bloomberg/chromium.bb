@@ -113,6 +113,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     final CallbackHelper mBillingAddressChangeProcessed;
     final CallbackHelper mShowFailed;
     final CallbackHelper mCanMakePaymentQueryResponded;
+    final CallbackHelper mHasEnrolledInstrumentQueryResponded;
     final CallbackHelper mExpirationMonthChange;
     final CallbackHelper mPaymentResponseReady;
     PaymentRequestUI mUI;
@@ -144,6 +145,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mPaymentResponseReady = new CallbackHelper();
         mShowFailed = new CallbackHelper();
         mCanMakePaymentQueryResponded = new CallbackHelper();
+        mHasEnrolledInstrumentQueryResponded = new CallbackHelper();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = testFileName.startsWith("data:")
                 ? testFileName
@@ -218,10 +220,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         return mCanMakePaymentQueryResponded;
     }
     public CallbackHelper getHasEnrolledInstrumentQueryResponded() {
-        // TODO(https://crbug.com/915907): return mHasEnrolledInstrumentQueryResponded once
-        // hasEnrolledInstrument is exposed in the PaymentRequest JavaScript API and browser tests
-        // are switched over to use the new API.
-        return mCanMakePaymentQueryResponded;
+        return mHasEnrolledInstrumentQueryResponded;
     }
     public CallbackHelper getExpirationMonthChange() {
         return mExpirationMonthChange;
@@ -919,10 +918,7 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     @Override
     public void onPaymentRequestServiceHasEnrolledInstrumentQueryResponded() {
         ThreadUtils.assertOnUiThread();
-        // TODO(https://crbug.com/915907): return mHasEnrolledInstrumentQueryResponded once
-        // hasEnrolledInstrument is exposed in the PaymentRequest JavaScript API and browser tests
-        // are switched over to use the new API.
-        mCanMakePaymentQueryResponded.notifyCalled();
+        mHasEnrolledInstrumentQueryResponded.notifyCalled();
     }
 
     @Override

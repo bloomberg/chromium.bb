@@ -148,17 +148,13 @@ void PaymentRequestBrowserTestBase::OnCanMakePaymentReturned() {
 }
 
 void PaymentRequestBrowserTestBase::OnHasEnrolledInstrumentCalled() {
-  // TODO(https://crbug.com/915907): rename enum to HAS_ENROLLED_INSTRUMENT
-  // version when new CanMakePayment behavior is implemented.
   if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
+    event_waiter_->OnEvent(DialogEvent::HAS_ENROLLED_INSTRUMENT_CALLED);
 }
 
 void PaymentRequestBrowserTestBase::OnHasEnrolledInstrumentReturned() {
-  // TODO(https://crbug.com/915907): rename enum to HAS_ENROLLED_INSTRUMENT
-  // version when new CanMakePayment behavior is implemented.
   if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_RETURNED);
+    event_waiter_->OnEvent(DialogEvent::HAS_ENROLLED_INSTRUMENT_RETURNED);
 }
 
 void PaymentRequestBrowserTestBase::OnNotSupportedError() {
