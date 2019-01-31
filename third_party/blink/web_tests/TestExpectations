@@ -4527,11 +4527,11 @@ crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-m
 
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Timeout ]
-crbug.com/874302 external/wpt/wasm/serialization/broadcastchannel-success-and-failure.html [ Timeout ]
-crbug.com/874302 external/wpt/wasm/serialization/broadcastchannel-success.html [ Timeout ]
+crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success-and-failure.html [ Timeout ]
+crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success.html [ Timeout ]
 
-crbug.com/877286 external/wpt/wasm/serialization/no-transferring.html [ Failure ]
-crbug.com/877296 external/wpt/wasm/serialization/window-serviceworker-failure.https.html [ Failure ]
+crbug.com/877286 external/wpt/wasm/serialization/module/no-transferring.html [ Failure ]
+crbug.com/877296 external/wpt/wasm/serialization/module/window-serviceworker-failure.https.html [ Failure ]
 
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]

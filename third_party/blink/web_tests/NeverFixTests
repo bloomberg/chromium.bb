@@ -2174,8 +2174,8 @@ Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/share
 Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
 Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
-Bug(none) external/wpt/wasm/serialization/window-domain-success.sub.html [ WontFix ]
-Bug(none) external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html [ WontFix ]
+Bug(none) external/wpt/wasm/serialization/module/window-domain-success.sub.html [ WontFix ]
+Bug(none) external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ WontFix ]
 
 # Code cache isolation tests only make sense if either
 # 1) site isolation is disabled or
