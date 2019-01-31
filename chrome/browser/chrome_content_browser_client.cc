@@ -128,6 +128,7 @@
 #include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
+#include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ssl/ssl_error_navigation_throttle.h"
@@ -2837,12 +2838,14 @@ void ChromeContentBrowserClient::SelectClientCertificate(
         std::move(auto_selected_identity),
         base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
                    base::Passed(&delegate), std::move(cert)));
+    LogClientAuthResult(ClientCertSelectionResult::kAutoSelect);
     return;
   }
 
   if (!may_show_cert_selection) {
     LOG(WARNING) << "No client cert matched by policy and user selection is "
                     "not allowed.";
+    LogClientAuthResult(ClientCertSelectionResult::kNoSelectionAllowed);
     // Continue without client certificate. We do this to mimic the case of no
     // client certificate being present in the profile's certificate store.
     delegate->ContinueWithCertificate(nullptr, nullptr);

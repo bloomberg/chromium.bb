@@ -1543,6 +1543,8 @@ jumbo_split_static_library("browser") {
     "ssl/ssl_blocking_page_base.cc",
     "ssl/ssl_blocking_page_base.h",
     "ssl/ssl_cert_reporter.h",
+    "ssl/ssl_client_auth_metrics.cc",
+    "ssl/ssl_client_auth_metrics.h",
     "ssl/ssl_client_certificate_selector.h",
     "ssl/ssl_config_service_manager.h",
     "ssl/ssl_config_service_manager_pref.cc",
