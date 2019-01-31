@@ -680,7 +680,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                         ? mContext.getString(R.string.actionbar_textselection_title)
                         : null);
         mode.setSubtitle(null);
-        createActionMenu(mode, menu);
     }
 
     @Override
