@@ -107,7 +107,6 @@ void WorkerBackingThread::ShutdownOnBackingThread() {
   DCHECK(backing_thread_->IsCurrentThread());
   Platform::Current()->WillStopWorkerThread();
 
-  V8GCController::ClearDOMWrappers(isolate_);
   V8PerIsolateData::WillBeDestroyed(isolate_);
   backing_thread_->ShutdownOnThread();
 
