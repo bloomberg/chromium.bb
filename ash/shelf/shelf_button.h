@@ -23,7 +23,6 @@ class ASH_EXPORT ShelfButton : public views::Button {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
 
