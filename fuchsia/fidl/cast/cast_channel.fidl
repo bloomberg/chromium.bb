@@ -8,10 +8,9 @@ using chromium.web;
 
 [Discoverable]
 interface CastChannel {
-  /// Handles Cast Channel open calls from the webpage.
-  /// The new Cast Channel's message port is returned asynchronously once
-  /// opened by the webpage. The port is disconnected when the peer's Cast
-  /// Channel is closed.
-  Connect() -> (chromium.web.MessagePort channel);
+  /// Receives an opened Cast |channel| from the Cast application.
+  /// The return callback is invoked when the service is ready to accept a new
+  /// Cast Channel. OnOpened() should not be called again until this happens.
+  OnOpened(chromium.web.MessagePort channel) -> ();
 };
 

@@ -5,26 +5,30 @@
 #ifndef FUCHSIA_RUNNERS_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
 #define FUCHSIA_RUNNERS_CAST_FAKE_APPLICATION_CONFIG_MANAGER_H_
 
+#include <map>
+#include <string>
+
 #include "base/macros.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/gurl.h"
 
 // Test cast.ApplicationConfigManager implementation which maps a test Cast
-// AppId to an embedded test server address.
+// AppId to a URL.
 class FakeApplicationConfigManager
     : public chromium::cast::ApplicationConfigManager {
  public:
-  static const char kTestCastAppId[];
-
-  explicit FakeApplicationConfigManager(
-      net::EmbeddedTestServer* embedded_test_server);
+  FakeApplicationConfigManager();
   ~FakeApplicationConfigManager() override;
+
+  // Associates a Cast application |id| with a url, to be served from the
+  // EmbeddedTestServer.
+  void AddAppMapping(const std::string& id, const GURL& url);
 
   // chromium::cast::ApplicationConfigManager interface.
   void GetConfig(std::string id, GetConfigCallback config_callback) override;
 
  private:
-  net::EmbeddedTestServer* embedded_test_server_;
+  std::map<std::string, GURL> id_to_url_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeApplicationConfigManager);
 };

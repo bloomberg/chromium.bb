@@ -73,9 +73,10 @@ void WebContentRunner::StartComponent(
     return;
   }
 
-  RegisterComponent(WebComponent::ForUrlRequest(this, std::move(url),
-                                                std::move(startup_info),
-                                                std::move(controller_request)));
+  std::unique_ptr<WebComponent> component = std::make_unique<WebComponent>(
+      this, std::move(startup_info), std::move(controller_request));
+  component->LoadUrl(url);
+  RegisterComponent(std::move(component));
 }
 
 void WebContentRunner::GetWebComponentForTest(
@@ -88,6 +89,7 @@ void WebContentRunner::GetWebComponentForTest(
 }
 
 void WebContentRunner::DestroyComponent(WebComponent* component) {
+  LOG(ERROR) << "DestroyComponent " << components_.size();
   components_.erase(components_.find(component));
 
   if (components_.empty())
@@ -99,9 +101,7 @@ void WebContentRunner::RegisterComponent(
   if (web_component_test_callback_) {
     std::move(web_component_test_callback_).Run(component.get());
   }
-  if (component) {
-    components_.insert(std::move(component));
-  }
+  components_.insert(std::move(component));
 }
 
 void WebContentRunner::RunOnIdleClosureIfValid() {

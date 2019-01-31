@@ -5,10 +5,13 @@
 #include "fuchsia/runners/cast/cast_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
-#include "fuchsia/runners/common/web_component.h"
+#include "base/memory/ptr_util.h"
+#include "fuchsia/runners/cast/cast_component.h"
 #include "url/gurl.h"
 
 CastRunner::CastRunner(
@@ -69,7 +72,8 @@ void CastRunner::GetConfigCallback(
 
   // If a config was returned then use it to launch a component.
   GURL cast_app_url(app_config->web_url);
-  RegisterComponent(WebComponent::ForUrlRequest(this, std::move(cast_app_url),
-                                                std::move(startup_info),
-                                                std::move(controller_request)));
+  auto component = std::make_unique<CastComponent>(
+      this, std::move(startup_info), std::move(controller_request));
+  component->LoadUrl(std::move(cast_app_url));
+  RegisterComponent(std::move(component));
 }

@@ -28,13 +28,13 @@ class CastRunner : public WebContentRunner {
                           controller_request) override;
 
  private:
-  chromium::cast::ApplicationConfigManagerPtr app_config_manager_;
-
   void GetConfigCallback(
       fuchsia::sys::StartupInfo startup_info,
       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
           controller_request,
       chromium::cast::ApplicationConfigPtr app_config);
+
+  const chromium::cast::ApplicationConfigManagerPtr app_config_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastRunner);
 };
