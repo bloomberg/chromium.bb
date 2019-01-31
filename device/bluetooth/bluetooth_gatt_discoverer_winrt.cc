@@ -18,12 +18,16 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCharacteristic;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCharacteristicsResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_AccessDenied;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus_Success;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattDescriptor;
@@ -43,15 +47,14 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService3;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceServicesResult;
-using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3;
-using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice;
-using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::IReference;
+using ABI::Windows::Foundation::Collections::IVectorView;
 using Microsoft::WRL::ComPtr;
 
 template <typename IGattResult>
-bool CheckCommunicationStatus(IGattResult* gatt_result) {
+bool CheckCommunicationStatus(IGattResult* gatt_result,
+                              bool allow_access_denied = false) {
   if (!gatt_result) {
     VLOG(2) << "Getting GATT Results failed.";
     return false;
@@ -66,14 +69,20 @@ bool CheckCommunicationStatus(IGattResult* gatt_result) {
   }
 
   if (status != GattCommunicationStatus_Success) {
-    VLOG(2) << "Unexpected GattCommunicationStatus: " << status;
+    if (status == GattCommunicationStatus_AccessDenied) {
+      VLOG(2) << "GATT access denied error";
+    } else {
+      VLOG(2) << "Unexpected GattCommunicationStatus: " << status;
+    }
     VLOG(2) << "GATT Error Code: "
             << static_cast<int>(
                    BluetoothRemoteGattServiceWinrt::GetGattErrorCode(
                        gatt_result));
   }
 
-  return status == GattCommunicationStatus_Success;
+  return status == GattCommunicationStatus_Success ||
+         (allow_access_denied &&
+          status == GattCommunicationStatus_AccessDenied);
 }
 
 template <typename T, typename I>
@@ -233,7 +242,9 @@ void BluetoothGattDiscovererWinrt::OnGetGattServices(
 void BluetoothGattDiscovererWinrt::OnGetCharacteristics(
     uint16_t service_attribute_handle,
     ComPtr<IGattCharacteristicsResult> characteristics_result) {
-  if (!CheckCommunicationStatus(characteristics_result.Get())) {
+  // A few GATT services like HID over GATT (short UUID 0x1812) are protected
+  // by the OS, leading to an access denied error.
+  if (!CheckCommunicationStatus(characteristics_result.Get(), true)) {
     std::move(callback_).Run(false);
     return;
   }
