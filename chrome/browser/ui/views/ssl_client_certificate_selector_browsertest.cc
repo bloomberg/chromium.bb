@@ -6,8 +6,10 @@
 #include "base/files/file_path.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -293,21 +295,41 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectNone) {
 #define MAYBE_Escape Escape
 #endif
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, MAYBE_Escape) {
+  base::HistogramTester histograms;
   EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
 
+  histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
+                                ClientCertSelectionResult::kUserCancel, 1);
+
   Mock::VerifyAndClear(auth_requestor_.get());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectDefault) {
+  base::HistogramTester histograms;
   EXPECT_CALL(*auth_requestor_.get(),
               CertificateSelected(cert_identity_1_->certificate(),
                                   cert_identity_1_->ssl_private_key()));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_RETURN, false, false, false, false));
+
+  histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
+                                ClientCertSelectionResult::kUserSelect, 1);
+
+  Mock::VerifyAndClear(auth_requestor_.get());
+}
+
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, CloseTab) {
+  base::HistogramTester histograms;
+  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+
+  browser()->tab_strip_model()->CloseAllTabs();
+
+  histograms.ExpectBucketCount(kClientCertSelectHistogramName,
+                               ClientCertSelectionResult::kUserCloseTab, 1);
 
   Mock::VerifyAndClear(auth_requestor_.get());
 }

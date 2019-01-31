@@ -7320,6 +7320,18 @@ histogram as enum -->
   <int value="14" label="Viber"/>
 </enum>
 
+<enum name="ClientCertSelectionResult">
+  <summary>
+    This metric enumerates how Chrome choses a client certificate when needed as
+    a result of user action or content settings.
+  </summary>
+  <int value="0" label="User selected certificate"/>
+  <int value="1" label="User cancelled selection"/>
+  <int value="2" label="User closed tab"/>
+  <int value="3" label="Selected by content settings"/>
+  <int value="4" label="User selection not permitted"/>
+</enum>
+
 <enum name="ClipboardAction">
   <int value="0" label="Write from non-Incognito"/>
   <int value="1" label="Write from Incognito"/>
