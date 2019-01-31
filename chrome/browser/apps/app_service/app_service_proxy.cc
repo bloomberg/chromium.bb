@@ -36,6 +36,7 @@ AppServiceProxy::AppServiceProxy(Profile* profile) {
   // responsibility isn't intrinsically part of the AppServiceProxy, but doing
   // that here, for each such app type, is as good a place as any.
   built_in_chrome_os_apps_.Initialize(app_service_, profile);
+  crostini_apps_.Initialize(app_service_, profile);
   extension_apps_.Initialize(app_service_, profile,
                              apps::mojom::AppType::kExtension);
   extension_web_apps_.Initialize(app_service_, profile,
