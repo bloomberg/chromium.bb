@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test GC of Stopped OscillatorNode </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audit.js"></script>
+  </head>
+  <body>
+    <script>
+      let audit = Audit.createTaskRunner();
+
+      audit.define('Test GC of Stopped Oscillators', (task, should) => {
+        let context = new AudioContext();
+        let gain = new GainNode(context, {gain: 1e-10});
+        gain.connect(context.destination);
+
+        // When |lastOsc0| stops, it will run gc.
+        let lastOsc0 = new OscillatorNode(context);
+        lastOsc0.connect(gain);
+
+        // When |lastOsc1| stops, we'll verify that the number of handlers left
+        // is correct.
+        let lastOsc1 = new OscillatorNode(context);
+        lastOsc1.connect(gain);
+
+        gc();
+        let initialCount = internals.audioHandlerCount();
+
+        // Create a bunch of sources for testing.  Since we call stop(), these
+        // should all get collected, even though they're no longer connected to
+        // the destination.
+        for (let k = 0; k < 1000; ++k) {
+          let osc = new OscillatorNode(context);
+          osc.start();
+          osc.connect(gain);
+          osc.stop();
+          osc.disconnect();
+        }
+
+        // Start source and stop it after 0.5 sec so give some time for the
+        // above oscillators time to stop.
+        lastOsc0.start();
+        lastOsc0.stop(context.currentTime + 0.5);
+        lastOsc0.onended = () => {
+          should(() => gc(), 'GC').notThrow();
+        };
+
+        // Start source and stop it after 0.75 sec so give some time for the
+        // above oscillators time to stop, and for lastOsc0 to trigger gc,
+        // allowing 0.25 sec for gc to finish.
+        lastOsc1.start();
+        lastOsc1.stop(context.currentTime + 0.75);
+        lastOsc1.onended = () => {
+          // All the disconnected oscillators should have been collected by now.
+          should(internals.audioHandlerCount(), 'Number of handlers after GC')
+              .beEqualTo(initialCount);
+          task.done();
+        };
+
+        should(internals.audioHandlerCount(), 'Audio handlers still alive')
+            .beGreaterThan(initialCount);
+      });
+
+      audit.run();
+    </script>
+  </body>
+</html>
