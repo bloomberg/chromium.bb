@@ -5977,3 +5977,5 @@ crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.worker.html [
 
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Pass Failure ]
+
+crbug.com/927296 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Failure ]
