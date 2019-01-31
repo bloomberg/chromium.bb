@@ -43,7 +43,8 @@ FindBuffer::Results::Results(const Vector<UChar>& buffer,
   text_searcher_.SetOffset(0);
 }
 
-FindBuffer::Results::Iterator::Iterator(TextSearcherICU* text_searcher)
+FindBuffer::Results::Iterator::Iterator(TextSearcherICU* text_searcher,
+                                        String search_text)
     : text_searcher_(text_searcher), has_match_(true) {
   operator++();
 }
@@ -63,7 +64,7 @@ FindBuffer::Results::Iterator FindBuffer::Results::begin() {
   if (empty_result_)
     return end();
   text_searcher_.SetOffset(0);
-  return Iterator(&text_searcher_);
+  return Iterator(&text_searcher_, search_text_);
 }
 
 FindBuffer::Results::Iterator FindBuffer::Results::end() const {
