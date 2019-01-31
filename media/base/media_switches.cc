@@ -386,10 +386,6 @@ const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
 const base::Feature kMediaDrmPersistentLicense{
     "MediaDrmPersistentLicense", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the Android MediaRouter implementation using CAF (Cast v3).
-const base::Feature kCafMediaRouterImpl{"CafMediaRouterImpl",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the Android Image Reader path for Video decoding(for AVDA and MCVD)
 const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

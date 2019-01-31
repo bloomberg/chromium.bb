@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.media.router.MediaRouteProvider;
 import org.chromium.chrome.browser.media.router.MediaSource;
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.media.router.caf.CafBaseMediaRouteProvider;
-import org.chromium.chrome.browser.media.router.cast.remoting.RemotingMediaSource;
 
 /** A {@link MediaRouteProvider} implementation for remoting, using Cast v3 API. */
 public class CafRemotingMediaRouteProvider extends CafBaseMediaRouteProvider {

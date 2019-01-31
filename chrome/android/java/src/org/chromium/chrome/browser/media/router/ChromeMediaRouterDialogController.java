@@ -10,8 +10,8 @@ import android.support.v7.media.MediaRouteSelector;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.media.router.cast.CastMediaSource;
-import org.chromium.chrome.browser.media.router.cast.remoting.RemotingMediaSource;
+import org.chromium.chrome.browser.media.router.caf.CastMediaSource;
+import org.chromium.chrome.browser.media.router.caf.remoting.RemotingMediaSource;
 
 /**
  * Implements the JNI interface called from the C++ Media Router dialog controller implementation
