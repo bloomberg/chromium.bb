@@ -137,8 +137,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetTooltipText(const base::string16& tooltip_text) override;
   void DisplayTooltipText(const base::string16& tooltip_text) override;
   uint32_t GetCaptureSequenceNumber() const override;
-  bool DoBrowserControlsShrinkRendererSize() const override;
-  float GetTopControlsHeight() const override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,

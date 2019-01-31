@@ -504,22 +504,6 @@ gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() const {
   return view_.GetPhysicalBackingSize();
 }
 
-bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkRendererSize() const {
-  auto* delegate_view = GetRenderViewHostDelegateView();
-  return delegate_view ? delegate_view->DoBrowserControlsShrinkRendererSize()
-                       : false;
-}
-
-float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
-  auto* delegate_view = GetRenderViewHostDelegateView();
-  return delegate_view ? delegate_view->GetTopControlsHeight() : 0.f;
-}
-
-float RenderWidgetHostViewAndroid::GetBottomControlsHeight() const {
-  auto* delegate_view = GetRenderViewHostDelegateView();
-  return delegate_view ? delegate_view->GetBottomControlsHeight() : 0.f;
-}
-
 int RenderWidgetHostViewAndroid::GetMouseWheelMinimumGranularity() const {
   auto* window = view_.GetWindowAndroid();
   if (!window)
@@ -1553,8 +1537,12 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
 
 void RenderWidgetHostViewAndroid::TransformPointToRootSurface(
     gfx::PointF* point) {
-  *point += gfx::Vector2d(
-      0, DoBrowserControlsShrinkRendererSize() ? GetTopControlsHeight() : 0);
+  if (!host()->delegate())
+    return;
+  RenderViewHostDelegateView* rvh_delegate_view =
+      host()->delegate()->GetDelegateView();
+  if (rvh_delegate_view->DoBrowserControlsShrinkRendererSize())
+    *point += gfx::Vector2d(0, rvh_delegate_view->GetTopControlsHeight());
 }
 
 // TODO(jrg): Find out the implications and answer correctly here,
@@ -1595,12 +1583,6 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
   if (!gesture_listener_manager_)
     return;
   gesture_listener_manager_->GestureEventAck(event, ack_result);
-}
-
-RenderViewHostDelegateView*
-RenderWidgetHostViewAndroid::GetRenderViewHostDelegateView() const {
-  RenderWidgetHostDelegate* delegate = host()->delegate();
-  return delegate ? delegate->GetDelegateView() : nullptr;
 }
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(

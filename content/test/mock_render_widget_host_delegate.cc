@@ -67,4 +67,8 @@ bool MockRenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
   return is_fullscreen_;
 }
 
+RenderViewHostDelegateView* MockRenderWidgetHostDelegate::GetDelegateView() {
+  return &rvh_delegate_view_;
+}
+
 }  // namespace content

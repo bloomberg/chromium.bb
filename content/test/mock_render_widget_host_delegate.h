@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
+#include "content/test/stub_render_view_host_delegate_view.h"
 
 namespace content {
 
@@ -51,6 +52,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void SendScreenRects() override;
   TextInputManager* GetTextInputManager() override;
   bool IsFullscreenForCurrentTab() override;
+  RenderViewHostDelegateView* GetDelegateView() override;
 
  private:
   std::unique_ptr<NativeWebKeyboardEvent> last_event_;
@@ -61,6 +63,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   RenderWidgetHostImpl* focused_widget_ = nullptr;
   KeyboardEventProcessingResult pre_handle_keyboard_event_result_ =
       KeyboardEventProcessingResult::NOT_HANDLED;
+  StubRenderViewHostDelegateView rvh_delegate_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
