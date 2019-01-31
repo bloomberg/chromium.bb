@@ -250,14 +250,6 @@ Platform* Platform::Current() {
   return g_platform;
 }
 
-Thread* Platform::MainThread() {
-  return Thread::MainThread();
-}
-
-Thread* Platform::CurrentThread() {
-  return Thread::Current();
-}
-
 service_manager::Connector* Platform::GetConnector() {
   DEFINE_STATIC_LOCAL(DefaultConnector, connector, ());
   return connector.Get();
@@ -281,21 +273,13 @@ std::unique_ptr<Thread> Platform::CreateThread(
   return Thread::CreateThread(params);
 }
 
-std::unique_ptr<Thread> Platform::CreateWebAudioThread() {
-  return Thread::CreateWebAudioThread();
-}
-
 void Platform::CreateAndSetCompositorThread() {
   Thread::CreateAndSetCompositorThread();
 }
 
-Thread* Platform::CompositorThread() {
-  return Thread::CompositorThread();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 Platform::CompositorThreadTaskRunner() {
-  if (Thread* compositor_thread = CompositorThread())
+  if (Thread* compositor_thread = Thread::CompositorThread())
     return compositor_thread->GetTaskRunner();
   return nullptr;
 }

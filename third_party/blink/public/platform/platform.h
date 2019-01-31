@@ -429,18 +429,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // DEPRECATED: Use Thread::CreateThread() instead.
   std::unique_ptr<Thread> CreateThread(const ThreadCreationParams&);
 
-  // DEPRECATED: Use Thread::CreateWebAudioThread() instead.
-  std::unique_ptr<Thread> CreateWebAudioThread();
-
-  // DEPRECATED: Use Thread::Current() instead.
-  Thread* CurrentThread();
-
-  // DEPRECATED: Use Thread::MainThread() instead.
-  Thread* MainThread();
-
-  // DEPRECATED: Use Thread::CompositorThread() instead.
-  Thread* CompositorThread();
-
   // The two compositor-related functions below are called by the embedder.
   // TODO(yutak): Perhaps we should move these to somewhere else?
 
