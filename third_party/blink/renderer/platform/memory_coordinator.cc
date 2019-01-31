@@ -124,10 +124,8 @@ void MemoryCoordinator::OnPurgeMemory() {
 }
 
 void MemoryCoordinator::ClearMemory() {
-  // Clear the image cache.
-  // TODO(tasak|bashi): Make ImageDecodingStore and FontCache be
-  // MemoryCoordinatorClients rather than clearing caches here.
-  ImageDecodingStore::Instance().Clear();
+  // TODO(tasak|bashi): Make FontCache a MemoryCoordinatorClient rather than
+  // clearing caches here.
   FontGlobalContext::ClearMemory();
 }
 
