@@ -44,7 +44,7 @@ TEST_F(FindBufferTest, FindInline) {
   FindBuffer buffer(WholeDocumentRange());
   EXPECT_TRUE(buffer.PositionAfterBlock().IsNull());
   std::unique_ptr<FindBuffer::Results> results =
-      buffer.FindMatches("abce", *mojom::blink::FindOptions::New());
+      buffer.FindMatches("abce", kCaseInsensitive);
   EXPECT_EQ(1u, results->CountForTesting());
   FindBuffer::BufferMatchResult match = *results->begin();
   EXPECT_EQ(0u, match.start);
@@ -143,27 +143,19 @@ TEST_F(FindBufferTest, FindBetweenPositionsSameNode) {
   PositionInFlatTree end_position =
       PositionInFlatTree::LastPositionInNode(*node);
   FindBuffer buffer(EphemeralRangeInFlatTree(start_position, end_position));
-  EXPECT_EQ(1u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(4u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(4u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // |start_position| = fo|ofoo
   // |end_position| = foof|oo
   start_position = PositionInFlatTree(*node, 2u);
   end_position = PositionInFlatTree(*node, 4u);
   buffer = FindBuffer(EphemeralRangeInFlatTree(start_position, end_position));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
 }
 
 TEST_F(FindBufferTest, FindBetweenPositionsDifferentNodes) {
@@ -177,69 +169,45 @@ TEST_F(FindBufferTest, FindBetweenPositionsDifferentNodes) {
   FindBuffer buffer(EphemeralRangeInFlatTree(
       PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
       PositionInFlatTree::LastPositionInNode(*span->firstChild())));
-  EXPECT_EQ(2u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("fo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oof", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(4u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(3u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(4u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(3u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // <div>f^oo<span>foof<b>o|o</b></span></div>
   // So buffer = "oofoofo"
   buffer = FindBuffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*div->firstChild(), 1),
                                PositionInFlatTree(*b->firstChild(), 1)));
-  EXPECT_EQ(1u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oof", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("fo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(5u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(5u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // <div>foo<span>f^oof|<b>oo</b></span></div>
   // So buffer = "oof"
   buffer = FindBuffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
                                PositionInFlatTree(*span->firstChild(), 4)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oof", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("fo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // <div>foo<span>foof^<b>oo|</b></span></div>
   // So buffer = "oo"
   buffer = FindBuffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 4),
                                PositionInFlatTree(*b->firstChild(), 2)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oof", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("fo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
 }
 
 TEST_F(FindBufferTest, FindBetweenPositionsSkippedNodes) {
@@ -258,60 +226,42 @@ TEST_F(FindBufferTest, FindBetweenPositionsSkippedNodes) {
   FindBuffer buffer(EphemeralRangeInFlatTree(
       PositionInFlatTree::FirstPositionInNode(*div->firstChild()),
       PositionInFlatTree(*span->firstChild(), 3)));
-  EXPECT_EQ(1u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oof", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("fo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("oof", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("fo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // <div>foo<span style='display:none;'>f^oof</span><b>oo|</b>
   // <script>fo</script><a>o</a></div>
   // So buffer = "oo"
   buffer = FindBuffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
                                PositionInFlatTree(*b->firstChild(), 2)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // <div>foo<span style='display:none;'>f^oof</span><b>oo|</b>
   // <script>f|o</script><a>o</a></div>
   // So buffer = "oo"
   buffer = FindBuffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*span->firstChild(), 1),
                                PositionInFlatTree(*script->firstChild(), 2)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(2u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
   // <div>foo<span style='display:none;'>foof</span><b>oo|</b>
   // <script>f^o</script><a>o|</a></div>
   // So buffer = "o"
   buffer = FindBuffer(
       EphemeralRangeInFlatTree(PositionInFlatTree(*script->firstChild(), 1),
                                PositionInFlatTree(*a->firstChild(), 1)));
-  EXPECT_EQ(0u, buffer.FindMatches("foo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("oo", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("o", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("f", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("oo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("o", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("f", kCaseInsensitive)->CountForTesting());
 }
 
 class FindBufferBlockTest : public FindBufferTest,
@@ -332,52 +282,38 @@ TEST_P(FindBufferBlockTest, FindBlock) {
   FindBuffer text_buffer(WholeDocumentRange());
   EXPECT_EQ(GetElementById("block"),
             *text_buffer.PositionAfterBlock().ComputeContainerNode());
-  EXPECT_EQ(1u,
-            text_buffer.FindMatches("text", *mojom::blink::FindOptions::New())
-                ->CountForTesting());
-  EXPECT_EQ(0u, text_buffer
-                    .FindMatches("textblock", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
   EXPECT_EQ(
-      0u,
-      text_buffer.FindMatches("text block", *mojom::blink::FindOptions::New())
-          ->CountForTesting());
+      1u, text_buffer.FindMatches("text", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, text_buffer.FindMatches("textblock", kCaseInsensitive)
+                    ->CountForTesting());
+  EXPECT_EQ(0u, text_buffer.FindMatches("text block", kCaseInsensitive)
+                    ->CountForTesting());
 
   FindBuffer block_buffer(EphemeralRangeInFlatTree(
       text_buffer.PositionAfterBlock(), LastPositionInDocument()));
   EXPECT_EQ(GetElementById("span"),
             *block_buffer.PositionAfterBlock().ComputeContainerNode());
   EXPECT_EQ(
-      1u, block_buffer.FindMatches("block", *mojom::blink::FindOptions::New())
-              ->CountForTesting());
-  EXPECT_EQ(0u, block_buffer
-                    .FindMatches("textblock", *mojom::blink::FindOptions::New())
+      1u,
+      block_buffer.FindMatches("block", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, block_buffer.FindMatches("textblock", kCaseInsensitive)
                     ->CountForTesting());
-  EXPECT_EQ(
-      0u,
-      block_buffer.FindMatches("text block", *mojom::blink::FindOptions::New())
-          ->CountForTesting());
-  EXPECT_EQ(0u, block_buffer
-                    .FindMatches("blockspan", *mojom::blink::FindOptions::New())
+  EXPECT_EQ(0u, block_buffer.FindMatches("text block", kCaseInsensitive)
                     ->CountForTesting());
-  EXPECT_EQ(
-      0u,
-      block_buffer.FindMatches("block span", *mojom::blink::FindOptions::New())
-          ->CountForTesting());
+  EXPECT_EQ(0u, block_buffer.FindMatches("blockspan", kCaseInsensitive)
+                    ->CountForTesting());
+  EXPECT_EQ(0u, block_buffer.FindMatches("block span", kCaseInsensitive)
+                    ->CountForTesting());
 
   FindBuffer span_buffer(EphemeralRangeInFlatTree(
       block_buffer.PositionAfterBlock(), LastPositionInDocument()));
   EXPECT_TRUE(span_buffer.PositionAfterBlock().IsNull());
-  EXPECT_EQ(1u,
-            span_buffer.FindMatches("span", *mojom::blink::FindOptions::New())
-                ->CountForTesting());
-  EXPECT_EQ(0u, span_buffer
-                    .FindMatches("blockspan", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
   EXPECT_EQ(
-      0u,
-      span_buffer.FindMatches("block span", *mojom::blink::FindOptions::New())
-          ->CountForTesting());
+      1u, span_buffer.FindMatches("span", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, span_buffer.FindMatches("blockspan", kCaseInsensitive)
+                    ->CountForTesting());
+  EXPECT_EQ(0u, span_buffer.FindMatches("block span", kCaseInsensitive)
+                    ->CountForTesting());
 }
 
 class FindBufferSeparatorTest
@@ -398,8 +334,7 @@ INSTANTIATE_TEST_CASE_P(Separators,
 TEST_P(FindBufferSeparatorTest, FindSeparatedElements) {
   SetBodyContent("a<" + GetParam() + ">a</" + GetParam() + ">a");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(0u, buffer.FindMatches("aa", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("aa", kCaseInsensitive)->CountForTesting());
 }
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPreWrap) {
@@ -408,63 +343,55 @@ TEST_F(FindBufferTest, WhiteSpaceCollapsingPreWrap) {
       "</span>");
   FindBuffer buffer(WholeDocumentRange());
   EXPECT_EQ(
-      1u, buffer.FindMatches("a b c d  e  ", *mojom::blink::FindOptions::New())
-              ->CountForTesting());
+      1u,
+      buffer.FindMatches("a b c d  e  ", kCaseInsensitive)->CountForTesting());
 };
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPre) {
   SetBodyContent("<div style='white-space: pre;'>a \n b</div>");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(1u, buffer.FindMatches("a", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("ab", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a  b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a   b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a\n b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a \nb", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a \n b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("a", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ab", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("a b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a  b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a   b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a\n b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a \nb", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a \n b", kCaseInsensitive)->CountForTesting());
 }
 
 TEST_F(FindBufferTest, WhiteSpaceCollapsingPreLine) {
   SetBodyContent("<div style='white-space: pre-line;'>a \n b</div>");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(1u, buffer.FindMatches("a", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(1u, buffer.FindMatches("b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("ab", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a  b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a   b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a \n b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a\n b", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a \nb", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
-  EXPECT_EQ(0u, buffer.FindMatches("a\nb", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("a", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("ab", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("a b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a  b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a   b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a \n b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a\n b", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a \nb", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u,
+            buffer.FindMatches("a\nb", kCaseInsensitive)->CountForTesting());
 }
 
 TEST_F(FindBufferTest, BidiTest) {
   SetBodyContent("<bdo dir=rtl id=bdo>foo<span>bar</span></bdo>");
   FindBuffer buffer(WholeDocumentRange());
-  EXPECT_EQ(1u, buffer.FindMatches("foobar", *mojom::blink::FindOptions::New())
-                    ->CountForTesting());
+  EXPECT_EQ(1u,
+            buffer.FindMatches("foobar", kCaseInsensitive)->CountForTesting());
 }
 
 }  // namespace blink
