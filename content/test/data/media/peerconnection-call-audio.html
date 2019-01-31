@@ -94,7 +94,8 @@
   }
 
   function callAndEnsureRemoteAudioTrackMutingWorks() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+    setupCallAndPromiseAudioPlaying(
+        {audio: {echoCancellation: {exact: false}}, video: true}).then(() => {
       // Call is up, now mute the remote track and check we stop playing out
       // audio (after a small delay, we don't expect it to happen instantly).
       enableRemoteAudio(gSecondConnection, false);
@@ -105,7 +106,8 @@
   }
 
   function callAndEnsureLocalAudioTrackMutingWorks() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+    setupCallAndPromiseAudioPlaying(
+        {audio: {echoCancellation: {exact: false}}, video: true}).then(() => {
       // Call is up, now mute the local track of the sending side and ensure
       // the receiving side stops receiving audio.
       enableLocalAudio(gFirstConnection, false);
@@ -116,7 +118,8 @@
   }
 
   function callAndEnsureAudioTrackUnmutingWorks() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+    setupCallAndPromiseAudioPlaying(
+        {audio: {echoCancellation: {exact: false}}, video: true}).then(() => {
       // Mute, wait a while, unmute, verify audio gets back up.
       // (Also, ensure video muting doesn't affect audio).
       enableRemoteAudio(gSecondConnection, false);
@@ -135,7 +138,8 @@
   }
 
   function callAndEnsureLocalVideoMutingDoesntMuteAudio() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+    setupCallAndPromiseAudioPlaying(
+        {audio: {echoCancellation: {exact: false}}, video: true}).then(() => {
       enableLocalVideo(gFirstConnection, false);
       return ensureAudioPlaying(gSecondConnection)
           .then(reportTestSuccess);
@@ -143,7 +147,8 @@
   }
 
   function callAndEnsureRemoteVideoMutingDoesntMuteAudio() {
-    setupCallAndPromiseAudioPlaying({audio: true, video: true}).then(() => {
+    setupCallAndPromiseAudioPlaying(
+        {audio: {echoCancellation: {exact: false}}, video: true}).then(() => {
       enableRemoteVideo(gSecondConnection, false);
       return ensureAudioPlaying(gSecondConnection)
           .then(reportTestSuccess);
