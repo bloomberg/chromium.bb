@@ -643,6 +643,10 @@ void AutocompleteMatch::ApplyPedal() {
   // TODO(orinj): It may make more sense to start from a clean slate and
   // apply only the bits of state relevant to the Pedal, rather than
   // eliminating parts of an existing match that are no longer useful.
+  // But while Pedal suggestions are derived from triggering suggestions by
+  // copy, it is necessary to be careful that we don't inherit fields that
+  // might cause issues.
+  allowed_to_be_default_match = false;
 
   type = Type::PEDAL;
   destination_url = pedal->GetNavigationUrl();

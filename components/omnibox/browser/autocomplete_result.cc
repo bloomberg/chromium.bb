@@ -236,18 +236,48 @@ void AutocompleteResult::SortAndCull(
 void AutocompleteResult::AppendDedicatedPedalMatches(
     AutocompleteProviderClient* client,
     const AutocompleteInput& input) {
-  ACMatches pedal_suggestions;
   const OmniboxPedalProvider* provider = client->GetPedalProvider();
+  ACMatches pedal_suggestions;
+  // Map from Pedal to a vector and index so that we can update instead of
+  // adding a duplicate.  Existing Pedals are fully indexed before the next
+  // loop that adds|updates because, e.g. the first match may trigger a Pedal
+  // which is already applied on the last.  We should update it, but without the
+  // fully built index the below logic would add new, resulting in a duplicate.
+  std::unordered_map<OmniboxPedal*, std::pair<ACMatches&, size_t>> pedals_found;
+  for (size_t match_index = 0; match_index < matches_.size(); ++match_index) {
+    OmniboxPedal* const pedal = matches_[match_index].pedal;
+    if (pedal) {
+      const auto insertion =
+          pedals_found.insert({pedal, {matches_, match_index}});
+      DCHECK(insertion.second) << "Found existing duplicate Pedal suggestion.";
+    }
+  }
   for (const auto& match : matches_) {
     if (match.pedal)
       continue;
-    OmniboxPedal* pedal = provider->FindPedalMatch(match.contents);
+    OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
     if (pedal) {
-      AutocompleteMatch suggestion = match;
-      suggestion.relevance--;
-      suggestion.pedal = pedal;
-      suggestion.ApplyPedal();
-      pedal_suggestions.push_back(suggestion);
+      auto derive_pedal_suggestion = [&match, pedal]() {
+        AutocompleteMatch suggestion = match;
+        suggestion.relevance--;
+        suggestion.pedal = pedal;
+        suggestion.ApplyPedal();
+        return suggestion;
+      };
+      const auto insertion = pedals_found.insert(
+          {pedal, {pedal_suggestions, pedal_suggestions.size()}});
+      if (insertion.second) {
+        // This is the first use of the found pedal; add new suggestion.
+        pedal_suggestions.push_back(derive_pedal_suggestion());
+      } else {
+        // This is a subsequent use of the found pedal; update its suggestion to
+        // ensure that it is derived from the most relevant matching suggestion.
+        const auto& map_value_pair = insertion.first->second;
+        auto& suggestion = map_value_pair.first[map_value_pair.second];
+        if (suggestion.relevance < match.relevance - 1) {
+          suggestion = derive_pedal_suggestion();
+        }
+      }
     }
   }
   if (!pedal_suggestions.empty()) {

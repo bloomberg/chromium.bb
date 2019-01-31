@@ -55,7 +55,9 @@ class AutocompleteResult {
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service);
 
-  // Creates and adds any dedicated Pedal matches triggered by existing match.
+  // Creates and adds any dedicated Pedal matches triggered by existing matches.
+  // This should be the only place where new Pedal suggestions are introduced
+  // because it doesn't dedupe; it just carefully avoids adding duplicates.
   void AppendDedicatedPedalMatches(AutocompleteProviderClient* client,
                                    const AutocompleteInput& input);
 

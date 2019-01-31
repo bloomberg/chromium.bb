@@ -85,7 +85,7 @@ class AutocompleteResultTest : public testing::Test {
  public:
   struct TestData {
     // Used to build a url for the AutocompleteMatch. The URL becomes
-    // "http://" + ('a' + |url_id|) (e.g. an ID of 2 yields "http://b").
+    // "http://" + ('a' + |url_id|) (e.g. an ID of 2 yields "http://c").
     int url_id;
 
     // ID of the provider.
@@ -1160,4 +1160,80 @@ TEST_F(AutocompleteResultTest, IsBetterMatchBothNonEntities) {
   EXPECT_FALSE(AutocompleteResult::IsBetterMatch(second, first,
                                                  OmniboxEventProto::HOME_PAGE));
   CheckRelevanceExpectations(first, second, 1000, 600, "", "");
+}
+
+TEST_F(AutocompleteResultTest, PedalSuggestionsCantBeDefaultMatch) {
+  TestData data[] = {
+      {1, 1, 500, true},
+      {0, 1, 1100, true},
+  };
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  matches[0].contents = base::UTF8ToUTF16("clear chrome history");
+  matches[1].contents = base::UTF8ToUTF16("open incognito tab");
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+
+  FakeAutocompleteProviderClient client;
+  result.AppendDedicatedPedalMatches(&client, input);
+
+  // Two distinct Pedals should be appended.
+  EXPECT_EQ(result.size(), 4u);
+  EXPECT_NE(result.match_at(2)->pedal, nullptr);
+  EXPECT_NE(result.match_at(3)->pedal, nullptr);
+
+  // Neither should be allowed to be default match, even though they were both
+  // derived from suggestions where the field is set true.
+  EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
+  EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
+  EXPECT_FALSE(result.match_at(2)->allowed_to_be_default_match);
+  EXPECT_FALSE(result.match_at(3)->allowed_to_be_default_match);
+}
+
+TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
+  TestData data[] = {
+      {1, 1, 500, true},
+      {0, 1, 1100, true},
+      {2, 1, 1000, true},
+      {0, 1, 1200, true},
+  };
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  matches[0].contents = base::UTF8ToUTF16("clear chrome history");
+  matches[1].contents = base::UTF8ToUTF16("open incognito tab");
+  matches[2].contents = base::UTF8ToUTF16("clear chrome history");
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+
+  FakeAutocompleteProviderClient client;
+  result.AppendDedicatedPedalMatches(&client, input);
+
+  // Exactly 2 (not 3) unique Pedals should be added with relevance close to max
+  // of the triggering suggestions.
+  EXPECT_EQ(result.size(), 6u);
+  EXPECT_NE(result.match_at(4)->pedal, nullptr);
+  EXPECT_NE(result.match_at(5)->pedal, nullptr);
+  EXPECT_NE(result.match_at(4)->pedal, result.match_at(5)->pedal);
+  EXPECT_EQ(result.match_at(4)->relevance, 999);
+  EXPECT_EQ(result.match_at(5)->relevance, 1099);
+
+  // Now artificially modify existing suggestions and run again to ensure that
+  // no duplicates are added, but the existing Pedal suggestion is updated.
+  result.match_at(3)->contents = base::UTF8ToUTF16("open incognito tab");
+  result.AppendDedicatedPedalMatches(&client, input);
+  EXPECT_EQ(result.size(), 6u);
+  EXPECT_NE(result.match_at(4)->pedal, nullptr);
+  EXPECT_NE(result.match_at(5)->pedal, nullptr);
+  EXPECT_NE(result.match_at(4)->pedal, result.match_at(5)->pedal);
+  EXPECT_EQ(result.match_at(5)->relevance, 1199);
 }
