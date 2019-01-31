@@ -30,6 +30,7 @@
 #include <unicode/usearch.h>
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
+#include "third_party/blink/renderer/platform/text/unicode_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -114,6 +115,10 @@ void TextSearcherICU::SetPattern(const StringView& pattern,
                                  bool case_sensitive) {
   SetCaseSensitivity(case_sensitive);
   SetPattern(pattern.Characters16(), pattern.length());
+  if (ContainsKanaLetters(pattern.ToString())) {
+    NormalizeCharactersIntoNFCForm(pattern.Characters16(), pattern.length(),
+                                   normalized_search_text_);
+  }
 }
 
 void TextSearcherICU::SetText(const UChar* text, wtf_size_t length) {
@@ -130,6 +135,14 @@ void TextSearcherICU::SetOffset(wtf_size_t offset) {
 }
 
 bool TextSearcherICU::NextMatchResult(MatchResultICU& result) {
+  while (NextMatchResultInternal(result)) {
+    if (!ShouldSkipCurrentMatch(result))
+      return true;
+  }
+  return false;
+}
+
+bool TextSearcherICU::NextMatchResultInternal(MatchResultICU& result) {
   UErrorCode status = U_ZERO_ERROR;
   const int match_start = usearch_next(searcher_, &status);
   DCHECK_EQ(status, U_ZERO_ERROR);
@@ -147,6 +160,22 @@ bool TextSearcherICU::NextMatchResult(MatchResultICU& result) {
   result.start = static_cast<wtf_size_t>(match_start);
   result.length = usearch_getMatchedLength(searcher_);
   return true;
+}
+
+bool TextSearcherICU::ShouldSkipCurrentMatch(MatchResultICU& result) const {
+  if (normalized_search_text_.IsEmpty())
+    return false;
+  Vector<UChar> normalized_match;
+  int32_t text_length;
+  const UChar* text = usearch_getText(searcher_, &text_length);
+  DCHECK_LE((int32_t)(result.start + result.length), text_length);
+
+  NormalizeCharactersIntoNFCForm(text + result.start, result.length,
+                                 normalized_match);
+
+  return !CheckOnlyKanaLettersInStrings(
+      normalized_search_text_.data(), normalized_search_text_.size(),
+      normalized_match.begin(), normalized_match.size());
 }
 
 void TextSearcherICU::SetPattern(const UChar* pattern, wtf_size_t length) {

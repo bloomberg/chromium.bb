@@ -394,4 +394,65 @@ TEST_F(FindBufferTest, BidiTest) {
             buffer.FindMatches("foobar", kCaseInsensitive)->CountForTesting());
 }
 
+TEST_F(FindBufferTest, KanaSmallVsNormal) {
+  SetBodyContent("や");  // Normal-sized や
+  FindBuffer buffer(WholeDocumentRange());
+  // Should find normal-sized や
+  EXPECT_EQ(1u, buffer.FindMatches("や", kCaseInsensitive)->CountForTesting());
+  // Should not find smalll-sized ゃ
+  EXPECT_EQ(0u, buffer.FindMatches("ゃ", kCaseInsensitive)->CountForTesting());
+}
+
+TEST_F(FindBufferTest, KanaDakuten) {
+  SetBodyContent("びゃ");  // Hiragana bya
+  FindBuffer buffer(WholeDocumentRange());
+  // Should find bi
+  EXPECT_EQ(1u, buffer.FindMatches("び", kCaseInsensitive)->CountForTesting());
+  // Should find smalll-sized ゃ
+  EXPECT_EQ(1u, buffer.FindMatches("ゃ", kCaseInsensitive)->CountForTesting());
+  // Should find bya
+  EXPECT_EQ(1u,
+            buffer.FindMatches("びゃ", kCaseInsensitive)->CountForTesting());
+  // Should not find hi
+  EXPECT_EQ(0u, buffer.FindMatches("ひ", kCaseInsensitive)->CountForTesting());
+  // Should not find pi
+  EXPECT_EQ(0u, buffer.FindMatches("ぴ", kCaseInsensitive)->CountForTesting());
+}
+
+TEST_F(FindBufferTest, KanaHalfFull) {
+  // Should treat hiragana, katakana, half width katakana as the same.
+  // hiragana ra, half width katakana ki, full width katakana na
+  SetBodyContent("らｷナ");
+  FindBuffer buffer(WholeDocumentRange());
+  // Should find katakana ra
+  EXPECT_EQ(1u, buffer.FindMatches("ラ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾗ", kCaseInsensitive)->CountForTesting());
+  // Should find hiragana & katakana ki
+  EXPECT_EQ(1u, buffer.FindMatches("き", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("キ", kCaseInsensitive)->CountForTesting());
+  // Should find hiragana & katakana na
+  EXPECT_EQ(1u, buffer.FindMatches("な", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾅ", kCaseInsensitive)->CountForTesting());
+  // Should find whole word
+  EXPECT_EQ(1u,
+            buffer.FindMatches("らきな", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾗｷﾅ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u,
+            buffer.FindMatches("ラキナ", kCaseInsensitive)->CountForTesting());
+}
+
+TEST_F(FindBufferTest, KanaDecomposed) {
+  SetBodyContent("は　゛");
+  FindBuffer buffer(WholeDocumentRange());
+  EXPECT_EQ(0u, buffer.FindMatches("ば", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u,
+            buffer.FindMatches("は　゛", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(0u, buffer.FindMatches("バ ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u,
+            buffer.FindMatches("ハ ゛", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("ﾊ ﾞ", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u,
+            buffer.FindMatches("ﾊ ゛", kCaseInsensitive)->CountForTesting());
+}
+
 }  // namespace blink

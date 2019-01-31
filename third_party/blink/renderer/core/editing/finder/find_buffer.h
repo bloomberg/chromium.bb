@@ -46,7 +46,7 @@ class CORE_EXPORT FindBuffer {
         : public std::iterator<std::forward_iterator_tag, BufferMatchResult> {
      public:
       Iterator() = default;
-      Iterator(TextSearcherICU* text_searcher);
+      Iterator(TextSearcherICU* text_searcher, String search_text_);
 
       bool operator==(const Iterator& other) {
         return has_match_ == other.has_match_;

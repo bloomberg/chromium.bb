@@ -32,9 +32,12 @@ class CORE_EXPORT TextSearcherICU {
  private:
   void SetPattern(const UChar* pattern, wtf_size_t length);
   void SetCaseSensitivity(bool case_sensitive);
+  bool ShouldSkipCurrentMatch(MatchResultICU&) const;
+  bool NextMatchResultInternal(MatchResultICU&);
 
   UStringSearch* searcher_ = nullptr;
   wtf_size_t text_length_ = 0;
+  Vector<UChar> normalized_search_text_;
 
   DISALLOW_COPY_AND_ASSIGN(TextSearcherICU);
 };
