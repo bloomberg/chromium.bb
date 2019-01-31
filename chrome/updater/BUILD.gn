@@ -14,6 +14,17 @@ group("updater") {
   }
 }
 
+source_set("common") {
+  sources = [
+    "updater.cc",
+    "updater.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("updater_tests") {
   testonly = true
   if (is_win) {
