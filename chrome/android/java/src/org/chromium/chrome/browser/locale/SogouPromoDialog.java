@@ -36,9 +36,9 @@ import java.lang.annotation.RetentionPolicy;
 public class SogouPromoDialog extends PromoDialog {
     // These constants are here to back a uma histogram. Append new constants at the end of this
     // list (do not rearrange) and don't forget to update NUM_ENTRIES.
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({UserChoice.USE_SOGOU, UserChoice.KEEP_GOOGLE, UserChoice.SETTINGS,
             UserChoice.BACK_KEY})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface UserChoice {
         int USE_SOGOU = 0;
         int KEEP_GOOGLE = 1;

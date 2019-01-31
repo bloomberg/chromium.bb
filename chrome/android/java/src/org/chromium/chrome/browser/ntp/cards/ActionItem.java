@@ -32,8 +32,8 @@ import java.util.Locale;
  * show a progress indicator over the same space. See {@link State}.
  */
 public class ActionItem extends OptionalLeaf {
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({State.HIDDEN, State.BUTTON, State.LOADING})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface State {
         int HIDDEN = 0;
         int BUTTON = 1;
