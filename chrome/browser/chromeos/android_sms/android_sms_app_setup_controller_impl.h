@@ -47,29 +47,36 @@ class AndroidSmsAppSetupControllerImpl : public AndroidSmsAppSetupController {
     PwaDelegate();
     virtual ~PwaDelegate();
 
-    virtual const extensions::Extension* GetPwaForUrl(const GURL& url,
+    virtual const extensions::Extension* GetPwaForUrl(const GURL& install_url,
                                                       Profile* profile);
-    virtual network::mojom::CookieManager* GetCookieManager(const GURL& url,
+    virtual network::mojom::CookieManager* GetCookieManager(const GURL& app_url,
                                                             Profile* profile);
   };
 
   // AndroidSmsAppSetupController:
-  void SetUpApp(const GURL& url, SuccessCallback callback) override;
-  const extensions::Extension* GetPwa(const GURL& url) override;
-  void DeleteRememberDeviceByDefaultCookie(const GURL& url,
+  void SetUpApp(const GURL& app_url,
+                const GURL& install_url,
+                SuccessCallback callback) override;
+  const extensions::Extension* GetPwa(const GURL& install_url) override;
+  void DeleteRememberDeviceByDefaultCookie(const GURL& app_url,
                                            SuccessCallback callback) override;
-  void RemoveApp(const GURL& url, SuccessCallback callback) override;
+  void RemoveApp(const GURL& app_url,
+                 const GURL& install_url,
+                 SuccessCallback callback) override;
 
-  void OnSetCookieResult(const GURL& url,
+  void OnSetCookieResult(const GURL& app_url,
+                         const GURL& install_url,
                          SuccessCallback callback,
                          bool succeeded);
   void OnAppInstallResult(SuccessCallback callback,
-                          const GURL& url,
+                          const GURL& app_url,
+                          const GURL& install_url,
                           web_app::InstallResultCode code);
   void OnAppUninstallResult(const base::UnguessableToken& id,
-                            const GURL& url,
+                            const GURL& app_url,
+                            const GURL& install_url,
                             bool succeeded);
-  void OnDeleteCookiesResult(const GURL& url,
+  void OnDeleteCookiesResult(const GURL& app_url,
                              SuccessCallback callback,
                              uint32_t num_deleted);
 

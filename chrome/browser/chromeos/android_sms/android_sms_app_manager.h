@@ -36,7 +36,7 @@ class AndroidSmsAppManager
   ~AndroidSmsAppManager() override;
 
   // If no app is installed, null is returned.
-  virtual base::Optional<GURL> GetInstalledAppUrl() = 0;
+  virtual base::Optional<GURL> GetCurrentAppUrl() = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

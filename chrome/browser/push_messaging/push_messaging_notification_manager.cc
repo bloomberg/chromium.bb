@@ -334,7 +334,7 @@ bool PushMessagingNotificationManager::ShouldSkipUserVisibleOnlyRequirements(
   }
 
   // Check if origin matches current messages url
-  base::Optional<GURL> app_url = android_sms_app_manager->GetInstalledAppUrl();
+  base::Optional<GURL> app_url = android_sms_app_manager->GetCurrentAppUrl();
   if (!app_url)
     app_url = chromeos::android_sms::GetAndroidMessagesURL();
 

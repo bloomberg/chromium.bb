@@ -48,7 +48,7 @@ AndroidSmsAppManagerImpl::AndroidSmsAppManagerImpl(
     : profile_(profile),
       setup_controller_(setup_controller),
       app_list_syncable_service_(app_list_syncable_service),
-      installed_url_at_last_notify_(GetInstalledAppUrl()),
+      installed_url_at_last_notify_(GetCurrentAppInstallUrl()),
       pwa_delegate_(std::make_unique<PwaDelegate>()),
       weak_ptr_factory_(this) {
   // Post a task to complete initialization. This portion of the flow must be
@@ -62,12 +62,30 @@ AndroidSmsAppManagerImpl::AndroidSmsAppManagerImpl(
 
 AndroidSmsAppManagerImpl::~AndroidSmsAppManagerImpl() = default;
 
-base::Optional<GURL> AndroidSmsAppManagerImpl::GetInstalledAppUrl() {
-  if (setup_controller_->GetPwa(GetAndroidMessagesURL()))
+base::Optional<GURL> AndroidSmsAppManagerImpl::GetCurrentAppUrl() {
+  if (setup_controller_->GetPwa(
+          GetAndroidMessagesURL(true /* use_install_url */))) {
     return GetAndroidMessagesURL();
+  }
 
-  if (setup_controller_->GetPwa(GetAndroidMessagesURLOld()))
+  if (setup_controller_->GetPwa(
+          GetAndroidMessagesURLOld(true /* use_install_url */))) {
     return GetAndroidMessagesURLOld();
+  }
+
+  return base::nullopt;
+}
+
+base::Optional<GURL> AndroidSmsAppManagerImpl::GetCurrentAppInstallUrl() {
+  if (setup_controller_->GetPwa(
+          GetAndroidMessagesURL(true /* use_install_url */))) {
+    return GetAndroidMessagesURL(true /* use_install_url */);
+  }
+
+  if (setup_controller_->GetPwa(
+          GetAndroidMessagesURLOld(true /* use_install_url */))) {
+    return GetAndroidMessagesURLOld(true /* use_install_url */);
+  }
 
   return base::nullopt;
 }
@@ -79,7 +97,8 @@ void AndroidSmsAppManagerImpl::SetUpAndroidSmsApp() {
 
   is_new_app_setup_in_progress_ = true;
   setup_controller_->SetUpApp(
-      GetAndroidMessagesURL(),
+      GetAndroidMessagesURL() /* app_url */,
+      GetAndroidMessagesURL(true /* use_install_url */) /* install_url */,
       base::BindOnce(&AndroidSmsAppManagerImpl::OnSetUpNewAppResult,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -90,7 +109,7 @@ void AndroidSmsAppManagerImpl::SetUpAndLaunchAndroidSmsApp() {
 }
 
 void AndroidSmsAppManagerImpl::TearDownAndroidSmsApp() {
-  base::Optional<GURL> installed_app_url = GetInstalledAppUrl();
+  base::Optional<GURL> installed_app_url = GetCurrentAppUrl();
   if (!installed_app_url)
     return;
 
@@ -101,12 +120,12 @@ void AndroidSmsAppManagerImpl::TearDownAndroidSmsApp() {
 void AndroidSmsAppManagerImpl::CompleteAsyncInitialization() {
   // If the kUseMessagesGoogleComDomain flag has been flipped and the installed
   // PWA is at the old URL, set up the new app.
-  if (GetInstalledAppUrl() == GetAndroidMessagesURLOld())
+  if (GetCurrentAppUrl() == GetAndroidMessagesURLOld())
     SetUpAndroidSmsApp();
 }
 
 void AndroidSmsAppManagerImpl::NotifyInstalledAppUrlChangedIfNecessary() {
-  base::Optional<GURL> installed_app_url = GetInstalledAppUrl();
+  base::Optional<GURL> installed_app_url = GetCurrentAppInstallUrl();
   if (installed_url_at_last_notify_ == installed_app_url)
     return;
 
@@ -117,8 +136,8 @@ void AndroidSmsAppManagerImpl::NotifyInstalledAppUrlChangedIfNecessary() {
 void AndroidSmsAppManagerImpl::OnSetUpNewAppResult(bool success) {
   is_new_app_setup_in_progress_ = false;
 
-  const extensions::Extension* new_pwa =
-      setup_controller_->GetPwa(GetAndroidMessagesURL());
+  const extensions::Extension* new_pwa = setup_controller_->GetPwa(
+      GetAndroidMessagesURL(true /* use_install_url */));
 
   // If the installation succeeded, a PWA should exist at the new URL.
   DCHECK_EQ(success, new_pwa != nullptr);
@@ -129,8 +148,8 @@ void AndroidSmsAppManagerImpl::OnSetUpNewAppResult(bool success) {
     return;
   }
 
-  const extensions::Extension* old_pwa =
-      setup_controller_->GetPwa(GetAndroidMessagesURLOld());
+  const extensions::Extension* old_pwa = setup_controller_->GetPwa(
+      GetAndroidMessagesURLOld(true /* use_install_url */));
 
   // If there is no PWA installed at the old URL, no migration is needed and
   // setup is finished.
@@ -147,13 +166,15 @@ void AndroidSmsAppManagerImpl::OnSetUpNewAppResult(bool success) {
   if (!transfer_attributes_success) {
     PA_LOG(ERROR) << "AndroidSmsAppManagerImpl::OnSetUpNewAppResult(): Failed "
                   << "to transfer item attributes from "
-                  << GetAndroidMessagesURLOld() << " to "
-                  << GetAndroidMessagesURL() << ".";
+                  << GetAndroidMessagesURLOld(true /* use_install_url */)
+                  << " to " << GetAndroidMessagesURL(true /* use_install_url */)
+                  << ".";
   }
 
   // Finish the migration by removing the old app now that it has been replaced.
   setup_controller_->RemoveApp(
       GetAndroidMessagesURLOld(),
+      GetAndroidMessagesURLOld(true /* use_install_url */),
       base::BindOnce(&AndroidSmsAppManagerImpl::OnRemoveOldAppResult,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -163,7 +184,8 @@ void AndroidSmsAppManagerImpl::OnRemoveOldAppResult(bool success) {
   // should still be notified of the URL change.
   if (!success) {
     PA_LOG(ERROR) << "AndroidSmsAppManagerImpl::OnRemoveOldAppResult(): Failed "
-                  << "to remove PWA at old URL " << GetAndroidMessagesURLOld()
+                  << "to remove PWA at old URL "
+                  << GetAndroidMessagesURLOld(true /* use_install_url */)
                   << ".";
   }
 
@@ -180,7 +202,7 @@ void AndroidSmsAppManagerImpl::HandleAppSetupFinished() {
   is_app_launch_pending_ = false;
 
   // If launch was requested but setup failed, there is no app to launch.
-  base::Optional<GURL> installed_app_url = GetInstalledAppUrl();
+  base::Optional<GURL> installed_app_url = GetCurrentAppInstallUrl();
   if (!installed_app_url)
     return;
 

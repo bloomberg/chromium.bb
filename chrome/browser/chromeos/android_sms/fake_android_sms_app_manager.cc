@@ -23,7 +23,7 @@ void FakeAndroidSmsAppManager::SetInstalledAppUrl(
   NotifyInstalledAppUrlChanged();
 }
 
-base::Optional<GURL> FakeAndroidSmsAppManager::GetInstalledAppUrl() {
+base::Optional<GURL> FakeAndroidSmsAppManager::GetCurrentAppUrl() {
   return url_;
 }
 

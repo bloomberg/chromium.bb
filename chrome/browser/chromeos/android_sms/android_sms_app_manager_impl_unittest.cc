@@ -148,13 +148,15 @@ TEST_F(AndroidSmsAppManagerImplTest, TestSetUpMessages_NoPreviousApp_Fails) {
 
   android_sms_app_manager()->SetUpAndroidSmsApp();
   fake_android_sms_app_setup_controller()->CompletePendingSetUpAppRequest(
-      GetAndroidMessagesURL() /* expected_url */,
+      GetAndroidMessagesURL() /* expected_app_url */,
+      GetAndroidMessagesURL(
+          true /* use_install_url */) /* expected_install_url */,
       base::nullopt /* id_for_app */);
 
   // Verify that no installed app exists and no observers were notified.
   EXPECT_FALSE(fake_android_sms_app_setup_controller()->GetAppMetadataAtUrl(
-      GetAndroidMessagesURL()));
-  EXPECT_FALSE(android_sms_app_manager()->GetInstalledAppUrl());
+      GetAndroidMessagesURL(true /* use_install_url */)));
+  EXPECT_FALSE(android_sms_app_manager()->GetCurrentAppUrl());
   EXPECT_EQ(0u, test_observer()->num_installed_app_url_changed_events());
 }
 
@@ -164,25 +166,33 @@ TEST_F(AndroidSmsAppManagerImplTest,
 
   android_sms_app_manager()->SetUpAndroidSmsApp();
   fake_android_sms_app_setup_controller()->CompletePendingSetUpAppRequest(
-      GetAndroidMessagesURL() /* expected_url */, kNewAppId);
+      GetAndroidMessagesURL() /* expected_app_url */,
+      GetAndroidMessagesURL(
+          true /* use_install_url */) /* expected_install_url */,
+      kNewAppId);
 
   // Verify that the app was installed and observers were notified.
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
-                           ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                           ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
+                               true /* use_install_url */))
                            ->pwa->id());
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
-                  ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                  ->GetAppMetadataAtUrl(
+                      GetAndroidMessagesURL(true /* use_install_url */))
                   ->is_cookie_present);
   EXPECT_EQ(GetAndroidMessagesURL(),
-            *android_sms_app_manager()->GetInstalledAppUrl());
+            *android_sms_app_manager()->GetCurrentAppUrl());
   EXPECT_EQ(1u, test_observer()->num_installed_app_url_changed_events());
 
   // Now, tear down the app, which should remove the DefaultToPersist cookie.
   android_sms_app_manager()->TearDownAndroidSmsApp();
   fake_android_sms_app_setup_controller()->CompletePendingDeleteCookieRequest(
-      GetAndroidMessagesURL() /* expected_url */);
+      GetAndroidMessagesURL() /* expected_app_url */,
+      GetAndroidMessagesURL(
+          true /* use_install_url */) /* expected_install_url */);
   EXPECT_FALSE(fake_android_sms_app_setup_controller()
-                   ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                   ->GetAppMetadataAtUrl(
+                       GetAndroidMessagesURL(true /* use_install_url */))
                    ->is_cookie_present);
 }
 
@@ -191,17 +201,22 @@ TEST_F(AndroidSmsAppManagerImplTest, TestSetUpMessagesAndLaunch_NoPreviousApp) {
 
   android_sms_app_manager()->SetUpAndLaunchAndroidSmsApp();
   fake_android_sms_app_setup_controller()->CompletePendingSetUpAppRequest(
-      GetAndroidMessagesURL() /* expected_url */, kNewAppId);
+      GetAndroidMessagesURL() /* expected_app_url */,
+      GetAndroidMessagesURL(
+          true /* use_install_url */) /* expected_install_url */,
+      kNewAppId);
 
   // Verify that the app was installed and observers were notified.
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
-                           ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                           ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
+                               true /* use_install_url */))
                            ->pwa->id());
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
-                  ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                  ->GetAppMetadataAtUrl(
+                      GetAndroidMessagesURL(true /* use_install_url */))
                   ->is_cookie_present);
   EXPECT_EQ(GetAndroidMessagesURL(),
-            *android_sms_app_manager()->GetInstalledAppUrl());
+            *android_sms_app_manager()->GetCurrentAppUrl());
   EXPECT_EQ(1u, test_observer()->num_installed_app_url_changed_events());
 
   // The app should have been launched.
@@ -212,29 +227,33 @@ TEST_F(AndroidSmsAppManagerImplTest,
        TestSetUpMessages_PreviousAppExists_Fails) {
   // Before completing initialization, install the old app.
   fake_android_sms_app_setup_controller()->SetAppAtUrl(
-      GetAndroidMessagesURLOld(), kOldAppId);
+      GetAndroidMessagesURLOld(true /* use_install_url */), kOldAppId);
   CompleteAsyncInitialization();
 
   // This should trigger the new app to be installed; fail this installation.
   // This simulates a situation which could occur if the user signs in with the
   // flag enabled but is offline and thus unable to install the new PWA.
   fake_android_sms_app_setup_controller()->CompletePendingSetUpAppRequest(
-      GetAndroidMessagesURL() /* expected_url */,
+      GetAndroidMessagesURL() /* expected_app_url */,
+      GetAndroidMessagesURL(
+          true /* use_install_url */) /* expected_install_url */,
       base::nullopt /* id_for_app */);
 
   // Verify that the new app was not installed and no observers were notified.
   EXPECT_FALSE(fake_android_sms_app_setup_controller()->GetAppMetadataAtUrl(
-      GetAndroidMessagesURL()));
+      GetAndroidMessagesURL(true /* use_install_url */)));
   EXPECT_EQ(0u, test_observer()->num_installed_app_url_changed_events());
 
-  // The old app should still be active.
+  // The old app should still be true.
   EXPECT_EQ(GetAndroidMessagesURLOld(),
-            *android_sms_app_manager()->GetInstalledAppUrl());
+            *android_sms_app_manager()->GetCurrentAppUrl());
   EXPECT_EQ(kOldAppId, fake_android_sms_app_setup_controller()
-                           ->GetAppMetadataAtUrl(GetAndroidMessagesURLOld())
+                           ->GetAppMetadataAtUrl(GetAndroidMessagesURLOld(
+                               true /* use_install_url */))
                            ->pwa->id());
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
-                  ->GetAppMetadataAtUrl(GetAndroidMessagesURLOld())
+                  ->GetAppMetadataAtUrl(
+                      GetAndroidMessagesURLOld(true /* use_install_url */))
                   ->is_cookie_present);
 }
 
@@ -242,24 +261,29 @@ TEST_F(AndroidSmsAppManagerImplTest,
        TestSetUpMessages_ThenTearDown_PreviousAppExists) {
   // Before completing initialization, install the old app.
   fake_android_sms_app_setup_controller()->SetAppAtUrl(
-      GetAndroidMessagesURLOld(), kOldAppId);
+      GetAndroidMessagesURLOld(true /* use_install_url */), kOldAppId);
   CompleteAsyncInitialization();
 
   // This should trigger the new app to be installed.
   fake_android_sms_app_setup_controller()->CompletePendingSetUpAppRequest(
-      GetAndroidMessagesURL() /* expected_url */, kNewAppId /* id_for_app */);
+      GetAndroidMessagesURL() /* expected_app_url */,
+      GetAndroidMessagesURL(
+          true /* use_install_url */) /* expected_install_url */,
+      kNewAppId /* id_for_app */);
 
   // Verify that the app was installed and attributes were transferred. By this
   // point, observers should not have been notified yet since the old app was
   // not yet installed.
   EXPECT_EQ(kNewAppId, fake_android_sms_app_setup_controller()
-                           ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                           ->GetAppMetadataAtUrl(GetAndroidMessagesURL(
+                               true /* use_install_url */))
                            ->pwa->id());
   EXPECT_TRUE(fake_android_sms_app_setup_controller()
-                  ->GetAppMetadataAtUrl(GetAndroidMessagesURL())
+                  ->GetAppMetadataAtUrl(
+                      GetAndroidMessagesURL(true /* use_install_url */))
                   ->is_cookie_present);
   EXPECT_EQ(GetAndroidMessagesURL(),
-            *android_sms_app_manager()->GetInstalledAppUrl());
+            *android_sms_app_manager()->GetCurrentAppUrl());
   EXPECT_EQ(std::make_pair(std::string(kOldAppId), std::string(kNewAppId)),
             test_pwa_delegate()->transfer_item_attribute_params()[0]);
   EXPECT_EQ(0u, test_observer()->num_installed_app_url_changed_events());
@@ -267,7 +291,10 @@ TEST_F(AndroidSmsAppManagerImplTest,
   // Now, complete uninstallation of the old app; this should trigger observers
   // to be notified.
   fake_android_sms_app_setup_controller()->CompleteRemoveAppRequest(
-      GetAndroidMessagesURLOld() /* expected_url */, true /* success */);
+      GetAndroidMessagesURLOld() /* expected_app_url */,
+      GetAndroidMessagesURLOld(
+          true /* use_install_url */) /* expected_install_url */,
+      true /* success */);
   EXPECT_EQ(1u, test_observer()->num_installed_app_url_changed_events());
 }
 

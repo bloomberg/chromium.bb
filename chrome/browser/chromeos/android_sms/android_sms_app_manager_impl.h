@@ -62,13 +62,14 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
   };
 
   // AndroidSmsAppManager:
-  base::Optional<GURL> GetInstalledAppUrl() override;
+  base::Optional<GURL> GetCurrentAppUrl() override;
 
   // AndroidSmsAppHelperDelegate:
   void SetUpAndroidSmsApp() override;
   void SetUpAndLaunchAndroidSmsApp() override;
   void TearDownAndroidSmsApp() override;
 
+  base::Optional<GURL> GetCurrentAppInstallUrl();
   void CompleteAsyncInitialization();
   void NotifyInstalledAppUrlChangedIfNecessary();
   void OnSetUpNewAppResult(bool success);
