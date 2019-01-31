@@ -143,7 +143,7 @@
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/resource_timing_info_conversions.h"
 #include "content/renderer/savable_resources.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
+#include "content/renderer/service_worker/web_service_worker_network_provider_impl_for_frame.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
@@ -3702,12 +3702,10 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
 
 scoped_refptr<blink::WebWorkerFetchContext>
 RenderFrameImpl::CreateWorkerFetchContext() {
-  blink::WebServiceWorkerNetworkProvider* web_provider =
-      frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
-  DCHECK(web_provider);
-  ServiceWorkerNetworkProvider* provider =
-      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-          web_provider);
+  WebServiceWorkerNetworkProviderImplForFrame* provider =
+      static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(
+          frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
+  DCHECK(provider);
 
   blink::mojom::RendererPreferenceWatcherPtr watcher;
   blink::mojom::RendererPreferenceWatcherRequest watcher_request =
@@ -3716,7 +3714,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
-          provider, render_view_->renderer_preferences(),
+          provider->context(), render_view_->renderer_preferences(),
           std::move(watcher_request), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
 
@@ -3780,8 +3778,8 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
   // At this point we should have non-null data source.
   if (!ChildThreadImpl::current())
     return nullptr;  // May be null in some tests.
-  ServiceWorkerNetworkProvider* provider =
-      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+  WebServiceWorkerNetworkProviderImplForFrame* provider =
+      static_cast<WebServiceWorkerNetworkProviderImplForFrame*>(
           frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   if (!provider->context()) {
     // The context can be null when the frame is sandboxed.
@@ -7177,18 +7175,6 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
 #endif
 }
 
-blink::mojom::ControllerServiceWorkerMode
-RenderFrameImpl::IsControlledByServiceWorker() {
-  blink::WebServiceWorkerNetworkProvider* web_provider =
-      frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
-  if (!web_provider)
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  ServiceWorkerNetworkProvider* provider =
-      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-          web_provider);
-  return provider->IsControlledByServiceWorker();
-}
-
 void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
   GetLocalRootRenderWidget()->SetWidgetBinding(std::move(request));
 }
@@ -7251,7 +7237,7 @@ RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
-  return ServiceWorkerNetworkProvider::CreateForNavigation(
+  return WebServiceWorkerNetworkProviderImplForFrame::Create(
       this, commit_params, std::move(controller_service_worker_info),
       std::move(fallback_factory));
 }

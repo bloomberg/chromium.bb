@@ -136,9 +136,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // host.
   blink::mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
 
-  // Called when ServiceWorkerNetworkProvider is destructed. This function
+  // Called when WebServiceWorkerNetworkProvider is destructed. This function
   // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
-  // reason ServiceWorkerNetworkProvider is special compared to the other
+  // reason WebServiceWorkerNetworkProvider is special compared to the other
   // providers, is that it is destructed synchronously when a service worker
   // client (Document) is removed from the DOM. Once this happens, the
   // ServiceWorkerProviderHost must destruct quickly in order to remove the

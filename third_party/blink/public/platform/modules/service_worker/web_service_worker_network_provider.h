@@ -46,7 +46,7 @@ class WebURLRequest;
 // thread. Currently the embedder has implementations for service worker clients
 // (frames and shared workers), and service workers themselves.
 //
-// An instance of this class is owned by the associated loading context, e.g.
+// Instances of this class are owned by the associated loading context, e.g.
 // DocumentLoader.
 class WebServiceWorkerNetworkProvider {
  public:

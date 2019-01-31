@@ -4,6 +4,8 @@
 
 #include "content/renderer/shared_worker/web_service_worker_network_provider_impl_for_worker.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
@@ -17,22 +19,76 @@
 
 namespace content {
 
-WebServiceWorkerNetworkProviderImplForWorker::
-    WebServiceWorkerNetworkProviderImplForWorker(
-        std::unique_ptr<ServiceWorkerNetworkProvider> provider,
-        bool is_secure_context,
-        std::unique_ptr<NavigationResponseOverrideParameters> response_override)
-    : WebServiceWorkerNetworkProviderBaseImpl(std::move(provider)),
-      is_secure_context_(is_secure_context),
-      response_override_(std::move(response_override)) {}
+std::unique_ptr<WebServiceWorkerNetworkProviderImplForWorker>
+WebServiceWorkerNetworkProviderImplForWorker::Create(
+    blink::mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
+    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+        script_loader_factory_info,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
+    scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
+    bool is_secure_context,
+    std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
+  auto provider =
+      base::WrapUnique(new WebServiceWorkerNetworkProviderImplForWorker(
+          is_secure_context, std::move(response_override)));
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    DCHECK(info);
+    provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
+        info->provider_id,
+        blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+        std::move(info->client_request), std::move(info->host_ptr_info),
+        std::move(controller_info), std::move(fallback_loader_factory));
+    if (script_loader_factory_info.is_valid()) {
+      provider->script_loader_factory_.Bind(
+          std::move(script_loader_factory_info));
+    }
+  } else {
+    DCHECK(!info);
+    int provider_id = GetNextServiceWorkerProviderId();
+    auto host_info = blink::mojom::ServiceWorkerProviderHostInfo::New(
+        provider_id, MSG_ROUTING_NONE,
+        blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+        true /* is_parent_frame_secure */, nullptr /* host_request */,
+        nullptr /* client_ptr_info */);
+    blink::mojom::ServiceWorkerContainerAssociatedRequest client_request =
+        mojo::MakeRequest(&host_info->client_ptr_info);
+    blink::mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+    host_info->host_request = mojo::MakeRequest(&host_ptr_info);
+
+    provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
+        provider_id, blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+        std::move(client_request), std::move(host_ptr_info),
+        std::move(controller_info), std::move(fallback_loader_factory));
+    if (ChildThreadImpl::current()) {
+      ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
+          &provider->dispatcher_host_);
+      provider->dispatcher_host_->OnProviderCreated(std::move(host_info));
+    } else {
+      // current() may be null in tests. Silently drop messages sent over
+      // ServiceWorkerContainerHost since we couldn't set it up correctly due
+      // to this test limitation. This way we don't crash when the associated
+      // interface ptr is used.
+      //
+      // TODO(falken): Just give ServiceWorkerProviderContext a null interface
+      // ptr and make the callsites deal with it. They are supposed to anyway
+      // because OnNetworkProviderDestroyed() can reset the ptr to null at any
+      // time.
+      mojo::AssociateWithDisconnectedPipe(host_info->host_request.PassHandle());
+    }
+  }
+  return provider;
+}
 
 WebServiceWorkerNetworkProviderImplForWorker::
-    ~WebServiceWorkerNetworkProviderImplForWorker() = default;
+    ~WebServiceWorkerNetworkProviderImplForWorker() {
+  if (context())
+    context()->OnNetworkProviderDestroyed();
+}
 
 void WebServiceWorkerNetworkProviderImplForWorker::WillSendRequest(
     blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_service_worker_provider_id(provider()->provider_id());
+  extra_data->set_service_worker_provider_id(provider_id());
   extra_data->set_initiated_in_secure_context(is_secure_context_);
   if (response_override_) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -50,10 +106,24 @@ void WebServiceWorkerNetworkProviderImplForWorker::WillSendRequest(
   // request and break the assumptions of the renderer.
   if (request.GetRequestContext() !=
           blink::mojom::RequestContextType::SHARED_WORKER &&
-      provider()->IsControlledByServiceWorker() ==
+      IsControlledByServiceWorker() ==
           blink::mojom::ControllerServiceWorkerMode::kNoController) {
     request.SetSkipServiceWorker(true);
   }
+}
+
+blink::mojom::ControllerServiceWorkerMode
+WebServiceWorkerNetworkProviderImplForWorker::IsControlledByServiceWorker() {
+  if (!context())
+    return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  return context()->IsControlledByServiceWorker();
+}
+
+int64_t
+WebServiceWorkerNetworkProviderImplForWorker::ControllerServiceWorkerID() {
+  if (!context())
+    return blink::mojom::kInvalidServiceWorkerVersionId;
+  return context()->GetControllerVersionId();
 }
 
 std::unique_ptr<blink::WebURLLoader>
@@ -72,7 +142,7 @@ WebServiceWorkerNetworkProviderImplForWorker::CreateURLLoader(
     return nullptr;
   }
   // If the request is for the main script, use the script_loader_factory.
-  if (provider()->script_loader_factory() &&
+  if (script_loader_factory_ &&
       request.GetRequestContext() ==
           blink::mojom::RequestContextType::SHARED_WORKER) {
     // TODO(crbug.com/796425): Temporarily wrap the raw
@@ -80,13 +150,12 @@ WebServiceWorkerNetworkProviderImplForWorker::CreateURLLoader(
     return std::make_unique<WebURLLoaderImpl>(
         render_thread->resource_dispatcher(), std::move(task_runner_handle),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            provider()->script_loader_factory()));
+            script_loader_factory_.get()));
   }
 
   // Otherwise, it's an importScript. Use the subresource loader factory if it
   // exists (we are controlled by a service worker).
-  if (!provider()->context() ||
-      !provider()->context()->GetSubresourceLoaderFactory()) {
+  if (!context() || !context()->GetSubresourceLoaderFactory()) {
     return nullptr;
   }
 
@@ -113,7 +182,20 @@ WebServiceWorkerNetworkProviderImplForWorker::CreateURLLoader(
       RenderThreadImpl::current()->resource_dispatcher(),
       std::move(task_runner_handle),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          provider()->context()->GetSubresourceLoaderFactory()));
+          context()->GetSubresourceLoaderFactory()));
 }
+
+int WebServiceWorkerNetworkProviderImplForWorker::provider_id() const {
+  if (!context_)
+    return kInvalidServiceWorkerProviderId;
+  return context_->provider_id();
+}
+
+WebServiceWorkerNetworkProviderImplForWorker::
+    WebServiceWorkerNetworkProviderImplForWorker(
+        bool is_secure_context,
+        std::unique_ptr<NavigationResponseOverrideParameters> response_override)
+    : is_secure_context_(is_secure_context),
+      response_override_(std::move(response_override)) {}
 
 }  // namespace content

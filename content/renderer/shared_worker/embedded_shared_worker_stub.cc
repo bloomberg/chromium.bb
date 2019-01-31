@@ -253,21 +253,18 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider =
-      ServiceWorkerNetworkProvider::CreateForSharedWorker(
-          std::move(service_worker_provider_info_),
-          std::move(main_script_loader_factory_), std::move(controller_info_),
-          subresource_loader_factories_);
-
-  return std::make_unique<WebServiceWorkerNetworkProviderImplForWorker>(
-      std::move(provider), IsOriginSecure(url_), std::move(response_override_));
+  return WebServiceWorkerNetworkProviderImplForWorker::Create(
+      std::move(service_worker_provider_info_),
+      std::move(main_script_loader_factory_), std::move(controller_info_),
+      subresource_loader_factories_, IsOriginSecure(url_),
+      std::move(response_override_));
 }
 
 void EmbeddedSharedWorkerStub::WaitForServiceWorkerControllerInfo(
     blink::WebServiceWorkerNetworkProvider* web_network_provider,
     base::OnceClosure callback) {
   ServiceWorkerProviderContext* context =
-      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+      static_cast<WebServiceWorkerNetworkProviderImplForWorker*>(
           web_network_provider)
           ->context();
   context->PingContainerHost(std::move(callback));
@@ -277,8 +274,8 @@ scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(web_network_provider);
-  ServiceWorkerNetworkProvider* network_provider =
-      ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
+  WebServiceWorkerNetworkProviderImplForWorker* network_provider =
+      static_cast<WebServiceWorkerNetworkProviderImplForWorker*>(
           web_network_provider);
 
   // Make the factory used for service worker network fallback (that should
@@ -288,7 +285,7 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
-          network_provider, std::move(renderer_preferences_),
+          network_provider->context(), std::move(renderer_preferences_),
           std::move(preference_watcher_request_),
           subresource_loader_factories_->Clone(), std::move(fallback_factory));
 
