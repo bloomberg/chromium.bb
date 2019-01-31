@@ -73,7 +73,7 @@ class GFX_EXPORT ImageSkiaRep {
   // ImageRep is |kImageTypeDrawable|.
   sk_sp<cc::PaintRecord> GetPaintRecord() const;
 
-  const cc::PaintImage& paint_image() const { return paint_image_; };
+  const cc::PaintImage& paint_image() const { return paint_image_; }
   bool has_paint_image() const { return !!paint_image_; }
 
  private:

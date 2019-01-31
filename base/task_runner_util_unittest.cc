@@ -53,7 +53,7 @@ struct FooDeleter {
   void operator()(Foo* foo) const {
     ++g_foo_free_count;
     delete foo;
-  };
+  }
 };
 
 std::unique_ptr<Foo, FooDeleter> CreateScopedFoo() {

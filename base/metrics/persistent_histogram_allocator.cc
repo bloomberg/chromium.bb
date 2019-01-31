@@ -925,7 +925,7 @@ GlobalHistogramAllocator::ReleaseForTesting() {
 
   subtle::Release_Store(&g_histogram_allocator, 0);
   return WrapUnique(histogram_allocator);
-};
+}
 
 void GlobalHistogramAllocator::SetPersistentLocation(const FilePath& location) {
   persistent_location_ = location;

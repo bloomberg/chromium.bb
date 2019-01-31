@@ -498,7 +498,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
 class MockedControllableCleanupDelegate : public ControllableCleanupDelegate {
  public:
   MockedControllableCleanupDelegate(TaskTracker* task_tracker)
-      : ControllableCleanupDelegate(task_tracker){};
+      : ControllableCleanupDelegate(task_tracker) {}
   ~MockedControllableCleanupDelegate() override = default;
 
   // SchedulerWorker::Delegate:

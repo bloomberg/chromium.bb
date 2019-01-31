@@ -33,7 +33,7 @@ GestureEventDataPacket::GestureSource ToGestureSource(
     case ui::MotionEvent::Action::BUTTON_RELEASE:
       NOTREACHED();
       return GestureEventDataPacket::INVALID;
-  };
+  }
   NOTREACHED();
   return GestureEventDataPacket::INVALID;
 }
