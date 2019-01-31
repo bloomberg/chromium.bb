@@ -294,6 +294,7 @@ void V4L2VideoDecodeAccelerator::InitializeTask() {
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kInitialized);
+  TRACE_EVENT0("media,gpu", "V4L2VDA::InitializeTask");
 
   if (IsDestroyPending())
     return;
@@ -356,6 +357,8 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kAwaitingPictureBuffers);
   DCHECK(output_queue_);
+  TRACE_EVENT1("media,gpu", "V4L2VDA::AssignPictureBuffersTask", "buffers_size",
+               buffers.size());
 
   if (IsDestroyPending())
     return;
@@ -619,6 +622,9 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
             << ", dmabuf_fds.size()=" << dmabuf_fds.size()
             << ", stride=" << stride;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  TRACE_EVENT2("media,gpu", "V4L2VDA::ImportBufferForPictureTask",
+               "picture_buffer_id", picture_buffer_id, "dmabuf_fds_size",
+               dmabuf_fds.size());
 
   if (IsDestroyPending())
     return;
@@ -821,7 +827,6 @@ void V4L2VideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
   DVLOGF(4) << "input_id=" << bitstream_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(decoder_state_, kUninitialized);
-  TRACE_EVENT1("media,gpu", "V4L2VDA::DecodeTask", "input_id", bitstream_id);
 
   if (IsDestroyPending())
     return;
@@ -1213,6 +1218,9 @@ bool V4L2VideoDecodeAccelerator::FlushInputFrame() {
   // Enqueue once since there's new available input for it.
   Enqueue();
 
+  TRACE_COUNTER_ID1("media,gpu", "V4L2VDA input ready buffers", this,
+                    input_ready_queue_.size());
+
   return (decoder_state_ != kError);
 }
 
@@ -1310,7 +1318,6 @@ void V4L2VideoDecodeAccelerator::Enqueue() {
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK(input_queue_);
   DCHECK(output_queue_);
-  TRACE_EVENT0("media,gpu", "V4L2VDA::Enqueue");
 
   // Drain the pipe of completed decode buffers.
   const int old_inputs_queued = input_queue_->QueuedBuffersCount();
@@ -1425,7 +1432,6 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK(input_queue_);
   DCHECK(output_queue_);
-  TRACE_EVENT0("media,gpu", "V4L2VDA::Dequeue");
 
   while (input_queue_->QueuedBuffersCount() > 0) {
     if (!DequeueInputBuffer())
@@ -1601,7 +1607,6 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
     std::unique_ptr<gl::GLFenceEGL> egl_fence) {
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  TRACE_EVENT0("media,gpu", "V4L2VDA::ReusePictureBufferTask");
 
   if (IsDestroyPending())
     return;
@@ -1646,12 +1651,20 @@ void V4L2VideoDecodeAccelerator::ReusePictureBufferTask(
 
   // We got a buffer back, so enqueue it back.
   Enqueue();
+
+  TRACE_COUNTER_ID2(
+      "media,gpu", "V4L2 output buffers", this, "in client",
+      GetNumOfRecordsInState(kAtClient), "in vda",
+      output_buffer_map_.size() - GetNumOfRecordsInState(kAtClient));
+  TRACE_COUNTER_ID2(
+      "media,gpu", "V4L2 output buffers in vda", this, "free",
+      GetNumOfRecordsInState(kFree), "in device or IP",
+      GetNumOfRecordsInState(kAtDevice) + GetNumOfRecordsInState(kAtProcessor));
 }
 
 void V4L2VideoDecodeAccelerator::FlushTask() {
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  TRACE_EVENT0("media,gpu", "V4L2VDA::FlushTask");
 
   if (IsDestroyPending())
     return;
@@ -1660,6 +1673,8 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
     VLOGF(2) << "early out: kError state";
     return;
   }
+
+  TRACE_EVENT_ASYNC_BEGIN0("media,gpu", "V4L2VDA::FlushTask", this);
 
   // We don't support stacked flushing.
   DCHECK(!decoder_flushing_);
@@ -1730,6 +1745,7 @@ void V4L2VideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
 }
 
 void V4L2VideoDecodeAccelerator::NofityFlushDone() {
+  TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2VDA::FlushTask", this);
   decoder_delay_bitstream_buffer_id_ = -1;
   decoder_flushing_ = false;
   VLOGF(2) << "returning flush";
@@ -1769,7 +1785,6 @@ bool V4L2VideoDecodeAccelerator::SendDecoderCmdStop() {
 void V4L2VideoDecodeAccelerator::ResetTask() {
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  TRACE_EVENT0("media,gpu", "V4L2VDA::ResetTask");
 
   if (IsDestroyPending())
     return;
@@ -1778,6 +1793,9 @@ void V4L2VideoDecodeAccelerator::ResetTask() {
     VLOGF(2) << "early out: kError state";
     return;
   }
+
+  TRACE_EVENT_ASYNC_BEGIN0("media,gpu", "V4L2VDA::ResetTask", this);
+
   decoder_current_bitstream_buffer_.reset();
   while (!decoder_input_queue_.empty())
     decoder_input_queue_.pop_front();
@@ -1843,7 +1861,6 @@ void V4L2VideoDecodeAccelerator::FinishReset() {
 void V4L2VideoDecodeAccelerator::ResetDoneTask() {
   VLOGF(2);
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  TRACE_EVENT0("media,gpu", "V4L2VDA::ResetDoneTask");
 
   if (IsDestroyPending())
     return;
@@ -1852,6 +1869,8 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
     VLOGF(2) << "early out: kError state";
     return;
   }
+
+  TRACE_EVENT_ASYNC_END0("media,gpu", "V4L2VDA::ResetTask", this);
 
   // Start poll thread if NotifyFlushDoneIfNeeded has not already.
   if (!device_poll_thread_.IsRunning()) {
@@ -2763,6 +2782,14 @@ void V4L2VideoDecodeAccelerator::ImageProcessorError() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
   VLOGF(1) << "Image processor error";
   NOTIFY_ERROR(PLATFORM_FAILURE);
+}
+
+size_t V4L2VideoDecodeAccelerator::GetNumOfRecordsInState(
+    OutputRecordState state) const {
+  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
+  return std::count_if(
+      output_buffer_map_.begin(), output_buffer_map_.end(),
+      [state = state](const auto& r) { return r.state == state; });
 }
 
 bool V4L2VideoDecodeAccelerator::OnMemoryDump(
