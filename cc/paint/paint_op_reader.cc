@@ -33,17 +33,9 @@ bool IsValidPaintShaderType(PaintShader::Type type) {
          static_cast<uint8_t>(PaintShader::Type::kShaderCount);
 }
 
-// SkShader::TileMode has no defined backing type, so read/write int32_t's.
-// If read_mode is a valid tile mode, this returns true and updates mode to the
-// equivalent enum value. Otherwise false is returned and mode is not modified.
-bool ValidateAndGetSkShaderTileMode(int32_t read_mode,
-                                    SkShader::TileMode* mode) {
-  if (read_mode < 0 || read_mode >= SkShader::kTileModeCount) {
-    return false;
-  }
-
-  *mode = static_cast<SkShader::TileMode>(read_mode);
-  return true;
+bool IsValidSkShaderTileMode(SkShader::TileMode mode) {
+  // When Skia adds Decal, update this (skbug.com/7638)
+  return mode <= SkShader::kMirror_TileMode;
 }
 
 bool IsValidPaintShaderScalingBehavior(PaintShader::ScalingBehavior behavior) {
@@ -468,14 +460,10 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   ReadSimple(&ref.flags_);
   ReadSimple(&ref.end_radius_);
   ReadSimple(&ref.start_radius_);
-
-  int32_t tx, ty;  // See ValidateAndGetSkShaderTileMode
-  Read(&tx);
-  Read(&ty);
-  if (!ValidateAndGetSkShaderTileMode(tx, &ref.tx_) ||
-      !ValidateAndGetSkShaderTileMode(ty, &ref.ty_)) {
+  ReadSimple(&ref.tx_);
+  ReadSimple(&ref.ty_);
+  if (!IsValidSkShaderTileMode(ref.tx_) || !IsValidSkShaderTileMode(ref.ty_))
     SetInvalid();
-  }
   ReadSimple(&ref.fallback_color_);
   ReadSimple(&ref.scaling_behavior_);
   if (!IsValidPaintShaderScalingBehavior(ref.scaling_behavior_))
