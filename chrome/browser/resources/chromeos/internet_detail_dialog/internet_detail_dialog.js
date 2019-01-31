@@ -30,6 +30,18 @@ Polymer({
       type: Object,
       value: chrome.networkingPrivate,
     },
+
+    /**
+     * Whether to show technology badge on mobile network icons.
+     * @private
+     */
+    showTechnologyBadge_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('showTechnologyBadge') &&
+            loadTimeData.getBoolean('showTechnologyBadge');
+      }
+    },
   },
 
   /**
