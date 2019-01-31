@@ -27,7 +27,7 @@
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -104,10 +104,7 @@ TestingProfile* TestWithBrowserView::CreateProfile() {
       profile, base::BindRepeating(&CreateAutocompleteClassifier));
 
   // Configure the GaiaCookieManagerService to return no accounts.
-  FakeGaiaCookieManagerService* gcms =
-      static_cast<FakeGaiaCookieManagerService*>(
-          GaiaCookieManagerServiceFactory::GetForProfile(profile));
-  gcms->SetListAccountsResponseHttpNotFound();
+  signin::SetListAccountsResponseHttpNotFound(test_url_loader_factory());
   return profile;
 }
 
@@ -119,6 +116,6 @@ BrowserWindow* TestWithBrowserView::CreateBrowserWindow() {
 
 TestingProfile::TestingFactories TestWithBrowserView::GetTestingFactories() {
   return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+           base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
                                test_url_loader_factory())}};
 }
