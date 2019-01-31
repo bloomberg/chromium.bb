@@ -12,6 +12,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/usb/public/cpp/fake_usb_device.h"
 #include "device/usb/public/cpp/usb_utils.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
 
 namespace device {
 
