@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 
 using blink::MessagePortChannel;
 
