@@ -161,7 +161,7 @@ class IDLLexer(object):
 
   # A symbol or keyword.
   def t_KEYWORD_OR_SYMBOL(self, t):
-    r'_?[A-Za-z][A-Za-z_0-9-]*'
+    r'[_-]?[A-Za-z][A-Za-z_0-9-]*'
 
     # All non-keywords are assumed to be symbols
     t.type = self.keywords.get(t.value, 'identifier')
