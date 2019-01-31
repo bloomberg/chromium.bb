@@ -14,6 +14,7 @@
 #include "components/prefs/pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 #include "services/device/public/mojom/public_ip_address_geolocation_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
