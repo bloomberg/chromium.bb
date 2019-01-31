@@ -34,8 +34,22 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "url/url_constants.h"
 
 namespace payments {
+namespace {
+
+base::string16 GetPaymentHandlerDialogTitle(
+    content::WebContents* web_contents,
+    const base::string16& https_prefix) {
+  return web_contents == nullptr ||
+                 base::StartsWith(web_contents->GetTitle(), https_prefix,
+                                  base::CompareCase::SENSITIVE)
+             ? base::string16()
+             : web_contents->GetTitle();
+}
+
+}  // namespace
 
 class ReadOnlyOriginView : public views::View {
  public:
@@ -144,7 +158,9 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
           std::make_unique<views::ProgressBar>(/*preferred_height=*/2)),
       separator_(std::make_unique<views::Separator>()),
       first_navigation_complete_callback_(
-          std::move(first_navigation_complete_callback)) {
+          std::move(first_navigation_complete_callback)),
+      https_prefix_(base::UTF8ToUTF16(url::kHttpsScheme) +
+                    base::UTF8ToUTF16(url::kStandardSchemeSeparator)) {
   progress_bar_->set_owned_by_client();
   progress_bar_->set_foreground_color(gfx::kGoogleBlue500);
   progress_bar_->set_background_color(SK_ColorTRANSPARENT);
@@ -156,10 +172,7 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
 PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {}
 
 base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
-  if (web_contents())
-    return web_contents()->GetTitle();
-
-  return l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+  return GetPaymentHandlerDialogTitle(web_contents(), https_prefix_);
 }
 
 void PaymentHandlerWebFlowViewController::FillContentView(
@@ -191,8 +204,8 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
                           : target_.GetOrigin();
   std::unique_ptr<views::Background> background = GetHeaderBackground();
   return std::make_unique<ReadOnlyOriginView>(
-      web_contents() == nullptr ? base::string16() : web_contents()->GetTitle(),
-      origin, state()->selected_instrument()->icon_image_skia(),
+      GetPaymentHandlerDialogTitle(web_contents(), https_prefix_), origin,
+      state()->selected_instrument()->icon_image_skia(),
       background->get_color(), this);
 }
 
