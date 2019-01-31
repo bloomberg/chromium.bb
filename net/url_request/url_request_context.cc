@@ -156,8 +156,6 @@ void URLRequestContext::AssertNoURLRequests() const {
 bool URLRequestContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(pmd);
-
   std::string dump_name =
       base::StringPrintf("net/url_request_context/%s/0x%" PRIxPTR,
                          name_.c_str(), reinterpret_cast<uintptr_t>(this));

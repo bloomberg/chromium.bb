@@ -168,6 +168,4 @@ std::unique_ptr<ProxyClientSocket> FuzzedSocketFactory::CreateProxyClientSocket(
   return nullptr;
 }
 
-void FuzzedSocketFactory::ClearSSLSessionCache() {}
-
 }  // namespace net

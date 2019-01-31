@@ -61,6 +61,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -791,13 +792,16 @@ class SSLClientSocketTest : public PlatformTest,
         cert_verifier_(new MockCertVerifier),
         transport_security_state_(new TransportSecurityState),
         ct_verifier_(new DoNothingCTVerifier),
-        ct_policy_enforcer_(new MockCTPolicyEnforcer) {
+        ct_policy_enforcer_(new MockCTPolicyEnforcer),
+        ssl_client_session_cache_(
+            new SSLClientSessionCache(SSLClientSessionCache::Config())) {
     cert_verifier_->set_default_result(OK);
     context_.cert_verifier = cert_verifier_.get();
     context_.transport_security_state = transport_security_state_.get();
     context_.cert_transparency_verifier = ct_verifier_.get();
     context_.ct_policy_enforcer = ct_policy_enforcer_.get();
-    // Set a dummy session cache shard to enable session caching.
+    // Set a dummy session cache (and shard) to enable session caching.
+    context_.ssl_client_session_cache = ssl_client_session_cache_.get();
     context_.ssl_session_cache_shard = "shard";
 
     EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -911,6 +915,7 @@ class SSLClientSocketTest : public PlatformTest,
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   std::unique_ptr<DoNothingCTVerifier> ct_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
+  std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
   SSLClientSocketContext context_;
   std::unique_ptr<SSLClientSocket> sock_;
   TestNetLog log_;
@@ -2435,12 +2440,6 @@ TEST_F(SSLClientSocketTest, ExportKeyingMaterial) {
   EXPECT_NE(memcmp(client_out1, client_out2, kKeyingMaterialSize), 0);
 }
 
-// Verifies that SSLClientSocket::ClearSessionCache can be called without
-// explicit NSS initialization.
-TEST(SSLClientSocket, ClearSessionCache) {
-  SSLClientSocket::ClearSessionCache();
-}
-
 TEST(SSLClientSocket, SerializeNextProtos) {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
@@ -3018,7 +3017,7 @@ TEST_F(SSLClientSocketTest, SessionResumption) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
   sock.reset();
 
-  SSLClientSocket::ClearSessionCache();
+  context_.ssl_client_session_cache->Flush();
 
   // After clearing the session cache, the next handshake doesn't resume.
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -4823,18 +4822,6 @@ TEST_F(SSLClientSocketTest, SessionCacheShard) {
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
-
-  // The empty shard never resumes.
-  context_.ssl_session_cache_shard = "";
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  ASSERT_THAT(rv, IsOk());
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  ASSERT_THAT(rv, IsOk());
-  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
-  EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
 }
 
 TEST_F(SSLClientSocketTest, Tag) {

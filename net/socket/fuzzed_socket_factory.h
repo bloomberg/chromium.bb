@@ -65,8 +65,6 @@ class FuzzedSocketFactory : public ClientSocketFactory {
       bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
-  void ClearSSLSessionCache() override;
-
   // Sets whether Connect()ions on returned sockets can be asynchronously
   // delayed or outright fail. Defaults to true.
   void set_fuzz_connect_result(bool v) { fuzz_connect_result_ = v; }

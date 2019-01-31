@@ -276,10 +276,6 @@ class MockSocketFactory : public ClientSocketFactory {
     ADD_FAILURE() << "Called CreateProxyClientSocket()";
     return nullptr;
   }
-  void ClearSSLSessionCache() override {
-    ADD_FAILURE() << "Called ClearSSLSessionCache()";
-  }
-
  private:
   std::vector<std::unique_ptr<MockUDPSocket>> udp_sockets_;
 

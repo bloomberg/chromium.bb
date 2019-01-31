@@ -469,10 +469,6 @@ MockTransportClientSocketFactory::CreateProxyClientSocket(
   return nullptr;
 }
 
-void MockTransportClientSocketFactory::ClearSSLSessionCache() {
-  NOTIMPLEMENTED();
-}
-
 void MockTransportClientSocketFactory::set_client_socket_types(
     ClientSocketType* type_list,
     int num_types) {

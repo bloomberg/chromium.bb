@@ -41,12 +41,10 @@ namespace net {
 
 namespace {
 
-base::AtomicSequenceNumber g_next_shard_id;
-
 std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
     HttpNetworkSession::SocketPoolType pool_type,
     const HttpNetworkSession::Context& context,
-    const std::string& ssl_session_cache_shard,
+    SSLClientSessionCache* ssl_client_session_cache,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager) {
   // TODO(yutak): Differentiate WebSocket pool manager and allow more
   // simultaneous connections for WebSockets.
@@ -58,7 +56,7 @@ std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
       context.network_quality_estimator, context.host_resolver,
       context.cert_verifier, context.channel_id_service,
       context.transport_security_state, context.cert_transparency_verifier,
-      context.ct_policy_enforcer, ssl_session_cache_shard,
+      context.ct_policy_enforcer, ssl_client_session_cache,
       context.ssl_config_service, websocket_endpoint_lock_manager,
       context.proxy_delegate, pool_type);
 }
@@ -194,6 +192,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
 #endif
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
+      ssl_client_session_cache_(SSLClientSessionCache::Config()),
       push_delegate_(nullptr),
       quic_stream_factory_(
           context.net_log,
@@ -257,13 +256,11 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   DCHECK(ssl_config_service_);
   CHECK(http_server_properties_);
 
-  const std::string ssl_session_cache_shard =
-      "http_network_session/" + base::IntToString(g_next_shard_id.GetNext());
   normal_socket_pool_manager_ = CreateSocketPoolManager(
-      NORMAL_SOCKET_POOL, context, ssl_session_cache_shard,
+      NORMAL_SOCKET_POOL, context, &ssl_client_session_cache_,
       &websocket_endpoint_lock_manager_);
   websocket_socket_pool_manager_ = CreateSocketPoolManager(
-      WEBSOCKET_SOCKET_POOL, context, ssl_session_cache_shard,
+      WEBSOCKET_SOCKET_POOL, context, &ssl_client_session_cache_,
       &websocket_endpoint_lock_manager_);
 
   if (params_.enable_http2) {
@@ -490,6 +487,7 @@ void HttpNetworkSession::DumpMemoryStats(
     }
     quic_stream_factory_.DumpMemoryStats(
         pmd, http_network_session_dump->absolute_name());
+    ssl_client_session_cache_.DumpMemoryStats(pmd, name);
   }
 
   // Create an empty row under parent's dump so size can be attributed correctly
@@ -507,6 +505,10 @@ bool HttpNetworkSession::IsQuicEnabled() const {
 
 void HttpNetworkSession::DisableQuic() {
   params_.enable_quic = false;
+}
+
+void HttpNetworkSession::ClearSSLSessionCache() {
+  ssl_client_session_cache_.Flush();
 }
 
 ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(

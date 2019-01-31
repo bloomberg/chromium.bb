@@ -106,6 +106,7 @@ TransportClientSocketPool::TransportClientSocketPool(
                                        transport_security_state,
                                        cert_transparency_verifier,
                                        ct_policy_enforcer,
+                                       nullptr,
                                        ssl_session_cache_shard),
                 socket_performance_watcher_factory,
                 network_quality_estimator,

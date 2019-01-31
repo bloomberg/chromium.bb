@@ -69,8 +69,6 @@ class TestClientSocketFactory : public ClientSocketFactory {
     return nullptr;
   }
 
-  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
-
  private:
   std::list<std::unique_ptr<SocketDataProvider>> data_providers_;
 };

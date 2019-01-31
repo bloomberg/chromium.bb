@@ -95,6 +95,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                    &transport_security_state_,
                                    &ct_verifier_,
                                    &ct_policy_enforcer_,
+                                   nullptr /* ssl_client_session_cache */,
                                    std::string() /* ssl_session_cache_shard */),
         direct_transport_socket_params_(
             new TransportSocketParams(HostPortPair("host", 443),

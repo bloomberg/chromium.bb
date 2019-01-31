@@ -25,6 +25,7 @@ class CTPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class CTVerifier;
+class SSLClientSessionCache;
 class SSLKeyLogger;
 class TransportSecurityState;
 
@@ -37,12 +38,14 @@ struct SSLClientSocketContext {
                          TransportSecurityState* transport_security_state_arg,
                          CTVerifier* cert_transparency_verifier_arg,
                          CTPolicyEnforcer* ct_policy_enforcer_arg,
+                         SSLClientSessionCache* ssl_client_session_cache_arg,
                          const std::string& ssl_session_cache_shard_arg)
       : cert_verifier(cert_verifier_arg),
         channel_id_service(channel_id_service_arg),
         transport_security_state(transport_security_state_arg),
         cert_transparency_verifier(cert_transparency_verifier_arg),
         ct_policy_enforcer(ct_policy_enforcer_arg),
+        ssl_client_session_cache(ssl_client_session_cache_arg),
         ssl_session_cache_shard(ssl_session_cache_shard_arg) {}
 
   CertVerifier* cert_verifier = nullptr;
@@ -50,6 +53,7 @@ struct SSLClientSocketContext {
   TransportSecurityState* transport_security_state = nullptr;
   CTVerifier* cert_transparency_verifier = nullptr;
   CTPolicyEnforcer* ct_policy_enforcer = nullptr;
+  SSLClientSessionCache* ssl_client_session_cache = nullptr;
   // ssl_session_cache_shard is an opaque string that identifies a shard of the
   // SSL session cache. SSL sockets with the same ssl_session_cache_shard may
   // resume each other's SSL sessions but we'll never sessions between shards.

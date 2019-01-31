@@ -333,7 +333,7 @@ int SSLConnectJob::DoSSLConnect() {
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
   // If privacy mode is enabled and the session shard is non-empty, prefix the
-  // SSL session shard with "pm/"
+  // SSL session shard with "pm/". Otherwise, prefix with "nopm/".
   // TODO(mmenke): Consider moving this up to the socket pool layer, after
   // giving socket pools knowledge of privacy mode.
   SSLClientSocketContext context_with_privacy_mode(
@@ -342,10 +342,9 @@ int SSLConnectJob::DoSSLConnect() {
       ssl_client_socket_context().transport_security_state,
       ssl_client_socket_context().cert_transparency_verifier,
       ssl_client_socket_context().ct_policy_enforcer,
-      (!ssl_client_socket_context().ssl_session_cache_shard.empty() &&
-               params_->privacy_mode() == PRIVACY_MODE_ENABLED
-           ? "pm/" + ssl_client_socket_context().ssl_session_cache_shard
-           : ssl_client_socket_context().ssl_session_cache_shard));
+      ssl_client_socket_context().ssl_client_session_cache,
+      (params_->privacy_mode() == PRIVACY_MODE_ENABLED ? "pm/" : "nopm/") +
+          ssl_client_socket_context().ssl_session_cache_shard);
   ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
       std::move(transport_socket_handle_), params_->host_and_port(),
       params_->ssl_config(), context_with_privacy_mode);

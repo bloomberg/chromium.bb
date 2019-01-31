@@ -435,11 +435,17 @@ TEST_P(SSLClientSessionCacheMemoryDumpTest, TestDumpMemoryStats) {
   base::trace_event::MemoryDumpArgs dump_args = {GetParam()};
   std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(dump_args));
-  cache.DumpMemoryStats(process_memory_dump.get());
+
+  const std::string parent_absolute_name =
+      "net/http_network_session_0xdeadbeef";
+  const std::string expected_dump_name =
+      parent_absolute_name + "/ssl_client_session_cache";
+
+  cache.DumpMemoryStats(process_memory_dump.get(), parent_absolute_name);
 
   using Entry = base::trace_event::MemoryAllocatorDump::Entry;
   const base::trace_event::MemoryAllocatorDump* dump =
-      process_memory_dump->GetAllocatorDump("net/ssl_session_cache");
+      process_memory_dump->GetAllocatorDump(expected_dump_name);
   ASSERT_NE(nullptr, dump);
   const std::vector<Entry>& entries = dump->entries();
   EXPECT_THAT(entries, Contains(Field(&Entry::name, Eq("cert_count"))));

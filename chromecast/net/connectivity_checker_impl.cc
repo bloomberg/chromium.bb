@@ -232,7 +232,9 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
   }
   DCHECK(task_runner_->BelongsToCurrentThread());
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
-  net::SSLClientSocket::ClearSessionCache();
+  url_request_context_->http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
   OnUrlRequestError(ErrorType::SSL_CERTIFICATE_ERROR);
   timeout_.Cancel();
 }

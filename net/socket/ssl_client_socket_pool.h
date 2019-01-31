@@ -50,7 +50,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
                       TransportSecurityState* transport_security_state,
                       CTVerifier* cert_transparency_verifier,
                       CTPolicyEnforcer* ct_policy_enforcer,
-                      const std::string& ssl_session_cache_shard,
+                      SSLClientSessionCache* ssl_client_session_cache,
                       ClientSocketFactory* client_socket_factory,
                       TransportClientSocketPool* transport_pool,
                       TransportClientSocketPool* socks_pool,
