@@ -1351,8 +1351,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
 
 // TODO(crbug.com/840080, crbug.com/824533): Filesystem and
 // CacheStorage can't be deleted on exit correctly at the moment.
+// TODO(crbug.com/927312): LocalStorage deletion is flaky.
 const std::vector<std::string> kSessionOnlyStorageTestTypes{
-    "Cookie", "LocalStorage",
+    "Cookie",
+    // "LocalStorage",
     // "FileSystem",
     "SessionStorage", "IndexedDb", "WebSql", "ServiceWorker",
     // "CacheStorage",
