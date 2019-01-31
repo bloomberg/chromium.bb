@@ -662,6 +662,9 @@ FcConfigAddFontDir (FcConfig	    *config,
 		    const FcChar8   *d,
 		    const FcChar8   *m);
 
+FcPrivate FcBool
+FcConfigResetFontDirs (FcConfig *config);
+
 FcPrivate FcChar8 *
 FcConfigMapFontPath(FcConfig		*config,
 		    const FcChar8	*path);
@@ -1249,6 +1252,9 @@ FcStrPairSecond (FcChar8 *s);
 
 FcPrivate FcBool
 FcStrSetAddFilenamePair (FcStrSet *strs, const FcChar8 *d, const FcChar8 *m);
+
+FcPrivate FcBool
+FcStrSetDeleteAll (FcStrSet *set);
 
 FcPrivate void
 FcStrBufInit (FcStrBuf *buf, FcChar8 *init, int size);

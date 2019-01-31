@@ -545,6 +545,12 @@ FcConfigAddFontDir (FcConfig	    *config,
     return FcStrSetAddFilenamePair (config->fontDirs, d, m);
 }
 
+FcBool
+FcConfigResetFontDirs (FcConfig *config)
+{
+    return FcStrSetDeleteAll (config->fontDirs);
+}
+
 FcStrList *
 FcConfigGetFontDirs (FcConfig	*config)
 {

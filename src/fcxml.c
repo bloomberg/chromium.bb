@@ -359,6 +359,7 @@ typedef enum _FcElement {
     FcElementAlias,
     FcElementDescription,
     FcElementRemapDir,
+    FcElementResetDirs,
 	
     FcElementRescan,
 
@@ -423,6 +424,7 @@ static const struct {
     { "alias",		FcElementAlias },
     { "description",	FcElementDescription },
     { "remap-dir",	FcElementRemapDir },
+    { "reset-dirs",	FcElementResetDirs },
 
     { "rescan",		FcElementRescan },
 
@@ -2085,6 +2087,16 @@ FcParseRemapDir (FcConfigParse *parse)
 	FcStrFree (prefix);
 }
 
+static void
+FcParseResetDirs (FcConfigParse *parse)
+{
+    if (!parse->scanOnly)
+    {
+	if (!FcConfigResetFontDirs (parse->config))
+	    FcConfigMessage (parse, FcSevereError, "Unable to reset fonts dirs");
+    }
+}
+
 static FcExpr *
 FcPopExpr (FcConfigParse *parse)
 {
@@ -3064,6 +3076,9 @@ FcEndElement(void *userData, const XML_Char *name FC_UNUSED)
 	break;
     case FcElementRemapDir:
 	FcParseRemapDir (parse);
+	break;
+    case FcElementResetDirs:
+	FcParseResetDirs (parse);
 	break;
 
     case FcElementRescan:

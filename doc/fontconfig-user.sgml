@@ -359,6 +359,10 @@ This is useful if the directory name is an alias
 (via a bind mount or symlink) to another directory in the system for
 which cached font information is likely to exist.
   </para></refsect2>
+  <refsect2><title><literal>&lt;reset-dirs /&gt;</literal></title><para>
+This element removes all of fonts directories where added by <literal>&lt;dir&gt;</literal> elements.
+This is useful to override fonts directories from system to own fonts directories only.
+  </para></refsect2>
   <refsect2><title><literal>&lt;rescan&gt;</literal></title><para>
 The <literal>&lt;rescan&gt;</literal> element holds an <literal>&lt;int&gt;</literal> element which indicates the default
 interval between automatic checks for font configuration changes.

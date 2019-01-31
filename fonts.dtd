@@ -8,6 +8,7 @@
 		      include |
 		      match |
 		      remap-dir |
+		      reset-dirs |
 		      selectfont)* >
 
 <!-- 
@@ -119,6 +120,11 @@
           as-path   CDATA                       #REQUIRED
           prefix    (default|xdg|relative|cwd)  "default"
 	  xml:space (default|preserve)          "preserve">
+
+<!--
+    Reset the list of fonts directories
+-->
+<!ELEMENT reset-dirs >
 
 <!--
     Periodically rescan the font configuration and

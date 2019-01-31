@@ -1388,6 +1388,22 @@ FcStrSetDel (FcStrSet *set, const FcChar8 *s)
     return FcFalse;
 }
 
+FcBool
+FcStrSetDeleteAll (FcStrSet *set)
+{
+    int i;
+
+    if (FcRefIsConst (&set->ref))
+	return FcFalse;
+
+    for (i = set->num; i > 0; i--)
+    {
+	FcStrFree (set->strs[i - 1]);
+	set->num--;
+    }
+    return FcTrue;
+}
+
 /* TODO Make public */
 static FcStrSet *
 FcStrSetReference (FcStrSet *set)
