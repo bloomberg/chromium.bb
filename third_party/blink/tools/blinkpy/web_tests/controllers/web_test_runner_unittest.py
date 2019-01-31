@@ -27,6 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import sys
 import unittest
 
 from blinkpy.common.host_mock import MockHost
@@ -79,6 +80,9 @@ class LockCheckingRunner(WebTestRunner):
         self._should_have_http_lock = http_lock
 
 
+# TODO(crbug.com/926841): Debug running this test on Swarming on Windows.
+# Ensure that all child processes are always cleaned up.
+@unittest.skipIf(sys.platform == 'win32', 'may not clean up child processes')
 class WebTestRunnerTests(unittest.TestCase):
 
     # pylint: disable=protected-access
