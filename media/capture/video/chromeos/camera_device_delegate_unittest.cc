@@ -88,21 +88,7 @@ class MockCameraDevice : public cros::mojom::Camera3DeviceOps {
                       uint32_t height,
                       const std::vector<uint32_t>& strides,
                       const std::vector<uint32_t>& offsets,
-                      RegisterBufferCallback callback) override {
-    DoRegisterBuffer(buffer_id, type, fds, drm_format, hal_pixel_format, width,
-                     height, strides, offsets, callback);
-  }
-  MOCK_METHOD10(DoRegisterBuffer,
-                void(uint64_t buffer_id,
-                     cros::mojom::Camera3DeviceOps::BufferType type,
-                     std::vector<mojo::ScopedHandle>& fds,
-                     uint32_t drm_format,
-                     cros::mojom::HalPixelFormat hal_pixel_format,
-                     uint32_t width,
-                     uint32_t height,
-                     const std::vector<uint32_t>& strides,
-                     const std::vector<uint32_t>& offsets,
-                     RegisterBufferCallback& callback));
+                      RegisterBufferCallback callback) override {}
 
   void Close(CloseCallback callback) override { DoClose(callback); }
   MOCK_METHOD1(DoClose, void(CloseCallback& callback));
@@ -265,19 +251,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     std::move(callback).Run(std::move(fake_settings));
   }
 
-  void RegisterBuffer(uint64_t buffer_id,
-                      cros::mojom::Camera3DeviceOps::BufferType type,
-                      std::vector<mojo::ScopedHandle>& fds,
-                      uint32_t drm_format,
-                      cros::mojom::HalPixelFormat hal_pixel_format,
-                      uint32_t width,
-                      uint32_t height,
-                      const std::vector<uint32_t>& strides,
-                      const std::vector<uint32_t>& offsets,
-                      base::OnceCallback<void(int32_t)>& callback) {
-    std::move(callback).Run(0);
-  }
-
   void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr& request,
                              base::OnceCallback<void(int32_t)>& callback) {
     std::move(callback).Run(0);
@@ -378,12 +351,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   }
 
   void SetUpExpectationForCaptureLoop() {
-    EXPECT_CALL(mock_camera_device_,
-                DoRegisterBuffer(_, _, _, _, _, _, _, _, _, _))
-        .Times(AtLeast(1))
-        .WillOnce(Invoke(this, &CameraDeviceDelegateTest::RegisterBuffer))
-        .WillRepeatedly(
-            Invoke(this, &CameraDeviceDelegateTest::RegisterBuffer));
     EXPECT_CALL(mock_camera_device_, DoProcessCaptureRequest(_, _))
         .Times(AtLeast(1))
         .WillOnce(

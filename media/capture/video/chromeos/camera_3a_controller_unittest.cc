@@ -8,7 +8,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
-#include "media/capture/video/chromeos/stream_buffer_manager.h"
+#include "media/capture/video/chromeos/request_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

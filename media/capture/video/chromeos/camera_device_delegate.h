@@ -20,13 +20,15 @@ namespace media {
 class Camera3AController;
 class CameraDeviceContext;
 class CameraHalDelegate;
-class StreamBufferManager;
+class RequestManager;
 
 enum class StreamType : uint64_t {
   kPreview = 0,
   kStillCapture = 1,
   kUnknown,
 };
+
+StreamType StreamIdToStreamType(uint64_t stream_id);
 
 std::string StreamTypeToString(StreamType stream_type);
 
@@ -45,16 +47,6 @@ class CAPTURE_EXPORT StreamCaptureInterface {
   };
 
   virtual ~StreamCaptureInterface() {}
-
-  // Registers a buffer to the camera HAL.
-  virtual void RegisterBuffer(uint64_t buffer_id,
-                              cros::mojom::Camera3DeviceOps::BufferType type,
-                              uint32_t drm_format,
-                              cros::mojom::HalPixelFormat hal_pixel_format,
-                              uint32_t width,
-                              uint32_t height,
-                              std::vector<Plane> planes,
-                              base::OnceCallback<void(int32_t)> callback) = 0;
 
   // Sends a capture request to the camera HAL.
   virtual void ProcessCaptureRequest(
@@ -153,14 +145,6 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   // StreamCaptureInterface implementations.  These methods are called by
   // |stream_buffer_manager_| on |ipc_task_runner_|.
-  void RegisterBuffer(uint64_t buffer_id,
-                      cros::mojom::Camera3DeviceOps::BufferType type,
-                      uint32_t drm_format,
-                      cros::mojom::HalPixelFormat hal_pixel_format,
-                      uint32_t width,
-                      uint32_t height,
-                      std::vector<StreamCaptureInterface::Plane> planes,
-                      base::OnceCallback<void(int32_t)> callback);
   void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr request,
                              base::OnceCallback<void(int32_t)> callback);
   void Flush(base::OnceCallback<void(int32_t)> callback);
@@ -180,7 +164,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   std::queue<VideoCaptureDevice::TakePhotoCallback> take_photo_callbacks_;
 
-  std::unique_ptr<StreamBufferManager> stream_buffer_manager_;
+  std::unique_ptr<RequestManager> request_manager_;
 
   std::unique_ptr<Camera3AController> camera_3a_controller_;
 

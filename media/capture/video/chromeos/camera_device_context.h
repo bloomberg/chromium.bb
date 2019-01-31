@@ -122,7 +122,7 @@ class CAPTURE_EXPORT CameraDeviceContext {
   int GetCameraFrameOrientation();
 
  private:
-  friend class StreamBufferManagerTest;
+  friend class RequestManagerTest;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
