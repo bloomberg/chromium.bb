@@ -1574,8 +1574,14 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 
 // Test that when there's a proxy configuration at startup, the initial requests
 // use that configuration.
+// Flaky on CrOS only. http://crbug.com/922876
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestInitialProxyConfig DISABLED_TestInitialProxyConfig
+#else
+#define MAYBE_TestInitialProxyConfig TestInitialProxyConfig
+#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
-                       TestInitialProxyConfig) {
+                       MAYBE_TestInitialProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   TestProxyConfigured(/*expect_success=*/true);
