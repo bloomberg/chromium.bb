@@ -26,7 +26,16 @@ SDK_SUBDIRS = ["arch", "pkg", "qemu", "sysroot", "target",
 
 def GetSdkHashForPlatform():
   filename = '{platform}.sdk.sha1'.format(platform =  GetHostOsFromPlatform())
-  return os.path.join(os.path.dirname(__file__), filename)
+  hash_file = os.path.join(os.path.dirname(__file__), filename)
+
+  with open(hash_file, 'r') as f:
+    sdk_hash = f.read().strip()
+
+  if not sdk_hash:
+    print >>sys.stderr, 'No SHA1 found in %s' % hash_file
+    return 1
+
+  return sdk_hash
 
 def GetBucketForPlatform():
   return 'gs://fuchsia/sdk/core/{platform}-amd64/'.format(
@@ -78,12 +87,8 @@ def main():
   sdk_root = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk')
   Cleanup(sdk_root)
 
-  hash_file = GetSdkHashForPlatform()
-  with open(hash_file, 'r') as f:
-    sdk_hash = f.read().strip()
-
+  sdk_hash = GetSdkHashForPlatform()
   if not sdk_hash:
-    print >>sys.stderr, 'No SHA1 found in %s' % hash_file
     return 1
 
   output_dir = os.path.join(sdk_root, 'sdk')
