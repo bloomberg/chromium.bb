@@ -42,9 +42,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/window_properties.h"  // nogncheck
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_features.h"
 #endif
 
 // static
@@ -230,12 +228,6 @@ OverlayWindowViews::OverlayWindowViews(
 
 #if defined(OS_CHROMEOS)
   GetNativeWindow()->SetProperty(ash::kWindowPipTypeKey, true);
-  if (features::IsUsingWindowService()) {
-    aura::Window* window = GetNativeWindow()->GetRootWindow();
-    window->SetProperty(aura::client::kMinimumSize,
-                        new gfx::Size(kMinWindowSize));
-    window->SetProperty(aura::client::kMaximumSize, new gfx::Size(max_size_));
-  }
 #endif  // defined(OS_CHROMEOS)
 
   is_initialized_ = true;
@@ -256,12 +248,6 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   // Lower bound size of the window is a fixed value to allow for minimal sizes
   // on UI affordances, such as buttons.
   min_size_ = kMinWindowSize;
-#if defined(OS_CHROMEOS)
-  if (features::IsUsingWindowService() && is_initialized_) {
-    GetNativeWindow()->GetRootWindow()->SetProperty(aura::client::kMaximumSize,
-                                                    new gfx::Size(max_size_));
-  }
-#endif
 
   gfx::Size window_size = window_bounds_.size();
   if (!has_been_shown_) {

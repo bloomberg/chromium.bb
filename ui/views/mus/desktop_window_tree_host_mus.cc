@@ -309,6 +309,25 @@ void DesktopWindowTreeHostMus::OnWindowTreeHostWindowVisibilityChanged(
     Hide();
 }
 
+void DesktopWindowTreeHostMus::UpdateMinAndMaxSize() {
+  gfx::Size min_size = content_window()->delegate()->GetMinimumSize();
+  gfx::Size max_size = content_window()->delegate()->GetMaximumSize();
+  if (min_size_ == min_size && max_size_ == max_size)
+    return;
+  min_size_ = min_size;
+  max_size_ = max_size;
+  // Setting the property to |window()| to propagate those properties to the
+  // window server.
+  if (min_size_ == gfx::Size())
+    window()->ClearProperty(aura::client::kMinimumSize);
+  else
+    window()->SetProperty(aura::client::kMinimumSize, new gfx::Size(min_size_));
+  if (max_size_ == gfx::Size())
+    window()->ClearProperty(aura::client::kMaximumSize);
+  else
+    window()->SetProperty(aura::client::kMaximumSize, new gfx::Size(max_size_));
+}
+
 void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
   const bool translucent =
       MusClient::ShouldMakeWidgetWindowsTranslucent(params);
@@ -528,6 +547,9 @@ void DesktopWindowTreeHostMus::Show(ui::WindowShowState show_state,
   // Ensure |content_window_| is visible before the call to Activate(),
   // otherwise focus goes to window().
   content_window()->Show();
+
+  if (show_state != ui::SHOW_STATE_MINIMIZED)
+    UpdateMinAndMaxSize();
 
   if (notify_visibility_change)
     native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
@@ -873,6 +895,7 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
   if (widget->widget_delegate())
     behavior = widget->widget_delegate()->GetResizeBehavior();
   window()->SetProperty(aura::client::kResizeBehaviorKey, behavior);
+  UpdateMinAndMaxSize();
 }
 
 bool DesktopWindowTreeHostMus::ShouldUpdateWindowTransparency() const {
@@ -985,6 +1008,7 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
     if (!max_size_in_pixels.IsEmpty())
       size.SetToMin(max_size_in_pixels);
     final_bounds_in_pixels.set_size(size);
+    UpdateMinAndMaxSize();
   }
   WindowTreeHostMus::SetBoundsInPixels(final_bounds_in_pixels,
                                        local_surface_id_allocation);
