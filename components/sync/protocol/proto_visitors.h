@@ -488,10 +488,12 @@ VISIT_PROTO_FIELDS(const sync_pb::GetUpdateTriggers& proto) {
   VISIT(invalidations_out_of_sync);
   VISIT(local_modification_nudges);
   VISIT(datatype_refresh_nudges);
+  VISIT(server_dropped_hints);
+  VISIT(initial_sync_in_progress);
+  VISIT(sync_for_resolve_conflict_in_progress);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesCallerInfo& proto) {
-  VISIT_ENUM(source);
   VISIT(notifications_enabled);
 }
 
