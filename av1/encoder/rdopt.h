@@ -151,10 +151,8 @@ typedef struct {
 
 sobel_xy sobel(const uint8_t *input, int stride, int i, int j, bool high_bd);
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

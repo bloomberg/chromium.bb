@@ -421,11 +421,9 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
           (int32_t *)aom_memalign(
               16, MAX_SB_SQUARE * sizeof(*thread_data->td->wsrc_buf)));
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
       CHECK_MEM_ERROR(cm, thread_data->td->inter_modes_info,
                       (InterModesInfo *)aom_malloc(
                           sizeof(*thread_data->td->inter_modes_info)));
-#endif
 
       for (int x = 0; x < 2; x++)
         for (int y = 0; y < 2; y++)
@@ -544,9 +542,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
       thread_data->td->mb.left_pred_buf = thread_data->td->left_pred_buf;
       thread_data->td->mb.wsrc_buf = thread_data->td->wsrc_buf;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
       thread_data->td->mb.inter_modes_info = thread_data->td->inter_modes_info;
-#endif
       for (int x = 0; x < 2; x++) {
         for (int y = 0; y < 2; y++) {
           memcpy(thread_data->td->hash_value_buffer[x][y],
@@ -662,9 +658,7 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
       this_tile->row_mt_info.current_mi_row = this_tile->tile_info.mi_row_start;
       this_tile->row_mt_info.num_threads_working = 0;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
       av1_inter_mode_data_init(this_tile);
-#endif
       av1_zero_above_context(cm, &cpi->td.mb.e_mbd,
                              this_tile->tile_info.mi_col_start,
                              this_tile->tile_info.mi_col_end, tile_row);

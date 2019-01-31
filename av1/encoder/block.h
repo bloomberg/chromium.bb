@@ -199,9 +199,7 @@ typedef struct {
   int is_global[2];
 } COMP_RD_STATS;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
 struct inter_modes_info;
-#endif
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
@@ -300,9 +298,7 @@ struct macroblock {
   // to the accurate tile context.
   FRAME_CONTEXT *tile_pb_ctx;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
   struct inter_modes_info *inter_modes_info;
-#endif
 
   // buffer for hash value calculation of a block
   // used only in av1_get_block_hash_value()

@@ -454,7 +454,6 @@ typedef struct FRAME_COUNTS {
                                 [SWITCHABLE_FILTERS];
 } FRAME_COUNTS;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
 #define INTER_MODE_RD_DATA_OVERALL_SIZE 6400
 
 typedef struct {
@@ -489,7 +488,6 @@ typedef struct inter_modes_info {
   int64_t est_rd_arr[MAX_INTER_MODES];
   RdIdxPair rd_idx_pair_arr[MAX_INTER_MODES];
 } InterModesInfo;
-#endif
 
 // Encoder row synchronization
 typedef struct AV1RowMTSyncData {
@@ -518,9 +516,7 @@ typedef struct TileDataEnc {
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
   FRAME_CONTEXT *row_ctx;
   uint8_t allow_update_cdf;
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
-#endif
   AV1RowMTSync row_mt_sync;
   AV1RowMTInfo row_mt_info;
 } TileDataEnc;
@@ -555,9 +551,7 @@ typedef struct ThreadData {
   tran_low_t *tree_coeff_buf[MAX_MB_PLANE];
   tran_low_t *tree_qcoeff_buf[MAX_MB_PLANE];
   tran_low_t *tree_dqcoeff_buf[MAX_MB_PLANE];
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
   InterModesInfo *inter_modes_info;
-#endif
   uint32_t *hash_value_buffer[2][2];
   int32_t *wsrc_buf;
   int32_t *mask_buf;

@@ -5669,13 +5669,11 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                         sb_size, BLOCK_4X4, &dummy_rdc, INT64_MAX, pc_root,
                         NULL);
     }
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
     if (cpi->sf.inter_mode_rd_model_estimation == 1 && cm->tile_cols == 1 &&
         cm->tile_rows == 1) {
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
-#endif
     if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
         (tile_info->mi_row_end > (mi_row + mib_size))) {
       if (sb_cols_in_tile == 1)
@@ -5831,9 +5829,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const TileInfo *const tile_info = &this_tile->tile_info;
   int mi_row;
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
   av1_inter_mode_data_init(this_tile);
-#endif
 
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);
