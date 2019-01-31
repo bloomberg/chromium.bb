@@ -30,8 +30,5 @@ const base::Feature kOutOfWebFullscreen{"OutOfWebFullscreen",
 
 const base::Feature kHistoryClobberWorkaround{
     "WKWebViewHistoryClobberWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kWebUISchemeHandling{"WebUISchemeHandling",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace web
