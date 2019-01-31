@@ -14,6 +14,7 @@
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/base/hit_test.h"
+#include "ui/platform_window/mojo/text_input_state.mojom.h"
 
 namespace aura {
 
