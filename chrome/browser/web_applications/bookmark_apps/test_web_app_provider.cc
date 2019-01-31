@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -20,9 +22,19 @@ TestWebAppProvider::TestWebAppProvider(Profile* profile)
 
 TestWebAppProvider::~TestWebAppProvider() = default;
 
+void TestWebAppProvider::SetPendingAppManager(
+    std::unique_ptr<PendingAppManager> pending_app_manager) {
+  pending_app_manager_ = std::move(pending_app_manager);
+}
+
 void TestWebAppProvider::SetSystemWebAppManager(
     std::unique_ptr<SystemWebAppManager> system_web_app_manager) {
   system_web_app_manager_ = std::move(system_web_app_manager);
+}
+
+void TestWebAppProvider::SetWebAppPolicyManager(
+    std::unique_ptr<WebAppPolicyManager> web_app_policy_manager) {
+  web_app_policy_manager_ = std::move(web_app_policy_manager);
 }
 
 TestWebAppProviderCreator::TestWebAppProviderCreator(
