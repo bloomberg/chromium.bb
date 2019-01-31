@@ -188,8 +188,8 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([DefaultValue=Undefined] optional long x, [DefaultValue=Undefined] optional long y);
 
 
-    // https://wicg.github.io/feature-policy/#the-policy-object
-    [OriginTrialEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
+    // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
+    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting

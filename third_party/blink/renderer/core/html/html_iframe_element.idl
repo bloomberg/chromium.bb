@@ -43,8 +43,8 @@ interface HTMLIFrameElement : HTMLElement {
 
     // Feature Policy
     [CEReactions, Reflect] attribute DOMString allow;
-    // https://wicg.github.io/feature-policy/#the-policy-object
-    [OriginTrialEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
+    // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
+    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
 
     [RuntimeEnabled=LazyFrameLoading, CEReactions, Reflect, ReflectOnly=("on", "off", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString lazyLoad;
 

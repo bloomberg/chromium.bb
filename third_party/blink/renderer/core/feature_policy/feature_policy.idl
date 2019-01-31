@@ -5,7 +5,7 @@
 // https://wicg.github.io/feature-policy/#the-policy-object
 [
   NoInterfaceObject,
-  OriginTrialEnabled=FeaturePolicyJavaScriptInterface,
+  RuntimeEnabled=FeaturePolicyJavaScriptInterface,
   ImplementedAs=DOMFeaturePolicy
 ] interface FeaturePolicy {
   [MeasureAs=FeaturePolicyJSAPI] boolean allowsFeature(DOMString feature, optional DOMString url);
