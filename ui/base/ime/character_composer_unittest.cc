@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/chromeos/character_composer.h"
+#include "ui/base/ime/character_composer.h"
 
 #include <stdint.h>
 
@@ -63,9 +63,9 @@ class CharacterComposerTest : public testing::Test {
                             DomCode code,
                             int flags,
                             base::char16 character) const {
-    KeyEvent* event = new KeyEvent(ET_KEY_PRESSED, vkey, code, flags,
-                                   DomKey::FromCharacter(character),
-                                   EventTimeForNow());
+    KeyEvent* event =
+        new KeyEvent(ET_KEY_PRESSED, vkey, code, flags,
+                     DomKey::FromCharacter(character), EventTimeForNow());
     return event;
   }
 
@@ -233,7 +233,7 @@ TEST_F(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
 // This file is included here intentionally, instead of the top of the file,
 // because including this file at the top of the file will define a
 // global constant and contaminate the global namespace.
-#include "ui/base/ime/chromeos/character_composer_data.h"
+#include "ui/base/ime/character_composer_data.h"
   const int kTypes = 2;
 
   // Record the subtree locations and check subtable sizes.
@@ -331,8 +331,7 @@ TEST_F(CharacterComposerTest, HexadecimalCompositionPreedit) {
   ExpectUnicodeKeyFiltered(VKEY_BACK, DomCode::BACKSPACE, EF_NONE, '\b');
   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer_.preedit_string());
   ExpectUnicodeKeyFiltered(VKEY_2, DomCode::DIGIT2, EF_NONE, '2');
-  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, EF_NONE,
-                           '\r',
+  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, EF_NONE, '\r',
                            base::string16(1, 0x3042));
   EXPECT_EQ(ASCIIToUTF16(""), character_composer_.preedit_string());
 
@@ -462,8 +461,7 @@ TEST_F(CharacterComposerTest,
   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer_.preedit_string());
   ExpectUnicodeKeyFiltered(ui::VKEY_2, DomCode::DIGIT2, kControlShift, 0);
   EXPECT_EQ(ASCIIToUTF16("u3042"), character_composer_.preedit_string());
-  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, kControlShift,
-                           '\r',
+  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, kControlShift, '\r',
                            base::string16(1, 0x3042));
   EXPECT_EQ(ASCIIToUTF16(""), character_composer_.preedit_string());
 

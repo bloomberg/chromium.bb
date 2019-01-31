@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/base/ime/chromeos/character_composer.h"
+#include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/base/ime/input_method_base.h"
