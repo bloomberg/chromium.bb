@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -450,13 +450,19 @@ class TestIdentityManagerDiagnosticsObserver
 }  // namespace
 
 class IdentityManagerTest : public testing::Test {
- public:
+ protected:
   IdentityManagerTest()
       : signin_client_(&pref_service_),
         token_service_(&pref_service_),
-        gaia_cookie_manager_service_(&token_service_,
-                                     &signin_client_,
-                                     &test_url_loader_factory_) {
+        gaia_cookie_manager_service_(
+            &token_service_,
+            &signin_client_,
+            base::BindRepeating(
+                [](network::TestURLLoaderFactory* test_url_loader_factory)
+                    -> scoped_refptr<network::SharedURLLoaderFactory> {
+                  return test_url_loader_factory->GetSafeWeakWrapper();
+                },
+                test_url_loader_factory())) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
@@ -482,7 +488,7 @@ class IdentityManagerTest : public testing::Test {
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
   }
-  FakeGaiaCookieManagerService* gaia_cookie_manager_service() {
+  GaiaCookieManagerService* gaia_cookie_manager_service() {
     return &gaia_cookie_manager_service_;
   }
 
@@ -570,6 +576,10 @@ class IdentityManagerTest : public testing::Test {
     consumer->OnMergeSessionFailure(error);
   }
 
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
+
  private:
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -577,7 +587,7 @@ class IdentityManagerTest : public testing::Test {
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
+  GaiaCookieManagerService gaia_cookie_manager_service_;
   std::unique_ptr<SigninManagerForTest> signin_manager_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
@@ -1769,7 +1779,7 @@ TEST_F(IdentityManagerTest,
   identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
       run_loop.QuitClosure());
 
-  gaia_cookie_manager_service()->SetListAccountsResponseNoAccounts();
+  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
   gaia_cookie_manager_service()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1785,8 +1795,8 @@ TEST_F(IdentityManagerTest,
   identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
       run_loop.QuitClosure());
 
-  gaia_cookie_manager_service()->SetListAccountsResponseOneAccount(kTestEmail,
-                                                                   kTestGaiaId);
+  signin::SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
+                                            test_url_loader_factory());
   gaia_cookie_manager_service()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1811,8 +1821,9 @@ TEST_F(IdentityManagerTest,
   identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
       run_loop.QuitClosure());
 
-  gaia_cookie_manager_service()->SetListAccountsResponseTwoAccounts(
-      kTestEmail, kTestGaiaId, kTestEmail2, kTestGaiaId2);
+  signin::SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId,
+                                             kTestEmail2, kTestGaiaId2,
+                                             test_url_loader_factory());
   gaia_cookie_manager_service()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1852,11 +1863,12 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
     identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
         run_loop.QuitClosure());
 
-    gaia_cookie_manager_service()->SetListAccountsResponseWithParams(
+    signin::SetListAccountsResponseWithParams(
         {{kTestEmail, kTestGaiaId, true /* valid */,
           signed_out_status.account_1 /* signed_out */, true /* verified */},
          {kTestEmail2, kTestGaiaId2, true /* valid */,
-          signed_out_status.account_2 /* signed_out */, true /* verified */}});
+          signed_out_status.account_2 /* signed_out */, true /* verified */}},
+        test_url_loader_factory());
 
     gaia_cookie_manager_service()->TriggerListAccounts();
     run_loop.Run();
@@ -1909,7 +1921,7 @@ TEST_F(IdentityManagerTest,
       run_loop.QuitClosure());
 
   // Configure list accounts to return a permanent Gaia auth error.
-  gaia_cookie_manager_service()->SetListAccountsResponseWebLoginRequired();
+  signin::SetListAccountsResponseWebLoginRequired(test_url_loader_factory());
   gaia_cookie_manager_service()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1925,7 +1937,7 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
   identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
       run_loop.QuitClosure());
 
-  gaia_cookie_manager_service()->SetListAccountsResponseNoAccounts();
+  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
 
   // Do an initial call to GetAccountsInCookieJar(). This call should return no
   // accounts but should also trigger an internal update and eventual
@@ -1953,8 +1965,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
   identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
       run_loop.QuitClosure());
 
-  gaia_cookie_manager_service()->SetListAccountsResponseOneAccount(kTestEmail,
-                                                                   kTestGaiaId);
+  signin::SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
+                                            test_url_loader_factory());
 
   // Do an initial call to GetAccountsInCookieJar(). This call should return no
   // accounts but should also trigger an internal update and eventual
@@ -1990,8 +2002,9 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
   identity_manager_observer()->set_on_accounts_in_cookie_updated_callback(
       run_loop.QuitClosure());
 
-  gaia_cookie_manager_service()->SetListAccountsResponseTwoAccounts(
-      kTestEmail, kTestGaiaId, kTestEmail2, kTestGaiaId2);
+  signin::SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId,
+                                             kTestEmail2, kTestGaiaId2,
+                                             test_url_loader_factory());
 
   // Do an initial call to GetAccountsInCookieJar(). This call should return no
   // accounts but should also trigger an internal update and eventual
