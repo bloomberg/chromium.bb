@@ -18,6 +18,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "media/base/media_switches.h"
 #include "media/capabilities/video_decode_stats_db.h"
+#include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
