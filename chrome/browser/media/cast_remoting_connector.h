@@ -14,6 +14,7 @@
 #include "components/sessions/core/session_id.h"
 #include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/interfaces/remoting_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
