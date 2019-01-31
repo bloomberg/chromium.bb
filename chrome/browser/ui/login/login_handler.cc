@@ -171,7 +171,7 @@ class LoginHandlerProxy : public content::LoginDelegate {
     handler_ = nullptr;
   }
 
-  LoginHandler* handler_;  // owned on the UI thread
+  LoginHandler* handler_ = nullptr;  // owned on the UI thread
   LoginAuthRequiredCallback callback_;
 };
 
