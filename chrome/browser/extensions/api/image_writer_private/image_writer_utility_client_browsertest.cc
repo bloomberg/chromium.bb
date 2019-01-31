@@ -294,7 +294,13 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_Write) {
   EXPECT_TRUE(error().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, WriteVerify) {
+// Flaky on Win. http://crbug.com/927218
+#if defined(OS_WIN)
+#define MAYBE_WriteVerify DISABLED_WriteVerify
+#else
+#define MAYBE_WriteVerify WriteVerify
+#endif
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_WriteVerify) {
   FillImageFileWithPattern('m');
   FillDeviceFileWithPattern(0);
 
@@ -362,7 +368,13 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_Verify) {
   EXPECT_TRUE(error().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, VerifyCancel) {
+// Flaky on Win. http://crbug.com/927218
+#if defined(OS_WIN)
+#define MAYBE_VerifyCancel DISABLED_VerifyCancel
+#else
+#define MAYBE_VerifyCancel VerifyCancel
+#endif
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_VerifyCancel) {
   FillImageFileWithPattern('s');
   FillDeviceFileWithPattern('s');
 
