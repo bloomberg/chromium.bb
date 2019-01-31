@@ -4,6 +4,7 @@
 
 #include "ash/system/network/network_icon.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/network_icon_image_source.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -442,7 +443,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
       badges->bottom_right = {&kNetworkBadgeRoamingIcon, icon_color};
   }
   // Only show technology badge when connected.
-  if (network->IsConnectedState())
+  if (network->IsConnectedState() && !features::IsSeparateNetworkIconsEnabled())
     badges->top_left = technology_badge_;
   if (show_vpn_badge_)
     badges->bottom_left = {&kUnifiedNetworkBadgeVpnIcon, icon_color};
