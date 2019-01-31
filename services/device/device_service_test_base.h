@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,8 +32,12 @@ class DeviceServiceTestBase : public testing::Test {
   service_manager::Connector* connector() { return connector_.get(); }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  base::Thread file_thread_;
-  base::Thread io_thread_;
+
+  // Both of these task runners should be deprecated in favor of individual
+  // components of the device service creating their own.
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
