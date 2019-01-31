@@ -1071,8 +1071,8 @@ class SingleClientWalletSecondaryAccountSyncTest
   ~SingleClientWalletSecondaryAccountSyncTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    fake_gaia_cookie_manager_factory_ =
-        secondary_account_helper::SetUpFakeGaiaCookieManagerService(
+    test_gaia_cookie_manager_factory_ =
+        secondary_account_helper::SetUpGaiaCookieManagerService(
             &test_url_loader_factory_);
   }
 
@@ -1086,8 +1086,8 @@ class SingleClientWalletSecondaryAccountSyncTest
   Profile* profile() { return GetProfile(0); }
 
  private:
-  secondary_account_helper::ScopedFakeGaiaCookieManagerServiceFactory
-      fake_gaia_cookie_manager_factory_;
+  secondary_account_helper::ScopedGaiaCookieManagerServiceFactory
+      test_gaia_cookie_manager_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSecondaryAccountSyncTest);
 };
@@ -1104,7 +1104,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSecondaryAccountSyncTest,
       {CreateDefaultSyncWalletCard(), CreateDefaultSyncPaymentsCustomerData()});
 
   // Set up Sync in transport mode for a non-primary account.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  secondary_account_helper::SignInSecondaryAccount(
+      profile(), &test_url_loader_factory_, "user@email.com");
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
@@ -1165,7 +1166,8 @@ IN_PROC_BROWSER_TEST_P(
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
 
   // Set up Sync in transport mode for a non-primary account.
-  secondary_account_helper::SignInSecondaryAccount(profile(), "user@email.com");
+  secondary_account_helper::SignInSecondaryAccount(
+      profile(), &test_url_loader_factory_, "user@email.com");
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
