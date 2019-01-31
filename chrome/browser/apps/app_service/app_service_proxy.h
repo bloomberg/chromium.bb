@@ -14,6 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
+#include "chrome/browser/apps/app_service/crostini_apps.h"
 #include "chrome/browser/apps/app_service/extension_apps.h"
 #endif  // OS_CHROMEOS
 
@@ -69,6 +70,7 @@ class AppServiceProxy : public KeyedService, public apps::mojom::Subscriber {
 
 #if defined(OS_CHROMEOS)
   BuiltInChromeOsApps built_in_chrome_os_apps_;
+  CrostiniApps crostini_apps_;
   ExtensionApps extension_apps_;
   ExtensionApps extension_web_apps_;
 #endif  // OS_CHROMEOS

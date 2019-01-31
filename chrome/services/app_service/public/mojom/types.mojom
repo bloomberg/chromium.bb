@@ -80,6 +80,7 @@ enum OptionalBool {
 enum IconType {
   kUnknown,
   kArc,
+  kCrostini,
   kExtension,
   kResource,
 };

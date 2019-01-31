@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/shelf_types.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/launch_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -58,21 +57,6 @@ const ContentSettingsType kSupportedPermissionTypes[] = {
     CONTENT_SETTINGS_TYPE_GEOLOCATION,
     CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
 };
-
-ash::ShelfLaunchSource ConvertLaunchSource(
-    apps::mojom::LaunchSource launch_source) {
-  switch (launch_source) {
-    case apps::mojom::LaunchSource::kUnknown:
-      return ash::LAUNCH_FROM_UNKNOWN;
-    case apps::mojom::LaunchSource::kFromAppListGrid:
-    case apps::mojom::LaunchSource::kFromAppListGridContextMenu:
-      return ash::LAUNCH_FROM_APP_LIST;
-    case apps::mojom::LaunchSource::kFromAppListQuery:
-    case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
-    case apps::mojom::LaunchSource::kFromAppListRecommendation:
-      return ash::LAUNCH_FROM_APP_LIST_SEARCH;
-  }
-}
 
 }  // namespace
 
@@ -191,9 +175,7 @@ void ExtensionApps::Launch(const std::string& app_id,
       break;
   }
 
-  ChromeLauncherController::instance()->LaunchApp(
-      ash::ShelfID(app_id), ConvertLaunchSource(launch_source), event_flags,
-      display_id);
+  apps_util::Launch(app_id, event_flags, launch_source, display_id);
 }
 
 void ExtensionApps::SetPermission(const std::string& app_id,
