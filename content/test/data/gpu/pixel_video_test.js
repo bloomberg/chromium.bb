@@ -7,13 +7,17 @@ var video;
 function main() {
   video = document.getElementById("video");
   video.loop = true;
-  video.addEventListener('timeupdate', SendSuccess);
+  video.addEventListener('timeupdate', waitForSwapToComplete);
   video.play();
 }
 
-function SendSuccess() {
+function waitForSwapToComplete() {
   if (video.currentTime > 0) {
-    video.removeEventListener('timeupdate', SendSuccess);
-    domAutomationController.send("SUCCESS");
+    video.removeEventListener('timeupdate', waitForSwapToComplete);
+    chrome.gpuBenchmarking.addSwapCompletionEventListener(sendSuccess);
   }
+}
+
+function sendSuccess() {
+  domAutomationController.send("SUCCESS");
 }

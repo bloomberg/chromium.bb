@@ -94,6 +94,10 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   // Freezes a page, used to transition the page to the FROZEN lifecycle state.
   void Freeze();
 
+  // Register a callback that should be fired when the next swap completes.
+  // The callback is removed once it's executed.
+  bool AddSwapCompletionEventListener(gin::Arguments* args);
+
   RenderFrameImpl* render_frame_;
   mojom::InputInjectorPtr input_injector_;
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
