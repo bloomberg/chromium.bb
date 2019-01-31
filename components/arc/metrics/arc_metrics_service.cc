@@ -279,7 +279,18 @@ void ArcMetricsService::ReportBootProgress(
     return;
   }
 
-  // Retrieve ARC start time from session manager.
+  if (IsArcVmEnabled()) {
+    // For VM builds, do not call into session_manager since we don't use it
+    // for the builds. Using base::TimeTicks() is fine for now because 1) the
+    // clocks in host and guest are not synchronized, and 2) the guest does not
+    // support mini container.
+    // TODO(yusukes): Once the guest supports mini container (details TBD), we
+    // should have the guest itself report the timing of the upgrade.
+    OnArcStartTimeRetrieved(std::move(events), boot_type, base::TimeTicks());
+    return;
+  }
+
+  // Retrieve ARC full container's start time from session manager.
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->GetArcStartTime(base::BindOnce(
