@@ -98,7 +98,9 @@ public class CustomTabActivityIncognitoTest {
     public void incognitoNotificationClosesCustomTab() throws Exception {
         launchIncognitoCustomTab();
 
-        IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(mActivity).send();
+        IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(mActivity)
+                .getPendingIntent()
+                .send();
 
         CriteriaHelper.pollUiThread(mActivity::isFinishing);
     }

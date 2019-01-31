@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.BrowserStartupController;
 
@@ -43,10 +44,11 @@ public class IncognitoNotificationService extends IntentService {
             "com.google.android.apps.chrome.incognito.CLOSE_ALL_INCOGNITO";
 
     @VisibleForTesting
-    public static PendingIntent getRemoveAllIncognitoTabsIntent(Context context) {
+    public static PendingIntentProvider getRemoveAllIncognitoTabsIntent(Context context) {
         Intent intent = new Intent(context, IncognitoNotificationService.class);
         intent.setAction(ACTION_CLOSE_ALL_INCOGNITO);
-        return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntentProvider.getService(
+                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /** Empty public constructor needed by Android. */

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 
@@ -37,8 +38,13 @@ public class IncognitoNotificationManager {
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.INCOGNITO)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.ChannelId.INCOGNITO,
+                                null /* remoteAppPackageName */,
+                                new NotificationMetadata(
+                                        NotificationUmaTracker.SystemNotificationType
+                                                .CLOSE_INCOGNITO,
+                                        INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID))
                         .setContentTitle(title)
                         .setContentIntent(
                                 IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(
