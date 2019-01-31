@@ -10,6 +10,7 @@
 
 #include "content/public/browser/media_keys_listener_manager.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/accelerators/accelerator.h"
 
