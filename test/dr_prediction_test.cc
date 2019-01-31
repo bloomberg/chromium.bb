@@ -59,7 +59,9 @@ typedef void (*Z1_Lbd)(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z1_Lbd fn>
 void z1_wrapper(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                 const uint8_t *above, const uint8_t *left, int upsample_above,
-                int /*upsample_left*/, int dx, int dy, int /*bd*/) {
+                int upsample_left, int dx, int dy, int bd) {
+  (void)bd;
+  (void)upsample_left;
   fn(dst, stride, bw, bh, above, left, upsample_above, dx, dy);
 }
 
@@ -69,7 +71,9 @@ typedef void (*Z2_Lbd)(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z2_Lbd fn>
 void z2_wrapper(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                 const uint8_t *above, const uint8_t *left, int upsample_above,
-                int upsample_left, int dx, int dy, int /*bd*/) {
+                int upsample_left, int dx, int dy, int bd) {
+  (void)bd;
+  (void)upsample_left;
   fn(dst, stride, bw, bh, above, left, upsample_above, upsample_left, dx, dy);
 }
 
@@ -78,9 +82,10 @@ typedef void (*Z3_Lbd)(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                        int upsample_left, int dx, int dy);
 template <Z3_Lbd fn>
 void z3_wrapper(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
-                const uint8_t *above, const uint8_t *left,
-                int /*upsample_above*/, int upsample_left, int dx, int dy,
-                int /*bd*/) {
+                const uint8_t *above, const uint8_t *left, int upsample_above,
+                int upsample_left, int dx, int dy, int bd) {
+  (void)bd;
+  (void)upsample_above;
   fn(dst, stride, bw, bh, above, left, upsample_left, dx, dy);
 }
 
@@ -90,8 +95,10 @@ typedef void (*Z1_Hbd)(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z1_Hbd fn>
 void z1_wrapper_hbd(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
                     const uint16_t *above, const uint16_t *left,
-                    int upsample_above, int /*upsample_left*/, int dx, int dy,
+                    int upsample_above, int upsample_left, int dx, int dy,
                     int bd) {
+  (void)bd;
+  (void)upsample_left;
   fn(dst, stride, bw, bh, above, left, upsample_above, dx, dy, bd);
 }
 
@@ -104,6 +111,7 @@ void z2_wrapper_hbd(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
                     const uint16_t *above, const uint16_t *left,
                     int upsample_above, int upsample_left, int dx, int dy,
                     int bd) {
+  (void)bd;
   fn(dst, stride, bw, bh, above, left, upsample_above, upsample_left, dx, dy,
      bd);
 }
@@ -114,8 +122,10 @@ typedef void (*Z3_Hbd)(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
 template <Z3_Hbd fn>
 void z3_wrapper_hbd(uint16_t *dst, ptrdiff_t stride, int bw, int bh,
                     const uint16_t *above, const uint16_t *left,
-                    int /*upsample_above*/, int upsample_left, int dx, int dy,
+                    int upsample_above, int upsample_left, int dx, int dy,
                     int bd) {
+  (void)bd;
+  (void)upsample_above;
   fn(dst, stride, bw, bh, above, left, upsample_left, dx, dy, bd);
 }
 
@@ -172,6 +182,9 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
     const int kNumTests = speedtest ? kMaxNumTests : 1;
     aom_usec_timer timer;
     int tst_time = 0;
+
+    bd_ = params_.bit_depth;
+
     aom_usec_timer_start(&timer);
     for (int k = 0; k < kNumTests; ++k) {
       params_.ref_fn(dst_ref_, dst_stride_, bw_, bh_, above_, left_,
@@ -199,6 +212,8 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
   }
 
   void RunTest(bool speedtest, bool needsaturation, int p_angle) {
+    bd_ = params_.bit_depth;
+
     if (needsaturation) {
       for (int i = 0; i < kBufSize; ++i) {
         above_data_[i] = left_data_[i] = (1 << bd_) - 1;
@@ -397,7 +412,6 @@ INSTANTIATE_TEST_CASE_P(
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_avx2>,
                           AOM_BITS_12, kZ1Start),
-                      /* TODO(https://crbug.com/aomedia/2288)
                       DrPredFunc<DrPred_Hbd>(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
@@ -410,7 +424,6 @@ INSTANTIATE_TEST_CASE_P(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
                           AOM_BITS_12, kZ2Start),
-                          */
                       DrPredFunc<DrPred_Hbd>(
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_c>,
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_avx2>,
