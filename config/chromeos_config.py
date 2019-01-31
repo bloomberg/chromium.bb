@@ -1151,7 +1151,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 3m interval',
   )
 
-
   # Add a pre-cq config for every board.
   site_config.AddForBoards(
       'pre-cq',
@@ -2265,7 +2264,6 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddTemplate(
       'postsubmit',
-      site_config.templates.internal,
       display_label=config_lib.DISPLAY_LABEL_POSTSUBMIT,
       build_type=constants.POSTSUBMIT_TYPE,
       manifest_version=True,
@@ -2285,6 +2283,7 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
   master_config = site_config.Add(
       'master-postsubmit',
       site_config.templates.postsubmit,
+      site_config.templates.internal,
       boards=[],
       master=True,
       manifest_version=True,
@@ -2292,14 +2291,20 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 2m interval',
   )
 
-  master_config.AddSlaves(
-      site_config.AddForBoards(
-          'postsubmit',
-          postsubmit_boards,
-          board_configs,
-          site_config.templates.postsubmit,
-      )
-  )
+  for board in boards_dict['all_boards']:
+    config = site_config.Add(
+        '%s-postsubmit' % board,
+        site_config.templates.postsubmit,
+        board_configs[board],
+    )
+
+    if board in boards_dict['internal_boards']:
+      config.apply(site_config.templates.internal)
+    else:
+      config.apply(site_config.templates.external)
+
+    if board in postsubmit_boards:
+      master_config.AddSlave(config)
 
 
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):

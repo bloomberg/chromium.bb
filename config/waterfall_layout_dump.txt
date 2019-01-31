@@ -561,6 +561,7 @@
   amd64-generic-cheets-no-vmtest-pre-cq
   amd64-generic-cheets-paladin-tryjob
   amd64-generic-cheets-payloads-tryjob
+  amd64-generic-cheets-postsubmit-tryjob
   amd64-generic-cheets-pre-cq
   amd64-generic-cheets-release-afdo-generate-tryjob
   amd64-generic-cheets-release-afdo-tryjob
@@ -582,6 +583,7 @@
   amd64-generic-no-vmtest-pre-cq
   amd64-generic-nowithdebug-paladin-tryjob
   amd64-generic-paladin-tryjob
+  amd64-generic-postsubmit-tryjob
   amd64-generic-pre-cq
   amd64-generic-telem-chromium-pfq-informational-tryjob
   amd64-generic-telemetry-tryjob
@@ -612,6 +614,7 @@
   arm-generic-llvm-toolchain-tryjob
   arm-generic-no-vmtest-pre-cq
   arm-generic-paladin-tryjob
+  arm-generic-postsubmit-tryjob
   arm-generic-pre-cq
   arm-generic-telemetry-tryjob
   arm-generic-tot-chromium-pfq-informational-tryjob
@@ -624,6 +627,7 @@
   arm64-generic-llvm-toolchain-tryjob
   arm64-generic-no-vmtest-pre-cq
   arm64-generic-paladin-tryjob
+  arm64-generic-postsubmit-tryjob
   arm64-generic-pre-cq
   arm64-generic-tot-chromium-pfq-informational-tryjob
   arm64-generic-unittest-stress
@@ -635,6 +639,7 @@
   arm64-llvmpipe-llvm-toolchain-tryjob
   arm64-llvmpipe-no-vmtest-pre-cq
   arm64-llvmpipe-paladin-tryjob
+  arm64-llvmpipe-postsubmit-tryjob
   arm64-llvmpipe-pre-cq
   arm64-llvmpipe-tot-chromium-pfq-informational-tryjob
   arm64-llvmpipe-unittest-stress
@@ -807,6 +812,7 @@
   betty-arcmaster-llvm-toolchain-tryjob
   betty-arcmaster-no-vmtest-pre-cq
   betty-arcmaster-paladin-tryjob
+  betty-arcmaster-postsubmit-tryjob
   betty-arcmaster-pre-cq
   betty-arcmaster-release-tryjob
   betty-arcmaster-tot-chromium-pfq-informational-tryjob
@@ -822,6 +828,7 @@
   betty-arcnext-paladin-tryjob
   betty-arcnext-payloads-tryjob
   betty-arcnext-pi-android-pfq-tryjob
+  betty-arcnext-postsubmit-tryjob
   betty-arcnext-pre-cq
   betty-arcnext-release-afdo-generate-tryjob
   betty-arcnext-release-afdo-tryjob
@@ -929,6 +936,7 @@
   capri-llvm-toolchain-tryjob
   capri-no-vmtest-pre-cq
   capri-paladin-tryjob
+  capri-postsubmit-tryjob
   capri-pre-cq
   capri-release-tryjob
   capri-unittest-stress
@@ -939,6 +947,7 @@
   capri-zfpga-llvm-toolchain-tryjob
   capri-zfpga-no-vmtest-pre-cq
   capri-zfpga-paladin-tryjob
+  capri-zfpga-postsubmit-tryjob
   capri-zfpga-pre-cq
   capri-zfpga-release-tryjob
   capri-zfpga-unittest-stress
@@ -949,6 +958,7 @@
   caroline-arc64-llvm-toolchain-tryjob
   caroline-arc64-no-vmtest-pre-cq
   caroline-arc64-paladin-tryjob
+  caroline-arc64-postsubmit-tryjob
   caroline-arc64-pre-cq
   caroline-arc64-release-tryjob
   caroline-arc64-tot-chromium-pfq-informational-tryjob
@@ -988,6 +998,7 @@
   caroline-ndktranslation-llvm-toolchain-tryjob
   caroline-ndktranslation-no-vmtest-pre-cq
   caroline-ndktranslation-paladin-tryjob
+  caroline-ndktranslation-postsubmit-tryjob
   caroline-ndktranslation-pre-cq
   caroline-ndktranslation-release-tryjob
   caroline-ndktranslation-tot-chromium-pfq-informational-tryjob
@@ -1012,6 +1023,7 @@
   caroline-userdebug-llvm-toolchain-tryjob
   caroline-userdebug-no-vmtest-pre-cq
   caroline-userdebug-paladin-tryjob
+  caroline-userdebug-postsubmit-tryjob
   caroline-userdebug-pre-cq
   caroline-userdebug-release-tryjob
   caroline-userdebug-tot-chromium-pfq-informational-tryjob
@@ -1091,6 +1103,7 @@
   cheza-freedreno-llvm-toolchain-tryjob
   cheza-freedreno-no-vmtest-pre-cq
   cheza-freedreno-paladin-tryjob
+  cheza-freedreno-postsubmit-tryjob
   cheza-freedreno-pre-cq
   cheza-freedreno-release-tryjob
   cheza-freedreno-tot-chromium-pfq-informational-tryjob
@@ -1143,6 +1156,7 @@
   cobblepot-llvm-toolchain-tryjob
   cobblepot-no-vmtest-pre-cq
   cobblepot-paladin-tryjob
+  cobblepot-postsubmit-tryjob
   cobblepot-pre-cq
   cobblepot-release-tryjob
   cobblepot-unittest-stress
@@ -1159,6 +1173,7 @@
   coral-nyc-android-pfq-tryjob
   coral-paladin-tryjob
   coral-payloads-tryjob
+  coral-postsubmit-tryjob
   coral-pre-cq
   coral-release-afdo-generate-tryjob
   coral-release-afdo-tryjob
@@ -1240,6 +1255,7 @@
   daisy_spring-no-vmtest-pre-cq
   daisy_spring-paladin-tryjob
   daisy_spring-payloads-tryjob
+  daisy_spring-postsubmit-tryjob
   daisy_spring-pre-cq
   daisy_spring-release-afdo-generate-tryjob
   daisy_spring-release-afdo-tryjob
@@ -1258,6 +1274,7 @@
   dragonegg-no-vmtest-pre-cq
   dragonegg-paladin-tryjob
   dragonegg-payloads-tryjob
+  dragonegg-postsubmit-tryjob
   dragonegg-pre-cq
   dragonegg-release-afdo-generate-tryjob
   dragonegg-release-afdo-tryjob
@@ -1357,6 +1374,7 @@
   eve-arcvm-no-vmtest-pre-cq
   eve-arcvm-paladin-tryjob
   eve-arcvm-payloads-tryjob
+  eve-arcvm-postsubmit-tryjob
   eve-arcvm-pre-cq
   eve-arcvm-release-afdo-generate-tryjob
   eve-arcvm-release-afdo-tryjob
@@ -1376,6 +1394,7 @@
   eve-campfire-no-vmtest-pre-cq
   eve-campfire-paladin-tryjob
   eve-campfire-payloads-tryjob
+  eve-campfire-postsubmit-tryjob
   eve-campfire-pre-cq
   eve-campfire-release-afdo-generate-tryjob
   eve-campfire-release-afdo-tryjob
@@ -1397,6 +1416,7 @@
   eve-kvm-llvm-toolchain-tryjob
   eve-kvm-no-vmtest-pre-cq
   eve-kvm-paladin-tryjob
+  eve-kvm-postsubmit-tryjob
   eve-kvm-pre-cq
   eve-kvm-release-tryjob
   eve-kvm-tot-chromium-pfq-informational-tryjob
@@ -1420,6 +1440,7 @@
   eve-swap-llvm-toolchain-tryjob
   eve-swap-no-vmtest-pre-cq
   eve-swap-paladin-tryjob
+  eve-swap-postsubmit-tryjob
   eve-swap-pre-cq
   eve-swap-release-tryjob
   eve-swap-tot-chromium-pfq-informational-tryjob
@@ -1434,6 +1455,7 @@
   eve-userdebug-llvm-toolchain-tryjob
   eve-userdebug-no-vmtest-pre-cq
   eve-userdebug-paladin-tryjob
+  eve-userdebug-postsubmit-tryjob
   eve-userdebug-pre-cq
   eve-userdebug-release-tryjob
   eve-userdebug-tot-chromium-pfq-informational-tryjob
@@ -1699,6 +1721,7 @@
   fizz-accelerator-no-vmtest-pre-cq
   fizz-accelerator-paladin-tryjob
   fizz-accelerator-payloads-tryjob
+  fizz-accelerator-postsubmit-tryjob
   fizz-accelerator-pre-cq
   fizz-accelerator-release-afdo-generate-tryjob
   fizz-accelerator-release-afdo-tryjob
@@ -1723,6 +1746,7 @@
   fizz-moblab-no-vmtest-pre-cq
   fizz-moblab-paladin-tryjob
   fizz-moblab-payloads-tryjob
+  fizz-moblab-postsubmit-tryjob
   fizz-moblab-pre-cq
   fizz-moblab-release-afdo-generate-tryjob
   fizz-moblab-release-afdo-tryjob
@@ -1808,6 +1832,7 @@
   glados-no-vmtest-pre-cq
   glados-paladin-tryjob
   glados-payloads-tryjob
+  glados-postsubmit-tryjob
   glados-pre-cq
   glados-release-afdo-generate-tryjob
   glados-release-afdo-tryjob
@@ -1863,6 +1888,7 @@
   gonzo-llvm-toolchain-tryjob
   gonzo-no-vmtest-pre-cq
   gonzo-paladin-tryjob
+  gonzo-postsubmit-tryjob
   gonzo-pre-cq
   gonzo-release-tryjob
   gonzo-unittest-stress
@@ -1877,6 +1903,7 @@
   gru-no-vmtest-pre-cq
   gru-paladin-tryjob
   gru-payloads-tryjob
+  gru-postsubmit-tryjob
   gru-pre-cq
   gru-release-afdo-generate-tryjob
   gru-release-afdo-tryjob
@@ -1916,6 +1943,7 @@
   guado-accelerator-no-vmtest-pre-cq
   guado-accelerator-paladin-tryjob
   guado-accelerator-payloads-tryjob
+  guado-accelerator-postsubmit-tryjob
   guado-accelerator-pre-cq
   guado-accelerator-release-afdo-generate-tryjob
   guado-accelerator-release-afdo-tryjob
@@ -1937,6 +1965,7 @@
   guado-macrophage-llvm-toolchain-tryjob
   guado-macrophage-no-vmtest-pre-cq
   guado-macrophage-paladin-tryjob
+  guado-macrophage-postsubmit-tryjob
   guado-macrophage-pre-cq
   guado-macrophage-release-tryjob
   guado-macrophage-tot-chromium-pfq-informational-tryjob
@@ -1963,6 +1992,7 @@
   guado_labstation-no-vmtest-pre-cq
   guado_labstation-paladin-tryjob
   guado_labstation-payloads-tryjob
+  guado_labstation-postsubmit-tryjob
   guado_labstation-pre-cq
   guado_labstation-release-afdo-generate-tryjob
   guado_labstation-release-afdo-tryjob
@@ -1981,6 +2011,7 @@
   guado_moblab-no-vmtest-pre-cq
   guado_moblab-paladin-tryjob
   guado_moblab-payloads-tryjob
+  guado_moblab-postsubmit-tryjob
   guado_moblab-pre-cq
   guado_moblab-release-afdo-generate-tryjob
   guado_moblab-release-afdo-tryjob
@@ -2020,6 +2051,7 @@
   hatch-no-vmtest-pre-cq
   hatch-paladin-tryjob
   hatch-payloads-tryjob
+  hatch-postsubmit-tryjob
   hatch-pre-cq
   hatch-release-afdo-generate-tryjob
   hatch-release-afdo-tryjob
@@ -2160,6 +2192,7 @@
   kevin64-no-vmtest-pre-cq
   kevin64-paladin-tryjob
   kevin64-payloads-tryjob
+  kevin64-postsubmit-tryjob
   kevin64-pre-cq
   kevin64-release-afdo-generate-tryjob
   kevin64-release-afdo-tryjob
@@ -2219,6 +2252,7 @@
   lakitu-gpu-no-vmtest-pre-cq
   lakitu-gpu-paladin-tryjob
   lakitu-gpu-payloads-tryjob
+  lakitu-gpu-postsubmit-tryjob
   lakitu-gpu-pre-cq
   lakitu-gpu-release-tryjob
   lakitu-gpu-unittest-stress
@@ -2232,12 +2266,14 @@
   lakitu-nc-no-vmtest-pre-cq
   lakitu-nc-paladin-tryjob
   lakitu-nc-payloads-tryjob
+  lakitu-nc-postsubmit-tryjob
   lakitu-nc-pre-cq
   lakitu-nc-release-tryjob
   lakitu-nc-unittest-stress
   lakitu-no-vmtest-pre-cq
   lakitu-paladin-tryjob
   lakitu-payloads-tryjob
+  lakitu-postsubmit-tryjob
   lakitu-pre-cq
   lakitu-release-tryjob
   lakitu-st-compile-only-pre-cq
@@ -2248,6 +2284,7 @@
   lakitu-st-no-vmtest-pre-cq
   lakitu-st-paladin-tryjob
   lakitu-st-payloads-tryjob
+  lakitu-st-postsubmit-tryjob
   lakitu-st-pre-cq
   lakitu-st-release-tryjob
   lakitu-st-unittest-stress
@@ -2260,6 +2297,7 @@
   lakitu_next-no-vmtest-pre-cq
   lakitu_next-paladin-tryjob
   lakitu_next-payloads-tryjob
+  lakitu_next-postsubmit-tryjob
   lakitu_next-pre-cq
   lakitu_next-release-tryjob
   lakitu_next-unittest-stress
@@ -2290,6 +2328,7 @@
   lasilla-ground-llvm-toolchain-tryjob
   lasilla-ground-no-vmtest-pre-cq
   lasilla-ground-paladin-tryjob
+  lasilla-ground-postsubmit-tryjob
   lasilla-ground-pre-cq
   lasilla-ground-release-tryjob
   lasilla-ground-unittest-stress
@@ -2322,6 +2361,7 @@
   link-no-vmtest-pre-cq
   link-paladin-tryjob
   link-payloads-tryjob
+  link-postsubmit-tryjob
   link-pre-cq
   link-release-afdo-generate-tryjob
   link-release-afdo-tryjob
@@ -2360,6 +2400,7 @@
   macchiato-ground-llvm-toolchain-tryjob
   macchiato-ground-no-vmtest-pre-cq
   macchiato-ground-paladin-tryjob
+  macchiato-ground-postsubmit-tryjob
   macchiato-ground-pre-cq
   macchiato-ground-release-tryjob
   macchiato-ground-tot-chromium-pfq-informational-tryjob
@@ -2813,6 +2854,7 @@
   mistral-llvm-toolchain-tryjob
   mistral-no-vmtest-pre-cq
   mistral-paladin-tryjob
+  mistral-postsubmit-tryjob
   mistral-pre-cq
   mistral-release-tryjob
   mistral-unittest-stress
@@ -2824,6 +2866,7 @@
   moblab-generic-vm-llvm-toolchain-tryjob
   moblab-generic-vm-no-vmtest-pre-cq
   moblab-generic-vm-paladin-tryjob
+  moblab-generic-vm-postsubmit-tryjob
   moblab-generic-vm-pre-cq
   moblab-generic-vm-tot-chromium-pfq-informational-tryjob
   moblab-generic-vm-unittest-stress
@@ -2917,6 +2960,7 @@
   nocturne-no-vmtest-pre-cq
   nocturne-paladin-tryjob
   nocturne-payloads-tryjob
+  nocturne-postsubmit-tryjob
   nocturne-pre-cq
   nocturne-release-afdo-generate-tryjob
   nocturne-release-afdo-tryjob
@@ -3050,6 +3094,7 @@
   octavius-llvm-toolchain-tryjob
   octavius-no-vmtest-pre-cq
   octavius-paladin-tryjob
+  octavius-postsubmit-tryjob
   octavius-pre-cq
   octavius-release-tryjob
   octavius-unittest-stress
@@ -3122,6 +3167,7 @@
   parrot_ivb-no-vmtest-pre-cq
   parrot_ivb-paladin-tryjob
   parrot_ivb-payloads-tryjob
+  parrot_ivb-postsubmit-tryjob
   parrot_ivb-pre-cq
   parrot_ivb-release-afdo-generate-tryjob
   parrot_ivb-release-afdo-tryjob
@@ -3197,6 +3243,7 @@
   poppy-no-vmtest-pre-cq
   poppy-paladin-tryjob
   poppy-payloads-tryjob
+  poppy-postsubmit-tryjob
   poppy-pre-cq
   poppy-release-afdo-generate-tryjob
   poppy-release-afdo-tryjob
@@ -3357,6 +3404,7 @@
   romer-llvm-toolchain-tryjob
   romer-no-vmtest-pre-cq
   romer-paladin-tryjob
+  romer-postsubmit-tryjob
   romer-pre-cq
   romer-release-tryjob
   romer-unittest-stress
@@ -3377,6 +3425,7 @@
   samus-kernelnext-no-vmtest-pre-cq
   samus-kernelnext-paladin-tryjob
   samus-kernelnext-payloads-tryjob
+  samus-kernelnext-postsubmit-tryjob
   samus-kernelnext-pre-cq
   samus-kernelnext-release-afdo-generate-tryjob
   samus-kernelnext-release-afdo-tryjob
@@ -3439,6 +3488,7 @@
   scarlet-arcnext-llvm-toolchain-tryjob
   scarlet-arcnext-no-vmtest-pre-cq
   scarlet-arcnext-paladin-tryjob
+  scarlet-arcnext-postsubmit-tryjob
   scarlet-arcnext-pre-cq
   scarlet-arcnext-release-tryjob
   scarlet-arcnext-tot-chromium-pfq-informational-tryjob
@@ -3510,6 +3560,7 @@
   sludge-llvm-toolchain-tryjob
   sludge-no-vmtest-pre-cq
   sludge-paladin-tryjob
+  sludge-postsubmit-tryjob
   sludge-pre-cq
   sludge-release-tryjob
   sludge-unittest-stress
@@ -3583,6 +3634,7 @@
   stout-no-vmtest-pre-cq
   stout-paladin-tryjob
   stout-payloads-tryjob
+  stout-postsubmit-tryjob
   stout-pre-cq
   stout-release-afdo-generate-tryjob
   stout-release-afdo-tryjob
@@ -3639,6 +3691,7 @@
   tael-llvm-toolchain-tryjob
   tael-no-vmtest-pre-cq
   tael-paladin-tryjob
+  tael-postsubmit-tryjob
   tael-pre-cq
   tael-unittest-stress
   tatl-compile-only-pre-cq
@@ -3647,6 +3700,7 @@
   tatl-llvm-toolchain-tryjob
   tatl-no-vmtest-pre-cq
   tatl-paladin-tryjob
+  tatl-postsubmit-tryjob
   tatl-pre-cq
   tatl-unittest-stress
   terra-chrome-pfq-tryjob
@@ -3996,6 +4050,7 @@
   wooten-llvm-toolchain-tryjob
   wooten-no-vmtest-pre-cq
   wooten-paladin-tryjob
+  wooten-postsubmit-tryjob
   wooten-pre-cq
   wooten-release-tryjob
   wooten-unittest-stress
@@ -4007,6 +4062,7 @@
   x32-generic-llvm-toolchain-tryjob
   x32-generic-no-vmtest-pre-cq
   x32-generic-paladin-tryjob
+  x32-generic-postsubmit-tryjob
   x32-generic-pre-cq
   x32-generic-tot-chromium-pfq-informational-tryjob
   x32-generic-unittest-stress
