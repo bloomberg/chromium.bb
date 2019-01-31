@@ -5985,3 +5985,5 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.html [ Pass 
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Pass Failure ]
 
 crbug.com/927296 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Failure ]
+
+crbug.com/927334 [ Win ] fast/dom/document-contentType-data-uri.html [ Pass Failure ]
