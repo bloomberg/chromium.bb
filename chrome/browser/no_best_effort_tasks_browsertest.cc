@@ -134,6 +134,9 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadAndPaintFromNetwork) {
 
 // Verify that an extension can be loaded and perform basic messaging without
 // running BEST_EFFORT tasks. Regression test for http://crbug.com/177163#c112.
+//
+// NOTE: If this test times out, it might help to look at how
+// http://crbug.com/924416 was resolved.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, LoadExtensionAndSendMessages) {
   ASSERT_TRUE(embedded_test_server()->Start());

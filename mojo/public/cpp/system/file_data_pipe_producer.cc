@@ -266,8 +266,11 @@ void FileDataPipeProducer::WriteFromPath(const base::FilePath& path,
 
 void FileDataPipeProducer::InitializeNewRequest(CompletionCallback callback) {
   DCHECK(!file_sequence_state_);
+  // TODO(crbug.com/924416): Re-evaluate how TaskPriority is set here and in
+  // other file URL-loading-related code. Some callers require USER_VISIBLE
+  // (i.e., BEST_EFFORT is not enough).
   auto file_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   file_sequence_state_ = new FileSequenceState(
       std::move(producer_), file_task_runner,
       base::BindOnce(&FileDataPipeProducer::OnWriteComplete,
