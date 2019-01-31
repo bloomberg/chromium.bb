@@ -254,6 +254,15 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     FillingAssistance filling_assistance = *filling_assistance_;
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.FillingAssistance",
                               filling_assistance);
+
+    if (is_main_frame_secure_) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.FillingAssistance.SecureOrigin", filling_assistance);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.FillingAssistance.InsecureOrigin",
+          filling_assistance);
+    }
   }
 
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
