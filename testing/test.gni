@@ -135,12 +135,18 @@ template("test") {
         }
       }
       unittest_apk(_apk_target) {
-        forward_variables_from(invoker, _apk_specific_vars + [ "deps" ])
+        forward_variables_from(invoker, _apk_specific_vars)
         shared_library = ":$_library_target"
         apk_name = invoker.target_name
         if (defined(invoker.output_name)) {
           apk_name = invoker.output_name
           install_script_name = "install_${invoker.output_name}"
+        }
+
+        if (defined(invoker.deps)) {
+          deps = invoker.deps
+        } else {
+          deps = []
         }
 
         # Add the Java classes so that each target does not have to do it.
