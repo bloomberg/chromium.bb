@@ -67,6 +67,20 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   EXPECT_NE(0, histogram_tester.GetBucketCount(
                    "Sync.ModelTypeEntityChange3.PREFERENCE",
                    /*REMOTE_NON_INITIAL_UPDATE=*/4));
+
+  // Metrics below are instrumented for the USS codepath only.
+  if (GetParam()) {
+    EXPECT_EQ(
+        1U,
+        histogram_tester
+            .GetAllSamples(
+                "Sync.NonReflectionUpdateFreshnessPossiblySkewed.PREFERENCE")
+            .size());
+    EXPECT_NE(0U, histogram_tester
+                      .GetAllSamples(
+                          "Sync.NonReflectionUpdateFreshnessPossiblySkewed")
+                      .size());
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(BooleanPref)) {
