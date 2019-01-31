@@ -94,9 +94,6 @@ class WebMediaStreamSource {
 
   BLINK_PLATFORM_EXPORT void Initialize(const WebString& id,
                                         Type,
-                                        const WebString& name);  // DEPRECATED
-  BLINK_PLATFORM_EXPORT void Initialize(const WebString& id,
-                                        Type,
                                         const WebString& name,
                                         bool remote);
   BLINK_PLATFORM_EXPORT void Reset();

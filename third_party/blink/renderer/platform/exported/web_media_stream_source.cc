@@ -67,13 +67,6 @@ WebMediaStreamSource::operator MediaStreamSource*() const {
 
 void WebMediaStreamSource::Initialize(const WebString& id,
                                       Type type,
-                                      const WebString& name) {
-  private_ = MediaStreamSource::Create(
-      id, static_cast<MediaStreamSource::StreamType>(type), name, false);
-}
-
-void WebMediaStreamSource::Initialize(const WebString& id,
-                                      Type type,
                                       const WebString& name,
                                       bool remote) {
   private_ = MediaStreamSource::Create(
