@@ -42,6 +42,9 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /** Whether to show technology badges on mobile network icons. */
+    showTechnologyBadge: {type: Boolean, value: true},
+
     /**
      * Reflects the iron-list selecteditem property.
      * @type {!CrNetworkList.CrNetworkListItemType}

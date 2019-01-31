@@ -141,7 +141,8 @@
     <div id="icon"
         class$="[[getIconClass_(networkState, deviceState, isListItem)]]">
     </div>
-    <iron-icon id="technology" hidden="[[!showTechnology_(networkState)]]"
+    <iron-icon id="technology"
+        hidden="[[!showTechnology_(networkState, showTechnologyBadge)]]"
         icon="[[getTechnology_(networkState)]]">
     </iron-icon>
     <iron-icon id="secure" hidden="[[!showSecure_(networkState)]]"

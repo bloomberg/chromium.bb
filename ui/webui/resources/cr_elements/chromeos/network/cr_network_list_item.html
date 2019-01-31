@@ -59,7 +59,9 @@
     <div id="divOuter"
         class="layout horizontal center flex" actionable>
       <template is="dom-if" if="[[networkState]]">
-        <cr-network-icon is-list-item network-state="[[networkState]]">
+        <cr-network-icon
+            show-technology-badge="[[showTechnologyBadge]]"
+            is-list-item network-state="[[networkState]]">
         </cr-network-icon>
       </template>
       <template is="dom-if" if="[[item.polymerIcon]]">
