@@ -15,6 +15,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/render_message_filter.mojom.h"
+#include "content/common/widget.mojom.h"
 #include "net/base/load_states.h"
 
 class GURL;
