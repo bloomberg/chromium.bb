@@ -111,12 +111,9 @@ cr.define('multidevice_setup', function() {
     /** @override */
     attached: function() {
       this.delegate_ = new MultiDeviceSetupFirstRunDelegate();
-      this.addWebUIListener(
-          'multidevice_setup.initializeSetupFlow',
-          this.initializeSetupFlow.bind(this));
     },
 
-    initializeSetupFlow: function() {
+    onForwardButtonFocusRequested_: function() {
       this.$$('#next-button').focus();
     },
 
