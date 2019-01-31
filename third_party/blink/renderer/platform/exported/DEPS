@@ -1,6 +1,5 @@
 
 include_rules = [
-    "+media/base/audio_bus.h",
     "+net/cookies/canonical_cookie.h",
     "+net/cookies/cookie_constants.h",
 ]
