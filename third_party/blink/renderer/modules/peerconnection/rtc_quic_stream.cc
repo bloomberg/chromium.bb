@@ -193,9 +193,6 @@ void RTCQuicStream::write(const RTCQuicStreamWriteParameters* data,
                               data_vector.size(), 1, 24000000, 50);
   proxy_->WriteData(std::move(data_vector), finish);
   if (finish) {
-    // TODO(shampson): This can cause a crash. If the P2PQuicStream
-    // has buffered data with a FIN, it will try calling
-    // host->OnWriteDataConsumed, after the QuicStreamHost has been deleted.
     wrote_fin_ = true;
     if (!read_fin_) {
       DCHECK_EQ(state_, RTCQuicStreamState::kOpen);

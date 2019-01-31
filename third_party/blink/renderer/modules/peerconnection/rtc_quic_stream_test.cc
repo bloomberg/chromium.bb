@@ -171,6 +171,8 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetFiresStateChangeToClosed) {
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnRemoteReset();
 
   RunUntilIdle();
@@ -205,6 +207,8 @@ TEST_F(RTCQuicStreamTest, PendingOnRemoteResetIgnoredAfterReset) {
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnRemoteReset();
   quic_stream->reset();
   EXPECT_EQ("closed", quic_stream->state());
@@ -328,6 +332,8 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetSetsWriteBufferedAmountToZero) {
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnRemoteReset();
 
   RunUntilIdle();
@@ -358,6 +364,8 @@ TEST_F(RTCQuicStreamTest,
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnDataReceived({}, /*fin=*/true);
 
   RunUntilIdle();
@@ -384,6 +392,8 @@ TEST_F(RTCQuicStreamTest, WriteThrowsIfRemoteReset) {
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnRemoteReset();
 
   RunUntilIdle();
@@ -575,6 +585,8 @@ TEST_F(RTCQuicStreamTest,
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnRemoteReset();
 
   RunUntilIdle();
@@ -878,6 +890,8 @@ TEST_F(RTCQuicStreamTest, ReadIntoThrowsIfClosed) {
 
   Persistent<RTCQuicStream> stream =
       CreateQuicStream(scope, p2p_quic_stream.get());
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream->reset();
 
   NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(2));
@@ -1136,6 +1150,8 @@ TEST_F(RTCQuicStreamTest, OnRemoteResetTransitionsToClosed) {
 
   ASSERT_TRUE(stream_delegate);
   EXPECT_EQ("open", stream->state());
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnRemoteReset();
 
   RunUntilIdle();
@@ -1167,6 +1183,7 @@ TEST_F(RTCQuicStreamTest, FinishAfterReadingRemoteFinishTransitionsToClosed) {
   EXPECT_TRUE(stream->readInto(read_buffer, ASSERT_NO_EXCEPTION)->finished());
 
   EXPECT_EQ("closing", stream->state());
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
 
   stream->write(CreateWriteParametersWithoutData(/*finish=*/true),
                 ASSERT_NO_EXCEPTION);
@@ -1195,6 +1212,8 @@ TEST_F(RTCQuicStreamTest, ReadingRemoteFinishAfterFinishTransitionsToClosed) {
   RunUntilIdle();
 
   ASSERT_TRUE(stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream.get(), SetDelegate(nullptr));
+
   stream_delegate->OnDataReceived({}, /*fin=*/true);
 
   RunUntilIdle();
