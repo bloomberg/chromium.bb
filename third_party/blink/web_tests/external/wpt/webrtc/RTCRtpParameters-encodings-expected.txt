@@ -5,8 +5,8 @@ FAIL sender.getParameters() should return sendEncodings set by addTransceiver() 
 PASS sender.setParameters() with mismatch number of encodings should reject with InvalidModificationError
 PASS sender.setParameters() with encodings unset should reject with TypeError
 FAIL setParameters() with modified encoding.rid field should reject with InvalidModificationError assert_equals: expected (string) "foo" but got (undefined) undefined
-FAIL setParameters() with encoding.scaleResolutionDownBy field set to less than 1.0 should reject with RangeError assert_unreached: Should have rejected: undefined Reached unreachable code
-FAIL setParameters() with encoding.scaleResolutionDownBy field set to greater than 1.0 should succeed assert_approx_equals: expected a number but got a "undefined"
+PASS setParameters() with encoding.scaleResolutionDownBy field set to less than 1.0 should reject with RangeError
+PASS setParameters() with encoding.scaleResolutionDownBy field set to greater than 1.0 should succeed
 FAIL setParameters() with modified encoding.dtx should succeed with RTCRtpTransceiverInit assert_equals: expected (string) "enabled" but got (undefined) undefined
 FAIL setParameters() with modified encoding.dtx should succeed without RTCRtpTransceiverInit assert_equals: expected (string) "enabled" but got (undefined) undefined
 FAIL setParameters() with unset encoding.dtx should succeed with RTCRtpTransceiverInit assert_equals: expected (string) "enabled" but got (undefined) undefined
