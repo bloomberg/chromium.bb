@@ -92,6 +92,17 @@ AppCacheHost::~AppCacheHost() {
   storage()->CancelDelegateCallbacks(this);
   if (service()->quota_manager_proxy() && !origin_in_use_.opaque())
     service()->quota_manager_proxy()->NotifyOriginNoLongerInUse(origin_in_use_);
+
+  // Run pending callbacks in case we get destroyed with pending callbacks while
+  // the mojo connection is still open.
+  if (pending_get_status_callback_) {
+    std::move(pending_get_status_callback_)
+        .Run(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED);
+  }
+  if (pending_swap_cache_callback_)
+    std::move(pending_swap_cache_callback_).Run(false);
+  if (pending_start_update_callback_)
+    std::move(pending_start_update_callback_).Run(false);
 }
 
 void AppCacheHost::AddObserver(Observer* observer) {
