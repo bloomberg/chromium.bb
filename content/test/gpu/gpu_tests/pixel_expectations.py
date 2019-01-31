@@ -49,16 +49,11 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    # TODO(wangxianzhu): This is commented out temporarily because of the entry
-    # for crbug.com/836884.
-    # self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)],
-    #     bug=690277)
+    self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)], bug=690277)
 
     # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
     # mark failing, unfortunately.
-    # TODO(wangxianzhu): This is commented out temporarily because of the entry
-    # for crbug.com/836884.
-    # self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
+    self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
@@ -121,12 +116,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=883500)
 
-    # TODO(wangxianzhu): Re-enable after and rebaselining
-    self.Fail('Pixel_CSSFilterEffects', bug=836884)
-    self.Fail('Pixel_CSSFilterEffects_NoOverlays', bug=836884)
-    self.Fail('Pixel_2DCanvasWebGL', bug=836884)
-    self.Fail('Pixel_CSS3DBlueBox', bug=836884)
-
     # We do not have software H.264 decoding on Android, so it can't survive a
     # context loss which results in hardware decoder loss.
     self.Skip('Pixel_Video_Context_Loss_MP4', ['android'], bug=580386)
@@ -144,6 +133,9 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
+
+    # Fails on multiple Android devices.
+    self.Fail('Pixel_CSS3DBlueBox', ['android'], bug=927107)
 
     # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV.
     self.Fail('Pixel_Video_MP4', ['android'], bug=925744)
