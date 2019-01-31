@@ -134,4 +134,11 @@ LayoutObject* HTMLPortalElement::CreateLayoutObject(
   return new LayoutIFrame(this);
 }
 
+void HTMLPortalElement::AttachLayoutTree(AttachContext& context) {
+  HTMLFrameOwnerElement::AttachLayoutTree(context);
+
+  if (GetLayoutEmbeddedContent() && ContentFrame())
+    SetEmbeddedContentView(ContentFrame()->View());
+}
+
 }  // namespace blink
