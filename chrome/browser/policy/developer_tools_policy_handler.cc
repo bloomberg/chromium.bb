@@ -180,8 +180,7 @@ void DeveloperToolsPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     if (value.value() == Availability::kDisallowed) {
       // Piggy-back disallowed developer tools to also force-disable
       // kExtensionsUIDeveloperMode.
-      prefs->SetValue(prefs::kExtensionsUIDeveloperMode,
-                      std::make_unique<base::Value>(false));
+      prefs->SetValue(prefs::kExtensionsUIDeveloperMode, base::Value(false));
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   }
