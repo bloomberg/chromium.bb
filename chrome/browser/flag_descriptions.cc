@@ -1300,7 +1300,7 @@ const char kNewTabButtonPositionTrailing[] = "Trailing";
 
 const char kNostatePrefetchName[] = "NoState Prefetch";
 const char kNostatePrefetchDescription[] =
-    R"*(If enabled, pre-downloads resources to improve page load speed.)*";
+    "If enabled, pre-downloads resources to improve page load speed.";
 
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
@@ -3509,12 +3509,12 @@ const char kUiSlowAnimationsDescription[] = "Makes all UI animations slow.";
 // Force UI Mode
 const char kUiModeName[] = "Force Ui Mode";
 const char kUiModeDescription[] =
-    R"*(This flag can be used to force a certain mode on to a chromebook, )*"
-    R"*(despite its current orientation. "Tablet" means that the )*"
-    R"*(chromebook will act as if it were in tablet mode. "Clamshell" )*"
-    R"*(means that the chromebook will act as if it were in clamshell )*"
-    R"*(mode . "Auto" means that the chromebook will alternate between )*"
-    R"*(the two, based on its orientation.)*";
+    "This flag can be used to force a certain mode on to a chromebook, "
+    "despite its current orientation. \"Tablet\" means that the "
+    "chromebook will act as if it were in tablet mode. \"Clamshell\" "
+    "means that the chromebook will act as if it were in clamshell "
+    "mode. \"Auto\" means that the chromebook will alternate between "
+    "the two, based on its orientation.";
 const char kUiModeTablet[] = "Tablet";
 const char kUiModeClamshell[] = "Clamshell";
 const char kUiModeAuto[] = "Auto (default)";
