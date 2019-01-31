@@ -27,6 +27,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/keyboard/public/keyboard_config.mojom.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace input_method_private = extensions::api::input_method_private;
