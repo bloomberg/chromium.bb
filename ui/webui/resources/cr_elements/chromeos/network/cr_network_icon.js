@@ -38,6 +38,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * If true, cellular technology badge is displayed in the network icon.
+     */
+    showTechnologyBadge: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   /**
@@ -115,7 +123,7 @@ Polymer({
    * @private
    */
   showTechnology_: function() {
-    return this.getTechnology_() != '';
+    return this.getTechnology_() != '' && this.showTechnologyBadge;
   },
 
   /**

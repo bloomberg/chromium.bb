@@ -56,6 +56,9 @@ Polymer({
      * @type {!CrOnc.ConnectionState|undefined}
      */
     connectionState_: String,
+
+    /** Whether to show technology badge on mobile network icon. */
+    showTechnologyBadge: {type: Boolean, value: true},
   },
 
   behaviors: [CrPolicyNetworkBehavior],

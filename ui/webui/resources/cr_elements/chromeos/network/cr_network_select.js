@@ -44,6 +44,9 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /** Whether to show technology badges on mobile network icons. */
+    showTechnologyBadge: {type: Boolean, value: true},
+
     /**
      * List of all network state data for all visible networks.
      * @private {!Array<!CrOnc.NetworkStateProperties>}
