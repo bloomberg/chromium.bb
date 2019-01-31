@@ -41,21 +41,19 @@ void SpellcheckLanguagePolicyHandler::ApplyPolicySettings(
 
   const base::Value::ListStorage& languages = value->GetList();
 
-  std::unique_ptr<base::ListValue> forced_language_list =
-      std::make_unique<base::ListValue>();
+  std::vector<base::Value> forced_language_list;
   for (const base::Value& language : languages) {
     std::string current_language =
         spellcheck::GetCorrespondingSpellCheckLanguage(
             base::TrimWhitespaceASCII(language.GetString(), base::TRIM_ALL));
     if (!current_language.empty()) {
-      forced_language_list->GetList().push_back(base::Value(current_language));
+      forced_language_list.emplace_back(std::move(current_language));
     } else {
       LOG(WARNING) << "Unknown language requested: \"" << language << "\"";
     }
   }
 
-  prefs->SetValue(spellcheck::prefs::kSpellCheckEnable,
-                  std::make_unique<base::Value>(true));
+  prefs->SetValue(spellcheck::prefs::kSpellCheckEnable, base::Value(true));
   prefs->SetValue(spellcheck::prefs::kSpellCheckForcedDictionaries,
-                  std::move(forced_language_list));
+                  base::Value(std::move(forced_language_list)));
 }
