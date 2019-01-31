@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/mus/test_window_tree_delegate.h"
 
