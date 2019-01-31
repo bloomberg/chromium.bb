@@ -179,14 +179,10 @@ NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
 LayoutUnit CalculateAvailableInlineSizeForLegacy(
     const LayoutBox& box,
     const NGConstraintSpace& space) {
-  if (box.StyleRef().LogicalWidth().IsPercent()) {
-    if (box.ShouldComputeSizeAsReplaced())
-      return space.ReplacedPercentageResolutionInlineSize();
+  if (box.ShouldComputeSizeAsReplaced())
+    return space.ReplacedPercentageResolutionInlineSize();
 
-    return space.PercentageResolutionInlineSize();
-  }
-
-  return space.AvailableSize().inline_size;
+  return space.PercentageResolutionInlineSize();
 }
 
 LayoutUnit CalculateAvailableBlockSizeForLegacy(
@@ -893,6 +889,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
     } else {
       box_->ClearOverrideLogicalHeight();
     }
+    box_->SetOverrideAvailableInlineSize(
+        constraint_space.AvailableSize().inline_size);
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,

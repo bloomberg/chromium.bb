@@ -1502,14 +1502,47 @@ bool LayoutBox::HasOverrideBlockPercentageResolutionSize() const {
 void LayoutBox::SetOverrideBlockPercentageResolutionSize(
     LayoutUnit logical_height) {
   DCHECK_GE(logical_height, LayoutUnit(-1));
-  EnsureRareData().override_block_percentage_resolution_size_ = logical_height;
-  EnsureRareData().has_override_block_percentage_resolution_size_ = true;
+  auto& rare_data = EnsureRareData();
+
+  // The actual data field is shared with override available inline size. They
+  // cannot be in use at the same time.
+  DCHECK(!rare_data.has_override_available_inline_size_);
+
+  rare_data.override_block_percentage_resolution_size_ = logical_height;
+  rare_data.has_override_block_percentage_resolution_size_ = true;
 }
 
 void LayoutBox::ClearOverrideBlockPercentageResolutionSize() {
   if (!rare_data_)
     return;
   EnsureRareData().has_override_block_percentage_resolution_size_ = false;
+}
+
+LayoutUnit LayoutBox::OverrideAvailableInlineSize() const {
+  DCHECK(HasOverrideAvailableInlineSize());
+  return rare_data_->override_block_percentage_resolution_size_;
+}
+
+bool LayoutBox::HasOverrideAvailableInlineSize() const {
+  return rare_data_ && rare_data_->has_override_available_inline_size_;
+}
+
+void LayoutBox::SetOverrideAvailableInlineSize(LayoutUnit inline_size) {
+  DCHECK_GE(inline_size, LayoutUnit());
+  auto& rare_data = EnsureRareData();
+
+  // The actual data field is shared with override block percentage resolution
+  // size. They cannot be in use at the same time.
+  DCHECK(!rare_data.has_override_block_percentage_resolution_size_);
+
+  rare_data.override_available_inline_size_ = inline_size;
+  rare_data.has_override_available_inline_size_ = true;
+}
+
+void LayoutBox::ClearOverrideAvailableInlineSize() {
+  if (!rare_data_)
+    return;
+  EnsureRareData().has_override_available_inline_size_ = false;
 }
 
 LayoutUnit LayoutBox::AdjustBorderBoxLogicalWidthForBoxSizing(
@@ -2841,6 +2874,10 @@ LayoutUnit LayoutBox::FillAvailableMeasure(LayoutUnit available_logical_width,
                                        available_size_for_resolving_margin);
   margin_end = MinimumValueForLength(StyleRef().MarginEnd(),
                                      available_size_for_resolving_margin);
+
+  if (HasOverrideAvailableInlineSize())
+    available_logical_width = OverrideAvailableInlineSize();
+
   LayoutUnit available = available_logical_width - margin_start - margin_end;
   available = std::max(available, LayoutUnit());
   return available;
