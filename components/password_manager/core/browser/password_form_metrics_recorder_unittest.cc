@@ -754,36 +754,53 @@ std::set<base::string16> ConvertToString16Set(
 
 void CheckFillingAssistanceTestCase(
     const FillingAssistanceTestCase& test_case) {
-  SCOPED_TRACE(testing::Message("Test description: ")
-               << test_case.description_for_logging);
+  for (bool is_main_frame_secure : {false, true}) {
+    SCOPED_TRACE(testing::Message("Test description: ")
+                 << test_case.description_for_logging
+                 << ", is_main_frame_secure: " << std::boolalpha
+                 << is_main_frame_secure);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::HistogramTester histogram_tester;
+    base::test::ScopedTaskEnvironment scoped_task_environment_;
+    base::HistogramTester histogram_tester;
 
-  FormData form_data = ConvertToFormData(test_case.fields);
-  std::set<base::string16> saved_usernames =
-      ConvertToString16Set(test_case.saved_usernames);
-  std::set<base::string16> saved_passwords =
-      ConvertToString16Set(test_case.saved_passwords);
+    FormData form_data = ConvertToFormData(test_case.fields);
+    std::set<base::string16> saved_usernames =
+        ConvertToString16Set(test_case.saved_usernames);
+    std::set<base::string16> saved_passwords =
+        ConvertToString16Set(test_case.saved_passwords);
 
-  auto recorder =
-      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
-  if (test_case.submission_detected) {
-    recorder->CalculateFillingAssistanceMetric(form_data, saved_usernames,
-                                               saved_passwords,
-                                               test_case.interactions_stats);
-  }
+    auto recorder =
+        CreatePasswordFormMetricsRecorder(is_main_frame_secure, nullptr);
+    if (test_case.submission_detected) {
+      recorder->CalculateFillingAssistanceMetric(form_data, saved_usernames,
+                                                 saved_passwords,
+                                                 test_case.interactions_stats);
+    }
 
-  if (test_case.submission_is_successful)
-    recorder->LogSubmitPassed();
-  recorder.reset();
+    if (test_case.submission_is_successful)
+      recorder->LogSubmitPassed();
+    recorder.reset();
 
-  int expected_count = test_case.expectation ? 1 : 0;
-  histogram_tester.ExpectTotalCount("PasswordManager.FillingAssistance",
-                                    expected_count);
-  if (test_case.expectation) {
-    histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
-                                        test_case.expectation.value(), 1);
+    int expected_count = test_case.expectation ? 1 : 0;
+    int expected_insecure_count = !is_main_frame_secure ? expected_count : 0;
+    int expected_secure_count = is_main_frame_secure ? expected_count : 0;
+    histogram_tester.ExpectTotalCount("PasswordManager.FillingAssistance",
+                                      expected_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.InsecureOrigin",
+        expected_insecure_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.SecureOrigin",
+        expected_secure_count);
+    if (test_case.expectation) {
+      histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
+                                          *test_case.expectation, 1);
+      histogram_tester.ExpectUniqueSample(
+          is_main_frame_secure
+              ? "PasswordManager.FillingAssistance.SecureOrigin"
+              : "PasswordManager.FillingAssistance.InsecureOrigin",
+          *test_case.expectation, 1);
+    }
   }
 }
 
