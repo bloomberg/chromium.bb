@@ -2011,7 +2011,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if ([self shouldLoadURLInNativeView:currentURL]) {
     [self loadCurrentURLInNativeView];
   } else if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-             isCurrentURLAppSpecific && _webStateImpl->HasWebUI()) {
+             isCurrentURLAppSpecific && _webStateImpl->HasWebUI() &&
+             !base::FeatureList::IsEnabled(
+                 web::features::kWebUISchemeHandling)) {
     [self loadPlaceholderInWebViewForURL:currentURL forContext:nullptr];
   } else {
     [self loadCurrentURLInWebView];
@@ -3298,7 +3300,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // |HasWebUI| will return false.
   _webStateImpl->CreateWebUI(URL);
   bool isWebUIURL = _webStateImpl->HasWebUI();
-  if (isWebUIURL) {
+  if (isWebUIURL &&
+      !base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling)) {
     _webUIManager = [[CRWWebUIManager alloc] initWithWebState:_webStateImpl];
   }
 }

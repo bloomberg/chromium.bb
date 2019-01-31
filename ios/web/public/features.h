@@ -36,6 +36,9 @@ extern const base::Feature kOutOfWebFullscreen;
 // (crbug.com/887497).
 extern const base::Feature kHistoryClobberWorkaround;
 
+// Used to have the WebUI schemes being handled by the WKWebView directly.
+extern const base::Feature kWebUISchemeHandling;
+
 }  // namespace features
 }  // namespace web
 

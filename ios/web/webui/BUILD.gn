@@ -23,6 +23,8 @@ source_set("webui") {
     "crw_web_ui_manager.mm",
     "crw_web_ui_page_builder.h",
     "crw_web_ui_page_builder.mm",
+    "crw_web_ui_scheme_handler.h",
+    "crw_web_ui_scheme_handler.mm",
     "mojo_facade.h",
     "mojo_facade.mm",
     "shared_resources_data_source_ios.h",

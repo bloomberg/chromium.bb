@@ -548,6 +548,7 @@ source_set("ios_web_webui_unittests") {
   sources = [
     "webui/crw_web_ui_manager_unittest.mm",
     "webui/crw_web_ui_page_builder_unittest.mm",
+    "webui/crw_web_ui_scheme_handler_unittest.mm",
     "webui/mojo_facade_unittest.mm",
     "webui/url_fetcher_block_adapter_unittest.mm",
   ]
