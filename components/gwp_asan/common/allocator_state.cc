@@ -15,7 +15,6 @@ namespace internal {
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t AllocatorState::kGpaMaxPages;
 constexpr size_t AllocatorState::kMaxStackFrames;
-constexpr size_t AllocatorState::kMaxPackedTraceLength;
 
 AllocatorState::AllocatorState() {}
 
