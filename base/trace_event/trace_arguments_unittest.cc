@@ -249,7 +249,7 @@ TEST(TraceArguments, ConstructorLegacyNoConvertables) {
   EXPECT_EQ(TRACE_VALUE_TYPE_STRING, args.types()[1]);
   EXPECT_EQ(kValues[0], args.values()[0].as_uint);
   EXPECT_EQ(kText, args.values()[1].as_string);
-};
+}
 
 TEST(TraceArguments, ConstructorLegacyWithConvertables) {
   const char* const kNames[3] = {"legacy_arg1", "legacy_arg2", "legacy_arg3"};

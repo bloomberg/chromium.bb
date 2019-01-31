@@ -18,5 +18,6 @@ typedef uint16_t HalfFloat;
 GFX_EXPORT void FloatToHalfFloat(const float* input,
                                  HalfFloat* output,
                                  size_t num);
-};
+}  // namespace gfx
+
 #endif

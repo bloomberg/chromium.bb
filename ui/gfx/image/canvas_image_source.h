@@ -45,7 +45,7 @@ class GFX_EXPORT CanvasImageSource : public ImageSkiaSource {
   virtual void Draw(Canvas* canvas) = 0;
 
   // Returns the size of images in DIP that this source will generate.
-  const Size& size() const { return size_; };
+  const Size& size() const { return size_; }
 
   // Overridden from ImageSkiaSource.
   ImageSkiaRep GetImageForScale(float scale) override;

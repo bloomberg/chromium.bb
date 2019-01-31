@@ -66,63 +66,63 @@ TYPED_TEST(CommonStringPieceTest, CheckComparisonOperators) {
                           op 0));                                          \
   }
 
-  CMP_Y(==, "",   "");
-  CMP_Y(==, "a",  "a");
-  CMP_Y(==, "aa", "aa");
-  CMP_N(==, "a",  "");
-  CMP_N(==, "",   "a");
-  CMP_N(==, "a",  "b");
-  CMP_N(==, "a",  "aa");
-  CMP_N(==, "aa", "a");
+  CMP_Y(==, "", "")
+  CMP_Y(==, "a", "a")
+  CMP_Y(==, "aa", "aa")
+  CMP_N(==, "a", "")
+  CMP_N(==, "", "a")
+  CMP_N(==, "a", "b")
+  CMP_N(==, "a", "aa")
+  CMP_N(==, "aa", "a")
 
-  CMP_N(!=, "",   "");
-  CMP_N(!=, "a",  "a");
-  CMP_N(!=, "aa", "aa");
-  CMP_Y(!=, "a",  "");
-  CMP_Y(!=, "",   "a");
-  CMP_Y(!=, "a",  "b");
-  CMP_Y(!=, "a",  "aa");
-  CMP_Y(!=, "aa", "a");
+  CMP_N(!=, "", "")
+  CMP_N(!=, "a", "a")
+  CMP_N(!=, "aa", "aa")
+  CMP_Y(!=, "a", "")
+  CMP_Y(!=, "", "a")
+  CMP_Y(!=, "a", "b")
+  CMP_Y(!=, "a", "aa")
+  CMP_Y(!=, "aa", "a")
 
-  CMP_Y(<, "a",  "b");
-  CMP_Y(<, "a",  "aa");
-  CMP_Y(<, "aa", "b");
-  CMP_Y(<, "aa", "bb");
-  CMP_N(<, "a",  "a");
-  CMP_N(<, "b",  "a");
-  CMP_N(<, "aa", "a");
-  CMP_N(<, "b",  "aa");
-  CMP_N(<, "bb", "aa");
+  CMP_Y(<, "a", "b")
+  CMP_Y(<, "a", "aa")
+  CMP_Y(<, "aa", "b")
+  CMP_Y(<, "aa", "bb")
+  CMP_N(<, "a", "a")
+  CMP_N(<, "b", "a")
+  CMP_N(<, "aa", "a")
+  CMP_N(<, "b", "aa")
+  CMP_N(<, "bb", "aa")
 
-  CMP_Y(<=, "a",  "a");
-  CMP_Y(<=, "a",  "b");
-  CMP_Y(<=, "a",  "aa");
-  CMP_Y(<=, "aa", "b");
-  CMP_Y(<=, "aa", "bb");
-  CMP_N(<=, "b",  "a");
-  CMP_N(<=, "aa", "a");
-  CMP_N(<=, "b",  "aa");
-  CMP_N(<=, "bb", "aa");
+  CMP_Y(<=, "a", "a")
+  CMP_Y(<=, "a", "b")
+  CMP_Y(<=, "a", "aa")
+  CMP_Y(<=, "aa", "b")
+  CMP_Y(<=, "aa", "bb")
+  CMP_N(<=, "b", "a")
+  CMP_N(<=, "aa", "a")
+  CMP_N(<=, "b", "aa")
+  CMP_N(<=, "bb", "aa")
 
-  CMP_N(>=, "a",  "b");
-  CMP_N(>=, "a",  "aa");
-  CMP_N(>=, "aa", "b");
-  CMP_N(>=, "aa", "bb");
-  CMP_Y(>=, "a",  "a");
-  CMP_Y(>=, "b",  "a");
-  CMP_Y(>=, "aa", "a");
-  CMP_Y(>=, "b",  "aa");
-  CMP_Y(>=, "bb", "aa");
+  CMP_N(>=, "a", "b")
+  CMP_N(>=, "a", "aa")
+  CMP_N(>=, "aa", "b")
+  CMP_N(>=, "aa", "bb")
+  CMP_Y(>=, "a", "a")
+  CMP_Y(>=, "b", "a")
+  CMP_Y(>=, "aa", "a")
+  CMP_Y(>=, "b", "aa")
+  CMP_Y(>=, "bb", "aa")
 
-  CMP_N(>, "a",  "a");
-  CMP_N(>, "a",  "b");
-  CMP_N(>, "a",  "aa");
-  CMP_N(>, "aa", "b");
-  CMP_N(>, "aa", "bb");
-  CMP_Y(>, "b",  "a");
-  CMP_Y(>, "aa", "a");
-  CMP_Y(>, "b",  "aa");
-  CMP_Y(>, "bb", "aa");
+  CMP_N(>, "a", "a")
+  CMP_N(>, "a", "b")
+  CMP_N(>, "a", "aa")
+  CMP_N(>, "aa", "b")
+  CMP_N(>, "aa", "bb")
+  CMP_Y(>, "b", "a")
+  CMP_Y(>, "aa", "a")
+  CMP_Y(>, "b", "aa")
+  CMP_Y(>, "bb", "aa")
 
   std::string x;
   for (int i = 0; i < 256; i++) {

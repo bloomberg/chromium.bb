@@ -111,7 +111,7 @@ TEST(BindObjcBlockTestARC, TestBlockMoveable) {
           invoked_block = *v;
         },
         std::make_unique<BOOL>(YES));
-  };
+  }
   std::move(c).Run();
   EXPECT_TRUE(invoked_block);
 }

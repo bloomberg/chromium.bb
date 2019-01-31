@@ -121,7 +121,7 @@ TEST_F(SyncSocketTest, ClonedSendReceivePeek) {
   SyncSocket socket_c(socket_a_.Release());
   SyncSocket socket_d(socket_b_.Release());
   SendReceivePeek(&socket_c, &socket_d);
-};
+}
 
 class CancelableSyncSocketTest : public testing::Test {
  public:

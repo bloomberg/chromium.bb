@@ -93,7 +93,7 @@ struct is_virtual_base_of<Base,
                               static_cast<Base*>(nullptr)))> : std::false_type {
 };
 
-};  // namespace internal
+}  // namespace internal
 
 template <typename T>
 class SequenceBound {

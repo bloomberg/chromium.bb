@@ -465,7 +465,7 @@ void CrashChildMain(int death_location) {
   // Should never reach this point.
   const uintptr_t failed = 0;
   HANDLE_EINTR(write(g_child_crash_pipe, &failed, sizeof(uintptr_t)));
-};
+}
 
 void SpawnChildAndCrash(int death_location, uintptr_t* child_crash_addr) {
   int pipefd[2];

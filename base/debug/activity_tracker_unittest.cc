@@ -275,7 +275,7 @@ class SimpleLockThread : public SimpleThread {
 
   bool IsRunning() { return is_running_.load(std::memory_order_relaxed); }
 
-  bool WasDataChanged() { return data_changed_; };
+  bool WasDataChanged() { return data_changed_; }
 
  private:
   Lock* lock_;

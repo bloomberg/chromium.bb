@@ -271,8 +271,8 @@ class ColorTransformInternal : public ColorTransform {
                          Intent intent);
   ~ColorTransformInternal() override;
 
-  gfx::ColorSpace GetSrcColorSpace() const override { return src_; };
-  gfx::ColorSpace GetDstColorSpace() const override { return dst_; };
+  gfx::ColorSpace GetSrcColorSpace() const override { return src_; }
+  gfx::ColorSpace GetDstColorSpace() const override { return dst_; }
 
   void Transform(TriStim* colors, size_t num) const override {
     for (const auto& step : steps_) {

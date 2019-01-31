@@ -62,7 +62,7 @@ RRectF::Type RRectF::GetType() const {
     case SkRRect::kComplex_Type:
     default:
       return Type::kComplex;
-  };
+  }
 }
 
 gfx::Vector2dF RRectF::GetCornerRadii(Corner corner) const {
