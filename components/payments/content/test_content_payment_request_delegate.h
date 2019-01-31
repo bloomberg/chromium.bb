@@ -48,6 +48,7 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   void EmbedPaymentHandlerWindow(
       const GURL& url,
       PaymentHandlerOpenWindowCallback callback) override;
+  bool IsInteractive() const override;
 
   autofill::TestAddressNormalizer* test_address_normalizer();
   void DelayFullCardRequestCompletion();
