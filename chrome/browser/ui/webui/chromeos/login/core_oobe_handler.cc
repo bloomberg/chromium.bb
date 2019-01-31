@@ -6,6 +6,7 @@
 
 #include <type_traits>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
@@ -186,6 +187,8 @@ void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
                base::Value(TabletModeClient::Get()->tablet_mode_enabled()));
   dict->SetKey("isDemoModeEnabled",
                base::Value(DemoSetupController::IsDemoModeAllowed()));
+  dict->SetKey("showTechnologyBadge",
+               base::Value(!ash::features::IsSeparateNetworkIconsEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {
