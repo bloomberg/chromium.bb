@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -196,6 +197,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         if (mNativeFeedLoggingBridge == 0) return;
 
         nativeOnSpinnerShown(mNativeFeedLoggingBridge, timeShownMs);
+    }
+
+    @Override
+    public void onPietFrameRenderingEvent(List<Integer> pietErrorCodes) {
+        // TODO(https://crbug.com/924739): Implementation.
     }
 
     /**
