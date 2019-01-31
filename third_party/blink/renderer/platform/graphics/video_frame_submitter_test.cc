@@ -19,6 +19,7 @@
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
