@@ -153,7 +153,7 @@ class StaticSingleton final {
   InstanceStorage<WrapperType> instance_;
 #if DCHECK_IS_ON()
   bool safely_initialized_;
-  ThreadIdentifier thread_;
+  base::PlatformThreadId thread_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(StaticSingleton);

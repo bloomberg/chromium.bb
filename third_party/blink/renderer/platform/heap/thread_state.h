@@ -260,7 +260,7 @@ class PLATFORM_EXPORT ThreadState final
   bool CheckThread() const { return thread_ == CurrentThread(); }
 
   ThreadHeap& Heap() const { return *heap_; }
-  ThreadIdentifier ThreadId() const { return thread_; }
+  base::PlatformThreadId ThreadId() const { return thread_; }
 
   // When ThreadState is detaching from non-main thread its
   // heap is expected to be empty (because it is going away).
@@ -667,7 +667,7 @@ class PLATFORM_EXPORT ThreadState final
   static uint8_t main_thread_state_storage_[];
 
   std::unique_ptr<ThreadHeap> heap_;
-  ThreadIdentifier thread_;
+  base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;
   std::unique_ptr<PersistentRegion> weak_persistent_region_;
   intptr_t* start_of_stack_;

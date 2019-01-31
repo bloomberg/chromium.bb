@@ -8,8 +8,8 @@
 
 namespace WTF {
 
-ThreadIdentifier CurrentThread() {
-  thread_local ThreadIdentifier g_id = base::PlatformThread::CurrentId();
+base::PlatformThreadId CurrentThread() {
+  thread_local base::PlatformThreadId g_id = base::PlatformThread::CurrentId();
   return g_id;
 }
 

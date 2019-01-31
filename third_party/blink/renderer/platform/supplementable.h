@@ -222,8 +222,8 @@ class Supplementable : public GarbageCollectedMixin {
 
 #if DCHECK_IS_ON()
  private:
-  ThreadIdentifier attached_thread_id_;
-  ThreadIdentifier creation_thread_id_;
+  base::PlatformThreadId attached_thread_id_;
+  base::PlatformThreadId creation_thread_id_;
 #endif
 };
 

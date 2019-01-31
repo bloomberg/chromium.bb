@@ -99,7 +99,7 @@ class ThreadRestrictionVerifier {
 
   bool shared_;
 
-  ThreadIdentifier owning_thread_;
+  base::PlatformThreadId owning_thread_;
 };
 
 }  // namespace WTF

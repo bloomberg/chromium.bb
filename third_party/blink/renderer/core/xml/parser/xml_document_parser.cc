@@ -473,7 +473,7 @@ bool XMLDocumentParser::ParseDocumentFragment(
 }
 
 static int g_global_descriptor = 0;
-static ThreadIdentifier g_libxml_loader_thread = 0;
+static base::PlatformThreadId g_libxml_loader_thread = 0;
 
 static int MatchFunc(const char*) {
   // Only match loads initiated due to uses of libxml2 from within
