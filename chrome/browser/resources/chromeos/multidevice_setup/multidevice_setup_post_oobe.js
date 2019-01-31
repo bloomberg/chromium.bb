@@ -73,7 +73,6 @@ Polymer({
   attached: function() {
     this.delegate_ = new multidevice_setup.PostOobeDelegate();
     this.$$('multidevice-setup').initializeSetupFlow();
-    this.onForwardButtonFocusRequested_();
   },
 
   /** @private */
