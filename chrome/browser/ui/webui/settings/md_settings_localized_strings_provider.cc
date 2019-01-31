@@ -1889,8 +1889,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   }
 #endif
 
-  html_source->AddString("syncErrorHelpUrl", chrome::kSyncErrorsHelpURL);
-
   html_source->AddString("activityControlsUrl",
                          chrome::kGoogleAccountActivityControlsURL);
 
