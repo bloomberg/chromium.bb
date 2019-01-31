@@ -284,6 +284,10 @@ class GpuImageDecodeCacheTest
         PaintImage::kDefaultGeneratorClientId, color_space.ToSkColorSpace());
   }
 
+  gfx::Size GetLargeImageSize() const {
+    return gfx::Size(1, max_texture_size_ + 1);
+  }
+
   PaintImage CreatePaintImageInternal(
       const gfx::Size& size,
       sk_sp<SkColorSpace> color_space = nullptr,
@@ -910,7 +914,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  PaintImage image = CreatePaintImageInternal(gfx::Size(1, 24000));
+  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -1121,7 +1125,8 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  PaintImage image = CreatePaintImageInternal(gfx::Size(1, 48000));
+  PaintImage image = CreatePaintImageInternal(
+      gfx::Size(GetLargeImageSize().width(), GetLargeImageSize().height() * 2));
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
@@ -1142,8 +1147,8 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
   // The mip level scale should never go below 0 in any dimension.
-  EXPECT_EQ(1, decoded_draw_image.image()->width());
-  EXPECT_EQ(24000, decoded_draw_image.image()->height());
+  EXPECT_EQ(GetLargeImageSize().width(), decoded_draw_image.image()->width());
+  EXPECT_EQ(GetLargeImageSize().height(), decoded_draw_image.image()->height());
 
   EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
 
@@ -1241,7 +1246,7 @@ TEST_P(GpuImageDecodeCacheTest,
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   cache->SetWorkingSetLimitsForTesting(0 /* max_bytes */, 0 /* max_items */);
-  PaintImage image = CreatePaintImageInternal(gfx::Size(1, 24000));
+  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -1533,13 +1538,14 @@ TEST_P(GpuImageDecodeCacheTest, QualityCappedAtMedium) {
   EXPECT_FALSE(low_result.task.get() == medium_result.task.get());
 
   // Get the same image at kHigh_FilterQuality. We should re-use medium.
-  DrawImage large_draw_image(
+  DrawImage high_quality_draw_image(
       image, SkIRect::MakeWH(image.width(), image.height()),
       kHigh_SkFilterQuality, matrix, PaintImage::kDefaultFrameIndex);
-  ImageDecodeCache::TaskResult large_result = cache->GetTaskForImageAndRef(
-      large_draw_image, ImageDecodeCache::TracingInfo());
-  EXPECT_TRUE(large_result.need_unref);
-  EXPECT_TRUE(medium_result.task.get() == large_result.task.get());
+  ImageDecodeCache::TaskResult high_quality_result =
+      cache->GetTaskForImageAndRef(high_quality_draw_image,
+                                   ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(high_quality_result.need_unref);
+  EXPECT_TRUE(medium_result.task.get() == high_quality_result.task.get());
 
   TestTileTaskRunner::ProcessTask(low_result.task->dependencies()[0].get());
   TestTileTaskRunner::ProcessTask(low_result.task.get());
@@ -1548,7 +1554,7 @@ TEST_P(GpuImageDecodeCacheTest, QualityCappedAtMedium) {
 
   cache->UnrefImage(low_draw_image);
   cache->UnrefImage(medium_draw_image);
-  cache->UnrefImage(large_draw_image);
+  cache->UnrefImage(high_quality_draw_image);
 }
 
 // Ensure that switching to a mipped version of an image after the initial
@@ -1822,7 +1828,7 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForLargeImage) {
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   // Create an image that's too large to cache.
-  PaintImage image = CreatePaintImageInternal(gfx::Size(1, 24000));
+  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -2080,7 +2086,7 @@ TEST_P(GpuImageDecodeCacheTest,
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   // Create an image that's too large to upload.
-  PaintImage image = CreatePaintImageInternal(gfx::Size(1, 24000));
+  PaintImage image = CreatePaintImageInternal(GetLargeImageSize());
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -2249,7 +2255,7 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageLargeImageColorConverted) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  PaintImage image = CreateBitmapImageInternal(gfx::Size(10, 24000));
+  PaintImage image = CreateBitmapImageInternal(GetLargeImageSize());
   DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
                        quality,
                        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
@@ -2359,21 +2365,21 @@ TEST_P(GpuImageDecodeCacheTest, DecodeToScale) {
                                .set_paint_image_generator(generator)
                                .TakePaintImage();
 
-  DrawImage draw_image1(
+  DrawImage draw_image(
       paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
       quality, CreateMatrix(SkSize::Make(0.5, 0.5), is_decomposable),
       PaintImage::kDefaultFrameIndex);
-  DecodedDrawImage decoded_image1 =
-      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image1));
-  ASSERT_TRUE(decoded_image1.image());
-  EXPECT_EQ(decoded_image1.image()->width(), 50);
-  EXPECT_EQ(decoded_image1.image()->height(), 50);
+  DecodedDrawImage decoded_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  ASSERT_TRUE(decoded_image.image());
+  EXPECT_EQ(decoded_image.image()->width(), 50);
+  EXPECT_EQ(decoded_image.image()->height(), 50);
 
   // We should have requested a scaled decode from the generator.
   ASSERT_EQ(generator->decode_infos().size(), 1u);
   EXPECT_EQ(generator->decode_infos().at(0).width(), 50);
   EXPECT_EQ(generator->decode_infos().at(0).height(), 50);
-  cache->DrawWithImageFinished(draw_image1, decoded_image1);
+  cache->DrawWithImageFinished(draw_image, decoded_image);
 }
 
 TEST_P(GpuImageDecodeCacheTest, DecodeToScaleNoneQuality) {
