@@ -244,33 +244,34 @@ void FCMNetworkHandler::SetTokenValidationTimerForTesting(
 
 void FCMNetworkHandler::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> callback) {
-  callback.Run(*diagnostic_info_.CollectDebugData());
+  callback.Run(diagnostic_info_.CollectDebugData());
 }
 
 FCMNetworkHandlerDiagnostic::FCMNetworkHandlerDiagnostic() {}
 
-std::unique_ptr<base::DictionaryValue>
-FCMNetworkHandlerDiagnostic::CollectDebugData() const {
-  std::unique_ptr<base::DictionaryValue> status(new base::DictionaryValue);
-  status->SetString("Registration result code",
-                    RegistrationResultToString(registration_result));
-  status->SetString("Token", token);
-  status->SetString(
-      "When token was requested",
+base::DictionaryValue FCMNetworkHandlerDiagnostic::CollectDebugData() const {
+  base::DictionaryValue status;
+  status.SetString("NetworkHandler.Registration-result-code",
+                   RegistrationResultToString(registration_result));
+  status.SetString("NetworkHandler.Token", token);
+  status.SetString(
+      "NetworkHandler.Token-was-requested",
       base::TimeFormatShortDateAndTime(instance_id_token_requested));
-  status->SetString(
-      "When Token was received",
+  status.SetString(
+      "NetworkHandler.Token-was-received",
       base::TimeFormatShortDateAndTime(instance_id_token_was_received));
-  status->SetString("When token verification started",
-                    base::TimeFormatShortDateAndTime(
-                        instance_id_token_verification_requested));
-  status->SetString("When token was verified", base::TimeFormatShortDateAndTime(
-                                                   instance_id_token_verified));
-  status->SetString("Verification result code",
-                    RegistrationResultToString(token_verification_result));
-  status->SetBoolean("Token change when verified", token_changed);
-  status->SetInteger("Token validation requests",
-                     token_validation_requested_num);
+  status.SetString("NetworkHandler.Token-verification-started",
+                   base::TimeFormatShortDateAndTime(
+                       instance_id_token_verification_requested));
+  status.SetString(
+      "NetworkHandler.Token-was-verified",
+      base::TimeFormatShortDateAndTime(instance_id_token_verified));
+  status.SetString("NetworkHandler.Verification-result-code",
+                   RegistrationResultToString(token_verification_result));
+  status.SetBoolean("NetworkHandler.Token-changed-when-verified",
+                    token_changed);
+  status.SetInteger("NetworkHandler.Token-validation-requests",
+                    token_validation_requested_num);
   return status;
 }
 

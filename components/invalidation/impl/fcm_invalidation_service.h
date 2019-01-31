@@ -86,7 +86,7 @@ class FCMInvalidationService : public InvalidationService,
     Diagnostics();
 
     // Collect all the internal variables in a single readable dictionary.
-    std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
+    base::DictionaryValue CollectDebugData() const;
 
     base::Time active_account_login;
     base::Time active_account_token_updated;

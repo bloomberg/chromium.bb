@@ -28,7 +28,7 @@ struct FCMNetworkHandlerDiagnostic {
   FCMNetworkHandlerDiagnostic();
 
   // Collect all the internal variables in a single readable dictionary.
-  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
+  base::DictionaryValue CollectDebugData() const;
 
   std::string RegistrationResultToString(
       const instance_id::InstanceID::Result result) const;

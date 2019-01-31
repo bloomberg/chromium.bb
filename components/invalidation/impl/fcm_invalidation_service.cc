@@ -127,7 +127,7 @@ InvalidationLogger* FCMInvalidationService::GetInvalidationLogger() {
 void FCMInvalidationService::RequestDetailedStatus(
     base::RepeatingCallback<void(const base::DictionaryValue&)> return_callback)
     const {
-  return_callback.Run(*diagnostic_info_.CollectDebugData());
+  return_callback.Run(diagnostic_info_.CollectDebugData());
   invalidator_registrar_.RequestDetailedStatus(return_callback);
   if (IsStarted()) {
     invalidator_->RequestDetailedStatus(return_callback);
@@ -259,27 +259,25 @@ void FCMInvalidationService::DoUpdateRegisteredIdsIfNeeded() {
 
 FCMInvalidationService::Diagnostics::Diagnostics() {}
 
-std::unique_ptr<base::DictionaryValue>
-FCMInvalidationService::Diagnostics::CollectDebugData() const {
-  std::unique_ptr<base::DictionaryValue> status =
-      std::make_unique<base::DictionaryValue>();
+base::DictionaryValue FCMInvalidationService::Diagnostics::CollectDebugData()
+    const {
+  base::DictionaryValue status;
 
-  status->SetString("Active account login",
-                    base::TimeFormatShortDateAndTime(active_account_login));
-  status->SetString(
-      "Active account token updated",
+  status.SetString("InvalidationService.Active-account-login",
+                   base::TimeFormatShortDateAndTime(active_account_login));
+  status.SetString(
+      "InvalidationService.Active-account-token-updated",
       base::TimeFormatShortDateAndTime(active_account_token_updated));
-  status->SetString(
-      "Active account logged out",
-      base::TimeFormatShortDateAndTime(active_account_logged_out));
-  status->SetString("Instance id requested",
-                    base::TimeFormatShortDateAndTime(instance_id_requested));
-  status->SetString("Instance id received",
-                    base::TimeFormatShortDateAndTime(instance_id_received));
-  status->SetString("Service was stopped",
-                    base::TimeFormatShortDateAndTime(service_was_stopped));
-  status->SetString("Service was started",
-                    base::TimeFormatShortDateAndTime(service_was_started));
+  status.SetString("InvalidationService.Active-account-logged-out",
+                   base::TimeFormatShortDateAndTime(active_account_logged_out));
+  status.SetString("InvalidationService.IID-requested",
+                   base::TimeFormatShortDateAndTime(instance_id_requested));
+  status.SetString("InvalidationService.IID-received",
+                   base::TimeFormatShortDateAndTime(instance_id_received));
+  status.SetString("InvalidationService.Service-stopped",
+                   base::TimeFormatShortDateAndTime(service_was_stopped));
+  status.SetString("InvalidationService.Service-started",
+                   base::TimeFormatShortDateAndTime(service_was_started));
   return status;
 }
 
