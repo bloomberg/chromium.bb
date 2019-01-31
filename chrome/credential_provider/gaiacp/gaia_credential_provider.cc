@@ -56,25 +56,6 @@ HRESULT CGaiaCredentialProvider::FinalConstruct() {
 void CGaiaCredentialProvider::FinalRelease() {
   LOGFN(INFO);
   ClearTransient();
-
-  // Delete the startup sentinel file if any still exists. It can still exist
-  // in 2 cases:
-
-  // 1. The FinalRelease should only occur after the user has logged in, so if
-  // they never selected any gaia credential and just used normal credentials
-  // this function will be called in that situation and it is guaranteed that
-  // the user has at least been able provide some input to winlogon.
-  // 2. When no usage scenario is supported, none of the credentials will be
-  // selected and thus the gcpw startup sentinel file will not be deleted.
-  // So in the case where the user is asked for CPUS_CRED_UI enough times,
-  // the sentinel file size will keep growing without being deleted and
-  // eventually GCPW will be disabled completed. In the unsupported usage
-  // scenario, FinalRelease will be called shortly after SetUsageScenario
-  // if the function returns E_NOTIMPL so try to catch potential crashes
-  // of the destruction of the provider when it is not used because
-  // crashes in this case will prevent the cred ui from coming up and not
-  // allow the user to access their desired resource.
-  DeleteStartupSentinel();
 }
 
 HRESULT CGaiaCredentialProvider::CreateGaiaCredential() {
@@ -380,6 +361,26 @@ HRESULT CGaiaCredentialProvider::UnAdvise() {
   ClearTransient();
   HRESULT hr = DestroyCredentials();
   LOGFN(INFO) << "hr=" << putHR(hr);
+
+  // Delete the startup sentinel file if any still exists. It can still exist
+  // in 2 cases:
+
+  // 1. The UnAdvise should only occur after the user has logged in, so if
+  // they never selected any gaia credential and just used normal credentials
+  // this function will be called in that situation and it is guaranteed that
+  // the user has at least been able provide some input to winlogon.
+  // 2. When no usage scenario is supported, none of the credentials will be
+  // selected and thus the gcpw startup sentinel file will not be deleted.
+  // So in the case where the user is asked for CPUS_CRED_UI enough times,
+  // the sentinel file size will keep growing without being deleted and
+  // eventually GCPW will be disabled completely. In the unsupported usage
+  // scenario, FinalRelease will be called shortly after SetUsageScenario
+  // if the function returns E_NOTIMPL so try to catch potential crashes
+  // of the destruction of the provider when it is not used because
+  // crashes in this case will prevent the cred ui from coming up and not
+  // allow the user to access their desired resource.
+  DeleteStartupSentinel();
+
   return S_OK;
 }
 
