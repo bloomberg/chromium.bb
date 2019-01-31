@@ -361,9 +361,8 @@
   [_incognitoBrowserCoordinator stop];
   _incognitoBrowserCoordinator = nil;
 
-  [self.mainBrowser->GetTabModel() closeAllTabs];
-  [self.otrBrowser->GetTabModel() closeAllTabs];
-  // Handles removing observers and stopping breakpad monitoring.
+  // Handles removing observers, stopping breakpad monitoring, and closing all
+  // tabs.
   [self setMainBrowser:nullptr];
   [self setOtrBrowser:nullptr];
 
