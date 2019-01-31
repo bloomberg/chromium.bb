@@ -699,7 +699,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                      mi_col, bsize, r);
     if (!valid_dv) {
       // Intra bc motion vectors are not valid - signal corrupt frame
-      aom_merge_corrupted_flag(&xd->corrupted, 1);
+      aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
+                         "Invalid intrabc dv");
     }
   }
 }
