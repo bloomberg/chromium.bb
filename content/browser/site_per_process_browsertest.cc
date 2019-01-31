@@ -2276,6 +2276,29 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 #endif
 }
 
+IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+                       ScrolledOutOfView) {
+  GURL main_frame(
+      embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
+  GURL child_url_b(
+      embedded_test_server()->GetURL("b.com", kIframeOutOfViewHTML));
+
+  // This will set up the page frame tree as A(B()).
+  ASSERT_TRUE(NavigateToURL(shell(), main_frame));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  WaitForOnLoad(root);
+  NavigateFrameToURL(root->child_at(0), child_url_b);
+  WaitForOnLoad(root->child_at(0));
+
+  FrameTreeNode* nested_iframe_node = root->child_at(0);
+  RenderFrameProxyHost* proxy_to_parent =
+      nested_iframe_node->render_manager()->GetProxyToParent();
+  CrossProcessFrameConnector* connector =
+      proxy_to_parent->cross_process_frame_connector();
+  ASSERT_EQ(blink::mojom::FrameVisibility::kRenderedOutOfViewport,
+            connector->visibility());
+}
+
 // This test verifies that smooth scrolling works correctly inside nested OOPIFs
 // which are same origin with the parent. Note that since the frame tree has
 // a A(B(A1())) structure, if and A1 and A2 shared the same

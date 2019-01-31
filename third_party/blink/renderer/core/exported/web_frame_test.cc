@@ -10654,30 +10654,34 @@ TEST_F(WebFrameTest, CallbackOrdering) {
 class TestWebRemoteFrameClientForVisibility
     : public frame_test_helpers::TestWebRemoteFrameClient {
  public:
-  TestWebRemoteFrameClientForVisibility() : visible_(true) {}
+  TestWebRemoteFrameClientForVisibility() = default;
   ~TestWebRemoteFrameClientForVisibility() override = default;
 
   // frame_test_helpers::TestWebRemoteFrameClient:
-  void VisibilityChanged(bool visible) override { visible_ = visible; }
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {
+    visibility_ = visibility;
+  }
 
-  bool IsVisible() const { return visible_; }
+  blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
  private:
-  bool visible_;
+  blink::mojom::FrameVisibility visibility_ =
+      blink::mojom::FrameVisibility::kRenderedInViewport;
 };
 
-class WebFrameVisibilityChangeTest : public WebFrameTest {
+class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
  public:
-  WebFrameVisibilityChangeTest() {
+  WebRemoteFrameVisibilityChangeTest() {
     RegisterMockedHttpURLLoad("visible_iframe.html");
     RegisterMockedHttpURLLoad("single_iframe.html");
     frame_ =
         web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html")
             ->MainFrameImpl();
+    web_view_helper_.Resize(WebSize(640, 480));
     web_remote_frame_ = frame_test_helpers::CreateRemote(&remote_frame_client_);
   }
 
-  ~WebFrameVisibilityChangeTest() override = default;
+  ~WebRemoteFrameVisibilityChangeTest() override = default;
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);
@@ -10703,23 +10707,132 @@ class WebFrameVisibilityChangeTest : public WebFrameTest {
   Persistent<WebRemoteFrameImpl> web_remote_frame_;
 };
 
-TEST_F(WebFrameVisibilityChangeTest, RemoteFrameVisibilityChange) {
+TEST_F(WebRemoteFrameVisibilityChangeTest, FrameVisibilityChange) {
   SwapLocalFrameToRemoteFrame();
   ExecuteScriptOnMainFrame(WebScriptSource(
       "document.querySelector('iframe').style.display = 'none';"));
-  EXPECT_FALSE(RemoteFrameClient()->IsVisible());
+  EXPECT_EQ(blink::mojom::FrameVisibility::kNotRendered,
+            RemoteFrameClient()->visibility());
 
   ExecuteScriptOnMainFrame(WebScriptSource(
       "document.querySelector('iframe').style.display = 'block';"));
-  EXPECT_TRUE(RemoteFrameClient()->IsVisible());
+  EXPECT_EQ(blink::mojom::FrameVisibility::kRenderedInViewport,
+            RemoteFrameClient()->visibility());
+
+  ExecuteScriptOnMainFrame(WebScriptSource(
+      "var padding = document.createElement('div');"
+      "padding.style = 'width: 400px; height: 800px;';"
+      "document.body.insertBefore(padding, document.body.firstChild);"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kRenderedOutOfViewport,
+            RemoteFrameClient()->visibility());
+
+  ExecuteScriptOnMainFrame(
+      WebScriptSource("document.scrollingElement.scrollTop = 800;"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kRenderedInViewport,
+            RemoteFrameClient()->visibility());
 }
 
-TEST_F(WebFrameVisibilityChangeTest, RemoteFrameParentVisibilityChange) {
+TEST_F(WebRemoteFrameVisibilityChangeTest, ParentVisibilityChange) {
   SwapLocalFrameToRemoteFrame();
   ExecuteScriptOnMainFrame(
       WebScriptSource("document.querySelector('iframe').parentElement.style."
                       "display = 'none';"));
-  EXPECT_FALSE(RemoteFrameClient()->IsVisible());
+  EXPECT_EQ(blink::mojom::FrameVisibility::kNotRendered,
+            RemoteFrameClient()->visibility());
+}
+
+class TestWebLocalFrameClientForVisibility
+    : public frame_test_helpers::TestWebFrameClient {
+ public:
+  TestWebLocalFrameClientForVisibility() = default;
+  ~TestWebLocalFrameClientForVisibility() override = default;
+
+  // frame_test_helpers::TestWebFrameClient:
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {
+    visibility_ = visibility;
+  }
+
+  blink::mojom::FrameVisibility visibility() const { return visibility_; }
+
+ private:
+  blink::mojom::FrameVisibility visibility_ =
+      blink::mojom::FrameVisibility::kRenderedInViewport;
+};
+
+class WebLocalFrameVisibilityChangeTest
+    : public WebFrameTest,
+      public frame_test_helpers::TestWebFrameClient {
+ public:
+  WebLocalFrameVisibilityChangeTest() {
+    RegisterMockedHttpURLLoad("visible_iframe.html");
+    RegisterMockedHttpURLLoad("single_iframe.html");
+    frame_ = web_view_helper_
+                 .InitializeAndLoad(base_url_ + "single_iframe.html", this)
+                 ->MainFrameImpl();
+    web_view_helper_.Resize(WebSize(640, 480));
+  }
+
+  ~WebLocalFrameVisibilityChangeTest() override = default;
+
+  void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
+    MainFrame()->ExecuteScript(script);
+    MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
+    RunPendingTasks();
+  }
+
+  WebLocalFrame* MainFrame() { return frame_; }
+
+  // frame_test_helpers::TestWebFrameClient:
+  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
+                                  WebTreeScopeType scope,
+                                  const WebString& name,
+                                  const WebString& fallback_name,
+                                  WebSandboxFlags,
+                                  const ParsedFeaturePolicy&,
+                                  const WebFrameOwnerProperties&,
+                                  FrameOwnerElementType) override {
+    return CreateLocalChild(*parent, scope, &child_client_);
+  }
+
+  TestWebLocalFrameClientForVisibility& ChildClient() { return child_client_; }
+
+ private:
+  TestWebLocalFrameClientForVisibility child_client_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
+  WebLocalFrame* frame_;
+};
+
+TEST_F(WebLocalFrameVisibilityChangeTest, FrameVisibilityChange) {
+  ExecuteScriptOnMainFrame(WebScriptSource(
+      "document.querySelector('iframe').style.display = 'none';"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kNotRendered,
+            ChildClient().visibility());
+
+  ExecuteScriptOnMainFrame(WebScriptSource(
+      "document.querySelector('iframe').style.display = 'block';"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kRenderedInViewport,
+            ChildClient().visibility());
+
+  ExecuteScriptOnMainFrame(WebScriptSource(
+      "var padding = document.createElement('div');"
+      "padding.style = 'width: 400px; height: 800px;';"
+      "document.body.insertBefore(padding, document.body.firstChild);"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kRenderedOutOfViewport,
+            ChildClient().visibility());
+
+  ExecuteScriptOnMainFrame(
+      WebScriptSource("document.scrollingElement.scrollTop = 800;"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kRenderedInViewport,
+            ChildClient().visibility());
+}
+
+TEST_F(WebLocalFrameVisibilityChangeTest, ParentVisibilityChange) {
+  ExecuteScriptOnMainFrame(
+      WebScriptSource("document.querySelector('iframe').parentElement.style."
+                      "display = 'none';"));
+  EXPECT_EQ(blink::mojom::FrameVisibility::kNotRendered,
+            ChildClient().visibility());
 }
 
 static void EnableGlobalReuseForUnownedMainFrames(WebSettings* settings) {

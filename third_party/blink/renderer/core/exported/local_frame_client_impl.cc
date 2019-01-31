@@ -762,6 +762,12 @@ void LocalFrameClientImpl::SelectorMatchChanged(
   }
 }
 
+void LocalFrameClientImpl::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  if (WebLocalFrameClient* client = web_frame_->Client())
+    client->VisibilityChanged(visibility);
+}
+
 DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,

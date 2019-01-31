@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_
 
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
@@ -50,7 +51,7 @@ class WebRemoteFrameClient {
       const WebRect& viewport_intersection,
       bool occluded_or_obscured) {}
 
-  virtual void VisibilityChanged(bool visible) {}
+  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
 
   // Set or clear the inert property on the remote frame.
   virtual void SetIsInert(bool) {}

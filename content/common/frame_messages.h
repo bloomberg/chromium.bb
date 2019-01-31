@@ -62,6 +62,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -155,6 +156,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::NavigationDownloadPolicy,
                               content::NavigationDownloadPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
+                          blink::mojom::FrameVisibility::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -1462,7 +1465,8 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
                     bool /* occluded or obscured */)
 
 // Informs the child that the frame has changed visibility.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,
+                    blink::mojom::FrameVisibility /* visibility */)
 
 // Sent by a RenderFrameProxy to the browser signaling that the renderer
 // has determined the DOM subtree it represents is inert and should no

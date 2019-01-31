@@ -2561,6 +2561,11 @@ void RenderFrameImpl::OnPortalActivated() {
   frame_->OnPortalActivated();
 }
 
+void RenderFrameImpl::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  GetFrameHost()->VisibilityChanged(visibility);
+}
+
 #if defined(OS_ANDROID)
 void RenderFrameImpl::ExtractSmartClipData(
     const gfx::Rect& rect,

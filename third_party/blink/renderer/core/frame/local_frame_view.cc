@@ -367,6 +367,7 @@ void LocalFrameView::SetupRenderThrottling() {
                           [](LocalFrameView* frame_view, bool is_visible) {
                             if (!frame_view)
                               return;
+                            frame_view->UpdateVisibility(is_visible);
                             frame_view->UpdateRenderThrottlingStatus(
                                 !is_visible, frame_view->subtree_throttled_);
                           },
@@ -4261,6 +4262,23 @@ void LocalFrameView::RegisterForLifecycleNotifications(
 void LocalFrameView::UnregisterFromLifecycleNotifications(
     LifecycleNotificationObserver* observer) {
   lifecycle_observers_.erase(observer);
+}
+
+void LocalFrameView::UpdateVisibility(bool is_visible) {
+  blink::mojom::FrameVisibility visibility;
+  if (!is_attached_) {
+    visibility = blink::mojom::FrameVisibility::kNotRendered;
+  } else if (!is_visible) {
+    visibility = blink::mojom::FrameVisibility::kRenderedOutOfViewport;
+  } else {
+    visibility = blink::mojom::FrameVisibility::kRenderedInViewport;
+  }
+  if (visibility_ == visibility)
+    return;
+  visibility_ = visibility;
+  if (auto* client = GetFrame().Client()) {
+    client->VisibilityChanged(visibility);
+  }
 }
 
 }  // namespace blink

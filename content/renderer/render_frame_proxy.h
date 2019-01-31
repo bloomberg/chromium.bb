@@ -209,7 +209,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void UpdateRemoteViewportIntersection(
       const blink::WebRect& viewport_intersection,
       bool occluded_or_obscured) override;
-  void VisibilityChanged(bool visible) override;
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(cc::TouchAction) override;
   void UpdateRenderThrottlingStatus(bool is_throttled,

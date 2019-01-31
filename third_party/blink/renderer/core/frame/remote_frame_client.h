@@ -58,8 +58,6 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void AdvanceFocus(WebFocusType, LocalFrame* source) = 0;
 
-  virtual void VisibilityChanged(bool visible) = 0;
-
   virtual void SetIsInert(bool) = 0;
 
   virtual void SetInheritedEffectiveTouchAction(TouchAction) = 0;

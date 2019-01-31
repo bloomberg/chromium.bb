@@ -145,6 +145,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FullscreenStateChanged(bool is_fullscreen) override {}
 
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {}
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
