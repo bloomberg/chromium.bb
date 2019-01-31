@@ -1870,8 +1870,9 @@ void MediaControlsImpl::OnVolumeChange() {
 }
 
 void MediaControlsImpl::OnFocusIn() {
-  // Touch focus shouldn't affect controls visibility.
-  if (!MediaElement().ShouldShowControls() || is_touch_interaction_)
+  // If the tap timer is active, then we will toggle the controls when the timer
+  // completes, so we don't want to start showing here.
+  if (!MediaElement().ShouldShowControls() || tap_timer_.IsActive())
     return;
 
   ResetHideMediaControlsTimer();
