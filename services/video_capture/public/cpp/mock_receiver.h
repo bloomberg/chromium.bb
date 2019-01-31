@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {

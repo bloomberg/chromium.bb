@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
+#include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 
 namespace video_capture {

@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
 
 using testing::_;

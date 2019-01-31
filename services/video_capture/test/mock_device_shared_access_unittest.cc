@@ -16,6 +16,7 @@
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/video_source_provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

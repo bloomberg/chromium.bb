@@ -8,7 +8,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/virtual_device.mojom.h"
 #include "services/video_capture/test/device_factory_provider_test.h"
 #include "services/video_capture/test/mock_devices_changed_observer.h"
 

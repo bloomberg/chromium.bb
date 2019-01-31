@@ -6,6 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_DEVICE_FACTORY_H_
 
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/producer.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {
