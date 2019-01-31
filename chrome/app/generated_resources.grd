@@ -6998,9 +6998,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <!-- Sync strings -->
 
       <!-- Shared between all the plaforms -->
-      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE" desc="Instructions for the dialog where the user needs to enter their previous google passphrase.">
-        Your data was encrypted with your Google password as of <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Enter it to start sync.
-      </message>
       <message name="IDS_SYNC_ACCOUNT_INFO" desc="The message that appears in the options dialog indicating that the user is signed in with the given email address.">
         Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
       </message>

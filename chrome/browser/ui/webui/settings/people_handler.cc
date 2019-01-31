@@ -12,6 +12,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -1023,12 +1024,15 @@ void PeopleHandler::PushSyncPrefs() {
   if (!passphrase_time.is_null()) {
     base::string16 passphrase_time_str =
         base::TimeFormatShortDate(passphrase_time);
-    args.SetString("enterPassphraseBody",
-                   GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
-                                   passphrase_time_str));
+    args.SetString(
+        "enterPassphraseBody",
+        GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
+                        base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
+                        passphrase_time_str));
     args.SetString(
         "enterGooglePassphraseBody",
         GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
+                        base::ASCIIToUTF16(chrome::kSyncErrorsHelpURL),
                         passphrase_time_str));
     switch (passphrase_type) {
       case syncer::PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:

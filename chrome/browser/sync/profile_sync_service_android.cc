@@ -434,10 +434,10 @@ ProfileSyncServiceAndroid::GetSyncEnterGooglePassphraseBodyWithDateText(
       sync_service_->GetUserSettings()->GetExplicitPassphraseTime();
   base::string16 passphrase_time_str =
       base::TimeFormatShortDate(passphrase_time);
-  return base::android::ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringFUTF16(
-        IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
-        passphrase_time_str));
+  return base::android::ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringFUTF16(
+               IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE_ANDROID,
+               passphrase_time_str));
 }
 
 ScopedJavaLocalRef<jstring>
@@ -449,9 +449,10 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyWithDateText(
       sync_service_->GetUserSettings()->GetExplicitPassphraseTime();
   base::string16 passphrase_time_str =
       base::TimeFormatShortDate(passphrase_time);
-  return base::android::ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
-        passphrase_time_str));
+  return base::android::ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringFUTF16(
+               IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE_ANDROID,
+               passphrase_time_str));
 }
 
 ScopedJavaLocalRef<jstring>
