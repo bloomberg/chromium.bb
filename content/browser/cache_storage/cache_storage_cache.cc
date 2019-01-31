@@ -669,8 +669,7 @@ void CacheStorageCache::BatchOperation(
   base::CheckedNumeric<uint64_t> safe_side_data_size = 0;
   for (const auto& operation : operations) {
     if (operation->operation_type == blink::mojom::OperationType::kPut) {
-      safe_space_required +=
-          (operation->response->blob ? operation->response->blob->size : 0);
+      safe_space_required += CalculateRequiredSafeSpaceForPut(operation);
       safe_side_data_size += (operation->response->side_data_blob
                                   ? operation->response->side_data_blob->size
                                   : 0);
@@ -2129,6 +2128,58 @@ int64_t CacheStorageCache::PaddedCacheSize() const {
     return CacheStorage::kSizeUnknown;
   }
   return cache_size_ + cache_padding_;
+}
+
+base::CheckedNumeric<uint64_t>
+CacheStorageCache::CalculateRequiredSafeSpaceForPut(
+    const blink::mojom::BatchOperationPtr& operation) {
+  DCHECK_EQ(blink::mojom::OperationType::kPut, operation->operation_type);
+  base::CheckedNumeric<uint64_t> safe_space_required = 0;
+  safe_space_required +=
+      CalculateRequiredSafeSpaceForResponse(operation->response);
+  safe_space_required +=
+      CalculateRequiredSafeSpaceForRequest(operation->request);
+
+  return safe_space_required;
+}
+
+base::CheckedNumeric<uint64_t>
+CacheStorageCache::CalculateRequiredSafeSpaceForRequest(
+    const blink::mojom::FetchAPIRequestPtr& request) {
+  base::CheckedNumeric<uint64_t> safe_space_required = 0;
+  safe_space_required += request->method.size();
+
+  safe_space_required += request->url.spec().size();
+
+  for (const auto& header : request->headers) {
+    safe_space_required += header.first.size();
+    safe_space_required += header.second.size();
+  }
+
+  return safe_space_required;
+}
+
+base::CheckedNumeric<uint64_t>
+CacheStorageCache::CalculateRequiredSafeSpaceForResponse(
+    const blink::mojom::FetchAPIResponsePtr& response) {
+  base::CheckedNumeric<uint64_t> safe_space_required = 0;
+  safe_space_required += (response->blob ? response->blob->size : 0);
+  safe_space_required += response->status_text.size();
+
+  for (const auto& header : response->headers) {
+    safe_space_required += header.first.size();
+    safe_space_required += header.second.size();
+  }
+
+  for (const auto& header : response->cors_exposed_header_names) {
+    safe_space_required += header.size();
+  }
+
+  for (const auto& url : response->url_list) {
+    safe_space_required += url.spec().size();
+  }
+
+  return safe_space_required;
 }
 
 }  // namespace content

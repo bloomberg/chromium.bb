@@ -477,6 +477,14 @@ class CONTENT_EXPORT CacheStorageCache {
       int64_t cache_padding);
   void DeleteBackendCompletedIO();
 
+  // Calculate the required safe space to put the entry in the cache.
+  base::CheckedNumeric<uint64_t> CalculateRequiredSafeSpaceForPut(
+      const blink::mojom::BatchOperationPtr& operation);
+  base::CheckedNumeric<uint64_t> CalculateRequiredSafeSpaceForRequest(
+      const blink::mojom::FetchAPIRequestPtr& request);
+  base::CheckedNumeric<uint64_t> CalculateRequiredSafeSpaceForResponse(
+      const blink::mojom::FetchAPIResponsePtr& response);
+
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 

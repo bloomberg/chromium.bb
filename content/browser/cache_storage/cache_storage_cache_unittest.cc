@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <memory>
 #include <set>
 #include <utility>
@@ -356,6 +357,16 @@ class TestCacheStorageCache : public CacheStorageCache {
   }
 
   void Init() { InitBackend(); }
+
+  base::CheckedNumeric<uint64_t> GetRequiredSafeSpaceForRequest(
+      const blink::mojom::FetchAPIRequestPtr& request) {
+    return CalculateRequiredSafeSpaceForRequest(request);
+  }
+
+  base::CheckedNumeric<uint64_t> GetRequiredSafeSpaceForResponse(
+      const blink::mojom::FetchAPIResponsePtr& response) {
+    return CalculateRequiredSafeSpaceForResponse(response);
+  }
 
  private:
   CacheStorageCacheHandle CreateHandle() override {
@@ -1635,9 +1646,13 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
-  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
-                                expected_blob_data_.size() - 1);
   blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size - 1);
   const std::string expected_side_data = "SideData";
   std::unique_ptr<storage::BlobDataHandle> side_data_blob_handle =
       BuildBlobHandle("blob-id:mysideblob", expected_side_data);
@@ -1650,9 +1665,13 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
-  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
-                                expected_blob_data_.size());
   blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
   const std::string expected_side_data = "SideData";
   std::unique_ptr<storage::BlobDataHandle> side_data_blob_handle =
       BuildBlobHandle("blob-id:mysideblob", expected_side_data);
@@ -1685,7 +1704,8 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_BadMessage) {
   operation->operation_type = blink::mojom::OperationType::kPut;
   operation->request = BackgroundFetchSettledFetch::CloneRequest(body_request_);
   operation->response = std::move(response);
-  operation->response->blob->size = std::numeric_limits<uint64_t>::max();
+  operation->response->side_data_blob->size =
+      std::numeric_limits<uint64_t>::max();
 
   std::vector<blink::mojom::BatchOperationPtr> operations;
   operations.emplace_back(std::move(operation));
@@ -1846,6 +1866,162 @@ TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimits) {
   mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
                                 0);
   EXPECT_FALSE(Put(body_request_, CreateBlobBodyResponse()));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimitsWithEmptyResponse) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  // The first Put will completely fill the quota, leaving no space for the
+  // second operation, which will fail even with empty response, due to the size
+  // of the headers.
+  EXPECT_TRUE(Put(body_request_, std::move(response)));
+  EXPECT_FALSE(Put(no_body_request_, CreateNoBodyResponse()));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutSafeSpaceIsEnough) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  EXPECT_TRUE(Put(body_request_, std::move(response)));
+}
+
+TEST_P(CacheStorageCacheTestP, PutRequestUrlObeysQuotaLimits) {
+  const GURL url("http://example.com/body.html");
+  const GURL longerUrl("http://example.com/longer-body.html");
+  blink::mojom::FetchAPIRequestPtr request = CreateFetchAPIRequest(
+      url, "GET", kHeaders, blink::mojom::Referrer::New(), false);
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(request) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  request->url = longerUrl;
+  EXPECT_FALSE(Put(request, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutRequestMethodObeysQuotaLimits) {
+  blink::mojom::FetchAPIRequestPtr request = CreateFetchAPIRequest(
+      kBodyUrl, "GET", kHeaders, blink::mojom::Referrer::New(), false);
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(request) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  request->method = "LongerMethodThanGet";
+  EXPECT_FALSE(Put(request, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutRequestHeadersObeyQuotaLimits) {
+  blink::mojom::FetchAPIRequestPtr request = CreateFetchAPIRequest(
+      kBodyUrl, "GET", kHeaders, blink::mojom::Referrer::New(), false);
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(request) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  request->headers["New-Header"] = "foo";
+  EXPECT_FALSE(Put(request, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutResponseStatusObeysQuotaLimits) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  response->status_text = "LongerThanOK";
+  EXPECT_FALSE(Put(body_request_, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutResponseBlobObeysQuotaLimits) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  response->blob->size += 1;
+  EXPECT_FALSE(Put(body_request_, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutResponseHeadersObeyQuotaLimits) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  response->headers["New-Header"] = "foo";
+  EXPECT_FALSE(Put(body_request_, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutResponseCorsHeadersObeyQuotaLimits) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  response->cors_exposed_header_names.push_back("AnotherOne");
+  EXPECT_FALSE(Put(body_request_, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutResponseUrlListObeysQuotaLimits) {
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  base::CheckedNumeric<uint64_t> safe_expected_entry_size =
+      cache_->GetRequiredSafeSpaceForRequest(body_request_) +
+      cache_->GetRequiredSafeSpaceForResponse(response);
+  uint64_t expected_entry_size = safe_expected_entry_size.ValueOrDie();
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                expected_entry_size);
+
+  response->url_list.push_back(GURL("http://example.com/another-url"));
+  EXPECT_FALSE(Put(body_request_, std::move(response)));
+  EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimitsWithEmptyResponseZeroQuota) {
+  mock_quota_manager_->SetQuota(kOrigin, blink::mojom::StorageType::kTemporary,
+                                0);
+  EXPECT_FALSE(Put(body_request_, CreateNoBodyResponse()));
   EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
 }
 
