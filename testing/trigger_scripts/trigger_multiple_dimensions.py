@@ -113,7 +113,7 @@ class MultiDimensionTestTriggerer(base_test_triggerer.BaseTestTriggerer):
 
   def select_config_indices(self, args, verbose):
     selected_indices = []
-    for _ in xrange(args.shards):
+    for _ in self.indices_to_trigger(args):
       selected_indices.append(self.pick_bot_configuration(verbose))
     return selected_indices
 

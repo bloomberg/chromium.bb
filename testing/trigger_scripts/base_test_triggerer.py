@@ -209,8 +209,15 @@ class BaseTestTriggerer(object):
     # Main implementation for base class to determine what
     # configs to trigger jobs on from self._bot_configs.
     # Returns a list of indices into the self._bot_configs and
-    # len(args.shards) == len(selected_indices).
+    # len(self.indices_to_trigger(args)) == len(selected_indices).
     pass
+
+  def indices_to_trigger(self, args):
+    """Returns the indices of the swarming shards that should be triggered."""
+    if args.shard_index is None:
+      return range(args.shards)
+    else:
+      return [args.shard_index]
 
   def trigger_tasks(self, args, remaining):
     """Triggers tasks for each bot.
@@ -244,7 +251,7 @@ class BaseTestTriggerer(object):
 
     # Choose selected configs for this run of the test suite.
     selected_configs = self.select_config_indices(args, verbose)
-    for i in xrange(args.shards):
+    for i in self.indices_to_trigger(args):
       # For each shard that we're going to distribute, do the following:
       # 1. Pick which bot configuration to use.
       # 2. Insert that bot configuration's dimensions as command line
@@ -294,5 +301,8 @@ class BaseTestTriggerer(object):
     parser.add_argument('--shards', type=int, default=1,
                         help='How many shards to trigger. Duplicated from the'
                        ' `swarming.py trigger` command.')
+    parser.add_argument('--shard-index', type=int, default=None,
+                        help='Which shard to trigger. Duplicated from the '
+                             '`swarming.py trigger` command.')
     return parser
 
