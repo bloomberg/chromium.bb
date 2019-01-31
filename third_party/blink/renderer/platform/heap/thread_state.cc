@@ -1740,10 +1740,13 @@ void ThreadState::MarkPhaseVisitRoots() {
 
   VisitPersistents(visitor);
 
-  // Unified garbage collections do not consider DOM wrapper references as
-  // roots. The cross-component references between V8<->Blink are found using
-  // collaborative tracing where both GCs report live references to each other.
-  if (!IsUnifiedGCMarkingInProgress()) {
+  // DOM wrapper references from V8 are considered as roots. Exceptions are:
+  // - Unified garbage collections: The cross-component references between
+  //   V8<->Blink are found using collaborative tracing where both GCs report
+  //   live references to each other.
+  // - Termination GCs that do not care about V8 any longer.
+  if (!IsUnifiedGCMarkingInProgress() &&
+      current_gc_data_.reason != BlinkGC::GCReason::kThreadTerminationGC) {
     VisitDOMWrappers(visitor);
   }
 

@@ -335,62 +335,11 @@ class DOMWrapperForwardingVisitor final
   Visitor* const visitor_;
 };
 
-// Visitor purging all DOM wrapper handles.
-class DOMWrapperPurgingVisitor final
-    : public v8::PersistentHandleVisitor,
-      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
- public:
-  explicit DOMWrapperPurgingVisitor(v8::Isolate* isolate)
-      : isolate_(isolate), scope_(isolate) {}
-
-  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
-                             uint16_t class_id) final {
-    // TODO(mlippautz): There should be no more v8::Persistent that have a class
-    // id set.
-    VisitHandle(value, class_id);
-  }
-
-  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
-    VisitHandle(&value, value.WrapperClassId());
-  }
-
- private:
-  template <typename T>
-  void VisitHandle(T* value, uint16_t class_id) {
-    if (!IsDOMWrapperClassId(class_id))
-      return;
-
-    // Clear out wrapper type information, essentially disconnecting the Blink
-    // wrappable from the V8 wrapper. This way, V8 cannot find the C++ object
-    // anymore.
-    int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
-    void* values[] = {nullptr, nullptr};
-    v8::Local<v8::Object> wrapper =
-        v8::Local<v8::Object>::New(isolate_, value->template As<v8::Object>());
-    wrapper->SetAlignedPointerInInternalFields(base::size(indices), indices,
-                                               values);
-  }
-
-  v8::Isolate* const isolate_;
-  v8::HandleScope scope_;
-};
-
 }  // namespace
 
 void V8GCController::TraceDOMWrappers(v8::Isolate* isolate,
                                       Visitor* parent_visitor) {
   DOMWrapperForwardingVisitor visitor(parent_visitor);
-  isolate->VisitHandlesWithClassIds(&visitor);
-  v8::EmbedderHeapTracer* tracer =
-      V8PerIsolateData::From(isolate)->GetEmbedderHeapTracer();
-  // There may be no tracer during tear down garbage collections.
-  // Not all threads have a tracer attached.
-  if (tracer)
-    tracer->IterateTracedGlobalHandles(&visitor);
-}
-
-void V8GCController::ClearDOMWrappers(v8::Isolate* isolate) {
-  DOMWrapperPurgingVisitor visitor(isolate);
   isolate->VisitHandlesWithClassIds(&visitor);
   v8::EmbedderHeapTracer* tracer =
       V8PerIsolateData::From(isolate)->GetEmbedderHeapTracer();
