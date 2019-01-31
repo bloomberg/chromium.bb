@@ -431,6 +431,11 @@ const char kWebPageTextAccessibilityDescription[] =
     "When enabled, text in web pages will respect the user's Dynamic Type "
     "setting.";
 
+const char kWebUISchemeHandlingName[] = "WKWebView is handling the WebUI pages";
+const char kWebUISchemeHandlingDescription[] =
+    "When enabled, the page with a WebUI scheme are directly loaded by the "
+    "WKWebView by using setURLSchemeHandler:forURLScheme: API.";
+
 const char kWKHTTPSystemCookieStoreName[] = "Use WKHTTPSystemCookieStore.";
 const char kWKHTTPSystemCookieStoreDescription[] =
     "Use WKHTTPCookieStore backed store for main context URL requests.";

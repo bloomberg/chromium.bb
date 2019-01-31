@@ -562,6 +562,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserContainerKeepsContentViewName,
      flag_descriptions::kBrowserContainerKeepsContentViewDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerKeepsContentView)},
+    {"web-ui-scheme-handling", flag_descriptions::kWebUISchemeHandlingName,
+     flag_descriptions::kWebUISchemeHandlingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kWebUISchemeHandling)},
 };
 
 // Add all switches from experimental flags to |command_line|.

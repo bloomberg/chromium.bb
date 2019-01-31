@@ -356,6 +356,11 @@ extern const char kWebFrameMessagingDescription[];
 extern const char kWebPageTextAccessibilityName[];
 extern const char kWebPageTextAccessibilityDescription[];
 
+// Title and description for the flag to have the WKWebView handling the WebUI
+// pages.
+extern const char kWebUISchemeHandlingName[];
+extern const char kWebUISchemeHandlingDescription[];
+
 // Title and description for the flag to enable WKHTTPSystemCookieStore usage
 // for main context URL requests.
 extern const char kWKHTTPSystemCookieStoreName[];

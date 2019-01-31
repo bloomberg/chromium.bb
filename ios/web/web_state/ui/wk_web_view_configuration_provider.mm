@@ -9,10 +9,13 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/features.h"
+#include "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
+#import "ios/web/webui/crw_web_ui_scheme_handler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,6 +24,7 @@
 namespace web {
 
 namespace {
+
 // A key used to associate a WKWebViewConfigurationProvider with a BrowserState.
 const char kWKWebViewConfigProviderKeyName[] = "wk_web_view_config_provider";
 
@@ -105,7 +109,24 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
                           browser_state_)];
     [[configuration_ userContentController]
         addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
+
+    if (base::FeatureList::IsEnabled(web::features::kWebUISchemeHandling)) {
+      if (!scheme_handler_) {
+        scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
+            browser_state_->GetSharedURLLoaderFactory();
+        scheme_handler_ = [[CRWWebUISchemeHandler alloc]
+            initWithURLLoaderFactory:shared_loader_factory];
+      }
+      WebClient::Schemes schemes;
+      GetWebClient()->AddAdditionalSchemes(&schemes);
+      GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
+      for (std::string scheme : schemes.standard_schemes) {
+        [configuration_ setURLSchemeHandler:scheme_handler_
+                               forURLScheme:base::SysUTF8ToNSString(scheme)];
+      }
+    }
   }
+
   // This is a shallow copy to prevent callers from changing the internals of
   // configuration.
   return [configuration_ copy];
