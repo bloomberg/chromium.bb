@@ -1720,6 +1720,8 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       )
   )
 
+  # Experimental full builder to measure impact of goma on build_packages.
+  # crbug.com/926963
   master_config.AddSlave(
       site_config.Add(
           'amd64-generic-goma-full',
