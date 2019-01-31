@@ -485,9 +485,7 @@
     },
     {
       name: "FeaturePolicyJavaScriptInterface",
-      implied_by: ["ExperimentalProductivityFeatures"],
-      origin_trial_feature_name: "FeaturePolicyJSAPI",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "FeaturePolicyReporting",

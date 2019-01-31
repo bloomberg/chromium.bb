@@ -569,6 +569,7 @@ html element iframe
     property contentDocument
     property contentWindow
     property csp
+    property featurePolicy
     property frameBorder
     property getSVGDocument
     property height
