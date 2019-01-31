@@ -6,25 +6,42 @@
 import json
 import os
 import re
-import shlex
 import sys
 import subprocess
 
 
 _RSP_RE = re.compile(r' (@(.+?\.rsp)) ')
+_CMD_LINE_RE = re.compile(
+    r'^(?P<gomacc>.*gomacc\.exe"?\s+)?(?P<clang>\S*clang\S*)\s+(?P<args>.*)$')
 _debugging = False
 
 
-def _ProcessEntry(entry):
-  """Transforms one entry in the compile database to be clang-tool friendly."""
-  split_command = shlex.split(entry['command'], posix=(sys.platform != 'win32'))
+def _ProcessCommand(command):
+  """Removes gomacc.exe and inserts --driver-mode=cl as the first argument.
 
-  # Drop gomacc.exe from the front, if present.
-  if split_command[0].endswith('gomacc.exe'):
-    split_command = split_command[1:]
-  # Insert --driver-mode=cl as the first argument.
-  split_command = split_command[:1] + ['--driver-mode=cl'] + split_command[1:]
-  entry['command'] = subprocess.list2cmdline(split_command)
+  Note that we deliberately don't use shlex.split here, because it doesn't work
+  predictably for Windows commands (specifically, it doesn't parse args the same
+  way that Clang does on Windows).
+
+  Instead, we just use a regex, with the simplifying assumption that the path to
+  clang-cl.exe contains no spaces.
+  """
+  match = _CMD_LINE_RE.search(command)
+  if match:
+    match_dict = match.groupdict()
+    command = ' '.join(
+        [match_dict['clang'], '--driver-mode=cl', match_dict['args']])
+  elif _debugging:
+    print 'Compile command didn\'t match expected regex!'
+    print 'Command:', command
+    print 'Regex:', _CMD_LINE_RE.pattern
+
+  return command
+
+
+def _ProcessEntry(entry):
+  """Transforms one entry in a Windows compile db to be clang-tool friendly."""
+  entry['command'] = _ProcessCommand(entry['command'])
 
   # Expand the contents of the response file, if any.
   # http://llvm.org/bugs/show_bug.cgi?id=21634
@@ -59,7 +76,7 @@ def ProcessCompileDatabaseIfNeeded(compile_db):
   if sys.platform != 'win32':
     return compile_db
 
-  if _debugging > 0:
+  if _debugging:
     print 'Read in %d entries from the compile db' % len(compile_db)
   compile_db = [_ProcessEntry(e) for e in compile_db]
   original_length = len(compile_db)
@@ -68,7 +85,7 @@ def ProcessCompileDatabaseIfNeeded(compile_db):
   # TODO(dcheng): This doesn't appear to do anything anymore, remove?
   compile_db = [e for e in compile_db if '_nacl.cc.pdb' not in e['command']
       and '_nacl_win64.cc.pdb' not in e['command']]
-  if _debugging > 0:
+  if _debugging:
     print 'Filtered out %d entries...' % (original_length - len(compile_db))
 
   # TODO(dcheng): Also filter out multiple commands for the same file. Not sure
