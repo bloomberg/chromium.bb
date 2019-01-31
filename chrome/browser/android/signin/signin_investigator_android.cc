@@ -5,12 +5,14 @@
 #include "chrome/browser/android/signin/signin_investigator_android.h"
 
 #include "base/android/jni_string.h"
+#include "base/optional.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/investigator_dependency_provider.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "jni/SigninInvestigator_jni.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
@@ -24,13 +26,15 @@ jint JNI_SigninInvestigator_Investigate(
   InvestigatorDependencyProvider provider(profile);
   const std::string email = ConvertJavaStringToUTF8(env, current_email);
 
-  // It may be possible that the account tracker is not aware of this account
-  // yet. If this happens we'll get an empty account_id back, and the
-  // investigator should fallback to an email comparison.
-  const std::string account_id =
-      AccountTrackerServiceFactory::GetForProfile(profile)
-          ->FindAccountInfoByEmail(email)
-          .account_id;
+  // It is possible that the Identity Service is not aware of that account
+  // yet. In that case, pass an empty account_id to the investigator, so
+  // that it falls back to email comparison.
+  base::Optional<AccountInfo> maybe_account_info =
+      IdentityManagerFactory::GetForProfile(profile)
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(email);
+  std::string account_id;
+  if (maybe_account_info.has_value())
+    account_id = maybe_account_info.value().account_id;
 
   return static_cast<int>(
       SigninInvestigator(email, account_id, &provider).Investigate());
