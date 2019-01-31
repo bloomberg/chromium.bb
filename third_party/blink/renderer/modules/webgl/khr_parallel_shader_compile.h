@@ -40,8 +40,6 @@ class KHRParallelShaderCompile final : public WebGLExtension {
 
   WebGLExtensionName GetName() const override;
 
-  void maxShaderCompilerThreadsKHR(GLuint count);
-
   explicit KHRParallelShaderCompile(WebGLRenderingContextBase*);
 };
 

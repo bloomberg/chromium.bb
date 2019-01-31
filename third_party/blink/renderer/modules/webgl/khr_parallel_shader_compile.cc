@@ -47,16 +47,6 @@ KHRParallelShaderCompile* KHRParallelShaderCompile::Create(
   return MakeGarbageCollected<KHRParallelShaderCompile>(context);
 }
 
-void KHRParallelShaderCompile::maxShaderCompilerThreadsKHR(GLuint count) {
-  WebGLExtensionScopedContext scoped(this);
-  if (scoped.IsLost())
-    return;
-  // For WebGL contexts, we don't want applications to be able to spin up huge
-  // numbers of shader compliation threads. Enforce a maximum of 2 here.
-  scoped.Context()->ContextGL()->MaxShaderCompilerThreadsKHR(
-      std::min(2u, count));
-}
-
 bool KHRParallelShaderCompile::Supported(WebGLRenderingContextBase* context) {
   return context->ExtensionsUtil()->SupportsExtension(
       "GL_KHR_parallel_shader_compile");
