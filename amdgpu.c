@@ -143,6 +143,7 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 		return -EINVAL;
 
 	if (combo->metadata.tiling == TILE_TYPE_DRI) {
+		bool needs_alignment = false;
 #ifdef __ANDROID__
 		/*
 		 * Currently, the gralloc API doesn't differentiate between allocation time and map
@@ -151,11 +152,18 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 		 *
 		 * See b/115946221,b/117942643
 		 */
-		if (use_flags & (BO_USE_SW_MASK)) {
+		if (use_flags & (BO_USE_SW_MASK))
+			needs_alignment = true;
+#endif
+		// See b/122049612
+		if (use_flags & (BO_USE_SCANOUT))
+			needs_alignment = true;
+
+		if (needs_alignment) {
 			uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(format, 0);
 			width = ALIGN(width, 256 / bytes_per_pixel);
 		}
-#endif
+
 		return dri_bo_create(bo, width, height, format, use_flags);
 	}
 
