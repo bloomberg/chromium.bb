@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -1813,7 +1814,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool showing_context_menu_;
 
   int currently_playing_video_count_ = 0;
-  VideoSizeMap cached_video_sizes_;
+  base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>
+      cached_video_sizes_;
 
   bool has_persistent_video_ = false;
 
