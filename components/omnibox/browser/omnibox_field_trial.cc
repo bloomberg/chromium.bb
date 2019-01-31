@@ -134,7 +134,7 @@ const base::Feature kOmniboxReverseTabSwitchLogic{
 
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
-const base::Feature kExperimentalKeywordMode{"ExperimentalKeywordMode",
+const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to enable Pedal suggestions as either in-suggestion side button
