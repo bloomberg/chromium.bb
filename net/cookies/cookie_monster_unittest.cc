@@ -1578,6 +1578,10 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
       cm.get(), https_www_foo_.url(),
       http_www_foo_.Format("E=F; domain=.%D; secure"), options));
 
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), http_www_bar_.url(),
+                                   http_www_bar_.Format("G=H; domain=.%D"),
+                                   options));
+
   const Time last_access_date(GetFirstCookieAccessDate(cm.get()));
 
   base::PlatformThread::Sleep(kAccessDelay);
@@ -1724,6 +1728,26 @@ TEST_F(CookieMonsterTest, InheritCreationDate) {
   EXPECT_NE(the_not_so_distant_past, cookies[0].CreationDate());
 }
 
+// Check that GetAllCookiesForURL() does not return expired cookies and deletes
+// them.
+TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
+  std::unique_ptr<CookieMonster> cm(
+      new CookieMonster(nullptr, nullptr, &net_log_));
+
+  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=B;"));
+
+  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "C=D;"));
+
+  CookieList cookies = GetAllCookiesForURL(cm.get(), http_www_foo_.url());
+  EXPECT_EQ(2u, cookies.size());
+
+  EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(),
+                        "C=D; expires=Thu, 01-Jan-1970 00:00:00 GMT"));
+
+  cookies = GetAllCookiesForURL(cm.get(), http_www_foo_.url());
+  EXPECT_EQ(1u, cookies.size());
+}
+
 TEST_F(CookieMonsterTest, DeleteCookieByName) {
   std::unique_ptr<CookieMonster> cm(
       new CookieMonster(nullptr, nullptr, &net_log_));
@@ -1731,6 +1755,8 @@ TEST_F(CookieMonsterTest, DeleteCookieByName) {
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A1; path=/"));
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A2; path=/foo"));
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "A=A3; path=/bar"));
+  EXPECT_TRUE(SetCookie(cm.get(), http_bar_foo_.url(), "A=A4; path=/foo"));
+  EXPECT_TRUE(SetCookie(cm.get(), http_www_bar_.url(), "A=A5; path=/foo"));
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B1; path=/"));
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B2; path=/foo"));
   EXPECT_TRUE(SetCookie(cm.get(), http_www_foo_.url(), "B=B3; path=/bar"));
@@ -1738,7 +1764,7 @@ TEST_F(CookieMonsterTest, DeleteCookieByName) {
   DeleteCookie(cm.get(), http_www_foo_.AppendPath("foo/bar"), "A");
 
   CookieList cookies = GetAllCookies(cm.get());
-  size_t expected_size = 4;
+  size_t expected_size = 6;
   EXPECT_EQ(expected_size, cookies.size());
   for (auto it = cookies.begin(); it != cookies.end(); ++it) {
     EXPECT_NE("A1", it->Value());
