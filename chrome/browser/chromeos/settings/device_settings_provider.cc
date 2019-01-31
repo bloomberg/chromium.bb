@@ -83,7 +83,6 @@ const char* const kKnownSettings[] = {
     kDeviceNativePrintersWhitelist,
     kDeviceQuirksDownloadEnabled,
     kDeviceUnaffiliatedCrostiniAllowed,
-    kDeviceWallpaperImage,
     kDeviceDisplayResolution,
     kDisplayRotationDefault,
     kExtensionCacheSize,
@@ -628,14 +627,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetBoolean(
         kDeviceQuirksDownloadEnabled,
         policy.quirks_download_enabled().quirks_download_enabled());
-  }
-
-  if (policy.has_device_wallpaper_image() &&
-      policy.device_wallpaper_image().has_device_wallpaper_image()) {
-    SetJsonDeviceSetting(
-        kDeviceWallpaperImage, policy::key::kDeviceWallpaperImage,
-        policy.device_wallpaper_image().device_wallpaper_image(),
-        new_values_cache);
   }
 
   if (policy.has_device_off_hours()) {
