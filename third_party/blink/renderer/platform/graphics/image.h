@@ -223,33 +223,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return nullptr;
   }
 
-  // Given the |size| that the whole image should draw at, and the
-  // input phase requested by the content, and the space between repeated tiles,
-  // return a rectangle with |size| and a location that respects
-  // the phase but is no more than one size + space in magnitude. In practice,
-  // this means that if there is no repeating the returned rect would contain
-  // the destination_offset location. The destination_offset passed here must
-  // exactly match the location of the subset in a following call to
-  // ComputeSubsetForBackground.
-  static FloatRect ComputePhaseForBackground(
-      const FloatPoint& destination_offset,
-      const FloatSize& size,
-      const FloatPoint& phase,
-      const FloatSize& spacing);
-
-  // Compute the image subset, in intrinsic image coordinates, that gets mapped
-  // onto the |subset|, when the whole image would be drawn with phase
-  // and size given by |phase_and_size|. Assumes
-  // |phase_and_size| contains |subset|. The location
-  // of the requested subset should be the painting snapped location, or
-  // whatever was used as a destination_offset in ComputePhaseForBackground.
-  // It is used to undo the offset added in ComputePhaseForBackground. The size
-  // of requested subset should be the unsnapped size so that the computed
-  // scale and location in the source image can be correctly determined.
-  static FloatRect ComputeSubsetForBackground(const FloatRect& phase_and_size,
-                                              const FloatRect& subset,
-                                              const FloatSize& intrinsic_size);
-
   virtual sk_sp<PaintRecord> PaintRecordForContainer(
       const KURL& url,
       const IntSize& container_size,
@@ -277,22 +250,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
  protected:
   Image(ImageObserver* = nullptr, bool is_multipart = false);
-
-  // The unsnapped_subset_size should be the target painting area implied by the
-  //   content, without any snapping applied. It is necessary to correctly
-  //   compute the subset of the source image to paint into the destination.
-  // The snapped_paint_rect should be the target destination for painting into.
-  // The phase is never snapped.
-  // The tile_size is the total image size. The mapping from this size
-  //   to the unsnapped_dest_rect size defines the scaling of the image for
-  //   sprite computation.
-  void DrawTiledBackground(GraphicsContext&,
-                           const FloatSize& unsnapped_subset_size,
-                           const FloatRect& snapped_paint_rect,
-                           const FloatPoint& phase,
-                           const FloatSize& tile_size,
-                           SkBlendMode,
-                           const FloatSize& repeat_spacing);
 
   void DrawTiledBorder(GraphicsContext&,
                        const FloatRect& dst_rect,

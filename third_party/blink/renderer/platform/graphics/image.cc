@@ -141,66 +141,6 @@ String Image::FilenameExtension() const {
 }
 
 // TODO(schenney): Lift this code, with the calculations for subsetting the
-// image and the like, up the stack into a BackgroundPainter.
-void Image::DrawTiledBackground(GraphicsContext& ctxt,
-                                const FloatSize& unsnapped_subset_size,
-                                const FloatRect& snapped_paint_rect,
-                                const FloatPoint& phase,
-                                const FloatSize& tile_size,
-                                SkBlendMode op,
-                                const FloatSize& repeat_spacing) {
-  if (tile_size.IsEmpty())
-    return;
-
-  // Use the intrinsic size of the image if it has one, otherwise force the
-  // generated image to be the tile size.
-  FloatSize intrinsic_tile_size(Size());
-  FloatSize scale(1, 1);
-  if (HasRelativeSize()) {
-    intrinsic_tile_size.SetWidth(tile_size.Width());
-    intrinsic_tile_size.SetHeight(tile_size.Height());
-  } else {
-    scale = FloatSize(tile_size.Width() / intrinsic_tile_size.Width(),
-                      tile_size.Height() / intrinsic_tile_size.Height());
-  }
-
-  const FloatRect one_tile_rect = ComputePhaseForBackground(
-      snapped_paint_rect.Location(), tile_size, phase, repeat_spacing);
-
-  // Check and see if a single draw of the image can cover the entire area we
-  // are supposed to tile. The dest_rect_for_subset must use the same
-  // location that was used in ComputePhaseForBackground and the unsnapped
-  // destination rect in order to correctly evaluate the subset size and
-  // location in the presence of border snapping and zoom.
-  FloatRect dest_rect_for_subset(snapped_paint_rect.Location(),
-                                 unsnapped_subset_size);
-  if (one_tile_rect.Contains(dest_rect_for_subset)) {
-    FloatRect visible_src_rect = ComputeSubsetForBackground(
-        one_tile_rect, dest_rect_for_subset, intrinsic_tile_size);
-    // Round to avoid filtering pulling in neighboring pixels, for the
-    // common case of sprite maps.
-    // TODO(schenney): Snapping at this level is a problem for cases where we
-    // might be animating background-position to pan over an image. Ideally we
-    // would either snap only if close to integral, or move snapping
-    // calculations up the stack.
-    visible_src_rect = FloatRect(RoundedIntRect(visible_src_rect));
-    ctxt.DrawImage(this, kSyncDecode, snapped_paint_rect, &visible_src_rect, op,
-                   kDoNotRespectImageOrientation);
-    return;
-  }
-
-  // Note that this tile rect the image's pre-scaled size.
-  FloatRect tile_rect(FloatPoint(), intrinsic_tile_size);
-  // This call takes the unscaled image, applies the given scale, and paints
-  // it into the snapped_dest_rect using phase from one_tile_rect and the
-  // given repeat spacing. Note the phase is already scaled.
-  DrawPattern(ctxt, tile_rect, scale, one_tile_rect.Location(), op,
-              snapped_paint_rect, repeat_spacing);
-
-  StartAnimation();
-}
-
-// TODO(schenney): Lift this code, with the calculations for subsetting the
 // image and the like, up the stack into a border painting class.
 void Image::DrawTiledBorder(GraphicsContext& ctxt,
                             const FloatRect& dst_rect,
@@ -295,8 +235,6 @@ void Image::DrawTiledBorder(GraphicsContext& ctxt,
     DrawPattern(ctxt, src_rect, tile_scale_factor, pattern_phase, op, dst_rect,
                 spacing);
   }
-
-  StartAnimation();
 }
 
 namespace {
@@ -412,6 +350,8 @@ void Image::DrawPattern(GraphicsContext& context,
 
   context.DrawRect(dest_rect, flags);
 
+  StartAnimation();
+
   if (CurrentFrameIsLazyDecoded()) {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                          "Draw LazyPixelRef", TRACE_EVENT_SCOPE_THREAD,
@@ -452,33 +392,6 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   StartAnimation();
 
   return true;
-}
-
-FloatRect Image::ComputePhaseForBackground(const FloatPoint& destination_offset,
-                                           const FloatSize& size,
-                                           const FloatPoint& phase,
-                                           const FloatSize& spacing) {
-  const FloatSize step_per_tile(size + spacing);
-  return FloatRect(
-      FloatPoint(
-          destination_offset.X() + fmodf(-phase.X(), step_per_tile.Width()),
-          destination_offset.Y() + fmodf(-phase.Y(), step_per_tile.Height())),
-      size);
-}
-
-FloatRect Image::ComputeSubsetForBackground(const FloatRect& phase_and_size,
-                                            const FloatRect& subset,
-                                            const FloatSize& intrinsic_size) {
-  // TODO(schenney): Re-enable this after determining why it fails for
-  // CAP, and maybe other cases.
-  // DCHECK(phase_and_size.Contains(subset));
-
-  const FloatSize scale(phase_and_size.Width() / intrinsic_size.Width(),
-                        phase_and_size.Height() / intrinsic_size.Height());
-  return FloatRect((subset.X() - phase_and_size.X()) / scale.Width(),
-                   (subset.Y() - phase_and_size.Y()) / scale.Height(),
-                   subset.Width() / scale.Width(),
-                   subset.Height() / scale.Height());
 }
 
 SkBitmap Image::AsSkBitmapForCurrentFrame(
