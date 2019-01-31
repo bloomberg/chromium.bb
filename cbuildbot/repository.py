@@ -623,16 +623,14 @@ class RepoRepository(object):
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
 
-  def FetchAll(self, detach=False):
-    """Run repo forall -c git fetch --all'.
+  def RepairMissingRemotes(self):
+    """Repair corruption with missing remote branch git objects.
 
-    Args:
-      detach: If true, throw away all local changes, even if on tracking
-        branches.
+    See http://crbug/921407 for history.
     """
-    cmd = [self.repo_cmd, 'forall', '-c', 'git', 'fetch', '--all']
-    if detach:
-      cmd.append('--detach')
+    cmd = [self.repo_cmd, 'forall', '-c',
+           os.path.join(constants.CHROMITE_DIR, 'scripts',
+                        'detect_fix_missing_remote.sh')]
 
     cros_build_lib.RunCommand(cmd, cwd=self.directory)
 
