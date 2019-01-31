@@ -33,7 +33,6 @@
 using content::WebContents;
 using content::MediaSession;
 using content::MediaSessionImpl;
-using content::MediaSessionObserver;
 using content::AudioFocusDelegate;
 using content::MediaSessionPlayerObserver;
 using content::MediaSessionUmaHelper;
