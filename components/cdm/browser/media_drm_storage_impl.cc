@@ -4,16 +4,22 @@
 
 #include "components/cdm/browser/media_drm_storage_impl.h"
 
+#include <map>
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/value_conversions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/navigation_handle.h"
 #include "media/base/android/media_drm_key_type.h"
+#include "url/origin.h"
+#include "url/url_constants.h"
 
 // The storage will be managed by PrefService. All data will be stored in a
 // dictionary under the key "media.media_drm_storage". The dictionary is
@@ -428,6 +434,116 @@ base::UnguessableToken GetOriginIdForOrigin(
   return origin_data->origin_id();
 }
 
+// Map shared by all MediaDrmStorageImpl objects to prevent multiple Origin IDs
+// being allocated for the same origin. Initialize() can be called multiple
+// times for the same web origin (and profile). This class groups together
+// requests for the same web origin (and profile), calling |get_origin_id_cb|
+// only on the first request. This avoids a race condition where simultaneous
+// requests could result in different Origin IDs allocated for the same origin
+// (and only the last one saved in the preference).
+class InitializationSerializer {
+ public:
+  // Origin IDs are unique per preference service and origin.
+  struct PreferenceAndOriginKey {
+    // Allow use as a key in std::map.
+    bool operator<(const PreferenceAndOriginKey& other) const {
+      return std::tie(pref_service, origin) <
+             std::tie(other.pref_service, other.origin);
+    }
+
+    PrefService* pref_service;
+    const url::Origin origin;
+  };
+
+  // The InitializationSerializer is a global map shared by all
+  // MediaDrmStorageImpl instances.
+  static InitializationSerializer& GetInstance() {
+    static base::NoDestructor<InitializationSerializer>
+        s_origin_id_request_impl;
+    return *s_origin_id_request_impl;
+  }
+
+  InitializationSerializer() = default;
+  ~InitializationSerializer() = default;
+
+  void FetchOriginId(
+      PrefService* pref_service,
+      const url::Origin& origin,
+      MediaDrmStorageImpl::GetOriginIdCB get_origin_id_cb,
+      MediaDrmStorageImpl::OriginIdObtainedCB origin_id_obtained_cb) {
+    DVLOG(3) << __func__ << " origin: " << origin;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    // Check if the preference has an existing origin ID.
+    const base::DictionaryValue* storage_dict =
+        pref_service->GetDictionary(kMediaDrmStorage);
+    base::UnguessableToken origin_id =
+        GetOriginIdForOrigin(storage_dict, origin);
+    if (origin_id) {
+      std::move(origin_id_obtained_cb).Run(origin_id);
+      return;
+    }
+
+    // No origin ID found, so check if another Initialize() call is in progress.
+    PreferenceAndOriginKey key{pref_service, origin};
+    auto entry = pending_requests_.find(key);
+    if (entry != pending_requests_.end()) {
+      // Entry already exists, so simply add |origin_id_obtained_cb| to be
+      // called once the Origin ID is obtained.
+      entry->second.emplace_back(std::move(origin_id_obtained_cb));
+      return;
+    }
+
+    // Entry does not exist, so create a new one.
+    std::vector<MediaDrmStorageImpl::OriginIdObtainedCB>
+        origin_id_obtained_cb_list;
+    origin_id_obtained_cb_list.emplace_back(std::move(origin_id_obtained_cb));
+    pending_requests_.emplace(key, std::move(origin_id_obtained_cb_list));
+
+    // Now call |get_origin_id_cb|. It will call OnOriginIdObtained() when done,
+    // which will call all the callbacks saved for this preference and origin
+    // pair. Use of base::Unretained() is valid as |this| is a singleton stored
+    // in a static variable.
+    get_origin_id_cb.Run(
+        base::BindOnce(&InitializationSerializer::OnOriginIdObtained,
+                       base::Unretained(this), pref_service, origin));
+  }
+
+ private:
+  void OnOriginIdObtained(PrefService* pref_service,
+                          const url::Origin& origin,
+                          const base::UnguessableToken& origin_id) {
+    DVLOG(3) << __func__ << " origin: " << origin;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    // Save the origin ID in the preference as long as it is not null.
+    if (origin_id) {
+      DictionaryPrefUpdate update(pref_service, kMediaDrmStorage);
+      CreateOriginDictAndReturnSessionsDict(update.Get(), origin, origin_id);
+    }
+
+    // Now call any callbacks waiting for this origin ID to be allocated.
+    auto entry = pending_requests_.find({pref_service, origin});
+    DCHECK(entry != pending_requests_.end());
+
+    std::vector<MediaDrmStorageImpl::OriginIdObtainedCB> callbacks;
+    callbacks.swap(entry->second);
+    pending_requests_.erase(entry);
+
+    for (auto& callback : callbacks)
+      std::move(callback).Run(origin_id);
+  }
+
+  // Note that this map is never deleted. As entries are removed when an origin
+  // ID is allocated, so it should never get too large.
+  std::map<PreferenceAndOriginKey,
+           std::vector<MediaDrmStorageImpl::OriginIdObtainedCB>>
+      pending_requests_;
+
+  THREAD_CHECKER(thread_checker_);
+  DISALLOW_COPY_AND_ASSIGN(InitializationSerializer);
+};
+
 }  // namespace
 
 // static
@@ -548,55 +664,28 @@ void MediaDrmStorageImpl::Initialize(InitializeCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!init_cb_);
 
-  if (IsInitialized()) {
+  if (is_initialized_) {
     std::move(callback).Run(origin_id_);
     return;
   }
   DCHECK(!origin_id_);
 
-  // Check if the preference has an existing origin ID.
-  const base::DictionaryValue* storage_dict =
-      pref_service_->GetDictionary(kMediaDrmStorage);
-  origin_id_ = GetOriginIdForOrigin(storage_dict, origin());
-  if (origin_id_) {
-    std::move(callback).Run(origin_id_);
-    return;
-  }
-
-  // No origin ID, so fetch one asynchronously. OnOriginIdObtained() is called
-  // to finish initialization.
+  // Call using SerializeInitializeRequests() to handle the case where
+  // Initialize() is called concurrently for the same origin (and preference
+  // service). Note that if there is already an existing origin ID for this web
+  // origin saved in the preference, OnOriginIdObtained() will be called
+  // immediately.
   init_cb_ = std::move(callback);
-  get_origin_id_cb_.Run(base::BindOnce(&MediaDrmStorageImpl::OnOriginIdObtained,
-                                       weak_factory_.GetWeakPtr()));
+  InitializationSerializer::GetInstance().FetchOriginId(
+      pref_service_, origin(), get_origin_id_cb_,
+      base::BindOnce(&MediaDrmStorageImpl::OnOriginIdObtained,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaDrmStorageImpl::OnOriginIdObtained(
     const base::UnguessableToken& origin_id) {
-  // If multiple MediaDrmStorage instances from the same web origin call
-  // Initialize concurrently, then a previous instance may have successfully
-  // obtained an origin ID and stored it for this origin. So check again to see
-  // if an origin ID has been saved, and use it instead of |origin_id|. This
-  // does mean that |origin_id| will be lost.
-  // TODO(crbug.com/919228): Once pre-provisioned origins are used, |origin_id|
-  // needs to be unprovisioned rather than dropped.
-  DictionaryPrefUpdate update(pref_service_, kMediaDrmStorage);
-  auto stored_origin_id = GetOriginIdForOrigin(update.Get(), origin());
-  if (stored_origin_id) {
-    origin_id_ = stored_origin_id;
-    std::move(init_cb_).Run(origin_id_);
-    return;
-  }
-
-  // As there is no current value, persist the origin ID into storage now.
-  // TODO(crbug.com/917527): When pre-provisioned origins are supported, there
-  // may not be any available, so an empty origin ID can be used temporarily.
-  // The empty origin ID should not be saved in the preference, but should be
-  // returned. Note that having |origin_id_| set is used to determine if this
-  // object is initialized or not, so temporarily using an empty origin ID will
-  // affect that, and that needs to be fixed too.
-  DCHECK(origin_id) << "Empty origin ID not handled.";
+  is_initialized_ = true;
   origin_id_ = origin_id;
-  CreateOriginDictAndReturnSessionsDict(update.Get(), origin(), origin_id_);
   std::move(init_cb_).Run(origin_id_);
 }
 
@@ -604,8 +693,15 @@ void MediaDrmStorageImpl::OnProvisioned(OnProvisionedCallback callback) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!IsInitialized()) {
+  if (!is_initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // If this is using an empty origin ID, it should not be provisioned.
+  if (!origin_id_) {
+    DVLOG(1) << __func__ << ": Empty origin ID.";
     std::move(callback).Run(false);
     return;
   }
@@ -628,8 +724,15 @@ void MediaDrmStorageImpl::SavePersistentSession(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!IsInitialized()) {
+  if (!is_initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // If this is using an empty origin ID, it cannot save persistent data.
+  if (!origin_id_) {
+    DVLOG(1) << __func__ << ": Empty origin ID.";
     std::move(callback).Run(false);
     return;
   }
@@ -674,8 +777,15 @@ void MediaDrmStorageImpl::LoadPersistentSession(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!IsInitialized()) {
+  if (!is_initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // If this is using an empty origin ID, it cannot save persistent data.
+  if (!origin_id_) {
+    DVLOG(1) << __func__ << ": Empty origin ID.";
     std::move(callback).Run(nullptr);
     return;
   }
@@ -714,8 +824,15 @@ void MediaDrmStorageImpl::RemovePersistentSession(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!IsInitialized()) {
+  if (!is_initialized_) {
     DVLOG(1) << __func__ << ": Not initialized.";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // If this is using an empty origin ID, it cannot save persistent data.
+  if (!origin_id_) {
+    DVLOG(1) << __func__ << ": Empty origin ID.";
     std::move(callback).Run(false);
     return;
   }
