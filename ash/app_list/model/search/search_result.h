@@ -141,6 +141,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   ash::mojom::SearchResultMetadataPtr TakeMetadata() {
     return std::move(metadata_);
   }
+  ash::mojom::SearchResultMetadataPtr CloneMetadata() const {
+    return metadata_->Clone();
+  }
 
  protected:
   void set_id(const std::string& id) { metadata_->id = id; }
