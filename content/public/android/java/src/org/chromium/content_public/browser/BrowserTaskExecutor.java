@@ -12,6 +12,7 @@ import org.chromium.base.task.SingleThreadTaskRunnerImpl;
 import org.chromium.base.task.TaskExecutor;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.content.browser.UiThreadTaskTraitsImpl;
 
 import java.util.WeakHashMap;
 
@@ -60,7 +61,8 @@ public class BrowserTaskExecutor implements TaskExecutor {
         // In some tests we will get called multiple times.
         if (sRegistered) return;
 
-        PostTask.registerTaskExecutor(UiThreadTaskTraits.EXTENSION_ID, new BrowserTaskExecutor());
+        PostTask.registerTaskExecutor(
+                UiThreadTaskTraitsImpl.EXTENSION_ID, new BrowserTaskExecutor());
         sRegistered = true;
     }
 
