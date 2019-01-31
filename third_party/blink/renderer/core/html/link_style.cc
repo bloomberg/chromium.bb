@@ -45,7 +45,6 @@ LinkStyle::LinkStyle(HTMLLinkElement* owner)
       disabled_state_(kUnset),
       pending_sheet_type_(kNone),
       loading_(false),
-      fired_load_(false),
       loaded_sheet_(false) {}
 
 LinkStyle::~LinkStyle() = default;
@@ -145,12 +144,9 @@ bool LinkStyle::SheetLoaded() {
 
 void LinkStyle::NotifyLoadedSheetAndAllCriticalSubresources(
     Node::LoadedSheetErrorStatus error_status) {
-  if (fired_load_)
-    return;
   loaded_sheet_ = (error_status == Node::kNoErrorLoadingSubresource);
   if (owner_)
     owner_->ScheduleEvent();
-  fired_load_ = true;
 }
 
 void LinkStyle::StartLoadingDynamicSheet() {
