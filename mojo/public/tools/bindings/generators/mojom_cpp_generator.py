@@ -302,7 +302,7 @@ class Generator(generator.Generator):
       "interfaces": self.module.interfaces,
       "kinds": self.module.kinds,
       "module": self.module,
-      "namespace": self.module.namespace,
+      "module_namespace": self.module.namespace,
       "namespaces_as_array": NamespaceToArray(self.module.namespace),
       "structs": self.module.structs,
       "support_lazy_serialization": self.support_lazy_serialization,
