@@ -202,7 +202,7 @@ static void BoundingBoxForArc(const FloatPoint3D& point,
   if (axis.Dot(to_transform.Axis()) < 0)
     to_degrees *= -1;
 
-  from_degrees = Blend(from_degrees, to_transform.Angle(), min_progress);
+  from_degrees = Blend(from_degrees, to_degrees, min_progress);
   to_degrees = Blend(to_degrees, from_transform.Angle(), 1.0 - max_progress);
   if (from_degrees > to_degrees)
     std::swap(from_degrees, to_degrees);

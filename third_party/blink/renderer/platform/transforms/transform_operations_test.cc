@@ -297,7 +297,7 @@ struct ProblematicAxisTest {
 };
 
 TEST(TransformOperationsTest, AbsoluteAnimatedProblematicAxisRotationBounds) {
-  // Zeros in the components of the axis osf rotation turned out to be tricky to
+  // Zeros in the components of the axis of rotation turned out to be tricky to
   // deal with in practice. This function tests some potentially problematic
   // axes to ensure sane behavior.
 
