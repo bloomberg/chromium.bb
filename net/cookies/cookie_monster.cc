@@ -674,13 +674,18 @@ void CookieMonster::GetCookieListWithOptions(const GURL& url,
   CookieStatusList excluded_cookies;
   if (HasCookieableScheme(url)) {
     std::vector<CanonicalCookie*> cookie_ptrs;
-    FindCookiesForHostAndDomain(url, options, &cookie_ptrs);
-    std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
+    FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
 
     cookies.reserve(cookie_ptrs.size());
-    for (std::vector<CanonicalCookie*>::const_iterator it = cookie_ptrs.begin();
-         it != cookie_ptrs.end(); it++)
-      cookies.push_back(**it);
+    std::vector<CanonicalCookie*> filtered_cookie_ptrs;
+    FilterCookiesWithOptions(url, options, &cookie_ptrs, &filtered_cookie_ptrs);
+
+    std::sort(filtered_cookie_ptrs.begin(), filtered_cookie_ptrs.end(),
+              CookieSorter);
+
+    for (auto* cookie : filtered_cookie_ptrs) {
+      cookies.push_back(*cookie);
+    }
   }
   MaybeRunCookieCallback(std::move(callback), cookies, excluded_cookies);
 }
@@ -775,14 +780,16 @@ void CookieMonster::DeleteCookie(const GURL& url,
   options.set_same_site_cookie_mode(
       CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   // Get the cookies for this host and its domain(s).
-  std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, &cookies);
+  std::vector<CanonicalCookie*> cookie_ptrs;
+  std::vector<CanonicalCookie*> filtered_cookie_ptrs;
+  FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
+  FilterCookiesWithOptions(url, options, &cookie_ptrs, &filtered_cookie_ptrs);
   std::set<CanonicalCookie*> matching_cookies;
 
-  for (auto* cookie : cookies) {
+  for (auto* cookie : filtered_cookie_ptrs) {
+    DCHECK(cookie->IsOnPath(url.path()));
+    DCHECK(cookie->IsDomainMatch(url.host()));
     if (cookie->Name() != cookie_name)
-      continue;
-    if (!cookie->IsOnPath(url.path()))
       continue;
     matching_cookies.insert(cookie);
   }
@@ -1077,32 +1084,15 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
   DCHECK_EQ(num_duplicates, num_duplicates_found);
 }
 
-void CookieMonster::FindCookiesForHostAndDomain(
+void CookieMonster::FindCookiesForRegistryControlledHost(
     const GURL& url,
-    const CookieOptions& options,
     std::vector<CanonicalCookie*>* cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const Time current_time(CurrentTime());
+  Time current_time(CurrentTime());
 
-  // Probe to save statistics relatively frequently.  We do it here rather
-  // than in the set path as many websites won't set cookies, and we
-  // want to collect statistics whenever the browser's being used.
-  RecordPeriodicStats(current_time);
-
-  // Can just dispatch to FindCookiesForKey
+  // Retrieve all cookies for a given key
   const std::string key(GetKey(url.host_piece()));
-  FindCookiesForKey(key, url, options, current_time, cookies);
-}
-
-void CookieMonster::FindCookiesForKey(const std::string& key,
-                                      const GURL& url,
-                                      const CookieOptions& options,
-                                      const Time& current,
-                                      std::vector<CanonicalCookie*>* cookies) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  std::vector<CanonicalCookie*> full_cookie_list;
 
   for (CookieMapItPair its = cookies_.equal_range(key);
        its.first != its.second;) {
@@ -1111,27 +1101,41 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
     ++its.first;
 
     // If the cookie is expired, delete it.
-    if (cc->IsExpired(current)) {
+    if (cc->IsExpired(current_time)) {
       InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPIRED);
       continue;
     }
-    full_cookie_list.push_back(cc);
+    cookies->push_back(cc);
   }
+}
 
-  for (CanonicalCookie* cc : full_cookie_list) {
+void CookieMonster::FilterCookiesWithOptions(
+    const GURL url,
+    const CookieOptions options,
+    std::vector<CanonicalCookie*>* cookie_ptrs,
+    std::vector<CanonicalCookie*>* cookies) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Probe to save statistics relatively frequently.  We do it here rather
+  // than in the set path as many websites won't set cookies, and we
+  // want to collect statistics whenever the browser's being used.
+  Time current_time(CurrentTime());
+  RecordPeriodicStats(current_time);
+
+  for (std::vector<CanonicalCookie*>::iterator it = cookie_ptrs->begin();
+       it != cookie_ptrs->end(); it++) {
     // Filter out cookies that should not be included for a request to the
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
-    if (cc->IncludeForRequestURL(url, options) !=
-        CanonicalCookie::CookieInclusionStatus::INCLUDE)
+    if ((*it)->IncludeForRequestURL(url, options) !=
+        CanonicalCookie::CookieInclusionStatus::INCLUDE) {
       continue;
-
-    // Add this cookie to the set of matching cookies. Update the access
-    // time if we've been requested to do so.
-    if (options.update_access_time()) {
-      InternalUpdateCookieAccessTime(cc, current);
     }
-    cookies->push_back(cc);
+
+    if (options.update_access_time())
+      InternalUpdateCookieAccessTime(*it, current_time);
+
+    cookies->push_back(*it);
   }
 }
 
@@ -1714,8 +1718,8 @@ size_t CookieMonster::GarbageCollectLeastRecentlyAccessed(
 
 // A wrapper around registry_controlled_domains::GetDomainAndRegistry
 // to make clear we're creating a key for our local map or for the persistent
-// store's use. Here and in FindCookiesForHostAndDomain() are the only two
-// places where we need to conditionalize based on key type.
+// store's use. Here and in FindCookiesForRegistryControlledHost() are the only
+// two places where we need to conditionalize based on key type.
 //
 // Note that this key algorithm explicitly ignores the scheme.  This is
 // because when we're entering cookies into the map from the backing store,

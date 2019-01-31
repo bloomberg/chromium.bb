@@ -108,6 +108,8 @@ class CookieStoreTest : public testing::Test {
  protected:
   CookieStoreTest()
       : http_www_foo_("http://www.foo.com"),
+        http_bar_foo_("http://bar.foo.com"),
+        http_www_bar_("http://www.bar.com"),
         https_www_foo_("https://www.foo.com"),
         ftp_foo_("ftp://ftp.foo.com/"),
         ws_www_foo_("ws://www.foo.com"),
@@ -337,6 +339,8 @@ class CookieStoreTest : public testing::Test {
   }
 
   const CookieURLHelper http_www_foo_;
+  const CookieURLHelper http_bar_foo_;
+  const CookieURLHelper http_www_bar_;
   const CookieURLHelper https_www_foo_;
   const CookieURLHelper ftp_foo_;
   const CookieURLHelper ws_www_foo_;
