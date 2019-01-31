@@ -6,6 +6,7 @@
 #define COMPONENTS_CDM_BROWSER_MEDIA_DRM_STORAGE_IMPL_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -36,8 +37,9 @@ namespace cdm {
 class MediaDrmStorageImpl final
     : public content::FrameServiceBase<media::mojom::MediaDrmStorage> {
  public:
-  using GetOriginIdCB = base::RepeatingCallback<void(
-      base::OnceCallback<void(const base::UnguessableToken&)>)>;
+  using OriginIdObtainedCB =
+      base::OnceCallback<void(const base::UnguessableToken&)>;
+  using GetOriginIdCB = base::RepeatingCallback<void(OriginIdObtainedCB)>;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -79,8 +81,6 @@ class MediaDrmStorageImpl final
   void RemovePersistentSession(const std::string& session_id,
                                RemovePersistentSessionCallback callback) final;
 
-  bool IsInitialized() const { return !!origin_id_; }
-
  private:
   // |this| can only be destructed as a FrameServiceBase.
   ~MediaDrmStorageImpl() final;
@@ -89,7 +89,7 @@ class MediaDrmStorageImpl final
   // of Initialize();
   void OnOriginIdObtained(const base::UnguessableToken& origin_id);
 
-  PrefService* const pref_service_ = nullptr;
+  PrefService* const pref_service_;
   GetOriginIdCB get_origin_id_cb_;
 
   // ID for the current origin. Per EME spec on individualization,
@@ -99,6 +99,9 @@ class MediaDrmStorageImpl final
   // As Initialize() may be asynchronous, save the InitializeCallback when
   // necessary.
   InitializeCallback init_cb_;
+
+  // Set when initialized.
+  bool is_initialized_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaDrmStorageImpl> weak_factory_;
