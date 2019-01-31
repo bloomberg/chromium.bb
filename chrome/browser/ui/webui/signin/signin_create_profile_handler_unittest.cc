@@ -10,9 +10,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/buildflags.h"
@@ -120,13 +118,8 @@ class SigninCreateProfileHandlerTest : public BrowserWithTestWindowTest {
     return handler_.get();
   }
 
-  FakeSigninManagerForTesting* signin_manager() {
-    return fake_signin_manager_;
-  }
-
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
-  FakeSigninManagerForTesting* fake_signin_manager_;
   std::unique_ptr<TestSigninCreateProfileHandler> handler_;
 };
 
