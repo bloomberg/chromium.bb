@@ -552,6 +552,8 @@ void LoginUserView::ButtonPressed(views::Button* sender,
     if (!menu_->parent())
       login_views_utils::GetTopLevelParentView(this)->AddChildView(menu_);
 
+    // Reset state in case the remove-user button was clicked once previously.
+    menu_->ResetState();
     menu_->Show();
 
     // If the menu was opened by pressing Enter on the focused dropdown, focus
