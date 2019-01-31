@@ -428,10 +428,14 @@ std::unique_ptr<base::DictionaryValue> ConvertPromoDataToDict(
 }
 
 std::unique_ptr<base::DictionaryValue> ConvertSearchSuggestDataToDict(
-    const SearchSuggestData& data) {
+    const base::Optional<SearchSuggestData>& data) {
   auto result = std::make_unique<base::DictionaryValue>();
-  result->SetString("suggestionsHtml", data.suggestions_html);
-  result->SetString("suggestionsEndOfBodyScript", data.end_of_body_script);
+  if (data.has_value()) {
+    result->SetString("suggestionsHtml", data->suggestions_html);
+    result->SetString("suggestionsEndOfBodyScript", data->end_of_body_script);
+  } else {
+    result->SetString("suggestionsHtml", std::string());
+  }
   return result;
 }
 
@@ -1301,16 +1305,11 @@ void LocalNtpSource::MaybeServeSearchSuggestions(
     const content::URLDataSource::GotDataCallback& callback) {
   base::Optional<SearchSuggestData> data =
       search_suggest_service_->search_suggest_data();
-  if (!data.has_value()) {
-    callback.Run(nullptr);
-    return;
-  }
 
-  SearchSuggestData suggest_data = *data;
   search_suggest_service_->SuggestionsDisplayed();
   scoped_refptr<base::RefCountedString> result;
   std::string js;
-  base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(suggest_data), &js);
+  base::JSONWriter::Write(*ConvertSearchSuggestDataToDict(data), &js);
   js = "var search_suggestions  = " + js + ";";
   result = base::RefCountedString::TakeString(&js);
   callback.Run(result);
