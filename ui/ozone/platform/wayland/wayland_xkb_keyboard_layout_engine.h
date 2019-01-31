@@ -36,6 +36,7 @@ class WaylandXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
     xkb_mod_index_t alt = 0;
     xkb_mod_index_t shift = 0;
     xkb_mod_index_t caps = 0;
+    xkb_mod_index_t altgr = 0;
   } xkb_mod_indexes_;
 
   EventModifiers* event_modifiers_ = nullptr;  // Owned by WaylandKeyboard.
