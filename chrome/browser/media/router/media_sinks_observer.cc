@@ -21,6 +21,11 @@ MediaSinksObserver::MediaSinksObserver(MediaRouter* router,
   DCHECK(router_);
 }
 
+MediaSinksObserver::MediaSinksObserver(MediaRouter* router)
+    : router_(router), initialized_(false) {
+  DCHECK(router_);
+}
+
 MediaSinksObserver::~MediaSinksObserver() {
 #if DCHECK_IS_ON()
   DCHECK(!in_on_sinks_updated_);

@@ -6,6 +6,7 @@
 #define CHROME_COMMON_MEDIA_ROUTER_DISCOVERY_MEDIA_SINK_SERVICE_BASE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
@@ -38,15 +39,19 @@ class MediaSinkServiceBase {
    public:
     virtual ~Observer() = default;
 
+    // Invoked when the list of discovered sinks changes.
+    virtual void OnSinksDiscovered(
+        const std::vector<MediaSinkInternal>& sinks) {}
+
     // Invoked when |sink| is added or updated.
-    virtual void OnSinkAddedOrUpdated(const MediaSinkInternal& sink) = 0;
+    virtual void OnSinkAddedOrUpdated(const MediaSinkInternal& sink) {}
 
     // Invoked when |sink| is removed.
-    virtual void OnSinkRemoved(const MediaSinkInternal& sink) = 0;
+    virtual void OnSinkRemoved(const MediaSinkInternal& sink) {}
   };
 
-  // |callback|: Callback to invoke inform MediaRouter of discovered sinks
-  // updates.
+  // |callback|: Callback to inform the MediaRouter extension of discovered
+  // sinks updates. Other uses should implement Observer::OnSinksDiscovered().
   explicit MediaSinkServiceBase(const OnSinksDiscoveredCallback& callback);
   virtual ~MediaSinkServiceBase();
 

@@ -78,7 +78,12 @@ class CastHandlerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*router_, RegisterMediaRoutesObserver(_))
         .WillOnce(SaveArg<0>(&routes_observer_));
     EXPECT_CALL(*router_, RegisterMediaSinksObserver(_))
-        .WillOnce(DoAll(SaveArg<0>(&sinks_observer_), Return(true)));
+        .WillRepeatedly(
+            WithArg<0>([this](media_router::MediaSinksObserver* observer) {
+              if (observer->source())
+                sinks_observer_ = observer;
+              return true;
+            }));
     handler_->Enable(protocol::Maybe<std::string>());
   }
 
@@ -99,7 +104,7 @@ TEST_F(CastHandlerTest, SetSinkToUse) {
   EXPECT_CALL(*router_, RegisterMediaSinksObserver(_))
       .WillOnce(WithArg<0>(
           [presentation_url](media_router::MediaSinksObserver* observer) {
-            EXPECT_EQ(presentation_url, observer->source().id());
+            EXPECT_EQ(presentation_url, observer->source()->id());
             observer->OnSinksUpdated({sink1, sink2}, {});
             return true;
           }));

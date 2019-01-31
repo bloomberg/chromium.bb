@@ -34,7 +34,7 @@ class QueryResultManager::MediaSourceMediaSinksObserver
 
   ~MediaSourceMediaSinksObserver() override {}
 
-  // MediaSinksObserver
+  // MediaSinksObserver:
   void OnSinksReceived(const std::vector<MediaSink>& result) override {
     latest_sink_ids_.clear();
     for (const MediaSink& sink : result)
@@ -44,7 +44,7 @@ class QueryResultManager::MediaSourceMediaSinksObserver
     result_manager_->NotifyOnResultsUpdated();
   }
 
-  // Returns the most recent sink IDs that were passed to |OnSinksReceived|.
+  // Returns the most recent sink IDs that were passed to |OnSinksReceived()|.
   void GetLatestSinkIds(std::vector<MediaSink::Id>* sink_ids) const {
     DCHECK(sink_ids);
     *sink_ids = latest_sink_ids_;
@@ -59,8 +59,29 @@ class QueryResultManager::MediaSourceMediaSinksObserver
   QueryResultManager* const result_manager_;
 };
 
+// Observes for all the available sinks.
+class QueryResultManager::AnyMediaSinksObserver : public MediaSinksObserver {
+ public:
+  AnyMediaSinksObserver(MediaRouter* router, QueryResultManager* result_manager)
+      : MediaSinksObserver(router), result_manager_(result_manager) {}
+
+  ~AnyMediaSinksObserver() override {}
+
+  // MediaSinksObserver:
+  void OnSinksReceived(const std::vector<MediaSink>& sinks) override {
+    result_manager_->UpdateSinkList(sinks);
+    result_manager_->NotifyOnResultsUpdated();
+  }
+
+ private:
+  QueryResultManager* const result_manager_;
+};
+
 QueryResultManager::QueryResultManager(MediaRouter* router) : router_(router) {
   DCHECK(router_);
+  auto observer = std::make_unique<AnyMediaSinksObserver>(router_, this);
+  observer->Init();
+  sinks_observers_[MediaSource()] = std::move(observer);
 }
 
 QueryResultManager::~QueryResultManager() {
@@ -175,15 +196,11 @@ void QueryResultManager::SetSinksCompatibleWithSource(
 
   // (1) Iterate through current sink set, remove cast mode from those that
   // do not appear in latest result.
-  for (auto it = all_sinks_.begin(); it != all_sinks_.end(); /*no-op*/) {
+  for (auto it = all_sinks_.begin(); it != all_sinks_.end(); ++it) {
     const MediaSink::Id& sink_id = it->first;
     CastModesWithMediaSources& sources_for_sink = it->second;
     if (!base::ContainsKey(new_sink_ids, sink_id))
       sources_for_sink.RemoveSource(cast_mode, source);
-    if (sources_for_sink.IsEmpty())
-      all_sinks_.erase(it++);
-    else
-      ++it;
   }
 
   // (2) Add / update sinks with latest result.
@@ -197,6 +214,25 @@ void QueryResultManager::SetSinksCompatibleWithSource(
     }
 
     sink_it->second.AddSource(cast_mode, source);
+  }
+}
+
+// A sink is added to |all_sinks_| in SetSinksCompatibleWithSource() when
+// MediaSourceMediaSinksObserver receives it, or in UpdateSinkList() when
+// AnyMediaSinksObserver receives it, whichever comes first.
+// A sink is removed from |all_sinks_| in UpdateSinkList() when
+// AnyMediaSinksObserver receives an update that does not contain it.
+void QueryResultManager::UpdateSinkList(const std::vector<MediaSink>& sinks) {
+  // Erase sinks in |all_sinks_| that do not appear in |sinks|.
+  base::EraseIf(all_sinks_, [&sinks](const auto& sink_pair) {
+    return std::find_if(sinks.begin(), sinks.end(),
+                        [&sink_pair](const MediaSink& sink) {
+                          return sink.id() == sink_pair.first;
+                        }) == sinks.end();
+  });
+  for (const MediaSink& sink : sinks) {
+    if (!base::ContainsKey(all_sinks_, sink.id()))
+      all_sinks_.emplace(sink.id(), sink);
   }
 }
 

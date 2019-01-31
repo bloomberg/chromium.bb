@@ -205,7 +205,7 @@ void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
 
 bool MediaRouterAndroid::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
-  const std::string& source_id = observer->source().id();
+  const std::string& source_id = observer->source()->id();
   auto& observer_list = sinks_observers_[source_id];
   if (!observer_list) {
     observer_list = std::make_unique<MediaSinksObserverList>();
@@ -219,7 +219,7 @@ bool MediaRouterAndroid::RegisterMediaSinksObserver(
 
 void MediaRouterAndroid::UnregisterMediaSinksObserver(
     MediaSinksObserver* observer) {
-  const std::string& source_id = observer->source().id();
+  const std::string& source_id = observer->source()->id();
   auto it = sinks_observers_.find(source_id);
   if (it == sinks_observers_.end() || !it->second->HasObserver(observer))
     return;
