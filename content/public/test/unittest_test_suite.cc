@@ -36,6 +36,18 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
   std::string disabled =
       command_line->GetSwitchValueASCII(switches::kDisableFeatures);
 
+  // Unit tests don't currently work with the Network Service enabled.
+  // base::TestSuite will reset the FeatureList, so modify the underlying
+  // CommandLine object to disable the network service when it's parsed again.
+  disabled += ",NetworkService";
+  base::CommandLine new_command_line(command_line->GetProgram());
+  base::CommandLine::SwitchMap switches = command_line->GetSwitches();
+  switches.erase(switches::kDisableFeatures);
+  new_command_line.AppendSwitchASCII(switches::kDisableFeatures, disabled);
+  for (const auto& iter : switches)
+    new_command_line.AppendSwitchNative(iter.first, iter.second);
+  *base::CommandLine::ForCurrentProcess() = new_command_line;
+
   // The TaskScheduler created by the test launcher is never destroyed.
   // Similarly, the FeatureList created here is never destroyed so it
   // can safely be accessed by the TaskScheduler.
@@ -47,6 +59,7 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 #if defined(OS_FUCHSIA)
   // Use headless ozone platform on Fuchsia by default.
   // TODO(crbug.com/865172): Remove this flag.
+  command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kOzonePlatform))
     command_line->AppendSwitchASCII(switches::kOzonePlatform, "headless");
 #endif
