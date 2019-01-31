@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/ime_controller.mojom.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class TestImeController : ash::mojom::ImeController {

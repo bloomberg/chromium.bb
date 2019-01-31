@@ -16,6 +16,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "ui/keyboard/public/keyboard_config.mojom.h"
 #include "url/gurl.h"
 
 class ChromeKeyboardWebContents;
