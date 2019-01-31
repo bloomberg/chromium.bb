@@ -152,6 +152,20 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.cookies();
   }
 
+  CookieStatusList GetExcludedCookiesForURLWithOptions(
+      CookieMonster* cm,
+      const GURL& url,
+      const CookieOptions& options) {
+    DCHECK(cm);
+    GetCookieListCallback callback;
+    cm->GetCookieListWithOptionsAsync(
+        url, options,
+        base::BindOnce(&GetCookieListCallback::Run,
+                       base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.excluded_cookies();
+  }
+
   bool SetAllCookies(CookieMonster* cm, const CookieList& list) {
     DCHECK(cm);
     ResultSavingCookieCallback<bool> callback;
@@ -1633,6 +1647,78 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   EXPECT_EQ(last_access_date, GetFirstCookieAccessDate(cm.get()));
 }
 
+TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
+  std::unique_ptr<CookieMonster> cm(
+      new CookieMonster(nullptr, kLastAccessThreshold, &net_log_));
+
+  // Create an httponly cookie.
+  CookieOptions options;
+  options.set_include_httponly();
+
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), http_www_foo_.url(),
+                                   "A=B; httponly", options));
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), http_www_foo_.url(),
+                                   http_www_foo_.Format("C=D; domain=.%D"),
+                                   options));
+  EXPECT_TRUE(SetCookieWithOptions(
+      cm.get(), https_www_foo_.url(),
+      http_www_foo_.Format("E=F; domain=.%D; secure"), options));
+
+  base::PlatformThread::Sleep(kAccessDelay);
+
+  // Check that no cookies are sent when option is turned off
+  CookieOptions do_not_return_excluded;
+  do_not_return_excluded.unset_return_excluded_cookies();
+
+  CookieStatusList excluded_cookies = GetExcludedCookiesForURLWithOptions(
+      cm.get(), http_www_foo_.url(), do_not_return_excluded);
+  auto iter = excluded_cookies.begin();
+
+  EXPECT_TRUE(excluded_cookies.empty());
+
+  // Checking that excluded cookies get sent with their statuses with http
+  // request.
+  excluded_cookies = GetExcludedCookiesForURL(cm.get(), http_www_foo_.url());
+  iter = excluded_cookies.begin();
+
+  ASSERT_TRUE(iter != excluded_cookies.end());
+  EXPECT_EQ(http_www_foo_.Format(".%D"), iter->cookie.Domain());
+  EXPECT_EQ("E", iter->cookie.Name());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+            iter->status);
+
+  ASSERT_TRUE(++iter == excluded_cookies.end());
+
+  // Checking that excluded cookies get sent with their statuses with http-only.
+  CookieOptions return_excluded = CookieOptions();
+  return_excluded.set_return_excluded_cookies();
+  return_excluded.set_exclude_httponly();
+
+  excluded_cookies = GetExcludedCookiesForURLWithOptions(
+      cm.get(), http_www_foo_.url(), return_excluded);
+  iter = excluded_cookies.begin();
+
+  ASSERT_TRUE(iter != excluded_cookies.end());
+  EXPECT_EQ(http_www_foo_.host(), iter->cookie.Domain());
+  EXPECT_EQ("A", iter->cookie.Name());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
+            iter->status);
+
+  ASSERT_TRUE(++iter != excluded_cookies.end());
+  EXPECT_EQ(http_www_foo_.Format(".%D"), iter->cookie.Domain());
+  EXPECT_EQ("E", iter->cookie.Name());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+            iter->status);
+
+  ASSERT_TRUE(++iter == excluded_cookies.end());
+
+  // Check that no excluded cookies are sent with secure request
+  excluded_cookies = GetExcludedCookiesForURL(cm.get(), https_www_foo_.url());
+  iter = excluded_cookies.begin();
+
+  EXPECT_TRUE(excluded_cookies.empty());
+}
+
 TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
   std::unique_ptr<CookieMonster> cm(
       new CookieMonster(nullptr, nullptr, &net_log_));
@@ -1670,6 +1756,42 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
   EXPECT_EQ("/", it->Path());
 
   ASSERT_TRUE(++it == cookies.end());
+}
+
+TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
+  std::unique_ptr<CookieMonster> cm(
+      new CookieMonster(nullptr, nullptr, &net_log_));
+  CookieOptions options;
+
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), www_foo_foo_.url(),
+                                   "A=B; path=/foo;", options));
+  EXPECT_TRUE(SetCookieWithOptions(cm.get(), www_foo_bar_.url(),
+                                   "C=D; path=/bar;", options));
+  EXPECT_TRUE(
+      SetCookieWithOptions(cm.get(), http_www_foo_.url(), "E=F;", options));
+
+  CookieStatusList excluded_cookies =
+      GetExcludedCookiesForURL(cm.get(), www_foo_foo_.url());
+  auto it = excluded_cookies.begin();
+
+  ASSERT_TRUE(it != excluded_cookies.end());
+  EXPECT_EQ("C", it->cookie.Name());
+  EXPECT_EQ("/bar", it->cookie.Path());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
+            it->status);
+
+  ASSERT_TRUE(++it == excluded_cookies.end());
+
+  excluded_cookies = GetExcludedCookiesForURL(cm.get(), www_foo_bar_.url());
+  it = excluded_cookies.begin();
+
+  ASSERT_TRUE(it != excluded_cookies.end());
+  EXPECT_EQ("A", it->cookie.Name());
+  EXPECT_EQ("/foo", it->cookie.Path());
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
+            it->status);
+
+  ASSERT_TRUE(++it == excluded_cookies.end());
 }
 
 TEST_F(CookieMonsterTest, CookieSorting) {

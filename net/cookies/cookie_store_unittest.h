@@ -169,6 +169,22 @@ class CookieStoreTest : public testing::Test {
     return callback.cookies();
   }
 
+  CookieStatusList GetExcludedCookiesForURL(CookieStore* cs, const GURL& url) {
+    DCHECK(cs);
+    GetCookieListCallback callback;
+    CookieOptions options;
+    options.set_include_httponly();
+    options.set_same_site_cookie_mode(
+        CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+    options.set_return_excluded_cookies();
+    cs->GetCookieListWithOptionsAsync(
+        url, options,
+        base::BindOnce(&GetCookieListCallback::Run,
+                       base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.excluded_cookies();
+  }
+
   CookieList GetAllCookies(CookieStore* cs) {
     DCHECK(cs);
     GetCookieListCallback callback;

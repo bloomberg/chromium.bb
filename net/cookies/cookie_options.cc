@@ -13,6 +13,7 @@ CookieOptions::CookieOptions()
     : exclude_httponly_(true),
       same_site_cookie_mode_(SameSiteCookieMode::DO_NOT_INCLUDE),
       update_access_time_(true),
-      server_time_() {}
+      server_time_(),
+      return_excluded_cookies_(false) {}
 
 }  // namespace net
