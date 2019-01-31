@@ -78,6 +78,7 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
         '--depth', '99',
         '--groups', 'abba,queen',
         '--repo-url', 'https://repo.xyz/repo',
+        '--repo-branch', 'repo-branch'
     ]
     self.rc.AddCmdResult(expected_cmd, side_effect=RepoInitSideEffects)
     repo = repo_util.Repository.Initialize(
@@ -89,6 +90,7 @@ class RepositoryTest(cros_test_lib.RunCommandTempDirTestCase):
         depth=99,
         groups='abba,queen',
         repo_url='https://repo.xyz/repo',
+        repo_branch='repo-branch'
     )
     self.assertCommandCalled(expected_cmd, cwd=self.empty_root)
     self.assertTrue(os.path.samefile(repo.root, self.empty_root))
