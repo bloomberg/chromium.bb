@@ -58,6 +58,11 @@ const char kUseMessagesGoogleComDomainDescription[] =
     "Use the messages.google.com domain as part of the \"Messages\" "
     "feature under \"Connected Devices\" settings.";
 
+const char kUseMessagesStagingUrlName[] = "Use Messages staging URL";
+const char kUseMessagesStagingUrlDescription[] =
+    "Use the staging server as part of the \"Messages\" feature under "
+    "\"Connected Devices\" settings.";
+
 const char kEnableMessagesWebPushName[] =
     "Web push in Android Messages integration";
 const char kEnableMessagesWebPushDescription[] =

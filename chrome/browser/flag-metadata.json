@@ -2232,6 +2232,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "use_messages_staging_url",
+    "owners": [ "azeemarshad", "khorimoto" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable_messages_web_push",
     "owners": [ "azeemarshad", "jlklein", "khorimoto" ],
     "expiry_milestone": 76

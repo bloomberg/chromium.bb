@@ -78,6 +78,11 @@ const base::Feature kVideoPlayerNativeControls{
 const base::Feature kUseMessagesGoogleComDomain{
     "UseMessagesGoogleComDomain", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use the staging URL as part of the "Messages" feature under "Connected
+// Devices" settings.
+const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables user activity prediction for power management on
 // Chrome OS.
 // Defined here rather than in //chrome alongside other related features so that
