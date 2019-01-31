@@ -187,6 +187,7 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
 }
 
 void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->ReadyToEvaluateScript();
 }
 
@@ -589,10 +590,12 @@ bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
 }
 
 void ServiceWorkerGlobalScopeProxy::CountFeature(WebFeature feature) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().CountFeature(feature);
 }
 
 void ServiceWorkerGlobalScopeProxy::CountDeprecation(WebFeature feature) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   // Go through the same code path with countFeature() because a deprecation
   // message is already shown on the worker console and a remaining work is
   // just to record an API use.
@@ -603,6 +606,7 @@ void ServiceWorkerGlobalScopeProxy::ReportException(
     const String& error_message,
     std::unique_ptr<SourceLocation> location,
     int exception_id) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().ReportException(error_message, location->LineNumber(),
                            location->ColumnNumber(), location->Url());
 }
@@ -612,6 +616,7 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
     MessageLevel level,
     const String& message,
     SourceLocation* location) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().ReportConsoleMessage(source, level, message, location->LineNumber(),
                                 location->Url());
 }
@@ -625,6 +630,7 @@ void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {
 
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* worker_global_scope) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!worker_global_scope_);
   worker_global_scope_ =
       static_cast<ServiceWorkerGlobalScope*>(worker_global_scope);
@@ -643,6 +649,7 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
 }
 
 void ServiceWorkerGlobalScopeProxy::DidFailToInitializeWorkerContext() {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
       this, "success", false);
@@ -655,7 +662,6 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
 
 void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledClassicScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
   // Tell ServiceWorkerContextClient about the failure. The generic
   // WorkerContextFailedToStart() wouldn't make sense because
   // WorkerContextStarted() was already called.
@@ -670,10 +676,10 @@ void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
 void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   TRACE_EVENT_ASYNC_BEGIN0(
       "ServiceWorker", "ServiceWorkerGlobalScopeProxy::EvaluateClassicScript",
       this);
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   // TODO(asamidoi): Remove CountWorkerScript which is called for recording
   // metrics if the metrics are no longer referenced, and then merge
   // WillEvaluateClassicScript and WillEvaluateModuleScript for cleanup.
@@ -739,6 +745,7 @@ void ServiceWorkerGlobalScopeProxy::WillDestroyWorkerGlobalScope() {
 }
 
 void ServiceWorkerGlobalScopeProxy::DidTerminateWorkerThread() {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   // This must be called after WillDestroyWorkerGlobalScope().
   DCHECK(!worker_global_scope_);
   Client().WorkerContextDestroyed();
@@ -778,8 +785,8 @@ WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {
 
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScopeProxy::WorkerGlobalScope()
     const {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_global_scope_);
-  DCHECK(worker_global_scope_->IsContextThread());
   return worker_global_scope_;
 }
 
