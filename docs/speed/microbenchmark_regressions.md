@@ -25,6 +25,9 @@ the new code. E.g. https://crbug.com/855544 was a specific case of this. One way
 to dig into this is to [examine the compiled functions](../disassemble_code.md)
 before and after the no-op change, to see if inlining has changed.
 
+If you have a function that you believe should always be inlined in production
+builds, please contact gbiv@chromium.org for advice.
+
 ### Toolchain rolls
 
 Our toolchain team regularly rolls in new versions of clang, the compiler for
