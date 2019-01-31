@@ -15,7 +15,6 @@ template("fuchsia_clang_toolchain") {
 
     # We want to build and strip binaries, but retain the unstripped binaries
     # in runtime_deps to make them available for isolates.
-    # TODO(https://crbug.com/877080): Switch to llvm-strip.
     if (host_os == "linux") {
       strip = rebase_path("//buildtools/third_party/eu-strip/bin/eu-strip",
                           root_build_dir)
