@@ -2667,6 +2667,8 @@ static_library("test_support") {
     "nqe/network_quality_estimator_test_util.h",
     "proxy_resolution/mock_pac_file_fetcher.cc",
     "proxy_resolution/mock_pac_file_fetcher.h",
+    "proxy_resolution/mock_proxy_host_resolver.cc",
+    "proxy_resolution/mock_proxy_host_resolver.h",
     "proxy_resolution/mock_proxy_resolver.cc",
     "proxy_resolution/mock_proxy_resolver.h",
     "proxy_resolution/proxy_config_service_common_unittest.cc",
@@ -2844,6 +2846,7 @@ static_library("test_support") {
 if (use_v8_in_net) {
   component("net_with_v8") {
     sources = [
+      "proxy_resolution/proxy_host_resolver.h",
       "proxy_resolution/proxy_resolver_v8.cc",
       "proxy_resolution/proxy_resolver_v8.h",
       "proxy_resolution/proxy_resolver_v8_tracing.cc",
