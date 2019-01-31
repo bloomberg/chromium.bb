@@ -72,6 +72,7 @@ struct LayoutBoxRareData {
         has_override_containing_block_content_logical_width_(false),
         has_override_containing_block_content_logical_height_(false),
         has_override_block_percentage_resolution_size_(false),
+        has_override_available_inline_size_(false),
         has_previous_content_box_rect_and_layout_overflow_rect_(false),
         percent_height_container_(nullptr),
         snap_container_(nullptr),
@@ -87,11 +88,22 @@ struct LayoutBoxRareData {
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
   bool has_override_block_percentage_resolution_size_ : 1;
+  bool has_override_available_inline_size_ : 1;
   bool has_previous_content_box_rect_and_layout_overflow_rect_ : 1;
 
   LayoutUnit override_containing_block_content_logical_width_;
   LayoutUnit override_containing_block_content_logical_height_;
-  LayoutUnit override_block_percentage_resolution_size_;
+
+  // Put two members that aren't used at the same time inside a union, to save
+  // space. There are DCHECKs to make sure that they aren't actually used at the
+  // same time. Currently, the percentage resolution block size is only used by
+  // custom layout children, while the available inline size is only used by
+  // LayoutNG. So, since custom layout containers are laid out by legacy, this
+  // should be safe.
+  union {
+    LayoutUnit override_block_percentage_resolution_size_;
+    LayoutUnit override_available_inline_size_;
+  };
 
   LayoutUnit offset_to_next_page_;
 
@@ -785,6 +797,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasOverrideBlockPercentageResolutionSize() const;
   void SetOverrideBlockPercentageResolutionSize(LayoutUnit);
   void ClearOverrideBlockPercentageResolutionSize();
+
+  // When an available inline size override has been set, we'll use that to fill
+  // available inline size, rather than deducing it from the containing block
+  // (and then subtract space taken up by adjacent floats).
+  LayoutUnit OverrideAvailableInlineSize() const;
+  bool HasOverrideAvailableInlineSize() const;
+  void SetOverrideAvailableInlineSize(LayoutUnit);
+  void ClearOverrideAvailableInlineSize();
 
   LayoutUnit AdjustBorderBoxLogicalWidthForBoxSizing(float width) const;
   LayoutUnit AdjustBorderBoxLogicalHeightForBoxSizing(float height) const;

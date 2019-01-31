@@ -326,15 +326,22 @@ void LayoutTable::UpdateLogicalWidth() {
         MinimumValueForLength(StyleRef().MarginEnd(), available_logical_width);
     LayoutUnit margin_total = margin_start + margin_end;
 
-    // Subtract out our margins to get the available content width.
-    LayoutUnit available_content_logical_width =
-        (container_width_in_inline_direction - margin_total)
-            .ClampNegativeToZero();
-    if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
-        ToLayoutBlockFlow(cb)->ContainsFloats() &&
-        !has_perpendicular_containing_block)
-      available_content_logical_width = ShrinkLogicalWidthToAvoidFloats(
-          margin_start, margin_end, ToLayoutBlockFlow(cb));
+    LayoutUnit available_content_logical_width;
+    if (HasOverrideAvailableInlineSize()) {
+      available_content_logical_width =
+          (OverrideAvailableInlineSize() - margin_total).ClampNegativeToZero();
+    } else {
+      // Subtract out our margins to get the available content width.
+      available_content_logical_width =
+          (container_width_in_inline_direction - margin_total)
+              .ClampNegativeToZero();
+      if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
+          ToLayoutBlockFlow(cb)->ContainsFloats() &&
+          !has_perpendicular_containing_block) {
+        available_content_logical_width = ShrinkLogicalWidthToAvoidFloats(
+            margin_start, margin_end, ToLayoutBlockFlow(cb));
+      }
+    }
 
     // Ensure we aren't bigger than our available width.
     LayoutUnit max_width = MaxPreferredLogicalWidth();
