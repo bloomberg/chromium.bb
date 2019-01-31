@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 
 #include <memory>
+#include "base/memory/memory_pressure_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_image_decoder.h"
@@ -231,6 +232,30 @@ TEST_F(ImageDecodingStoreTest, MultipleClientsForSameGenerator) {
   ImageDecodingStore::Instance().RemoveDecoder(generator_.get(), client_id_2,
                                                decoder_2);
   EXPECT_EQ(ImageDecodingStore::Instance().CacheEntries(), 0);
+}
+
+TEST_F(ImageDecodingStoreTest, OnMemoryPressure) {
+  std::unique_ptr<ImageDecoder> decoder = MockImageDecoder::Create(this);
+  decoder->SetSize(1, 1);
+  ImageDecodingStore::Instance().InsertDecoder(
+      generator_.get(), cc::PaintImage::kDefaultGeneratorClientId,
+      std::move(decoder));
+  EXPECT_EQ(1, ImageDecodingStore::Instance().CacheEntries());
+  EXPECT_EQ(4u, ImageDecodingStore::Instance().MemoryUsageInBytes());
+
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, ImageDecodingStore::Instance().CacheEntries());
+  EXPECT_EQ(4u, ImageDecodingStore::Instance().MemoryUsageInBytes());
+
+  base::MemoryPressureListener::SimulatePressureNotification(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, ImageDecodingStore::Instance().CacheEntries());
+  EXPECT_EQ(0u, ImageDecodingStore::Instance().MemoryUsageInBytes());
 }
 
 }  // namespace blink

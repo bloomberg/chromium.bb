@@ -32,6 +32,7 @@
 #include "SkSize.h"
 #include "SkTypes.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_image_generator.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
@@ -290,6 +291,10 @@ class PLATFORM_EXPORT ImageDecodingStore final {
 
   void Prune();
 
+  // Called by the memory pressure listener when the memory pressure rises.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
   // These helper methods are called while m_mutex is locked.
   template <class T, class U, class V>
   void InsertCacheInternal(std::unique_ptr<T> cache_entry,
@@ -346,6 +351,9 @@ class PLATFORM_EXPORT ImageDecodingStore final {
 
   size_t heap_limit_in_bytes_;
   size_t heap_memory_usage_in_bytes_;
+
+  // A listener to global memory pressure events.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   // Protect concurrent access to these members:
   //   m_orderedCacheList
