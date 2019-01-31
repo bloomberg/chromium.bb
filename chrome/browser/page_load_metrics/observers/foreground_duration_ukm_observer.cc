@@ -41,7 +41,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ForegroundDurationUKMObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordUkmIfInForeground();
+  RecordUkmIfInForeground(base::TimeTicks::Now());
   return CONTINUE_OBSERVING;
 }
 
@@ -49,7 +49,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 ForegroundDurationUKMObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordUkmIfInForeground();
+  RecordUkmIfInForeground(base::TimeTicks::Now());
   return CONTINUE_OBSERVING;
 }
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -64,14 +64,22 @@ ForegroundDurationUKMObserver::OnShown() {
 void ForegroundDurationUKMObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordUkmIfInForeground();
+  // If we have a page_end_time, use it as our end time, else fall back to the
+  // current time. Note that we expect page_end_time.has_value() to always be
+  // true in OnComplete (the PageLoadTracker destructor is supposed to guarantee
+  // it), but we use Now() as a graceful fallback just in case.
+  base::TimeTicks end_time =
+      info.page_end_time.has_value()
+          ? info.navigation_start + info.page_end_time.value()
+          : base::TimeTicks::Now();
+  RecordUkmIfInForeground(end_time);
 }
 
-void ForegroundDurationUKMObserver::RecordUkmIfInForeground() {
+void ForegroundDurationUKMObserver::RecordUkmIfInForeground(
+    base::TimeTicks end_time) {
   if (!currently_in_foreground_)
     return;
-  base::TimeDelta foreground_duration =
-      base::TimeTicks::Now() - last_time_shown_;
+  base::TimeDelta foreground_duration = end_time - last_time_shown_;
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::PageForegroundSession(source_id_)
       .SetForegroundDuration(foreground_duration.InMilliseconds())
