@@ -10,22 +10,12 @@
 var cca = cca || {};
 
 /**
- * Namespace for views.
- */
-cca.views = cca.views || {};
-
-/**
- * Namespace for Camera view.
- */
-cca.views.camera = cca.views.camera || {};
-
-/**
- * Creates a controller for the gallery-button of Camera view.
+ * Creates a controller for the gallery-button.
  * @param {cca.models.Gallery} model Model object.
  * @implements {cca.models.Gallery.Observer}
  * @constructor
  */
-cca.views.camera.GalleryButton = function(model) {
+cca.GalleryButton = function(model) {
   /**
    * @type {cca.models.Gallery}
    * @private
@@ -62,7 +52,7 @@ cca.views.camera.GalleryButton = function(model) {
  * Updates the button for the model changes.
  * @private
  */
-cca.views.camera.GalleryButton.prototype.updateButton_ = function() {
+cca.GalleryButton.prototype.updateButton_ = function() {
   this.model_.lastPicture().then((picture) => {
     if (picture != this.lastPicture_) {
       this.lastPicture_ = picture;
@@ -84,7 +74,7 @@ cca.views.camera.GalleryButton.prototype.updateButton_ = function() {
  * @param {cca.models.Gallery.Picture} picture Picture to be browsed.
  * @private
  */
-cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
+cca.GalleryButton.prototype.openGallery_ = function(picture) {
   if (cca.App.useGalleryApp()) {
     const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
     const entry = picture.pictureEntry;
@@ -101,7 +91,7 @@ cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
 /**
  * @override
  */
-cca.views.camera.GalleryButton.prototype.onPictureDeleted = function(picture) {
+cca.GalleryButton.prototype.onPictureDeleted = function(picture) {
   if (this.lastPicture_ == picture) {
     this.updateButton_();
   }
@@ -110,7 +100,7 @@ cca.views.camera.GalleryButton.prototype.onPictureDeleted = function(picture) {
 /**
  * @override
  */
-cca.views.camera.GalleryButton.prototype.onPictureAdded = function(picture) {
+cca.GalleryButton.prototype.onPictureAdded = function(picture) {
   if (!this.lastPicture_ || this.lastPicture_.timestamp <= picture.timestamp) {
     this.updateButton_();
   }

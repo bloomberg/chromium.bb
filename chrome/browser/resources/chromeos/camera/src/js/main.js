@@ -21,46 +21,16 @@ cca.App = function() {
   this.model_ = new cca.models.Gallery();
 
   /**
-   * @type {cca.views.Camera}
+   * @type {cca.GalleryButton}
    * @private
    */
-  this.cameraView_ = new cca.views.Camera(this.model_);
-
-  /**
-   * @type {cca.views.MasterSettings}
-   * @private
-   */
-  this.settingsView_ = new cca.views.MasterSettings();
-
-  /**
-   * @type {cca.views.GridSettings}
-   * @private
-   */
-  this.gridsettingsView_ = new cca.views.GridSettings();
-
-  /**
-   * @type {cca.views.TimerSettings}
-   * @private
-   */
-  this.timersettingsView_ = new cca.views.TimerSettings();
+  this.galleryButton_ = new cca.GalleryButton(this.model_);
 
   /**
    * @type {cca.views.Browser}
    * @private
    */
   this.browserView_ = new cca.views.Browser(this.model_);
-
-  /**
-   * @type {cca.views.Warning}
-   * @private
-   */
-  this.warningView_ = new cca.views.Warning();
-
-  /**
-   * @type {cca.views.Dialog}
-   * @private
-   */
-  this.dialogView_ = new cca.views.Dialog();
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -70,6 +40,17 @@ cca.App = function() {
   document.title = chrome.i18n.getMessage('name');
   this.setupI18nElements_();
   this.setupToggles_();
+
+  // Set up views navigation by their DOM z-order.
+  cca.nav.setup([
+    new cca.views.Camera(this.model_),
+    new cca.views.MasterSettings(),
+    new cca.views.GridSettings(),
+    new cca.views.TimerSettings(),
+    this.browserView_,
+    new cca.views.Warning(),
+    new cca.views.Dialog(),
+  ]);
 };
 
 /*
@@ -146,18 +127,9 @@ cca.App.prototype.setupToggles_ = function() {
 };
 
 /**
- * Starts the app by preparing views/model and opening the camera-view.
+ * Starts the app by loading the model and opening the camera-view.
  */
 cca.App.prototype.start = function() {
-  cca.nav.setup([
-    this.cameraView_,
-    this.settingsView_,
-    this.gridsettingsView_,
-    this.timersettingsView_,
-    this.browserView_,
-    this.warningView_,
-    this.dialogView_,
-  ]);
   cca.models.FileSystem.initialize(() => {
     // Prompt to migrate pictures if needed.
     var message = chrome.i18n.getMessage('migratePicturesMsg');
@@ -168,9 +140,7 @@ cca.App.prototype.start = function() {
     });
   }).then((external) => {
     document.body.classList.toggle('ext-fs', external);
-    // Prepare the views/model and open camera-view.
-    this.cameraView_.prepare();
-    this.model_.addObserver(this.cameraView_.galleryButton);
+    this.model_.addObserver(this.galleryButton_);
     if (!cca.App.useGalleryApp()) {
       this.model_.addObserver(this.browserView_);
     }

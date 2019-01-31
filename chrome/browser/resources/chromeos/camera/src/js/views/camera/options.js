@@ -122,6 +122,16 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   this.tickSound_.src = '../sounds/tick.ogg';
   this.recordStartSound_.src = '../sounds/record_start.ogg';
   this.recordEndSound_.src = '../sounds/record_end.ogg';
+
+  // Restore saved mirroring states per video device.
+  chrome.storage.local.get({mirroringToggles: {}},
+      (values) => this.mirroringToggles_ = values.mirroringToggles);
+  // Remove the deprecated values.
+  chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
+
+  // TODO(yuli): Replace with devicechanged event.
+  this.maybeRefreshVideoDeviceIds_();
+  setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
 };
 
 /**
@@ -140,21 +150,6 @@ cca.views.camera.Options.prototype = {
     return !document.body.classList.contains('streaming') ||
         document.body.classList.contains('taking');
   },
-};
-
-/**
- * Prepares the options.
- */
-cca.views.camera.Options.prototype.prepare = function() {
-  // Restore saved mirroring states per video device.
-  chrome.storage.local.get({mirroringToggles: {}},
-      (values) => this.mirroringToggles_ = values.mirroringToggles);
-  // Remove the deprecated values.
-  chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
-
-  // TODO(yuli): Replace with devicechanged event.
-  this.maybeRefreshVideoDeviceIds_();
-  setInterval(this.maybeRefreshVideoDeviceIds_.bind(this), 1000);
 };
 
 /**

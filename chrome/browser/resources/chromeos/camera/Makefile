@@ -110,6 +110,7 @@ RESOURCES = \
 	src/images/settings_timer_duration.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
+	src/js/gallerybutton.js \
 	src/js/main.js \
 	src/js/models/gallery.js \
 	src/js/models/file_system.js \
@@ -120,7 +121,6 @@ RESOURCES = \
 	src/js/util.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
-	src/js/views/camera/gallerybutton.js \
 	src/js/views/camera/layout.js \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
