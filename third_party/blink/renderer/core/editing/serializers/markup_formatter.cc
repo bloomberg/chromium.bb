@@ -202,6 +202,22 @@ void MarkupFormatter::AppendAttributeValue(StringBuilder& result,
                                         : kEntityMaskInAttributeValue);
 }
 
+void MarkupFormatter::AppendAttribute(StringBuilder& result,
+                                      const AtomicString& prefix,
+                                      const AtomicString& local_name,
+                                      const String& value,
+                                      bool document_is_html) {
+  result.Append(' ');
+  if (!prefix.IsEmpty()) {
+    result.Append(prefix);
+    result.Append(':');
+  }
+  result.Append(local_name);
+  result.Append("=\"");
+  AppendAttributeValue(result, value, document_is_html);
+  result.Append('"');
+}
+
 void MarkupFormatter::AppendNamespace(StringBuilder& result,
                                       const AtomicString& prefix,
                                       const AtomicString& namespace_uri,
@@ -210,16 +226,10 @@ void MarkupFormatter::AppendNamespace(StringBuilder& result,
   AtomicString found_uri = namespaces.at(lookup_key);
   if (!EqualIgnoringNullity(found_uri, namespace_uri)) {
     namespaces.Set(lookup_key, namespace_uri);
-    result.Append(' ');
-    result.Append(g_xmlns_atom.GetString());
-    if (!prefix.IsEmpty()) {
-      result.Append(':');
-      result.Append(prefix);
-    }
-
-    result.Append("=\"");
-    AppendAttributeValue(result, namespace_uri, false);
-    result.Append('"');
+    if (prefix.IsEmpty())
+      AppendAttribute(result, g_null_atom, g_xmlns_atom, namespace_uri, false);
+    else
+      AppendAttribute(result, g_xmlns_atom, prefix, namespace_uri, false);
   }
 }
 
@@ -323,6 +333,12 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
                                       const Attribute& attribute,
                                       Namespaces* namespaces) {
   bool document_is_html = SerializeAsHTMLDocument(element);
+  String value = attribute.Value();
+  if (element.IsURLAttribute(attribute)) {
+    // FIXME: This does not fully match other browsers. Firefox percent-escapes
+    // non-ASCII characters for innerHTML.
+    value = ResolveURLIfNeeded(element, value);
+  }
 
   if (document_is_html) {
     // https://html.spec.whatwg.org/multipage/parsing.html#attribute's-serialised-name
@@ -335,8 +351,8 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
     } else if (attribute.NamespaceURI() == xlink_names::kNamespaceURI) {
       prefixed_name.SetPrefix(g_xlink_atom);
     }
-    result.Append(' ');
-    result.Append(prefixed_name.ToString());
+    AppendAttribute(result, prefixed_name.Prefix(), prefixed_name.LocalName(),
+                    value, document_is_html);
   } else {
     // https://w3c.github.io/DOM-Parsing/#serializing-an-element-s-attributes
 
@@ -398,30 +414,9 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
                         *namespaces);
       }
     }
-    // 3.6. Append a " " (U+0020 SPACE) to result.
-    result.Append(' ');
-    // 3.7. If candidate prefix is not null, then append to result the
-    // concatenation of candidate prefix with ":" (U+003A COLON).
-    if (candidate_prefix) {
-      result.Append(candidate_prefix);
-      result.Append(':');
-    }
-    // 3.9.1. The value of attr's localName;
-    result.Append(attribute.LocalName());
+    AppendAttribute(result, candidate_prefix, attribute.LocalName(), value,
+                    document_is_html);
   }
-
-  result.Append('=');
-
-  result.Append('"');
-  if (element.IsURLAttribute(attribute)) {
-    // FIXME: This does not fully match other browsers. Firefox percent-escapes
-    // non-ASCII characters for innerHTML.
-    AppendAttributeValue(result, ResolveURLIfNeeded(element, attribute.Value()),
-                         document_is_html);
-  } else {
-    AppendAttributeValue(result, attribute.Value(), document_is_html);
-  }
-  result.Append('"');
 }
 
 void MarkupFormatter::AppendCDATASection(StringBuilder& result,

@@ -73,6 +73,11 @@ class MarkupFormatter final {
 
  public:
   static void AppendAttributeValue(StringBuilder&, const String&, bool);
+  static void AppendAttribute(StringBuilder& result,
+                              const AtomicString& prefix,
+                              const AtomicString& local_name,
+                              const String& value,
+                              bool document_is_html);
   static void AppendCDATASection(StringBuilder&, const String&);
   static void AppendCharactersReplacingEntities(StringBuilder&,
                                                 const String&,
