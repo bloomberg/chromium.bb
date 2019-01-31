@@ -70,6 +70,6 @@ PASS PerformanceEntry interface: mark must inherit property "entryType" with the
 PASS PerformanceEntry interface: mark must inherit property "startTime" with the proper type
 PASS PerformanceEntry interface: mark must inherit property "duration" with the proper type
 PASS PerformanceEntry interface: mark must inherit property "toJSON()" with the proper type
-PASS Test default toJSON operation of PerformanceMark
+PASS PerformanceEntry interface: default toJSON operation on mark
 Harness: the test ran to completion.
 
