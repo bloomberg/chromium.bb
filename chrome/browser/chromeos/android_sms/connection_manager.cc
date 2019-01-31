@@ -163,7 +163,7 @@ base::Optional<GURL> ConnectionManager::GenerateEnabledPwaUrl() {
 
   // Return the installed app URL if the PWA is installed.
   base::Optional<GURL> installed_url =
-      android_sms_app_manager_->GetInstalledAppUrl();
+      android_sms_app_manager_->GetCurrentAppUrl();
   if (installed_url)
     return installed_url;
 

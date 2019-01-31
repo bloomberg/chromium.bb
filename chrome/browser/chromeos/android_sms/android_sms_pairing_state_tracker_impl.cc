@@ -94,7 +94,7 @@ void AndroidSmsPairingStateTrackerImpl::OnInstalledAppUrlChanged() {
 }
 
 GURL AndroidSmsPairingStateTrackerImpl::GetPairingUrl() {
-  base::Optional<GURL> app_url = android_sms_app_manager_->GetInstalledAppUrl();
+  base::Optional<GURL> app_url = android_sms_app_manager_->GetCurrentAppUrl();
   if (app_url)
     return *app_url;
 

@@ -31,7 +31,7 @@ class FakeAndroidSmsAppManager
 
  private:
   // AndroidSmsAppManager:
-  base::Optional<GURL> GetInstalledAppUrl() override;
+  base::Optional<GURL> GetCurrentAppUrl() override;
 
   base::Optional<GURL> url_;
 

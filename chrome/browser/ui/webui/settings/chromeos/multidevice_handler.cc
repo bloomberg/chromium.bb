@@ -294,7 +294,7 @@ std::unique_ptr<base::DictionaryValue>
 MultideviceHandler::GenerateAndroidSmsInfo() {
   base::Optional<GURL> app_url;
   if (android_sms_app_manager_)
-    app_url = android_sms_app_manager_->GetInstalledAppUrl();
+    app_url = android_sms_app_manager_->GetCurrentAppUrl();
   if (!app_url)
     app_url = android_sms::GetAndroidMessagesURL();
 

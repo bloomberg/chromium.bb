@@ -17,10 +17,13 @@ namespace android_sms {
 
 namespace {
 
+const char kGoogleMessagesInstallUrl[] =
+    "https://messages.google.com/web/authentication";
+const char kGoogleMessagesUrl[] = "https://messages.google.com/web/";
 const char kAndroidMessagesUrl[] = "https://messages.android.com/";
-const char kGoogleMessagesUrl[] = "https://messages.google.com/";
 
-GURL GetAndroidMessagesURL(bool use_google_url_if_applicable) {
+GURL GetAndroidMessagesURL(bool use_google_url_if_applicable,
+                           bool use_install_url) {
   // If a custom URL was passed via a command line argument, use it.
   std::string url_from_command_line_arg =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -28,20 +31,25 @@ GURL GetAndroidMessagesURL(bool use_google_url_if_applicable) {
   if (!url_from_command_line_arg.empty())
     return GURL(url_from_command_line_arg);
 
-  return use_google_url_if_applicable ? GURL(kGoogleMessagesUrl)
-                                      : GURL(kAndroidMessagesUrl);
+  if (use_google_url_if_applicable) {
+    return use_install_url ? GURL(kGoogleMessagesInstallUrl)
+                           : GURL(kGoogleMessagesUrl);
+  }
+  return GURL(kAndroidMessagesUrl);
 }
 
 }  // namespace
 
-GURL GetAndroidMessagesURL() {
+GURL GetAndroidMessagesURL(bool use_install_url) {
   return GetAndroidMessagesURL(
-      base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain));
+      base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain),
+      use_install_url);
 }
 
-GURL GetAndroidMessagesURLOld() {
+GURL GetAndroidMessagesURLOld(bool use_install_url) {
   return GetAndroidMessagesURL(
-      !base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain));
+      !base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain),
+      use_install_url);
 }
 
 }  // namespace android_sms

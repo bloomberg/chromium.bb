@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller_impl.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
@@ -38,20 +41,21 @@ AndroidSmsAppSetupControllerImpl::PwaDelegate::PwaDelegate() = default;
 AndroidSmsAppSetupControllerImpl::PwaDelegate::~PwaDelegate() = default;
 
 const extensions::Extension*
-AndroidSmsAppSetupControllerImpl::PwaDelegate::GetPwaForUrl(const GURL& url,
-                                                            Profile* profile) {
+AndroidSmsAppSetupControllerImpl::PwaDelegate::GetPwaForUrl(
+    const GURL& install_url,
+    Profile* profile) {
   // PWA windowing is disabled for some browser tests.
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing))
     return nullptr;
 
-  return extensions::util::GetInstalledPwaForUrl(profile, url);
+  return extensions::util::GetInstalledPwaForUrl(profile, install_url);
 }
 
 network::mojom::CookieManager*
 AndroidSmsAppSetupControllerImpl::PwaDelegate::GetCookieManager(
-    const GURL& url,
+    const GURL& app_url,
     Profile* profile) {
-  return content::BrowserContext::GetStoragePartitionForSite(profile, url)
+  return content::BrowserContext::GetStoragePartitionForSite(profile, app_url)
       ->GetCookieManagerForBrowserProcess();
 }
 
@@ -67,63 +71,66 @@ AndroidSmsAppSetupControllerImpl::AndroidSmsAppSetupControllerImpl(
 
 AndroidSmsAppSetupControllerImpl::~AndroidSmsAppSetupControllerImpl() = default;
 
-void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& url,
+void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
+                                                const GURL& install_url,
                                                 SuccessCallback callback) {
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::SetUpApp(): Setting "
-                  << "DefaultToPersist cookie at " << url << " before PWA "
+                  << "DefaultToPersist cookie at " << app_url << " before PWA "
                   << "installation.";
-  pwa_delegate_->GetCookieManager(url, profile_)
+  pwa_delegate_->GetCookieManager(app_url, profile_)
       ->SetCanonicalCookie(
           *net::CanonicalCookie::CreateSanitizedCookie(
-              url, kDefaultToPersistCookieName, kDefaultToPersistCookieValue,
-              std::string() /* domain */, std::string() /* path */,
-              base::Time::Now() /* creation_time */,
+              app_url, kDefaultToPersistCookieName,
+              kDefaultToPersistCookieValue, std::string() /* domain */,
+              std::string() /* path */, base::Time::Now() /* creation_time */,
               base::Time() /* expiration_time */,
               base::Time::Now() /* last_access_time */, true /* secure */,
               false /* http_only */, net::CookieSameSite::STRICT_MODE,
               net::COOKIE_PRIORITY_DEFAULT),
           true /* secure_source */, false /* modify_http_only */,
           base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnSetCookieResult,
-                         weak_ptr_factory_.GetWeakPtr(), url,
+                         weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
                          std::move(callback)));
 }
 
 const extensions::Extension* AndroidSmsAppSetupControllerImpl::GetPwa(
-    const GURL& url) {
-  return pwa_delegate_->GetPwaForUrl(url, profile_);
+    const GURL& install_url) {
+  return pwa_delegate_->GetPwaForUrl(install_url, profile_);
 }
 
 void AndroidSmsAppSetupControllerImpl::DeleteRememberDeviceByDefaultCookie(
-    const GURL& url,
+    const GURL& app_url,
     SuccessCallback callback) {
   PA_LOG(INFO) << "AndroidSmsAppSetupControllerImpl::"
                << "DeleteRememberDeviceByDefaultCookie(): Deleting "
-               << "DefaultToPersist cookie at " << url << ".";
+               << "DefaultToPersist cookie at " << app_url << ".";
   network::mojom::CookieDeletionFilterPtr filter(
       network::mojom::CookieDeletionFilter::New());
-  filter->url = url;
+  filter->url = app_url;
   filter->cookie_name = kDefaultToPersistCookieName;
-  pwa_delegate_->GetCookieManager(url, profile_)
+  pwa_delegate_->GetCookieManager(app_url, profile_)
       ->DeleteCookies(
           std::move(filter),
           base::BindOnce(
               &AndroidSmsAppSetupControllerImpl::OnDeleteCookiesResult,
-              weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+              weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));
 }
 
-void AndroidSmsAppSetupControllerImpl::RemoveApp(const GURL& url,
+void AndroidSmsAppSetupControllerImpl::RemoveApp(const GURL& app_url,
+                                                 const GURL& install_url,
                                                  SuccessCallback callback) {
   // If there is no app installed at |url|, there is nothing more to do.
-  if (!pwa_delegate_->GetPwaForUrl(url, profile_)) {
+  if (!pwa_delegate_->GetPwaForUrl(install_url, profile_)) {
     PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::RemoveApp(): No app "
-                    << "is installed at " << url << "; skipping removal "
+                    << "is installed at " << install_url
+                    << "; skipping removal "
                     << "process.";
     std::move(callback).Run(true /* success */);
     return;
   }
 
   PA_LOG(INFO) << "AndroidSmsAppSetupControllerImpl::RemoveApp(): "
-               << "Uninstalling app at " << url << ".";
+               << "Uninstalling app at " << install_url << ".";
   // UninstallApps() takes a base::RepeatedCallback, but |callback| is a
   // base::OnceCallback; thus, |callback| cannot be included in the closure
   // because it has move-only semantics. Assign this uninstall attempt an ID
@@ -132,33 +139,34 @@ void AndroidSmsAppSetupControllerImpl::RemoveApp(const GURL& url,
   auto id = base::UnguessableToken::Create();
   uninstall_id_to_callback_map_.emplace(id, std::move(callback));
   pending_app_manager_->UninstallApps(
-      std::vector<GURL>{url},
+      std::vector<GURL>{install_url},
       base::BindRepeating(
           &AndroidSmsAppSetupControllerImpl::OnAppUninstallResult,
-          weak_ptr_factory_.GetWeakPtr(), id));
+          weak_ptr_factory_.GetWeakPtr(), id, app_url));
 }
 
 void AndroidSmsAppSetupControllerImpl::OnSetCookieResult(
-    const GURL& url,
+    const GURL& app_url,
+    const GURL& install_url,
     SuccessCallback callback,
     bool succeeded) {
   if (!succeeded) {
     PA_LOG(WARNING) << "AndroidSmsAppSetupControllerImpl::"
                     << "OnSetCookieResult(): Failed to set "
-                    << "DefaultToPersist cookie at " << url << ". Proceeding "
-                    << "with installation request.";
+                    << "DefaultToPersist cookie at " << app_url
+                    << ". Proceeding with installation request.";
   }
 
   // If the app is already installed at |url|, there is nothing more to do.
-  if (pwa_delegate_->GetPwaForUrl(url, profile_)) {
+  if (pwa_delegate_->GetPwaForUrl(install_url, profile_)) {
     PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::OnSetCookieResult(): "
-                    << "App is already installed at " << url << "; skipping "
-                    << "setup process.";
+                    << "App is already installed at " << install_url
+                    << "; skipping setup process.";
     std::move(callback).Run(true /* success */);
     return;
   }
 
-  web_app::PendingAppManager::AppInfo info(url,
+  web_app::PendingAppManager::AppInfo info(install_url,
                                            web_app::LaunchContainer::kWindow,
                                            web_app::InstallSource::kInternal);
   info.override_previous_user_uninstall = true;
@@ -168,34 +176,36 @@ void AndroidSmsAppSetupControllerImpl::OnSetCookieResult(
   info.require_manifest = true;
 
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::OnSetCookieResult(): "
-                  << "Installing PWA for " << url << ".";
+                  << "Installing PWA for " << install_url << ".";
   pending_app_manager_->Install(
       std::move(info),
       base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnAppInstallResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     app_url));
 }
 
 void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
     SuccessCallback callback,
-    const GURL& url,
+    const GURL& app_url,
+    const GURL& install_url,
     web_app::InstallResultCode code) {
   UMA_HISTOGRAM_ENUMERATION("AndroidSms.PWAInstallationResult", code);
 
   if (code != web_app::InstallResultCode::kSuccess) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::OnAppInstallResult(): "
-        << "PWA for " << url << " failed to install. "
+        << "PWA for " << install_url << " failed to install. "
         << "InstallResultCode: " << static_cast<int>(code);
     std::move(callback).Run(false /* success */);
     return;
   }
 
   PA_LOG(INFO) << "AndroidSmsAppSetupControllerImpl::OnAppInstallResult(): "
-               << "PWA for " << url << " was installed successfully.";
+               << "PWA for " << install_url << " was installed successfully.";
 
   // Grant notification permission for the PWA.
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
-      url, GURL() /* top_level_url */,
+      app_url, GURL() /* top_level_url */,
       ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       content_settings::ResourceIdentifier(),
       std::make_unique<base::Value>(ContentSetting::CONTENT_SETTING_ALLOW));
@@ -205,7 +215,8 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
 
 void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
     const base::UnguessableToken& id,
-    const GURL& url,
+    const GURL& app_url,
+    const GURL& install_url,
     bool succeeded) {
   UMA_HISTOGRAM_BOOLEAN("AndroidSms.PWAUninstallationResult", succeeded);
 
@@ -218,22 +229,22 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
   if (!succeeded) {
     PA_LOG(ERROR)
         << "AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(): "
-        << "PWA for " << url << " failed to uninstall.";
+        << "PWA for " << install_url << " failed to uninstall.";
     std::move(callback).Run(false /* success */);
     return;
   }
 
-  DeleteRememberDeviceByDefaultCookie(url, std::move(callback));
+  DeleteRememberDeviceByDefaultCookie(app_url, std::move(callback));
 }
 
 void AndroidSmsAppSetupControllerImpl::OnDeleteCookiesResult(
-    const GURL& url,
+    const GURL& app_url,
     SuccessCallback callback,
     uint32_t num_deleted) {
   if (num_deleted != 1u) {
     PA_LOG(WARNING) << "AndroidSmsAppSetupControllerImpl::"
                     << "OnDeleteCookiesResult(): Tried to delete a single "
-                    << "cookie at " << url << ", but " << num_deleted << " "
+                    << "cookie at " << app_url << ", but " << num_deleted << " "
                     << "cookies were deleted.";
   }
 

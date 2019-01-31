@@ -12,14 +12,19 @@ namespace chromeos {
 namespace android_sms {
 
 // Returns URL to Android Messages for Web page used by AndroidSmsService.
-GURL GetAndroidMessagesURL();
+// If |use_install_url| is true, the URL used only for installation and
+// uninstallation of the PWA is returned; otherwise, the URL for the service
+// worker is returned.
+GURL GetAndroidMessagesURL(bool use_install_url = false);
 
 // Returns the old URL used for Android Messages. In this context, the "old" URL
 // refers to the URL used before the last change to the
 // kUseMessagesGoogleComDomain flag. See go/awm-cros-domain for details.
 // TODO(https://crbug.com/917855): Remove this function when migration is
-// complete.
-GURL GetAndroidMessagesURLOld();
+// complete.  If |use_install_url| is true, the URL used only for installation
+// and uninstallation of the PWA is returned; otherwise, the URL for the service
+// worker is returned.
+GURL GetAndroidMessagesURLOld(bool use_install_url = false);
 
 }  // namespace android_sms
 
