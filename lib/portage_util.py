@@ -768,6 +768,10 @@ class EBuild(object):
 
     Returns:
       EBuild.SourceInfo namedtuple.
+
+    Raises:
+      raise Error if there are errors with extracting/validating data required
+        for constructing SourceInfo.
     """
     localnames = self.cros_workon_vars.localname
     projects = self.cros_workon_vars.project
@@ -791,7 +795,7 @@ class EBuild(object):
           os.path.dirname(self._unstable_ebuild_path))))
       srcbase = os.path.join(base_dir, 'src')
       if not os.path.isdir(srcbase):
-        cros_build_lib.Die('_SRCPATH used but source path not found.')
+        raise Error('_SRCPATH used but source path not found.')
 
     subdir_paths = []
     subtree_paths = []
@@ -801,7 +805,7 @@ class EBuild(object):
       if srcpath:
         subdir_path = os.path.join(srcbase, srcpath)
         if not os.path.isdir(subdir_path):
-          cros_build_lib.Die('Source for package %s not found.' % self.pkgname)
+          raise Error('Source for package %s not found.' % self.pkgname)
 
         if self.subdir_support and subdir:
           subdir_path = os.path.join(subdir_path, subdir)
@@ -815,16 +819,16 @@ class EBuild(object):
           subdir_path = os.path.join(subdir_path, subdir)
 
         if not os.path.isdir(subdir_path):
-          cros_build_lib.Die('Source repository %s '
-                             'for project %s does not exist.' % (subdir_path,
-                                                                 self.pkgname))
+          raise Error('Source repository %s '
+                      'for project %s does not exist.' % (subdir_path,
+                                                          self.pkgname))
         # Verify that we're grabbing the commit id from the right project name.
         real_project = manifest.FindCheckoutFromPath(subdir_path)['name']
         if project != real_project:
-          cros_build_lib.Die('Project name mismatch for %s '
-                             '(found %s, expected %s)' % (subdir_path,
-                                                          real_project,
-                                                          project))
+          raise Error('Project name mismatch for %s '
+                      '(found %s, expected %s)' % (subdir_path,
+                                                   real_project,
+                                                   project))
 
       subdir_paths.append(subdir_path)
       subtree_paths.extend(
@@ -836,10 +840,17 @@ class EBuild(object):
         subtrees=subtree_paths)
 
   def GetCommitId(self, srcdir):
-    """Get the commit id for this ebuild."""
+    """Get the commit id for this ebuild.
+
+    Returns:
+      Commit id (string) for this ebuild.
+
+    Raises:
+      raise Error if git fails to return the HEAD commit id.
+    """
     output = self._RunGit(srcdir, ['rev-parse', 'HEAD'])
     if not output:
-      cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
+      raise Error('Cannot determine HEAD commit for %s' % srcdir)
     return output.rstrip()
 
   def GetTreeId(self, path):
@@ -850,6 +861,9 @@ class EBuild(object):
 
     Given path can point a regular file, not a directory. If it does not exist,
     None is returned.
+
+    Raises:
+      raise Error if git fails to determine the HEAD tree hash.
     """
     if not os.path.exists(path):
       return None
@@ -861,7 +875,7 @@ class EBuild(object):
       relpath = os.path.basename(path)
     output = self._RunGit(basedir, ['rev-parse', 'HEAD:./%s' % relpath])
     if not output:
-      cros_build_lib.Die('Cannot determine HEAD tree hash for %s' % path)
+      raise Error('Cannot determine HEAD tree hash for %s' % path)
     return output.rstrip()
 
   def GetVersion(self, srcroot, manifest, default):
@@ -869,6 +883,10 @@ class EBuild(object):
 
     The version is provided by the ebuild through a specific script in
     the $FILESDIR (chromeos-version.sh).
+
+    Raises:
+      raise Error when chromeos-version.sh script fails to return the raw
+        version number.
     """
     vers_script = os.path.join(os.path.dirname(self._ebuild_path_no_version),
                                'files', 'chromeos-version.sh')
@@ -898,7 +916,7 @@ class EBuild(object):
                                             error_code_ok=True)
       # TODO(crbug.com/917099): Remove this long-term because it's verbose.
       ls_out = self._RunCommand(['ls', '-lRa'] + srcdirs, error_code_ok=True)
-      cros_build_lib.Die(
+      raise Error(
           'Package %s has a chromeos-version.sh script but failed:\n'
           'return code = %s\nstdout = %s\nstderr = %s\ndir listing = %s\n'
           'git fsck = %s\nsrcdirs = %s\n',
@@ -1022,9 +1040,9 @@ class EBuild(object):
 
     logging.info('Determining whether to create new ebuild %s',
                  new_stable_ebuild_path)
-    if not os.path.exists(self._unstable_ebuild_path):
-      cros_build_lib.Die('Missing unstable ebuild: %s' %
-                         self._unstable_ebuild_path)
+
+    assert os.path.exists(self._unstable_ebuild_path), (
+        'Missing unstable ebuild: %s' % self._unstable_ebuild_path)
 
     self.MarkAsStable(self._unstable_ebuild_path, new_stable_ebuild_path,
                       variables, redirect_file)
@@ -1338,6 +1356,9 @@ def _FindUprevCandidates(files, allow_blacklisted, subdir_support):
     allow_blacklisted: If False, discard blacklisted packages.
     subdir_support: Support obsolete CROS_WORKON_SUBDIR.
                     Intended for branchs older than 10363.0.0.
+
+  Raises:
+    raise Error if there is error with validating the ebuild files.
   """
   stable_ebuilds = []
   unstable_ebuilds = []
@@ -1350,8 +1371,8 @@ def _FindUprevCandidates(files, allow_blacklisted, subdir_support):
       continue
     if ebuild.is_stable:
       if ebuild.version == WORKON_EBUILD_VERSION:
-        cros_build_lib.Die('KEYWORDS in %s ebuild should not be stable %s'
-                           % (WORKON_EBUILD_VERSION, path))
+        raise Error('KEYWORDS in %s ebuild should not be stable %s'
+                    % (WORKON_EBUILD_VERSION, path))
       stable_ebuilds.append(ebuild)
     else:
       unstable_ebuilds.append(ebuild)
@@ -1361,13 +1382,12 @@ def _FindUprevCandidates(files, allow_blacklisted, subdir_support):
   if not unstable_ebuilds:
     if stable_ebuilds:
       path = os.path.dirname(stable_ebuilds[0].ebuild_path)
-      cros_build_lib.Die(
-          'Missing %s ebuild in %s' % (WORKON_EBUILD_VERSION, path))
+      raise Error('Missing %s ebuild in %s' % (WORKON_EBUILD_VERSION, path))
     return None
 
   path = os.path.dirname(unstable_ebuilds[0].ebuild_path)
-  if len(unstable_ebuilds) > 1:
-    cros_build_lib.Die('Found multiple unstable ebuilds in %s' % path)
+  assert len(unstable_ebuilds) <= 1, (
+      'Found multiple unstable ebuilds in %s' % path)
 
   if not stable_ebuilds:
     logging.warning('Missing stable ebuild in %s', path)
@@ -1382,7 +1402,7 @@ def _FindUprevCandidates(files, allow_blacklisted, subdir_support):
     message = 'Found multiple stable ebuild versions in %s:' % path
     for version in stable_versions:
       message += '\n    %s-%s' % (package, version)
-    cros_build_lib.Die(message)
+    raise Error(message)
 
   uprev_ebuild = max(stable_ebuilds, key=lambda eb: eb.current_revision)
   for ebuild in stable_ebuilds:

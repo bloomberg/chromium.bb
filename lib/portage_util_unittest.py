@@ -734,7 +734,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     # Reject no output.
     run.return_value = cros_build_lib.CommandResult(
         returncode=0, output='', error='STDERR')
-    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    self.assertRaises(portage_util.Error,
+                      self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
     exists.reset_mock()
@@ -742,7 +743,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     # Reject simple output.
     run.return_value = cros_build_lib.CommandResult(
         returncode=0, output='\n', error='STDERR')
-    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    self.assertRaises(portage_util.Error,
+                      self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
     exists.reset_mock()
@@ -750,7 +752,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     # Reject error.
     run.return_value = cros_build_lib.CommandResult(
         returncode=1, output='FAIL\n', error='STDERR')
-    self.assertRaises(SystemExit, self.m_ebuild.GetVersion, None, None, '1234')
+    self.assertRaises(portage_util.Error,
+                      self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
     self.assertEqual(exists.call_count, 1)
 
