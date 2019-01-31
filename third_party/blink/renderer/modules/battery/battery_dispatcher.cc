@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/battery/battery_dispatcher.h"
 
+#include "services/device/public/mojom/battery_status.mojom-blink.h"
 #include "services/device/public/mojom/constants.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
