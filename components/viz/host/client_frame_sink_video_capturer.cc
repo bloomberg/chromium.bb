@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/viz/host/client_frame_sink_video_capturer.h"
-#include "base/bind.h"
 
 #include <utility>
+
+#include "base/bind.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 
 namespace viz {
 
