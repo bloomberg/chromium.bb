@@ -27,11 +27,13 @@ class TaskWorklet final : public Worklet,
 
   Task* postTask(ScriptState*,
                  V8Function* task,
-                 const Vector<ScriptValue>& arguments);
+                 const Vector<ScriptValue>& arguments,
+                 ExceptionState&);
 
   Task* postTask(ScriptState*,
                  const String& function_name,
-                 const Vector<ScriptValue>& arguments);
+                 const Vector<ScriptValue>& arguments,
+                 ExceptionState&);
 
   ThreadPoolThread* GetLeastBusyThread() override;
 

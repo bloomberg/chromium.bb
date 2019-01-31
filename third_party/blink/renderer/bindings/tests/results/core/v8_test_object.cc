@@ -919,9 +919,7 @@ static void PromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::V
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestObject", "promiseAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "promiseAttribute");
   ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
@@ -2231,9 +2229,7 @@ static void CheckSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Perform a security check for the returned object.
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestObject", "checkSecurityForNodeReadonlyDocumentAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "checkSecurityForNodeReadonlyDocumentAttribute");
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), WTF::GetPtr(impl->checkSecurityForNodeReadonlyDocumentAttribute()), BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kCrossOriginTestObjectCheckSecurityForNodeReadonlyDocumentAttribute);
@@ -3001,9 +2997,7 @@ static void RaisesExceptionLongAttributeAttributeGetter(const v8::FunctionCallba
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestObject", "raisesExceptionLongAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "raisesExceptionLongAttribute");
 
   int32_t cpp_value(impl->raisesExceptionLongAttribute(exception_state));
 
@@ -3038,9 +3032,7 @@ static void RaisesExceptionGetterLongAttributeAttributeGetter(const v8::Function
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestObject", "raisesExceptionGetterLongAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "raisesExceptionGetterLongAttribute");
 
   int32_t cpp_value(impl->raisesExceptionGetterLongAttribute(exception_state));
 
@@ -3103,9 +3095,7 @@ static void RaisesExceptionTestInterfaceEmptyAttributeAttributeGetter(const v8::
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestObject", "raisesExceptionTestInterfaceEmptyAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "raisesExceptionTestInterfaceEmptyAttribute");
 
   TestInterfaceEmpty* cpp_value(impl->raisesExceptionTestInterfaceEmptyAttribute(exception_state));
 
@@ -3156,9 +3146,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
     }
   }
 
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestObject", "cachedAttributeRaisesExceptionGetterAnyAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "cachedAttributeRaisesExceptionGetterAnyAttribute");
 
   ScriptValue cpp_value(impl->cachedAttributeRaisesExceptionGetterAnyAttribute(exception_state));
 

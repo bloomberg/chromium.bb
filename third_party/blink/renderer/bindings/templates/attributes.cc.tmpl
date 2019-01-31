@@ -11,9 +11,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% filter format_remove_duplicates(['ExceptionState exception_state']) %}
   {% set define_exception_state -%}
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "{{interface_name}}", "{{attribute.name}}");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", "{{attribute.name}}");
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
