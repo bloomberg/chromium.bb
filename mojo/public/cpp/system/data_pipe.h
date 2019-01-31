@@ -141,7 +141,7 @@ inline MojoResult CreateDataPipe(
 // TODO(vtl): Make an even more friendly version? (Maybe templatized for a
 // particular type instead of some "element"? Maybe functions that take
 // vectors?)
-class DataPipe {
+class MOJO_CPP_SYSTEM_EXPORT DataPipe {
  public:
   DataPipe();
   explicit DataPipe(uint32_t capacity_num_bytes);
@@ -151,32 +151,6 @@ class DataPipe {
   ScopedDataPipeProducerHandle producer_handle;
   ScopedDataPipeConsumerHandle consumer_handle;
 };
-
-inline DataPipe::DataPipe() {
-  MojoResult result =
-      CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
-}
-
-inline DataPipe::DataPipe(uint32_t capacity_num_bytes) {
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = capacity_num_bytes;
-  MojoResult result =
-      CreateDataPipe(&options, &producer_handle, &consumer_handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
-}
-
-inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
-  MojoResult result =
-      CreateDataPipe(&options, &producer_handle, &consumer_handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
-}
-
-inline DataPipe::~DataPipe() {
-}
 
 }  // namespace mojo
 

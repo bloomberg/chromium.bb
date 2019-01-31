@@ -26,6 +26,7 @@ component("system") {
     "buffer.cc",
     "buffer.h",
     "core.h",
+    "data_pipe.cc",
     "data_pipe.h",
     "data_pipe_drainer.cc",
     "data_pipe_drainer.h",
