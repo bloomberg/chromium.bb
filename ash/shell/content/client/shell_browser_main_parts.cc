@@ -16,6 +16,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/shell/content/embedded_browser.h"
+#include "ash/shell/example_app_list_client.h"
 #include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/shell_views_delegate.h"
@@ -145,6 +146,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       base::BindRepeating(&EmbeddedBrowser::Create,
                           base::Unretained(browser_context_.get()),
                           GURL("https://www.google.com")));
+
+  example_app_list_client_ = std::make_unique<ExampleAppListClient>(
+      Shell::Get()->app_list_controller());
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 

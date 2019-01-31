@@ -4,7 +4,7 @@
 
 #include "ash/app_list/test/test_app_list_client.h"
 
-#include "ash/shell.h"
+#include <utility>
 
 namespace ash {
 
@@ -16,6 +16,18 @@ mojom::AppListClientPtr TestAppListClient::CreateInterfacePtrAndBind() {
   mojom::AppListClientPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;
+}
+
+void TestAppListClient::GetSearchResultContextMenuModel(
+    const std::string& result_id,
+    GetContextMenuModelCallback callback) {
+  std::move(callback).Run({});
+}
+
+void TestAppListClient::GetContextMenuModel(
+    const std::string& id,
+    GetContextMenuModelCallback callback) {
+  std::move(callback).Run({});
 }
 
 }  // namespace ash

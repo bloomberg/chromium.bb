@@ -1391,8 +1391,9 @@ static_library("ash_shell_lib") {
   testonly = true
   sources = [
     "../ui/views/test/test_views_delegate_aura.cc",
-    "shell/app_list.cc",
     "shell/bubble.cc",
+    "shell/example_app_list_client.cc",
+    "shell/example_app_list_client.h",
     "shell/example_factory.h",
     "shell/example_session_controller_client.cc",
     "shell/example_session_controller_client.h",
