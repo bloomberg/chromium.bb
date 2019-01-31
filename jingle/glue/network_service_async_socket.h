@@ -24,6 +24,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
 
 namespace jingle_glue {

@@ -15,6 +15,7 @@
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
 namespace notifier {
