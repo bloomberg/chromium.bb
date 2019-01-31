@@ -114,7 +114,9 @@ bool PrintingAllowedPageSizesPolicyHandler::CheckListEntry(
 void PrintingAllowedPageSizesPolicyHandler::ApplyList(
     std::unique_ptr<base::ListValue> filtered_list,
     PrefValueMap* prefs) {
-  prefs->SetValue(prefs::kPrintingAllowedPageSizes, std::move(filtered_list));
+  DCHECK(filtered_list);
+  prefs->SetValue(prefs::kPrintingAllowedPageSizes,
+                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
 }
 
 PrintingColorDefaultPolicyHandler::PrintingColorDefaultPolicyHandler()
@@ -245,8 +247,7 @@ void PrintingSizeDefaultPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   const base::Value* value;
   if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingSizeDefault,
-                    std::make_unique<base::Value>(value->Clone()));
+    prefs->SetValue(prefs::kPrintingSizeDefault, value->Clone());
   }
 }
 
