@@ -2190,6 +2190,7 @@ jumbo_source_set("unit_tests") {
     "streams/queue_with_sizes_test.cc",
     "streams/readable_stream_operations_test.cc",
     "streams/readable_stream_test.cc",
+    "streams/stream_promise_resolver_test.cc",
     "streams/test_underlying_source.h",
     "streams/transform_stream_test.cc",
     "streams/writable_stream_test.cc",
