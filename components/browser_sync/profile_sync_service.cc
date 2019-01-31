@@ -1223,7 +1223,8 @@ void ProfileSyncService::OnConfigureDone(
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
-  DCHECK(!IsPassphraseRequiredForDecryption() || IsEncryptedDatatypeEnabled());
+  DCHECK(!GetUserSettings()->IsPassphraseRequiredForDecryption() ||
+         IsEncryptedDatatypeEnabled());
 
   // Notify listeners that configuration is done.
   for (auto& observer : observers_)
@@ -1330,14 +1331,6 @@ bool ProfileSyncService::IsPassphraseRequired() const {
   return user_settings_->IsPassphraseRequired();
 }
 
-bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // If there is an encrypted datatype enabled and we don't have the proper
-  // passphrase, we must prompt the user for a passphrase. The only way for the
-  // user to avoid entering their passphrase is to disable the encrypted types.
-  return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
-}
-
 base::Time ProfileSyncService::GetLastSyncedTime() const {
   return sync_prefs_.GetLastSyncedTime();
 }
@@ -1411,11 +1404,6 @@ syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   return data_type_manager_->GetActiveDataTypes();
 }
 
-bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->IsUsingSecondaryPassphrase();
-}
-
 void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1478,7 +1466,7 @@ void ProfileSyncService::ConfigureDataTypeManager(
     if (base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableAccountWalletStorage) &&
         base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
-      if (!IsUsingSecondaryPassphrase() ||
+      if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
           base::FeatureList::IsEnabled(
               switches::
                   kSyncAllowWalletDataInTransportModeWithCustomPassphrase)) {

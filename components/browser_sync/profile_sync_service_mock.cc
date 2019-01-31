@@ -37,14 +37,6 @@ syncer::ModelTypeSet ProfileSyncServiceMock::GetPreferredDataTypes() const {
       user_settings_.GetChosenDataTypes());
 }
 
-bool ProfileSyncServiceMock::IsPassphraseRequiredForDecryption() const {
-  return user_settings_.IsPassphraseRequiredForDecryption();
-}
-
-bool ProfileSyncServiceMock::IsUsingSecondaryPassphrase() const {
-  return user_settings_.IsUsingSecondaryPassphrase();
-}
-
 std::unique_ptr<syncer::SyncSetupInProgressHandle>
 ProfileSyncServiceMock::GetSetupInProgressHandleConcrete() {
   return browser_sync::ProfileSyncService::GetSetupInProgressHandle();

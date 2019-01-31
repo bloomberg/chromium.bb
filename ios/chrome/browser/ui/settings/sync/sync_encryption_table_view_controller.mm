@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -70,8 +71,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _browserState = browserState;
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
-    _isUsingSecondaryPassphrase = syncService->IsEngineInitialized() &&
-                                  syncService->IsUsingSecondaryPassphrase();
+    _isUsingSecondaryPassphrase =
+        syncService->IsEngineInitialized() &&
+        syncService->GetUserSettings()->IsUsingSecondaryPassphrase();
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
   }
   return self;
@@ -183,7 +185,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       syncer::SyncService* service =
           ProfileSyncServiceFactory::GetForBrowserState(_browserState);
       if (service->IsEngineInitialized() &&
-          !service->IsUsingSecondaryPassphrase()) {
+          !service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
         SyncCreatePassphraseTableViewController* controller =
             [[SyncCreatePassphraseTableViewController alloc]
                 initWithBrowserState:_browserState];
@@ -210,7 +212,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   BOOL isNowUsingSecondaryPassphrase =
-      service->IsEngineInitialized() && service->IsUsingSecondaryPassphrase();
+      service->IsEngineInitialized() &&
+      service->GetUserSettings()->IsUsingSecondaryPassphrase();
   if (_isUsingSecondaryPassphrase != isNowUsingSecondaryPassphrase) {
     _isUsingSecondaryPassphrase = isNowUsingSecondaryPassphrase;
     [self reloadData];

@@ -301,18 +301,6 @@ class SyncService : public KeyedService {
   virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
-  // ENCRYPTION
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Returns true if OnPassphraseRequired has been called for decryption and
-  // we have an encrypted data type enabled.
-  virtual bool IsPassphraseRequiredForDecryption() const = 0;
-
-  // Returns true if a secondary (explicit) passphrase is being used. Before the
-  // engine is initialized, this will always return false.
-  virtual bool IsUsingSecondaryPassphrase() const = 0;
-
-  //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS
   //////////////////////////////////////////////////////////////////////////////
 

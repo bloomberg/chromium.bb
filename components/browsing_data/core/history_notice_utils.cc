@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/version_info/version_info.h"
 
 namespace {
@@ -60,7 +61,8 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       !sync_service->GetActiveDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES) ||
-      sync_service->IsUsingSecondaryPassphrase() || !history_service) {
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
+      !history_service) {
     callback.Run(false);
     return;
   }
@@ -101,7 +103,8 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       !sync_service->GetActiveDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES) ||
-      sync_service->IsUsingSecondaryPassphrase() || !history_service) {
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
+      !history_service) {
     callback.Run(false);
     return;
   }

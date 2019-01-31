@@ -101,7 +101,6 @@ class TestSyncService : public browser_sync::ProfileSyncServiceMock {
   syncer::ModelTypeSet GetPreferredDataTypes() const override {
     return GetActiveDataTypes();
   }
-  bool IsUsingSecondaryPassphrase() const override { return false; }
 
   void set_synced_types(SyncedTypes synced_types) {
     synced_types_ = synced_types;

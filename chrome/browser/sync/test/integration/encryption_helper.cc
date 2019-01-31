@@ -169,7 +169,8 @@ PassphraseRequiredStateChecker::PassphraseRequiredStateChecker(
     : SingleClientStatusChangeChecker(service), desired_state_(desired_state) {}
 
 bool PassphraseRequiredStateChecker::IsExitConditionSatisfied() {
-  return service()->IsPassphraseRequiredForDecryption() == desired_state_;
+  return service()->GetUserSettings()->IsPassphraseRequiredForDecryption() ==
+         desired_state_;
 }
 
 std::string PassphraseRequiredStateChecker::GetDebugMessage() const {

@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/user_events/user_event_sync_bridge.h"
 
 using sync_pb::UserEventSpecifics;
@@ -105,7 +106,7 @@ bool UserEventServiceImpl::CanRecordHistory() {
   // secondary passphrase. Similarly, unless the Sync feature is enabled,
   // GetPreferredDataTypes() isn't meaningful.
   return sync_service_->IsEngineInitialized() &&
-         !sync_service_->IsUsingSecondaryPassphrase() &&
+         !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase() &&
          sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);
 }
@@ -115,7 +116,7 @@ bool UserEventServiceImpl::IsUserEventsDatatypeEnabled() {
   // secondary passphrase. Similarly, unless the Sync feature is enabled,
   // GetPreferredDataTypes() isn't meaningful.
   return sync_service_->IsEngineInitialized() &&
-         !sync_service_->IsUsingSecondaryPassphrase() &&
+         !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase() &&
          sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetPreferredDataTypes().Has(USER_EVENTS);
 }

@@ -50,6 +50,8 @@ class TestSyncUserSettings : public SyncUserSettings {
 
   void SetFirstSetupComplete(bool first_setup_complete);
   void SetPassphraseRequired(bool required);
+  void SetPassphraseRequiredForDecryption(bool required);
+  void SetIsUsingSecondaryPassphrase(bool enabled);
 
  private:
   TestSyncService* service_;
@@ -58,6 +60,8 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool sync_everything_enabled_ = true;
 
   bool passphrase_required_ = false;
+  bool passphrase_required_for_decryption_ = false;
+  bool using_secondary_passphrase_ = false;
 };
 
 }  // namespace syncer
