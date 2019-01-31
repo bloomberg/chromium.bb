@@ -24,11 +24,6 @@ group("vr_perf_tests") {
     "//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
     "//chrome/test/data/xr/webvr_info/samples/",
     "//chrome/test/data/xr/webxr_samples/",
-
-    # Necessary for running on bots
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
-    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
   ]
   data_deps = [
     "//chrome/android:vr_nfc_simulator_apk",
