@@ -575,6 +575,14 @@ void NavigationSimulatorImpl::Commit() {
     document_interface_broker_blink_request_ = nullptr;
   }
 
+  if (handle_) {
+    scoped_refptr<net::HttpResponseHeaders> response_headers =
+        new net::HttpResponseHeaders(std::string());
+    response_headers->AddHeader(std::string("Content-Type: ") +
+                                contents_mime_type_);
+    handle_->set_response_headers_for_testing(response_headers);
+  }
+
   auto params = BuildDidCommitProvisionalLoadParams(
       false /* same_document */, false /* failed_navigation */);
   render_frame_host_->SimulateCommitProcessed(

@@ -16,7 +16,6 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/navigation_policy.h"
@@ -294,7 +293,7 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
     bool was_within_same_document) {
-  if (GetNavigationHandle()) {
+  if (GetNavigationHandle() && !GetNavigationHandle()->GetResponseHeaders()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
     response_headers->AddHeader(std::string("Content-Type: ") +
@@ -444,6 +443,7 @@ void TestRenderFrameHost::SimulateCommitProcessed(
   CHECK(params);
   blink::mojom::CommitResult result = blink::mojom::CommitResult::Ok;
 
+  bool did_commit = false;
   if (!same_document) {
     // Note: Although the code does not prohibit the running of multiple
     // callbacks, no more than 1 callback will ever run, because navigation_id
@@ -455,8 +455,15 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     }
     {
       auto callback_it = navigation_client_commit_callback_.find(navigation_id);
-      if (callback_it != navigation_client_commit_callback_.end())
-        std::move(callback_it->second).Run(result);
+      if (callback_it != navigation_client_commit_callback_.end()) {
+        std::move(callback_it->second)
+            .Run(std::move(params),
+                 mojom::DidCommitProvisionalLoadInterfaceParams::New(
+                     std::move(interface_provider_request),
+                     std::move(document_interface_broker_content_request),
+                     std::move(document_interface_broker_blink_request)));
+        did_commit = true;
+      }
     }
     {
       auto callback_it = commit_failed_callback_.find(navigation_id);
@@ -471,13 +478,15 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     }
   }
 
-  SendNavigateWithParamsAndInterfaceParams(
-      params.release(),
-      mojom::DidCommitProvisionalLoadInterfaceParams::New(
-          std::move(interface_provider_request),
-          std::move(document_interface_broker_content_request),
-          std::move(document_interface_broker_blink_request)),
-      same_document);
+  if (!did_commit) {
+    SendNavigateWithParamsAndInterfaceParams(
+        params.release(),
+        mojom::DidCommitProvisionalLoadInterfaceParams::New(
+            std::move(interface_provider_request),
+            std::move(document_interface_broker_content_request),
+            std::move(document_interface_broker_blink_request)),
+        same_document);
+  }
 }
 
 WebBluetoothServiceImpl*

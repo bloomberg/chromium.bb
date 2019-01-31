@@ -562,21 +562,44 @@ class CONTENT_EXPORT RenderFrameImpl
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
-      CommitNavigationCallback callback) override;
+      mojom::FrameNavigationControl::CommitNavigationCallback commit_callback)
+      override;
+
+  // This is the version to be used with PerNavigationMojoInterface enabled.
+  // It essentially works the same way, except the navigation callback is
+  // the one from NavigationClient mojo interface.
+  void CommitPerNavigationMojoInterfaceNavigation(
+      const network::ResourceResponseHead& head,
+      const CommonNavigationParams& common_params,
+      const CommitNavigationParams& commit_params,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      const base::UnguessableToken& devtools_navigation_token,
+      mojom::NavigationClient::CommitNavigationCallback
+          per_navigation_mojo_interface_callback);
+
   void CommitFailedNavigation(
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
       CommitFailedNavigationCallback callback) override;
   void CommitSameDocumentNavigation(
       const CommonNavigationParams& common_params,
@@ -584,8 +607,8 @@ class CONTENT_EXPORT RenderFrameImpl
       CommitSameDocumentNavigationCallback callback) override;
   void HandleRendererDebugURL(const GURL& url) override;
   void UpdateSubresourceLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders)
-      override;
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories) override;
   void BindDevToolsAgent(
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
@@ -1326,6 +1349,25 @@ class CONTENT_EXPORT RenderFrameImpl
       const CommitNavigationParams* commit_params,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info);
+
+  // This function avoid duplication between CommitNavigation and
+  // CommitPerNavigationMojoInterfaceNavigation.
+  void CommitNavigationInternal(
+      const network::ResourceResponseHead& head,
+      const CommonNavigationParams& common_params,
+      const CommitNavigationParams& commit_params,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+          subresource_overrides,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
+      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      const base::UnguessableToken& devtools_navigation_token,
+      mojom::FrameNavigationControl::CommitNavigationCallback callback,
+      mojom::NavigationClient::CommitNavigationCallback
+          per_navigation_mojo_interface_callback);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
