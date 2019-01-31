@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

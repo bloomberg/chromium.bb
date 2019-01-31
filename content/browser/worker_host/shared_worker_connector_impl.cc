@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 
 namespace content {
 
