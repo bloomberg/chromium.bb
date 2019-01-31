@@ -12,6 +12,7 @@
 #include "content/public/common/content_features.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 
