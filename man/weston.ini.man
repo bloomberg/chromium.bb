@@ -216,7 +216,7 @@ backend.
 .PP
 Available configuration are:
 .TP 7
-.BI "enable_tap=" true
+.BI "enable-tap=" true
 enables tap to click on touchpad devices
 .TP 7
 .BI "touchscreen_calibrator=" true

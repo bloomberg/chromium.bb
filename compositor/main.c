@@ -1464,21 +1464,27 @@ configure_input_device(struct weston_compositor *compositor,
 {
 	struct weston_config_section *s;
 	struct weston_config *config = wet_get_config(compositor);
+	int has_enable_tap = 0;
 	int enable_tap;
-	int enable_tap_default;
 
 	s = weston_config_get_section(config,
 				      "libinput", NULL, NULL);
 
 	if (libinput_device_config_tap_get_finger_count(device) > 0) {
-		enable_tap_default =
-			libinput_device_config_tap_get_default_enabled(
-				device);
-		weston_config_section_get_bool(s, "enable_tap",
-					       &enable_tap,
-					       enable_tap_default);
-		libinput_device_config_tap_set_enabled(device,
-						       enable_tap);
+		if (weston_config_section_get_bool(s, "enable_tap",
+						   &enable_tap, 0) == 0) {
+			weston_log("!!DEPRECATION WARNING!!: In weston.ini, "
+				   "enable_tap is deprecated in favour of "
+				   "enable-tap. Support for it may be removed "
+				   "at any time!");
+			has_enable_tap = 1;
+		}
+		if (weston_config_section_get_bool(s, "enable-tap",
+						   &enable_tap, 0) == 0)
+			has_enable_tap = 1;
+		if (has_enable_tap)
+			libinput_device_config_tap_set_enabled(device,
+							       enable_tap);
 	}
 }
 

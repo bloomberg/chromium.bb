@@ -60,7 +60,7 @@ path=@libexecdir@/weston-keyboard
 #transform=flipped-90
 
 #[libinput]
-#enable_tap=true
+#enable-tap=true
 
 #[touchpad]
 #constant_accel_factor = 50
