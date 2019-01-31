@@ -14,6 +14,7 @@ cr.define('destination_select_test', function() {
     KioskModeSelectsFirstPrinter: 'kiosk mode selects first printer',
     NoPrintersShowsError: 'no printers shows error',
     UnreachableRecentCloudPrinter: 'unreachable recent cloud printer',
+    RecentSaveAsPdf: 'recent save as pdf',
   };
 
   const suiteName = 'DestinationSelectTests';
@@ -59,6 +60,7 @@ cr.define('destination_select_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       const cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
       cloudprint.setCloudPrintInterfaceForTesting(cloudPrintInterface);
+      print_preview.DestinationStore.AUTO_SELECT_TIMEOUT_ = 0;
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
       document.body.appendChild(page);
@@ -80,9 +82,10 @@ cr.define('destination_select_test', function() {
      * Checks that a printer is displayed to the user with the name given
      * by |printerName|.
      * @param {string} printerName The printer name that should be displayed.
+     * @param {boolean} disabled Whether the dropdown should be disabled.
      * @return {!Promise} Promise that resolves when checks are complete.
      */
-    function assertPrinterDisplay(printerName) {
+    function assertPrinterDisplay(printerName, disabled) {
       const destinationSettings = page.$$('print-preview-destination-settings');
       const destinationSelect = destinationSettings.$.destinationSelect;
 
@@ -91,7 +94,7 @@ cr.define('destination_select_test', function() {
         // Check that the throbber is hidden and the dropdown is shown.
         assertTrue(destinationSettings.$$('.throbber-container').hidden);
         assertFalse(destinationSelect.hidden);
-        assertFalse(destinationSelect.disabled);
+        assertEquals(disabled, destinationSelect.disabled);
 
         const options = destinationSelect.shadowRoot.querySelectorAll('option');
         const selectedOption =
@@ -117,7 +120,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID1', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('ID1', page.destination_.id);
-        return assertPrinterDisplay('One');
+        return assertPrinterDisplay('One', false);
       });
     });
 
@@ -142,7 +145,7 @@ cr.define('destination_select_test', function() {
             assertEquals('ID1', args.destinationId);
             assertEquals(print_preview.PrinterType.LOCAL, args.type);
             assertEquals('ID1', page.destination_.id);
-            return assertPrinterDisplay('One');
+            return assertPrinterDisplay('One', false);
           })
           .then(function() {
             // Verify the correct printers are marked as recent in the store.
@@ -213,7 +216,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID4', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('ID4', page.destination_.id);
-        return assertPrinterDisplay('Four');
+        return assertPrinterDisplay('Four', false);
       });
     });
 
@@ -247,7 +250,7 @@ cr.define('destination_select_test', function() {
             // Need to load FooDevice as the printer, since it is the system
             // default.
             assertEquals('FooDevice', page.destination_.id);
-            assertPrinterDisplay('FooName');
+            assertPrinterDisplay('FooName', false);
           });
     });
 
@@ -268,7 +271,7 @@ cr.define('destination_select_test', function() {
         assertEquals(destinations[0].id, args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals(destinations[0].id, page.destination_.id);
-        return assertPrinterDisplay(destinations[0].displayName);
+        return assertPrinterDisplay(destinations[0].displayName, false);
       });
     });
 
@@ -324,8 +327,37 @@ cr.define('destination_select_test', function() {
         assertEquals('FooDevice', args.destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, args.type);
         assertEquals('FooDevice', page.destination_.id);
-        return assertPrinterDisplay('FooName');
+        return assertPrinterDisplay('FooName', false);
       });
+    });
+
+    /**
+     * Tests that if the user has a recent destination that is already in the
+     * store (PDF printer), the DestinationStore does not try to select a
+     * printer again later. Regression test for https://crbug.com/927162.
+     */
+    test(assert(TestNames.RecentSaveAsPdf), function() {
+      const pdfPrinter = print_preview_test_utils.getSaveAsPdfDestination();
+      const recentDestination = print_preview.makeRecentDestination(pdfPrinter);
+      initialSettings.serializedAppStateStr = JSON.stringify({
+        version: 2,
+        recentDestinations: [recentDestination],
+      });
+
+      return setInitialSettings()
+          .then(function() {
+            assertEquals(print_preview_new.State.READY, page.state);
+            assertPrinterDisplay('Save as PDF', false);
+            // Simulate setting a bad ticket value.
+            page.$.state.transitTo(print_preview_new.State.INVALID_TICKET);
+            return new Promise(resolve => setTimeout(resolve));
+          })
+          .then(function() {
+            // Should still have Save as PDF. Dropdown is disabled due to
+            // invalid ticket.
+            assertPrinterDisplay('Save as PDF', true);
+            assertEquals(print_preview_new.State.INVALID_TICKET, page.state);
+          });
     });
   });
 

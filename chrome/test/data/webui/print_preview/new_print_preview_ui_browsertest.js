@@ -662,6 +662,10 @@ TEST_F(
           destination_select_test.TestNames.UnreachableRecentCloudPrinter);
     });
 
+TEST_F('PrintPreviewDestinationSelectTest', 'RecentSaveAsPdf', function() {
+  this.runMochaTest(destination_select_test.TestNames.RecentSaveAsPdf);
+});
+
 PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
