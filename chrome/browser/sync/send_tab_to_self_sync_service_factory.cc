@@ -8,10 +8,11 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/send_tab_to_self/send_tab_to_self_service.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "ui/base/device_form_factor.h"
 
 // static
@@ -30,7 +31,9 @@ SendTabToSelfSyncServiceFactory::GetInstance() {
 SendTabToSelfSyncServiceFactory::SendTabToSelfSyncServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "SendTabToSelfSyncService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+}
 
 SendTabToSelfSyncServiceFactory::~SendTabToSelfSyncServiceFactory() {}
 
@@ -38,19 +41,12 @@ KeyedService* SendTabToSelfSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  syncer::LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback
-      signin_scoped_device_id_callback =
-          base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
-
-  std::unique_ptr<syncer::LocalDeviceInfoProviderImpl>
-      local_device_info_provider =
-          std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-              chrome::GetChannel(), chrome::GetVersionString(),
-              ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-              signin_scoped_device_id_callback);
+  syncer::LocalDeviceInfoProvider* local_device_info_provider =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile)
+          ->GetLocalDeviceInfoProvider();
 
   // TODO(jeffreycohen): use KeyedService to provide a DeviceInfo ptr.
 
   return new send_tab_to_self::SendTabToSelfService(chrome::GetChannel(),
-                                                    nullptr);
+                                                    local_device_info_provider);
 }

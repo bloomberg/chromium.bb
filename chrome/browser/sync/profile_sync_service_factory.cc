@@ -35,6 +35,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
+#include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -152,6 +153,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
+  DependsOn(SendTabToSelfSyncServiceFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());

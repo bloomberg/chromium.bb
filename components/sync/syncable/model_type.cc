@@ -21,6 +21,7 @@
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
+#include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
