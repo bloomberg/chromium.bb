@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
+#include "chrome/browser/taskbar/taskbar_decorator_win.h"
 
 #include <objbase.h>
 #include <shobjidl.h>
@@ -10,9 +10,15 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/win/scoped_gdi_object.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -27,7 +33,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/win/hwnd_util.h"
 
-namespace chrome {
+namespace taskbar {
 
 namespace {
 
@@ -62,9 +68,8 @@ void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
     DCHECK_GE(kOverlayIconSize, resized_height);
     // Since the target size is so small, we use our best resizer.
     SkBitmap sk_icon = skia::ImageOperations::Resize(
-        *bitmap.get(),
-        skia::ImageOperations::RESIZE_LANCZOS3,
-        kOverlayIconSize, resized_height);
+        *bitmap.get(), skia::ImageOperations::RESIZE_LANCZOS3, kOverlayIconSize,
+        resized_height);
 
     // Paint the resized icon onto a 16x16 canvas otherwise Windows will badly
     // hammer it to 16x16. We'll use a circular clip to be consistent with the
@@ -162,11 +167,48 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
   // gfx::Image isn't thread safe.
   std::unique_ptr<SkBitmap> bitmap;
   if (image) {
-    bitmap.reset(new SkBitmap(
-        profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
+    bitmap.reset(
+        new SkBitmap(profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
   }
 
   PostSetOverlayIcon(hwnd, std::move(bitmap));
 }
 
-}  // namespace chrome
+void UpdateTaskbarDecoration(Profile* profile, gfx::NativeWindow window) {
+  if (profile->IsGuestSession() ||
+      // Browser process and profile manager may be null in tests.
+      (g_browser_process && g_browser_process->profile_manager() &&
+       g_browser_process->profile_manager()
+               ->GetProfileAttributesStorage()
+               .GetNumberOfProfiles() <= 1)) {
+    taskbar::DrawTaskbarDecoration(window, nullptr);
+    return;
+  }
+
+  // We need to draw the taskbar decoration. Even though we have an icon on the
+  // window's relaunch details, we draw over it because the user may have
+  // pinned the badge-less Chrome shortcut which will cause Windows to ignore
+  // the relaunch details.
+  // TODO(calamity): ideally this should not be necessary but due to issues
+  // with the default shortcut being pinned, we add the runtime badge for
+  // safety. See crbug.com/313800.
+  gfx::Image decoration;
+  AvatarMenu::ImageLoadStatus status =
+      AvatarMenu::GetImageForMenuButton(profile->GetPath(), &decoration);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Profile.AvatarLoadStatus", status,
+      static_cast<int>(AvatarMenu::ImageLoadStatus::MAX) + 1);
+
+  // If the user is using a Gaia picture and the picture is still being loaded,
+  // wait until the load finishes. This taskbar decoration will be triggered
+  // again upon the finish of the picture load.
+  if (status == AvatarMenu::ImageLoadStatus::LOADING ||
+      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED) {
+    return;
+  }
+
+  taskbar::DrawTaskbarDecoration(window, &decoration);
+}
+
+}  // namespace taskbar

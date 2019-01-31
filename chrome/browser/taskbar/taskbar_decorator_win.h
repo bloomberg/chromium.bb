@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_WIN_H_
+#ifndef CHROME_BROWSER_TASKBAR_TASKBAR_DECORATOR_WIN_H_
+#define CHROME_BROWSER_TASKBAR_TASKBAR_DECORATOR_WIN_H_
+
+#include <string>
 
 #include "ui/gfx/native_widget_types.h"
+
+class Profile;
 
 namespace gfx {
 class Image;
 }
 
-namespace chrome {
+namespace taskbar {
 
 // Add a numeric badge to the taskbar.
 void DrawTaskbarDecorationString(gfx::NativeWindow window,
@@ -21,6 +25,11 @@ void DrawTaskbarDecorationString(gfx::NativeWindow window,
 // associated with top level, visible |window|. Currently only implemented
 // for Windows 7 and above.
 void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image);
-}  // namespace chrome
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_WIN_H_
+// Draws a taskbar icon for non-guest sessions, erases it otherwise. Note: This
+// will clear any badge that has been set on the window.
+void UpdateTaskbarDecoration(Profile* profile, gfx::NativeWindow window);
+
+}  // namespace taskbar
+
+#endif  // CHROME_BROWSER_TASKBAR_TASKBAR_DECORATOR_WIN_H_

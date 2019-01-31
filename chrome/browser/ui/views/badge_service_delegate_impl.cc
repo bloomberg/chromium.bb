@@ -10,13 +10,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
+#include "chrome/browser/taskbar/taskbar_decorator_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
@@ -64,7 +63,7 @@ void SetBadgeImpl(content::WebContents* contents,
 #if defined(OS_WIN)
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   auto* window = browser->window()->GetNativeWindow();
-  chrome::DrawTaskbarDecorationString(window, GetBadgeString(badge_content));
+  taskbar::DrawTaskbarDecorationString(window, GetBadgeString(badge_content));
 #elif defined(OS_MACOSX)
   SetAppShimBadgeLabel(contents, GetBadgeString(badge_content));
 #endif
@@ -73,11 +72,11 @@ void SetBadgeImpl(content::WebContents* contents,
 void ClearBadgeImpl(content::WebContents* contents) {
 #if defined(OS_WIN)
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
 
   // Restore the decoration to whatever it is naturally (either nothing or a
   // profile picture badge).
-  browser_view->frame()->GetFrameView()->UpdateTaskbarDecoration();
+  taskbar::UpdateTaskbarDecoration(browser->profile(),
+                                   browser->window()->GetNativeWindow());
 #elif defined(OS_MACOSX)
   SetAppShimBadgeLabel(contents, "");
 #endif
