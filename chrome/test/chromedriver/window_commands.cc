@@ -1243,6 +1243,7 @@ Status ExecutePerformActions(Session* session,
   std::vector<std::vector<MouseEvent>> mouse_events_list;
   std::vector<std::vector<TouchEvent>> touch_events_list;
   std::vector<std::vector<KeyEvent>> key_events_list;
+  std::vector<base::DictionaryValue*> key_input_states;
   size_t longest_mouse_list_size = 0;
   size_t longest_touch_list_size = 0;
   size_t longest_key_list_size = 0;
@@ -1254,6 +1255,13 @@ Status ExecutePerformActions(Session* session,
     DCHECK(actions);
     action_sequence->GetString("sourceType", &type);
 
+    std::string id;
+    action_sequence->GetString("id", &id);
+
+    base::DictionaryValue* input_state;
+    if (!session->input_state_table.GetDictionary(id, &input_state))
+      return Status(kUnknownError, "missing input state");
+
     // key actions
     if (type == "key") {
       KeyEventBuilder builder;
@@ -1263,12 +1271,6 @@ Status ExecutePerformActions(Session* session,
         actions->GetDictionary(j, &action);
         std::string subtype;
         action->GetString("subtype", &subtype);
-        std::string id;
-        action->GetString("id", &id);
-
-        base::DictionaryValue* input_state;
-        if (!session->input_state_table.GetDictionary(id, &input_state))
-          return Status(kUnknownError, "missing input state");
 
         if (subtype == "pause") {
           key_events.push_back(builder.SetType(kPauseEventType)->Build());
@@ -1283,6 +1285,7 @@ Status ExecutePerformActions(Session* session,
       longest_key_list_size =
           std::max(key_events.size(), longest_key_list_size);
       key_events_list.push_back(key_events);
+      key_input_states.push_back(input_state);
     } else if (type == "pointer") {
       std::string pointer_type;
       action_sequence->GetString("pointerType", &pointer_type);
@@ -1434,7 +1437,12 @@ Status ExecutePerformActions(Session* session,
     for (size_t j = 0; j < key_events_list.size(); j++) {
       if (i < key_events_list[j].size() &&
           key_events_list[j][i].type != kPauseEventType) {
-        dispatch_key_events.push_back(key_events_list[j][i]);
+        const KeyEvent& event = key_events_list[j][i];
+        dispatch_key_events.push_back(event);
+        if (event.type == kKeyDownEventType) {
+          session->input_cancel_list.emplace_back(key_input_states[j], nullptr,
+                                                  nullptr, &event);
+        }
       }
     }
     if (dispatch_key_events.size() > 0) {
@@ -1455,8 +1463,21 @@ Status ExecuteReleaseActions(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
-  // TODO(https://crbug.com/chromedriver/1897): Process "input cancel list".
+  // TODO(https://crbug.com/chromedriver/1897): Process "input cancel list" for
+  // mouse and touch events.
+  for (auto it = session->input_cancel_list.rbegin();
+       it != session->input_cancel_list.rend(); ++it) {
+    if (it->key_event) {
+      base::DictionaryValue* pressed;
+      it->input_state->GetDictionary("pressed", &pressed);
+      if (!pressed->HasKey(it->key_event->key))
+        continue;
+      web_view->DispatchKeyEvents({*it->key_event});
+      pressed->Remove(it->key_event->key, nullptr);
+    }
+  }
 
+  session->input_cancel_list.clear();
   session->input_state_table.Clear();
   session->active_input_sources.Clear();
 
