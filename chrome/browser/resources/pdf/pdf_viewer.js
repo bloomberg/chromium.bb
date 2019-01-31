@@ -1148,6 +1148,14 @@ PDFViewer.prototype = {
 
     chrome.fileSystem.chooseEntry(
         {type: 'saveFile', suggestedName: fileName}, entry => {
+          if (chrome.runtime.lastError) {
+            if (chrome.runtime.lastError.message != 'User cancelled') {
+              console.log(
+                  'chrome.fileSystem.chooseEntry failed: ' +
+                  chrome.runtime.lastError.message);
+            }
+            return;
+          }
           entry.createWriter(writer => {
             writer.write(
                 new Blob([result.dataToSave], {type: 'application/pdf'}));
