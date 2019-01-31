@@ -96,7 +96,8 @@ var CLASSES = {
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
   RTL: 'rtl',  // Right-to-left language text.
-  SHOW_DOODLE: 'show-doodle',
+  // Applied when the doodle notifier should be shown instead of the doodle.
+  USE_NOTIFIER: 'use-notifier',
 };
 
 
@@ -199,10 +200,9 @@ const MAX_NUM_TILES_CUSTOM_LINKS = 10;
 
 
 /**
- * Background colors considered "white". Used to determine if it is possible
- * to display a Google Doodle, or if the notifier should be used instead (Note:
- * this only applies if a theme/custom background is set). Also used to
- * determine if a colored or white logo should be used.
+ * Background colors considered "white". Used to determine if it is possible to
+ * display a Google Doodle, or if the notifier should be used instead. Also used
+ * to determine if a colored or white logo should be used.
  * @type {Array<string>}
  * @const
  */
@@ -210,7 +210,8 @@ var WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
 
 /**
- * Background color for Chrome dark mode.
+ * Background color for Chrome dark mode. Used to determine if it is possible to
+ * display a Google Doodle, or if the notifier should be used instead.
  * @type {string}
  * @const
  */
@@ -286,19 +287,23 @@ function createExecutableTimeout(timeout, delay, previousContainer) {
 
 /**
  * Returns theme background info, first checking for history.state.notheme. If
- * the page has notheme set, returns a fallback light-colored theme.
+ * the page has notheme set, returns a fallback light-colored theme (or dark-
+ * colored theme if dark mode is enabled). This is used when the doodle is
+ * displayed after clicking the notifier.
  */
 function getThemeBackgroundInfo() {
   if (history.state && history.state.notheme) {
     return {
       alternateLogo: false,
-      backgroundColorRgba: [255, 255, 255, 255],
+      backgroundColorRgba:
+          (isDarkModeEnabled ? [50, 54, 57, 255] : [255, 255, 255, 255]),
       colorRgba: [255, 255, 255, 255],
       headerColorRgba: [150, 150, 150, 255],
       linkColorRgba: [6, 55, 116, 255],
       sectionBorderColorRgba: [150, 150, 150, 255],
       textColorLightRgba: [102, 102, 102, 255],
       textColorRgba: [0, 0, 0, 255],
+      usingDarkMode: isDarkModeEnabled,
       usingDefaultTheme: true,
     };
   }
@@ -352,10 +357,8 @@ function renderTheme() {
   }
 
   var background = [
-    (isDarkModeEnabled ? DARK_MODE_BACKGROUND_COLOR :
-                         convertToRGBAColor(info.backgroundColorRgba)),
-    info.imageUrl, info.imageTiling, info.imageHorizontalAlignment,
-    info.imageVerticalAlignment
+    convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
+    info.imageTiling, info.imageHorizontalAlignment, info.imageVerticalAlignment
   ].join(' ').trim();
 
   // If a custom background has been selected the image will be applied to the
@@ -370,9 +373,13 @@ function renderTheme() {
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
   const isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
-  // Show the doodle if this is the default NTP.
-  const showDoodle = info.usingDefaultTheme && !info.customBackgroundConfigured;
-  document.body.classList.toggle(CLASSES.SHOW_DOODLE, showDoodle);
+
+  // The doodle notifier should be shown for non-default backgrounds. This
+  // includes non-white backgrounds, excluding dark mode gray if dark mode is
+  // enabled.
+  const isDefaultBackground = WHITE_BACKGROUND_COLORS.includes(background) ||
+      (isDarkModeEnabled && background === DARK_MODE_BACKGROUND_COLOR);
+  document.body.classList.toggle(CLASSES.USE_NOTIFIER, !isDefaultBackground);
 
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
