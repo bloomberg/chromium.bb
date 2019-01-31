@@ -5393,6 +5393,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Stale"/>
 </enum>
 
+<enum name="BooleanStarsSalientImageFound">
+  <int value="0" label="Salient image was not found."/>
+  <int value="1" label="Salient image was found."/>
+</enum>
+
 <enum name="BooleanStartedCompleted">
   <int value="0" label="Started"/>
   <int value="1" label="Completed"/>
@@ -50374,6 +50379,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Search"/>
   <int value="5" label="Bookmark Editor"/>
   <int value="6" label="Omnibox"/>
+</enum>
+
+<enum name="StarsPromoActions">
+  <int value="0" label="Displayed">
+    The promo panel has been presented to the user.
+  </int>
+  <int value="1" label="Dismissed">The user selected the not now button.</int>
+  <int value="2" label="Completed">The user selected the sign-in button.</int>
 </enum>
 
 <enum name="StartupProfilingFinishReason">
