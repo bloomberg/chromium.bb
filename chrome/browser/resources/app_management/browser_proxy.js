@@ -20,16 +20,16 @@ cr.define('app_management', function() {
 
         const /** @type {!Array<App>}*/ appList = [
           app_management.FakePageHandler.createApp(
-              'ahfgeienlihckogmohjhadlkjgocpleb'),
+              'ahfgeienlihckogmohjhadlkjgocpleb', {title: 'Web Store'}),
           app_management.FakePageHandler.createApp(
               'aohghmighlieiainnegkcijnfilokake',
-              {type: apps.mojom.AppType.kExtension}),
+              {title: 'Docs', type: apps.mojom.AppType.kExtension}),
           app_management.FakePageHandler.createApp(
-              'blpcfgokakmgnkcojhhkbfbldkacnbeo'),
+              'blpcfgokakmgnkcojhhkbfbldkacnbeo', {title: 'Youtube'}),
           app_management.FakePageHandler.createApp(
-              'pjkljhegncpnkpknbcohdijeoejaedia'),
+              'pjkljhegncpnkpknbcohdijeoejaedia', {title: 'Gmail'}),
           app_management.FakePageHandler.createApp(
-              'aapocclcgogkmnckokdopfmhonfmgoek'),
+              'aapocclcgogkmnckokdopfmhonfmgoek', {title: 'Slide'}),
         ];
 
         this.handler.setApps(appList);

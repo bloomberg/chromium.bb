@@ -58,9 +58,7 @@ Polymer({
   },
 
   attached: function() {
-    this.watch('apps_', function(state) {
-      return Object.values(state.apps);
-    });
+    this.watch('apps_', state => Object.values(state.apps));
     this.updateFromStore();
   },
 
@@ -94,7 +92,10 @@ Polymer({
     this.displayedApps_ = this.apps_.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     this.collapsedApps_ =
         this.apps_.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, this.apps_.length);
-    this.notificationApps_ = this.apps_.slice();
+
+    const [notificationsAllowed, notificationsBlocked] =
+        app_management.util.splitByNotificationPermission();
+    this.notificationApps_ = notificationsAllowed;
   },
 
   /**
@@ -157,7 +158,7 @@ Polymer({
     const textContainer = this.$['notifications-sublabel'];
     textContainer.textContent = '';
     for (const p of pieces) {
-      if (p.value.length == 0) {
+      if (!p.value || p.value.length == 0) {
         return;
       }
 

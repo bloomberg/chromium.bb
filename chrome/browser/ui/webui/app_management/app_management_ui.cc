@@ -105,6 +105,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_PERMISSION_ITEM_HTML);
   source->AddResourcePath("permission_item.js",
                           IDR_APP_MANAGEMENT_PERMISSION_ITEM_JS);
+  source->AddResourcePath("permission_toggle.html",
+                          IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_HTML);
+  source->AddResourcePath("permission_toggle.js",
+                          IDR_APP_MANAGEMENT_PERMISSION_TOGGLE_JS);
   source->AddResourcePath("pwa_permission_view.html",
                           IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML);
   source->AddResourcePath("pwa_permission_view.js",
