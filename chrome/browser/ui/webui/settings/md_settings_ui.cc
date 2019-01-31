@@ -382,7 +382,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_CHROMEOS)
   // Add the System Web App resources for Settings.
-  if (web_app::SystemWebAppManager::ShouldEnableForProfile(profile)) {
+  if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
 #if BUILDFLAG(OPTIMIZE_WEBUI)

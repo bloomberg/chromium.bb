@@ -145,7 +145,7 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  if (!SystemWebAppManager::ShouldEnableForProfile(profile))
+  if (!SystemWebAppManager::IsEnabled())
     return nullptr;
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);

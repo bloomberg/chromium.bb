@@ -27,7 +27,7 @@ class SystemWebAppManager {
 
   void Start();
 
-  static bool ShouldEnableForProfile(Profile* profile);
+  static bool IsEnabled();
 
  protected:
   // Overridden in tests.
