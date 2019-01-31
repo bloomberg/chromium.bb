@@ -675,18 +675,18 @@ void CookieMonster::GetCookieListWithOptions(const GURL& url,
   if (HasCookieableScheme(url)) {
     std::vector<CanonicalCookie*> cookie_ptrs;
     FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
+    std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
 
     cookies.reserve(cookie_ptrs.size());
-    std::vector<CanonicalCookie*> filtered_cookie_ptrs;
-    FilterCookiesWithOptions(url, options, &cookie_ptrs, &filtered_cookie_ptrs);
+    std::vector<CanonicalCookie*> included_cookie_ptrs;
+    FilterCookiesWithOptions(url, options, &cookie_ptrs, &included_cookie_ptrs,
+                             &excluded_cookies);
 
-    std::sort(filtered_cookie_ptrs.begin(), filtered_cookie_ptrs.end(),
-              CookieSorter);
-
-    for (auto* cookie : filtered_cookie_ptrs) {
+    for (auto* cookie : included_cookie_ptrs) {
       cookies.push_back(*cookie);
     }
   }
+
   MaybeRunCookieCallback(std::move(callback), cookies, excluded_cookies);
 }
 
@@ -781,12 +781,13 @@ void CookieMonster::DeleteCookie(const GURL& url,
       CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookie_ptrs;
-  std::vector<CanonicalCookie*> filtered_cookie_ptrs;
+  std::vector<CanonicalCookie*> included_cookie_ptrs;
   FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
-  FilterCookiesWithOptions(url, options, &cookie_ptrs, &filtered_cookie_ptrs);
+  FilterCookiesWithOptions(url, options, &cookie_ptrs, &included_cookie_ptrs,
+                           nullptr);
   std::set<CanonicalCookie*> matching_cookies;
 
-  for (auto* cookie : filtered_cookie_ptrs) {
+  for (auto* cookie : included_cookie_ptrs) {
     DCHECK(cookie->IsOnPath(url.path()));
     DCHECK(cookie->IsDomainMatch(url.host()));
     if (cookie->Name() != cookie_name)
@@ -1113,7 +1114,8 @@ void CookieMonster::FilterCookiesWithOptions(
     const GURL url,
     const CookieOptions options,
     std::vector<CanonicalCookie*>* cookie_ptrs,
-    std::vector<CanonicalCookie*>* cookies) {
+    std::vector<CanonicalCookie*>* included_cookie_ptrs,
+    CookieStatusList* excluded_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Probe to save statistics relatively frequently.  We do it here rather
@@ -1127,15 +1129,19 @@ void CookieMonster::FilterCookiesWithOptions(
     // Filter out cookies that should not be included for a request to the
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
-    if ((*it)->IncludeForRequestURL(url, options) !=
-        CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    CanonicalCookie::CookieInclusionStatus status =
+        (*it)->IncludeForRequestURL(url, options);
+
+    if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      if (options.return_excluded_cookies())
+        excluded_cookies->push_back({**it, status});
       continue;
     }
 
     if (options.update_access_time())
       InternalUpdateCookieAccessTime(*it, current_time);
 
-    cookies->push_back(*it);
+    included_cookie_ptrs->push_back(*it);
   }
 }
 

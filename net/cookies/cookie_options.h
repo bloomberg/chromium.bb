@@ -63,11 +63,16 @@ class NET_EXPORT CookieOptions {
   void set_do_not_update_access_time() { update_access_time_ = false; }
   bool update_access_time() const { return update_access_time_; }
 
+  void set_return_excluded_cookies() { return_excluded_cookies_ = true; }
+  void unset_return_excluded_cookies() { return_excluded_cookies_ = false; }
+  bool return_excluded_cookies() const { return return_excluded_cookies_; }
+
  private:
   bool exclude_httponly_;
   SameSiteCookieMode same_site_cookie_mode_;
   bool update_access_time_;
   base::Time server_time_;
+  bool return_excluded_cookies_;
 };
 
 }  // namespace net

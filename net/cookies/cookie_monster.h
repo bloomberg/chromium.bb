@@ -450,10 +450,12 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const GURL& url,
       std::vector<CanonicalCookie*>* cookies);
 
-  void FilterCookiesWithOptions(const GURL url,
-                                const CookieOptions options,
-                                std::vector<CanonicalCookie*>* cookie_ptrs,
-                                std::vector<CanonicalCookie*>* cookies);
+  void FilterCookiesWithOptions(
+      const GURL url,
+      const CookieOptions options,
+      std::vector<CanonicalCookie*>* cookie_ptrs,
+      std::vector<CanonicalCookie*>* included_cookie_ptrs,
+      CookieStatusList* excluded_cookie_ptrs);
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
   // |source_secure| indicates if the source may override existing secure
   // cookies.
