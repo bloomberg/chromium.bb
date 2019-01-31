@@ -17,6 +17,7 @@
 #include "ash/accelerators/exit_warning_handler.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/accelerator_controller.mojom.h"
+#include "ash/public/interfaces/volume.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
