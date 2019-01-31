@@ -72,7 +72,7 @@ class VideoTrackRecorderTest
         blink::WebString::FromASCII("dummy"));
     blink_source_.Initialize(webkit_track_id,
                              blink::WebMediaStreamSource::kTypeVideo,
-                             webkit_track_id);
+                             webkit_track_id, false /*remote*/);
     blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
     blink_track_.Initialize(blink_source_);
 
