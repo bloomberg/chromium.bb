@@ -472,9 +472,11 @@ void SessionControllerClient::OnSessionStateChanged() {
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
     // Assistant is initialized only once when primary user logs in.
+    // Initialize Assistant when browser process restarts.
     if (chromeos::switches::IsAssistantEnabled()) {
       AssistantClient::Get()->MaybeInit(
           ProfileManager::GetPrimaryUserProfile());
+      AssistantClient::Get()->MaybeStartAssistantOptInFlow();
     }
 #endif
   }
