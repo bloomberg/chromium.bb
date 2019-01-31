@@ -34656,6 +34656,14 @@ Called by update_use_counter_css.py.-->
   <int value="27" label="iPhoto file system used this session (obsolete)"/>
 </enum>
 
+<enum name="MediaHardwareKeyAction">
+  <int value="0" label="Play"/>
+  <int value="1" label="Pause"/>
+  <int value="2" label="Stop"/>
+  <int value="3" label="Next Track"/>
+  <int value="4" label="Previous Track"/>
+</enum>
+
 <enum name="MediaKeyError">
   <int value="1" label="kUnknownError"/>
   <int value="2" label="kClientError"/>

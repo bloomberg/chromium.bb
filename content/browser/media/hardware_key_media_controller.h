@@ -49,6 +49,17 @@ class CONTENT_EXPORT HardwareKeyMediaController
   }
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class MediaHardwareKeyAction {
+    kActionPlay = 0,
+    kActionPause,
+    kActionStop,
+    kActionNextTrack,
+    kActionPreviousTrack,
+    kMaxValue = kActionPreviousTrack
+  };
+
   // Used for converting between MediaSessionAction and KeyboardCode.
   media_session::mojom::MediaSessionAction KeyCodeToMediaSessionAction(
       ui::KeyboardCode key_code) const;
@@ -60,6 +71,7 @@ class CONTENT_EXPORT HardwareKeyMediaController
 
   bool SupportsAction(media_session::mojom::MediaSessionAction action) const;
   void PerformAction(media_session::mojom::MediaSessionAction action);
+  void RecordAction(MediaHardwareKeyAction action);
 
   // Used to control the active session.
   media_session::mojom::MediaControllerPtr media_controller_ptr_;

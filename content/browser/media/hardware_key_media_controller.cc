@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/media_keys_listener_manager.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -113,18 +114,23 @@ void HardwareKeyMediaController::PerformAction(MediaSessionAction action) {
   switch (action) {
     case MediaSessionAction::kPreviousTrack:
       media_controller_ptr_->PreviousTrack();
+      RecordAction(MediaHardwareKeyAction::kActionPreviousTrack);
       return;
     case MediaSessionAction::kPlay:
       media_controller_ptr_->Resume();
+      RecordAction(MediaHardwareKeyAction::kActionPlay);
       return;
     case MediaSessionAction::kPause:
       media_controller_ptr_->Suspend();
+      RecordAction(MediaHardwareKeyAction::kActionPause);
       return;
     case MediaSessionAction::kNextTrack:
       media_controller_ptr_->NextTrack();
+      RecordAction(MediaHardwareKeyAction::kActionNextTrack);
       return;
     case MediaSessionAction::kStop:
       media_controller_ptr_->Stop();
+      RecordAction(MediaHardwareKeyAction::kActionStop);
       return;
     case MediaSessionAction::kSeekBackward:
     case MediaSessionAction::kSeekForward:
@@ -132,6 +138,10 @@ void HardwareKeyMediaController::PerformAction(MediaSessionAction action) {
       NOTREACHED();
       return;
   }
+}
+
+void HardwareKeyMediaController::RecordAction(MediaHardwareKeyAction action) {
+  UMA_HISTOGRAM_ENUMERATION("Media.HardwareKeyPressed", action);
 }
 
 MediaSessionAction HardwareKeyMediaController::KeyCodeToMediaSessionAction(
