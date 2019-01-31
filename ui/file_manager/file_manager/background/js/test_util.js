@@ -17,26 +17,6 @@ test.util.async.openMainWindow = function(appState, callback) {
 };
 
 /**
- * Returns an array with the files currently selected in the file manager.
- * TODO(hirono): Integrate the method into getFileList method.
- *
- * @param {Window} contentWindow Window to be tested.
- * @return {Array<string>} Array of selected files.
- */
-test.util.sync.getSelectedFiles = function(contentWindow) {
-  var table = contentWindow.document.querySelector('#detail-table');
-  var rows = table.querySelectorAll('li');
-  var selected = [];
-  for (var i = 0; i < rows.length; ++i) {
-    if (rows[i].hasAttribute('selected')) {
-      selected.push(
-          rows[i].querySelector('.filename-label').textContent);
-    }
-  }
-  return selected;
-};
-
-/**
  * Returns the name of the item currently selected in the directory tree.
  * Returns null if no entry is selected.
  *
@@ -56,15 +36,16 @@ test.util.sync.getSelectedTreeItem = function(contentWindow) {
   return null;
 };
 
-
 /**
- * Returns an array with the files on the file manager's file list.
+ * Returns details about each file shown in the file list: name, size, type and
+ * modification time.
  *
- * TODO(sashab): Since we recycle DOM elements, this only returns the first ~11
- * visible elements. crbug.com/850834.
+ * Since FilesApp normally has a fixed display size in test, and also since the
+ * #detail-table recycles its file row elements, this call only returns details
+ * about the visible file rows (11 rows normally, see crbug.com/850834).
  *
  * @param {Window} contentWindow Window to be tested.
- * @return {Array<Array<string>>} Array of rows.
+ * @return {Array<Array<string>>} Details for each visible file row.
  */
 test.util.sync.getFileList = function(contentWindow) {
   var table = contentWindow.document.querySelector('#detail-table');
@@ -80,6 +61,25 @@ test.util.sync.getFileList = function(contentWindow) {
     ]);
   }
   return fileList;
+};
+
+/**
+ * Returns the name of the files currently selected in the file list. Note the
+ * routine has the same 'visible files' limitation as getFileList() above.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {Array<string>} Selected file names.
+ */
+test.util.sync.getSelectedFiles = function(contentWindow) {
+  var table = contentWindow.document.querySelector('#detail-table');
+  var rows = table.querySelectorAll('li');
+  var selected = [];
+  for (var i = 0; i < rows.length; ++i) {
+    if (rows[i].hasAttribute('selected')) {
+      selected.push(rows[i].querySelector('.filename-label').textContent);
+    }
+  }
+  return selected;
 };
 
 /**
