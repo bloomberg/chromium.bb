@@ -4,6 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cStringIO
 import optparse
 import os
 import shutil
@@ -189,16 +190,23 @@ def main(args):
       # from failing.
       build_utils.Touch(tmp_mapping_path)
 
+      f = cStringIO.StringIO()
+      proguard_util.WriteFlagsFile(
+          options.proguard_configs, f, exclude_generated=True)
+      merged_configs = f.getvalue()
+      f.close()
+      print_stdout = '-whyareyoukeeping' in merged_configs
+
       if options.output_path.endswith('.dex'):
         with build_utils.TempDir() as tmp_dex_dir:
           cmd = _CreateR8Command(options, tmp_mapping_path, tmp_dex_dir,
                                  tmp_proguard_config_path, libraries)
-          build_utils.CheckOutput(cmd)
+          build_utils.CheckOutput(cmd, print_stdout=print_stdout)
           _MoveTempDexFile(tmp_dex_dir, options.output_path)
       else:
         cmd = _CreateR8Command(options, tmp_mapping_path, options.output_path,
                                tmp_proguard_config_path, libraries)
-        build_utils.CheckOutput(cmd)
+        build_utils.CheckOutput(cmd, print_stdout=print_stdout)
 
       # Copy output files to correct locations.
       with build_utils.AtomicOutput(options.mapping_output) as mapping:
@@ -207,9 +215,8 @@ def main(args):
         with open(tmp_mapping_path) as tmp:
           mapping.writelines(l for l in tmp if not l.startswith("#"))
 
-    with build_utils.AtomicOutput(options.output_config) as merged_config:
-      proguard_util.WriteFlagsFile(
-          options.proguard_configs, merged_config, exclude_generated=True)
+    with build_utils.AtomicOutput(options.output_config) as f:
+      f.write(merged_configs)
 
     if options.expected_configs_file:
       _VerifyExpectedConfigs(options.expected_configs_file,
