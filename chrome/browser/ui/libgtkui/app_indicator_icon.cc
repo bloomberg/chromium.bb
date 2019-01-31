@@ -83,7 +83,7 @@ app_indicator_set_icon_full_func app_indicator_set_icon_full = nullptr;
 app_indicator_set_icon_theme_path_func app_indicator_set_icon_theme_path =
     nullptr;
 
-void EnsureMethodsLoaded() {
+void EnsureLibAppIndicatorLoaded() {
   if (g_attempted_load)
     return;
 
@@ -160,7 +160,7 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   desktop_env_ = base::nix::GetDesktopEnvironment(env.get());
 
-  EnsureMethodsLoaded();
+  EnsureLibAppIndicatorLoaded();
   tool_tip_ = base::UTF16ToUTF8(tool_tip);
   SetImage(image);
 }
@@ -176,7 +176,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
 
 // static
 bool AppIndicatorIcon::CouldOpen() {
-  EnsureMethodsLoaded();
+  EnsureLibAppIndicatorLoaded();
   return g_opened;
 }
 

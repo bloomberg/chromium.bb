@@ -5,10 +5,11 @@
 assert(is_linux, "This file should only be referenced on Linux")
 
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//printing/buildflags/buildflags.gni")
 
-component("libgtkui") {
+jumbo_component("libgtkui") {
   sources = [
     "app_indicator_icon.cc",
     "app_indicator_icon.h",

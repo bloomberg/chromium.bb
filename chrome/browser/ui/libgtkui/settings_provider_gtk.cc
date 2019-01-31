@@ -14,17 +14,6 @@ namespace {
 
 const char kDefaultGtkLayout[] = "menu:minimize,maximize,close";
 
-std::string GetGtkSettingsStringProperty(GtkSettings* settings,
-                                         const gchar* prop_name) {
-  GValue layout = G_VALUE_INIT;
-  g_value_init(&layout, G_TYPE_STRING);
-  g_object_get_property(G_OBJECT(settings), prop_name, &layout);
-  DCHECK(G_VALUE_HOLDS_STRING(&layout));
-  std::string prop_value(g_value_get_string(&layout));
-  g_value_unset(&layout);
-  return prop_value;
-}
-
 std::string GetDecorationLayoutFromGtkWindow() {
 #if GTK_CHECK_VERSION(3, 90, 0)
   NOTREACHED();
