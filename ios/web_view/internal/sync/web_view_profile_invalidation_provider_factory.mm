@@ -24,8 +24,6 @@
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #include "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -84,9 +82,7 @@ WebViewProfileInvalidationProviderFactory::
           "InvalidationService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(WebViewIdentityManagerFactory::GetInstance());
-  DependsOn(WebViewSigninManagerFactory::GetInstance());
   DependsOn(WebViewGCMProfileServiceFactory::GetInstance());
-  DependsOn(WebViewOAuth2TokenServiceFactory::GetInstance());
 }
 
 WebViewProfileInvalidationProviderFactory::
