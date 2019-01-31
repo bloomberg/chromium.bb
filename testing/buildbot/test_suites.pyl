@@ -3892,7 +3892,6 @@
       'network_service_browser_tests': {
         'args': [
           '--enable-features=NetworkService',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.chromeos.network_browser_tests.filter',
         ],
         'swarming': {
           'shards': 10,
