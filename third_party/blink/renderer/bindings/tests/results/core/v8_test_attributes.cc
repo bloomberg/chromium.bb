@@ -81,9 +81,7 @@ static void StringPromiseAttributeAttributeGetter(const v8::FunctionCallbackInfo
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestAttributes", "stringPromiseAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestAttributes", "stringPromiseAttribute");
   ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
@@ -118,9 +116,7 @@ static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   // This attribute returns a Promise.
   // Per https://heycam.github.io/webidl/#dfn-attribute-getter, all exceptions
   // must be turned into a Promise rejection.
-  ExceptionState exception_state(
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestAttributes", "raisesExceptionShortPromiseAttribute");
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kGetterContext, "TestAttributes", "raisesExceptionShortPromiseAttribute");
   ExceptionToRejectPromiseScope reject_promise_scope(info, exception_state);
 
   // Returning a Promise type requires us to disable some of V8's type checks,
@@ -134,9 +130,6 @@ static void RaisesExceptionShortPromiseAttributeAttributeGetter(const v8::Functi
   v8::Local<v8::Object> holder = info.Holder();
 
   TestAttributes* impl = V8TestAttributes::ToImpl(holder);
-
-      info.GetIsolate(), ExceptionState::kGetterContext,
-      "TestAttributes", "raisesExceptionShortPromiseAttribute");
 
   ScriptPromise cpp_value(impl->raisesExceptionShortPromiseAttribute(exception_state));
 

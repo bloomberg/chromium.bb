@@ -41,23 +41,32 @@ ScriptPromise WorkerTaskQueue::postFunction(
     ScriptState* script_state,
     V8Function* function,
     AbortSignal* signal,
-    const Vector<ScriptValue>& arguments) {
+    const Vector<ScriptValue>& arguments,
+    ExceptionState& exception_state) {
   DCHECK(document_->IsContextThread());
 
-  Task* task =
-      MakeGarbageCollected<Task>(ThreadPool::From(*document_), script_state,
-                                 function, arguments, task_type_);
+  Task* task = MakeGarbageCollected<Task>(
+      script_state, ThreadPool::From(*document_), function, arguments,
+      task_type_, exception_state);
+  if (exception_state.HadException())
+    return ScriptPromise();
+
   if (signal)
     signal->AddAlgorithm(WTF::Bind(&Task::cancel, WrapWeakPersistent(task)));
-  return task->result(script_state);
+  return task->result(script_state, exception_state);
 }
 
 Task* WorkerTaskQueue::postTask(ScriptState* script_state,
                                 V8Function* function,
-                                const Vector<ScriptValue>& arguments) {
+                                const Vector<ScriptValue>& arguments,
+                                ExceptionState& exception_state) {
   DCHECK(document_->IsContextThread());
-  return MakeGarbageCollected<Task>(ThreadPool::From(*document_), script_state,
-                                    function, arguments, task_type_);
+  Task* task = MakeGarbageCollected<Task>(
+      script_state, ThreadPool::From(*document_), function, arguments,
+      task_type_, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return task;
 }
 
 void WorkerTaskQueue::Trace(blink::Visitor* visitor) {

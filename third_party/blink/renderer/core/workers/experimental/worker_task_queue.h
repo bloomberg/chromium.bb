@@ -35,11 +35,13 @@ class CORE_EXPORT WorkerTaskQueue : public ScriptWrappable {
   ScriptPromise postFunction(ScriptState*,
                              V8Function* function,
                              AbortSignal*,
-                             const Vector<ScriptValue>& arguments);
+                             const Vector<ScriptValue>& arguments,
+                             ExceptionState&);
 
   Task* postTask(ScriptState*,
                  V8Function* function,
-                 const Vector<ScriptValue>& arguments);
+                 const Vector<ScriptValue>& arguments,
+                 ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
