@@ -844,15 +844,6 @@ uint32_t RenderWidgetHostViewAura::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
 }
 
-bool RenderWidgetHostViewAura::DoBrowserControlsShrinkRendererSize() const {
-  return host()->delegate() &&
-         host()->delegate()->DoBrowserControlsShrinkRendererSize();
-}
-
-float RenderWidgetHostViewAura::GetTopControlsHeight() const {
-  return host()->delegate() ? host()->delegate()->GetTopControlsHeight() : 0;
-}
-
 void RenderWidgetHostViewAura::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,

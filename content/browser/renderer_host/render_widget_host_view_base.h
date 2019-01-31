@@ -224,16 +224,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetCompositorViewportPixelSize() const;
 
-  // Whether or not the renderer's viewport size should be shrunk by the height
-  // of the URL-bar.
-  virtual bool DoBrowserControlsShrinkRendererSize() const;
-
-  // The height of the URL-bar browser controls.
-  virtual float GetTopControlsHeight() const;
-
-  // The height of the bottom bar.
-  virtual float GetBottomControlsHeight() const;
-
   // If mouse wheels can only specify the number of ticks of some static
   // multiplier constant, this method returns that constant (in DIPs). If mouse
   // wheels can specify an arbitrary delta this returns 0.

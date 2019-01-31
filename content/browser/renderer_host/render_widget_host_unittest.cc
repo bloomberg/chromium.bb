@@ -334,9 +334,7 @@ class TestView : public TestRenderWidgetHostView {
         acked_event_count_(0),
         gesture_event_type_(-1),
         use_fake_compositor_viewport_pixel_size_(false),
-        ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN),
-        top_controls_height_(0.f),
-        bottom_controls_height_(0.f) {
+        ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
     local_surface_id_allocator_.GenerateId();
   }
 
@@ -359,14 +357,6 @@ class TestView : public TestRenderWidgetHostView {
 
   void GetScreenInfo(ScreenInfo* screen_info) const override {
     *screen_info = screen_info_;
-  }
-
-  void set_top_controls_height(float top_controls_height) {
-    top_controls_height_ = top_controls_height;
-  }
-
-  void set_bottom_controls_height(float bottom_controls_height) {
-    bottom_controls_height_ = bottom_controls_height;
   }
 
   const WebTouchEvent& acked_event() const { return acked_event_; }
@@ -409,10 +399,6 @@ class TestView : public TestRenderWidgetHostView {
 
   // RenderWidgetHostView override.
   gfx::Rect GetViewBounds() const override { return bounds_; }
-  float GetTopControlsHeight() const override { return top_controls_height_; }
-  float GetBottomControlsHeight() const override {
-    return bottom_controls_height_;
-  }
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
       const override {
     return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
@@ -454,8 +440,6 @@ class TestView : public TestRenderWidgetHostView {
   bool use_fake_compositor_viewport_pixel_size_;
   gfx::Size mock_compositor_viewport_pixel_size_;
   InputEventAckState ack_result_;
-  float top_controls_height_;
-  float bottom_controls_height_;
   viz::BeginFrameAck last_did_not_produce_frame_ack_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
   ScreenInfo screen_info_;

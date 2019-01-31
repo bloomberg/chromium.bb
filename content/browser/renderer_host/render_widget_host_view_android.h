@@ -119,9 +119,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void EnsureSurfaceSynchronizedForWebTest() override;
   uint32_t GetCaptureSequenceNumber() const override;
-  bool DoBrowserControlsShrinkRendererSize() const override;
-  float GetTopControlsHeight() const override;
-  float GetBottomControlsHeight() const override;
   int GetMouseWheelMinimumGranularity() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
@@ -405,7 +402,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                         float mouse_down_y);
 
   WebContentsAccessibilityAndroid* GetWebContentsAccessibilityAndroid() const;
-  RenderViewHostDelegateView* GetRenderViewHostDelegateView() const;
 
   void OnFocusInternal();
   void LostFocusInternal();

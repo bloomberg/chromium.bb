@@ -133,6 +133,9 @@ class CONTENT_EXPORT WebContentsViewAura
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
+  int GetTopControlsHeight() const override;
+  int GetBottomControlsHeight() const override;
+  bool DoBrowserControlsShrinkRendererSize() const override;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void ShowPopupMenu(RenderFrameHost* render_frame_host,
                      const gfx::Rect& bounds,

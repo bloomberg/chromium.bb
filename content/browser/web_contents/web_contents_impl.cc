@@ -2201,14 +2201,6 @@ void WebContentsImpl::SetTopControlsShownRatio(
   delegate_->SetTopControlsShownRatio(this, ratio);
 }
 
-bool WebContentsImpl::DoBrowserControlsShrinkRendererSize() const {
-  return delegate_ && delegate_->DoBrowserControlsShrinkRendererSize(this);
-}
-
-int WebContentsImpl::GetTopControlsHeight() const {
-  return delegate_ ? delegate_->GetTopControlsHeight() : 0;
-}
-
 void WebContentsImpl::SetTopControlsGestureScrollInProgress(bool in_progress) {
   if (delegate_)
     delegate_->SetTopControlsGestureScrollInProgress(in_progress);

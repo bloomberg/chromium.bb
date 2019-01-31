@@ -872,23 +872,37 @@ bool RenderWidgetHostImpl::GetVisualProperties(
   visual_properties->page_scale_factor = page_scale_factor_;
 
   if (view_) {
+    // TODO(danakj): Move this browser controls code out of the if-view block?
+    if (delegate_) {
+      RenderViewHostDelegateView* rvh_delegate_view =
+          delegate_->GetDelegateView();
+      DCHECK(rvh_delegate_view);
+
+      visual_properties->browser_controls_shrink_blink_size =
+          rvh_delegate_view->DoBrowserControlsShrinkRendererSize();
+
+      float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
+      float bottom_controls_height =
+          rvh_delegate_view->GetBottomControlsHeight();
+      float browser_controls_dsf_multiplier = 1.f;
+      // The top and bottom control sizes are physical pixels but the IPC wants
+      // DIPs *when not using page zoom for DSF* because blink layout is working
+      // in DIPs then.
+      if (!IsUseZoomForDSFEnabled()) {
+        browser_controls_dsf_multiplier =
+            visual_properties->screen_info.device_scale_factor;
+      }
+      visual_properties->top_controls_height =
+          top_controls_height / browser_controls_dsf_multiplier;
+      visual_properties->bottom_controls_height =
+          bottom_controls_height / browser_controls_dsf_multiplier;
+    }
+
     visual_properties->new_size = view_->GetRequestedRendererSize();
     visual_properties->capture_sequence_number =
         view_->GetCaptureSequenceNumber();
     visual_properties->compositor_viewport_pixel_size =
         view_->GetCompositorViewportPixelSize();
-    visual_properties->top_controls_height = view_->GetTopControlsHeight();
-    visual_properties->bottom_controls_height =
-        view_->GetBottomControlsHeight();
-    if (!IsUseZoomForDSFEnabled()) {
-      float device_scale = visual_properties->screen_info.device_scale_factor;
-      if (device_scale != 0.f) {
-        visual_properties->top_controls_height /= device_scale;
-        visual_properties->bottom_controls_height /= device_scale;
-      }
-    }
-    visual_properties->browser_controls_shrink_blink_size =
-        view_->DoBrowserControlsShrinkRendererSize();
     visual_properties->visible_viewport_size = view_->GetVisibleViewportSize();
     // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
     // scale factor of the surface. Fix this.

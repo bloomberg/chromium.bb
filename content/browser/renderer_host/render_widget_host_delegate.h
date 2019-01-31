@@ -61,8 +61,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void SetTopControlsShownRatio(
       RenderWidgetHostImpl* render_widget_host,
       float ratio) {}
-  virtual bool DoBrowserControlsShrinkRendererSize() const;
-  virtual int GetTopControlsHeight() const;
   virtual void SetTopControlsGestureScrollInProgress(bool in_progress) {}
 
   // The RenderWidgetHost has just been created.

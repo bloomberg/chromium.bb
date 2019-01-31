@@ -259,6 +259,7 @@ jumbo_static_library("test_support") {
     "storage_partition_test_utils.h",
     "stub_layer_tree_view_delegate.cc",
     "stub_layer_tree_view_delegate.h",
+    "stub_render_view_host_delegate_view.h",
     "stub_render_widget_host_owner_delegate.cc",
     "stub_render_widget_host_owner_delegate.h",
     "test_background_sync_context.cc",

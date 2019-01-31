@@ -1299,6 +1299,27 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ConvertFromWeb(current_drag_op_);
 }
 
+int WebContentsViewAura::GetTopControlsHeight() const {
+  WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  if (!delegate)
+    return 0;
+  return delegate->GetTopControlsHeight();
+}
+
+int WebContentsViewAura::GetBottomControlsHeight() const {
+  WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  if (!delegate)
+    return 0;
+  return delegate->GetBottomControlsHeight();
+}
+
+bool WebContentsViewAura::DoBrowserControlsShrinkRendererSize() const {
+  WebContentsDelegate* delegate = web_contents_->GetDelegate();
+  if (!delegate)
+    return false;
+  return delegate->DoBrowserControlsShrinkRendererSize(web_contents_);
+}
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void WebContentsViewAura::ShowPopupMenu(RenderFrameHost* render_frame_host,
                                         const gfx::Rect& bounds,
