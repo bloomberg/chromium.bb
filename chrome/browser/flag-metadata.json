@@ -1729,7 +1729,7 @@
   },
   {
     "name": "enable-query-in-omnibox",
-    // "owners": [ "your-team" ],
+    "owners": [ "tommycli", "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
@@ -2713,77 +2713,82 @@
   },
   {
     "name": "omnibox-display-title-for-current-url",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-drive-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "skare", "chrome-omnibox-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-experimental-keyword-mode",
+    "owners": [ "krb", "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-new-answer-layout",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-pedal-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "orinj", "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-reverse-answers",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-rich-entity-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-spare-renderer",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-tab-switch-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "krb", "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-tail-suggestions",
-    // "owners": [ "your-team" ],
+    "owners": [ "krb", "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-scheme",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-trivial-subdomains",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-max-autocomplete-matches",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-one-click-unelide",
-    "owners": [ "tommycli" ],
+    "owners": [ "tommycli", "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
-    // "owners": [ "your-team" ],
+    "owners": [ "chrome-omnibox-team" ],
     "expiry_milestone": 76
   },
   {

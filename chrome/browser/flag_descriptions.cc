@@ -2836,6 +2836,12 @@ const char kOmniboxDriveSuggestionsDescriptions[] =
     "Display suggestions for Google Drive documents in the omnibox when Google "
     "is the default search engine.";
 
+const char kOmniboxExperimentalKeywordModeName[] =
+    "Omnibox Experimental Keyword Mode";
+const char kOmniboxExperimentalKeywordModeDescription[] =
+    "Enables various experimental features related to keyword mode, its "
+    "suggestions and layout";
+
 const char kOmniboxPedalSuggestionsName[] = "Omnibox Pedal suggestions";
 const char kOmniboxPedalSuggestionsDescription[] =
     "Enable omnibox Pedal suggestions using either a side button in suggestion "

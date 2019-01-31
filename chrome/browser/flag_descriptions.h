@@ -1681,6 +1681,9 @@ extern const char kInfiniteSessionRestoreDescription[];
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
 
+extern const char kOmniboxExperimentalKeywordModeName[];
+extern const char kOmniboxExperimentalKeywordModeDescription[];
+
 extern const char kOmniboxPedalSuggestionsName[];
 extern const char kOmniboxPedalSuggestionsDescription[];
 
