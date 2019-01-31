@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
@@ -27,12 +28,10 @@ namespace content {
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
     mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
-  new EmbeddedWorkerInstanceClientImpl(std::move(io_thread_runner),
-                                       std::move(request));
+  new EmbeddedWorkerInstanceClientImpl(std::move(request));
 }
 
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
@@ -117,11 +116,8 @@ void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
     mojom::EmbeddedWorkerInstanceClientRequest request)
-    : binding_(this, std::move(request)),
-      temporal_self_(this),
-      io_thread_runner_(std::move(io_thread_runner)) {
+    : binding_(this, std::move(request)), temporal_self_(this) {
   binding_.set_connection_error_handler(base::BindOnce(
       &EmbeddedWorkerInstanceClientImpl::OnError, base::Unretained(this)));
 }
