@@ -3067,6 +3067,41 @@
       "features": [
         "disable_direct_composition"
       ]
+    },
+    {
+      "id": 287,
+      "description": "glCopyTexImage2D on Adreno fails if source is GL_RGB10_A2 and destination is not.",
+      "cr_bugs": [925986],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": ">=",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*4\\d\\d",
+      "gl_renderer": "Adreno \\(TM\\) [345].*",
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_adreno"
+      ]
+    },
+    {
+      "id": 288,
+      "description": "glCopyTexImage2D on NVIDIA Tegra fails in certain cases if source is GL_RGB10_A2.",
+      "cr_bugs": [925986],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.0"
+      },
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_tegra"
+      ]
     }
   ]
 }
