@@ -344,7 +344,7 @@ std::vector<AXNode*>* AXNode::GetExtraMacNodes() const {
 //
 
 bool AXNode::IsTableRow() const {
-  return data().role == ax::mojom::Role::kRow;
+  return ui::IsTableRow(data().role);
 }
 
 int32_t AXNode::GetTableRowRowIndex() const {
@@ -362,12 +362,13 @@ int32_t AXNode::GetTableRowRowIndex() const {
 }
 
 #if defined(OS_MACOSX)
+
 //
 // Table column-like nodes. These nodes are only present on macOS.
 //
 
 bool AXNode::IsTableColumn() const {
-  return data().role == ax::mojom::Role::kColumn;
+  return ui::IsTableColumn(data().role);
 }
 
 int32_t AXNode::GetTableColColIndex() const {
@@ -386,6 +387,7 @@ int32_t AXNode::GetTableColColIndex() const {
   }
   return index;
 }
+
 #endif  // defined(OS_MACOSX)
 
 //
@@ -465,7 +467,7 @@ int32_t AXNode::GetTableCellRowSpan() const {
 int32_t AXNode::GetTableCellAriaColIndex() const {
   AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return -0;
+    return 0;
 
   int32_t index = GetTableCellIndex();
   if (index == -1)
@@ -477,11 +479,11 @@ int32_t AXNode::GetTableCellAriaColIndex() const {
 int32_t AXNode::GetTableCellAriaRowIndex() const {
   AXTableInfo* table_info = GetAncestorTableInfo();
   if (!table_info)
-    return -0;
+    return -1;
 
   int32_t index = GetTableCellIndex();
   if (index == -1)
-    return 0;
+    return -1;
 
   return table_info->cell_data_vector[index].aria_row_index;
 }

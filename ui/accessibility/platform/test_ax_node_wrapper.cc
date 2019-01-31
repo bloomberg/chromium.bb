@@ -194,12 +194,28 @@ void TestAXNodeWrapper::ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute,
   node_->SetData(new_data);
 }
 
+bool TestAXNodeWrapper::IsTable() const {
+  return node_->IsTable();
+}
+
 int TestAXNodeWrapper::GetTableRowCount() const {
   return node_->GetTableRowCount();
 }
 
 int TestAXNodeWrapper::GetTableColCount() const {
   return node_->GetTableColCount();
+}
+
+int TestAXNodeWrapper::GetTableAriaRowCount() const {
+  return node_->GetTableAriaRowCount();
+}
+
+int TestAXNodeWrapper::GetTableAriaColCount() const {
+  return node_->GetTableAriaColCount();
+}
+
+int TestAXNodeWrapper::GetTableCellCount() const {
+  return node_->GetTableCellCount();
 }
 
 const std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
@@ -228,6 +244,46 @@ const std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(
   return header_ids;
 }
 
+bool TestAXNodeWrapper::IsTableRow() const {
+  return node_->IsTableRow();
+}
+
+int TestAXNodeWrapper::GetTableRowRowIndex() const {
+  return node_->GetTableRowRowIndex();
+}
+
+bool TestAXNodeWrapper::IsTableCellOrHeader() const {
+  return node_->IsTableCellOrHeader();
+}
+
+int TestAXNodeWrapper::GetTableCellIndex() const {
+  return node_->GetTableCellIndex();
+}
+
+int TestAXNodeWrapper::GetTableCellColIndex() const {
+  return node_->GetTableCellColIndex();
+}
+
+int TestAXNodeWrapper::GetTableCellRowIndex() const {
+  return node_->GetTableCellRowIndex();
+}
+
+int TestAXNodeWrapper::GetTableCellColSpan() const {
+  return node_->GetTableCellColSpan();
+}
+
+int TestAXNodeWrapper::GetTableCellRowSpan() const {
+  return node_->GetTableCellRowSpan();
+}
+
+int TestAXNodeWrapper::GetTableCellAriaColIndex() const {
+  return node_->GetTableCellAriaColIndex();
+}
+
+int TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
+  return node_->GetTableCellAriaRowIndex();
+}
+
 int32_t TestAXNodeWrapper::GetCellId(int32_t row_index,
                                      int32_t col_index) const {
   ui::AXNode* cell = node_->GetTableCellFromCoords(row_index, col_index);
@@ -235,10 +291,6 @@ int32_t TestAXNodeWrapper::GetCellId(int32_t row_index,
     return cell->id();
 
   return -1;
-}
-
-int32_t TestAXNodeWrapper::GetTableCellIndex() const {
-  return node_->GetTableCellIndex();
 }
 
 int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
