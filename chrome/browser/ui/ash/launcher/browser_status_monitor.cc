@@ -271,11 +271,6 @@ void BrowserStatusMonitor::RemoveWebContentsObserver(
   webcontents_to_observer_map_.erase(contents);
 }
 
-ash::ShelfID BrowserStatusMonitor::GetShelfIDForWebContents(
-    content::WebContents* contents) {
-  return launcher_controller_->GetShelfIDForWebContents(contents);
-}
-
 void BrowserStatusMonitor::SetShelfIDForBrowserWindowContents(
     Browser* browser,
     content::WebContents* web_contents) {
