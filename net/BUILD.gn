@@ -1811,6 +1811,8 @@ component("net") {
         "reporting/reporting_browsing_data_remover.h",
         "reporting/reporting_cache.cc",
         "reporting/reporting_cache.h",
+        "reporting/reporting_cache_impl.cc",
+        "reporting/reporting_cache_impl.h",
         "reporting/reporting_cache_observer.cc",
         "reporting/reporting_cache_observer.h",
         "reporting/reporting_client.cc",
