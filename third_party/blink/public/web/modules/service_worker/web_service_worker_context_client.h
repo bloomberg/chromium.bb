@@ -78,13 +78,19 @@ class WebServiceWorkerContextClient {
   // failed.
   virtual void FailedToFetchModuleScript() {}
 
-  // The worker script successfully loaded. Called on the main thread when the
-  // script is served from ResourceLoader or on the worker thread when the
-  // script is served via WebServiceWorkerInstalledScriptsManager.
+  // The worker script was successfully loaded by ResourceLoader. Called on the
+  // main thread.
   //
-  // This may be called before or after WorkerContextStarted(). Script
-  // evaluation does not start until WillEvaluateScript().
+  // This is called before WorkerContextStarted(). Script evaluation does not
+  // start until WillEvaluateScript().
   virtual void WorkerScriptLoaded() {}
+
+  // The worker script was successfully read from
+  // WebServiceWorkerInstalledScriptsManager. Called on the worker thread.
+  //
+  // This is called after WorkerContextStarted(). Script evaluation does not
+  // start until WillEvaluateScript().
+  virtual void InstalledWorkerScriptLoaded() {}
 
   // Called when a WorkerGlobalScope was created for the worker thread. This
   // also gives a proxy to the embedder to talk to the newly created
@@ -92,8 +98,12 @@ class WebServiceWorkerContextClient {
   // be destroyed by the caller. No proxy methods should be called after
   // willDestroyWorkerContext() is called.
   //
-  // This may be called before or after WorkerScriptLoaded(). Script evaluation
-  // does not start until WillEvaluateScript().
+  // For new workers (on-main-thread script fetch), this is called after
+  // WorkerScriptLoaded().
+  //
+  // For installed workers, this is called before InstalledWorkerScriptLoaded().
+  //
+  // Script evaluation does not start until WillEvaluateScript().
   virtual void WorkerContextStarted(WebServiceWorkerContextProxy*) {}
 
   // Called immediately before V8 script evaluation starts for the main script.

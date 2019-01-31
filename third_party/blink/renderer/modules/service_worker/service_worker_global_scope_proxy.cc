@@ -657,7 +657,7 @@ void ServiceWorkerGlobalScopeProxy::DidFailToInitializeWorkerContext() {
 
 void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  Client().WorkerScriptLoaded();
+  Client().InstalledWorkerScriptLoaded();
 }
 
 void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledClassicScript() {

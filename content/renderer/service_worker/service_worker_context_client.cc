@@ -641,10 +641,15 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoaded() {
-  // This could be called both from the main thread and worker thread as the
-  // comment in WebServiceWorkerContextClient describes.
-  if (!is_starting_installed_worker_)
-    (*instance_host_)->OnScriptLoaded();
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(!is_starting_installed_worker_);
+  (*instance_host_)->OnScriptLoaded();
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
+}
+
+void ServiceWorkerContextClient::InstalledWorkerScriptLoaded() {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(is_starting_installed_worker_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
 }
 
