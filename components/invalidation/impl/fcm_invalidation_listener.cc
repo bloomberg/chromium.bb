@@ -168,9 +168,10 @@ void FCMInvalidationListener::DoRegistrationUpdate() {
 }
 
 void FCMInvalidationListener::RequestDetailedStatus(
-    base::Callback<void(const base::DictionaryValue&)> callback) const {
+    const base::RepeatingCallback<void(const base::DictionaryValue&)>& callback)
+    const {
   network_channel_->RequestDetailedStatus(callback);
-  callback.Run(*CollectDebugData());
+  callback.Run(CollectDebugData());
 }
 
 void FCMInvalidationListener::StopForTest() {
@@ -240,21 +241,19 @@ void FCMInvalidationListener::OnSubscriptionChannelStateChanged(
   EmitStateChange();
 }
 
-std::unique_ptr<base::DictionaryValue>
-FCMInvalidationListener::CollectDebugData() const {
-  std::unique_ptr<base::DictionaryValue> return_value =
+base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
+  base::DictionaryValue status =
       per_user_topic_registration_manager_->CollectDebugData();
-  return_value->SetString("FCM channel state",
-                          InvalidatorStateToString(fcm_network_state_));
-  return_value->SetString(
-      "Subscription channel state",
-      InvalidatorStateToString(subscription_channel_state_));
+  status.SetString("InvalidationListener.FCM-channel-state",
+                   InvalidatorStateToString(fcm_network_state_));
+  status.SetString("InvalidationListener.Subscription-channel-state",
+                   InvalidatorStateToString(subscription_channel_state_));
   for (const Topic& topic : registered_topics_) {
-    if (!return_value->HasKey(topic)) {
-      return_value->SetString(topic, "Unregistered");
+    if (!status.HasKey(topic)) {
+      status.SetString(topic, "Unregistered");
     }
   }
-  return return_value;
+  return status;
 }
 
 }  // namespace syncer

@@ -71,7 +71,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
+  base::DictionaryValue CollectDebugData() const;
 
   bool HaveAllRequestsFinishedForTest() const {
     return registration_statuses_.empty();

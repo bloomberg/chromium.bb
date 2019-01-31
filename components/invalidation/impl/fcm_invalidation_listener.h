@@ -92,7 +92,8 @@ class FCMInvalidationListener : public InvalidationListener,
   void DoRegistrationUpdate();
 
   void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> callback) const;
+      const base::RepeatingCallback<void(const base::DictionaryValue&)>&
+          callback) const;
 
   void StopForTest();
 
@@ -126,7 +127,7 @@ class FCMInvalidationListener : public InvalidationListener,
   void EmitSavedInvalidations(const TopicInvalidationMap& to_emit);
 
   // Generate a Dictionary with all the debugging information.
-  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
+  base::DictionaryValue CollectDebugData() const;
 
   std::unique_ptr<FCMSyncNetworkChannel> network_channel_;
   UnackedInvalidationsMap unacked_invalidations_map_;
