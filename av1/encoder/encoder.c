@@ -4711,6 +4711,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       scale_references(cpi);
     }
     av1_set_quantizer(cm, q);
+    av1_init_quantizer(cpi);
     // printf("Frame %d/%d: q = %d, frame_type = %d superres_denom = %d\n",
     //        cm->current_frame.frame_number, cm->show_frame, q,
     //        cm->current_frame.frame_type, cm->superres_scale_denominator);
