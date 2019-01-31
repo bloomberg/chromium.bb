@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "services/ws/public/mojom/ime/ime_struct_traits_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
