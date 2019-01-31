@@ -36,31 +36,6 @@ class ChromeBrowserMainPartsTestApi {
 
 namespace {
 
-// ChromeBrowserMainExtraParts is used to initialize the network state.
-class ChromeBrowserMainExtraPartsNetFactoryInstaller
-    : public ChromeBrowserMainExtraParts {
- public:
-  explicit ChromeBrowserMainExtraPartsNetFactoryInstaller(
-      content::NetworkConnectionChangeSimulator* network_change_simulator)
-      : network_change_simulator_(network_change_simulator) {
-    EXPECT_TRUE(network_change_simulator_);
-  }
-
-  // ChromeBrowserMainExtraParts:
-  void PreEarlyInitialization() override {}
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override {
-    network_change_simulator_->SetConnectionType(
-        network::mojom::ConnectionType::CONNECTION_NONE);
-  }
-
- private:
-  content::NetworkConnectionChangeSimulator* network_change_simulator_ =
-      nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsNetFactoryInstaller);
-};
-
 class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
  public:
   ChromeBrowserMainBrowserTest() {
@@ -87,16 +62,7 @@ class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
         static_cast<ChromeBrowserMainParts*>(browser_main_parts);
     ChromeBrowserMainPartsTestApi(chrome_browser_main_parts)
         .EnableVariationsServiceInit();
-    network_change_simulator_ =
-        std::make_unique<content::NetworkConnectionChangeSimulator>();
-    extra_parts_ = new ChromeBrowserMainExtraPartsNetFactoryInstaller(
-        network_change_simulator_.get());
-    chrome_browser_main_parts->AddParts(extra_parts_);
   }
-
-  std::unique_ptr<content::NetworkConnectionChangeSimulator>
-      network_change_simulator_;
-  ChromeBrowserMainExtraPartsNetFactoryInstaller* extra_parts_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -110,16 +76,28 @@ class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
 // instead of performing an actual request.
 IN_PROC_BROWSER_TEST_F(ChromeBrowserMainBrowserTest,
                        VariationsServiceStartsRequestOnNetworkChange) {
-  const int initial_request_count =
-      g_browser_process->variations_service()->request_count();
-  ASSERT_TRUE(extra_parts_);
-  network_change_simulator_->SetConnectionType(
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  variations_service->CancelCurrentRequestForTesting();
+
+  content::NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  const int initial_request_count = variations_service->request_count();
+
+  // The variations service will only send a request the first time the
+  // connection goes online, or after the 30min delay. Tell it that it hasn't
+  // sent a request yet to make sure the next time we go online a request will
+  // be sent.
+  variations_service->GetResourceRequestAllowedNotifierForTesting()
+      ->SetObserverRequestedForTesting(true);
+
+  network_change_simulator.SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_WIFI);
   // NotifyObserversOfNetworkChangeForTests uses PostTask, so run the loop until
   // idle to ensure VariationsService processes the network change.
   base::RunLoop().RunUntilIdle();
-  const int final_request_count =
-      g_browser_process->variations_service()->request_count();
+  const int final_request_count = variations_service->request_count();
   EXPECT_EQ(initial_request_count + 1, final_request_count);
 }
 

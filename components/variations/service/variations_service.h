@@ -176,6 +176,11 @@ class VariationsService
   // Exposed for testing.
   void GetClientFilterableStateForVersionCalledForTesting();
 
+  web_resource::ResourceRequestAllowedNotifier*
+  GetResourceRequestAllowedNotifierForTesting() {
+    return resource_request_allowed_notifier_.get();
+  }
+
   // Wrapper around VariationsFieldTrialCreator::SetupFieldTrials().
   bool SetupFieldTrials(const char* kEnableGpuBenchmarking,
                         const char* kEnableFeatures,
@@ -189,6 +194,9 @@ class VariationsService
   void OverrideCachedUIStrings();
 
   int request_count() const { return request_count_; }
+
+  // Cancels the currently pending fetch request.
+  void CancelCurrentRequestForTesting();
 
  protected:
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
