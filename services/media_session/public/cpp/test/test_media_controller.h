@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace media_session {
 namespace test {
