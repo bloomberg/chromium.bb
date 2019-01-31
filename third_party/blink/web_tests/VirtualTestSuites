@@ -881,12 +881,12 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "external/wpt/wasm/serialization/window-domain-success.sub.html",
+    "base": "external/wpt/wasm/serialization/module/window-domain-success.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },
   {
     "prefix": "not-site-per-process",
-    "base": "external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html",
+    "base": "external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },
   {
