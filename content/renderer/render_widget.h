@@ -114,7 +114,6 @@ class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
 class RenderWidgetScreenMetricsEmulator;
-class ResizingModeSelector;
 class TextInputClientObserver;
 class WidgetInputHandlerManager;
 struct ContextMenuParams;
@@ -889,6 +888,20 @@ class CONTENT_EXPORT RenderWidget
   // the RenderViewImpl, we freeze it instead.
   bool is_frozen_;
 
+  // In web tests, synchronous resizing mode may be used. Normally each widget's
+  // size is controlled by IPC from the browser. In synchronous resize mode the
+  // renderer controls the size directly, and IPCs from the browser must be
+  // ignored. This was deprecated but then later undeprecated, so it is now
+  // called unfortunate instead. See https://crbug.com/309760. When this is
+  // enabled the various size properties will be controlled directly when
+  // SetWindowRect() is called instead of needing a round trip through the
+  // browser.
+  // Note that SetWindowRectSynchronouslyForTesting() provides a secondary way
+  // to control the size of the RenderWidget independently from the renderer
+  // process, without the use of this mode, however it would be overridden by
+  // the browser if they disagree.
+  bool synchronous_resize_mode_for_testing_ = false;
+
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;
 
@@ -949,7 +962,6 @@ class CONTENT_EXPORT RenderWidget
   float popup_origin_scale_for_emulation_;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
-  std::unique_ptr<ResizingModeSelector> resizing_mode_selector_;
 
   // Lists of RenderFrameProxy objects that need to be notified of
   // compositing-related events (e.g. DidCommitCompositorFrame).

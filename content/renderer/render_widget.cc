@@ -73,7 +73,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/resizing_mode_selector.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_sync_message.h"
@@ -421,7 +420,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       monitor_composition_info_(false),
       popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
-      resizing_mode_selector_(new ResizingModeSelector()),
       has_host_context_menu_location_(false),
       has_focus_(false),
       for_child_local_root_frame_(false),
@@ -777,8 +775,41 @@ void RenderWidget::OnSynchronizeVisualProperties(
     bottom_controls_height_ = params.bottom_controls_height;
   }
 
-  if (!resizing_mode_selector_->ShouldAbortOnResize(this, params)) {
+  bool ignore_resize_ipc = false;
+  if (synchronous_resize_mode_for_testing_) {
+    // We can ignore browser-initialized resizing during synchronous
+    // (renderer-controlled) mode, unless it is switching us to/from
+    // fullsreen mode or changing the device scale factor.
+    // TODO(danakj): Does the browser actually change DSF inside a web test??
+    // TODO(danakj): Isn't the display mode check redundant with the fullscreen
+    // one?
+    if (params.is_fullscreen_granted == is_fullscreen_granted_ &&
+        params.display_mode == display_mode_ &&
+        params.screen_info.device_scale_factor ==
+            screen_info_.device_scale_factor)
+      ignore_resize_ipc = true;
+  }
+
+  // When controlling the size in the renderer, we should ignore sizes given by
+  // the browser IPC here.
+  // TODO(danakj): There are many things also being ignored that aren't the
+  // widget's size params. It works because tests that use this mode don't
+  // change those parameters, I guess. But it's more complicated then because it
+  // looks like they are related to sync resize mode. Let's move them out of
+  // this block.
+  // TODO(danakj): It would be nice if we can still use the emulator to emulate
+  // things other than the size if we are in sync resize mode - if the emulator
+  // is even used in sync resize tests. It probably isn't though, so either way
+  // it'd be good to get the emulator out of this block (maybe by overwriting
+  // some of |params| in sync resize mode instead of just skipping the emulator.
+  if (!ignore_resize_ipc) {
     if (screen_metrics_emulator_) {
+      // This will call our SynchronizeVisualProperties() method with a
+      // different set of VisualProperties, holding emulated values. Though not
+      // all VisualProperties are modified by the metrics emulator, so it's a
+      // bit unclear to do this with the full structure. Anything it does not
+      // modify can be consumed directly here instead of in
+      // SynchronizeVisualProperties().
       screen_metrics_emulator_->OnSynchronizeVisualProperties(params);
     } else {
       if (!delegate()) {
@@ -1935,7 +1966,7 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
   WebRect window_rect = rect_in_screen;
   EmulatedToScreenRectIfNeeded(&window_rect);
 
-  if (resizing_mode_selector_->is_synchronous_mode()) {
+  if (synchronous_resize_mode_for_testing_) {
     // This is a web-test-only path. At one point, it was planned to be
     // removed. See https://crbug.com/309760.
     SetWindowRectSynchronously(window_rect);
@@ -2523,7 +2554,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
       size_.height() != new_size_in_window.height) {
     size_ = gfx::Size(new_size_in_window.width, new_size_in_window.height);
 
-    if (resizing_mode_selector_->is_synchronous_mode()) {
+    if (synchronous_resize_mode_for_testing_) {
       gfx::Rect new_pos(WindowRect().x, WindowRect().y, size_.width(),
                         size_.height());
       widget_screen_rect_ = new_pos;
@@ -3324,7 +3355,7 @@ void RenderWidget::PageScaleFactorChanged(float page_scale_factor) {
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
-  resizing_mode_selector_->set_is_synchronous_mode(enable);
+  synchronous_resize_mode_for_testing_ = enable;
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
