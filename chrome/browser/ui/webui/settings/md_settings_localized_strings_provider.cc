@@ -1544,11 +1544,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                                                profile->GetPrefs()) != 0);
 
   syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+      ProfileSyncServiceFactory::GetSyncServiceForProfile(profile);
   if (sync_service && sync_service->CanSyncFeatureStart() &&
       sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
-    html_source->AddBoolean("isUsingSecondaryPassphrase",
-                            sync_service->IsUsingSecondaryPassphrase());
+    html_source->AddBoolean(
+        "isUsingSecondaryPassphrase",
+        sync_service->GetUserSettings()->IsUsingSecondaryPassphrase());
     html_source->AddBoolean(
         "uploadToGoogleActive",
         syncer::GetUploadToGoogleState(

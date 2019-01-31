@@ -42,7 +42,7 @@ PassphraseRequiredChecker::PassphraseRequiredChecker(
     : SingleClientStatusChangeChecker(service) {}
 
 bool PassphraseRequiredChecker::IsExitConditionSatisfied() {
-  return service()->IsPassphraseRequired();
+  return service()->GetUserSettings()->IsPassphraseRequired();
 }
 
 std::string PassphraseRequiredChecker::GetDebugMessage() const {
@@ -54,8 +54,8 @@ PassphraseAcceptedChecker::PassphraseAcceptedChecker(
     : SingleClientStatusChangeChecker(service) {}
 
 bool PassphraseAcceptedChecker::IsExitConditionSatisfied() {
-  return !service()->IsPassphraseRequired() &&
-         service()->IsUsingSecondaryPassphrase();
+  return !service()->GetUserSettings()->IsPassphraseRequired() &&
+         service()->GetUserSettings()->IsUsingSecondaryPassphrase();
 }
 
 std::string PassphraseAcceptedChecker::GetDebugMessage() const {

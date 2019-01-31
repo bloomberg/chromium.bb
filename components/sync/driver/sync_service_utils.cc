@@ -31,7 +31,7 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
   // some data types are never encrypted (e.g. DEVICE_INFO), even if the
   // "encrypt everything" setting is enabled.
   if (sync_service->GetUserSettings()->GetEncryptedDataTypes().Has(type) &&
-      sync_service->IsUsingSecondaryPassphrase()) {
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
     return UploadState::NOT_ACTIVE;
   }
 

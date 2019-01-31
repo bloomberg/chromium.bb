@@ -88,7 +88,7 @@ bool TestSyncUserSettings::IsEncryptEverythingEnabled() const {
 void TestSyncUserSettings::EnableEncryptEverything() {}
 
 ModelTypeSet TestSyncUserSettings::GetEncryptedDataTypes() const {
-  if (!service_->IsUsingSecondaryPassphrase()) {
+  if (!IsUsingSecondaryPassphrase()) {
     // PASSWORDS are always encrypted.
     return ModelTypeSet(PASSWORDS);
   }
@@ -103,11 +103,11 @@ bool TestSyncUserSettings::IsPassphraseRequired() const {
 }
 
 bool TestSyncUserSettings::IsPassphraseRequiredForDecryption() const {
-  return service_->IsPassphraseRequiredForDecryption();
+  return passphrase_required_for_decryption_;
 }
 
 bool TestSyncUserSettings::IsUsingSecondaryPassphrase() const {
-  return service_->IsUsingSecondaryPassphrase();
+  return using_secondary_passphrase_;
 }
 
 base::Time TestSyncUserSettings::GetExplicitPassphraseTime() const {
@@ -133,6 +133,14 @@ void TestSyncUserSettings::SetFirstSetupComplete(bool first_setup_complete) {
 
 void TestSyncUserSettings::SetPassphraseRequired(bool required) {
   passphrase_required_ = required;
+}
+
+void TestSyncUserSettings::SetPassphraseRequiredForDecryption(bool required) {
+  passphrase_required_for_decryption_ = required;
+}
+
+void TestSyncUserSettings::SetIsUsingSecondaryPassphrase(bool enabled) {
+  using_secondary_passphrase_ = enabled;
 }
 
 }  // namespace syncer

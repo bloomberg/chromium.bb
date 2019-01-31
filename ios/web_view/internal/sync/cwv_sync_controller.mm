@@ -166,7 +166,7 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (BOOL)isPassphraseNeeded {
-  return _syncService->IsPassphraseRequiredForDecryption();
+  return _syncService->GetUserSettings()->IsPassphraseRequiredForDecryption();
 }
 
 - (void)startSyncWithIdentity:(CWVIdentity*)identity

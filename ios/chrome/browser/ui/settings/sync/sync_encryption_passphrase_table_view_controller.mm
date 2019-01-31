@@ -87,7 +87,7 @@ const CGFloat kSpinnerButtonPadding = 18;
     syncer::SyncService* service =
         ProfileSyncServiceFactory::GetForBrowserState(browserState_);
     if (service->IsEngineInitialized() &&
-        service->IsUsingSecondaryPassphrase()) {
+        service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
       base::Time passphrase_time =
           service->GetUserSettings()->GetExplicitPassphraseTime();
       if (!passphrase_time.is_null()) {

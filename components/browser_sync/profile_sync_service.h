@@ -204,8 +204,6 @@ class ProfileSyncService : public syncer::SyncService,
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
-  bool IsPassphraseRequiredForDecryption() const override;
-  bool IsUsingSecondaryPassphrase() const override;
   syncer::UserShare* GetUserShare() const override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;

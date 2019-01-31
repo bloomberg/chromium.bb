@@ -90,14 +90,6 @@ const GoogleServiceAuthError& FakeSyncService::GetAuthError() const {
   return error_;
 }
 
-bool FakeSyncService::IsPassphraseRequiredForDecryption() const {
-  return false;
-}
-
-bool FakeSyncService::IsUsingSecondaryPassphrase() const {
-  return false;
-}
-
 UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }

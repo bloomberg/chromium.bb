@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/sync/driver/sync_token_status.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
@@ -113,7 +114,8 @@ SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
                     status.connection_status == syncer::CONNECTION_OK;
 
   state.passphrase_protected =
-      state.initialized && sync_service->IsUsingSecondaryPassphrase();
+      state.initialized &&
+      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase();
   if (consent_helper) {
     state.anonymized_data_collection_state =
         consent_helper->IsEnabled() ? DataCollectionState::kEnabled

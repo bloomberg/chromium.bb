@@ -36,7 +36,6 @@ class TestSyncService : public SyncService {
   void SetFirstSetupComplete(bool first_setup_complete);
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
-  void SetIsUsingSecondaryPassphrase(bool enabled);
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
   // Convenience versions of the above, for when the caller doesn't care about
   // the particular values in the snapshot, just whether there is one.
@@ -45,6 +44,7 @@ class TestSyncService : public SyncService {
   void SetDetailedSyncStatus(bool engine_available, SyncStatus status);
   void SetPassphraseRequired(bool required);
   void SetPassphraseRequiredForDecryption(bool required);
+  void SetIsUsingSecondaryPassphrase(bool enabled);
 
   // SyncService implementation.
   syncer::SyncUserSettings* GetUserSettings() override;
@@ -74,9 +74,6 @@ class TestSyncService : public SyncService {
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
-
-  bool IsPassphraseRequiredForDecryption() const override;
-  bool IsUsingSecondaryPassphrase() const override;
 
   UserShare* GetUserShare() const override;
 
@@ -113,9 +110,6 @@ class TestSyncService : public SyncService {
 
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;
-
-  bool using_secondary_passphrase_ = false;
-  bool passphrase_required_for_decryption_ = false;
 
   bool detailed_sync_status_engine_available_ = false;
   SyncStatus detailed_sync_status_;

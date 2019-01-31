@@ -62,8 +62,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   EXPECT_FALSE(GetSyncService(kDecryptingClientId)
                    ->GetUserSettings()
                    ->SetDecryptionPassphrase("incorrect passphrase"));
-  EXPECT_TRUE(
-      GetSyncService(kDecryptingClientId)->IsPassphraseRequiredForDecryption());
+  EXPECT_TRUE(GetSyncService(kDecryptingClientId)
+                  ->GetUserSettings()
+                  ->IsPassphraseRequiredForDecryption());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest, ClientsCanSyncData) {

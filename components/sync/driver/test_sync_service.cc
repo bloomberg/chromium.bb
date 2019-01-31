@@ -83,10 +83,6 @@ void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
   active_data_types_ = types;
 }
 
-void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
-  using_secondary_passphrase_ = enabled;
-}
-
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
 }
@@ -110,7 +106,11 @@ void TestSyncService::SetPassphraseRequired(bool required) {
 }
 
 void TestSyncService::SetPassphraseRequiredForDecryption(bool required) {
-  passphrase_required_for_decryption_ = required;
+  user_settings_.SetPassphraseRequiredForDecryption(required);
+}
+
+void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
+  user_settings_.SetIsUsingSecondaryPassphrase(enabled);
 }
 
 SyncUserSettings* TestSyncService::GetUserSettings() {
@@ -186,14 +186,6 @@ void TestSyncService::RemoveObserver(SyncServiceObserver* observer) {}
 
 bool TestSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return false;
-}
-
-bool TestSyncService::IsPassphraseRequiredForDecryption() const {
-  return passphrase_required_for_decryption_;
-}
-
-bool TestSyncService::IsUsingSecondaryPassphrase() const {
-  return using_secondary_passphrase_;
 }
 
 UserShare* TestSyncService::GetUserShare() const {

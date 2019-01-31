@@ -49,9 +49,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(AddObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));
 
-  bool IsPassphraseRequiredForDecryption() const override;
-  bool IsUsingSecondaryPassphrase() const override;
-
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
 
   MOCK_CONST_METHOD1(QueryDetailedSyncStatus,
