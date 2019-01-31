@@ -20,6 +20,7 @@
 #include "content/public/common/screen_info.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
