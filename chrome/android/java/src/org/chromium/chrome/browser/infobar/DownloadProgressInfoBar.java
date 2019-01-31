@@ -13,12 +13,13 @@ import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * An {@link InfoBar} to provide information about currently running downloads.
@@ -151,7 +152,7 @@ public class DownloadProgressInfoBar extends InfoBar {
     }
 
     private void restartIconAnimation() {
-        ThreadUtils.postOnUiThread(() -> {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (mAnimatedDrawable == null) return;
             mAnimatedDrawable.start();
         });

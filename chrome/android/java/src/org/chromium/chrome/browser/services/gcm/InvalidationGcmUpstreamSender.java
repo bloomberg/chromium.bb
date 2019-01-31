@@ -19,10 +19,12 @@ import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderServic
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.sync.SyncConstants;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -40,7 +42,7 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
     public void deliverMessage(final String to, final Bundle data) {
         final Bundle dataToSend = createDeepCopy(data);
 
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 doDeliverMessage(ContextUtils.getApplicationContext(), to, dataToSend);

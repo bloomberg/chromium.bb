@@ -45,6 +45,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -68,6 +69,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -559,7 +561,7 @@ public class CustomTabsConnection {
             return false;
         }
 
-        ThreadUtils.postOnUiThread(() -> {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             doMayLaunchUrlOnUiThread(
                     lowConfidence, session, uid, urlString, extras, otherLikelyBundles, true);
         });
@@ -579,7 +581,7 @@ public class CustomTabsConnection {
             if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                             .isStartupSuccessfullyCompleted()) {
                 if (retryIfNotLoaded) {
-                    ThreadUtils.postOnUiThread(() -> {
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                         doMayLaunchUrlOnUiThread(lowConfidence, session, uid, urlString, extras,
                                 otherLikelyBundles, false);
                     });
@@ -684,7 +686,7 @@ public class CustomTabsConnection {
         if (!mClientManager.bindToPostMessageServiceForSession(session)) return false;
 
         final int uid = Binder.getCallingUid();
-        ThreadUtils.postOnUiThread(() -> {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             // If the API is not enabled, we don't set the post message origin, which will avoid
             // PostMessageHandler initialization and disallow postMessage calls.
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_POST_MESSAGE_API)) return;

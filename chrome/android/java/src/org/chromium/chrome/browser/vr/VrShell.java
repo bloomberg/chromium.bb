@@ -32,6 +32,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -54,6 +55,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -569,7 +571,7 @@ public class VrShell extends GvrLayout
                     @Override
                     public void onRequestPermissionsResult(
                             String[] permissions, int[] grantResults) {
-                        ThreadUtils.postOnUiThread(new Runnable() {
+                        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                             @Override
                             public void run() {
                                 VrShellDelegate.enterVrIfNecessary();

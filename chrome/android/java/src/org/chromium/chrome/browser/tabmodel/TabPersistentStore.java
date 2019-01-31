@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -33,6 +34,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -1244,7 +1246,7 @@ public class TabPersistentStore extends TabPersister {
                             TimeUnit.MILLISECONDS);
                 }
 
-                ThreadUtils.postOnUiThread(new Runnable() {
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                     @Override
                     public void run() {
                         // This eventually calls serializeTabModelSelector() which much be called

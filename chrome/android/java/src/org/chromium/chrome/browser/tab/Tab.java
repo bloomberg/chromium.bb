@@ -34,11 +34,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActionModeCallback;
@@ -100,6 +100,7 @@ import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -2867,7 +2868,7 @@ public class Tab
             mDownloadIPHBubble.addOnDismissListener(new OnDismissListener() {
                 @Override
                 public void onDismiss() {
-                    ThreadUtils.postOnUiThread(new Runnable() {
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                         @Override
                         public void run() {
                             hideMediaDownloadInProductHelp();

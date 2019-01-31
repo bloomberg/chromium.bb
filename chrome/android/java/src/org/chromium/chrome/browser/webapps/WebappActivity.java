@@ -25,11 +25,11 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -202,13 +203,14 @@ public class WebappActivity extends SingleTabActivity {
                         WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
                 if (WebappActivity.this.isActivityFinishing()) return;
                 if (mainView != null) {
-                    ThreadUtils.postOnUiThread(() -> {
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                         if (WebappActivity.this.isActivityFinishing()) return;
                         onLayoutInflated(mainView);
                     });
                 } else {
                     if (WebappActivity.this.isActivityFinishing()) return;
-                    ThreadUtils.postOnUiThread(() -> WebappActivity.super.doLayoutInflation());
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                            () -> WebappActivity.super.doLayoutInflation());
                 }
             }
         }

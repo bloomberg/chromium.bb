@@ -22,6 +22,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * This class detects screenshots by monitoring the screenshots directory on internal and external
@@ -81,7 +83,7 @@ public class ScreenshotMonitor {
 
             if (!doesChangeLookLikeScreenshot(uri)) return;
 
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     if (mScreenshotMonitor == null) return;

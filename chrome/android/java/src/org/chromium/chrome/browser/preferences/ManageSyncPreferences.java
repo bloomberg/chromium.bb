@@ -23,9 +23,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -187,7 +188,7 @@ public class ManageSyncPreferences extends PreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object o) {
         // A change to Preference state hasn't been applied yet. Defer
         // updateSyncStateFromSelectedModelTypes so it gets the updated state from isChecked().
-        ThreadUtils.postOnUiThread(this::updateSyncStateFromSelectedModelTypes);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncStateFromSelectedModelTypes);
         return true;
     }
 
@@ -201,7 +202,7 @@ public class ManageSyncPreferences extends PreferenceFragment
     public void syncStateChanged() {
         // This is invoked synchronously from ProfileSyncService.setChosenDataTypes, postpone the
         // update to let updateSyncStateFromSelectedModelTypes finish saving the state.
-        ThreadUtils.postOnUiThread(this::updateSyncPreferences);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
     }
 
     /**
@@ -232,7 +233,7 @@ public class ManageSyncPreferences extends PreferenceFragment
                 mSyncEverything.isChecked(), getSelectedModelTypes());
         PersonalDataManager.setPaymentsIntegrationEnabled(mSyncPaymentsIntegration.isChecked());
         // Some calls to setChosenDataTypes don't trigger syncStateChanged, so schedule update here.
-        ThreadUtils.postOnUiThread(this::updateSyncPreferences);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
     }
 
     /**

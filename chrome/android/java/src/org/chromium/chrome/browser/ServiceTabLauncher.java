@@ -15,8 +15,8 @@ import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -73,7 +74,8 @@ public class ServiceTabLauncher {
         // Note that this is used by PaymentRequestEvent.openWindow().
         if (disposition == WindowOpenDisposition.NEW_POPUP) {
             if (!createPopupCustomTab(requestId, url, incognito)) {
-                ThreadUtils.postOnUiThread(() -> onWebContentsForRequestAvailable(requestId, null));
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                        () -> onWebContentsForRequestAvailable(requestId, null));
             }
             return;
         }

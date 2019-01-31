@@ -34,6 +34,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -55,6 +56,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -278,7 +280,7 @@ public class TrustedCdnPublisherUrlTest {
                         ChromeTabbedActivity.class.getName(), /* result = */ null, false);
         CustomTabActivity customTabActivity = mCustomTabActivityTestRule.getActivity();
         final Tab tab = customTabActivity.getActivityTab();
-        ThreadUtils.postOnUiThread(() -> {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             Assert.assertEquals(publisherUrl, tab.getTrustedCdnPublisherUrl());
             customTabActivity.openCurrentUrlInBrowser(true);
             Assert.assertNull(customTabActivity.getActivityTab());

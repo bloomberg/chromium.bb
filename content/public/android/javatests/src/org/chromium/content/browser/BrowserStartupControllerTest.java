@@ -18,8 +18,10 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Test of BrowserStartupController
@@ -71,7 +73,7 @@ public class BrowserStartupControllerTest {
 
         private int kickOffStartup(boolean startServiceManagerOnly) {
             // Post to the UI thread to emulate what would happen in a real scenario.
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     if (!mServiceManagerStarted) {

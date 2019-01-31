@@ -19,6 +19,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.memory.MemoryPressureMonitor;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -70,7 +72,7 @@ public class SharedStatics {
 
     public void freeMemoryForTests() {
         if (ActivityManager.isRunningInTestHarness()) {
-            ThreadUtils.postOnUiThread(() -> {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 // This variable is needed to prevent weird formatting by "git cl format".
                 MemoryPressureMonitor pressureMonitor = MemoryPressureMonitor.INSTANCE;
                 pressureMonitor.notifyPressure(MemoryPressureLevel.CRITICAL);

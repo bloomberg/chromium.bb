@@ -11,7 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -158,7 +160,7 @@ public class ChainedTasksTest {
 
         tasks.start(false);
         Assert.assertTrue(secondTaskFinished.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        ThreadUtils.postOnUiThread(new TestRunnable(messages, "High Priority"));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new TestRunnable(messages, "High Priority"));
         waitForHighPriorityTask.release();
 
         Assert.assertTrue(finished.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));

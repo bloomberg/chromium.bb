@@ -31,8 +31,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -52,6 +52,7 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.components.sync.ProtocolErrorClientAction;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -187,7 +188,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             SyncPreferenceUtils.enableSync((boolean) newValue);
             // Must be done asynchronously because the switch state isn't updated
             // until after this function exits.
-            ThreadUtils.postOnUiThread(this::updateSyncStateFromSwitch);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncStateFromSwitch);
             return true;
         });
 
@@ -210,13 +211,13 @@ public class SyncCustomizationFragment extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference == mSyncEverything) {
-            ThreadUtils.postOnUiThread(this::updateDataTypeState);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateDataTypeState);
             return true;
         }
         if (isSyncTypePreference(preference)) {
             final boolean syncAutofillToggled = preference == mSyncAutofill;
             final boolean preferenceChecked = (boolean) newValue;
-            ThreadUtils.postOnUiThread(() -> {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 if (syncAutofillToggled) {
                     // If the user checks the autofill sync checkbox, then enable and check the
                     // payments integration checkbox.

@@ -17,13 +17,14 @@ import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
@@ -126,7 +127,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             List<Pair<Integer, List<ContextMenuItem>>> items =
                     mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
             if (items.isEmpty()) {
-                ThreadUtils.postOnUiThread(mOnMenuClosed);
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
                 return;
             }
 
@@ -259,7 +260,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
 
         if (items.isEmpty()) {
-            ThreadUtils.postOnUiThread(mOnMenuClosed);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
             return;
         }
         ContextMenuUi menuUi = new PlatformContextMenuUi(menu);

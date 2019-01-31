@@ -113,7 +113,6 @@ public class UiThreadSchedulerTest {
                     Assert.assertTrue(ThreadUtils.runningOnUiThread());
                 }
             });
-
             SchedulerTestHelpers.postTaskAndBlockUntilRun(uiThreadTaskRunner);
         } finally {
             uiThreadTaskRunner.destroy();

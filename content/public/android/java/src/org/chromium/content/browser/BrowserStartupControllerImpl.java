@@ -20,8 +20,10 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.resources.ResourceExtractor;
 
 import java.lang.annotation.Retention;
@@ -130,7 +132,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         if (BuildInfo.isDebugAndroid()) {
             // Only set up the tracing broadcast receiver on debug builds of the OS. Normal tracing
             // should use the DevTools API.
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     addStartupCompletedObserver(new StartupCallback() {

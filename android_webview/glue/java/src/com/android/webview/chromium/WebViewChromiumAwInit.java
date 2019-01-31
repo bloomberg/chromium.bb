@@ -48,6 +48,8 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -280,7 +282,7 @@ public class WebViewChromiumAwInit {
 
         // We must post to the UI thread to cover the case that the user has invoked Chromium
         // startup by using the (thread-safe) CookieManager rather than creating a WebView.
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 synchronized (mLock) {
@@ -457,7 +459,7 @@ public class WebViewChromiumAwInit {
                 return;
             }
 
-            ThreadUtils.postOnUiThread(() -> FieldTrialList.logActiveTrials());
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> FieldTrialList.logActiveTrials());
         });
     }
 

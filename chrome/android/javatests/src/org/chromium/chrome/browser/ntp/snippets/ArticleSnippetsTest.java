@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -66,6 +67,7 @@ import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAni
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.IOException;
@@ -492,7 +494,7 @@ public class ArticleSnippetsTest {
         public void makeFaviconRequest(
                 SnippetArticle suggestion, final Callback<Bitmap> faviconCallback) {
             // Run the callback asynchronously in case the caller made that assumption.
-            ThreadUtils.postOnUiThread(() -> {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 // Return an arbitrary drawable.
                 faviconCallback.onResult(getBitmap(R.drawable.star_green));
             });
@@ -502,7 +504,7 @@ public class ArticleSnippetsTest {
         public void makeLargeIconRequest(final String url, final int largeIconSizePx,
                 final LargeIconBridge.LargeIconCallback callback) {
             // Run the callback asynchronously in case the caller made that assumption.
-            ThreadUtils.postOnUiThread(() -> {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                 // Return an arbitrary drawable.
                 callback.onLargeIconAvailable(
                         getBitmap(R.drawable.star_green), largeIconSizePx, true, IconType.INVALID);
