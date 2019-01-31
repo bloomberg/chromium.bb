@@ -114,7 +114,8 @@
 <!--
     Map a font path as the path "as-path"
 -->
-<!ELEMENT remap-dir
+<!ELEMENT remap-dir (#PCDATA)>
+<!ATTLIST remap-dir
           as-path   CDATA                       #REQUIRED
           prefix    (default|xdg|relative|cwd)  "default"
 	  xml:space (default|preserve)          "preserve">
