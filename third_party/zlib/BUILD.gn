@@ -120,6 +120,9 @@ config("zlib_inflate_chunk_simd_config") {
 
   if (use_arm_neon_optimizations) {
     defines = [ "INFLATE_CHUNK_SIMD_NEON" ]
+    if (current_cpu == "arm64") {
+      defines += [ "INFLATE_CHUNK_READ_64LE" ]
+    }
   }
 }
 
