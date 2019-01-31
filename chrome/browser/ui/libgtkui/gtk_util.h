@@ -184,6 +184,9 @@ SkColor GetSelectionBgColor(const std::string& css_selector);
 // Get the color of the GtkSeparator specified by |css_selector|.
 SkColor GetSeparatorColor(const std::string& css_selector);
 
+// Get a GtkSettings property as a C++ string.
+std::string GetGtkSettingsStringProperty(GtkSettings* settings,
+                                         const gchar* prop_name);
 }  // namespace libgtkui
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UTIL_H_
