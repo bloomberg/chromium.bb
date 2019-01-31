@@ -47,15 +47,15 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
+  gfx::Point CalculatePosition() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
   void RequestFocus() override;
-  void AddedToWidget() override;
+  bool HasFocus() const override;
   const char* GetClassName() const override;
-  gfx::Size CalculatePreferredSize() const override;
 
  private:
   LoginButton* bubble_opener_ = nullptr;

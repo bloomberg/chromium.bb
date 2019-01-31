@@ -74,5 +74,14 @@ views::Label* CreateBubbleLabel(const base::string16& message, SkColor color) {
   return label;
 }
 
+views::View* GetTopLevelParentView(views::View* view) {
+  views::View* v = view;
+
+  while (v->parent() != nullptr)
+    v = v->parent();
+
+  return v;
+}
+
 }  // namespace login_views_utils
 }  // namespace ash

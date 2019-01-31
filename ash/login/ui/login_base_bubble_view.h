@@ -17,7 +17,7 @@ namespace ash {
 class LoginBubbleHandler;
 
 // Base bubble view for login screen bubbles.
-class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView,
+class ASH_EXPORT LoginBaseBubbleView : public views::View,
                                        public ui::LayerAnimationObserver {
  public:
   // Without specifying a parent_window, the bubble will default to being in the
@@ -30,8 +30,6 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView,
   void Show();
   void Hide();
 
-  bool IsVisible();
-
   // Returns the button responsible for opening this bubble.
   virtual LoginButton* GetBubbleOpener() const;
 
@@ -40,11 +38,11 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView,
   // Change the persistence of the bubble.
   virtual void SetPersistent(bool persistent);
 
-  // views::BubbleDialogDelegateView:
-  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
-                                views::Widget* widget) const override;
-  int GetDialogButtons() const override;
+  // Determine the position of the bubble prior to showing.
+  virtual gfx::Point CalculatePosition();
+
   void SetAnchorView(views::View* anchor_view);
+  views::View* GetAnchorView() const { return anchor_view_; }
 
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
@@ -54,15 +52,13 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
-
-  // views::WidgetObserver:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
-  void OnWidgetBoundsChanged(views::Widget* widget,
-                             const gfx::Rect& new_bounds) override;
+  void Layout() override;
+  void OnBlur() override;
 
  private:
   void ScheduleAnimation(bool visible);
-  void EnsureInScreen();
+
+  views::View* anchor_view_;
 
   std::unique_ptr<LoginBubbleHandler> bubble_handler_;
 

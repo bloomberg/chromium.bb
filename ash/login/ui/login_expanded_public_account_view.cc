@@ -13,6 +13,7 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -415,20 +416,10 @@ class RightPaneView : public NonAccessibleView,
           current_user_->basic_user_info->account_id,
           selected_language_item_.value, selected_keyboard_item_.value);
     } else if (sender == language_selection_) {
-      if (language_menu_view_ && language_menu_view_->IsVisible()) {
+      DCHECK(language_menu_view_);
+      if (language_menu_view_->visible()) {
         language_menu_view_->Hide();
       } else {
-        if (language_menu_view_) {
-          language_menu_view_->GetWidget()->Close();
-          language_menu_view_ = nullptr;
-        }
-
-        language_menu_view_ = new LoginMenuView(
-            language_items_, language_selection_ /*anchor_view*/,
-            language_selection_ /*bubble_opener*/,
-            base::BindRepeating(&RightPaneView::OnLanguageSelected,
-                                weak_factory_.GetWeakPtr()));
-
         bool opener_had_focus = language_selection_->HasFocus();
 
         language_menu_view_->Show();
@@ -437,19 +428,10 @@ class RightPaneView : public NonAccessibleView,
           language_menu_view_->RequestFocus();
       }
     } else if (sender == keyboard_selection_) {
-      if (keyboard_menu_view_ && keyboard_menu_view_->IsVisible()) {
+      DCHECK(keyboard_menu_view_);
+      if (keyboard_menu_view_->visible()) {
         keyboard_menu_view_->Hide();
       } else {
-        if (keyboard_menu_view_) {
-          keyboard_menu_view_->GetWidget()->Close();
-          keyboard_menu_view_ = nullptr;
-        }
-
-        keyboard_menu_view_ = new LoginMenuView(
-            keyboard_items_, keyboard_selection_ /*anchor_view*/,
-            keyboard_selection_ /*bubble_opener*/,
-            base::BindRepeating(&RightPaneView::OnKeyboardSelected,
-                                weak_factory_.GetWeakPtr()));
         bool opener_had_focus = keyboard_selection_->HasFocus();
 
         keyboard_menu_view_->Show();
@@ -496,7 +478,6 @@ class RightPaneView : public NonAccessibleView,
   }
 
   void OnLanguageSelected(LoginMenuView::Item item) {
-    language_menu_view_ = nullptr;
     language_changed_by_user_ = true;
     selected_language_item_ = item;
     language_selection_->SetText(base::UTF8ToUTF16(item.title));
@@ -511,7 +492,6 @@ class RightPaneView : public NonAccessibleView,
   }
 
   void OnKeyboardSelected(LoginMenuView::Item item) {
-    keyboard_menu_view_ = nullptr;
     selected_keyboard_item_ = item;
     keyboard_selection_->SetText(base::UTF8ToUTF16(item.title));
   }
@@ -534,6 +514,14 @@ class RightPaneView : public NonAccessibleView,
       if (selected_language_item_.value == locale->language_code)
         selected_language_item_ = item;
     }
+
+    language_menu_view_ = new LoginMenuView(
+        language_items_, language_selection_ /*anchor_view*/,
+        language_selection_ /*bubble_opener*/,
+        base::BindRepeating(&RightPaneView::OnLanguageSelected,
+                            weak_factory_.GetWeakPtr()));
+    login_views_utils::GetTopLevelParentView(this)->AddChildView(
+        language_menu_view_);
   }
 
   void PopulateKeyboardItems(
@@ -550,6 +538,14 @@ class RightPaneView : public NonAccessibleView,
       if (keyboard->selected)
         selected_keyboard_item_ = item;
     }
+
+    keyboard_menu_view_ = new LoginMenuView(
+        keyboard_items_, keyboard_selection_ /*anchor_view*/,
+        keyboard_selection_ /*bubble_opener*/,
+        base::BindRepeating(&RightPaneView::OnKeyboardSelected,
+                            weak_factory_.GetWeakPtr()));
+    login_views_utils::GetTopLevelParentView(this)->AddChildView(
+        keyboard_menu_view_);
   }
 
   LoginBaseBubbleView* GetLanguageMenuView() { return language_menu_view_; }
@@ -558,16 +554,6 @@ class RightPaneView : public NonAccessibleView,
 
   // Close language and keyboard menus and reset local states.
   void Reset() {
-    if (language_menu_view_) {
-      language_menu_view_->GetWidget()->Close();
-      language_menu_view_ = nullptr;
-    }
-
-    if (keyboard_menu_view_) {
-      keyboard_menu_view_->GetWidget()->Close();
-      keyboard_menu_view_ = nullptr;
-    }
-
     show_advanced_changed_by_user_ = false;
     language_changed_by_user_ = false;
   }
@@ -587,11 +573,9 @@ class RightPaneView : public NonAccessibleView,
   views::StyledLabel* learn_more_label_ = nullptr;
   MonitoringWarningView* monitoring_warning_view_ = nullptr;
 
-  // |language_menu_view_| and |keyboard_menu_view_| are owned by their
-  // respective bubble widgets, which are always initialized with a Show() call
-  // after construction. menu_view_->GetWidget()->Close() is called on Reset()
-  // and before creating a new instance to avoid memory leaks. The views
-  // themselves should never be deleted directly.
+  // |language_menu_view_| and |keyboard_menu_view_| are parented by the top
+  // level view, either LockContentsView or LockDebugView. This allows the menu
+  // items to be clicked outside the bounds of the right pane view.
   LoginMenuView* language_menu_view_ = nullptr;
   LoginMenuView* keyboard_menu_view_ = nullptr;
 
@@ -730,20 +714,14 @@ void LoginExpandedPublicAccountView::ProcessPressedEvent(
 
   // Ignore press event inside the language and keyboard menu.
   LoginBaseBubbleView* language_menu_view = right_pane_->GetLanguageMenuView();
-  LoginBaseBubbleView* keyboard_menu_view = right_pane_->GetKeyboardMenuView();
-  if (language_menu_view) {
-    const gfx::Rect bounds =
-        language_menu_view->GetWidget()->GetWindowBoundsInScreen();
-    if (bounds.Contains(event->root_location()))
-      return;
-  }
+  if (language_menu_view &&
+      language_menu_view->GetBoundsInScreen().Contains(event->root_location()))
+    return;
 
-  if (keyboard_menu_view) {
-    const gfx::Rect bounds =
-        keyboard_menu_view->GetWidget()->GetWindowBoundsInScreen();
-    if (bounds.Contains(event->root_location()))
-      return;
-  }
+  LoginBaseBubbleView* keyboard_menu_view = right_pane_->GetKeyboardMenuView();
+  if (keyboard_menu_view &&
+      keyboard_menu_view->GetBoundsInScreen().Contains(event->root_location()))
+    return;
 
   Hide();
 }

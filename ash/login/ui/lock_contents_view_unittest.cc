@@ -726,7 +726,7 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
 
   LockContentsView::TestApi test_api(lock);
   // Creating lock screen does not show tooltip bubble.
-  EXPECT_FALSE(test_api.tooltip_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.tooltip_bubble()->visible());
 
   // Show an icon with |autoshow_tooltip| is false. Tooltip bubble is not
   // activated.
@@ -735,13 +735,13 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
   icon->autoshow_tooltip = false;
   DataDispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
                                        icon);
-  EXPECT_FALSE(test_api.tooltip_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.tooltip_bubble()->visible());
 
   // Show icon with |autoshow_tooltip| set to true. Tooltip bubble is shown.
   icon->autoshow_tooltip = true;
   DataDispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
                                        icon);
-  EXPECT_TRUE(test_api.tooltip_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.tooltip_bubble()->visible());
 }
 
 // Verifies that easy unlock icon state persists when changing auth user.
@@ -860,12 +860,12 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
 
   // The error bubble is expected to close on a user action - e.g. if they start
   // typing the password again.
   generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  EXPECT_FALSE(test_api.auth_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
 }
 
 // Gaia is never shown on lock, no mater how many times auth fails.
@@ -957,17 +957,17 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 
   // Change detachable base to a base different than the one previously used by
   // the user - verify that a detachable base error bubble is shown.
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // Verify that the bubble is not hidden if the user starts typing.
   generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // Switching to the user that doesn't have previously used detachable base
   // (and should thus not be warned about the detachable base missmatch) should
@@ -978,7 +978,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
       secondary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 
   // The error should be shown again when switching back to the primary user.
   LoginAuthUserView::TestApi primary_test_api(
@@ -987,7 +987,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
       primary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
   EXPECT_FALSE(primary_test_api.password_view()->HasFocus());
 
   EXPECT_EQ("1234",
@@ -1036,16 +1036,16 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 
   // Show notification if unauthenticated base is attached.
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kNotAuthenticated, "");
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // Verify that the bubble is not hidden if the user starts typing.
   generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // Switching to another user should not hide the error bubble.
   LoginAuthUserView::TestApi secondary_test_api(
@@ -1054,7 +1054,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
       secondary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
   EXPECT_FALSE(secondary_test_api.password_view()->HasFocus());
 
   // The last trusted detachable used by the user should not be overriden by
@@ -1103,12 +1103,12 @@ TEST_F(LockContentsViewUnitTest,
   // the user - verify that a detachable base error bubble is shown.
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // The notification should be hidden if the base gets detached.
   detachable_base_model->SetPairingStatus(DetachableBasePairingStatus::kNone,
                                           "");
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 }
 
 TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
@@ -1136,7 +1136,7 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
@@ -1149,8 +1149,8 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->IsVisible());
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 
   // Change detachable base to a base different than the one previously used by
   // the user - verify that a detachable base error bubble is shown, and the
@@ -1158,8 +1158,8 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
-  EXPECT_FALSE(test_api.auth_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
 }
 
 TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
@@ -1187,7 +1187,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
 
   // Change detachable base to a base different than the one previously used by
   // the user - verify that a detachable base error bubble is shown, and the
@@ -1195,7 +1195,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   // Detachable base error should not be hidden.
@@ -1212,15 +1212,15 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->IsVisible());
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
 
   // User action, like pressing a key should close the auth error bubble, but
   // not the detachable base error bubble.
   generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->IsVisible());
-  EXPECT_FALSE(test_api.auth_error_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
 }
 
 TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
@@ -2039,19 +2039,19 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Creating lock screen does not show warning banner bubble.
-  EXPECT_FALSE(test_api.warning_banner_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.warning_banner_bubble()->visible());
 
   // Verifies that a warning banner is shown by giving a non-empty message.
   DataDispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
-  EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->visible());
 
   // Verifies that a warning banner is hidden by HideWarningBanner().
   DataDispatcher()->HideWarningBanner();
-  EXPECT_FALSE(test_api.warning_banner_bubble()->IsVisible());
+  EXPECT_FALSE(test_api.warning_banner_bubble()->visible());
 
   // Shows a warning banner again.
   DataDispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
-  EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->visible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   // The warning banner should not be hidden.
@@ -2068,8 +2068,8 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->IsVisible());
-  EXPECT_TRUE(test_api.warning_banner_bubble()->IsVisible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->visible());
 }
 
 TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {

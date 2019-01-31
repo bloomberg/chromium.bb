@@ -17,48 +17,20 @@
 namespace ash {
 namespace {
 
-// Vertical spacing between the anchor view and error bubble.
-constexpr int kAnchorViewErrorBubbleVerticalSpacingDp = 48;
-
 // The size of the alert icon in the error bubble.
 constexpr int kAlertIconSizeDp = 20;
 
-// Margin/inset of the entries for the user menu.
-constexpr int kUserMenuMarginWidth = 14;
-constexpr int kUserMenuMarginHeight = 18;
-
-// Spacing between the child view inside the bubble view.
-constexpr int kBubbleBetweenChildSpacingDp = 6;
-
 }  // namespace
 
-// static
-LoginErrorBubble* LoginErrorBubble::CreateDefault() {
-  aura::Window* menu_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_MenuContainer);
-  return new LoginErrorBubble(nullptr /* content */, nullptr /*anchor_view*/,
-                              menu_container /*parent_container*/,
-                              false /*is_persistent*/);
-}
+LoginErrorBubble::LoginErrorBubble()
+    : LoginErrorBubble(nullptr /*content*/,
+                       nullptr /*anchor_view*/,
+                       false /*is_persistent*/) {}
 
 LoginErrorBubble::LoginErrorBubble(views::View* content,
                                    views::View* anchor_view,
-                                   aura::Window* parent_container,
                                    bool is_persistent)
-    : LoginBaseBubbleView(anchor_view, parent_container),
-      is_persistent_(is_persistent) {
-  set_anchor_view_insets(
-      gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
-
-  gfx::Insets margins(kUserMenuMarginHeight, kUserMenuMarginWidth);
-
-  set_margins(gfx::Insets(0, margins.left(), 0, margins.right()));
-
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
-      gfx::Insets(margins.top(), 0, margins.bottom(), 0),
-      kBubbleBetweenChildSpacingDp));
-
+    : LoginBaseBubbleView(anchor_view), is_persistent_(is_persistent) {
   auto* alert_view = new NonAccessibleView("AlertIconContainer");
   alert_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
@@ -91,6 +63,16 @@ bool LoginErrorBubble::IsPersistent() const {
 
 void LoginErrorBubble::SetPersistent(bool persistent) {
   is_persistent_ = persistent;
+}
+
+gfx::Size LoginErrorBubble::CalculatePreferredSize() const {
+  gfx::Size size;
+
+  if (GetAnchorView())
+    size.set_width(GetAnchorView()->width());
+
+  size.set_height(GetHeightForWidth(size.width()));
+  return size;
 }
 
 const char* LoginErrorBubble::GetClassName() const {

@@ -15,15 +15,6 @@ namespace ash {
 namespace {
 // Total width of the bubble view.
 constexpr int kBubbleTotalWidthDp = 178;
-
-// Horizontal margin of the bubble view.
-constexpr int kBubbleHorizontalMarginDp = 14;
-
-// Top margin of the bubble view.
-constexpr int kBubbleTopMarginDp = 13;
-
-// Bottom margin of the bubble view.
-constexpr int kBubbleBottomMarginDp = 18;
 }  // namespace
 
 class LoginBaseBubbleViewTest : public LoginTestBase {
@@ -36,6 +27,7 @@ class LoginBaseBubbleViewTest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     anchor_ = new views::View();
+    anchor_->SetSize(gfx::Size(0, 25));
     container_ = new views::View();
     container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
@@ -50,6 +42,8 @@ class LoginBaseBubbleViewTest : public LoginTestBase {
     bubble_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     bubble_->AddChildView(label);
+
+    container_->AddChildView(bubble_);
   }
 
   LoginBaseBubbleView* bubble_;
@@ -61,58 +55,54 @@ class LoginBaseBubbleViewTest : public LoginTestBase {
 };
 
 TEST_F(LoginBaseBubbleViewTest, BasicProperties) {
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 
   bubble_->Show();
-  EXPECT_TRUE(bubble_->IsVisible());
+  EXPECT_TRUE(bubble_->visible());
 
-  EXPECT_EQ(bubble_->GetDialogButtons(), ui::DIALOG_BUTTON_NONE);
   EXPECT_EQ(bubble_->width(), kBubbleTotalWidthDp);
-  EXPECT_EQ(bubble_->color(), SK_ColorBLACK);
-  EXPECT_EQ(bubble_->margins(),
-            gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
-                        kBubbleBottomMarginDp, kBubbleHorizontalMarginDp));
+  EXPECT_EQ(bubble_->background()->get_color(), SK_ColorBLACK);
 
   bubble_->Hide();
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 }
 
 TEST_F(LoginBaseBubbleViewTest, KeyEventHandling) {
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 
   // Verify that a random key event won't open the bubble.
   ui::test::EventGenerator* generator = GetEventGenerator();
   container_->RequestFocus();
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 
   // Verify that a key event will close the bubble if it is open.
   bubble_->Show();
-  EXPECT_TRUE(bubble_->IsVisible());
+  EXPECT_TRUE(bubble_->visible());
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 }
 
 TEST_F(LoginBaseBubbleViewTest, MouseEventHandling) {
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 
   // Verify that a random mouse event won't open the bubble.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(container_->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 
   // Verify that a click event on the bubble won't close it.
   bubble_->Show();
-  EXPECT_TRUE(bubble_->IsVisible());
+  EXPECT_TRUE(bubble_->visible());
   generator->MoveMouseTo(bubble_->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_TRUE(bubble_->IsVisible());
+  EXPECT_TRUE(bubble_->visible());
 
   // Verify that a click event outside the bubble will close it if it is open.
   generator->MoveMouseTo(anchor_->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(bubble_->IsVisible());
+  EXPECT_FALSE(bubble_->visible());
 }
 
 }  // namespace ash
