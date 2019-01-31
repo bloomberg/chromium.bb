@@ -421,6 +421,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions_*.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=793055)
+    self.Flaky('conformance/extensions/webgl-compressed-texture-s3tc.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=927407)
 
     # Passthrough command decoder / Linux / OpenGL / Intel
     self.Flaky('conformance/extensions/webgl-compressed-texture-s3tc.html',
