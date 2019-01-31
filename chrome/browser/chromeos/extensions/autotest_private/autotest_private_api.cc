@@ -1271,6 +1271,13 @@ void AutotestPrivateSendAssistantTextQueryFunction::OnHtmlResponse(
 
 void AutotestPrivateSendAssistantTextQueryFunction::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
+  // Only return a result to the caller and stop the timer when |result_|
+  // is not empty to avoid an early return before the entire interaction is
+  // completed. This happens when sending queries to modify device settings,
+  // e.g. "turn on bluetooth", which results in two rounds of interaction.
+  if (result_->empty())
+    return;
+
   if (resolution != AssistantInteractionResolution::kNormal) {
     Respond(Error("Interaction ends abnormally."));
     timeout_timer_.AbandonAndStop();
