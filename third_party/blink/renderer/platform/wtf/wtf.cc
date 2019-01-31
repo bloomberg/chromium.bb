@@ -73,7 +73,6 @@ void Initialize(void (*call_on_main_thread_function)(MainThreadFunction,
   CHECK(!g_initialized);
   g_initialized = true;
   g_is_main_thread = true;
-  InitializeCurrentThread();
   g_main_thread_identifier = CurrentThread();
 
   WTFThreadData::Initialize();
