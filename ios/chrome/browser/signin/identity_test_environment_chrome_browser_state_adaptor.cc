@@ -35,9 +35,7 @@ std::unique_ptr<KeyedService> BuildFakeSigninManager(
 }
 
 TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
-  return {{ios::GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
-          {ProfileOAuth2TokenServiceFactory::GetInstance(),
+  return {{ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeOAuth2TokenService)},
           {ios::SigninManagerFactory::GetInstance(),
            base::BindRepeating(&BuildFakeSigninManager)}};
