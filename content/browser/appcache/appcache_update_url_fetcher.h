@@ -33,7 +33,7 @@ class AppCacheUpdateJob::URLFetcher {
   ~URLFetcher();
   void Start();
   FetchType fetch_type() const { return fetch_type_; }
-  UpdateRequestBase* request() const { return request_.get(); }
+  UpdateURLLoaderRequest* request() const { return request_.get(); }
   const AppCacheEntry& existing_entry() const { return existing_entry_; }
   const std::string& manifest_data() const { return manifest_data_; }
   AppCacheResponseWriter* response_writer() const {
@@ -60,14 +60,13 @@ class AppCacheUpdateJob::URLFetcher {
   void OnResponseCompleted(int net_error);
   bool MaybeRetryRequest();
 
-  friend class UpdateURLRequest;
   friend class UpdateURLLoaderRequest;
 
   GURL url_;
   AppCacheUpdateJob* job_;
   FetchType fetch_type_;
   int retry_503_attempts_;
-  std::unique_ptr<UpdateRequestBase> request_;
+  std::unique_ptr<UpdateURLLoaderRequest> request_;
   AppCacheEntry existing_entry_;
   scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;
   std::string manifest_data_;
