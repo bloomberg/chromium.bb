@@ -45,6 +45,7 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_image_cache.h"
@@ -264,7 +265,7 @@ void OnMicroBenchmarkCompleted(CallbackAndContext* callback_and_context,
   }
 }
 
-void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
+void RunCallbackHelper(CallbackAndContext* callback_and_context) {
   v8::Isolate* isolate = callback_and_context->isolate();
   v8::HandleScope scope(isolate);
   v8::Local<v8::Context> context = callback_and_context->GetContext();
@@ -275,6 +276,10 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
     frame->CallFunctionEvenIfScriptDisabled(callback, v8::Object::New(isolate),
                                             0, nullptr);
   }
+}
+
+void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
+  RunCallbackHelper(callback_and_context);
 }
 
 bool BeginSmoothScroll(GpuBenchmarkingContext* context,
@@ -473,6 +478,12 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
   }
 }
 
+void OnSwapCompletedHelper(CallbackAndContext* callback_and_context,
+                           blink::WebLayerTreeView::SwapResult,
+                           base::TimeTicks) {
+  RunCallbackHelper(callback_and_context);
+}
+
 // This function is only used for correctness testing of this experimental
 // feature; no need for it in release builds.
 // Also note:  You must execute Chrome with `--no-sandbox` and
@@ -575,7 +586,9 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
                  &GpuBenchmarking::GetGpuDriverBugWorkarounds)
       .SetMethod("startProfiling", &GpuBenchmarking::StartProfiling)
       .SetMethod("stopProfiling", &GpuBenchmarking::StopProfiling)
-      .SetMethod("freeze", &GpuBenchmarking::Freeze);
+      .SetMethod("freeze", &GpuBenchmarking::Freeze)
+      .SetMethod("addSwapCompletionEventListener",
+                 &GpuBenchmarking::AddSwapCompletionEventListener);
 }
 
 void GpuBenchmarking::SetNeedsDisplayOnAllLayers() {
@@ -1192,6 +1205,27 @@ void GpuBenchmarking::Freeze() {
   context.web_view()->SetIsHidden(/*hidden=*/true,
                                   /*is_initial_state=*/false);
   context.web_view()->SetPageFrozen(true);
+}
+
+bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
+  v8::Local<v8::Function> callback;
+  if (!GetArg(args, &callback))
+    return false;
+  if (!render_frame_)
+    return false;
+  LayerTreeView* layer_tree_view =
+      render_frame_->GetLocalRootRenderWidget()->layer_tree_view();
+  if (!layer_tree_view)
+    return false;
+  GpuBenchmarkingContext context;
+  if (!context.Init(true))
+    return false;
+
+  auto callback_and_context = base::MakeRefCounted<CallbackAndContext>(
+      args->isolate(), callback, context.web_frame()->MainWorldScriptContext());
+  layer_tree_view->NotifySwapTime(base::BindOnce(
+      &OnSwapCompletedHelper, base::RetainedRef(callback_and_context)));
+  return true;
 }
 
 }  // namespace content
