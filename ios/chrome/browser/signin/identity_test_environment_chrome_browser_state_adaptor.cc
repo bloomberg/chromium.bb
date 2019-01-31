@@ -8,13 +8,31 @@
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
-#include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 
 namespace {
+
+std::unique_ptr<KeyedService> BuildFakeSigninManager(
+    web::BrowserState* browser_state) {
+  ios::ChromeBrowserState* chrome_browser_state =
+      ios::ChromeBrowserState::FromBrowserState(browser_state);
+  std::unique_ptr<SigninManager> manager(new FakeSigninManager(
+      SigninClientFactory::GetForBrowserState(chrome_browser_state),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          chrome_browser_state),
+      ios::AccountTrackerServiceFactory::GetForBrowserState(
+          chrome_browser_state),
+      ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
+          chrome_browser_state)));
+  manager->Initialize(nullptr);
+  ios::SigninManagerFactory::GetInstance()
+      ->NotifyObserversOfSigninManagerCreationForTesting(manager.get());
+  return manager;
+}
 
 TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
   return {{ios::GaiaCookieManagerServiceFactory::GetInstance(),
@@ -22,7 +40,7 @@ TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
           {ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeOAuth2TokenService)},
           {ios::SigninManagerFactory::GetInstance(),
-           base::BindRepeating(&ios::BuildFakeSigninManager)}};
+           base::BindRepeating(&BuildFakeSigninManager)}};
 }
 
 }  // namespace
