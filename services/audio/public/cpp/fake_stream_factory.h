@@ -7,8 +7,11 @@
 
 #include <string>
 
+#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace audio {
