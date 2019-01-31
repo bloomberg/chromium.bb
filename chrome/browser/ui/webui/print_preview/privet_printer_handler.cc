@@ -191,7 +191,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
   printer_info_and_caps.SetDictionary(kSettingCapabilities,
                                       std::move(capabilities_copy));
   std::move(capabilities_callback_)
-      .Run(std::move(*ValidateCddForPrintPreview(printer_info_and_caps)));
+      .Run(ValidateCddForPrintPreview(std::move(printer_info_and_caps)));
   privet_capabilities_operation_.reset();
 }
 
