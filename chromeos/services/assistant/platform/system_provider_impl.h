@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "libassistant/shared/public/platform_system.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/device/public/mojom/battery_status.mojom.h"
 
 namespace chromeos {
 namespace assistant {
