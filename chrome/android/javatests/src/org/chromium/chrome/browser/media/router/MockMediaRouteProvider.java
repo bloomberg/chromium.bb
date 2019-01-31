@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.media.router;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,12 +89,10 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
         final ArrayList<MediaSink> sinks = new ArrayList<MediaSink>();
         sinks.add(new MediaSink(SINK_ID1, SINK_NAME1, null));
         sinks.add(new MediaSink(SINK_ID2, SINK_NAME2, null));
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mManager.onSinksReceived(sourceId, MockMediaRouteProvider.this, sinks);
-                }
-            }, mSinksObservedDelayMillis);
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
+                ()
+                        -> mManager.onSinksReceived(sourceId, MockMediaRouteProvider.this, sinks),
+                mSinksObservedDelayMillis);
     }
 
     @Override
@@ -112,13 +111,11 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
         if (mCreateRouteDelayMillis == 0) {
             doCreateRoute(sourceId, sinkId, presentationId, origin, tabId, nativeRequestId);
         } else {
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        doCreateRoute(
-                                sourceId, sinkId, presentationId, origin, tabId, nativeRequestId);
-                    }
-                }, mCreateRouteDelayMillis);
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
+                    ()
+                            -> doCreateRoute(sourceId, sinkId, presentationId, origin, tabId,
+                                    nativeRequestId),
+                    mCreateRouteDelayMillis);
         }
     }
 

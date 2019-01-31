@@ -14,11 +14,12 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.preferences.developer.TracingPreferences;
 import org.chromium.content_public.browser.TracingControllerAndroid;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
@@ -247,7 +248,7 @@ public class TracingController {
 
             TracingNotificationManager.updateTracingActiveNotification(pair.first);
 
-            ThreadUtils.postOnUiThreadDelayed(
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
                     () -> { updateBufferUsage(); }, UPDATE_BUFFER_USAGE_INTERVAL_MILLIS);
         });
     }
@@ -303,7 +304,7 @@ public class TracingController {
         // Delete the file after an hour. This won't work if the app quits in the meantime, so we
         // also check for old files when TraceController is created.
         File tracingTempFile = mTracingTempFile;
-        ThreadUtils.postOnUiThreadDelayed(() -> {
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
             new DeleteTempFileTask(tracingTempFile)
                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }, DELETE_AFTER_SHARE_TIMEOUT_MILLIS);

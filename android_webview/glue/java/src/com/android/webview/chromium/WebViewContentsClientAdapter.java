@@ -51,8 +51,9 @@ import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.ref.WeakReference;
 import java.security.Principal;
@@ -433,14 +434,11 @@ class WebViewContentsClientAdapter extends SharedWebViewContentsClientAdapter {
             // no further updates after onPageStarted, we'll fail the test by timing
             // out waiting for a Picture.
             if (mPictureListener != null) {
-                ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mPictureListener != null) {
-                            if (TRACE) Log.i(TAG, "onPageFinished-fake");
-                            mPictureListener.onNewPicture(mWebView,
-                                    mPictureListenerInvalidateOnly ? null : new Picture());
-                        }
+                PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
+                    if (mPictureListener != null) {
+                        if (TRACE) Log.i(TAG, "onPageFinished-fake");
+                        mPictureListener.onNewPicture(
+                                mWebView, mPictureListenerInvalidateOnly ? null : new Picture());
                     }
                 }, 100);
             }
