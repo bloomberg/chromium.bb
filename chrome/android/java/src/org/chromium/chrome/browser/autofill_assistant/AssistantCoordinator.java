@@ -143,8 +143,12 @@ class AssistantCoordinator {
         // Show overlay to prevent user from interacting with the page during onboarding.
         mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.full());
 
+        // Disable swiping for the onboarding because it interferes with letting the user scroll
+        // the onboarding contents.
+        mBottomBarCoordinator.allowSwipingBottomSheet(false);
         AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
                 .then(accepted -> {
+                    mBottomBarCoordinator.allowSwipingBottomSheet(true);
                     if (!accepted) {
                         shutdownImmediately(DropOutReason.DECLINED);
                         return;
