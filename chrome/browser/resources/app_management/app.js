@@ -47,7 +47,7 @@ Polymer({
     });
 
     this.watch('notificationsViewSelected_', (state) => {
-      return state.currentPage.pageType === PageType.NOTIFICATIONS;
+      return app_management.util.isNotificationsViewSelected(state);
     });
 
     this.updateFromStore();

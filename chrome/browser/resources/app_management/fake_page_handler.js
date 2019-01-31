@@ -13,8 +13,10 @@ cr.define('app_management', function() {
      * @return {!Permission}
      */
     static createPermission(permissionId, optConfig) {
+      // Changing to kAllow to test notifications sublabel collapsibility, as it
+      // assumes all apps have notification permission.
       const permission = app_management.util.createPermission(
-          permissionId, PermissionValueType.kTriState, TriState.kBlock);
+          permissionId, PermissionValueType.kTriState, TriState.kAllow);
 
       if (optConfig) {
         Object.assign(permission, optConfig);

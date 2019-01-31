@@ -11,35 +11,11 @@ Polymer({
 
   properties: {
     /**
-     * List of all apps.
-     * @private {Array<App>}
-     */
-    apps_: {
-      type: Array,
-      value: () => [],
-    },
-
-    /**
      * List of apps with notification permission
      * displayed before expanding the app list.
      * @private {Array<App>}
      */
-    displayedApps_: {
-      type: Array,
-      value: function() {
-        const /** @type {!Array<App>}*/ appList = [
-          app_management.FakePageHandler.createApp(
-              'blpcfgokakmgnkcojhhkbfbldkacnbeo'),
-          app_management.FakePageHandler.createApp(
-              'pjkljhegncpnkpknbcohdijeoejaedia'),
-          app_management.FakePageHandler.createApp(
-              'aapocclcgogkmnckokdopfmhonfmgoek'),
-          app_management.FakePageHandler.createApp(
-              'ahfgeienlihckogmohjhadlkjgocpleb'),
-        ];
-        return appList;
-      },
-    },
+    displayedApps_: Array,
 
     /**
      * List of apps without notification permission
@@ -48,14 +24,7 @@ Polymer({
      */
     collapsedApps_: {
       type: Array,
-      value: function() {
-        const /** @type {!Array<App>}*/ appList = [
-          app_management.FakePageHandler.createApp(
-              'aohghmighlieiainnegkcijnfilokake',
-              {type: apps.mojom.AppType.kArc}),
-        ];
-        return appList;
-      },
+      value: () => [],
     },
 
     /**
@@ -63,30 +32,53 @@ Polymer({
      */
     listExpanded_: {
       type: Boolean,
-      value: true,
+      value: false,
+    },
+
+    /**
+     * A boolean to identify whether current page is notifications view so that
+     * apps' list only get updated when page refreshed.
+     * @private {boolean}
+     */
+    notificationsViewSelected_: {
+      type: Boolean,
+      observer: 'onViewChanged_',
     },
   },
 
   attached: function() {
-    this.watch('apps_', (state) => {
-      return Object.values(state.apps);
+    this.watch('notificationsViewSelected_', (state) => {
+      return app_management.util.isNotificationsViewSelected(state);
     });
     this.updateFromStore();
   },
 
   /**
-   * @param {number} numApps
+   * If all the apps have / don't have notification permission, display the
+   * whole list, else display those with notification permission before
+   * expanding.
+   * @private
+   */
+  onViewChanged_: function() {
+    [this.displayedApps_, this.collapsedApps_] =
+        app_management.util.splitByNotificationPermission();
+    if (this.displayedApps_.length === 0) {
+      this.displayedApps_ = this.collapsedApps_;
+      this.collapsedApps_ = [];
+    }
+    this.$['expander-row'].hidden = this.collapsedApps_.length === 0;
+  },
+
+  /**
    * @param {boolean} listExpanded
+   * @param {Array<App>} collapsedApps
    * @return {string}
    * @private
    */
-  moreAppsString_: function(numApps, listExpanded) {
-    // TODO(ceciliani) Make view display apps with notification permission
-    // first.
+  moreAppsString_: function(listExpanded, collapsedApps) {
     return listExpanded ?
         loadTimeData.getString('lessApps') :
-        loadTimeData.getStringF(
-            'moreApps', numApps - NUMBER_OF_APPS_DISPLAYED_DEFAULT);
+        loadTimeData.getStringF('moreApps', collapsedApps.length);
   },
 
   /**
@@ -98,6 +90,7 @@ Polymer({
 
   /** @private */
   onClickBackButton_: function() {
+    this.listExpanded_ = false;
     if (!window.history.state) {
       this.dispatch(app_management.actions.changePage(PageType.MAIN));
     } else {
@@ -112,5 +105,18 @@ Polymer({
    */
   getCollapsedIcon_: function(listExpanded) {
     return listExpanded ? 'cr:expand-less' : 'cr:expand-more';
+  },
+
+  /**
+   * TODO(rekanorman) Make this function work for other apps.
+   * Returns a boolean representation of the permission value, which used to
+   * determine the position of the permission toggle.
+   * @param {App} app
+   * @return {boolean}
+   * @private
+   */
+  getNotificationValueBool_: function(app) {
+    return app_management.util.getPermissionValueBool(
+        app, 'CONTENT_SETTINGS_TYPE_NOTIFICATIONS');
   },
 });

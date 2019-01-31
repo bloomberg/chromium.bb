@@ -41,6 +41,7 @@ Polymer({
     return app.isPinned === OptionalBool.kTrue;
   },
 
+  /** @private */
   togglePinned_: function() {
     let newPinnedValue;
 
@@ -84,5 +85,4 @@ Polymer({
 
     return loadTimeData.getStringF('size', assert(app.size));
   },
-
 });
