@@ -256,7 +256,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       break;
 
     case WebInputEvent::kGestureScrollEnd:
-      gesture_sequence_.clear();
+      if (gesture_sequence_.size() >= 1000)
+        gesture_sequence_.erase(gesture_sequence_.begin(),
+                                gesture_sequence_.end() - 250);
       gesture_sequence_in_progress_ = false;
       // Whenever there is a new touch start, white listed touch action will be
       // set. So it is fine to reset at GSE.
@@ -350,6 +352,17 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         gesture_sequence_.append("OY");
       else
         gesture_sequence_.append("ON");
+      if (compositor_touch_action_enabled_ &&
+          !allowed_touch_action_.has_value() &&
+          !white_listed_touch_action_.has_value()) {
+        static auto* crash_key = base::debug::AllocateCrashKeyString(
+            "tapdown-gestures", base::debug::CrashKeySize::Size256);
+        if (gesture_sequence_.size() >= 256)
+          gesture_sequence_.erase(gesture_sequence_.begin(),
+                                  gesture_sequence_.end() - 256);
+        base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        gesture_sequence_.clear();
+      }
       // TODO(xidachen): investigate why the touch action has no value.
       if (compositor_touch_action_enabled_ && !touch_action.has_value())
         SetTouchAction(cc::kTouchActionAuto);
