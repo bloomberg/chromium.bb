@@ -87,6 +87,7 @@ class PaymentHandlerWebFlowViewController
   std::unique_ptr<views::ProgressBar> progress_bar_;
   std::unique_ptr<views::Separator> separator_;
   PaymentHandlerOpenWindowCallback first_navigation_complete_callback_;
+  base::string16 https_prefix_;
 };
 
 }  // namespace payments
