@@ -384,6 +384,8 @@ void SVGImage::DrawPatternForContainer(GraphicsContext& context,
   flags.setBlendMode(composite_op);
   flags.setColorFilter(sk_ref_sp(context.GetColorFilter()));
   context.DrawRect(dst_rect, flags);
+
+  StartAnimation();
 }
 
 sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(

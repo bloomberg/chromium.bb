@@ -995,17 +995,17 @@ SkFilterQuality GraphicsContext::ComputeFilterQuality(
       std::min(resampling, ImageInterpolationQuality()));
 }
 
-void GraphicsContext::DrawTiledImage(Image* image,
-                                     const FloatSize& unsnapped_subset_size,
-                                     const FloatRect& snapped_paint_rect,
-                                     const FloatPoint& unsnapped_phase,
-                                     const FloatSize& tile_size,
-                                     SkBlendMode op,
-                                     const FloatSize& repeat_spacing) {
+void GraphicsContext::DrawImageTiled(Image* image,
+                                     const FloatRect& dest_rect,
+                                     const FloatRect& src_rect,
+                                     const FloatSize& scale_src_to_dest,
+                                     const FloatPoint& phase,
+                                     const FloatSize& repeat_spacing,
+                                     SkBlendMode op) {
   if (ContextDisabled() || !image)
     return;
-  image->DrawTiledBackground(*this, unsnapped_subset_size, snapped_paint_rect,
-                             unsnapped_phase, tile_size, op, repeat_spacing);
+  image->DrawPattern(*this, src_rect, scale_src_to_dest, phase, op, dest_rect,
+                     repeat_spacing);
   paint_controller_.SetImagePainted();
 }
 
