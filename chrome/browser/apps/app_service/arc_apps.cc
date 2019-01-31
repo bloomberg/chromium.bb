@@ -115,18 +115,18 @@ ArcApps* ArcApps::Get(Profile* profile) {
 }
 
 ArcApps::ArcApps(Profile* profile)
-    : binding_(this),
-      profile_(profile),
-      prefs_(ArcAppListPrefs::Get(profile)),
-      next_u_key_(1) {
-  if (!prefs_ || !arc::IsArcAllowedForProfile(profile_)) {
+    : binding_(this), profile_(profile), prefs_(nullptr), next_u_key_(1) {
+  if (!arc::IsArcAllowedForProfile(profile_) ||
+      (arc::ArcServiceManager::Get() == nullptr)) {
     return;
   }
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  if (!arc_service_manager) {
+
+  prefs_ = ArcAppListPrefs::Get(profile);
+  if (!prefs_) {
     return;
   }
-  ObservePrefs();
+  prefs_->AddObserver(this);
+  prefs_->app_connection_holder()->AddObserver(this);
 
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));
@@ -144,13 +144,10 @@ ArcApps::~ArcApps() {
 void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,
                       apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  if (prefs_) {
-    for (const auto& app_id : prefs_->GetAppIds()) {
-      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-          prefs_->GetApp(app_id);
-      if (app_info) {
-        apps.push_back(Convert(app_id, *app_info));
-      }
+  for (const auto& app_id : prefs_->GetAppIds()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
+    if (app_info) {
+      apps.push_back(Convert(app_id, *app_info));
     }
   }
   subscriber->OnApps(std::move(apps));
@@ -162,7 +159,7 @@ void ArcApps::LoadIcon(const std::string& app_id,
                        apps::mojom::IconCompression icon_compression,
                        int32_t size_hint_in_dip,
                        LoadIconCallback callback) {
-  if (prefs_ && !icon_key.is_null() &&
+  if (!icon_key.is_null() &&
       (icon_key->icon_type == apps::mojom::IconType::kArc) &&
       !icon_key->s_key.empty()) {
     // Treat the Play Store as a special case, loading an icon defined by a
@@ -275,18 +272,11 @@ void ArcApps::OpenNativeSettings(const std::string& app_id) {
 }
 
 void ArcApps::OnConnectionReady() {
-  if (!prefs_) {
-    prefs_ = ArcAppListPrefs::Get(profile_);
-    ObservePrefs();
+  AppConnectionHolder* app_connection_holder = prefs_->app_connection_holder();
+  for (auto& pending : pending_load_icon_calls_) {
+    std::move(pending).Run(app_connection_holder);
   }
-  if (prefs_) {
-    AppConnectionHolder* app_connection_holder =
-        prefs_->app_connection_holder();
-    for (auto& pending : pending_load_icon_calls_) {
-      std::move(pending).Run(app_connection_holder);
-    }
-    pending_load_icon_calls_.clear();
-  }
+  pending_load_icon_calls_.clear();
 }
 
 void ArcApps::OnAppRegistered(const std::string& app_id,
@@ -340,17 +330,8 @@ void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
   }
 }
 
-void ArcApps::ObservePrefs() {
-  prefs_->AddObserver(this);
-  prefs_->app_connection_holder()->AddObserver(this);
-}
-
 const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
                                                     int32_t size_hint_in_dip) {
-  if (!prefs_) {
-    return base::FilePath();
-  }
-
   // TODO(crbug.com/826982): process the app_id argument like the private
   // GetAppFromAppOrGroupId function and the ArcAppIcon::mapped_app_id_ field
   // in arc_app_icon.cc?
@@ -365,25 +346,23 @@ void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
                              apps::mojom::IconCompression icon_compression,
                              int32_t size_hint_in_dip,
                              LoadIconCallback callback) {
-  if (prefs_) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        prefs_->GetApp(icon_key_s_key);
-    if (app_info) {
-      base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
-          base::BindOnce(&LoadIcon0, icon_compression,
-                         ConvertDipToPx(size_hint_in_dip),
-                         app_info->package_name, app_info->activity,
-                         app_info->icon_resource_id, std::move(callback));
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs_->GetApp(icon_key_s_key);
+  if (app_info) {
+    base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
+        base::BindOnce(&LoadIcon0, icon_compression,
+                       ConvertDipToPx(size_hint_in_dip), app_info->package_name,
+                       app_info->activity, app_info->icon_resource_id,
+                       std::move(callback));
 
-      AppConnectionHolder* app_connection_holder =
-          prefs_->app_connection_holder();
-      if (app_connection_holder->IsConnected()) {
-        std::move(pending).Run(app_connection_holder);
-      } else {
-        pending_load_icon_calls_.push_back(std::move(pending));
-      }
-      return;
+    AppConnectionHolder* app_connection_holder =
+        prefs_->app_connection_holder();
+    if (app_connection_holder->IsConnected()) {
+      std::move(pending).Run(app_connection_holder);
+    } else {
+      pending_load_icon_calls_.push_back(std::move(pending));
     }
+    return;
   }
 
   // On failure, we still run the callback, with the zero IconValue.
