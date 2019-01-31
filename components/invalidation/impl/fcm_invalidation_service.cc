@@ -128,6 +128,7 @@ void FCMInvalidationService::RequestDetailedStatus(
     base::RepeatingCallback<void(const base::DictionaryValue&)> return_callback)
     const {
   return_callback.Run(*diagnostic_info_.CollectDebugData());
+  invalidator_registrar_.RequestDetailedStatus(return_callback);
   if (IsStarted()) {
     invalidator_->RequestDetailedStatus(return_callback);
   }
