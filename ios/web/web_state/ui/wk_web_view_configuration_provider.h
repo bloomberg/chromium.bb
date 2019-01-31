@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 
-@class CRWWebUISchemeHandler;
 @class CRWWKScriptMessageRouter;
 @class WKWebViewConfiguration;
 
@@ -51,7 +50,6 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   explicit WKWebViewConfigurationProvider(BrowserState* browser_state);
   WKWebViewConfigurationProvider() = delete;
 
-  CRWWebUISchemeHandler* scheme_handler_ = nil;
   WKWebViewConfiguration* configuration_;
   CRWWKScriptMessageRouter* router_;
   BrowserState* browser_state_;
