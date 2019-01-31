@@ -19,6 +19,7 @@
 #include "services/video_capture/public/cpp/mock_device_factory.h"
 #include "services/video_capture/public/cpp/mock_device_factory_provider.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/producer.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
