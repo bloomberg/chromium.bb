@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/mojo/media_controller.mojom.h"
+#include "chrome/common/media_router/mojo/media_status.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class PrefService;
