@@ -325,11 +325,6 @@ PoissonAllocationSampler::ScopedMuteThreadSamples::~ScopedMuteThreadSamples() {
   TLSSetValue(g_internal_reentry_guard, false);
 }
 
-// static
-bool PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted() {
-  return TLSGetValue(g_internal_reentry_guard);
-}
-
 PoissonAllocationSampler* PoissonAllocationSampler::instance_;
 
 PoissonAllocationSampler::PoissonAllocationSampler() {
