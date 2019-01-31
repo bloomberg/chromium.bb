@@ -48,9 +48,6 @@ scoped_refptr<TransformOperation> RotateTransformOperation::Blend(
     const TransformOperation* from,
     double progress,
     bool blend_to_identity) {
-  if (from && !from->IsSameType(*this))
-    return this;
-
   if (blend_to_identity)
     return RotateTransformOperation::Create(
         Rotation(Axis(), Angle() * (1 - progress)), type_);
@@ -60,17 +57,18 @@ scoped_refptr<TransformOperation> RotateTransformOperation::Blend(
     return RotateTransformOperation::Create(
         Rotation(Axis(), Angle() * progress), type_);
 
+  // Apply spherical linear interpolation. Rotate around a common axis if
+  // possible. Otherwise, convert rotations to 4x4 matrix representations and
+  // interpolate the matrix decompositions. The 'from' and 'to' transforms can
+  // be of different types (based on axis), but must both have equivalent
+  // rotate3d representations.
+  DCHECK(from->PrimitiveType() == OperationType::kRotate3D);
+  OperationType type =
+      from->IsSameType(*this) ? type_ : OperationType::kRotate3D;
   const RotateTransformOperation& from_rotate =
       ToRotateTransformOperation(*from);
-  if (GetType() == kRotate3D) {
-    return RotateTransformOperation::Create(
-        Rotation::Slerp(from_rotate.rotation_, rotation_, progress), kRotate3D);
-  }
-
-  DCHECK(Axis() == from_rotate.Axis());
   return RotateTransformOperation::Create(
-      Rotation(Axis(), blink::Blend(from_rotate.Angle(), Angle(), progress)),
-      type_);
+      Rotation::Slerp(from_rotate.rotation_, rotation_, progress), type);
 }
 
 bool RotateTransformOperation::CanBlendWith(

@@ -117,6 +117,32 @@ assertInterpolation({
   {at: 1, is: 'rotateZ(900deg)'},
   {at: 2, is: 'rotateZ(1800deg)'},
 ]);
+// Interpolation is about a common axis if either endpoint has a rotation angle
+// of zero.
+assertInterpolation({
+  property: 'transform',
+  from: 'rotateX(0deg)',
+  to: 'rotateY(900deg)'
+}, [
+  {at: -1, is: 'rotateY(-900deg)'},
+  {at: 0, is: 'rotateY(0deg)'},
+  {at: 0.25, is: 'rotateY(225deg)'},
+  {at: 0.75, is: 'rotateY(675deg)'},
+  {at: 1, is: 'rotateY(900deg)'},
+  {at: 2, is: 'rotateY(1800deg)'},
+]);
+assertInterpolation({
+  property: 'transform',
+  from: 'rotateY(900deg)',
+  to: 'rotateZ(0deg)'
+}, [
+  {at: -1, is: 'rotateY(1800deg)'},
+  {at: 0, is: 'rotateY(900deg)'},
+  {at: 0.25, is: 'rotateY(675deg)'},
+  {at: 0.75, is: 'rotateY(225deg)'},
+  {at: 1, is: 'rotateY(0deg)'},
+  {at: 2, is: 'rotateY(-900deg)'},
+]);
 assertInterpolation({
   property: 'transform',
   from: 'rotate3d(7, 8, 9, 100deg)',
@@ -145,6 +171,19 @@ assertInterpolation({
   property: 'transform',
   from: 'rotate3d(0, 1, 0, 0deg)',
   to: 'rotate3d(0, 1, 0, 450deg)'
+}, [
+  {at: -1, is: 'rotate3d(0, 1, 0, -450deg)'},
+  {at: 0, is: 'rotate3d(0, 1, 0, 0deg)'},
+  {at: 0.25, is: 'rotate3d(0, 1, 0, 112.5deg)'},
+  {at: 0.75, is: 'rotate3d(0, 1, 0, 337.5deg)'},
+  {at: 1, is: 'rotate3d(0, 1, 0, 450deg)'},
+  {at: 2, is: 'rotate3d(0, 1, 0, 900deg)'},
+]);
+// Rotation is about a common axis if the axes are colinear.
+assertInterpolation({
+  property: 'transform',
+  from: 'rotate3d(0, 1, 0, 0deg)',
+  to: 'rotate3d(0, 2, 0, 450deg)'
 }, [
   {at: -1, is: 'rotate3d(0, 1, 0, -450deg)'},
   {at: 0, is: 'rotate3d(0, 1, 0, 0deg)'},
