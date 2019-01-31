@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,9 +117,14 @@ public class AutofillAssistantFacade {
         Map<String, String> result = new HashMap<>();
         if (extras != null) {
             for (String key : extras.keySet()) {
-                if (key.startsWith(INTENT_EXTRA_PREFIX) && !key.startsWith(INTENT_SPECIAL_PREFIX)) {
-                    result.put(key.substring(INTENT_EXTRA_PREFIX.length()),
-                            extras.get(key).toString());
+                try {
+                    if (key.startsWith(INTENT_EXTRA_PREFIX)
+                            && !key.startsWith(INTENT_SPECIAL_PREFIX)) {
+                        result.put(key.substring(INTENT_EXTRA_PREFIX.length()),
+                                URLDecoder.decode(extras.get(key).toString(), "UTF-8"));
+                    }
+                } catch (java.io.UnsupportedEncodingException e) {
+                    throw new IllegalStateException("UTF-8 encoding not available.", e);
                 }
             }
         }
