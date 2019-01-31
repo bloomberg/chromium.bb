@@ -4,13 +4,16 @@
 
 package org.chromium.chrome.browser.feature_engagement;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
@@ -18,6 +21,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 
 /**
  * This class detects screenshots by monitoring the screenshots directory on internal and external
@@ -102,6 +106,15 @@ public class ScreenshotMonitor {
         String[] mediaProjection = new String[] {MediaStore.Images.ImageColumns.DATE_TAKEN,
                 MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.HEIGHT,
                 MediaStore.MediaColumns.WIDTH, MediaStore.MediaColumns._ID};
+
+        // Check if READ_EXTERNAL_STORAGE permission are enabled.
+        if (ContextCompat.checkSelfPermission(
+                    ContextUtils.getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            RecordUserAction.record("Tab.Screenshot.WithoutStoragePermission");
+            return false;
+        }
+
         try {
             cursor = ContextUtils.getApplicationContext().getContentResolver().query(
                     storeUri, mediaProjection, null, null, null);
