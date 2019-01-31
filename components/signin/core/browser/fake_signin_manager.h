@@ -48,11 +48,7 @@ class FakeSigninManager : public SigninManager {
     possibly_invalid_account_id_ = account_id;
   }
 
-  void set_password(const std::string& password) { password_ = password; }
-
-  void SignIn(const std::string& gaia_id,
-              const std::string& username,
-              const std::string& password);
+  void SignIn(const std::string& gaia_id, const std::string& username);
 
   void ForceSignOut();
 
@@ -62,7 +58,6 @@ class FakeSigninManager : public SigninManager {
       const std::string& refresh_token,
       const std::string& gaia_id,
       const std::string& username,
-      const std::string& password,
       OAuthTokenFetchedCallback oauth_fetched_callback) override;
 
   void CompletePendingSignin() override;

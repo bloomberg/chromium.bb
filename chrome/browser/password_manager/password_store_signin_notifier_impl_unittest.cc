@@ -51,7 +51,7 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
 TEST_F(PasswordStoreSigninNotifierImplTest, Subscribed) {
   PasswordStoreSigninNotifierImpl notifier(testing_profile_.get());
   notifier.SubscribeToSigninEvents(store_.get());
-  fake_signin_manager_->SignIn("accountid", "username", "password");
+  fake_signin_manager_->SignIn("accountid", "username");
   testing::Mock::VerifyAndClearExpectations(store_.get());
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash());
   fake_signin_manager_->ForceSignOut();
@@ -65,7 +65,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, Unsubscribed) {
   notifier.SubscribeToSigninEvents(store_.get());
   notifier.UnsubscribeFromSigninEvents();
   EXPECT_CALL(*store_, ClearAllGaiaPasswordHash()).Times(0);
-  fake_signin_manager_->SignIn("accountid", "username", "secret");
+  fake_signin_manager_->SignIn("accountid", "username");
   fake_signin_manager_->ForceSignOut();
 }
 
@@ -83,8 +83,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
   primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
       /*refresh_token=*/"refresh_token",
       /*gaia_id=*/"primary_account_id",
-      /*username=*/"username",
-      /*password=*/"password", base::OnceCallback<void(const std::string&)>());
+      /*username=*/"username", base::OnceCallback<void(const std::string&)>());
   primary_account_mutator->LegacyCompletePendingPrimaryAccountSignin();
 
   testing::Mock::VerifyAndClearExpectations(store_.get());

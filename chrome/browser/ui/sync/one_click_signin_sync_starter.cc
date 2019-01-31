@@ -99,7 +99,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
 
   DCHECK(primary_account_mutator_);
   primary_account_mutator_->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      refresh_token, gaia_id, email, password,
+      refresh_token, gaia_id, email,
       base::BindOnce(&OneClickSigninSyncStarter::ConfirmSignin,
                      weak_pointer_factory_.GetWeakPtr(), profile_mode));
 }

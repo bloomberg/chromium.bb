@@ -435,7 +435,7 @@ TEST_F(IdentityManagerImplTest,
   // to call SignIn() here to ensure that GoogleSigninSucceeded() is fired by
   // the fake signin manager.
   static_cast<FakeSigninManager*>(signin_manager())
-      ->SignIn(kTestGaiaId, kTestEmail, "password");
+      ->SignIn(kTestGaiaId, kTestEmail);
 
   run_loop.Run();
 

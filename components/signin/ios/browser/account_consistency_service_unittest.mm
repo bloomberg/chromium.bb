@@ -221,7 +221,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   }
 
   void SignIn() {
-    signin_manager_->SignIn("12345", "user@gmail.com", "password");
+    signin_manager_->SignIn("12345", "user@gmail.com");
     EXPECT_EQ(0, web_view_load_expection_count_);
   }
 

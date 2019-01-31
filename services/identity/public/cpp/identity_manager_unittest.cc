@@ -605,7 +605,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   identity_manager_observer()->set_on_primary_account_set_callback(
       run_loop.QuitClosure());
 
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail, "password");
+  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
   run_loop.Run();
 
   AccountInfo primary_account_from_set_callback =
@@ -631,7 +631,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   base::RunLoop run_loop;
   identity_manager_observer()->set_on_primary_account_set_callback(
       run_loop.QuitClosure());
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail, "password");
+  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
   run_loop.Run();
 
   // Sign the user out and check that the IdentityManager responds
@@ -666,7 +666,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
   base::RunLoop run_loop;
   identity_manager_observer()->set_on_primary_account_set_callback(
       run_loop.QuitClosure());
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail, "password");
+  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
   run_loop.Run();
 
   // Remove the account from the AccountTrackerService and check that
@@ -1456,7 +1456,7 @@ TEST_F(
   RecreateIdentityManager();
   signin_manager_observer.set_identity_manager(identity_manager());
 
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail, "password");
+  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
   run_loop.Run();
 
   AccountInfo primary_account_from_signin_callback =

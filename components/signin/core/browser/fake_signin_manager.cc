@@ -56,11 +56,9 @@ void FakeSigninManager::StartSignInWithRefreshToken(
     const std::string& refresh_token,
     const std::string& gaia_id,
     const std::string& username,
-    const std::string& password,
     OAuthTokenFetchedCallback oauth_fetched_callback) {
   set_auth_in_progress(
       account_tracker_service()->SeedAccountInfo(gaia_id, username));
-  set_password(password);
   username_ = username;
 
   possibly_invalid_gaia_id_.assign(gaia_id);
@@ -77,9 +75,8 @@ void FakeSigninManager::CompletePendingSignin() {
 }
 
 void FakeSigninManager::SignIn(const std::string& gaia_id,
-                               const std::string& username,
-                               const std::string& password) {
-  StartSignInWithRefreshToken(std::string(), gaia_id, username, password,
+                               const std::string& username) {
+  StartSignInWithRefreshToken(std::string(), gaia_id, username,
                               OAuthTokenFetchedCallback());
   CompletePendingSignin();
 }
@@ -123,7 +120,6 @@ void FakeSigninManager::OnSignoutDecisionReached(
     return;
 
   set_auth_in_progress(std::string());
-  set_password(std::string());
   AccountInfo account_info = GetAuthenticatedAccountInfo();
   const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = account_info.email;

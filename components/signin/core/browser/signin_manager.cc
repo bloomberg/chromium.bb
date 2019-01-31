@@ -58,8 +58,7 @@ std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
 
 bool SigninManager::PrepareForSignin(SigninType type,
                                      const std::string& gaia_id,
-                                     const std::string& username,
-                                     const std::string& password) {
+                                     const std::string& username) {
   std::string account_id =
       account_tracker_service()->PickAccountIdForAccount(gaia_id, username);
   DCHECK(!account_id.empty());
@@ -83,7 +82,6 @@ bool SigninManager::PrepareForSignin(SigninType type,
   possibly_invalid_account_id_.assign(account_id);
   possibly_invalid_gaia_id_.assign(gaia_id);
   possibly_invalid_email_.assign(username);
-  password_.assign(password);
   signin_manager_signed_in_ = false;
   user_info_fetched_by_account_tracker_ = false;
   return true;
@@ -93,13 +91,12 @@ void SigninManager::StartSignInWithRefreshToken(
     const std::string& refresh_token,
     const std::string& gaia_id,
     const std::string& username,
-    const std::string& password,
     OAuthTokenFetchedCallback callback) {
   DCHECK(!IsAuthenticated());
   SigninType signin_type = refresh_token.empty()
                                ? SIGNIN_TYPE_WITHOUT_REFRESH_TOKEN
                                : SIGNIN_TYPE_WITH_REFRESH_TOKEN;
-  if (!PrepareForSignin(signin_type, gaia_id, username, password)) {
+  if (!PrepareForSignin(signin_type, gaia_id, username)) {
     return;
   }
 
@@ -121,7 +118,6 @@ void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
   possibly_invalid_gaia_id_ = source.possibly_invalid_gaia_id_;
   possibly_invalid_email_ = source.possibly_invalid_email_;
   temp_refresh_token_ = source.temp_refresh_token_;
-  password_ = source.password_;
   source.signin_client()->AfterCredentialsCopied();
 }
 
@@ -131,7 +127,6 @@ void SigninManager::ClearTransientSigninData() {
   possibly_invalid_account_id_.clear();
   possibly_invalid_gaia_id_.clear();
   possibly_invalid_email_.clear();
-  password_.clear();
   type_ = SIGNIN_TYPE_NONE;
   temp_refresh_token_.clear();
 }
@@ -425,16 +420,12 @@ void SigninManager::OnSignedIn() {
 
   signin_metrics::LogSigninProfile(signin_client()->IsFirstRun(),
                                    signin_client()->GetInstallDate());
-
-  PostSignedIn();
 }
 
 void SigninManager::FireGoogleSigninSucceeded() {
   const AccountInfo account_info = GetAuthenticatedAccountInfo();
-  for (auto& observer : observer_list_) {
+  for (auto& observer : observer_list_)
     observer.GoogleSigninSucceeded(account_info);
-    observer.GoogleSigninSucceededWithPassword(account_info, password_);
-  }
 }
 
 void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
@@ -443,26 +434,15 @@ void SigninManager::FireGoogleSignedOut(const AccountInfo& account_info) {
   }
 }
 
-void SigninManager::PostSignedIn() {
-  if (!signin_manager_signed_in_ || !user_info_fetched_by_account_tracker_)
-    return;
-
-  signin_client()->PostSignedIn(GetAuthenticatedAccountId(),
-                                GetAuthenticatedAccountInfo().email, password_);
-  password_.clear();
-}
-
 void SigninManager::OnAccountUpdated(const AccountInfo& info) {
   if (!info.IsValid())
     return;
 
   user_info_fetched_by_account_tracker_ = true;
-  PostSignedIn();
 }
 
 void SigninManager::OnAccountUpdateFailed(const std::string& account_id) {
   user_info_fetched_by_account_tracker_ = true;
-  PostSignedIn();
 }
 
 void SigninManager::OnRefreshTokensLoaded() {
