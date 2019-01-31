@@ -465,7 +465,7 @@ void WorkerThread::InitializeOnWorkerThread(
             WorkerThreadDebugger::From(GetIsolate()))
       debugger->WorkerThreadCreated(this);
 
-    if (GlobalScope()->ScriptController()->InitializeContextIfNeeded(
+    if (GlobalScope()->ScriptController()->InitializeContext(
             String(), url_for_debugger)) {
       worker_reporting_proxy_.DidInitializeWorkerContext();
       v8::HandleScope handle_scope(GetIsolate());

@@ -140,13 +140,12 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
   script_state_->DissociateContext();
 }
 
-bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
+bool WorkerOrWorkletScriptController::InitializeContext(
     const String& human_readable_name,
     const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
-  if (IsContextInitialized())
-    return true;
+  DCHECK(!IsContextInitialized());
 
   // Create a new v8::Context with the worker/worklet as the global object
   // (aka the inner global).
