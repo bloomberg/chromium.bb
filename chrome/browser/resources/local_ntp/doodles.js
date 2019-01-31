@@ -557,6 +557,7 @@ doodles.applyDoodleMetadata = function() {
     case doodles.LOGO_TYPE.INTERACTIVE:
       logoDoodleIframe.title = doodles.targetDoodle.metadata.altText;
       logoDoodleIframe.src = doodles.targetDoodle.metadata.fullPageUrl;
+      logoDoodleIframe.allow = 'autoplay';
       document.body.style.setProperty(
           '--logo-iframe-width',
           doodles.targetDoodle.metadata.iframeWidthPx + 'px');
