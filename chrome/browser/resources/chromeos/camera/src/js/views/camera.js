@@ -79,13 +79,6 @@ cca.views.Camera = function(model) {
   this.recordTime_ = new cca.views.camera.RecordTime();
 
   /**
-   * Button for going to the gallery.
-   * @type {cca.views.camera.GalleryButton}
-   * @private
-   */
-  this.galleryButton_ = new cca.views.camera.GalleryButton(model);
-
-  /**
    * Button for taking photos and recording videos.
    * @type {HTMLButtonElement}
    * @private
@@ -136,7 +129,18 @@ cca.views.Camera = function(model) {
   Object.seal(this);
 
   this.shutterButton_.addEventListener('click',
-      this.onShutterButtonClicked_.bind(this));
+      () => this.onShutterButtonClicked_());
+
+  // Monitor the states to stop camera when locked/minimized.
+  chrome.idle.onStateChanged.addListener((newState) => {
+    this.locked_ = (newState == 'locked');
+    if (this.locked_) {
+      this.stop_();
+    }
+  });
+  chrome.app.window.current().onMinimized.addListener(() => this.stop_());
+
+  this.start_();
 };
 
 /**
@@ -157,27 +161,6 @@ cca.views.Camera.prototype = {
   get recordMode() {
     return document.body.classList.contains('record-mode');
   },
-  get galleryButton() {
-    return this.galleryButton_;
-  },
-};
-
-/**
- * Prepares the view.
- */
-cca.views.Camera.prototype.prepare = function() {
-  // Monitor the states to stop camera when locked/minimized.
-  chrome.idle.onStateChanged.addListener((newState) => {
-    this.locked_ = (newState == 'locked');
-    if (this.locked_) {
-      this.stop_();
-    }
-  });
-  chrome.app.window.current().onMinimized.addListener(() => this.stop_());
-
-  // Start the camera after preparing the options (device ids).
-  this.options_.prepare();
-  this.start_();
 };
 
 /**
