@@ -904,7 +904,8 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
 
     case ash::mojom::WindowStateType::MAXIMIZED:
     case ash::mojom::WindowStateType::FULLSCREEN:
-      animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
+      if (!window_state->IsPip())
+        animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
       break;
 
     default:
