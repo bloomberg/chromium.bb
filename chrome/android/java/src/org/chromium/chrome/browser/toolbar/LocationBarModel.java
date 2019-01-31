@@ -427,7 +427,7 @@ public class LocationBarModel implements ToolbarDataProvider {
 
     @Override
     public boolean shouldDisplaySearchTerms() {
-        return getDisplaySearchTerms() != null;
+        return getDisplaySearchTerms() != null && !isPreview();
     }
 
     /**
