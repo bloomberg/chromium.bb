@@ -85,6 +85,7 @@ PerformanceObserver::PerformanceObserver(
       callback_(callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
+      type_(PerformanceObserverType::kUnknown),
       is_registered_(false) {
   DCHECK(performance_);
 }
@@ -97,23 +98,64 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     return;
   }
 
-  PerformanceEntryTypeMask entry_types = PerformanceEntry::kInvalid;
-  if (observer_init->hasEntryTypes() && observer_init->entryTypes().size()) {
+  if (observer_init->hasEntryTypes()) {
+    if (observer_init->hasType()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kSyntaxError,
+          "An observe() call MUST NOT include both entryTypes and type.");
+      return;
+    }
+    if (type_ == PerformanceObserverType::kTypeObserver) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidModificationError,
+          "This observer has performed observe({type:...}, therefore it cannot "
+          "perform observe({entryTypes:...})");
+      return;
+    }
+    type_ = PerformanceObserverType::kEntryTypesObserver;
+    PerformanceEntryTypeMask entry_types = PerformanceEntry::kInvalid;
     const Vector<String>& sequence = observer_init->entryTypes();
     for (const auto& entry_type_string : sequence) {
       entry_types |=
           PerformanceEntry::ToEntryTypeEnum(AtomicString(entry_type_string));
     }
+    if (entry_types == PerformanceEntry::kInvalid) {
+      String message =
+          "The Performance Observer MUST have at least one valid entryType in "
+          "its "
+          "entryTypes attribute.";
+      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel, message));
+      return;
+    }
+    filter_options_ = entry_types;
+  } else {
+    if (!observer_init->hasType()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kSyntaxError,
+          "An observe() call MUST include either entryTypes or type.");
+      return;
+    }
+    if (type_ == PerformanceObserverType::kEntryTypesObserver) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidModificationError,
+          "This observer has performed observe({entryTypes:...}, therefore it "
+          "cannot perform observe({type:...})");
+      return;
+    }
+    type_ = PerformanceObserverType::kTypeObserver;
+    PerformanceEntryType entry_type =
+        PerformanceEntry::ToEntryTypeEnum(AtomicString(observer_init->type()));
+    if (entry_type == PerformanceEntry::kInvalid) {
+      String message =
+          "The Performance Observer MUST have a valid entryType in its "
+          "type attribute.";
+      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel, message));
+      return;
+    }
+    filter_options_ |= entry_type;
   }
-  if (entry_types == PerformanceEntry::kInvalid) {
-    String message =
-        "A Performance Observer MUST have at least one valid entryType in its "
-        "entryTypes attribute.";
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
-    return;
-  }
-  filter_options_ = entry_types;
   if (is_registered_)
     performance_->UpdatePerformanceObserverFilterOptions();
   else
