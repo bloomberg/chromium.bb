@@ -78,13 +78,25 @@ class ChromeIOSTranslateClient
   bool IsTranslatableURL(const GURL& url) override;
   void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
 
+  id<LanguageSelectionHandler> language_selection_handler() {
+    return language_selection_handler_;
+  }
+
   void set_language_selection_handler(id<LanguageSelectionHandler> handler) {
     language_selection_handler_ = handler;
+  }
+
+  id<TranslateOptionSelectionHandler> translate_option_selection_handler() {
+    return translate_option_selection_handler_;
   }
 
   void set_translate_option_selection_handler(
       id<TranslateOptionSelectionHandler> handler) {
     translate_option_selection_handler_ = handler;
+  }
+
+  id<TranslateNotificationHandler> translate_notification_handler() {
+    return translate_notification_handler_;
   }
 
   void set_translate_notification_handler(

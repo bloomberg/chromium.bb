@@ -84,12 +84,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "language_state_unittest.cc",
-    "mock_translate_client.cc",
-    "mock_translate_client.h",
-    "mock_translate_driver.cc",
-    "mock_translate_driver.h",
-    "mock_translate_ranker.cc",
-    "mock_translate_ranker.h",
     "translate_accept_languages_unittest.cc",
     "translate_browser_metrics_unittest.cc",
     "translate_language_list_unittest.cc",
@@ -102,6 +96,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":browser",
+    ":test_support",
     "//base",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
@@ -120,8 +115,38 @@ source_set("unit_tests") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",
-    "//testing/gtest",
-    "//third_party/metrics_proto",
     "//ui/base",
   ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "mock_translate_client.cc",
+    "mock_translate_client.h",
+    "mock_translate_driver.cc",
+    "mock_translate_driver.h",
+    "mock_translate_ranker.cc",
+    "mock_translate_ranker.h",
+  ]
+  deps = [
+    "//base",
+    "//components/infobars/core",
+    "//components/language/core/browser",
+    "//components/sync_preferences",
+    "//components/sync_preferences:test_support",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/metrics_proto:metrics_proto",
+    "//url",
+  ]
+
+  if (is_ios || is_android) {
+    sources += [
+      "mock_translate_infobar_delegate.cc",
+      "mock_translate_infobar_delegate.h",
+    ]
+  }
 }

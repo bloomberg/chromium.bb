@@ -103,8 +103,24 @@ void TranslateInfoBarDelegate::Create(
     infobar_manager->AddInfoBar(std::move(infobar));
 }
 
+size_t TranslateInfoBarDelegate::num_languages() const {
+  return ui_delegate_.GetNumberOfLanguages();
+}
+
+std::string TranslateInfoBarDelegate::language_code_at(size_t index) const {
+  return ui_delegate_.GetLanguageCodeAt(index);
+}
+
+base::string16 TranslateInfoBarDelegate::language_name_at(size_t index) const {
+  return ui_delegate_.GetLanguageNameAt(index);
+}
+
 void TranslateInfoBarDelegate::SetObserver(Observer* observer) {
   observer_ = observer;
+}
+
+base::string16 TranslateInfoBarDelegate::original_language_name() const {
+  return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
 }
 
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(

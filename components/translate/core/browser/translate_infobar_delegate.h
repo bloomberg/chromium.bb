@@ -77,17 +77,13 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                      bool triggered_from_menu);
 
   // Returns the number of languages supported.
-  size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
+  virtual size_t num_languages() const;
 
   // Returns the ISO code for the language at |index|.
-  std::string language_code_at(size_t index) const {
-    return ui_delegate_.GetLanguageCodeAt(index);
-  }
+  virtual std::string language_code_at(size_t index) const;
 
   // Returns the displayable name for the language at |index|.
-  base::string16 language_name_at(size_t index) const {
-    return ui_delegate_.GetLanguageNameAt(index);
-  }
+  virtual base::string16 language_name_at(size_t index) const;
 
   translate::TranslateStep translate_step() const { return step_; }
 
@@ -99,9 +95,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
     return ui_delegate_.GetOriginalLanguageCode();
   }
 
-  base::string16 original_language_name() const {
-    return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
-  }
+  virtual base::string16 original_language_name() const;
 
   void UpdateOriginalLanguage(const std::string& language_code);
 

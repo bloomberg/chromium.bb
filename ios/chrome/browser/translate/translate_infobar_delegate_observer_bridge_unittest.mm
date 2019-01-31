@@ -6,16 +6,7 @@
 
 #include <memory>
 
-#include "components/language/core/browser/language_model.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/translate/core/browser/mock_translate_client.h"
-#include "components/translate/core/browser/mock_translate_driver.h"
-#include "components/translate/core/browser/mock_translate_ranker.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
-#include "components/translate/core/browser/translate_manager.h"
-#include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "components/translate/core/browser/mock_translate_infobar_delegate.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
@@ -23,75 +14,8 @@
 #error "This file requires ARC support."
 #endif
 
-using testing::_;
-using translate::testing::MockTranslateClient;
-using translate::testing::MockTranslateDriver;
-using translate::testing::MockTranslateRanker;
-
-class MockLanguageModel : public language::LanguageModel {
-  std::vector<LanguageDetails> GetLanguages() override {
-    return {LanguageDetails("en", 1.0)};
-  }
-};
-
-class MockTranslateInfoBarDelegate
-    : public translate::TranslateInfoBarDelegate {
- public:
-  MockTranslateInfoBarDelegate(
-      const base::WeakPtr<translate::TranslateManager>& translate_manager,
-      bool is_off_the_record,
-      translate::TranslateStep step,
-      const std::string& original_language,
-      const std::string& target_language,
-      translate::TranslateErrors::Type error_type,
-      bool triggered_from_menu)
-      : translate::TranslateInfoBarDelegate(translate_manager,
-                                            is_off_the_record,
-                                            step,
-                                            original_language,
-                                            target_language,
-                                            error_type,
-                                            triggered_from_menu) {}
-  ~MockTranslateInfoBarDelegate() override {}
-
-  MOCK_METHOD1(SetObserver, void(Observer* observer));
-};
-
-class MockTranslateInfoBarDelegateFactory {
- public:
-  MockTranslateInfoBarDelegateFactory() {
-    pref_service_ =
-        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
-    translate::TranslatePrefs::RegisterProfilePrefs(pref_service_->registry());
-    pref_service_->registry()->RegisterBooleanPref(
-        prefs::kOfferTranslateEnabled, true);
-    client_ =
-        std::make_unique<MockTranslateClient>(&driver_, pref_service_.get());
-    ranker_ = std::make_unique<MockTranslateRanker>();
-    language_model_ = std::make_unique<MockLanguageModel>();
-    manager_ = std::make_unique<translate::TranslateManager>(
-        client_.get(), ranker_.get(), language_model_.get());
-    delegate_ = std::make_unique<MockTranslateInfoBarDelegate>(
-        manager_->GetWeakPtr(), false,
-        translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE, "fr", "en",
-        translate::TranslateErrors::Type::NONE, false);
-  }
-
-  ~MockTranslateInfoBarDelegateFactory() = default;
-
-  MockTranslateInfoBarDelegate* GetMockTranslateInfoBarDelegate() {
-    return delegate_.get();
-  }
-
- private:
-  MockTranslateDriver driver_;
-  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
-  std::unique_ptr<MockTranslateClient> client_;
-  std::unique_ptr<MockTranslateRanker> ranker_;
-  std::unique_ptr<MockLanguageModel> language_model_;
-  std::unique_ptr<translate::TranslateManager> manager_;
-  std::unique_ptr<MockTranslateInfoBarDelegate> delegate_;
-};
+using translate::testing::MockTranslateInfoBarDelegate;
+using translate::testing::MockTranslateInfoBarDelegateFactory;
 
 @interface TestTranslateInfoBarDelegateObserver
     : NSObject <TranslateInfobarDelegateObserving>
@@ -129,7 +53,8 @@ class MockTranslateInfoBarDelegateFactory {
 class TranslateInfobarDelegateObserverBridgeTest : public PlatformTest {
  protected:
   TranslateInfobarDelegateObserverBridgeTest()
-      : observer_([[TestTranslateInfoBarDelegateObserver alloc] init]) {
+      : delegate_factory_("fr", "en"),
+        observer_([[TestTranslateInfoBarDelegateObserver alloc] init]) {
     // Make sure the observer bridge sets up itself as an observer.
     EXPECT_CALL(*GetDelegate(), SetObserver(_)).Times(1);
 
