@@ -2097,6 +2097,22 @@
             ]
         }
     ],
+    "HardwareMediaKeyHandling": [
+        {
+            "platforms": [
+                "windows",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HardwareMediaKeyHandling"
+                    ]
+                }
+            ]
+        }
+    ],
     "HomePageButtonForceEnabled": [
         {
             "platforms": [
