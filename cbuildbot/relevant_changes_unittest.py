@@ -34,7 +34,8 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
     self.site_config = config_lib.GetConfig()
     self.build_config = copy.deepcopy(self.site_config[self._bot_id])
 
-    self.fake_cidb = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore()
+    self.fake_cidb = self.buildstore.GetCIDBHandle()
     self.master_build_id = self.fake_cidb.InsertBuild(
         self._bot_id, '1', self._bot_id, 'bot_hostname')
     self._patch_factory = patch_unittest.MockPatchFactory()
@@ -79,7 +80,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     config_map, action_history = (
         relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions(
-            self.master_build_id, self.fake_cidb, self.build_config,
+            self.master_build_id, self.buildstore, self.build_config,
             changes, ['bb_id_1'], include_master=True))
     expected_config_map = {
         self.master_build_id: self._bot_id,
@@ -95,7 +96,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     config_map, action_history = (
         relevant_changes.RelevantChanges._GetSlaveMappingAndCLActions(
-            self.master_build_id, self.fake_cidb, self.build_config,
+            self.master_build_id, self.buildstore, self.build_config,
             changes, ['bb_id_1']))
     expected_config_map = {
         test_build_id: slave_config
@@ -146,7 +147,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     result = (
         relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            new_master_build_id, self.fake_cidb, changes,
+            new_master_build_id, self.buildstore, changes,
             change_relevant_slaves_dict))
     self.assertDictEqual(result, {})
 
@@ -166,7 +167,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     result = (
         relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            new_master_build_id, self.fake_cidb, changes,
+            new_master_build_id, self.buildstore, changes,
             change_relevant_slaves_dict))
     self.assertDictEqual(result, {})
 
@@ -187,7 +188,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     result = (
         relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            new_master_build_id, self.fake_cidb, changes,
+            new_master_build_id, self.buildstore, changes,
             change_relevant_slaves_dict))
     self.assertDictEqual(result, {})
 
@@ -211,7 +212,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     result = (
         relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            new_master_build_id, self.fake_cidb, changes,
+            new_master_build_id, self.buildstore, changes,
             change_relevant_slaves_dict))
     self.assertDictEqual(result, {})
 
@@ -246,7 +247,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     result = (
         relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            new_master_build_id, self.fake_cidb, changes,
+            new_master_build_id, self.buildstore, changes,
             change_relevant_slaves_dict))
     expected = {
         changes[0]: {'slave_3'},
@@ -363,7 +364,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     mock_get_changes.assert_called_once_with(
         mock_stage_dict)
     mock_get_passed_slaves.assert_called_once_with(
-        self.master_build_id, self.fake_cidb, self.changes, mock.ANY)
+        self.master_build_id, self.buildstore, self.changes, mock.ANY)
 
   def _BuildDependMap(self):
     """Helper method to build dependency_map for GetDependChanges tests."""

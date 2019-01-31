@@ -185,7 +185,8 @@ class SlaveStatus(object):
 
     self.all_cidb_status_dict = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, self.all_buildbucket_info_dict))
+            self.buildstore, self.master_build_id,
+            self.all_buildbucket_info_dict))
     self.new_cidb_status_dict = self._GetNewSlaveCIDBStatusInfo(
         self.all_cidb_status_dict, self.completed_builds)
 
@@ -412,7 +413,8 @@ class SlaveStatus(object):
     )
     all_experimental_cidb_status_dict = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, all_experimental_bb_info_dict)
+            self.buildstore, self.master_build_id,
+            all_experimental_bb_info_dict)
     )
 
     completed_experimental_builds = set(

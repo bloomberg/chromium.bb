@@ -779,13 +779,12 @@ class ReportStage(generic_stages.BuilderStage,
         debug=self._run.options.debug_forced, update_list=True, acl=self.acl)
     return os.path.join(archive.download_url_file, timeline_file)
 
-  def _UploadSlavesTimeline(self, builder_run, build_id, db):
+  def _UploadSlavesTimeline(self, builder_run, build_id):
     """Upload an HTML timeline for the slaves at remote archive location.
 
     Args:
       builder_run: BuilderRun object for this run.
       build_id: CIDB id for the master build.
-      db: CIDBConnection instance.
 
     Returns:
       The URL of the timeline is returned if slave builds exists.  If no
@@ -806,7 +805,7 @@ class ReportStage(generic_stages.BuilderStage,
     timeline = os.path.join(archive_path, timeline_file)
 
     # Gather information about this build from CIDB.
-    statuses = db.GetSlaveStatuses(build_id)
+    statuses = self.buildstore.GetSlaveStatuses(build_id)
     if statuses is None or len(statuses) == 0:
       return None
     # Slaves may be started at slightly different times, but what matters most
@@ -893,7 +892,7 @@ class ReportStage(generic_stages.BuilderStage,
         timeline = self._UploadBuildStagesTimeline(builder_run, build_id)
         logging.PrintBuildbotLink('Build stages timeline', timeline)
 
-        timeline = self._UploadSlavesTimeline(builder_run, build_id, db)
+        timeline = self._UploadSlavesTimeline(builder_run, build_id)
         if timeline is not None:
           logging.PrintBuildbotLink('Slaves timeline', timeline)
 

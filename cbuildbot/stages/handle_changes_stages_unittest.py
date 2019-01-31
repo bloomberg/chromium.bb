@@ -20,7 +20,6 @@ from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
@@ -38,8 +37,8 @@ class CommitQueueHandleChangesStageTests(
 
   def setUp(self):
     self._Prepare()
-    self.mock_cidb = mock.Mock()
-    self.buildstore = FakeBuildStore(self.mock_cidb)
+    self.buildstore = FakeBuildStore()
+    self.mock_cidb = self.buildstore.GetCIDBHandle()
 
     self.partial_submit_changes = ['A', 'B']
     self.other_changes = ['C', 'D']
@@ -154,7 +153,7 @@ class CommitQueueHandleChangesStageTests(
     stage = self.ConstructStage()
     self._MockPartialSubmit(stage)
     master_build_id = stage._run.attrs.metadata.GetValue('build_id')
-    db = fake_cidb.FakeCIDBConnection()
+    db = self.mock_cidb
     slave_build_id = db.InsertBuild(
         'slave_1', 1, 'slave_1', 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='123')

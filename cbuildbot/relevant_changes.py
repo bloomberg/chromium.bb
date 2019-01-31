@@ -29,13 +29,14 @@ class RelevantChanges(object):
   """Class that quries and tracks relevant changes."""
 
   @classmethod
-  def _GetSlaveMappingAndCLActions(cls, master_build_id, db, config, changes,
-                                   slave_buildbucket_ids, include_master=False):
+  def _GetSlaveMappingAndCLActions(cls, master_build_id, buildstore, config,
+                                   changes, slave_buildbucket_ids,
+                                   include_master=False):
     """Query CIDB to for slaves and CL actions.
 
     Args:
       master_build_id: Build id of this master build.
-      db: Instance of cidb.CIDBConnection.
+      buildstore: Instance of buildstore.BuildStore.
       config: Instance of config_lib.BuildConfig of this build.
       changes: A list of GerritPatch instances to examine.
       slave_buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
@@ -49,16 +50,17 @@ class RelevantChanges(object):
       include_master is True, the config_map also includes master build. The
       action_history is a list of all CL actions associated with |changes|.
     """
-    assert db, 'No database connection to use.'
+    assert buildstore, 'No buildstore to use.'
     assert config.master, 'This is not a master build.'
 
-    slave_list = db.GetSlaveStatuses(
+    # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
+    slave_list = buildstore.GetSlaveStatuses(
         master_build_id, buildbucket_ids=slave_buildbucket_ids)
 
     # TODO(akeshet): We are getting the full action history for all changes that
     # were in this CQ run. It would make more sense to only get the actions from
     # build_ids of this master and its slaves.
-    action_history = db.GetActionsForChanges(changes)
+    action_history = buildstore.GetCIDBHandle().GetActionsForChanges(changes)
 
     config_map = dict()
 
@@ -71,15 +73,15 @@ class RelevantChanges(object):
     return config_map, action_history
 
   @classmethod
-  def GetRelevantChangesForSlaves(cls, master_build_id, db, config, changes,
-                                  builds_not_passed_sync_stage,
+  def GetRelevantChangesForSlaves(cls, master_build_id, buildstore, config,
+                                  changes, builds_not_passed_sync_stage,
                                   slave_buildbucket_ids,
                                   include_master=False):
     """Compile a set of relevant changes for each slave.
 
     Args:
       master_build_id: Build id of this master build.
-      db: Instance of cidb.CIDBConnection.
+      buildstore: Instance of buildstore.BuildStore.
       config: Instance of config_lib.BuildConfig of this build.
       changes: A list of GerritPatch instances to examine.
       builds_not_passed_sync_stage: Set of build config names of slaves that
@@ -94,10 +96,11 @@ class RelevantChanges(object):
       (as GerritPatch instances). If include_master is True, the dictionary
       includes the master build config and its relevant changes.
     """
+    # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
     # Retrieve the slaves and clactions from CIDB.
     config_map, action_history = cls._GetSlaveMappingAndCLActions(
-        master_build_id, db, config, changes, slave_buildbucket_ids,
-        include_master=include_master)
+        master_build_id, buildstore, config, changes,
+        slave_buildbucket_ids, include_master=include_master)
     changes_by_build_id = clactions.GetRelevantChangesForBuilds(
         changes, action_history, config_map.keys())
 
@@ -117,7 +120,7 @@ class RelevantChanges(object):
 
   @classmethod
   def GetPreviouslyPassedSlavesForChanges(
-      cls, master_build_id, db, changes, change_relevant_slaves_dict,
+      cls, master_build_id, buildstore, changes, change_relevant_slaves_dict,
       history_lookback_limit=CQ_HISTORY_LOOKBACK_LIMIT_HOUR):
     """Get slaves passed in history (not from current run) for changes.
 
@@ -129,7 +132,7 @@ class RelevantChanges(object):
 
     Args:
       master_build_id: The build id of current master to get current slaves.
-      db: An instance of cidb.CIDBConnection.
+      buildstore: An instance of buildstore.BuildStore.
       changes: A list of cros_patch.GerritPatch instance to check.
       change_relevant_slaves_dict: A dict mapping changes to their relevant
         slaves in current run.
@@ -142,8 +145,9 @@ class RelevantChanges(object):
       of build config name (strings) of their relevant slaves which passed in
       history.
     """
-    assert db, 'No database connection to use.'
-    current_slaves = db.GetSlaveStatuses(master_build_id)
+    assert buildstore, 'No buildstore to use.'
+    # TODO(buildstore): make sure buildstore is BuildStore, not CIDBConnection.
+    current_slaves = buildstore.GetSlaveStatuses(master_build_id)
     current_slave_build_ids = [x['id'] for x in current_slaves]
 
     valid_configs = set()
@@ -160,7 +164,7 @@ class RelevantChanges(object):
       start_time = (datetime.datetime.now() -
                     datetime.timedelta(hours=history_lookback_limit))
 
-    actions = db.GetActionsForChanges(
+    actions = buildstore.GetCIDBHandle().GetActionsForChanges(
         changes,
         ignore_patch_number=False,
         status=constants.BUILDER_STATUS_PASSED,
@@ -289,7 +293,7 @@ class TriageRelevantChanges(object):
         self.slave_changes_dict)
     self.change_passed_slaves_dict = (
         RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-            self.master_build_id, self.db, self.changes,
+            self.master_build_id, self.buildstore, self.changes,
             self.change_relevant_slaves_dict))
 
   @staticmethod
@@ -391,7 +395,7 @@ class TriageRelevantChanges(object):
     slave_buildbucket_ids = [bb_info.buildbucket_id
                              for bb_info in self.buildbucket_info_dict.values()]
     slave_changes_dict = RelevantChanges.GetRelevantChangesForSlaves(
-        self.master_build_id, self.db, self.config, self.changes,
+        self.master_build_id, self.buildstore, self.config, self.changes,
         builds_not_passed_sync_stage, slave_buildbucket_ids)
 
     # Some slaves may not pick up any changes, update the value to set()

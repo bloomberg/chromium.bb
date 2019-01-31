@@ -34,8 +34,10 @@ _CL_URLS = (
 class CLStatsEngine(object):
   """Engine to generate stats about CL actions taken by the Commit Queue."""
 
-  def __init__(self, db):
-    self.db = db
+  def __init__(self, buildstore):
+    assert not isinstance(buildstore, cidb.CIDBConnection)
+    self.buildstore = buildstore
+    self.db = buildstore.GetCIDBHandle()
     self.builds = []
     self.claction_history = None
     self.reasons = {}
@@ -137,7 +139,8 @@ class CLStatsEngine(object):
     # separate query per CQ run, but this could be consolidated to a single
     # query if necessary (requires adding a cidb.py API method).
     for bid in self.builds_by_build_id:
-      self.slave_builds_by_master_id[bid] = self.db.GetSlaveStatuses(bid)
+      self.slave_builds_by_master_id[bid] = self.buildstore.GetSlaveStatuses(
+          bid)
 
     self.slave_builds_by_config = cros_collections.GroupByKey(
         itertools.chain(*self.slave_builds_by_master_id.values()),

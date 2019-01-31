@@ -18,6 +18,7 @@ from chromite.lib import fake_cidb
 from chromite.scripts import summarize_build_stats
 from chromite.lib import metadata_lib
 from chromite.lib import constants
+from chromite.lib.buildstore import FakeBuildStore
 
 
 CQ = constants.CQ
@@ -29,6 +30,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
 
   def setUp(self):
     self.fake_db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.fake_db)
 
   def _PopulateFakeCidbWithTestData(self, cq):
     """Generate test data and insert it in the the fake cidb object.
@@ -161,7 +163,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
       self._PopulateFakeCidbWithTestData(cq=True)
       stack.Add(mock.patch.object, summarize_build_stats.CLStatsEngine,
                 'GatherBuildAnnotations')
-      cl_stats = summarize_build_stats.CLStatsEngine(self.fake_db)
+      cl_stats = summarize_build_stats.CLStatsEngine(self.buildstore)
       cl_stats.Gather(datetime.date.today(), datetime.date.today())
       cl_stats.reasons = {1: '', 2: '', 3: constants.FAILURE_CATEGORY_BAD_CL,
                           4: constants.FAILURE_CATEGORY_BAD_CL}
