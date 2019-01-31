@@ -1695,6 +1695,9 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   if (start_session_type_ == PRIMARY_USER_SESSION) {
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
     // Initialize Assistant early to be used in post login Oobe steps.
+    // Note: AssistantClient::MaybeInit is also called in
+    // SessionControllerClient::OnSessionStateChanged, which happends after the
+    // post login Oobe steps. Therefore Assistant is initialized here.
     if (chromeos::switches::IsAssistantEnabled())
       AssistantClient::Get()->MaybeInit(profile);
 #endif

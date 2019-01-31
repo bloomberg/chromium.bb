@@ -25,6 +25,7 @@ class AssistantClient : chromeos::assistant::mojom::Client {
   ~AssistantClient() override;
 
   void MaybeInit(Profile* profile);
+  void MaybeStartAssistantOptInFlow();
 
   // assistant::mojom::Client overrides:
   void OnAssistantStatusChanged(bool running) override;

@@ -66,6 +66,10 @@ void AssistantClient::MaybeInit(Profile* profile) {
   assistant_setup_ = std::make_unique<AssistantSetup>(connector);
 }
 
+void AssistantClient::MaybeStartAssistantOptInFlow() {
+  assistant_setup_->MaybeStartAssistantOptInFlow();
+}
+
 void AssistantClient::OnAssistantStatusChanged(bool running) {
   // |running| means assistent mojom service is running. This maps to
   // |STOPPED| and |NOT_READY|. |RUNNING| maps to UI is shown and an assistant
