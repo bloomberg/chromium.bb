@@ -4,8 +4,9 @@
 
 #include "api/public/message_demuxer.h"
 
+#include <memory>
+
 #include "api/impl/quic/quic_connection.h"
-#include "base/make_unique.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {

@@ -4,7 +4,8 @@
 
 #include "api/impl/quic/quic_service_common.h"
 
-#include "base/make_unique.h"
+#include <memory>
+
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -16,8 +17,8 @@ std::unique_ptr<QuicProtocolConnection> QuicProtocolConnection::FromExisting(
     ServiceConnectionDelegate* delegate,
     uint64_t endpoint_id) {
   std::unique_ptr<QuicStream> stream = connection->MakeOutgoingStream(delegate);
-  auto pc =
-      MakeUnique<QuicProtocolConnection>(owner, endpoint_id, stream->id());
+  auto pc = std::make_unique<QuicProtocolConnection>(owner, endpoint_id,
+                                                     stream->id());
   pc->set_stream(stream.get());
   delegate->AddStreamPair(ServiceStreamPair(std::move(stream), pc.get()));
   return pc;
@@ -103,8 +104,8 @@ QuicStream::Delegate* ServiceConnectionDelegate::NextStreamDelegate(
     uint64_t connection_id,
     uint64_t stream_id) {
   OSP_DCHECK(!pending_connection_);
-  pending_connection_ =
-      MakeUnique<QuicProtocolConnection>(parent_, endpoint_id_, stream_id);
+  pending_connection_ = std::make_unique<QuicProtocolConnection>(
+      parent_, endpoint_id_, stream_id);
   return this;
 }
 

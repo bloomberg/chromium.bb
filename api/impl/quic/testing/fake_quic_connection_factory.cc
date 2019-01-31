@@ -5,8 +5,8 @@
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
 
 #include <algorithm>
+#include <memory>
 
-#include "base/make_unique.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -22,8 +22,8 @@ void FakeQuicConnectionFactory::StartServerConnection(
     const IPEndpoint& endpoint) {
   QuicConnection::Delegate* delegate =
       server_delegate_->NextConnectionDelegate(endpoint);
-  auto connection =
-      MakeUnique<FakeQuicConnection>(this, next_connection_id_++, delegate);
+  auto connection = std::make_unique<FakeQuicConnection>(
+      this, next_connection_id_++, delegate);
   pending_connections_.emplace(endpoint, connection.get());
   server_delegate_->OnIncomingConnection(std::move(connection));
 }
@@ -102,8 +102,8 @@ std::unique_ptr<QuicConnection> FakeQuicConnectionFactory::Connect(
     const IPEndpoint& endpoint,
     QuicConnection::Delegate* connection_delegate) {
   OSP_DCHECK(pending_connections_.find(endpoint) == pending_connections_.end());
-  auto connection = MakeUnique<FakeQuicConnection>(this, next_connection_id_++,
-                                                   connection_delegate);
+  auto connection = std::make_unique<FakeQuicConnection>(
+      this, next_connection_id_++, connection_delegate);
   pending_connections_.emplace(endpoint, connection.get());
   return connection;
 }

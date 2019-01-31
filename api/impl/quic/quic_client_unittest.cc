@@ -4,11 +4,12 @@
 
 #include "api/impl/quic/quic_client.h"
 
+#include <memory>
+
 #include "api/impl/quic/quic_service_common.h"
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
 #include "api/public/network_metrics.h"
 #include "base/error.h"
-#include "base/make_unique.h"
 #include "platform/api/logging.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -76,11 +77,11 @@ class ConnectionCallback final
 class QuicClientTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    auto connection_factory = MakeUnique<FakeQuicConnectionFactory>(
+    auto connection_factory = std::make_unique<FakeQuicConnectionFactory>(
         local_endpoint_, &server_demuxer_);
     connection_factory_ = connection_factory.get();
-    client_ = MakeUnique<QuicClient>(&demuxer_, std::move(connection_factory),
-                                     &mock_observer_);
+    client_ = std::make_unique<QuicClient>(
+        &demuxer_, std::move(connection_factory), &mock_observer_);
   }
 
   void RunTasksUntilIdle() {

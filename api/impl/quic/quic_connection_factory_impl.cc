@@ -5,9 +5,9 @@
 #include "api/impl/quic/quic_connection_factory_impl.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "api/impl/quic/quic_connection_impl.h"
-#include "base/make_unique.h"
 #include "platform/api/logging.h"
 #include "platform/base/event_loop.h"
 #include "third_party/chromium_quic/src/base/location.h"
@@ -76,12 +76,12 @@ bool QuicTaskRunner::RunsTasksInCurrentSequence() const {
 
 QuicConnectionFactoryImpl::QuicConnectionFactoryImpl() {
   task_runner_ = ::base::MakeRefCounted<QuicTaskRunner>();
-  alarm_factory_ = MakeUnique<::net::QuicChromiumAlarmFactory>(
+  alarm_factory_ = std::make_unique<::net::QuicChromiumAlarmFactory>(
       task_runner_.get(), ::quic::QuicChromiumClock::GetInstance());
   ::quic::QuartcFactoryConfig factory_config;
   factory_config.alarm_factory = alarm_factory_.get();
   factory_config.clock = ::quic::QuicChromiumClock::GetInstance();
-  quartc_factory_ = MakeUnique<::quic::QuartcFactory>(factory_config);
+  quartc_factory_ = std::make_unique<::quic::QuartcFactory>(factory_config);
   waiter_ = platform::CreateEventWaiter();
 }
 
@@ -116,12 +116,13 @@ void QuicConnectionFactoryImpl::RunTasks() {
       if (server_delegate_) {
         OSP_VLOG(1) << __func__ << ": spawning connection from "
                     << packet.source;
-        auto transport = MakeUnique<UdpTransport>(packet.socket, packet.source);
+        auto transport =
+            std::make_unique<UdpTransport>(packet.socket, packet.source);
         ::quic::QuartcSessionConfig session_config;
         session_config.perspective = ::quic::Perspective::IS_SERVER;
         session_config.packet_transport = transport.get();
 
-        auto result = MakeUnique<QuicConnectionImpl>(
+        auto result = std::make_unique<QuicConnectionImpl>(
             this, server_delegate_->NextConnectionDelegate(packet.source),
             std::move(transport),
             quartc_factory_->CreateQuartcSession(session_config));
@@ -144,7 +145,7 @@ std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
   auto* socket = endpoint.address.IsV4() ? platform::CreateUdpSocketIPv4()
                                          : platform::CreateUdpSocketIPv6();
   platform::BindUdpSocket(socket, {}, 0);
-  auto transport = MakeUnique<UdpTransport>(socket, endpoint);
+  auto transport = std::make_unique<UdpTransport>(socket, endpoint);
 
   ::quic::QuartcSessionConfig session_config;
   session_config.perspective = ::quic::Perspective::IS_CLIENT;
@@ -153,7 +154,7 @@ std::unique_ptr<QuicConnection> QuicConnectionFactoryImpl::Connect(
   session_config.unique_remote_server_id = "turtle";
   session_config.packet_transport = transport.get();
 
-  auto result = MakeUnique<QuicConnectionImpl>(
+  auto result = std::make_unique<QuicConnectionImpl>(
       this, connection_delegate, std::move(transport),
       quartc_factory_->CreateQuartcSession(session_config));
 

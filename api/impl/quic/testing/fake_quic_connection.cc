@@ -4,8 +4,9 @@
 
 #include "api/impl/quic/testing/fake_quic_connection.h"
 
+#include <memory>
+
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
-#include "base/make_unique.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -53,7 +54,7 @@ FakeQuicConnection::~FakeQuicConnection() = default;
 
 std::unique_ptr<FakeQuicStream> FakeQuicConnection::MakeIncomingStream() {
   uint64_t stream_id = next_stream_id_++;
-  auto result = MakeUnique<FakeQuicStream>(
+  auto result = std::make_unique<FakeQuicStream>(
       delegate()->NextStreamDelegate(id(), stream_id), stream_id);
   streams_.emplace(result->id(), result.get());
   return result;
@@ -65,7 +66,7 @@ void FakeQuicConnection::OnDataReceived(const platform::ReceivedData& data) {
 
 std::unique_ptr<QuicStream> FakeQuicConnection::MakeOutgoingStream(
     QuicStream::Delegate* delegate) {
-  auto result = MakeUnique<FakeQuicStream>(delegate, next_stream_id_++);
+  auto result = std::make_unique<FakeQuicStream>(delegate, next_stream_id_++);
   streams_.emplace(result->id(), result.get());
   return result;
 }

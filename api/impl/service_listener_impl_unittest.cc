@@ -4,7 +4,8 @@
 
 #include "api/impl/service_listener_impl.h"
 
-#include "base/make_unique.h"
+#include <memory>
+
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -55,7 +56,7 @@ class ServiceListenerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
     service_listener_ =
-        MakeUnique<ServiceListenerImpl>(nullptr, &mock_delegate_);
+        std::make_unique<ServiceListenerImpl>(nullptr, &mock_delegate_);
   }
 
   MockMdnsDelegate mock_delegate_;
@@ -236,7 +237,7 @@ TEST_F(ServiceListenerImplTest, ObserveTransitions) {
   MockObserver observer;
   MockMdnsDelegate mock_delegate;
   service_listener_ =
-      MakeUnique<ServiceListenerImpl>(&observer, &mock_delegate);
+      std::make_unique<ServiceListenerImpl>(&observer, &mock_delegate);
 
   service_listener_->Start();
   Expectation start_from_stopped = EXPECT_CALL(observer, OnStarted());
@@ -280,7 +281,7 @@ TEST_F(ServiceListenerImplTest, ObserveFromSearching) {
   MockObserver observer;
   MockMdnsDelegate mock_delegate;
   service_listener_ =
-      MakeUnique<ServiceListenerImpl>(&observer, &mock_delegate);
+      std::make_unique<ServiceListenerImpl>(&observer, &mock_delegate);
 
   service_listener_->Start();
   mock_delegate.SetState(State::kRunning);
@@ -312,7 +313,7 @@ TEST_F(ServiceListenerImplTest, ReceiverObserverPassThrough) {
   MockObserver observer;
   MockMdnsDelegate mock_delegate;
   service_listener_ =
-      MakeUnique<ServiceListenerImpl>(&observer, &mock_delegate);
+      std::make_unique<ServiceListenerImpl>(&observer, &mock_delegate);
 
   EXPECT_CALL(observer, OnReceiverAdded(receiver1));
   service_listener_->OnReceiverAdded(receiver1);

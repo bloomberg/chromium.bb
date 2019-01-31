@@ -4,11 +4,12 @@
 
 #include "api/impl/presentation/url_availability_requester.h"
 
+#include <memory>
+
 #include "api/impl/quic/quic_client.h"
 #include "api/impl/quic/testing/fake_quic_connection_factory.h"
 #include "api/impl/testing/fake_clock.h"
 #include "api/public/network_service_manager.h"
-#include "base/make_unique.h"
 #include "msgs/osp_messages.h"
 #include "platform/api/logging.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
@@ -54,10 +55,10 @@ class NullObserver final : public ProtocolConnectionServiceObserver {
 class UrlAvailabilityRequesterTest : public ::testing::Test {
  public:
   void SetUp() override {
-    auto fake_factory = MakeUnique<FakeQuicConnectionFactory>(
+    auto fake_factory = std::make_unique<FakeQuicConnectionFactory>(
         controller_endpoint_, &receiver_demuxer_);
     fake_factory_ = fake_factory.get();
-    auto quic_client = MakeUnique<QuicClient>(
+    auto quic_client = std::make_unique<QuicClient>(
         &controller_demuxer_, std::move(fake_factory), &null_observer_);
     quic_client->Start();
     NetworkServiceManager::Get()->Create(nullptr, nullptr,
@@ -118,7 +119,8 @@ class UrlAvailabilityRequesterTest : public ::testing::Test {
   FakeQuicConnectionFactory* fake_factory_;
   NullObserver null_observer_;
   platform::TimeDelta now_{platform::TimeDelta::FromSeconds(213489)};
-  std::unique_ptr<FakeClock> fake_clock_owned_{MakeUnique<FakeClock>(now_)};
+  std::unique_ptr<FakeClock> fake_clock_owned_{
+      std::make_unique<FakeClock>(now_)};
   FakeClock* fake_clock_{fake_clock_owned_.get()};
   UrlAvailabilityRequester listener_{std::move(fake_clock_owned_)};
 

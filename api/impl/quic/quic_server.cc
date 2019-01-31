@@ -4,7 +4,8 @@
 
 #include "api/impl/quic/quic_server.h"
 
-#include "base/make_unique.h"
+#include <memory>
+
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -140,7 +141,7 @@ QuicConnection::Delegate* QuicServer::NextConnectionDelegate(
   OSP_DCHECK_EQ(state_, State::kRunning);
   OSP_DCHECK(!pending_connection_delegate_);
   pending_connection_delegate_ =
-      MakeUnique<ServiceConnectionDelegate>(this, source);
+      std::make_unique<ServiceConnectionDelegate>(this, source);
   return pending_connection_delegate_.get();
 }
 

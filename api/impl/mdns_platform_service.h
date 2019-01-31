@@ -5,10 +5,8 @@
 #ifndef API_IMPL_MDNS_PLATFORM_SERVICE_H_
 #define API_IMPL_MDNS_PLATFORM_SERVICE_H_
 
-#include <memory>
 #include <vector>
 
-#include "base/make_unique.h"
 #include "platform/api/event_waiter.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/socket.h"

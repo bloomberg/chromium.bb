@@ -5,8 +5,8 @@
 #include "api/impl/quic/quic_client.h"
 
 #include <algorithm>
+#include <memory>
 
-#include "base/make_unique.h"
 #include "platform/api/logging.h"
 
 namespace openscreen {
@@ -156,7 +156,7 @@ QuicClient::PendingConnectionData& QuicClient::PendingConnectionData::operator=(
 uint64_t QuicClient::StartConnectionRequest(
     const IPEndpoint& endpoint,
     ConnectionRequestCallback* request) {
-  auto delegate = MakeUnique<ServiceConnectionDelegate>(this, endpoint);
+  auto delegate = std::make_unique<ServiceConnectionDelegate>(this, endpoint);
   std::unique_ptr<QuicConnection> connection =
       connection_factory_->Connect(endpoint, delegate.get());
   auto pending_result = pending_connections_.emplace(

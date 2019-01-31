@@ -7,10 +7,10 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/error.h"
-#include "base/make_unique.h"
 #include "discovery/mdns/mdns_responder_adapter_impl.h"
 #include "platform/api/error.h"
 #include "platform/api/logging.h"
@@ -234,7 +234,7 @@ void BrowseDemo(const std::string& service_name,
     return;
   }
 
-  auto mdns_adapter = MakeUnique<mdns::MdnsResponderAdapterImpl>();
+  auto mdns_adapter = std::make_unique<mdns::MdnsResponderAdapterImpl>();
   platform::EventWaiterPtr waiter = platform::CreateEventWaiter();
   mdns_adapter->Init();
   mdns_adapter->SetHostLabel("gigliorononomicon");

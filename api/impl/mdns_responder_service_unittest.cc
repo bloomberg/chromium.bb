@@ -9,7 +9,6 @@
 #include "api/impl/service_listener_impl.h"
 #include "api/impl/testing/fake_mdns_platform_service.h"
 #include "api/impl/testing/fake_mdns_responder_adapter.h"
-#include "base/make_unique.h"
 #include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
@@ -31,7 +30,7 @@ class FakeMdnsResponderAdapterFactory final
   ~FakeMdnsResponderAdapterFactory() override = default;
 
   std::unique_ptr<mdns::MdnsResponderAdapter> Create() override {
-    auto mdns = MakeUnique<FakeMdnsResponderAdapter>();
+    auto mdns = std::make_unique<FakeMdnsResponderAdapter>();
     mdns->SetLifetimeObserver(this);
     last_mdns_responder_ = mdns.get();
     ++instances_;
@@ -94,21 +93,22 @@ class MockServicePublisherObserver final : public ServicePublisher::Observer {
 class MdnsResponderServiceTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    auto mdns_responder_factory = MakeUnique<FakeMdnsResponderAdapterFactory>();
+    auto mdns_responder_factory =
+        std::make_unique<FakeMdnsResponderAdapterFactory>();
     mdns_responder_factory_ = mdns_responder_factory.get();
-    auto platform_service = MakeUnique<FakeMdnsPlatformService>();
+    auto platform_service = std::make_unique<FakeMdnsPlatformService>();
     fake_platform_service_ = platform_service.get();
     fake_platform_service_->set_interfaces(bound_interfaces_);
-    mdns_service_ = MakeUnique<MdnsResponderService>(
+    mdns_service_ = std::make_unique<MdnsResponderService>(
         kTestServiceName, kTestServiceProtocol,
         std::move(mdns_responder_factory), std::move(platform_service));
     service_listener_ =
-        MakeUnique<ServiceListenerImpl>(&observer_, mdns_service_.get());
+        std::make_unique<ServiceListenerImpl>(&observer_, mdns_service_.get());
 
     mdns_service_->SetServiceConfig(kTestHostname, kTestServiceInstance,
                                     kTestPort, {}, {{"model", "shifty"}});
-    service_publisher_ = MakeUnique<ServicePublisherImpl>(&publisher_observer_,
-                                                          mdns_service_.get());
+    service_publisher_ = std::make_unique<ServicePublisherImpl>(
+        &publisher_observer_, mdns_service_.get());
   }
 
   MockServiceListenerObserver observer_;

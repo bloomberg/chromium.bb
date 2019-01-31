@@ -10,7 +10,6 @@ source_set("base") {
     "ip_address.cc",
     "ip_address.h",
     "macros.h",
-    "make_unique.h",
     "scoped_pipe.h",
     "stringprintf.h",
     "time.h",

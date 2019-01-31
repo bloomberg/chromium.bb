@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "api/public/mdns_service_listener_factory.h"
@@ -18,7 +19,6 @@
 #include "api/public/protocol_connection_server_factory.h"
 #include "api/public/service_listener.h"
 #include "api/public/service_publisher.h"
-#include "base/make_unique.h"
 #include "msgs/osp_messages.h"
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
@@ -102,7 +102,7 @@ class ListenerObserver final : public ServiceListener::Observer {
   void OnReceiverAdded(const ServiceInfo& info) override {
     OSP_LOG_INFO << "found! " << info.friendly_name;
     if (!auto_message_) {
-      auto_message_ = MakeUnique<AutoMessage>();
+      auto_message_ = std::make_unique<AutoMessage>();
       auto_message_->TakeRequest(
           NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
               info.v4_endpoint, auto_message_.get()));
@@ -183,7 +183,7 @@ class ConnectionServerObserver final
 
   void OnIncomingConnection(
       std::unique_ptr<ProtocolConnection>&& connection) override {
-    auto observer = MakeUnique<ConnectionObserver>(this);
+    auto observer = std::make_unique<ConnectionObserver>(this);
     connection->SetObserver(observer.get());
     connections_.emplace_back(std::move(observer), std::move(connection));
     connections_.back().second->CloseWriteEnd();
