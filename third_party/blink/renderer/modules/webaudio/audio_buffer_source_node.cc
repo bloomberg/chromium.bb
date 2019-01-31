@@ -45,6 +45,14 @@ const double kDefaultGrainDuration = 0.020;  // 20ms
 // buffers to minimize linear interpolation aliasing.
 const double kMaxRate = 1024;
 
+// Number of extra frames to use when determining if a source node can be
+// stopped.  This should be at least one rendering quantum, but we add one more
+// quantum for good measure.  This doesn't need to be extra precise, just more
+// than one rendering quantum.  See |handleStoppableSourceNode()|.
+// FIXME: Expose the rendering quantum somehow instead of hardwiring a value
+// here.
+const int kExtraStopFrames = 256;
+
 AudioBufferSourceHandler::AudioBufferSourceHandler(
     AudioNode& node,
     float sample_rate,
