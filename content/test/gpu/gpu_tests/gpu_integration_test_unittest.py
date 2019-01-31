@@ -7,10 +7,12 @@ import os
 import shutil
 import tempfile
 import unittest
+import mock
 
 from telemetry.testing import browser_test_runner
 
 from gpu_tests import path_util
+from gpu_tests import gpu_integration_test
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
@@ -77,6 +79,30 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       ['--also-run-disabled-tests'])
     self.assertEquals(self._test_state['num_test_runs'], 1)
 
+  def testStartBrowser_Retries(self):
+    class TestException(Exception):
+      pass
+    def SetBrowserAndRaiseTestException():
+      gpu_integration_test.GpuIntegrationTest.browser = (
+          mock.MagicMock())
+      raise TestException
+    gpu_integration_test.GpuIntegrationTest.browser = None
+    gpu_integration_test.GpuIntegrationTest.platform = None
+    with mock.patch.object(
+        gpu_integration_test.serially_executed_browser_test_case.\
+            SeriallyExecutedBrowserTestCase,
+            'StartBrowser',
+            side_effect=SetBrowserAndRaiseTestException) as mock_start_browser:
+      with mock.patch.object(
+          gpu_integration_test.GpuIntegrationTest,
+          'StopBrowser') as mock_stop_browser:
+        with self.assertRaises(TestException):
+          gpu_integration_test.GpuIntegrationTest.StartBrowser()
+        self.assertEqual(mock_start_browser.call_count,
+                         gpu_integration_test._START_BROWSER_RETRIES)
+        self.assertEqual(mock_stop_browser.call_count,
+                         gpu_integration_test._START_BROWSER_RETRIES)
+
   def _RunIntegrationTest(self, test_name, failures, successes, skips,
                           additional_args):
     config = chromium_config.ChromiumConfig(
@@ -97,14 +123,14 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       with open(test_state_path) as f:
         self._test_state = json.load(f)
       actual_successes, actual_failures, actual_skips = (
-          self._ExtracTestResults(test_result))
+          self._ExtractTestResults(test_result))
       self.assertEquals(set(actual_failures), set(failures))
       self.assertEquals(set(actual_successes), set(successes))
       self.assertEquals(set(actual_skips), set(skips))
     finally:
       shutil.rmtree(temp_dir)
 
-  def _ExtracTestResults(self, test_result):
+  def _ExtractTestResults(self, test_result):
     delimiter = test_result['path_delimiter']
     failures = []
     successes = []

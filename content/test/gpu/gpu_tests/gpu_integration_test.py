@@ -11,6 +11,8 @@ from telemetry.util import screenshot
 from gpu_tests import exception_formatter
 from gpu_tests import gpu_test_expectations
 
+_START_BROWSER_RETRIES = 3
+
 
 class GpuIntegrationTest(
     serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
@@ -115,28 +117,31 @@ class GpuIntegrationTest(
     # to push the fetch of the first tab into the lower retry loop
     # without breaking Telemetry's unit tests, and that hook is used
     # to implement the gpu_integration_test_unittests.
-    for x in range(0, 3):
+    for x in range(1, _START_BROWSER_RETRIES+1):  # Index from 1 instead of 0.
       try:
         super(GpuIntegrationTest, cls).StartBrowser()
         cls.tab = cls.browser.tabs[0]
         return
       except Exception:
-        logging.warning('Browser start failed (attempt %d of 3)', (x + 1))
+        logging.warning('Browser start failed (attempt %d of %d)',
+                        x, _START_BROWSER_RETRIES)
         # If we are on the last try and there is an exception take a screenshot
         # to try and capture more about the browser failure and raise
-        if x == 2:
+        if x == _START_BROWSER_RETRIES:
           url = screenshot.TryCaptureScreenShotAndUploadToCloudStorage(
             cls.platform)
           if url is not None:
             logging.info("GpuIntegrationTest screenshot of browser failure " +
               "located at " + url)
           else:
-            logging.warning("GpuIntegrationTest unable to take screenshot")
-          raise
-        # Otherwise, stop the browser to make sure it's in an
+            logging.warning("GpuIntegrationTest unable to take screenshot.")
+        # Stop the browser to make sure it's in an
         # acceptable state to try restarting it.
         if cls.browser:
           cls.StopBrowser()
+    # Re-raise the last exception thrown. Only happens if all the retries
+    # fail.
+    raise
 
   @classmethod
   def _RestartBrowser(cls, reason):
