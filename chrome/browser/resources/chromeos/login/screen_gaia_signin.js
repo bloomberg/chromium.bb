@@ -635,7 +635,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onBeforeHide: function() {
       chrome.send('loginUIStateChanged', ['gaia-signin', false]);
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
       $('offline-gaia').switchToEmailCard(false /* animated */);
     },
 
