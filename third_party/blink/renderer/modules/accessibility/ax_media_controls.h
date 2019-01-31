@@ -81,33 +81,6 @@ class AccessibilityMediaTimeline final : public AXSlider {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaTimeline);
 };
 
-class AXMediaControlsContainer final : public AccessibilityMediaControl {
- public:
-  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
-
-  AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
-  ~AXMediaControlsContainer() override = default;
-
-  ax::mojom::Role RoleValue() const override {
-    return ax::mojom::Role::kToolbar;
-  }
-
-  String TextAlternative(bool recursive,
-                         bool in_aria_labelled_by_traversal,
-                         AXObjectSet& visited,
-                         ax::mojom::NameFrom&,
-                         AXRelatedObjectVector*,
-                         NameSources*) const override;
-  String Description(ax::mojom::NameFrom,
-                     ax::mojom::DescriptionFrom&,
-                     AXObjectVector* description_objects) const override;
-
- private:
-  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(AXMediaControlsContainer);
-};
-
 class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);

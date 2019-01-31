@@ -2,8 +2,8 @@
 ++[section]
 ++++[audio]
 ++++++[section]
-++++++++[tool bar] name='audio' description='audio' horizontal
-++++++++++[tool bar] name='audio' description='audio' horizontal
+++++++++[section]
+++++++++++[section]
 ++++++++++++[push button] name='play' xml-roles:button
 ++++++++++++[section] name='elapsed time: 0:00'
 ++++++++++++++[text] name='0:00'

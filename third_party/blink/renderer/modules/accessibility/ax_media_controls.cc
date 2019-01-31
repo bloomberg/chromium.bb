@@ -58,9 +58,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaSlider:
       return AccessibilityMediaTimeline::Create(layout_object, ax_object_cache);
 
-    case kMediaControlsPanel:
-      return AXMediaControlsContainer::Create(layout_object, ax_object_cache);
-
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
     case kMediaOverflowButton:
@@ -109,7 +106,6 @@ String AccessibilityMediaControl::TextAlternative(
       return QueryString(WebLocalizedString::kAXMediaOverflowButton);
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
-    case kMediaControlsPanel:
     case kMediaOverflowList:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
@@ -132,7 +128,6 @@ String AccessibilityMediaControl::Description(
       return QueryString(WebLocalizedString::kAXMediaOverflowButtonHelp);
     case kMediaSliderThumb:
     case kMediaTimelineContainer:
-    case kMediaControlsPanel:
     case kMediaOverflowList:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
@@ -165,7 +160,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
     case kMediaOverflowList:
       return ax::mojom::Role::kGroup;
 
-    case kMediaControlsPanel:
     case kMediaSliderThumb:
       return ax::mojom::Role::kUnknown;
 
@@ -178,46 +172,6 @@ ax::mojom::Role AccessibilityMediaControl::RoleValue() const {
 
   NOTREACHED();
   return ax::mojom::Role::kUnknown;
-}
-
-//
-// AXMediaControlsContainer
-
-AXMediaControlsContainer::AXMediaControlsContainer(
-    LayoutObject* layout_object,
-    AXObjectCacheImpl& ax_object_cache)
-    : AccessibilityMediaControl(layout_object, ax_object_cache) {}
-
-AXObject* AXMediaControlsContainer::Create(LayoutObject* layout_object,
-                                           AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXMediaControlsContainer>(layout_object,
-                                                        ax_object_cache);
-}
-
-String AXMediaControlsContainer::TextAlternative(
-    bool recursive,
-    bool in_aria_labelled_by_traversal,
-    AXObjectSet& visited,
-    ax::mojom::NameFrom& name_from,
-    AXRelatedObjectVector* related_objects,
-    NameSources* name_sources) const {
-  return QueryString(IsControllingVideoElement()
-                         ? WebLocalizedString::kAXMediaVideoElement
-                         : WebLocalizedString::kAXMediaAudioElement);
-}
-
-String AXMediaControlsContainer::Description(
-    ax::mojom::NameFrom name_from,
-    ax::mojom::DescriptionFrom& description_from,
-    AXObjectVector* description_objects) const {
-  return QueryString(IsControllingVideoElement()
-                         ? WebLocalizedString::kAXMediaVideoElementHelp
-                         : WebLocalizedString::kAXMediaAudioElementHelp);
-}
-
-bool AXMediaControlsContainer::ComputeAccessibilityIsIgnored(
-    IgnoredReasons* ignored_reasons) const {
-  return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
 //
