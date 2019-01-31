@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -136,7 +137,8 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInternetDetailDialogHost);
-
+  source->AddBoolean("showTechnologyBadge",
+                     !ash::features::IsSeparateNetworkIconsEnabled());
   AddInternetStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_INTERNET_DETAIL);
   source->SetJsonPath("strings.js");
