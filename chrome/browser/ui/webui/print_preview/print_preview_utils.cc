@@ -110,37 +110,37 @@ void SystemDialogDone(const base::Value& error) {
 
 }  // namespace
 
-std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
-    const base::DictionaryValue& cdd) {
-  auto validated_cdd =
-      base::DictionaryValue::From(base::Value::ToUniquePtrValue(cdd.Clone()));
-  const base::Value* caps = cdd.FindKey(kPrinter);
-  if (!caps || !caps->is_dict())
-    return validated_cdd;
-  validated_cdd->RemoveKey(kPrinter);
-  auto out_caps = std::make_unique<base::DictionaryValue>();
-  for (const auto& capability : caps->DictItems()) {
-    const auto& key = capability.first;
-    const base::Value& value = capability.second;
+base::Value ValidateCddForPrintPreview(base::Value cdd) {
+  base::Value* caps =
+      cdd.FindKeyOfType(kPrinter, base::Value::Type::DICTIONARY);
+  if (!caps)
+    return cdd;
 
-    const base::Value* list = nullptr;
-    if (value.is_dict())
-      list = value.FindKeyOfType(kOptionKey, base::Value::Type::LIST);
-    else if (value.is_list())
-      list = &value;
+  base::Value out_caps(base::Value::Type::DICTIONARY);
+  for (auto capability : caps->DictItems()) {
+    const auto& key = capability.first;
+    base::Value* value = &capability.second;
+
+    base::Value* list = nullptr;
+    if (value->is_dict())
+      list = value->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
+    else if (value->is_list())
+      list = value;
+
     if (!list) {
-      out_caps->SetKey(key, value.Clone());
+      out_caps.SetKey(key, std::move(*value));
       continue;
     }
 
     bool is_vendor_capability = key == kVendorCapabilityKey;
-    base::Value out_list = GetFilteredList(
-        list, is_vendor_capability ? VendorCapabilityInvalid : ValueIsNull);
-    if (out_list.GetList().empty())  // leave out empty lists.
+    base::EraseIf(list->GetList(),
+                  is_vendor_capability ? VendorCapabilityInvalid : ValueIsNull);
+    if (list->GetList().empty())  // leave out empty lists.
       continue;
+
     if (is_vendor_capability) {
       // Need to also filter the individual capability lists.
-      for (auto& vendor_option : out_list.GetList()) {
+      for (auto& vendor_option : list->GetList()) {
         const base::Value* option_type =
             vendor_option.FindKeyOfType(kTypeKey, base::Value::Type::STRING);
         if (option_type->GetString() != kSelectString)
@@ -148,22 +148,21 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
 
         base::Value* options_dict = vendor_option.FindKeyOfType(
             kSelectCapKey, base::Value::Type::DICTIONARY);
-        const base::Value* options_list =
+        base::Value* options_list =
             options_dict->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
-        options_dict->SetKey(kOptionKey,
-                             GetFilteredList(options_list, ValueIsNull));
+        base::EraseIf(options_list->GetList(), ValueIsNull);
       }
     }
-    if (value.is_dict()) {
+    if (value->is_dict()) {
       base::Value option_dict(base::Value::Type::DICTIONARY);
-      option_dict.SetKey(kOptionKey, std::move(out_list));
-      out_caps->SetKey(key, std::move(option_dict));
+      option_dict.SetKey(kOptionKey, std::move(*list));
+      out_caps.SetKey(key, std::move(option_dict));
     } else {
-      out_caps->SetKey(key, std::move(out_list));
+      out_caps.SetKey(key, std::move(*list));
     }
   }
-  validated_cdd->SetDictionary(kPrinter, std::move(out_caps));
-  return validated_cdd;
+  cdd.SetKey(kPrinter, std::move(out_caps));
+  return cdd;
 }
 
 void ConvertPrinterListForCallback(
