@@ -3336,7 +3336,6 @@ jumbo_split_static_library("browser") {
     }
   } else {  # Non-ChromeOS.
     sources += [
-      "badging/badge_service_delegate.h",
       "fullscreen.h",
       "policy/browser_signin_policy_handler.cc",
       "policy/browser_signin_policy_handler.h",
@@ -3353,6 +3352,8 @@ jumbo_split_static_library("browser") {
 
   if (is_win) {
     sources += [
+      "badging/badge_manager_delegate_win.cc",
+      "badging/badge_manager_delegate_win.h",
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "first_run/upgrade_util.cc",
@@ -3463,7 +3464,11 @@ jumbo_split_static_library("browser") {
 
   if (is_mac) {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
-    sources += [ "download/drag_download_item_mac.mm" ]
+    sources += [
+      "badging/badge_manager_delegate_mac.cc",
+      "badging/badge_manager_delegate_mac.h",
+      "download/drag_download_item_mac.mm",
+    ]
     deps += [
       "//chrome/app_shim",
       "//chrome/browser/apps/app_shim",

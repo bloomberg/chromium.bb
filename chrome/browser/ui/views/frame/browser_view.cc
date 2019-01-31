@@ -169,7 +169,6 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/ui_base_features.h"
 #else
-#include "chrome/browser/badging/badge_service_delegate.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #endif  // !defined(OS_CHROMEOS)
@@ -535,9 +534,6 @@ void BrowserView::Init(std::unique_ptr<Browser> browser) {
   browser_ = std::move(browser);
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_.reset(chrome::CreateImmersiveModeController());
-#if !defined(OS_CHROMEOS)
-  badge_service_delegate_ = std::make_unique<BadgeServiceDelegate>();
-#endif
 }
 
 // static
@@ -1351,10 +1347,6 @@ void BrowserView::SetIntentPickerViewVisibility(bool visible) {
     location_bar->intent_picker_view()->SetVisible(visible);
     location_bar->Layout();
   }
-}
-#else   // !defined(OS_CHROMEOS)
-BadgeServiceDelegate* BrowserView::GetBadgeServiceDelegate() const {
-  return badge_service_delegate_.get();
 }
 #endif  // defined(OS_CHROMEOS)
 

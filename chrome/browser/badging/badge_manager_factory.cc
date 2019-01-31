@@ -36,10 +36,7 @@ BadgeManagerFactory::~BadgeManagerFactory() {}
 
 KeyedService* BadgeManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // We don't actually need to use the BrowserContext - we just use the
-  // BrowserContextKeyedFactory contract to to keep BadgeManagers separate
-  // across profiles.
-  return new BadgeManager();
+  return new BadgeManager(Profile::FromBrowserContext(context));
 }
 
 }  // namespace badging

@@ -20,7 +20,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/badging/badge_service_delegate.h"
+#include "chrome/browser/badging/badge_manager.h"
+#include "chrome/browser/badging/badge_manager_delegate.h"
+#include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -978,27 +980,42 @@ IN_PROC_BROWSER_TEST_P(HostedAppCustomTabBarOnlyTest,
             app_browser->GetWindowTitleForCurrentTab(false));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 class HostedAppBadgingTest : public HostedAppTest {
  public:
+  // Listens to BadgeManager events and forwards them to the test class.
+  class TestBadgeManagerDelegate : public badging::BadgeManagerDelegate {
+   public:
+    using SetBadgeCallback =
+        base::RepeatingCallback<void(const std::string&,
+                                     base::Optional<uint64_t>)>;
+    using ClearBadgeCallback =
+        base::RepeatingCallback<void(const std::string&)>;
+
+    TestBadgeManagerDelegate(Profile* profile,
+                             SetBadgeCallback on_set_badge,
+                             ClearBadgeCallback on_clear_badge)
+        : badging::BadgeManagerDelegate(profile),
+          on_set_badge_(on_set_badge),
+          on_clear_badge_(on_clear_badge) {}
+
+    void OnBadgeSet(const std::string& app_id,
+                    base::Optional<uint64_t> contents) override {
+      on_set_badge_.Run(app_id, contents);
+    }
+
+    void OnBadgeCleared(const std::string& app_id) override {
+      on_clear_badge_.Run(app_id);
+    }
+
+   private:
+    SetBadgeCallback on_set_badge_;
+    ClearBadgeCallback on_clear_badge_;
+  };
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HostedAppTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII("enable-blink-features", "Badging");
-  }
-
-  void OnBadgeSet(content::WebContents* web_contents,
-                  base::Optional<uint64_t> badge_content) {
-    if (badge_content.has_value())
-      last_badge_content_ = badge_content;
-    else
-      was_flagged_ = true;
-
-    awaiter_->Quit();
-  }
-
-  void OnBadgeCleared(content::WebContents* web_contents) {
-    was_cleared_ = true;
-    awaiter_->Quit();
   }
 
   void SetUpOnMainThread() override {
@@ -1010,12 +1027,34 @@ class HostedAppBadgingTest : public HostedAppTest {
     InstallSecurePWA();
 
     awaiter_ = std::make_unique<base::RunLoop>();
-    badge_service_delegate_ = app_browser_->window()->GetBadgeServiceDelegate();
-    badge_service_delegate_->SetImplForTesting(
-        base::BindRepeating(&HostedAppBadgingTest::OnBadgeSet,
-                            base::Unretained(this)),
-        base::BindRepeating(&HostedAppBadgingTest::OnBadgeCleared,
-                            base::Unretained(this)));
+
+    Profile* profile = app_browser_->profile();
+    std::unique_ptr<badging::BadgeManagerDelegate> delegate =
+        std::make_unique<TestBadgeManagerDelegate>(
+            profile,
+            base::BindRepeating(&HostedAppBadgingTest::OnBadgeSet,
+                                base::Unretained(this)),
+            base::BindRepeating(&HostedAppBadgingTest::OnBadgeCleared,
+                                base::Unretained(this)));
+    badging::BadgeManagerFactory::GetInstance()
+        ->GetForProfile(profile)
+        ->SetDelegate(std::move(delegate));
+  }
+
+  // BadgeManagerDelegate:
+  void OnBadgeSet(const std::string& app_id,
+                  base::Optional<uint64_t> badge_content) {
+    if (badge_content.has_value())
+      last_badge_content_ = badge_content;
+    else
+      was_flagged_ = true;
+
+    awaiter_->Quit();
+  }
+
+  void OnBadgeCleared(const std::string& app_id) {
+    was_cleared_ = true;
+    awaiter_->Quit();
   }
 
  protected:
@@ -1034,8 +1073,6 @@ class HostedAppBadgingTest : public HostedAppTest {
 
     awaiter_->Run();
   }
-
-  BadgeServiceDelegate* badge_service_delegate_;
 
   bool was_cleared_ = false;
   bool was_flagged_ = false;

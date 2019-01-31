@@ -3008,7 +3008,6 @@ jumbo_split_static_library("ui") {
       ]
     } else {
       sources += [
-        "views/badge_service_delegate_impl.cc",
         "views/frame/opaque_browser_frame_view.cc",
         "views/frame/opaque_browser_frame_view.h",
         "views/frame/opaque_browser_frame_view_layout.cc",

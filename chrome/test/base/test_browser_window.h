@@ -118,8 +118,6 @@ class TestBrowserWindow : public BrowserWindow {
       bool disable_stay_in_chrome,
       IntentPickerResponse callback) override {}
   void SetIntentPickerViewVisibility(bool visible) override {}
-#else  // !defined(OS_CHROMEOS)
-  BadgeServiceDelegate* GetBadgeServiceDelegate() const override;
 #endif
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,

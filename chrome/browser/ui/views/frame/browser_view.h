@@ -367,8 +367,6 @@ class BrowserView : public BrowserWindow,
       bool disable_stay_in_chrome,
       IntentPickerResponse callback) override;
   void SetIntentPickerViewVisibility(bool visible) override;
-#else   // !defined(OS_CHROMEOS)
-  BadgeServiceDelegate* GetBadgeServiceDelegate() const override;
 #endif  // defined(OS_CHROMEOS)
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
@@ -830,11 +828,6 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<BrowserWindowHistogramHelper> histogram_helper_;
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
-
-#if !defined(OS_CHROMEOS)
-  // The badge service delegate for this window.
-  std::unique_ptr<BadgeServiceDelegate> badge_service_delegate_;
-#endif  // !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   std::unique_ptr<ReopenTabPromoController> reopen_tab_promo_controller_;

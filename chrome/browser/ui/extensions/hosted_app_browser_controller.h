@@ -92,6 +92,9 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   // Gets the short name of the app.
   std::string GetAppShortName() const;
 
+  // Returns the extension id for the app.
+  std::string GetExtensionId() const;
+
   // Gets the origin of the app start url suitable for display (e.g
   // example.com.au).
   base::string16 GetFormattedUrlOrigin() const;

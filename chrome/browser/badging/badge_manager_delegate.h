@@ -9,20 +9,28 @@
 
 #include "base/optional.h"
 
+class Profile;
+
 namespace badging {
 
 // BadgeManagerDelegate is responsible for dispatching badge events that should
 // be handled and reflected in the UI.
 class BadgeManagerDelegate {
  public:
+  explicit BadgeManagerDelegate(Profile* profile) : profile_(profile) {}
+
   virtual ~BadgeManagerDelegate() {}
 
   // Called when an app's badge has changed.
   virtual void OnBadgeSet(const std::string& app_id,
-                          base::Optional<int> contents) = 0;
+                          base::Optional<uint64_t> contents) = 0;
 
   // Called when a app's badge has been cleared.
   virtual void OnBadgeCleared(const std::string& app_id) = 0;
+
+ protected:
+  // The profile the badge manager delegate is associated with.
+  Profile* profile_;
 };
 
 }  // namespace badging
