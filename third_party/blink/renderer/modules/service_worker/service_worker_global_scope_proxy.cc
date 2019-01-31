@@ -34,6 +34,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
@@ -172,7 +173,7 @@ void ServiceWorkerGlobalScopeProxy::Trace(blink::Visitor* visitor) {
 
 void ServiceWorkerGlobalScopeProxy::BindServiceWorkerHost(
     mojo::ScopedInterfaceEndpointHandle service_worker_host) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->BindServiceWorkerHost(
       mojom::blink::ServiceWorkerHostAssociatedPtrInfo(
           std::move(service_worker_host),
@@ -181,7 +182,7 @@ void ServiceWorkerGlobalScopeProxy::BindServiceWorkerHost(
 
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
     WebServiceWorkerRegistrationObjectInfo info) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->SetRegistration(std::move(info));
 }
 
@@ -192,7 +193,7 @@ void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
     int event_id,
     const WebBackgroundFetchRegistration& registration) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchAbort, event_id);
 
@@ -217,7 +218,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
     int event_id,
     const WebBackgroundFetchRegistration& registration) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
 
@@ -235,7 +236,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
     const WebBackgroundFetchRegistration& registration) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchFail, event_id);
 
@@ -261,7 +262,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
     int event_id,
     const WebBackgroundFetchRegistration& registration) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchSuccess,
       event_id);
@@ -286,7 +287,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchActivateEvent(int event_id) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kActivate, event_id);
   Event* event = ExtendableEvent::Create(
@@ -298,7 +299,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchCookieChangeEvent(
     int event_id,
     const WebCanonicalCookie& cookie,
     network::mojom::CookieChangeCause change_cause) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kCookieChange, event_id);
 
@@ -321,7 +322,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     TransferableMessage message,
     const WebSecurityOrigin& source_origin,
     const WebServiceWorkerClientInfo& client) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*worker_global_scope_, std::move(msg.ports));
@@ -346,7 +347,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     TransferableMessage message,
     const WebSecurityOrigin& source_origin,
     WebServiceWorkerObjectInfo info) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*worker_global_scope_, std::move(msg.ports));
@@ -367,7 +368,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
     int fetch_event_id,
     const WebServiceWorkerRequest& web_request,
     bool navigation_preload_sent) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   ScriptState::Scope scope(
       WorkerGlobalScope()->ScriptController()->GetScriptState());
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
@@ -408,7 +409,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
     int fetch_event_id,
     std::unique_ptr<WebURLResponse> response,
     mojo::ScopedDataPipeConsumerHandle data_pipe) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   auto it = pending_preload_fetch_events_.find(fetch_event_id);
   DCHECK(it != pending_preload_fetch_events_.end());
   FetchEvent* fetch_event = it->value.Get();
@@ -421,7 +422,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
     int fetch_event_id,
     std::unique_ptr<WebServiceWorkerError> error) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
   DCHECK(fetch_event);
   // Display an error message to the console, preferring the unsanitized one if
@@ -446,7 +447,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadComplete(
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
   DCHECK(fetch_event);
   fetch_event->OnNavigationPreloadComplete(
@@ -455,7 +456,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadComplete(
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kInstall, event_id);
   Event* event =
@@ -471,7 +472,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationClickEvent(
     const WebNotificationData& data,
     int action_index,
     const WebString& reply) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClick, event_id);
   NotificationEventInit* event_init = NotificationEventInit::Create();
@@ -490,7 +491,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationCloseEvent(
     int event_id,
     const WebString& notification_id,
     const WebNotificationData& data) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClose, event_id);
   NotificationEventInit* event_init = NotificationEventInit::Create();
@@ -505,7 +506,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationCloseEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchPushEvent(int event_id,
                                                       const WebString& data) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kPush, event_id);
   Event* event = PushEvent::Create(event_type_names::kPush,
@@ -516,7 +517,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPushEvent(int event_id,
 void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(int event_id,
                                                       const WebString& id,
                                                       bool last_chance) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kSync, event_id);
   Event* event =
@@ -525,7 +526,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(int event_id,
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchAbortPaymentEvent(int event_id) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kAbortPayment, event_id);
   AbortPaymentRespondWithObserver* respond_with_observer =
@@ -543,7 +544,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchAbortPaymentEvent(int event_id) {
 void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(
     int event_id,
     const WebCanMakePaymentEventData& web_event_data) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kCanMakePayment, event_id);
   CanMakePaymentRespondWithObserver* respond_with_observer =
@@ -564,7 +565,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(
 void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
     int event_id,
     const WebPaymentRequestEventData& web_app_request) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kPaymentRequest, event_id);
   PaymentRequestRespondWithObserver* respond_with_observer =
@@ -583,7 +584,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
 }
 
 bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   return WorkerGlobalScope()->HasEventListeners(event_type_names::kFetch);
 }
 
@@ -615,6 +616,13 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
                                 location->Url());
 }
 
+void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
+      this);
+}
+
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* worker_global_scope) {
   DCHECK(!worker_global_scope_);
@@ -624,20 +632,29 @@ void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
 }
 
 void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   ScriptState::Scope scope(
       WorkerGlobalScope()->ScriptController()->GetScriptState());
   Client().DidInitializeWorkerContext(
       WorkerGlobalScope()->ScriptController()->GetContext());
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
+      this, "success", true);
+}
+
+void ServiceWorkerGlobalScopeProxy::DidFailToInitializeWorkerContext() {
+  TRACE_EVENT_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext",
+      this, "success", false);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().WorkerScriptLoaded();
 }
 
 void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledClassicScript() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
 
   // Tell ServiceWorkerContextClient about the failure. The generic
   // WorkerContextFailedToStart() wouldn't make sense because
@@ -646,14 +663,17 @@ void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledClassicScript() {
 }
 
 void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().FailedToFetchModuleScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerGlobalScopeProxy::EvaluateClassicScript",
+      this);
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   // TODO(asamidoi): Remove CountWorkerScript which is called for recording
   // metrics if the metrics are no longer referenced, and then merge
   // WillEvaluateClassicScript and WillEvaluateModuleScript for cleanup.
@@ -664,29 +684,32 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
 void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   worker_global_scope_->CountImportedScript(script_size, cached_metadata_size);
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateModuleScript() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   Client().WillEvaluateScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->DidEvaluateScript();
   Client().DidEvaluateScript(success);
+  TRACE_EVENT_ASYNC_END1("ServiceWorker",
+                         "ServiceWorkerGlobalScopeProxy::EvaluateClassicScript",
+                         this, "success", success);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidEvaluateModuleScript(bool success) {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->DidEvaluateScript();
   Client().DidEvaluateScript(success);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   // close() is not web-exposed for ServiceWorker. This is called when
   // ServiceWorkerGlobalScope internally requests close(), for example, due to
   // failure on startup when installed scripts couldn't be read.
@@ -708,7 +731,7 @@ void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
 }
 
 void ServiceWorkerGlobalScopeProxy::WillDestroyWorkerGlobalScope() {
-  DCHECK(WorkerGlobalScope()->IsContextThread());
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   v8::HandleScope handle_scope(WorkerGlobalScope()->GetThread()->GetIsolate());
   Client().WillDestroyWorkerContext(
       WorkerGlobalScope()->ScriptController()->GetContext());
@@ -728,6 +751,7 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
       client_(&client),
       worker_global_scope_(nullptr) {
   DCHECK(IsMainThread());
+  DETACH_FROM_THREAD(worker_thread_checker_);
   // ServiceWorker can sometimes run tasks that are initiated by/associated
   // with a document's frame but these documents can be from a different
   // process. So we intentionally populate the task runners with default task

@@ -644,8 +644,6 @@ void ServiceWorkerContextClient::WorkerScriptLoaded() {
   if (!is_starting_installed_worker_)
     (*instance_host_)->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "START_WORKER_CONTEXT",
-                                    this);
 }
 
 void ServiceWorkerContextClient::WorkerContextStarted(
@@ -677,14 +675,10 @@ void ServiceWorkerContextClient::WorkerContextStarted(
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
         std::move(pending_controller_request_), GetWeakPtr());
   }
-
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "START_WORKER_CONTEXT",
-                                  this);
 }
 
 void ServiceWorkerContextClient::WillEvaluateScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
   start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
 
   // Temporary CHECK for https://crbug.com/881100
@@ -725,10 +719,6 @@ void ServiceWorkerContextClient::DidEvaluateScript(bool success) {
   worker_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerContextClient::SendWorkerStarted,
                                 GetWeakPtr(), status));
-
-  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "EVALUATE_SCRIPT", this,
-                                  "Status",
-                                  ServiceWorkerUtils::MojoEnumToString(status));
 }
 
 void ServiceWorkerContextClient::DidInitializeWorkerContext(
