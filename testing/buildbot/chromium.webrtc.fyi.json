@@ -75,18 +75,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_apprtc",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -102,6 +90,23 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ]
+        },
+        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -202,18 +207,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_apprtc",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -229,6 +222,23 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
+        },
+        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -329,18 +339,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_apprtc",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -356,6 +354,23 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -438,18 +453,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_apprtc",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -465,6 +468,23 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-7-SP1"
+            }
+          ]
+        },
+        "test": "browser_tests_apprtc"
       },
       {
         "args": [
@@ -547,18 +567,6 @@
     "gtest_tests": [
       {
         "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_apprtc",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
           "--run-manual",
           "--test-launcher-jobs=1"
@@ -574,6 +582,23 @@
           ]
         },
         "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-8.1-SP0"
+            }
+          ]
+        },
+        "test": "browser_tests_apprtc"
       },
       {
         "args": [
