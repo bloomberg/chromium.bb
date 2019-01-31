@@ -1595,6 +1595,7 @@ test("content_unittests") {
     "../browser/renderer_host/media/video_capture_controller_unittest.cc",
     "../browser/renderer_host/media/video_capture_manager_unittest.cc",
     "../browser/renderer_host/media/video_capture_unittest.cc",
+    "../browser/renderer_host/native_web_keyboard_event_mac_unittest.mm",
     "../browser/renderer_host/overscroll_controller_unittest.cc",
     "../browser/renderer_host/render_process_host_unittest.cc",
     "../browser/renderer_host/render_view_host_unittest.cc",
@@ -2094,7 +2095,10 @@ test("content_unittests") {
       "//third_party/ocmock",
       "//ui/accelerated_widget_mac",
     ]
-    libs = [ "IOSurface.framework" ]
+    libs = [
+      "Carbon.framework",
+      "IOSurface.framework",
+    ]
   }
   if (is_chromeos) {
     deps += [ "//chromeos/audio" ]
