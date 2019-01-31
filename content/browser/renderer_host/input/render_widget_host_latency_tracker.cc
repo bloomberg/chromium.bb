@@ -70,8 +70,14 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
 
   std::string event_name = WebInputEvent::GetName(type);
 
-  if (latency.source_event_type() == ui::SourceEventType::KEY_PRESS)
+  if (latency.source_event_type() == ui::SourceEventType::KEY_PRESS) {
     event_name = "KeyPress";
+  } else if (event_name != "TouchEnd" && event_name != "TouchMove" &&
+             event_name != "TouchStart") {
+    // Only log events we care about (that are documented in histograms.xml),
+    // to avoid using memory and bandwidth for metrics that are not important.
+    return;
+  }
 
   std::string default_action_status =
       action_prevented ? "DefaultPrevented" : "DefaultAllowed";
