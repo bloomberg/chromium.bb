@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_VISUAL_UTILS_H_
 #define COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_VISUAL_UTILS_H_
 
+#include <string>
+
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -23,6 +25,18 @@ int GetQuantizedB(QuantizedColor color);
 // to their QuantizedColor, then reports their weight and centroid.
 bool GetHistogramForImage(const SkBitmap& image,
                           VisualFeatures::ColorHistogram* histogram);
+
+// Computes the BlurredImage for the given input image. This involves
+// downsampling the image to a certain fixed resolution, then blurring
+// by taking an average over fixed-size blocks of pixels.
+bool GetBlurredImage(const SkBitmap& image,
+                     VisualFeatures::BlurredImage* blurred_image);
+
+// Computes the pHash from the Blurred image. This involves computing the
+// luminance for each pixel, then outputs a bitstring, where each pixel
+// contributes a "1" if the luminance is above the median, and a "0" otherwise.
+bool GetPHash(const VisualFeatures::BlurredImage& blurred_image,
+              std::string* phash);
 
 }  // namespace visual_utils
 }  // namespace safe_browsing
