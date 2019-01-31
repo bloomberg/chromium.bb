@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -34,16 +36,21 @@ class KeyboardAccessoryModernViewBinder {
         return KeyboardAccessoryViewBinder.create(parent, viewType);
     }
 
-    static class BarItemChipViewHolder extends BarItemViewHolder<BarItem, ChipView> {
+    static class BarItemChipViewHolder extends BarItemViewHolder<AutofillBarItem, ChipView> {
         BarItemChipViewHolder(ViewGroup parent) {
             super(parent, R.layout.keyboard_accessory_suggestion_modern);
         }
 
         @Override
-        protected void bind(BarItem item, ChipView chipView) {
+        protected void bind(AutofillBarItem item, ChipView chipView) {
+            chipView.getPrimaryTextView().setText(item.getSuggestion().getLabel());
+            chipView.getSecondaryTextView().setText(item.getSuggestion().getSublabel());
+            chipView.getSecondaryTextView().setVisibility(
+                    item.getSuggestion().getSublabel().isEmpty() ? View.GONE : View.VISIBLE);
+            int iconId = item.getSuggestion().getIconId();
+            chipView.setIcon(iconId != 0 ? iconId : ChipView.INVALID_ICON_ID, false);
             KeyboardAccessoryData.Action action = item.getAction();
             assert action != null : "Tried to bind item without action. Chose a wrong ViewHolder?";
-            chipView.getPrimaryTextView().setText(action.getCaption());
             chipView.setOnClickListener(view -> action.getCallback().onResult(action));
         }
     }

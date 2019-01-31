@@ -18,6 +18,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.BarItemViewHolder;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.ListModel;
@@ -195,6 +197,19 @@ public class KeyboardAccessoryCoordinator {
     public void registerActionProvider(
             KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action[]> provider) {
         provider.addObserver(mMediator);
+    }
+
+    /**
+     * Registers a KeyboardAccessoryData.Observer to the given KeyboardAccessoryData.Provider. The
+     * new observer will render chips into the accessory bar for every new suggestion and call the
+     * given {@link AutofillDelegate} when the user interacts with a chip.
+     * @param provider A {@link KeyboardAccessoryData.Provider<AutofillSuggestion[]>}.
+     * @param delegate A {@link AutofillDelegate}.
+     */
+    public void registerAutofillProvider(
+            KeyboardAccessoryData.Provider<AutofillSuggestion[]> provider,
+            AutofillDelegate delegate) {
+        provider.addObserver(mMediator.createAutofillSuggestionsObserver(delegate));
     }
 
     /**

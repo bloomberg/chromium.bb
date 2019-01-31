@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,7 +33,10 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -58,6 +62,8 @@ public class KeyboardAccessoryControllerTest {
     private KeyboardAccessoryModernView mMockView;
     @Mock
     private KeyboardAccessoryTabLayoutView mMockTabSwitcherView;
+    @Mock
+    private AutofillDelegate mMockAutofillDelegate;
 
     private final KeyboardAccessoryData.Tab mTestTab =
             new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
@@ -155,10 +161,11 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testIsVisibleWithSuggestionsBeforeKeyboardComesUp() {
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
-        Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionProvider(autofillSuggestionProvider);
+        AutofillSuggestion suggestion =
+                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
 
         // Without suggestions, the accessory should remain invisible - even if the keyboard shows.
         assertThat(mModel.get(BAR_ITEMS).size(), is(0));
@@ -168,7 +175,8 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.close();
 
         // Adding suggestions doesn't change the visibility by itself.
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion, suggestion});
+        autofillSuggestionProvider.notifyObservers(
+                new AutofillSuggestion[] {suggestion, suggestion});
         assertThat(mModel.get(BAR_ITEMS).size(), is(2));
         assertThat(mModel.get(VISIBLE), is(false));
 
@@ -179,10 +187,11 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testIsVisibleWithSuggestionsAfterKeyboardComesUp() {
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
-        Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionProvider(autofillSuggestionProvider);
+        AutofillSuggestion suggestion =
+                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
 
         // Without any suggestions, the accessory should remain invisible.
         assertThat(mModel.get(VISIBLE), is(false));
@@ -193,7 +202,8 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.get(VISIBLE), is(false));
 
         // Adding suggestions while the keyboard is visible triggers the accessory.
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion, suggestion});
+        autofillSuggestionProvider.notifyObservers(
+                new AutofillSuggestion[] {suggestion, suggestion});
         assertThat(mModel.get(BAR_ITEMS).size(), is(2));
         assertThat(mModel.get(VISIBLE), is(true));
     }
@@ -215,51 +225,62 @@ public class KeyboardAccessoryControllerTest {
     public void testSortsActionsBasedOnType() {
         KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
 
         mCoordinator.registerActionProvider(generationProvider);
-        mCoordinator.registerActionProvider(autofillSuggestionProvider);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
 
-        Action suggestion1 = new Action("FirstSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        Action suggestion2 = new Action("SecondSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
+        AutofillSuggestion suggestion1 =
+                new AutofillSuggestion("FirstSuggestion", "", 0, false, 0, false, false, false);
+        AutofillSuggestion suggestion2 =
+                new AutofillSuggestion("SecondSuggestion", "", 0, false, 0, false, false, false);
         Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion1, suggestion2});
+        autofillSuggestionProvider.notifyObservers(
+                new AutofillSuggestion[] {suggestion1, suggestion2});
         generationProvider.notifyObservers(new Action[] {generationAction});
 
         // Autofill suggestions should always come last, independent of when they were added.
         assertThat(mModel.get(BAR_ITEMS).size(), is(3));
         assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(generationAction));
-        assertThat(mModel.get(BAR_ITEMS).get(1).getAction(), is(suggestion1));
-        assertThat(mModel.get(BAR_ITEMS).get(2).getAction(), is(suggestion2));
+        assertThat(mModel.get(BAR_ITEMS).get(1), instanceOf(AutofillBarItem.class));
+        AutofillBarItem autofillBarItem1 = (AutofillBarItem) mModel.get(BAR_ITEMS).get(1);
+        assertThat(autofillBarItem1.getSuggestion(), is(suggestion1));
+        assertThat(mModel.get(BAR_ITEMS).get(2), instanceOf(AutofillBarItem.class));
+        AutofillBarItem autofillBarItem2 = (AutofillBarItem) mModel.get(BAR_ITEMS).get(2);
+        assertThat(autofillBarItem2.getSuggestion(), is(suggestion2));
     }
 
     @Test
     public void testDeletingActionsAffectsOnlyOneType() {
         KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
 
         mCoordinator.registerActionProvider(generationProvider);
-        mCoordinator.registerActionProvider(autofillSuggestionProvider);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
 
-        Action suggestion = new Action("NewSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
+        AutofillSuggestion suggestion =
+                new AutofillSuggestion("Suggestion", "", 0, false, 0, false, false, false);
         Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion, suggestion});
+        autofillSuggestionProvider.notifyObservers(
+                new AutofillSuggestion[] {suggestion, suggestion});
         generationProvider.notifyObservers(new Action[] {generationAction});
         assertThat(mModel.get(BAR_ITEMS).size(), is(3));
 
         // Drop all Autofill suggestions. Only the generation action should remain.
-        autofillSuggestionProvider.notifyObservers(new Action[0]);
+        autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[0]);
         assertThat(mModel.get(BAR_ITEMS).size(), is(1));
         assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(generationAction));
 
         // Readd an Autofill suggestion and drop the generation. Only the suggestion should remain.
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
+        autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {suggestion});
         generationProvider.notifyObservers(new Action[0]);
         assertThat(mModel.get(BAR_ITEMS).size(), is(1));
-        assertThat(mModel.get(BAR_ITEMS).get(0).getAction(), is(suggestion));
+        assertThat(mModel.get(BAR_ITEMS).get(0), instanceOf(AutofillBarItem.class));
+        AutofillBarItem autofillBarItem = (AutofillBarItem) mModel.get(BAR_ITEMS).get(0);
+        assertThat(autofillBarItem.getSuggestion(), is(suggestion));
     }
 
     @Test
@@ -311,11 +332,12 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding suggestions adds to the suggestions bucket - and again to tabs and total.
         mCoordinator.close(); // Hide, so it's brought up again.
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
-        Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionProvider(autofillSuggestionProvider);
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
+        AutofillSuggestion suggestion =
+                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
+        autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {suggestion});
         mCoordinator.requestShowing();
 
         // Hiding the keyboard clears actions, so don't log more actions from here on out.
@@ -326,7 +348,7 @@ public class KeyboardAccessoryControllerTest {
 
         // Removing suggestions adds to everything but the suggestions bucket. The value remains.
         mCoordinator.close(); // Hide, so it's brought up again.
-        autofillSuggestionProvider.notifyObservers(new Action[0]);
+        autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[0]);
         mCoordinator.requestShowing();
 
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
@@ -354,11 +376,12 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
-        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
-        Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionProvider(autofillSuggestionProvider);
-        autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
+        AutofillSuggestion suggestion =
+                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
+        mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
+        autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {suggestion});
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
 
         // The other changes were not recorded again - just the changes.

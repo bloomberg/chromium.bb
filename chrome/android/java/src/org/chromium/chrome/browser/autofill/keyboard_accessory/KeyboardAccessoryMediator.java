@@ -18,7 +18,11 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.TabSwitchingDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryCoordinator.VisibilityDelegate;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.components.autofill.PopupItemId;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -58,21 +62,59 @@ class KeyboardAccessoryMediator
         mModel.addObserver(this);
     }
 
+    /**
+     * Creates an observer object that refreshes the accessory bar items when a connected provider
+     * notifies it about new {@link AutofillSuggestion}s. It ensures the delegate receives
+     * interactions with the view representing a suggestion.
+     * @param delegate A {@link AutofillDelegate}.
+     * @return A {@link KeyboardAccessoryData.Observer} accepting only {@link AutofillSuggestion}s.
+     */
+    public KeyboardAccessoryData.Observer<AutofillSuggestion[]> createAutofillSuggestionsObserver(
+            AutofillDelegate delegate) {
+        return (@AccessoryAction int typeId, AutofillSuggestion[] suggestions) -> {
+            assert typeId
+                    == AccessoryAction.AUTOFILL_SUGGESTION
+                : "Autofill suggestions observer received wrong data: "
+                            + typeId;
+            List<BarItem> retainedItems = collectItemsToRetain(AccessoryAction.AUTOFILL_SUGGESTION);
+            retainedItems.addAll(toBarItems(suggestions, delegate));
+            mModel.get(BAR_ITEMS).set(retainedItems);
+        };
+    }
+
     @Override
-    public void onItemAvailable(@BarItem.Type int typeId, KeyboardAccessoryData.Action[] actions) {
+    public void onItemAvailable(
+            @AccessoryAction int typeId, KeyboardAccessoryData.Action[] actions) {
         assert typeId != DEFAULT_TYPE : "Did not specify which Action type has been updated.";
-        // If there is a new list, retain all actions that are of a different type than the provided
-        // actions.
+        List<BarItem> retainedItems = collectItemsToRetain(typeId);
+        retainedItems.addAll(0, toBarItems(actions));
+        mModel.get(BAR_ITEMS).set(retainedItems);
+    }
+
+    private List<BarItem> collectItemsToRetain(@AccessoryAction int actionType) {
         List<BarItem> retainedItems = new ArrayList<>();
         for (BarItem item : mModel.get(BAR_ITEMS)) {
             if (item.getAction() == null) continue;
-            if (item.getAction().getActionType() == typeId) continue;
+            if (item.getAction().getActionType() == actionType) continue;
             retainedItems.add(item);
         }
-        // Append autofill suggestions to the end, right before the tab switcher.
-        int insertPos = typeId == AccessoryAction.AUTOFILL_SUGGESTION ? retainedItems.size() : 0;
-        retainedItems.addAll(insertPos, toBarItems(actions));
-        mModel.get(BAR_ITEMS).set(retainedItems);
+        return retainedItems;
+    }
+
+    private List<BarItem> toBarItems(AutofillSuggestion[] suggestions, AutofillDelegate delegate) {
+        List<BarItem> barItems = new ArrayList<>(suggestions.length);
+        for (int position = 0; position < suggestions.length; ++position) {
+            AutofillSuggestion suggestion = suggestions[position];
+            // The accessory doesn't need any special options like clearing or managing for now.
+            if (suggestion.getSuggestionId() == PopupItemId.ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY
+                    || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_CLEAR_FORM
+                    || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_SEPARATOR
+                    || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_AUTOFILL_OPTIONS) {
+                continue;
+            }
+            barItems.add(new AutofillBarItem(suggestion, createAutofillAction(delegate, position)));
+        }
+        return barItems;
     }
 
     private Collection<BarItem> toBarItems(Action[] actions) {
@@ -81,6 +123,16 @@ class KeyboardAccessoryMediator
             barItems.add(new BarItem(toBarItemType(action.getActionType()), action));
         }
         return barItems;
+    }
+
+    private KeyboardAccessoryData.Action createAutofillAction(AutofillDelegate delegate, int pos) {
+        return new KeyboardAccessoryData.Action(
+                null, // Unused. The AutofillSuggestion has more meaningful labels.
+                AccessoryAction.AUTOFILL_SUGGESTION, result -> {
+                    KeyboardAccessoryMetricsRecorder.recordActionSelected(
+                            AccessoryAction.AUTOFILL_SUGGESTION);
+                    delegate.suggestionSelected(pos);
+                });
     }
 
     private @BarItem.Type int toBarItemType(@AccessoryAction int accessoryAction) {
