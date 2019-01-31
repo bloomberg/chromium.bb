@@ -435,6 +435,7 @@ void WorkerThread::InitializeOnWorkerThread(
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK(IsCurrentThread());
+  worker_reporting_proxy_.WillInitializeWorkerContext();
   {
     MutexLocker lock(mutex_);
     DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
@@ -464,14 +465,18 @@ void WorkerThread::InitializeOnWorkerThread(
             WorkerThreadDebugger::From(GetIsolate()))
       debugger->WorkerThreadCreated(this);
 
-    // TODO(nhiroki): Handle a case where the script controller fails to
-    // initialize the context.
     if (GlobalScope()->ScriptController()->InitializeContextIfNeeded(
             String(), url_for_debugger)) {
       worker_reporting_proxy_.DidInitializeWorkerContext();
       v8::HandleScope handle_scope(GetIsolate());
       Platform::Current()->WorkerContextCreated(
           GlobalScope()->ScriptController()->GetContext());
+    } else {
+      // TODO(nhiroki): Handle a case where the script controller fails to
+      // initialize the context. Specifically, we need to terminate this worker
+      // thread from the the parent thread. Currently we only record trace
+      // event.
+      worker_reporting_proxy_.DidFailToInitializeWorkerContext();
     }
 
     inspector_task_runner_->InitIsolate(GetIsolate());

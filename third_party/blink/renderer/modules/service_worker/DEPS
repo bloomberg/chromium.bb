@@ -1,6 +1,7 @@
 include_rules = [
     "+base/barrier_closure.h",
     "+base/threading/thread_checker.h",
+    "+base/trace_event/trace_event.h",
     "+mojo/public/cpp/bindings/strong_binding.h",
     "+mojo/public/cpp/system/data_pipe.h",
     "-third_party/blink/renderer/modules",
