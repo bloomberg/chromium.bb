@@ -36,9 +36,14 @@ constexpr char kKeyTaskId[] = "task_id";
 constexpr char kAcquireBufferQuery[] =
     "android:onMessageReceived/android:handleMessageInvalidate/"
     "android:latchBuffer/android:updateTexImage/android:acquireBuffer";
-constexpr char kReleaseBufferQuery[] =
+// Android PI+
+constexpr char kReleaseBufferQueryP[] =
     "android:onMessageReceived/android:handleMessageRefresh/"
     "android:postComposition/android:releaseBuffer";
+// Android NYC
+constexpr char kReleaseBufferQueryN[] =
+    "android:onMessageReceived/android:handleMessageRefresh/"
+    "android:releaseBuffer";
 constexpr char kDequeueBufferQuery[] = "android:dequeueBuffer";
 constexpr char kQueueBufferQuery[] = "android:queueBuffer";
 
@@ -304,7 +309,9 @@ BufferToEvents GetSurfaceFlingerEvents(const ArcTracingModel& common_model) {
   BufferToEvents per_buffer_surface_flinger_events;
   ProcessSurfaceFlingerEvents(common_model, kAcquireBufferQuery,
                               &per_buffer_surface_flinger_events);
-  ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQuery,
+  ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryP,
+                              &per_buffer_surface_flinger_events);
+  ProcessSurfaceFlingerEvents(common_model, kReleaseBufferQueryN,
                               &per_buffer_surface_flinger_events);
   ProcessSurfaceFlingerEvents(common_model, kQueueBufferQuery,
                               &per_buffer_surface_flinger_events);

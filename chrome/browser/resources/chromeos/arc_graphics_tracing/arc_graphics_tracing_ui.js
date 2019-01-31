@@ -144,10 +144,17 @@ class SVG {
  * content.
  */
 class EventBandTitle {
-  constructor(title) {
+  constructor(title, opt_iconContent) {
     this.div = document.createElement('div');
     this.div.classList.add('arc-events-band-title');
-    this.div.appendChild(document.createTextNode(title));
+    if (opt_iconContent) {
+      var icon = document.createElement('img');
+      icon.src = 'data:image/png;base64,' + opt_iconContent;
+      this.div.appendChild(icon);
+    }
+    var span = document.createElement('span');
+    span.appendChild(document.createTextNode(title));
+    this.div.appendChild(span);
     this.controlledItems = [];
     this.div.onclick = this.onClick_.bind(this);
     var parent = $('arc-event-bands');
@@ -416,8 +423,16 @@ function setGraphicBuffersModel(model) {
 
   for (i = 0; i < model.views.length; i++) {
     var view = model.views[i];
-    var activityTitleText = 'Task #' + view.task_id + ' - ' + view.activity;
-    var activityTitle = new EventBandTitle(activityTitleText);
+    var activityTitleText;
+    var icon;
+    if (view.task_id in model.tasks) {
+      activityTitleText =
+          model.tasks[view.task_id].title + ' - ' + view.activity;
+      icon = model.tasks[view.task_id].icon;
+    } else {
+      activityTitleText = 'Task #' + view.task_id + ' - ' + view.activity;
+    }
+    var activityTitle = new EventBandTitle(activityTitleText, icon);
     for (j = 0; j < view.buffers.length; j++) {
       var androidBand = new EventBand(
           activityTitle, 'arc-events-inner-band', model.duration, 14);

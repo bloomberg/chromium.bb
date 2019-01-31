@@ -34,12 +34,24 @@
 }
 
 .arc-events-band-title {
+  align-items: center;
   border: none;
-  display: block;
+  display: flex;
+  flex-direction: row;
   left: 0;
   outline: none;
   position: sticky;
   text-align: start;
+}
+
+.arc-events-band-title img {
+  height: 24px;
+  width: 24px;
+}
+
+.arc-events-band-title span {
+  flex: 1;
+  padding-top: 4px;
 }
 
 .arc-events-band-title::before {
@@ -47,6 +59,7 @@
   float: left;
   font-weight: bold;
   margin-inline-end: 4px;
+  padding-top: 4px;
 }
 
 .hidden.arc-events-band-title::before {
