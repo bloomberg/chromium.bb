@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "media/learning/common/learning_session.h"
 #include "media/learning/mojo/mojo_learning_session_impl.h"
+#include "media/learning/mojo/public/mojom/learning_types.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
