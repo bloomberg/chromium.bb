@@ -8,6 +8,7 @@
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 
 namespace content {
 
