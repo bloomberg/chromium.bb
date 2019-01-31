@@ -9,7 +9,6 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_profile_attributes_updater.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 // static
 SigninProfileAttributesUpdater*
