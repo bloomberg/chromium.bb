@@ -149,7 +149,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       is_enterprise_device) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
-    SetBaselineTime(Time::Now().UTCMidnight() + activity_day_start + kHour);
+    SetBaselineTime(Time::Now().LocalMidnight() + activity_day_start + kHour);
   }
 
   void UpdateUsageTime() { UpdateChildUsageTime(); }
