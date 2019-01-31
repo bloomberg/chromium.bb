@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -2205,11 +2206,16 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
 // Check that downloading a single file works.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, SingleDownload) {
   base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  std::string download_path =
+      temp_dir.GetPath().AppendASCII("download").AsUTF8Unsafe();
+
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
-  SetDownloadBehavior("allow", "download");
+  SetDownloadBehavior("allow", download_path);
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
   download::DownloadItem* download = StartDownloadAndReturnItem(
@@ -2339,11 +2345,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, ResetDownloadState) {
 // corrupted files.
 IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
   base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  std::string download1_path =
+      temp_dir.GetPath().AppendASCII("download1").AsUTF8Unsafe();
+  std::string download2_path =
+      temp_dir.GetPath().AppendASCII("download2").AsUTF8Unsafe();
+
   SetupEnsureNoPendingDownloads();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
-  SetDownloadBehavior("allow", "download1");
+  SetDownloadBehavior("allow", download1_path);
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
   download::DownloadItem* download1 = StartDownloadAndReturnItem(
@@ -2352,7 +2365,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
   ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download1->GetState());
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
-  SetDownloadBehavior("allow", "download2");
+  SetDownloadBehavior("allow", download2_path);
   // Start the second download and wait until it's done.
   GURL url(embedded_test_server()->GetURL("/download/download-test.lib"));
   download::DownloadItem* download2 = StartDownloadAndReturnItem(shell(), url);
@@ -2378,14 +2391,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MAYBE_MultiDownload) {
   // |file1| should be full of '*'s, and |file2| should be the same as the
   // source file.
   base::FilePath file1(download1->GetTargetFilePath());
-  ASSERT_EQ(file1.DirName().MaybeAsASCII(), "download1");
+  ASSERT_EQ(file1.DirName().MaybeAsASCII(), download1_path);
   size_t file_size1 = content::SlowDownloadHttpResponse::kFirstDownloadSize +
                       content::SlowDownloadHttpResponse::kSecondDownloadSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
   base::FilePath file2(download2->GetTargetFilePath());
-  ASSERT_EQ(file2.DirName().MaybeAsASCII(), "download2");
+  ASSERT_EQ(file2.DirName().MaybeAsASCII(), download2_path);
   ASSERT_TRUE(base::ContentsEqual(
       file2, GetTestFilePath("download", "download-test.lib")));
 }
