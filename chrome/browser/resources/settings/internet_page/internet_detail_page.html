@@ -68,7 +68,9 @@
     <!-- Title section: Icon + name + connection state. -->
     <div id="titleDiv" class="settings-box first">
       <div class="start layout horizontal center">
-        <cr-network-icon network-state="[[networkProperties]]">
+        <cr-network-icon
+            show-technology-badge="[[showTechnologyBadge_]]"
+            network-state="[[networkProperties]]">
         </cr-network-icon>
         <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(networkProperties)]]"

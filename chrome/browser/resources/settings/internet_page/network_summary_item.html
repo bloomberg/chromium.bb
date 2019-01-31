@@ -45,7 +45,9 @@
       <div actionable class="flex layout horizontal center"
           on-click="onShowDetailsTap_">
         <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
-          <cr-network-icon network-state="[[activeNetworkState]]"
+          <cr-network-icon
+              show-technology-badge="[[showTechnologyBadge_]]"
+              network-state="[[activeNetworkState]]"
               device-state="[[deviceState]]">
           </cr-network-icon>
           <div class="flex settings-box-text">

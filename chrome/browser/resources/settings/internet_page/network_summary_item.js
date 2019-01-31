@@ -59,6 +59,18 @@ Polymer({
      * @type {string|undefined}
      */
     networkTitleText: String,
+
+    /**
+     * Whether to show technology badge on mobile network icon.
+     * @private
+     */
+    showTechnologyBadge_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('showTechnologyBadge') &&
+            loadTimeData.getBoolean('showTechnologyBadge');
+      }
+    },
   },
 
   /**
