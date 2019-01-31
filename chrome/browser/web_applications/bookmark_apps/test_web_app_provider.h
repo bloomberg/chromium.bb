@@ -19,15 +19,21 @@ class BrowserContext;
 
 namespace web_app {
 
+class PendingAppManager;
 class SystemWebAppManager;
+class WebAppPolicyManager;
 
 class TestWebAppProvider : public WebAppProvider {
  public:
   explicit TestWebAppProvider(Profile* profile);
   ~TestWebAppProvider() override;
 
+  void SetPendingAppManager(
+      std::unique_ptr<PendingAppManager> pending_app_manager);
   void SetSystemWebAppManager(
       std::unique_ptr<SystemWebAppManager> system_web_app_manager);
+  void SetWebAppPolicyManager(
+      std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
 };
 
 class TestWebAppProviderCreator {
