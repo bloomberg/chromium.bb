@@ -121,13 +121,14 @@ enum {
 } UENUM1BYTE(RESIZE_MODE);
 
 enum {
-  SUPERRES_NONE = 0,     // No frame superres allowed
-  SUPERRES_FIXED = 1,    // All frames are coded at the specified scale,
-                         // and super-resolved.
-  SUPERRES_RANDOM = 2,   // All frames are coded at a random scale,
-                         // and super-resolved.
-  SUPERRES_QTHRESH = 3,  // Superres scale for a frame is determined based on
-                         // q_index
+  SUPERRES_NONE,     // No frame superres allowed.
+  SUPERRES_FIXED,    // All frames are coded at the specified scale,
+                     // and super-resolved.
+  SUPERRES_RANDOM,   // All frames are coded at a random scale,
+                     // and super-resolved.
+  SUPERRES_QTHRESH,  // Superres scale for a frame is determined based on
+                     // q_index.
+  SUPERRES_AUTO,     // Automatically select superres for appropriate frames.
   SUPERRES_MODES
 } UENUM1BYTE(SUPERRES_MODE);
 

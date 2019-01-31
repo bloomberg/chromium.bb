@@ -4143,6 +4143,29 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       }
       break;
     }
+    case SUPERRES_AUTO: {
+      // Don't use when screen content tools are used.
+      if (cpi->common.allow_screen_content_tools) break;
+      // Don't use for inter frames.
+      if (!frame_is_intra_only(&cpi->common)) break;
+      // Don't use for keyframes that can be used as references.
+      if (cpi->rc.frames_to_key != 1) break;
+      // Don't use for any rate control mode other than constant quality.
+      if (oxcf->rc_mode != AOM_Q) break;
+
+      // Now decide the use of superres based on 'q'.
+      int bottom_index, top_index;
+      const int q = av1_rc_pick_q_and_bounds(
+          cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
+
+      const int qthresh = 128;
+      if (q <= qthresh) {
+        new_denom = SCALE_NUMERATOR;
+      } else {
+        new_denom = get_superres_denom_for_qindex(cpi, q);
+      }
+      break;
+    }
     default: assert(0);
   }
   return new_denom;

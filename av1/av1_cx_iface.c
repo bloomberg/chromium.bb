@@ -2122,7 +2122,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         SCALE_NUMERATOR,  // rc_resize_denominator
         SCALE_NUMERATOR,  // rc_resize_kf_denominator
 
-        0,                // rc_superres_mode
+        SUPERRES_NONE,    // rc_superres_mode
         SCALE_NUMERATOR,  // rc_superres_denominator
         SCALE_NUMERATOR,  // rc_superres_kf_denominator
         63,               // rc_superres_qthresh

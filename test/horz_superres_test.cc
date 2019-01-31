@@ -50,10 +50,14 @@ const TestVideoParam kTestVideoVectors[] = {
   { "screendata.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 4, 1 },
 };
 
-// Superres modes tested
+// TODO(urvang): Add separate tests for SUPERRES_AUTO and SUPERRES_RANDOM,
+// as they don't use the denoms. SUPERRES_QTHRESH tests should also not use the
+// denominators.
 // SUPERRES_QTHRESH is not included, as it has its own test
-const SUPERRES_MODE kSuperresModesNotQThresh[] = { SUPERRES_FIXED,
-                                                   SUPERRES_RANDOM };
+const SUPERRES_MODE kSuperresModesNotQThresh[] = {
+  SUPERRES_FIXED,
+  SUPERRES_RANDOM,
+};
 
 // Superres denominators and superres kf denominators to be tested
 typedef tuple<int, int> SuperresDenominatorPair;
