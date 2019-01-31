@@ -5,11 +5,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
-#import "ios/web/web_state/find_in_page/find_in_page_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

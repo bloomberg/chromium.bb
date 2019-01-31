@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_state/find_in_page/find_in_page_manager_impl.h"
+#import "ios/web/find_in_page/find_in_page_manager_impl.h"
 
 #import "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#import "ios/web/find_in_page/find_in_page_constants.h"
 #import "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
-#import "ios/web/web_state/find_in_page/find_in_page_constants.h"
 #import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

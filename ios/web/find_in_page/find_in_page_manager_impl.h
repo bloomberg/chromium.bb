@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_IMPL_H_
-#define IOS_WEB_WEB_STATE_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_IMPL_H_
+#ifndef IOS_WEB_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_IMPL_H_
+#define IOS_WEB_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_IMPL_H_
 
 #include <list>
 #include <map>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#import "ios/web/public/web_state/find_in_page/find_in_page_manager.h"
+#import "ios/web/public/find_in_page/find_in_page_manager.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
 namespace web {
@@ -70,4 +70,4 @@ class FindInPageManagerImpl : public FindInPageManager,
 };
 }  // namespace web
 
-#endif  // IOS_WEB_WEB_STATE_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_IMPL_H_
+#endif  // IOS_WEB_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_IMPL_H_

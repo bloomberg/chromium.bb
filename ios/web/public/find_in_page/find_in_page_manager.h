@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_H_
+#ifndef IOS_WEB_PUBLIC_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_H_
+#define IOS_WEB_PUBLIC_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_H_
 
 #include "base/macros.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
@@ -51,4 +51,4 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_H_
+#endif  // IOS_WEB_PUBLIC_FIND_IN_PAGE_FIND_IN_PAGE_MANAGER_H_
