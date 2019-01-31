@@ -184,6 +184,8 @@
       white-space: nowrap;
     }
 
+    --cr-text-element-min-width: 200px;
+
     --cr-title-text: {
         color: var(--cr-title-text-color);
         font-size: 107.6923%;  /* Go to 14px from 13px. */
@@ -200,7 +202,7 @@
       font-size: 92.31%;  /* Effectively 12px if the host default is 13px. */
       font-weight: 500;
       max-width: 330px;
-      min-width: 200px;
+      min-width: var(--cr-text-element-min-width);
       padding: 10px 8px;
     }
 
