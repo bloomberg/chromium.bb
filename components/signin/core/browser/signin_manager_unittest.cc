@@ -40,14 +40,12 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
   TestSigninManagerObserver()
       : num_failed_signins_(0),
         num_successful_signins_(0),
-        num_successful_signins_with_password_(0),
         num_signouts_(0) {}
 
   ~TestSigninManagerObserver() override {}
 
   int num_failed_signins_;
   int num_successful_signins_;
-  int num_successful_signins_with_password_;
   int num_signouts_;
 
  private:
@@ -58,11 +56,6 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
 
   void GoogleSigninSucceeded(const AccountInfo& account_info) override {
     num_successful_signins_++;
-  }
-
-  void GoogleSigninSucceededWithPassword(const AccountInfo& account_info,
-                                         const std::string& password) override {
-    num_successful_signins_with_password_++;
   }
 
   void GoogleSignedOut(const AccountInfo& account_info) override {
@@ -145,7 +138,6 @@ class SigninManagerTest : public testing::Test {
 
     // Should go into token service and stop.
     EXPECT_EQ(1, test_observer_.num_successful_signins_);
-    EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
     EXPECT_EQ(0, test_observer_.num_failed_signins_);
   }
 
@@ -175,7 +167,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshToken) {
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->StartSignInWithRefreshToken(
-      "rt", "gaia_id", "user@gmail.com", "password",
+      "rt", "gaia_id", "user@gmail.com",
       SigninManager::OAuthTokenFetchedCallback());
 
   ExpectSignInWithRefreshTokenSuccess();
@@ -190,9 +182,8 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallbackComplete) {
   CreateSigninManager();
   EXPECT_FALSE(manager_->IsAuthenticated());
 
-  // Since the password is empty, must verify the gaia cookies first.
   manager_->StartSignInWithRefreshToken(
-      "rt", "gaia_id", "user@gmail.com", "password",
+      "rt", "gaia_id", "user@gmail.com",
       base::BindOnce(&SigninManagerTest::CompleteSigninCallback,
                      base::Unretained(this)));
 
@@ -211,22 +202,13 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
   account_tracker()->SeedAccountInfo(gaia_id, email);
   account_fetcher()->OnRefreshTokensLoaded();
 
-  ASSERT_TRUE(signin_client()->get_signed_in_password().empty());
-
   manager_->StartSignInWithRefreshToken(
-      "rt1", gaia_id, email, "password",
-      SigninManager::OAuthTokenFetchedCallback());
-
-  // PostSignedIn is not called until the AccountTrackerService returns.
-  ASSERT_EQ("", signin_client()->get_signed_in_password());
+      "rt1", gaia_id, email, SigninManager::OAuthTokenFetchedCallback());
 
   account_fetcher()->FakeUserInfoFetchSuccess(
       account_tracker()->PickAccountIdForAccount(gaia_id, email), email,
       gaia_id, "google.com", "full_name", "given_name", "locale",
       "http://www.google.com");
-
-  // AccountTracker and SigninManager are both done and PostSignedIn was called.
-  ASSERT_EQ("password", signin_client()->get_signed_in_password());
 
   ExpectSignInWithRefreshTokenSuccess();
 }
@@ -234,7 +216,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallsPostSignout) {
 TEST_F(SigninManagerTest, SignOut) {
   CreateSigninManager();
   manager_->StartSignInWithRefreshToken(
-      "rt", "gaia_id", "user@gmail.com", "password",
+      "rt", "gaia_id", "user@gmail.com",
       SigninManager::OAuthTokenFetchedCallback());
   manager_->SignOut(signin_metrics::SIGNOUT_TEST,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
@@ -391,12 +373,10 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_successful_signins_with_password_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->OnExternalSigninCompleted("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
@@ -407,19 +387,16 @@ TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
-  EXPECT_EQ(0, test_observer_.num_successful_signins_with_password_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->OnExternalSigninCompleted("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 
   manager_->OnExternalSigninCompleted("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
-  EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());

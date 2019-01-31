@@ -104,7 +104,6 @@ class SigninManager : public SigninManagerBase,
       const std::string& refresh_token,
       const std::string& gaia_id,
       const std::string& username,
-      const std::string& password,
       OAuthTokenFetchedCallback oauth_fetched_callback);
 
   // Copies auth credentials from one SigninManager to this one. This is used
@@ -201,14 +200,13 @@ class SigninManager : public SigninManagerBase,
 
   // Called to setup the transient signin data during one of the
   // StartSigninXXX methods.  |type| indicates which of the methods is being
-  // used to perform the signin while |username| and |password| identify the
-  // account to be signed in. Returns false and generates an auth error if the
-  // passed |username| is not allowed by policy.  |gaia_id| is the obfuscated
-  // gaia id corresponding to |username|.
+  // used to perform the signin while |username| identifies the account to be
+  // signed in. Returns false and generates an auth error if the passed
+  // |username| is not allowed by policy.  |gaia_id| is the obfuscated gaia id
+  // corresponding to |username|.
   bool PrepareForSignin(SigninType type,
                         const std::string& gaia_id,
-                        const std::string& username,
-                        const std::string& password);
+                        const std::string& username);
 
   // Persists |account_id| as the currently signed-in account, and triggers
   // a sign-in success notification.
@@ -219,10 +217,6 @@ class SigninManager : public SigninManagerBase,
 
   // Send all observers |GoogleSignedOut| notifications.
   void FireGoogleSignedOut(const AccountInfo& account_info);
-
-  // Waits for the AccountTrackerService, then sends GoogleSigninSucceeded to
-  // the client and clears the local password.
-  void PostSignedIn();
 
   // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;
@@ -255,7 +249,6 @@ class SigninManager : public SigninManagerBase,
   std::string possibly_invalid_account_id_;
   std::string possibly_invalid_gaia_id_;
   std::string possibly_invalid_email_;
-  std::string password_;  // This is kept empty whenever possible.
 
   // The type of sign being performed.  This value is valid only between a call
   // to one of the StartSigninXXX methods and when the sign in is either

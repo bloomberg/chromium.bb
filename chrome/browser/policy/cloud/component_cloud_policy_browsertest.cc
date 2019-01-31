@@ -186,7 +186,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
         IdentityManagerFactory::GetForProfile(browser()->profile())
             ->GetPrimaryAccountMutator();
     primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-        "", "account_id", "12345", PolicyBuilder::kFakeUsername,
+        "", "account_id", PolicyBuilder::kFakeUsername,
         base::OnceCallback<void(const std::string&)>());
 
     UserCloudPolicyManager* policy_manager =

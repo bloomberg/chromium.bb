@@ -23,8 +23,6 @@
 // these semantics.
 
 - (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo;
-- (void)onPrimaryAccountSet:(const AccountInfo&)primaryAccountInfo
-               withPassword:(const std::string&)password;
 - (void)onPrimaryAccountCleared:(const AccountInfo&)previousPrimaryAccountInfo;
 - (void)onPrimaryAccountSigninFailed:(const GoogleServiceAuthError&)error;
 - (void)onRefreshTokenUpdatedForAccount:(const AccountInfo&)accountInfo;
@@ -51,8 +49,6 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
 
   // IdentityManager::Observer.
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
-  void OnPrimaryAccountSetWithPassword(const AccountInfo& primary_account_info,
-                                       const std::string& password) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
   void OnPrimaryAccountSigninFailed(

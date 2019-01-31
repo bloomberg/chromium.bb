@@ -55,22 +55,6 @@ class SigninManagerBase : public KeyedService {
     // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
 
-    // Called when a user signs into Google services such as sync. Also passes
-    // the password of the Google account that was used to sign in.
-    // This method is not called during a reauth.
-    //
-    // Observers should override |GoogleSigninSucceeded| if they are not
-    // interested in the password thas was used during the sign-in.
-    //
-    // Note: The password is always empty on mobile as the user signs in to
-    // Chrome with accounts that were added to the device, so Chrome does not
-    // have access to the password.
-    // DEPRECATED: password will be empty if login is using DICE workflow; the
-    // method will be removed once all login is using the DICE workflow.
-    virtual void GoogleSigninSucceededWithPassword(
-        const AccountInfo& account_info,
-        const std::string& password) {}
-
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const AccountInfo& account_info) {}
 
@@ -78,8 +62,7 @@ class SigninManagerBase : public KeyedService {
     virtual ~Observer() {}
 
    private:
-    // SigninManagers that fire |GoogleSigninSucceededWithPassword|
-    // notifications.
+    // SigninManagers that fire notifications.
     friend class SigninManager;
     friend class FakeSigninManager;
   };

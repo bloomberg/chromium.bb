@@ -167,7 +167,7 @@ AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   // Note: pass an empty string as the refresh token so that no refresh token is
   // set.
   real_signin_manager->StartSignInWithRefreshToken(
-      /*refresh_token=*/"", gaia_id, email, /*password=*/"",
+      /*refresh_token=*/"", gaia_id, email,
       /*oauth_fetched_callback=*/base::DoNothing());
   real_signin_manager->CompletePendingSignin();
 

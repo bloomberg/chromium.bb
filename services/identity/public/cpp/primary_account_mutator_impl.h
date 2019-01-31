@@ -33,7 +33,6 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
       const std::string& refresh_token,
       const std::string& gaia_id,
       const std::string& username,
-      const std::string& password,
       base::OnceCallback<void(const std::string&)> callback) override;
   void LegacyCompletePendingPrimaryAccountSignin() override;
   void LegacyMergeSigninCredentialIntoCookieJar() override;

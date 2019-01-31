@@ -21,7 +21,6 @@ const char kUnknownAccountId[] = "{unknown account id}";
 const char kPrimaryAccountEmail[] = "primary.account@example.com";
 const char kAnotherAccountEmail[] = "another.account@example.com";
 const char kRefreshToken[] = "refresh_token";
-const char kPassword[] = "password";
 
 // All account consistency methods that are tested by those unit tests when
 // testing ClearPrimaryAccount method.
@@ -559,7 +558,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_AuthInProgress) {
   base::RunLoop run_loop;
   std::string signed_account_refresh_token;
   primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      kRefreshToken, account_info.gaia, account_info.email,
       base::BindOnce(
           [](std::string* out_refresh_token, const std::string& refresh_token) {
             *out_refresh_token = refresh_token;
@@ -671,7 +670,7 @@ TEST_F(PrimaryAccountMutatorTest, SigninWithRefreshToken) {
   // whether we end up with a similar result than with SetPrimaryAccount().
   std::string signed_account_refresh_token;
   primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      kRefreshToken, account_info.gaia, account_info.email,
       base::BindOnce(
           [](std::string* out_refresh_token, const std::string& refresh_token) {
             *out_refresh_token = refresh_token;
@@ -735,7 +734,7 @@ TEST_F(PrimaryAccountMutatorTest, AuthInProgress_SigninCompleted) {
   base::RunLoop run_loop;
   std::string signed_account_refresh_token;
   primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      kRefreshToken, account_info.gaia, account_info.email,
       base::BindOnce(
           [](std::string* out_refresh_token, const std::string& refresh_token) {
             *out_refresh_token = refresh_token;
@@ -803,7 +802,7 @@ TEST_F(PrimaryAccountMutatorTest, AuthInProgress_SigninCancelled) {
   base::RunLoop run_loop;
   std::string signed_account_refresh_token;
   primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      kRefreshToken, account_info.gaia, account_info.email,
       base::BindOnce(
           [](std::string* out_refresh_token, const std::string& refresh_token) {
             *out_refresh_token = refresh_token;
@@ -877,7 +876,7 @@ TEST_F(PrimaryAccountMutatorTest, CopyCredentialsFrom) {
   base::RunLoop run_loop;
   std::string signed_account_refresh_token;
   primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-      kRefreshToken, account_info.gaia, account_info.email, kPassword,
+      kRefreshToken, account_info.gaia, account_info.email,
       base::BindOnce(
           [](std::string* out_refresh_token, const std::string& refresh_token) {
             *out_refresh_token = refresh_token;

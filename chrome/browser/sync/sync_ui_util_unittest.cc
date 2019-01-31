@@ -56,7 +56,6 @@ namespace {
 const char kTestGaiaId[] = "gaia-id-test_user@test.com";
 const char kTestUser[] = "test_user@test.com";
 const char kRefreshToken[] = "refresh_token";
-const char kPassword[] = "password";
 
 }  // namespace
 
@@ -105,7 +104,7 @@ void GetDistinctCase(TestSyncService* service,
       // report "auth in progress" when checked from the test later on.
       primary_account_mutator
           ->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-              kRefreshToken, kTestGaiaId, kTestUser, kPassword,
+              kRefreshToken, kTestGaiaId, kTestUser,
               base::BindOnce([](const std::string& refresh_token) {
                 // Check that the token is properly passed along.
                 EXPECT_EQ(kRefreshToken, refresh_token);

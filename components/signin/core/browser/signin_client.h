@@ -61,11 +61,6 @@ class SigninClient : public KeyedService {
   // Signin component is being used.
   virtual std::string GetProductVersion() = 0;
 
-  // Called after Google signin has succeeded and GetUserInfo has returned.
-  virtual void PostSignedIn(const std::string& account_id,
-                            const std::string& username,
-                            const std::string& password) {}
-
   // Called before Google sign-out started. Implementers must run the
   // |on_signout_decision_reached|, passing a SignoutDecision to allow/disallow
   // sign-out to continue. When to disallow sign-out is implementation specific.

@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
+#include <utility>
+
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
@@ -81,10 +83,9 @@ void PrimaryAccountMutatorImpl::
         const std::string& refresh_token,
         const std::string& gaia_id,
         const std::string& username,
-        const std::string& password,
         base::OnceCallback<void(const std::string&)> callback) {
   signin_manager_->StartSignInWithRefreshToken(refresh_token, gaia_id, username,
-                                               password, std::move(callback));
+                                               std::move(callback));
 }
 
 void PrimaryAccountMutatorImpl::LegacyCompletePendingPrimaryAccountSignin() {
