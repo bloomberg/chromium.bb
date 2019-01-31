@@ -893,6 +893,13 @@ Status ExecuteMouseDoubleClick(Session* session,
   std::list<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers, 0, 1));
+  events.push_back(
+      MouseEvent(kReleasedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers,
+                 MouseButtonToButtons(button), 1));
+  events.push_back(
+      MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
                  session->mouse_position.y, session->sticky_modifiers, 0, 2));
   events.push_back(
       MouseEvent(kReleasedMouseEventType, button, session->mouse_position.x,
