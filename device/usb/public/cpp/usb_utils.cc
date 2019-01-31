@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/usb_device.h"
 
 namespace device {

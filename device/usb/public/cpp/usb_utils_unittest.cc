@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/public/cpp/usb_utils.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
 #include "device/usb/usb_descriptors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
