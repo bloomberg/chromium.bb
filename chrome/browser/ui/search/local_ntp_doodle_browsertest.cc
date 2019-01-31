@@ -122,6 +122,26 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
     return base::nullopt;
   }
 
+  void TeardownNavigatorTest(content::WebContents* tab) {
+    ASSERT_TRUE(content::ExecuteScript(tab, "window.navigator = navigatorOld"));
+  }
+
+  void SetupBeaconTest(content::WebContents* tab) {
+    ASSERT_TRUE(content::ExecuteScript(tab,
+                                       "var navigatorOld = window.navigator; "
+                                       "window.navigator = {};"
+                                       "window.navigator.sendBeacon = "
+                                       "(url) => { sentbeacon = url };"));
+  }
+
+  base::Optional<std::string> GetBeaconURL(content::WebContents* tab) {
+    std::string target_url;
+    if (instant_test_utils::GetStringFromJS(tab, "sentbeacon", &target_url)) {
+      return target_url;
+    }
+    return base::nullopt;
+  }
+
   bool ElementExists(content::WebContents* tab, const std::string& id) {
     return ExecuteBooleanJS(
         tab, base::StringPrintf("!!document.getElementById(%s)",
@@ -937,6 +957,130 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldCopyLinkInShareDialog) {
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       active_tab, "window.getSelection().toString()", &short_link));
   EXPECT_EQ("https://g.co/", short_link);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogShareClicksNoEventId) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url =
+      GURL("https://www.chrotmium.org/?ct=test");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Replace window.open so we stay in the same tab.
+  SetupWindowOpenTest(active_tab);
+  SetupBeaconTest(active_tab);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-fbb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C2%2Cct%3Atest&ntp=1"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-twb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C3%2Cct%3Atest&ntp=1"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-emb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C5%2Cct%3Atest&ntp=1"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-copy').click();"));
+  std::string short_link;
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C6%2Cct%3Atest&ntp=1"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogShareClicksWithEventId) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url =
+      GURL("https://www.chrotmium.org/?ct=test");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Replace window.open so we stay in the same tab.
+  SetupWindowOpenTest(active_tab);
+  SetupBeaconTest(active_tab);
+
+  ASSERT_TRUE(content::ExecuteScript(active_tab, "doodles.ei = 'test_ei';"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-fbb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C2%2Cct%3Atest&ntp=1&ei=test_ei"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-twb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C3%2Cct%3Atest&ntp=1&ei=test_ei"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-emb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C5%2Cct%3Atest&ntp=1&ei=test_ei"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-copy').click();"));
+  std::string short_link;
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C6%2Cct%3Atest&ntp=1&ei=test_ei"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
