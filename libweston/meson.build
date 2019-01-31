@@ -81,11 +81,11 @@ dep_libweston = declare_dependency(
 )
 
 pkgconfig.generate(
+	lib_weston,
 	filebase: 'libweston-@0@'.format(libweston_major),
 	name: 'libweston API',
 	version: version_weston,
 	description: 'Header files for libweston compositors development',
-	libraries: lib_weston,
 	requires_private: [ dep_wayland_server, dep_pixman, dep_xkbcommon ],
 	subdirs: dir_include_libweston
 )

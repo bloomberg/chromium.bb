@@ -25,11 +25,11 @@ dep_lib_desktop = declare_dependency(
 install_headers('libweston-desktop.h', subdir: dir_include_libweston)
 
 pkgconfig.generate(
+	lib_desktop,
 	filebase: 'libweston-desktop-@0@'.format(libweston_major),
 	name: 'libweston-desktop',
 	version: version_weston,
 	description: 'Desktop shells abstraction library for libweston compositors',
-	libraries: lib_desktop,
 	requires_private: [ lib_weston, dep_wayland_server ],
 	subdirs: dir_include_libweston
 )
