@@ -111,6 +111,7 @@ UIControlsAura::~UIControlsAura() {
 
 // static. declared in ui_controls.h
 void InstallUIControlsAura(UIControlsAura* instance) {
+  EnableUIControls();
   delete instance_;
   instance_ = instance;
 }

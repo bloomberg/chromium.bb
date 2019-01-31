@@ -481,6 +481,7 @@ test("browser_tests") {
       "//chrome/browser/chromeos/login/test/https_forwarder.py",
       "//chrome/browser/resources/chromeos/wallpaper_manager/",
       "//chrome/browser/resources/chromeos/zip_archiver/",
+      "//google_apis/test/",
       "//chrome/browser/resources/chromeos/zip_archiver/test/",
       "//chromeos/test/data/",
       "//ui/file_manager/base/",
@@ -502,16 +503,55 @@ test("browser_tests") {
       "//ash:ash_service_resources",
       "//chrome",
       "//ui/keyboard:resources",
+      "//ui/file_manager:unit_test_data",
     ]
+
+    if (use_dbus) {
+      deps += [ "//dbus:test_support" ]
+    }
 
     if (enable_nacl) {
       data_deps += [
         "//components/nacl/loader:nacl_helper",
         "//ppapi/native_client:irt",
       ]
+
+      if (enable_nacl_nonsfi) {
+        data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
+      }
     }
 
-    deps += [ "//chrome/browser/chromeos:test_support" ]
+    deps += [
+      "//ash:interactive_ui_test_support",
+      "//ash:test_support",
+      "//ash/public/interfaces:test_interfaces",
+      "//chrome/browser/chromeos:arc_test_support",
+      "//chrome/browser/chromeos:test_support",
+      "//chrome/browser/media/router:test_support",
+      "//chrome/browser/resources/chromeos/chromevox:browser_tests",
+      "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
+      "//chrome/browser/resources/chromeos/switch_access:browser_tests",
+      "//chrome/services/file_util/public/cpp:browser_tests",
+      "//chromeos:test_support",
+      "//chromeos/components/drivefs:test_support",
+      "//chromeos/dbus:test_support",
+      "//components/arc:arc_test_support",
+      "//components/exo:test_support",
+      "//components/prefs",
+      "//components/user_manager:test_support",
+      "//content/public/common:feature_h264_with_openh264_ffmpeg",
+      "//mojo/core/embedder",
+      "//services/audio/public/cpp:test_support",
+      "//services/identity/public/cpp",
+      "//services/network/public/mojom",
+      "//services/preferences/public/cpp",
+      "//services/preferences/public/mojom",
+      "//services/service_manager/public/cpp",
+      "//services/ws/public/cpp/input_devices:test_support",
+      "//ui/keyboard:test_support",
+      "//ui/login:resources",
+      "//url",
+    ]
   }
 
   # TODO(jbudorick): In progress. See crbug.com/611756
@@ -1496,6 +1536,7 @@ test("browser_tests") {
           "../browser/accessibility/accessibility_extension_api_browsertest.cc",
           "../browser/apps/platform_apps/api/arc_apps_private/arc_apps_private_apitest.cc",
           "../browser/extensions/api/system_display/system_display_chromeos_apitest.cc",
+          "../browser/extensions/clipboard_extension_apitest_chromeos.cc",
         ]
       }
 
@@ -1650,10 +1691,18 @@ test("browser_tests") {
     if (is_chromeos) {
       assert(enable_app_list)
       sources += [
+        "../browser/apps/platform_apps/app_window_interactive_uitest.cc",
+        "../browser/apps/platform_apps/app_window_interactive_uitest.h",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
+        "../browser/chromeos/accessibility/dictation_chromeos_browsertest.cc",
+        "../browser/chromeos/accessibility/magnification_controller_browsertest.cc",
         "../browser/chromeos/accessibility/magnification_manager_browsertest.cc",
+        "../browser/chromeos/accessibility/select_to_speak_browsertest.cc",
         "../browser/chromeos/accessibility/speech_monitor.cc",
         "../browser/chromeos/accessibility/speech_monitor.h",
+        "../browser/chromeos/accessibility/spoken_feedback_browsertest.cc",
+        "../browser/chromeos/accessibility/sticky_keys_browsertest.cc",
+        "../browser/chromeos/accessibility/switch_access_browsertest.cc",
         "../browser/chromeos/accessibility/touch_exploration_controller_browsertest.cc",
         "../browser/chromeos/app_mode/arc/arc_kiosk_app_manager_browsertest.cc",
         "../browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc",
@@ -1717,9 +1766,12 @@ test("browser_tests") {
         "../browser/chromeos/first_run/drive_first_run_browsertest.cc",
         "../browser/chromeos/first_run/goodies_displayer_browsertest.cc",
         "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
+        "../browser/chromeos/input_method/textinput_browsertest.cc",
+        "../browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc",
         "../browser/chromeos/input_method/textinput_test_helper.cc",
         "../browser/chromeos/input_method/textinput_test_helper.h",
         "../browser/chromeos/lock_screen_apps/note_taking_browsertest.cc",
+        "../browser/chromeos/login/active_directory_login_browsertest.cc",
         "../browser/chromeos/login/active_directory_test_helper.cc",
         "../browser/chromeos/login/active_directory_test_helper.h",
         "../browser/chromeos/login/auto_launched_kiosk_browsertest.cc",
@@ -1742,13 +1794,19 @@ test("browser_tests") {
         "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.h",
+        "../browser/chromeos/login/login_auth_recorder_browsertest.cc",
+        "../browser/chromeos/login/login_browsertest.cc",
         "../browser/chromeos/login/login_manager_test.cc",
         "../browser/chromeos/login/login_manager_test.h",
         "../browser/chromeos/login/login_screen_policy_browsertest.cc",
+        "../browser/chromeos/login/login_ui_browsertest.cc",
+        "../browser/chromeos/login/login_ui_hide_supervised_users_browsertest.cc",
         "../browser/chromeos/login/login_ui_keyboard_browsertest.cc",
         "../browser/chromeos/login/login_utils_browsertest.cc",
         "../browser/chromeos/login/mixin_based_in_process_browser_test.cc",
         "../browser/chromeos/login/mixin_based_in_process_browser_test.h",
+        "../browser/chromeos/login/oobe_browsertest.cc",
+        "../browser/chromeos/login/oobe_interactive_ui_test.cc",
         "../browser/chromeos/login/oobe_localization_browsertest.cc",
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
         "../browser/chromeos/login/quick_unlock/pin_migration_browsertest.cc",
@@ -1771,6 +1829,18 @@ test("browser_tests") {
         "../browser/chromeos/login/screens/network_screen_browsertest.cc",
         "../browser/chromeos/login/screens/update_screen_browsertest.cc",
         "../browser/chromeos/login/screens/user_selection_screen_browsertest.cc",
+        "../browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h",
+        "../browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric_cpu.cpp",
+        "../browser/chromeos/login/screenshot_testing/SkImageDiffer.cpp",
+        "../browser/chromeos/login/screenshot_testing/SkImageDiffer.h",
+        "../browser/chromeos/login/screenshot_testing/SkPMetric.cpp",
+        "../browser/chromeos/login/screenshot_testing/SkPMetric.h",
+        "../browser/chromeos/login/screenshot_testing/SkPMetricUtil_gen.h",
+        "../browser/chromeos/login/screenshot_testing/login_screen_areas.h",
+        "../browser/chromeos/login/screenshot_testing/screenshot_tester.cc",
+        "../browser/chromeos/login/screenshot_testing/screenshot_tester.h",
+        "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.cc",
+        "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h",
         "../browser/chromeos/login/session/chrome_session_manager_browsertest.cc",
         "../browser/chromeos/login/session_login_browsertest.cc",
         "../browser/chromeos/login/signin/device_id_browsertest.cc",
@@ -1832,6 +1902,7 @@ test("browser_tests") {
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/system/device_disabling_browsertest.cc",
         "../browser/chromeos/system/tray_accessibility_browsertest.cc",
+        "../browser/download/notification/download_notification_interactive_uitest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
@@ -1859,10 +1930,12 @@ test("browser_tests") {
         "../browser/ui/ash/shelf_browsertest.cc",
         "../browser/ui/ash/system_tray_client_browsertest.cc",
         "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
+        "../browser/ui/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/ash/tablet_mode_page_behavior_browsertest.cc",
         "../browser/ui/ash/time_to_first_present_recorder_browsertest.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
+        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
         "../browser/ui/views/arc_app_dialog_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.cc",
         "../browser/ui/views/crostini/crostini_browser_test_util.h",
@@ -1873,6 +1946,7 @@ test("browser_tests") {
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
+        "../browser/ui/views/frame/hosted_app_ash_interactive_ui_test.cc",
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/views/frame/top_controls_slide_controller_chromeos_browsertest.cc",
         "../browser/ui/views/plugin_vm/plugin_vm_launcher_view_browsertest.cc",
@@ -1884,12 +1958,31 @@ test("browser_tests") {
         "../browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files_test.cc",
         "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.cc",
         "../browser/ui/webui/chromeos/login/discover/wait_for_did_start_navigate.h",
+        "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/settings/chromeos/device_power_handler_browsertest.cc",
+        "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
+        "//ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
+        "//ash/app_list/app_list_interactive_uitest.cc",
+        "//ash/drag_drop/drag_drop_interactive_uitest.cc",
+        "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
+        "base/interactive_test_utils.cc",
+        "base/interactive_test_utils.h",
+        "base/interactive_test_utils_aura.cc",
+        "base/interactive_test_utils_aura.h",
+        "base/interactive_test_utils_common_views.cc",
+        "base/interactive_test_utils_views.cc",
+        "data/chromeos/service_login.html",
       ]
       if (enable_cros_assistant) {
         sources +=
             [ "../browser/ui/ash/assistant/assistant_context_browsertest.cc" ]
+      }
+      if (is_chrome_branded) {
+        sources += [
+          # The screen this test is checking exists in official build only.
+          "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
+        ]
       }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
@@ -1913,36 +2006,6 @@ test("browser_tests") {
         # chromeos does not support machine level user cloud policies
         "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
       ]
-      deps += [
-        "//ash:test_support",
-        "//ash/public/interfaces:test_interfaces",
-        "//chrome/browser/chromeos:arc_test_support",
-        "//chrome/browser/chromeos:test_support",
-        "//chrome/browser/resources/chromeos/chromevox:browser_tests",
-        "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
-        "//chrome/browser/resources/chromeos/switch_access:browser_tests",
-        "//chrome/services/file_util/public/cpp:browser_tests",
-        "//chromeos/components/drivefs:test_support",
-        "//components/arc:arc_test_support",
-        "//components/exo:test_support",
-        "//components/prefs",
-        "//components/user_manager:test_support",
-        "//content/public/common:feature_h264_with_openh264_ffmpeg",
-        "//services/audio/public/cpp:test_support",
-        "//services/identity/public/cpp",
-        "//services/network/public/mojom",
-        "//services/preferences/public/cpp",
-        "//services/preferences/public/mojom",
-        "//services/service_manager/public/cpp",
-        "//services/ws/public/cpp/input_devices:test_support",
-        "//ui/keyboard:test_support",
-        "//ui/login:resources",
-        "//url",
-      ]
-      data_deps += [ "//ui/file_manager:unit_test_data" ]
-      if (use_dbus) {
-        deps += [ "//dbus:test_support" ]
-      }
     } else {  # !is_chromeos
       sources -= [
         "../browser/invalidation/deprecated_profile_invalidation_provider_factory_browsertest.cc",
@@ -4778,7 +4841,6 @@ if (!is_android) {
       "../browser/extensions/api/tabs/tabs_interactive_test.cc",
       "../browser/extensions/chrome_extension_test_notification_observer.cc",
       "../browser/extensions/chrome_extension_test_notification_observer.h",
-      "../browser/extensions/clipboard_extension_apitest_chromeos.cc",
       "../browser/extensions/extension_apitest.cc",
       "../browser/extensions/extension_browsertest.cc",
       "../browser/extensions/extension_commands_global_registry_apitest.cc",
@@ -5034,97 +5096,13 @@ if (!is_android) {
     }
 
     if (is_chromeos) {
-      sources += [
-        "../browser/chromeos/accessibility/dictation_chromeos_browsertest.cc",
-        "../browser/chromeos/accessibility/magnification_controller_browsertest.cc",
-        "../browser/chromeos/accessibility/select_to_speak_browsertest.cc",
-        "../browser/chromeos/accessibility/spoken_feedback_browsertest.cc",
-        "../browser/chromeos/accessibility/sticky_keys_browsertest.cc",
-        "../browser/chromeos/accessibility/switch_access_browsertest.cc",
-        "../browser/chromeos/input_method/textinput_browsertest.cc",
-        "../browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc",
-        "../browser/chromeos/input_method/textinput_test_helper.cc",
-        "../browser/chromeos/input_method/textinput_test_helper.h",
-        "../browser/chromeos/login/active_directory_login_browsertest.cc",
-        "../browser/chromeos/login/active_directory_test_helper.cc",
-        "../browser/chromeos/login/active_directory_test_helper.h",
-        "../browser/chromeos/login/login_auth_recorder_browsertest.cc",
-        "../browser/chromeos/login/login_browsertest.cc",
-        "../browser/chromeos/login/login_manager_test.cc",
-        "../browser/chromeos/login/login_manager_test.h",
-        "../browser/chromeos/login/login_ui_browsertest.cc",
-        "../browser/chromeos/login/login_ui_hide_supervised_users_browsertest.cc",
-        "../browser/chromeos/login/mixin_based_in_process_browser_test.cc",
-        "../browser/chromeos/login/mixin_based_in_process_browser_test.h",
-        "../browser/chromeos/login/oobe_browsertest.cc",
-        "../browser/chromeos/login/oobe_interactive_ui_test.cc",
-        "../browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric.h",
-        "../browser/chromeos/login/screenshot_testing/SkDiffPixelsMetric_cpu.cpp",
-        "../browser/chromeos/login/screenshot_testing/SkImageDiffer.cpp",
-        "../browser/chromeos/login/screenshot_testing/SkImageDiffer.h",
-        "../browser/chromeos/login/screenshot_testing/SkPMetric.cpp",
-        "../browser/chromeos/login/screenshot_testing/SkPMetric.h",
-        "../browser/chromeos/login/screenshot_testing/SkPMetricUtil_gen.h",
-        "../browser/chromeos/login/screenshot_testing/login_screen_areas.h",
-        "../browser/chromeos/login/screenshot_testing/screenshot_tester.cc",
-        "../browser/chromeos/login/screenshot_testing/screenshot_tester.h",
-        "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.cc",
-        "../browser/chromeos/login/screenshot_testing/screenshot_testing_mixin.h",
-        "../browser/chromeos/login/test/https_forwarder.cc",
-        "../browser/chromeos/login/test/https_forwarder.h",
-        "../browser/chromeos/login/test/oobe_base_test.cc",
-        "../browser/chromeos/login/test/oobe_base_test.h",
-        "../browser/download/notification/download_notification_interactive_uitest.cc",
-        "../browser/ui/ash/tab_scrubber_browsertest.cc",
-        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
-        "../browser/ui/views/frame/hosted_app_ash_interactive_ui_test.cc",
-        "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
-        "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
-        "//ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
-        "//ash/app_list/app_list_interactive_uitest.cc",
-        "//ash/drag_drop/drag_drop_interactive_uitest.cc",
-        "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
-        "data/chromeos/service_login.html",
-      ]
-      if (is_chrome_branded) {
-        sources += [
-          # The screen this test is checking exists in official build only.
-          "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
-        ]
-      }
+      deps += [ "//chrome/browser/media/router:test_support" ]
       sources -= [
         "../browser/ui/signin_view_controller_interactive_uitest.cc",
 
         # Use only the _chromeos version on Ash / Chrome OS.
         "base/view_event_test_platform_part_default.cc",
       ]
-      deps += [
-        "//ash:interactive_ui_test_support",
-        "//ash/public/interfaces:test_interfaces",
-        "//chrome/browser/chromeos:test_support",
-        "//chrome/browser/media/router:test_support",
-        "//chromeos/dbus:test_support",
-        "//mojo/core/embedder",
-      ]
-
-      data += [
-        "//chrome/browser/chromeos/login/test/https_forwarder.py",
-        "//google_apis/test/",
-        "$root_out_dir/resources/chromeos/",
-      ]
-
-      data_deps += [ "//ui/keyboard:resources" ]
-
-      if (enable_nacl) {
-        data_deps += [
-          "//components/nacl/loader:nacl_helper",
-          "//ppapi/native_client:irt",
-        ]
-
-        if (enable_nacl_nonsfi) {
-          data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
-        }
-      }
     } else {  # ! is_chromeos
       # Non-ChromeOS notifications tests.
       sources += [
