@@ -76,7 +76,7 @@ class IsolatedScriptTestAdapter(common.BaseIsolatedScriptArgsAdapter):
     return ['--isolated-script-test-output=%s' % output]
 
   def generate_test_launcher_retry_limit_args(self, retry_limit):
-    return ['--isolated-script-test-retry-limit=%d' % retry_limit]
+    return ['--isolated-script-test-launcher-retry-limit=%d' % retry_limit]
 
   def generate_test_repeat_args(self, repeat_count):
     return ['--isolated-script-test-repeat=%d' % repeat_count]

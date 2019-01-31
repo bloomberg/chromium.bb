@@ -300,12 +300,12 @@ class BaseIsolatedScriptArgsAdapter(object):
           self.options.isolated_script_test_filter)
 
     # Augment test repeat if needed
-    if self.options.isolated_script_test_repeat:
+    if self.options.isolated_script_test_repeat is not None:
       isolated_script_cmd += self.generate_test_repeat_args(
           self.options.isolated_script_test_repeat)
 
     # Augment test launcher retry limit args if needed
-    if self.options.isolated_script_test_launcher_retry_limit:
+    if self.options.isolated_script_test_launcher_retry_limit is not None:
       isolated_script_cmd += self.generate_test_launcher_retry_limit_args(
           self.options.isolated_script_test_launcher_retry_limit)
 
