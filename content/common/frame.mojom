@@ -19,7 +19,6 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
-import "third_party/blink/public/mojom/frame/document_interface_broker.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
@@ -267,12 +266,6 @@ struct CreateNewWindowReply {
 // An opaque handle that keeps alive the associated render process even after
 // the frame is detached. Used by resource requests with "keepalive" specified.
 interface KeepAliveHandle {};
-
-struct DidCommitProvisionalLoadInterfaceParams {
-  service_manager.mojom.InterfaceProvider& interface_provider_request;
-  blink.mojom.DocumentInterfaceBroker& document_interface_broker_content_request;
-  blink.mojom.DocumentInterfaceBroker& document_interface_broker_blink_request;
-};
 
 // Implemented by the frame server (i.e. the browser process). For messages that
 // must be associated with the IPC channel.

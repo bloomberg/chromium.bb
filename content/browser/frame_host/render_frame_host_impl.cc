@@ -2139,123 +2139,22 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
       this, validated_url, error_code, error_description);
 }
 
-// Called when the renderer navigates.  For every frame loaded, we'll get this
-// notification containing parameters identifying the navigation.
 void RenderFrameHostImpl::DidCommitProvisionalLoad(
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
         validated_params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  if (GetNavigationHandle()) {
-    main_frame_request_ids_ = {validated_params->request_id,
-                               GetNavigationHandle()->GetGlobalRequestID()};
-    if (deferred_main_frame_load_info_)
-      ResourceLoadComplete(std::move(deferred_main_frame_load_info_));
-  }
-  // DidCommitProvisionalLoad IPC should be associated with the URL being
-  // committed (not with the *last* committed URL that most other IPCs are
-  // associated with).
-  ScopedActiveURL scoped_active_url(
-      validated_params->url,
-      frame_tree_node()->frame_tree()->root()->current_origin());
+  DidCommitNavigation(nullptr /* committing_navigation_request */,
+                      std::move(validated_params), std::move(interface_params));
+}
 
-  ScopedCommitStateResetter commit_state_resetter(this);
-  RenderProcessHost* process = GetProcess();
-
-  TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
-               "url", validated_params->url.possibly_invalid_spec(), "details",
-               CommitAsTracedValue(validated_params.get()));
-
-  // If we're waiting for a cross-site beforeunload ack from this renderer and
-  // we receive a Navigate message from the main frame, then the renderer was
-  // navigating already and sent it before hearing the FrameMsg_Stop message.
-  // Treat this as an implicit beforeunload ack to allow the pending navigation
-  // to continue.
-  if (is_waiting_for_beforeunload_ack_ && unload_ack_is_for_navigation_ &&
-      !GetParent()) {
-    base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
-    ProcessBeforeUnloadACK(true /* proceed */, true /* treat_as_final_ack */,
-                           approx_renderer_start_time, base::TimeTicks::Now());
-  }
-
-  // If we're waiting for an unload ack from this frame and we receive a commit
-  // message, then the frame was navigating before it received the unload
-  // request.  It will either respond to the unload request soon or our timer
-  // will expire.  Either way, we should ignore this message, because we have
-  // already committed to destroying this RenderFrameHost.  Note that we
-  // intentionally do not ignore commits that happen while the current tab is
-  // being closed - see https://crbug.com/805705.
-  if (is_waiting_for_swapout_ack_)
-    return;
-
-  // Retroactive sanity check:
-  // - If this is the first real load committing in this frame, then by this
-  //   time the RenderFrameHost's InterfaceProvider implementation should have
-  //   already been bound to a message pipe whose client end is used to service
-  //   interface requests from the initial empty document.
-  // - Otherwise, the InterfaceProvider implementation should at this point be
-  //   bound to an interface connection servicing interface requests coming from
-  //   the document of the previously committed navigation.
-  DCHECK(document_scoped_interface_provider_binding_.is_bound());
-  if (interface_params) {
-    // As a general rule, expect the RenderFrame to have supplied the
-    // request end of a new InterfaceProvider connection that will be used by
-    // the new document to issue interface requests to access RenderFrameHost
-    // services.
-    auto interface_provider_request_of_previous_document =
-        document_scoped_interface_provider_binding_.Unbind();
-    dropped_interface_request_logger_ =
-        std::make_unique<DroppedInterfaceRequestLogger>(
-            std::move(interface_provider_request_of_previous_document));
-    BindInterfaceProviderRequest(
-        std::move(interface_params->interface_provider_request));
-
-    document_interface_broker_content_binding_.Close();
-    document_interface_broker_blink_binding_.Close();
-    BindDocumentInterfaceBrokerRequest(
-        std::move(interface_params->document_interface_broker_content_request),
-        std::move(interface_params->document_interface_broker_blink_request));
-
-  } else {
-    // If there had already been a real load committed in the frame, and this is
-    // not a same-document navigation, then both the active document as well as
-    // the global object was replaced in this browsing context. The RenderFrame
-    // should have rebound its InterfaceProvider to a new pipe, but failed to do
-    // so. Kill the renderer, and close the old binding to ensure that any
-    // pending interface requests originating from the previous document, hence
-    // possibly from a different security origin, will no longer be dispatched.
-    if (frame_tree_node_->has_committed_real_load()) {
-      document_scoped_interface_provider_binding_.Close();
-      document_interface_broker_content_binding_.Close();
-      document_interface_broker_blink_binding_.Close();
-      bad_message::ReceivedBadMessage(
-          process, bad_message::RFH_INTERFACE_PROVIDER_MISSING);
-      return;
-    }
-
-    // Otherwise, it is the first real load commited, for which the RenderFrame
-    // is allowed to, and will re-use the existing InterfaceProvider connection
-    // if the new document is same-origin with the initial empty document, and
-    // therefore the global object is not replaced.
-  }
-
-  if (!DidCommitNavigationInternal(validated_params.get(),
-                                   false /* is_same_document_navigation */))
-    return;
-
-  // Since we didn't early return, it's safe to keep the commit state.
-  commit_state_resetter.disable();
-
-  // For a top-level frame, there are potential security concerns associated
-  // with displaying graphics from a previously loaded page after the URL in
-  // the omnibar has been changed. It is unappealing to clear the page
-  // immediately, but if the renderer is taking a long time to issue any
-  // compositor output (possibly because of script deliberately creating this
-  // situation) then we clear it after a while anyway.
-  // See https://crbug.com/497588.
-  if (frame_tree_node_->IsMainFrame() && GetView()) {
-    RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
-        ->DidNavigate(validated_params->content_source_id);
-  }
+void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
+    NavigationRequest* committing_navigation_request,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+        validated_params,
+    mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
+  DCHECK(committing_navigation_request);
+  DidCommitNavigation(committing_navigation_request,
+                      std::move(validated_params), std::move(interface_params));
 }
 
 void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
@@ -2283,9 +2182,14 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                validated_params->url.possibly_invalid_spec());
 
-  if (!DidCommitNavigationInternal(validated_params.get(),
-                                   true /* is_same_document_navigation*/))
+  // TODO(ahemery): We also create a NavigationRequest for browser initiated
+  // same document navigations, so implement the passing of this request to
+  // DidCommitNavigationInternal.
+  if (!DidCommitNavigationInternal(nullptr /* navigation_request */,
+                                   validated_params.get(),
+                                   true /* is_same_document_navigation*/)) {
     return;
+  }
 
   // Since we didn't early return, it's safe to keep the commit state.
   commit_state_resetter.disable();
@@ -5362,7 +5266,7 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // We only send loader factory bundle upon navigation, so
-  // bail out if the frame hasn't commited any yet.
+  // bail out if the frame hasn't committed any yet.
   if (!has_committed_any_navigation_)
     return;
   DCHECK(!IsOutOfProcessNetworkService() ||
@@ -6200,6 +6104,7 @@ void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
 }
 
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
+    NavigationRequest* navigation_request,
     FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
     bool is_same_document_navigation) {
   // Sanity-check the page transition for frame type.
@@ -6223,23 +6128,35 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (navigation_request_)
     was_discarded_ = navigation_request_->commit_params().was_discarded;
 
-  // Find the appropriate NavigationRequest for this navigation.
-  std::unique_ptr<NavigationRequest> navigation_request;
-
-  if (is_same_document_navigation) {
-    navigation_request =
-        TakeNavigationRequestForSameDocumentCommit(*validated_params);
-  } else {
-    navigation_request = TakeNavigationRequestForCommit(*validated_params);
+  std::unique_ptr<NavigationRequest> committed_request;
+  // |navigation_request| is committed, we pass full ownership to the Navigator.
+  if (navigation_request) {
+    auto it = navigation_requests_.find(
+        navigation_request->navigation_handle()->GetNavigationId());
+    // If we provided a navigation_request and it committed, it should always
+    // be in the map.
+    CHECK(it != navigation_requests_.end());
+    committed_request = std::move(it->second);
+    navigation_requests_.erase(it);
   }
-  DCHECK(navigation_request);
-  DCHECK(navigation_request->navigation_handle());
+
+  if (!committed_request) {
+    if (is_same_document_navigation) {
+      committed_request =
+          TakeNavigationRequestForSameDocumentCommit(*validated_params);
+    } else {
+      committed_request = TakeNavigationRequestForCommit(*validated_params);
+    }
+  }
+
+  DCHECK(committed_request);
+  DCHECK(committed_request->navigation_handle());
 
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
 
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, *validated_params,
-                                              std::move(navigation_request),
+                                              std::move(committed_request),
                                               is_same_document_navigation);
   if (!is_same_document_navigation)
     navigation_request_.reset();
@@ -6421,6 +6338,135 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
   }
 }
 
+// Called when the renderer navigates.  For every frame loaded, we'll get this
+// notification containing parameters identifying the navigation.
+void RenderFrameHostImpl::DidCommitNavigation(
+    NavigationRequest* committing_navigation_request,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+        validated_params,
+    mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
+  NavigationHandleImpl* navigation_handle;
+  if (committing_navigation_request) {
+    navigation_handle = committing_navigation_request->navigation_handle();
+  } else {
+    navigation_handle = GetNavigationHandle();
+  }
+
+  if (navigation_handle) {
+    main_frame_request_ids_ = {validated_params->request_id,
+                               navigation_handle->GetGlobalRequestID()};
+    if (deferred_main_frame_load_info_)
+      ResourceLoadComplete(std::move(deferred_main_frame_load_info_));
+  }
+  // DidCommitProvisionalLoad IPC should be associated with the URL being
+  // committed (not with the *last* committed URL that most other IPCs are
+  // associated with).
+  ScopedActiveURL scoped_active_url(
+      validated_params->url,
+      frame_tree_node()->frame_tree()->root()->current_origin());
+
+  ScopedCommitStateResetter commit_state_resetter(this);
+  RenderProcessHost* process = GetProcess();
+
+  TRACE_EVENT2("navigation", "RenderFrameHostImpl::DidCommitProvisionalLoad",
+               "url", validated_params->url.possibly_invalid_spec(), "details",
+               CommitAsTracedValue(validated_params.get()));
+
+  // If we're waiting for a cross-site beforeunload ack from this renderer and
+  // we receive a Navigate message from the main frame, then the renderer was
+  // navigating already and sent it before hearing the FrameMsg_Stop message.
+  // Treat this as an implicit beforeunload ack to allow the pending navigation
+  // to continue.
+  if (is_waiting_for_beforeunload_ack_ && unload_ack_is_for_navigation_ &&
+      !GetParent()) {
+    base::TimeTicks approx_renderer_start_time = send_before_unload_start_time_;
+    ProcessBeforeUnloadACK(true /* proceed */, true /* treat_as_final_ack */,
+                           approx_renderer_start_time, base::TimeTicks::Now());
+  }
+
+  // If we're waiting for an unload ack from this frame and we receive a commit
+  // message, then the frame was navigating before it received the unload
+  // request.  It will either respond to the unload request soon or our timer
+  // will expire.  Either way, we should ignore this message, because we have
+  // already committed to destroying this RenderFrameHost.  Note that we
+  // intentionally do not ignore commits that happen while the current tab is
+  // being closed - see https://crbug.com/805705.
+  if (is_waiting_for_swapout_ack_)
+    return;
+
+  // Retroactive sanity check:
+  // - If this is the first real load committing in this frame, then by this
+  //   time the RenderFrameHost's InterfaceProvider implementation should have
+  //   already been bound to a message pipe whose client end is used to service
+  //   interface requests from the initial empty document.
+  // - Otherwise, the InterfaceProvider implementation should at this point be
+  //   bound to an interface connection servicing interface requests coming from
+  //   the document of the previously committed navigation.
+  DCHECK(document_scoped_interface_provider_binding_.is_bound());
+  if (interface_params) {
+    // As a general rule, expect the RenderFrame to have supplied the
+    // request end of a new InterfaceProvider connection that will be used by
+    // the new document to issue interface requests to access RenderFrameHost
+    // services.
+    auto interface_provider_request_of_previous_document =
+        document_scoped_interface_provider_binding_.Unbind();
+    dropped_interface_request_logger_ =
+        std::make_unique<DroppedInterfaceRequestLogger>(
+            std::move(interface_provider_request_of_previous_document));
+    BindInterfaceProviderRequest(
+        std::move(interface_params->interface_provider_request));
+
+    document_interface_broker_content_binding_.Close();
+    document_interface_broker_blink_binding_.Close();
+    BindDocumentInterfaceBrokerRequest(
+        std::move(interface_params->document_interface_broker_content_request),
+        std::move(interface_params->document_interface_broker_blink_request));
+
+  } else {
+    // If there had already been a real load committed in the frame, and this is
+    // not a same-document navigation, then both the active document as well as
+    // the global object was replaced in this browsing context. The RenderFrame
+    // should have rebound its InterfaceProvider to a new pipe, but failed to do
+    // so. Kill the renderer, and close the old binding to ensure that any
+    // pending interface requests originating from the previous document, hence
+    // possibly from a different security origin, will no longer be dispatched.
+    if (frame_tree_node_->has_committed_real_load()) {
+      document_scoped_interface_provider_binding_.Close();
+      document_interface_broker_content_binding_.Close();
+      document_interface_broker_blink_binding_.Close();
+      bad_message::ReceivedBadMessage(
+          process, bad_message::RFH_INTERFACE_PROVIDER_MISSING);
+      return;
+    }
+
+    // Otherwise, it is the first real load committed, for which the RenderFrame
+    // is allowed to, and will re-use the existing InterfaceProvider connection
+    // if the new document is same-origin with the initial empty document, and
+    // therefore the global object is not replaced.
+  }
+
+  if (!DidCommitNavigationInternal(committing_navigation_request,
+                                   validated_params.get(),
+                                   false /* is_same_document_navigation */)) {
+    return;
+  }
+
+  // Since we didn't early return, it's safe to keep the commit state.
+  commit_state_resetter.disable();
+
+  // For a top-level frame, there are potential security concerns associated
+  // with displaying graphics from a previously loaded page after the URL in
+  // the omnibar has been changed. It is unappealing to clear the page
+  // immediately, but if the renderer is taking a long time to issue any
+  // compositor output (possibly because of script deliberately creating this
+  // situation) then we clear it after a while anyway.
+  // See https://crbug.com/497588.
+  if (frame_tree_node_->IsMainFrame() && GetView()) {
+    RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
+        ->DidNavigate(validated_params->content_source_id);
+  }
+}
+
 mojom::FrameNavigationControl::CommitNavigationCallback
 RenderFrameHostImpl::BuildCommitNavigationCallback(
     NavigationRequest* navigation_request) {
@@ -6448,9 +6494,8 @@ RenderFrameHostImpl::BuildNavigationClientCommitNavigationCallback(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
   return base::BindOnce(
-      &RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
-      base::Unretained(this),
-      navigation_request->navigation_handle()->GetNavigationId());
+      &RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation,
+      base::Unretained(this), navigation_request);
 }
 
 mojom::NavigationClient::CommitFailedNavigationCallback

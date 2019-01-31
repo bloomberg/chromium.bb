@@ -1118,6 +1118,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
+
+  // This function mimics DidCommitProvisionalLoad but is a direct mojo
+  // callback from NavigationClient::CommitNavigation.
+  // This only used when PerNavigationMojoInterface is enabled, and will
+  // replace DidCommitProvisionalLoad in the long run.
+  void DidCommitPerNavigationMojoInterfaceNavigation(
+      NavigationRequest* committing_navigation_request,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+          validated_params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
+
   void DidCommitSameDocumentNavigation(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
@@ -1408,12 +1419,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // an interstitial.
   void UpdateSiteURL(const GURL& url, bool url_is_unreachable);
 
+  // The actual implementation of DidCommitProvisionalLoad and
+  // DidCommitPerNavigationMojoInterfaceNavigation.
+  void DidCommitNavigation(
+      NavigationRequest* committing_navigation_request,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+          validated_params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
+
   // Called when we receive the confirmation that a navigation committed in the
   // renderer. Used by both DidCommitSameDocumentNavigation and
   // DidCommitNavigation.
   // Returns true if the navigation did commit properly, false if the commit
   // state should be restored to its pre-commit value.
   bool DidCommitNavigationInternal(
+      NavigationRequest* navigation_request,
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
       bool is_same_document_navigation);
 
@@ -1686,6 +1706,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // indexed by IDs. These are navigations that have passed ReadyToCommit stage
   // and are waiting for the renderer to send back a matching
   // OnCrossDocumentCommitProcessed.
+
+  // TODO(ahemery): We have this storage as a map because we actually want to
+  // find navigations by id with PerNavigationMojoInterface disabled.
+  // When the flag is always on, rework the structure to simply store an
+  // unindexed bunch of ongoing navigations and modify
+  // DidCommitNavigationInternal.
   std::map<int64_t, std::unique_ptr<NavigationRequest>> navigation_requests_;
 
   // Holds a same-document NavigationRequest while waiting for the navigation it

@@ -6,6 +6,7 @@ module content.mojom;
 
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
+import "content/common/frame_messages.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "url/mojom/url.mojom";
@@ -62,7 +63,8 @@ interface NavigationClient {
       blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
       network.mojom.URLLoaderFactory? prefetch_loader_factory,
       mojo_base.mojom.UnguessableToken devtools_navigation_token)
-      => (blink.mojom.CommitResult commit_result);
+      => (DidCommitProvisionalLoadParams params,
+          DidCommitProvisionalLoadInterfaceParams? interface_params);
 
   // Tells the renderer that a failed navigation is ready to commit.
   //
