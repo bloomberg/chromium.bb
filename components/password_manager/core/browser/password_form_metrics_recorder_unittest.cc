@@ -988,4 +988,38 @@ TEST(PasswordFormMetricsRecorder,
        .expectation = PasswordFormMetricsRecorder::FillingAssistance::kManual});
 }
 
+TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedDomain) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Submission while domain is blacklisted",
+       .fields = {{.value = "user1"},
+                  {.value = "password1", .is_password = true}},
+       // A blacklisted domain is represented as empty username and password
+       // but empty username elements are stripped before
+       // PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric is
+       // called.
+       .saved_usernames = {},
+       .saved_passwords = {""},
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNoSavedCredentialsAndBlacklisted});
+}
+
+TEST(PasswordFormMetricsRecorder,
+     FillingAssistanceBlacklistedDomainWithCredential) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "Submission while domain is blacklisted but a credential is stored",
+       .fields = {{.value = "user1", .automatically_filled = true},
+                  {.value = "password1",
+                   .is_password = true,
+                   .automatically_filled = true}},
+       // A blacklisted domain is represented as empty username and password
+       // but empty username elements are stripped before
+       // PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric is
+       // called.
+       .saved_usernames = {"user1"},
+       .saved_passwords = {"", "password1"},
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
 }  // namespace password_manager

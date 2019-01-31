@@ -41320,6 +41320,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="%-) Neither filling nor user input">
     For example, it might be because of 3rd party password managers.
   </int>
+  <int value="7"
+      label=":-X Unknown password typed, no saved credentials existed and
+             site was explicitly blacklisted"/>
 </enum>
 
 <enum name="PasswordManagerFirstRendererFillingResult">

@@ -266,7 +266,9 @@ class PasswordFormMetricsRecorder
     kNoSavedCredentials = 5,
     // Neither user input nor filling.
     kNoUserInputNoFillingInPasswordFields = 6,
-    kMaxValue = kNoUserInputNoFillingInPasswordFields,
+    // Domain is blacklisted and no other credentials exist.
+    kNoSavedCredentialsAndBlacklisted = 7,
+    kMaxValue = kNoSavedCredentialsAndBlacklisted,
   };
 
   // The maximum number of combinations of the ManagerAction, UserAction and
