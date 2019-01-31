@@ -3019,6 +3019,11 @@ void RenderFrameHostImpl::UpdateUserGestureCarryoverInfo() {
 }
 #endif
 
+void RenderFrameHostImpl::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  visibility_ = visibility;
+}
+
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
   delegate_->OnDidBlockFramebust(url);
 }

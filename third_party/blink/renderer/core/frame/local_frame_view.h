@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
@@ -862,6 +863,8 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
+  void UpdateVisibility(bool is_visible);
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -874,6 +877,8 @@ class CORE_EXPORT LocalFrameView final
   bool is_attached_;
   bool self_visible_;
   bool parent_visible_;
+  blink::mojom::FrameVisibility visibility_ =
+      blink::mojom::FrameVisibility::kRenderedInViewport;
 
   WebDisplayMode display_mode_;
 

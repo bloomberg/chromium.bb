@@ -61,6 +61,7 @@ void RemoteFrameView::AttachToLayout() {
   is_attached_ = true;
   if (ParentFrameView()->IsVisible())
     SetParentVisible(true);
+  UpdateVisibility(true);
 
   SetupRenderThrottling();
   subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
@@ -297,12 +298,12 @@ void RemoteFrameView::UpdateGeometry() {
 
 void RemoteFrameView::Hide() {
   self_visible_ = false;
-  remote_frame_->Client()->VisibilityChanged(false);
+  UpdateVisibility(scroll_visible_);
 }
 
 void RemoteFrameView::Show() {
   self_visible_ = true;
-  remote_frame_->Client()->VisibilityChanged(true);
+  UpdateVisibility(scroll_visible_);
 }
 
 void RemoteFrameView::SetParentVisible(bool visible) {
@@ -312,8 +313,24 @@ void RemoteFrameView::SetParentVisible(bool visible) {
   parent_visible_ = visible;
   if (!self_visible_)
     return;
+  UpdateVisibility(scroll_visible_);
+}
 
-  remote_frame_->Client()->VisibilityChanged(self_visible_ && parent_visible_);
+void RemoteFrameView::UpdateVisibility(bool scroll_visible) {
+  blink::mojom::FrameVisibility visibility;
+  scroll_visible_ = scroll_visible;
+  if (self_visible_ && parent_visible_) {
+    visibility = scroll_visible
+                     ? blink::mojom::FrameVisibility::kRenderedInViewport
+                     : blink::mojom::FrameVisibility::kRenderedOutOfViewport;
+  } else {
+    visibility = blink::mojom::FrameVisibility::kNotRendered;
+  }
+
+  if (visibility == visibility_)
+    return;
+  visibility_ = visibility;
+  remote_frame_->Client()->VisibilityChanged(visibility);
 }
 
 void RemoteFrameView::SetupRenderThrottling() {
@@ -327,6 +344,7 @@ void RemoteFrameView::SetupRenderThrottling() {
   visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
       target_element, WTF::BindRepeating(
                           [](RemoteFrameView* remote_view, bool is_visible) {
+                            remote_view->UpdateVisibility(is_visible);
                             remote_view->UpdateRenderThrottlingStatus(
                                 !is_visible, remote_view->subtree_throttled_);
                           },

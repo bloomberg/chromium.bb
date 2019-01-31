@@ -20,6 +20,7 @@ import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
@@ -382,6 +383,10 @@ interface FrameHost {
   // Notifies the browser that the current frame has either become or is no
   // longer fullscreen.
   FullscreenStateChanged(bool is_fullscreen);
+
+  // Notifies the browser that the current frame has changed its visibility
+  // status.
+  VisibilityChanged(blink.mojom.FrameVisibility visibility);
 
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain

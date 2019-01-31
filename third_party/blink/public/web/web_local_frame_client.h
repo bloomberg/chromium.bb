@@ -39,6 +39,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
@@ -628,6 +629,8 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // A performance timing event (e.g. first paint) occurred
   virtual void DidChangePerformanceTiming() {}
+
+  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) {}
 
   // UseCounter ----------------------------------------------------------
   // Blink exhibited a certain loading behavior that the browser process will

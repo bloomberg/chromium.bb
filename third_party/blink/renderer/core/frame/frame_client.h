@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CLIENT_H_
 
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -32,6 +33,8 @@ class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
   virtual unsigned BackForwardLength() = 0;
 
   virtual void FrameFocused() const = 0;
+
+  virtual void VisibilityChanged(blink::mojom::FrameVisibility visibility) = 0;
 
   virtual base::UnguessableToken GetDevToolsFrameToken() const = 0;
 

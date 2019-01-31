@@ -870,6 +870,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // activated.
   void OnPortalActivated();
 
+  // mojom::FrameHost:
+  void VisibilityChanged(blink::mojom::FrameVisibility) override;
+
+  blink::mojom::FrameVisibility visibility() const { return visibility_; }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1956,6 +1961,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
+
+  blink::mojom::FrameVisibility visibility_ =
+      blink::mojom::FrameVisibility::kRenderedInViewport;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

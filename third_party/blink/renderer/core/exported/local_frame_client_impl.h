@@ -156,6 +156,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool ShouldTrackUseCounter(const KURL&) override;
   void SelectorMatchChanged(const Vector<String>& added_selectors,
                             const Vector<String>& removed_selectors) override;
+  void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
 
   // Creates a WebDocumentLoaderImpl that is a DocumentLoader but also has:
   // - storage to store an extra data that can be used by the content layer

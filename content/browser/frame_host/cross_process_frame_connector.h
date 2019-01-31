@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_visual_properties.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 
 namespace IPC {
 class Message;
@@ -158,6 +159,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // became visible.
   void DelegateWasShown();
 
+  blink::mojom::FrameVisibility visibility() const { return visibility_; }
+
  private:
   friend class MockCrossProcessFrameConnector;
 
@@ -181,7 +184,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
                                     const gfx::Rect& compositor_visible_rect,
                                     bool occluded_or_obscured);
-  void OnVisibilityChanged(bool visible);
+  void OnVisibilityChanged(blink::mojom::FrameVisibility visibility);
   void OnSetIsInert(bool);
   void OnSetInheritedEffectiveTouchAction(cc::TouchAction);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
@@ -199,8 +202,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool subtree_throttled_ = false;
 
   // Visibility state of the corresponding frame owner element in parent process
-  // which is set through CSS.
-  bool is_hidden_ = false;
+  // which is set through CSS or scrolling.
+  blink::mojom::FrameVisibility visibility_ =
+      blink::mojom::FrameVisibility::kRenderedInViewport;
 
   // Used to make sure we only log UMA once per renderer crash.
   bool is_crash_already_logged_ = false;

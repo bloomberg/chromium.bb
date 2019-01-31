@@ -355,6 +355,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   }
   bool AllowScriptExtensions() override { return false; }
 
+  void VisibilityChanged(blink::mojom::FrameVisibility) override {}
+
   WebCookieJar* CookieJar() const override { return nullptr; }
 
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
@@ -446,7 +448,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(const IntRect& viewport_intersection,
                                         bool occluded_or_obscured) override {}
   void AdvanceFocus(WebFocusType, LocalFrame* source) override {}
-  void VisibilityChanged(bool visible) override {}
+  void VisibilityChanged(blink::mojom::FrameVisibility) override {}
   void SetIsInert(bool) override {}
   void SetInheritedEffectiveTouchAction(TouchAction) override {}
   void UpdateRenderThrottlingStatus(bool is_throttled,

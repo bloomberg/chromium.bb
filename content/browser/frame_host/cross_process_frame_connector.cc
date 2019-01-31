@@ -150,8 +150,8 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     delegate_was_shown_after_crash_ = false;
 
     view_->SetFrameConnectorDelegate(this);
-    if (is_hidden_)
-      OnVisibilityChanged(false);
+    if (visibility_ != blink::mojom::FrameVisibility::kRenderedInViewport)
+      OnVisibilityChanged(visibility_);
     FrameMsg_ViewChanged_Params params;
     if (!features::IsMultiProcessMash())
       params.frame_sink_id = view_->GetFrameSinkId();
@@ -370,8 +370,10 @@ void CrossProcessFrameConnector::OnUpdateViewportIntersection(
   }
 }
 
-void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
-  is_hidden_ = !visible;
+void CrossProcessFrameConnector::OnVisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  bool visible = visibility != blink::mojom::FrameVisibility::kNotRendered;
+  visibility_ = visibility;
   if (IsVisible()) {
     // Record metrics if a crashed subframe became visible as a result of this
     // visibility change.
@@ -379,6 +381,10 @@ void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
   }
   if (!view_)
     return;
+
+  frame_proxy_in_parent_renderer_->frame_tree_node()
+      ->current_frame_host()
+      ->VisibilityChanged(visibility);
 
   // If there is an inner WebContents, it should be notified of the change in
   // the visibility. The Show/Hide methods will not be called if an inner
@@ -453,7 +459,7 @@ cc::TouchAction CrossProcessFrameConnector::InheritedEffectiveTouchAction()
 }
 
 bool CrossProcessFrameConnector::IsHidden() const {
-  return is_hidden_;
+  return visibility_ == blink::mojom::FrameVisibility::kNotRendered;
 }
 
 #if defined(USE_AURA)
@@ -588,7 +594,7 @@ void CrossProcessFrameConnector::DelegateWasShown() {
 }
 
 bool CrossProcessFrameConnector::IsVisible() {
-  if (is_hidden_)
+  if (visibility_ == blink::mojom::FrameVisibility::kNotRendered)
     return false;
   if (viewport_intersection_rect().IsEmpty())
     return false;
