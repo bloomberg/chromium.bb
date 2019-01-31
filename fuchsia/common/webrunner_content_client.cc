@@ -36,7 +36,7 @@ gfx::Image& WebRunnerContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 blink::OriginTrialPolicy* WebRunnerContentClient::GetOriginTrialPolicy() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
