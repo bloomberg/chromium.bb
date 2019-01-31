@@ -150,6 +150,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/SpeechRecognitionImpl.java",
     "java/src/org/chromium/content/browser/SyntheticGestureTarget.java",
     "java/src/org/chromium/content/browser/TracingControllerAndroidImpl.java",
+    "java/src/org/chromium/content/browser/UiThreadTaskTraitsImpl.java",
     "java/src/org/chromium/content/browser/ViewEventSinkImpl.java",
     "java/src/org/chromium/content/browser/WindowEventObserver.java",
     "java/src/org/chromium/content/browser/WindowEventObserverManager.java",

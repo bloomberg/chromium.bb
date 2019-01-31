@@ -63,7 +63,7 @@ public class UiThreadSchedulerTest {
     @MediumTest
     public void testSimpleUiThreadPostingBeforeNativeLoaded() throws Exception {
         TaskRunner uiThreadTaskRunner =
-                PostTask.createSingleThreadTaskRunner(new UiThreadTaskTraits());
+                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         try {
             List<Integer> orderList = new ArrayList<>();
             SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 1);
@@ -81,7 +81,7 @@ public class UiThreadSchedulerTest {
     @MediumTest
     public void testUiThreadTaskRunnerMigrationToNative() throws Exception {
         TaskRunner uiThreadTaskRunner =
-                PostTask.createSingleThreadTaskRunner(new UiThreadTaskTraits());
+                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         try {
             List<Integer> orderList = new ArrayList<>();
             SchedulerTestHelpers.postRecordOrderTask(uiThreadTaskRunner, orderList, 1);
@@ -103,8 +103,7 @@ public class UiThreadSchedulerTest {
     @MediumTest
     public void testSimpleUiThreadPostingAfterNativeLoaded() throws Exception {
         TaskRunner uiThreadTaskRunner =
-                PostTask.createSingleThreadTaskRunner(new UiThreadTaskTraits());
-
+                PostTask.createSingleThreadTaskRunner(UiThreadTaskTraits.DEFAULT);
         try {
             startContentMainOnUiThread();
 

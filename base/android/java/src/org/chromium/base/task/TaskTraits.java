@@ -22,12 +22,30 @@ public class TaskTraits {
     // Keep in sync with base::TaskTraitsExtensionStorage::kStorageSize
     public static final int EXTENSION_STORAGE_SIZE = 8;
 
+    // A convenience variable explicitly specifying the default priority
+    public static final TaskTraits USER_VISIBLE =
+            new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE);
+
     public TaskTraits() {}
 
-    public TaskTraits setTaskPriority(int taskPriority) {
-        mPrioritySetExplicitly = true;
-        mPriority = taskPriority;
-        return this;
+    private TaskTraits(TaskTraits other) {
+        mPrioritySetExplicitly = other.mPrioritySetExplicitly;
+        mPriority = other.mPriority;
+        mMayBlock = other.mMayBlock;
+        mExtensionId = other.mExtensionId;
+        mExtensionData = other.mExtensionData;
+    }
+
+    public TaskTraits(byte extensionId, byte[] extensionData) {
+        mExtensionId = extensionId;
+        mExtensionData = extensionData;
+    }
+
+    public TaskTraits taskPriority(int taskPriority) {
+        TaskTraits taskTraits = new TaskTraits(this);
+        taskTraits.mPrioritySetExplicitly = true;
+        taskTraits.mPriority = taskPriority;
+        return taskTraits;
     }
 
     /**
@@ -36,9 +54,10 @@ public class TaskTraits {
      * socket, rename or delete a file, enumerate files in a directory, etc. This trait isn't
      * required for the mere use of locks.
      */
-    public TaskTraits setMayBlock(boolean mayBlock) {
-        mMayBlock = mayBlock;
-        return this;
+    public TaskTraits mayBlock(boolean mayBlock) {
+        TaskTraits taskTraits = new TaskTraits(this);
+        taskTraits.mMayBlock = mayBlock;
+        return taskTraits;
     }
 
     // For convenience of the JNI code, we use primitive types only.
@@ -48,14 +67,6 @@ public class TaskTraits {
     boolean mMayBlock;
     byte mExtensionId = INVALID_EXTENSION_ID;
     byte mExtensionData[];
-
-    protected void setExtensionId(byte extensionId) {
-        mExtensionId = extensionId;
-    }
-
-    protected void setExtensionData(byte[] extensionData) {
-        mExtensionData = extensionData;
-    }
 
     /**
      * @return true if this task is using some TaskTraits extension.
