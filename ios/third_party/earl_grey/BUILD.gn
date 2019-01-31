@@ -253,6 +253,7 @@ ios_framework_bundle("earl_grey") {
     "src/EarlGrey/Assertion/GREYAssertionBlock.h",
     "src/EarlGrey/Assertion/GREYAssertionDefines.h",
     "src/EarlGrey/Assertion/GREYAssertions.h",
+    "src/EarlGrey/Common/GREYAppleInternals.h",
     "src/EarlGrey/Common/GREYConfiguration.h",
     "src/EarlGrey/Common/GREYConstants.h",
     "src/EarlGrey/Common/GREYDefines.h",
