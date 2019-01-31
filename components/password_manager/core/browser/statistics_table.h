@@ -21,8 +21,6 @@ namespace password_manager {
 
 // The statistics containing user interactions with a site.
 struct InteractionsStats {
-  InteractionsStats();
-
   // The domain of the site.
   GURL origin_domain;
 

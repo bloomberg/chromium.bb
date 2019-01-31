@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -712,6 +713,7 @@ struct FillingAssistanceTestCase {
   std::vector<FieldInfo> fields;
   std::vector<std::string> saved_usernames;
   std::vector<std::string> saved_passwords;
+  std::vector<InteractionsStats> interactions_stats;
 
   base::Optional<PasswordFormMetricsRecorder::FillingAssistance> expectation;
 };
@@ -766,9 +768,11 @@ void CheckFillingAssistanceTestCase(
 
   auto recorder =
       CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
-  if (test_case.submission_detected)
+  if (test_case.submission_detected) {
     recorder->CalculateFillingAssistanceMetric(form_data, saved_usernames,
-                                               saved_passwords);
+                                               saved_passwords,
+                                               test_case.interactions_stats);
+  }
 
   if (test_case.submission_is_successful)
     recorder->LogSubmitPassed();
@@ -1020,6 +1024,20 @@ TEST(PasswordFormMetricsRecorder,
        .saved_passwords = {"", "password1"},
        .expectation =
            PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedBySmartBubble) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Submission without saved credentials while "
+                                  "smart bubble suppresses saving",
+       .fields = {{.value = "user1"},
+                  {.value = "password1", .is_password = true}},
+       .saved_usernames = {},
+       .saved_passwords = {},
+       .interactions_stats = {{.username_value = ASCIIToUTF16("user1"),
+                               .dismissal_count = 10}},
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNoSavedCredentialsAndBlacklistedBySmartBubble});
 }
 
 }  // namespace password_manager

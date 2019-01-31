@@ -29,6 +29,7 @@ struct FormData;
 namespace password_manager {
 
 class FormFetcher;
+struct InteractionsStats;
 
 // The pupose of this class is to record various types of metrics about the
 // behavior of the PasswordFormManager and its interaction with the user and
@@ -268,7 +269,10 @@ class PasswordFormMetricsRecorder
     kNoUserInputNoFillingInPasswordFields = 6,
     // Domain is blacklisted and no other credentials exist.
     kNoSavedCredentialsAndBlacklisted = 7,
-    kMaxValue = kNoSavedCredentialsAndBlacklisted,
+    // No credentials exist and the user has ignored the save bubble too often,
+    // meaning that they won't be asked to save credentials anymore.
+    kNoSavedCredentialsAndBlacklistedBySmartBubble = 8,
+    kMaxValue = kNoSavedCredentialsAndBlacklistedBySmartBubble,
   };
 
   // The maximum number of combinations of the ManagerAction, UserAction and
@@ -400,7 +404,8 @@ class PasswordFormMetricsRecorder
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form,
       const std::set<base::string16>& saved_usernames,
-      const std::set<base::string16>& saved_passwords);
+      const std::set<base::string16>& saved_passwords,
+      const std::vector<InteractionsStats>& interactions_stats);
 
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;

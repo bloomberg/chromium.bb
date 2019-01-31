@@ -1066,7 +1066,8 @@ void NewPasswordFormManager::CalculateFillingAssistanceMetric(
   saved_usernames.erase(base::string16());
 
   metrics_recorder_->CalculateFillingAssistanceMetric(
-      submitted_form, saved_usernames, saved_passwords);
+      submitted_form, saved_usernames, saved_passwords,
+      form_fetcher_->GetInteractionsStats());
 #endif
 }
 

@@ -41323,6 +41323,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="7"
       label=":-X Unknown password typed, no saved credentials existed and
              site was explicitly blacklisted"/>
+  <int value="8"
+      label=":-X Unknown password typed, no saved credentials existed and
+             site is blacklisted by the smart bubble"/>
 </enum>
 
 <enum name="PasswordManagerFirstRendererFillingResult">
