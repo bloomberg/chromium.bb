@@ -474,6 +474,62 @@ void DockKeyboard() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Same as before but with the keyboard undocked.
+- (void)testUndockedInputAccessoryBarIsPresentAfterPickers {
+  // No need to run if not iPad.
+  if (!IsIPadIdiom()) {
+    EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
+  }
+  // Add the profile to be used.
+  AddAutofillProfile(_personalDataManager);
+
+  // Bring up the keyboard by tapping the city, which is the element before the
+  // picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+
+  UndockKeyboard();
+
+  // Tap on the profiles icon.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the profiles controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap any option.
+  [[EarlGrey selectElementWithMatcher:ProfileTableViewButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the profiles controller table view is not visible.
+  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
+
+  // On iPad the picker is a table view in a popover, we need to dismiss that
+  // first. Tap in the previous field, so the popover dismisses.
+  [[EarlGrey selectElementWithMatcher:grey_keyWindow()]
+      performAction:grey_tapAtPoint(CGPointMake(0, 0))];
+
+  // Verify the table view is not visible.
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
+      assertWithMatcher:grey_notVisible()];
+
+  // Bring up the regular keyboard again.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+
+  // Wait for the accessory icon to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Verify the profiles icon is visible, and therefore also the input accessory
+  // bar.
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  DockKeyboard();
+}
+
 // Test the input accessory bar is present when undocking the keyboard.
 - (void)testInputAccessoryBarIsPresentAfterUndockingKeyboard {
   if (!IsIPadIdiom()) {
