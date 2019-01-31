@@ -202,37 +202,6 @@ void MarkupFormatter::AppendAttributeValue(StringBuilder& result,
                                         : kEntityMaskInAttributeValue);
 }
 
-void MarkupFormatter::AppendQuotedURLAttributeValue(
-    StringBuilder& result,
-    const Element& element,
-    const Attribute& attribute) {
-  DCHECK(element.IsURLAttribute(attribute)) << element;
-  String resolved_url_string = ResolveURLIfNeeded(element, attribute.Value());
-  UChar quote_char = '"';
-  if (ProtocolIsJavaScript(resolved_url_string)) {
-    // minimal escaping for javascript urls
-    if (resolved_url_string.Contains('&'))
-      resolved_url_string.Replace('&', "&amp;");
-
-    if (resolved_url_string.Contains('"')) {
-      if (resolved_url_string.Contains('\''))
-        resolved_url_string.Replace('"', "&quot;");
-      else
-        quote_char = '\'';
-    }
-    result.Append(quote_char);
-    result.Append(resolved_url_string);
-    result.Append(quote_char);
-    return;
-  }
-
-  // FIXME: This does not fully match other browsers. Firefox percent-escapes
-  // non-ASCII characters for innerHTML.
-  result.Append(quote_char);
-  AppendAttributeValue(result, resolved_url_string, false);
-  result.Append(quote_char);
-}
-
 void MarkupFormatter::AppendNamespace(StringBuilder& result,
                                       const AtomicString& prefix,
                                       const AtomicString& namespace_uri,
@@ -443,13 +412,16 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
 
   result.Append('=');
 
+  result.Append('"');
   if (element.IsURLAttribute(attribute)) {
-    AppendQuotedURLAttributeValue(result, element, attribute);
+    // FIXME: This does not fully match other browsers. Firefox percent-escapes
+    // non-ASCII characters for innerHTML.
+    AppendAttributeValue(result, ResolveURLIfNeeded(element, attribute.Value()),
+                         document_is_html);
   } else {
-    result.Append('"');
     AppendAttributeValue(result, attribute.Value(), document_is_html);
-    result.Append('"');
   }
+  result.Append('"');
 }
 
 void MarkupFormatter::AppendCDATASection(StringBuilder& result,
