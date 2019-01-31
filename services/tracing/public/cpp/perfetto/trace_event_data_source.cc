@@ -8,12 +8,17 @@
 #include <map>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
+#include "base/pickle.h"
 #include "base/process/process_handle.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -515,12 +520,14 @@ void TraceEventDataSource::StartTracing(
     RegisterWithTraceLog();
   }
 
-  TraceLog::GetInstance()->SetEnabled(
-      TraceConfig(data_source_config.trace_config), TraceLog::RECORDING_MODE);
+  auto trace_config = TraceConfig(data_source_config.trace_config);
+  TraceLog::GetInstance()->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
+  ResetHistograms(trace_config);
 }
 
 void TraceEventDataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
+  LogHistograms();
   stop_complete_callback_ = std::move(stop_complete_callback);
 
   auto on_tracing_stopped_callback =
@@ -568,6 +575,36 @@ void TraceEventDataSource::StopTracing(
   } else {
     on_tracing_stopped_callback(this, scoped_refptr<base::RefCountedString>(),
                                 false);
+  }
+}
+
+void TraceEventDataSource::LogHistogram(base::HistogramBase* histogram) {
+  if (!histogram) {
+    return;
+  }
+  auto samples = histogram->SnapshotSamples();
+  base::Pickle pickle;
+  samples->Serialize(&pickle);
+  std::string buckets;
+  base::Base64Encode(
+      std::string(static_cast<const char*>(pickle.data()), pickle.size()),
+      &buckets);
+  TRACE_EVENT_INSTANT2("benchmark", "UMAHistogramDelta",
+                       TRACE_EVENT_SCOPE_PROCESS, "name",
+                       histogram->histogram_name(), "buckets", buckets);
+}
+
+void TraceEventDataSource::ResetHistograms(const TraceConfig& trace_config) {
+  histograms_.clear();
+  for (const std::string& histogram_name : trace_config.histogram_names()) {
+    histograms_.push_back(histogram_name);
+    LogHistogram(base::StatisticsRecorder::FindHistogram(histogram_name));
+  }
+}
+
+void TraceEventDataSource::LogHistograms() {
+  for (const std::string& histogram_name : histograms_) {
+    LogHistogram(base::StatisticsRecorder::FindHistogram(histogram_name));
   }
 }
 

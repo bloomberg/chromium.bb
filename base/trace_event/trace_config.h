@@ -238,6 +238,7 @@ class BASE_EXPORT TraceConfig {
   }
   void EnableSystrace() { enable_systrace_ = true; }
   void EnableArgumentFilter() { enable_argument_filter_ = true; }
+  void EnableHistogram(const std::string& histogram_name);
 
   // Writes the string representation of the TraceConfig. The string is JSON
   // formatted.
@@ -280,6 +281,10 @@ class BASE_EXPORT TraceConfig {
     event_filters_ = filter_configs;
   }
 
+  const std::unordered_set<std::string>& histogram_names() const {
+    return histogram_names_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidLegacyFormat);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
@@ -304,6 +309,7 @@ class BASE_EXPORT TraceConfig {
       const DictionaryValue& memory_dump_config);
   void SetDefaultMemoryDumpConfig();
 
+  void SetHistogramNamesFromConfigList(const base::ListValue& histogram_names);
   void SetEventFiltersFromConfigList(const base::ListValue& event_filters);
   std::unique_ptr<DictionaryValue> ToDict() const;
 
@@ -320,6 +326,7 @@ class BASE_EXPORT TraceConfig {
   ProcessFilterConfig process_filter_config_;
 
   EventFilters event_filters_;
+  std::unordered_set<std::string> histogram_names_;
 };
 
 }  // namespace trace_event

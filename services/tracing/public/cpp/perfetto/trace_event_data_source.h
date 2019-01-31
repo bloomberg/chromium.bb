@@ -11,7 +11,9 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_base.h"
 #include "base/threading/thread_local.h"
+#include "base/trace_event/trace_config.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 
 namespace perfetto {
@@ -108,6 +110,14 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void ReturnTraceWriter(
       std::unique_ptr<perfetto::StartupTraceWriter> trace_writer);
 
+  // Extracts UMA histogram names that should be logged in traces and logs their
+  // starting values.
+  void ResetHistograms(const base::trace_event::TraceConfig& trace_config);
+  // Logs selected UMA histogram.
+  void LogHistograms();
+  // Logs a given histogram in traces.
+  void LogHistogram(base::HistogramBase* histogram);
+
   base::OnceClosure stop_complete_callback_;
 
   base::Lock lock_;  // Protects subsequent members.
@@ -118,6 +128,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // SetupStartupTracing() is called.
   std::unique_ptr<perfetto::StartupTraceWriterRegistry>
       startup_writer_registry_;
+  std::vector<std::string> histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);
 };
