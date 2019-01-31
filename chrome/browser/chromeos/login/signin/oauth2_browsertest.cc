@@ -28,7 +28,6 @@
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
@@ -52,7 +51,6 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -60,6 +58,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -740,8 +739,9 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
   ASSERT_NE(OAuth2LoginManager::SESSION_RESTORE_DONE, login_manager->state());
 
   // Generate an auth error.
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->UpdateCredentials(
-      kTestEmail, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+  identity::SetInvalidRefreshTokenForAccount(
+      IdentityManagerFactory::GetInstance()->GetForProfile(profile()),
+      kTestEmail);
 
   // Let go /ListAccounts request.
   list_accounts_request_deferer.UnblockRequest();
