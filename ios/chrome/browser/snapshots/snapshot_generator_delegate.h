@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 @class SnapshotGenerator;
-@class SnapshotOverlay;
 
 namespace web {
 class WebState;
@@ -28,12 +27,13 @@ class WebState;
 - (UIEdgeInsets)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
     snapshotEdgeInsetsForWebState:(web::WebState*)webState;
 
-// Returns the list of SnapshotOverlays that should be rendered over the
+// Returns the list of overlay views that should be rendered over the
 // page when generating the snapshot for |webState|. If no overlays should
-// be rendered, the list may be nil or empty.
-- (NSArray<SnapshotOverlay*>*)snapshotGenerator:
-                                  (SnapshotGenerator*)snapshotGenerator
-                    snapshotOverlaysForWebState:(web::WebState*)webState;
+// be rendered, the list may be nil or empty. The order of views in the array
+// will be the z order of their image in the composed snapshot. A view at the
+// end of the array will appear in front of a view at the beginning.
+- (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+           snapshotOverlaysForWebState:(web::WebState*)webState;
 
 // Invoked before capturing a snapshot for |webState|. The delegate can remove
 // subviews from the hierarchy or take other actions to ensure the snapshot
