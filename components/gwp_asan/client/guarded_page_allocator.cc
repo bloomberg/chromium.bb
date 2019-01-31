@@ -17,7 +17,6 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
-#include "components/gwp_asan/common/pack_stack_trace.h"
 
 namespace gwp_asan {
 namespace internal {
@@ -175,13 +174,10 @@ void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
   slots_[slot].alloc_size = size;
   slots_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
-  void* trace[AllocatorState::kMaxStackFrames];
-  size_t len =
-      base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
-  slots_[slot].alloc.trace_len = Pack(reinterpret_cast<uintptr_t*>(trace), len,
-                                      slots_[slot].alloc.packed_trace,
-                                      sizeof(slots_[slot].alloc.packed_trace));
   slots_[slot].alloc.tid = base::PlatformThread::CurrentId();
+  slots_[slot].alloc.trace_len = base::debug::CollectStackTrace(
+      reinterpret_cast<void**>(&slots_[slot].alloc.trace),
+      AllocatorState::kMaxStackFrames);
   slots_[slot].alloc.trace_collected = true;
 
   slots_[slot].dealloc.tid = base::kInvalidThreadId;
@@ -191,14 +187,10 @@ void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
 }
 
 void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
-  void* trace[AllocatorState::kMaxStackFrames];
-  size_t len =
-      base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
-  slots_[slot].dealloc.trace_len =
-      Pack(reinterpret_cast<uintptr_t*>(trace), len,
-           slots_[slot].dealloc.packed_trace,
-           sizeof(slots_[slot].dealloc.packed_trace));
   slots_[slot].dealloc.tid = base::PlatformThread::CurrentId();
+  slots_[slot].dealloc.trace_len = base::debug::CollectStackTrace(
+      reinterpret_cast<void**>(&slots_[slot].dealloc.trace),
+      AllocatorState::kMaxStackFrames);
   slots_[slot].dealloc.trace_collected = true;
 }
 
