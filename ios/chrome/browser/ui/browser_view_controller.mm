@@ -60,7 +60,6 @@
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
-#import "ios/chrome/browser/snapshots/snapshot_overlay.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
@@ -2920,40 +2919,28 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return insets;
 }
 
-- (NSArray<SnapshotOverlay*>*)snapshotGenerator:
-                                  (SnapshotGenerator*)snapshotGenerator
-                    snapshotOverlaysForWebState:(web::WebState*)webState {
+- (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+           snapshotOverlaysForWebState:(web::WebState*)webState {
   DCHECK(webState);
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
   if (!self.webUsageEnabled)
     return @[];
 
-  NSMutableArray* overlays = [NSMutableArray array];
+  NSMutableArray<UIView*>* overlays = [NSMutableArray array];
   UIView* infoBarView = [self infoBarOverlayViewForTab:tab];
   if (infoBarView) {
-    CGFloat infoBarYOffset = [self infoBarOverlayYOffsetForTab:tab];
-    SnapshotOverlay* infoBarOverlay =
-        [[SnapshotOverlay alloc] initWithView:infoBarView
-                                      yOffset:infoBarYOffset];
-    [overlays addObject:infoBarOverlay];
+    [overlays addObject:infoBarView];
   }
 
   UIView* downloadManagerView = _downloadManagerCoordinator.viewController.view;
   if (downloadManagerView) {
-    CGFloat offset = [self downloadManagerOverlayYOffsetForTab:tab];
-    SnapshotOverlay* downloadManagerOverlay =
-        [[SnapshotOverlay alloc] initWithView:downloadManagerView
-                                      yOffset:offset];
-    [overlays addObject:downloadManagerOverlay];
+    [overlays addObject:downloadManagerView];
   }
 
   UIView* sadTabView = _sadTabCoordinator.viewController.view;
   if (sadTabView) {
-    SnapshotOverlay* sadTabOverlay =
-        [[SnapshotOverlay alloc] initWithView:sadTabView
-                                      yOffset:self.headerHeight];
-    [overlays addObject:sadTabOverlay];
+    [overlays addObject:sadTabView];
   }
 
   return overlays;
@@ -3000,23 +2987,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
   }
   return nil;
-}
-
-// Returns a vertical infobar offset relative to the tab content. It is an error
-// to call this method on a tab that does not have an infobar overlay.
-- (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab {
-  DCHECK_EQ(tab, self.tabModel.currentTab);
-  DCHECK([self.infobarContainerCoordinator
-      isInfobarPresentingForWebState:tab.webState]);
-  CGRect visibleFrame = [self visibleFrameForTab:self.tabModel.currentTab];
-  return CGRectGetMaxY(visibleFrame) -
-         CGRectGetHeight([self.infobarContainerCoordinator view].frame);
-}
-
-// Returns a vertical download manager offset relative to the tab content.
-- (CGFloat)downloadManagerOverlayYOffsetForTab:(Tab*)tab {
-  return CGRectGetMaxY([self visibleFrameForTab:tab]) -
-         CGRectGetHeight(_downloadManagerCoordinator.viewController.view.frame);
 }
 
 #pragma mark - PasswordControllerDelegate methods
