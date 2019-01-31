@@ -3364,13 +3364,6 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, WEBGL_multiview not enabled");
       return ScriptValue::CreateNull(script_state);
-    case GL_MAX_SHADER_COMPILER_THREADS_KHR:
-      if (ExtensionEnabled(kKHRParallelShaderCompileName))
-        return GetUnsignedIntParameter(script_state, pname);
-      SynthesizeGLError(
-          GL_INVALID_ENUM, "getParameter",
-          "invalid parameter name, KHR_parallel_shader_compile not enabled");
-      return ScriptValue::CreateNull(script_state);
     default:
       if ((ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2OrHigher()) &&
           pname >= GL_DRAW_BUFFER0_EXT &&
