@@ -226,12 +226,14 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool text_autosizing_enabled;
 
+  // Representation of the Web App Manifest scope if any.
+  GURL web_app_scope;
+
 #if defined(OS_ANDROID)
   float font_scale_factor;
   float device_scale_adjustment;
   bool force_enable_zoom;
   bool fullscreen_supported;
-  GURL web_app_scope;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
   bool use_legacy_background_size_shorthand_behavior;
