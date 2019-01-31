@@ -86,6 +86,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/settings/cells/legacy",
     "//ios/chrome/browser/ui/settings/sync/utils",
     "//ios/chrome/browser/ui/table_view:test_support",
+    "//ios/chrome/browser/ui/table_view/cells",
     "//ios/web/public/test",
     "//testing/gtest",
     "//ui/base",

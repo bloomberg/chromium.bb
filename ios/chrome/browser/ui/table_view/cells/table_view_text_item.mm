@@ -28,6 +28,7 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewTextCell class];
+    _enabled = YES;
   }
   return self;
 }
@@ -71,6 +72,8 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
   }
   cell.textLabel.textAlignment =
       self.textAlignment ? self.textAlignment : NSTextAlignmentLeft;
+
+  cell.userInteractionEnabled = self.enabled;
 }
 
 @end
@@ -128,6 +131,7 @@ const CGFloat kLabelCellVerticalSpacing = 11.0;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.checked = NO;
+  self.userInteractionEnabled = YES;
 }
 
 @end

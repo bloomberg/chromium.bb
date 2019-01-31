@@ -19,15 +19,16 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
-#import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_create_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -154,18 +155,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return footerView;
 }
 
-- (BOOL)tableView:(UITableView*)tableView
-    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypePassphrase || item.type == ItemTypeAccount) {
-    EncryptionItem* encryptionItem =
-        base::mac::ObjCCastStrict<EncryptionItem>(item);
-    // Don't perform any action if the cell isn't enabled.
-    return encryptionItem.isEnabled;
-  }
-  return YES;
-}
-
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(indexPath.section,
@@ -173,12 +162,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 sectionForSectionIdentifier:SectionIdentifierEncryption]);
 
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if ([item respondsToSelector:@selector(isEnabled)] &&
-      ![item performSelector:@selector(isEnabled)]) {
-    // Don't perform any action if the cell isn't enabled.
-    return;
-  }
-
   switch (item.type) {
     case ItemTypePassphrase: {
       DCHECK(browser_sync::ProfileSyncService::IsSyncAllowedByFlag());
@@ -226,10 +209,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
                           text:(NSString*)text
                        checked:(BOOL)checked
                        enabled:(BOOL)enabled {
-  EncryptionItem* item = [[EncryptionItem alloc] initWithType:type];
+  TableViewTextItem* item = [[TableViewTextItem alloc] initWithType:type];
+  item.accessibilityTraits |= UIAccessibilityTraitButton;
   item.text = text;
   item.accessoryType = checked ? UITableViewCellAccessoryCheckmark
                                : UITableViewCellAccessoryNone;
+  item.textColor =
+      enabled ? [UIColor blackColor]
+              : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   item.enabled = enabled;
   return item;
 }

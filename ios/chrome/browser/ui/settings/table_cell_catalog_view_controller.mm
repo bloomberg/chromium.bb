@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
-#import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
@@ -60,7 +59,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLWithSupplementalText,
   ItemTypeURLWithBadgeImage,
   ItemTypeTextSettingsDetail,
-  ItemTypeEncryption,
   ItemTypeLinkFooter,
   ItemTypeDetailText,
   ItemTypeAccountSignInItem,
@@ -225,25 +223,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       @"This is more detail about the sync error description";
   imageDetailTextItem.image = [ChromeIcon infoIcon];
   [model addItem:imageDetailTextItem
-      toSectionWithIdentifier:SectionIdentifierSettings];
-
-  EncryptionItem* encryptionChecked =
-      [[EncryptionItem alloc] initWithType:ItemTypeEncryption];
-  encryptionChecked.text =
-      @"These two cells have exactly the same text, but one has a checkmark "
-      @"and the other does not.  They should lay out identically, and the "
-      @"presence of the checkmark should not cause the text to reflow.";
-  encryptionChecked.accessoryType = UITableViewCellAccessoryCheckmark;
-  [model addItem:encryptionChecked
-      toSectionWithIdentifier:SectionIdentifierSettings];
-
-  EncryptionItem* encryptionUnchecked =
-      [[EncryptionItem alloc] initWithType:ItemTypeEncryption];
-  encryptionUnchecked.text =
-      @"These two cells have exactly the same text, but one has a checkmark "
-      @"and the other does not.  They should lay out identically, and the "
-      @"presence of the checkmark should not cause the text to reflow.";
-  [model addItem:encryptionUnchecked
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   TableViewLinkHeaderFooterItem* linkFooter =
