@@ -147,6 +147,10 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   void SetResizesScrollView(bool resizes_scroll_view);
   bool ResizesScrollView() const;
 
+  // Setter for the safe area insets for the current WebState's view.
+  void SetWebViewSafeAreaInsets(UIEdgeInsets safe_area_insets);
+  UIEdgeInsets GetWebViewSafeAreaInsets() const;
+
  private:
   // Returns how a scroll to the current |y_content_offset_| from |from_offset|
   // should be handled.
@@ -220,6 +224,8 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   bool ignoring_current_scroll_ = false;
   // Whether the scroll view is resized for fullscreen events.
   bool resizes_scroll_view_ = false;
+  // The WebState view's safe area insets.
+  UIEdgeInsets safe_area_insets_ = UIEdgeInsetsZero;
   // The number of FullscreenModelObserver callbacks currently being executed.
   size_t observer_callback_count_ = 0;
 

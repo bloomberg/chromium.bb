@@ -228,6 +228,17 @@ bool FullscreenModel::ResizesScrollView() const {
   return resizes_scroll_view_;
 }
 
+void FullscreenModel::SetWebViewSafeAreaInsets(UIEdgeInsets safe_area_insets) {
+  if (UIEdgeInsetsEqualToEdgeInsets(safe_area_insets_, safe_area_insets))
+    return;
+  safe_area_insets_ = safe_area_insets;
+  UpdateDisabledCounterForContentHeight();
+}
+
+UIEdgeInsets FullscreenModel::GetWebViewSafeAreaInsets() const {
+  return safe_area_insets_;
+}
+
 FullscreenModel::ScrollAction FullscreenModel::ActionForScrollFromOffset(
     CGFloat from_offset) const {
   // Update the base offset but don't recalculate progress if:
@@ -279,6 +290,14 @@ void FullscreenModel::UpdateDisabledCounterForContentHeight() {
     // resized to account for the viewport insets after the page has been
     // rendered, so account for the maximum toolbar insets in the threshold.
     disabling_threshold += expanded_toolbar_height_ + bottom_toolbar_height_;
+  } else {
+    // After reloads, pages whose viewports fit the screen are sometimes resized
+    // to account for the safe area insets.  Adding these to the threshold helps
+    // prevent fullscreen from beeing re-enabled in this case.
+    // TODO(crbug.com/924807): This logic can potentially disable fullscreen for
+    // short pages in which this bug does not occur.  It should be removed once
+    // the page can be reloaded without resizing.
+    disabling_threshold += safe_area_insets_.top + safe_area_insets_.bottom;
   }
 
   // Don't disable fullscreen if both heights have not been received.

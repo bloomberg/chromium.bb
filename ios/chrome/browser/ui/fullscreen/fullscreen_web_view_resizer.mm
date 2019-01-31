@@ -93,6 +93,7 @@
     return;
 
   [self updateForInsets:self.model->GetToolbarInsetsAtProgress(progress)];
+  self.model->SetWebViewSafeAreaInsets(self.webState->GetView().safeAreaInsets);
 }
 
 // Updates the WebState view, resizing it such as |insets| is the insets between
