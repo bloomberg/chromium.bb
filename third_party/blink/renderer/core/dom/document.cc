@@ -7921,6 +7921,18 @@ void Document::CancelPendingJavaScriptUrl() {
     javascript_url_task_handle_.Cancel();
 }
 
+bool Document::IsInWebAppScope() const {
+  if (!GetSettings())
+    return false;
+
+  const String& web_app_scope = GetSettings()->GetWebAppScope();
+  if (web_app_scope.IsNull() || web_app_scope.IsEmpty())
+    return false;
+
+  DCHECK_EQ(KURL(web_app_scope).GetString(), web_app_scope);
+  return Url().GetString().StartsWith(web_app_scope);
+}
+
 void Document::SendViolationReport(
     mojom::blink::CSPViolationParamsPtr violation_params) {
   std::unique_ptr<SourceLocation> source_location = SourceLocation::Create(
