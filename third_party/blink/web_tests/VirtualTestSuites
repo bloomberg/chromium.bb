@@ -1013,20 +1013,5 @@
     "prefix": "bidi-caret-affinity",
     "base": "editing/selection/modify_move",
     "args": ["--enable-blink-features=BidiCaretAffinity,EditingNG"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "http/tests/navigation",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "http/tests/security",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
-  },
-  {
-    "prefix": "feature-policy-for-sandbox",
-    "base": "mhtml",
-    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
   }
 ]
