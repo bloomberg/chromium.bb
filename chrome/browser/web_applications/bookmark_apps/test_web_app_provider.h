@@ -7,9 +7,15 @@
 
 #include <memory>
 
+#include "base/callback.h"
+#include "base/callback_list.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 
 class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace web_app {
 
@@ -22,6 +28,26 @@ class TestWebAppProvider : public WebAppProvider {
 
   void SetSystemWebAppManager(
       std::unique_ptr<SystemWebAppManager> system_web_app_manager);
+};
+
+class TestWebAppProviderCreator {
+ public:
+  using CreateWebAppProviderCallback =
+      base::OnceCallback<std::unique_ptr<KeyedService>(Profile* profile)>;
+
+  explicit TestWebAppProviderCreator(CreateWebAppProviderCallback callback);
+  ~TestWebAppProviderCreator();
+
+ private:
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context);
+  std::unique_ptr<KeyedService> CreateWebAppProvider(
+      content::BrowserContext* context);
+
+  CreateWebAppProviderCallback callback_;
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
 };
 
 }  // namespace web_app

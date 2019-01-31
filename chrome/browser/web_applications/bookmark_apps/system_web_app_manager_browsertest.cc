@@ -17,7 +17,6 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/grit/browser_resources.h"
@@ -113,7 +112,10 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
 };
 
 SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
-    : factory_(std::make_unique<TestWebUIControllerFactory>()) {
+    : factory_(std::make_unique<TestWebUIControllerFactory>()),
+      test_web_app_provider_creator_(
+          base::BindOnce(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
+                         base::Unretained(this))) {
   scoped_feature_list_.InitWithFeatures(
       {features::kDesktopPWAWindowing, features::kSystemWebApps}, {});
   content::WebUIControllerFactory::RegisterFactory(factory_.get());
@@ -123,36 +125,15 @@ SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() {
   content::WebUIControllerFactory::UnregisterFactoryForTesting(factory_.get());
 }
 
-void SystemWebAppManagerBrowserTest::SetUpInProcessBrowserTestFixture() {
-  will_create_browser_context_services_subscription_ =
-      BrowserContextDependencyManager::GetInstance()
-          ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
-              base::BindRepeating(&SystemWebAppManagerBrowserTest::
-                                      OnWillCreateBrowserContextServices,
-                                  base::Unretained(this)));
-}
-
-void SystemWebAppManagerBrowserTest::OnWillCreateBrowserContextServices(
-    content::BrowserContext* context) {
-  WebAppProviderFactory::GetInstance()->SetTestingFactory(
-      context,
-      base::BindRepeating(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
-                          base::Unretained(this)));
-}
-
 std::unique_ptr<KeyedService>
-SystemWebAppManagerBrowserTest::CreateWebAppProvider(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-
-  if (!SystemWebAppManager::IsEnabled())
-    return nullptr;
+SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
+  DCHECK(SystemWebAppManager::IsEnabled());
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);
   // Create all real subsystems but do not start them:
   provider->Init();
 
-  // But override SystemWebAppManager with TestSystemWebAppManager:
+  // Override SystemWebAppManager with TestSystemWebAppManager:
   DCHECK(!test_system_web_app_manager_);
   auto test_system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
       profile, &provider->pending_app_manager());
