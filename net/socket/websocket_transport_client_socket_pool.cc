@@ -64,6 +64,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
                                  transport_security_state,
                                  cert_transparency_verifier,
                                  ct_policy_enforcer,
+                                 nullptr,
                                  ssl_session_cache_shard),
       network_quality_estimator_(network_quality_estimator),
       websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),

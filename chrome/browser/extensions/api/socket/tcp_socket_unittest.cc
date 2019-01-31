@@ -533,7 +533,6 @@ class TestSocketFactory : public net::ClientSocketFactory {
     NOTIMPLEMENTED();
     return nullptr;
   }
-  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
 
  private:
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> providers_;

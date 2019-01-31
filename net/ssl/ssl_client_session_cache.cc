@@ -22,9 +22,15 @@ SSLClientSessionCache::SSLClientSessionCache(const Config& config)
       lookups_since_flush_(0) {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
       &SSLClientSessionCache::OnMemoryPressure, base::Unretained(this))));
+  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 SSLClientSessionCache::~SSLClientSessionCache() {
+  CertDatabase::GetInstance()->RemoveObserver(this);
+  Flush();
+}
+
+void SSLClientSessionCache::OnCertDBChanged() {
   Flush();
 }
 
@@ -34,8 +40,6 @@ size_t SSLClientSessionCache::size() const {
 
 bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
     const std::string& cache_key) {
-  base::AutoLock lock(lock_);
-
   // Expire stale sessions.
   lookups_since_flush_++;
   if (lookups_since_flush_ >= config_.expiration_check_count) {
@@ -58,8 +62,6 @@ bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
 }
 
 void SSLClientSessionCache::ResetLookupCount(const std::string& cache_key) {
-  base::AutoLock lock(lock_);
-
   // It's possible that the cached session for this key was deleted after the
   // Lookup. If that's the case, don't do anything.
   auto iter = cache_.Get(cache_key);
@@ -69,8 +71,6 @@ void SSLClientSessionCache::ResetLookupCount(const std::string& cache_key) {
 
 void SSLClientSessionCache::Insert(const std::string& cache_key,
                                    SSL_SESSION* session) {
-  base::AutoLock lock(lock_);
-
   auto iter = cache_.Get(cache_key);
   if (iter == cache_.end())
     iter = cache_.Put(cache_key, Entry());
@@ -78,8 +78,6 @@ void SSLClientSessionCache::Insert(const std::string& cache_key,
 }
 
 void SSLClientSessionCache::Flush() {
-  base::AutoLock lock(lock_);
-
   cache_.Clear();
 }
 
@@ -97,17 +95,11 @@ bool SSLClientSessionCache::IsExpired(SSL_SESSION* session, time_t now) {
 }
 
 void SSLClientSessionCache::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd) {
-  std::string absolute_name = "net/ssl_session_cache";
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& parent_absolute_name) const {
+  std::string name = parent_absolute_name + "/ssl_client_session_cache";
   base::trace_event::MemoryAllocatorDump* cache_dump =
-      pmd->GetAllocatorDump(absolute_name);
-  // This method can be reached from different URLRequestContexts. Since this is
-  // a singleton, only log memory stats once.
-  // TODO(xunjieli): Change this once crbug.com/458365 is fixed.
-  if (cache_dump)
-    return;
-  cache_dump = pmd->CreateAllocatorDump(absolute_name);
-  base::AutoLock lock(lock_);
+      pmd->CreateAllocatorDump(name);
   size_t cert_size = 0;
   size_t cert_count = 0;
   size_t undeduped_cert_size = 0;

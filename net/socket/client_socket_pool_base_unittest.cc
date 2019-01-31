@@ -256,8 +256,6 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return nullptr;
   }
 
-  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
-
   void WaitForSignal(TestConnectJob* job) { waiting_jobs_.push_back(job); }
 
   void SignalJobs();

@@ -72,9 +72,6 @@ class NET_EXPORT ClientSocketFactory {
       bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
-  // Clears cache used for SSL session resumption.
-  virtual void ClearSSLSessionCache() = 0;
-
   // Returns the default ClientSocketFactory.
   static ClientSocketFactory* GetDefaultFactory();
 };

@@ -107,7 +107,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
         kMaxSockets, kMaxSocketsPerGroup, cert_verifier_.get(),
         NULL /* channel_id_service */, transport_security_state_.get(),
         &ct_verifier_, &ct_policy_enforcer_,
-        std::string() /* ssl_session_cache_shard */, &socket_factory_,
+        nullptr /* ssl_client_session_cache */, &socket_factory_,
         transport_pool ? &transport_socket_pool_ : nullptr, nullptr,
         http_proxy_pool ? &http_proxy_socket_pool_ : nullptr,
         nullptr /* ssl_config_service */,
@@ -273,7 +273,7 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
                            cert_verifier_.get(), NULL /* channel_id_service */,
                            transport_security_state_.get(), &ct_verifier_,
                            &ct_policy_enforcer_,
-                           std::string() /* ssl_session_cache_shard */,
+                           nullptr /* ssl_client_session_cache */,
                            ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
                            NULL, NULL, NULL, NULL, NULL);
   TestCompletionCallback callback;
@@ -351,7 +351,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
                            cert_verifier_.get(), NULL /* channel_id_service */,
                            transport_security_state_.get(), &ct_verifier_,
                            &ct_policy_enforcer_,
-                           std::string() /* ssl_session_cache_shard */,
+                           nullptr /* ssl_client_session_cache */,
                            ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
                            NULL, NULL, NULL, NULL, NULL);
   ClientSocketHandle handle;
@@ -421,7 +421,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
                            cert_verifier_.get(), NULL /* channel_id_service */,
                            transport_security_state_.get(), &ct_verifier_,
                            &ct_policy_enforcer_,
-                           std::string() /* ssl_session_cache_shard */,
+                           nullptr /* ssl_client_session_cache */,
                            ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
                            NULL, NULL, NULL, NULL, NULL);
   TestCompletionCallback callback;

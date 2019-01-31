@@ -504,14 +504,14 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           transport_security_state,
                           cert_transparency_verifier,
                           ct_policy_enforcer,
-                          std::string(),  // ssl_session_cache_shard
-                          nullptr,        // deterministic_socket_factory
-                          nullptr,        // transport_socket_pool
-                          nullptr,        // socks_pool
-                          nullptr,        // http_proxy_pool
-                          nullptr,        // ssl_config_service
-                          nullptr,        // network_quality_estimator
-                          nullptr),       // net_log
+                          nullptr,   // ssl_client_session_cache
+                          nullptr,   // deterministic_socket_factory
+                          nullptr,   // transport_socket_pool
+                          nullptr,   // socks_pool
+                          nullptr,   // http_proxy_pool
+                          nullptr,   // ssl_config_service
+                          nullptr,   // network_quality_estimator
+                          nullptr),  // net_log
       last_num_streams_(-1) {}
 
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;

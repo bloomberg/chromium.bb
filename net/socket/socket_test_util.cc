@@ -816,9 +816,6 @@ MockClientSocketFactory::CreateProxyClientSocket(
   }
 }
 
-void MockClientSocketFactory::ClearSSLSessionCache() {
-}
-
 MockClientSocket::MockClientSocket(const NetLogWithSource& net_log)
     : connected_(false), net_log_(net_log), weak_factory_(this) {
   local_addr_ = IPEndPoint(IPAddress(192, 0, 2, 33), 123);

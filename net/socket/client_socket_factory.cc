@@ -8,7 +8,6 @@
 
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
-#include "net/cert/cert_database.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket_impl.h"
@@ -21,23 +20,12 @@ class X509Certificate;
 
 namespace {
 
-class DefaultClientSocketFactory : public ClientSocketFactory,
-                                   public CertDatabase::Observer {
+class DefaultClientSocketFactory : public ClientSocketFactory {
  public:
-  DefaultClientSocketFactory() {
-    CertDatabase::GetInstance()->AddObserver(this);
-  }
+  DefaultClientSocketFactory() {}
 
-  ~DefaultClientSocketFactory() override {
-    // Note: This code never runs, as the factory is defined as a Leaky
-    // singleton.
-    CertDatabase::GetInstance()->RemoveObserver(this);
-  }
-
-  void OnCertDBChanged() override {
-    // Flush sockets whenever CA trust changes.
-    ClearSSLSessionCache();
-  }
+  // Note: This code never runs, as the factory is defined as a Leaky singleton.
+  ~DefaultClientSocketFactory() override {}
 
   std::unique_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
@@ -82,8 +70,6 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
         http_auth_controller, tunnel, using_spdy, negotiated_protocol,
         proxy_delegate, is_https_proxy, traffic_annotation);
   }
-
-  void ClearSSLSessionCache() override { SSLClientSocket::ClearSessionCache(); }
 };
 
 static base::LazyInstance<DefaultClientSocketFactory>::Leaky

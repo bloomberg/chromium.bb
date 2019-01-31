@@ -9797,7 +9797,9 @@ TEST_F(HTTPSRequestTest, ClientAuth) {
   default_context_.http_transaction_factory()
       ->GetSession()
       ->CloseAllConnections();
-  SSLClientSocket::ClearSessionCache();
+  default_context_.http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
 
   // Connecting again should not call OnCertificateRequested. The identity is
   // taken from the client auth cache.
@@ -9877,7 +9879,9 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigning) {
   default_context_.http_transaction_factory()
       ->GetSession()
       ->CloseAllConnections();
-  SSLClientSocket::ClearSessionCache();
+  default_context_.http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
 
   // The bad identity should have been evicted from the cache, so connecting
   // again should call OnCertificateRequested again.
@@ -9955,7 +9959,9 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigningRetry) {
   default_context_.http_transaction_factory()
       ->GetSession()
       ->CloseAllConnections();
-  SSLClientSocket::ClearSessionCache();
+  default_context_.http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
 
   // Cause the private key to fail. Connecting again should attempt to use it,
   // notice the failure, and then request a new identity via
@@ -9996,7 +10002,9 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
-  SSLClientSocket::ClearSessionCache();
+  default_context_.http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
 
   {
     TestDelegate d;
@@ -10069,7 +10077,9 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
-  SSLClientSocket::ClearSessionCache();
+  default_context_.http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
 
   {
     TestDelegate d;
@@ -10249,7 +10259,9 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
 
-  SSLClientSocket::ClearSessionCache();
+  default_context_.http_transaction_factory()
+      ->GetSession()
+      ->ClearSSLSessionCache();
 
   // Simulate the certificate being expired and attempt a connection.
   cert_verifier_.set_default_result(ERR_CERT_DATE_INVALID);

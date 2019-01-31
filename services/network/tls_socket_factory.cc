@@ -53,7 +53,8 @@ TLSSocketFactory::TLSSocketFactory(
           url_request_context->transport_security_state(),
           url_request_context->cert_transparency_verifier(),
           url_request_context->ct_policy_enforcer(),
-          std::string() /* TODO(rsleevi): Ensure a proper unique shard. */),
+          nullptr /* Disables SSL session caching */,
+          std::string()),
       client_socket_factory_(nullptr),
       ssl_config_service_(url_request_context->ssl_config_service()) {
   if (http_context) {

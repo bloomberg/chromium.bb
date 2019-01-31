@@ -104,8 +104,6 @@ class MockTransportClientSocketFactory : public ClientSocketFactory {
       bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
 
-  void ClearSSLSessionCache() override;
-
   int allocation_count() const { return allocation_count_; }
 
   // Set the default ClientSocketType.

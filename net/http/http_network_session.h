@@ -35,6 +35,7 @@
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_client_auth_cache.h"
+#include "net/ssl/ssl_client_session_cache.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
 namespace base {
@@ -375,6 +376,9 @@ class NET_EXPORT HttpNetworkSession {
   // Disable QUIC for new streams.
   void DisableQuic();
 
+  // Clear the SSL session cache.
+  void ClearSSLSessionCache();
+
  private:
   friend class HttpNetworkSessionPeer;
 
@@ -398,6 +402,7 @@ class NET_EXPORT HttpNetworkSession {
 
   HttpAuthCache http_auth_cache_;
   SSLClientAuthCache ssl_client_auth_cache_;
+  SSLClientSessionCache ssl_client_session_cache_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
   std::unique_ptr<ClientSocketPoolManager> normal_socket_pool_manager_;
   std::unique_ptr<ClientSocketPoolManager> websocket_socket_pool_manager_;

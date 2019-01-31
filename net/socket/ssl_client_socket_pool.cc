@@ -43,7 +43,7 @@ SSLClientSocketPool::SSLClientSocketPool(
     TransportSecurityState* transport_security_state,
     CTVerifier* cert_transparency_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
-    const std::string& ssl_session_cache_shard,
+    SSLClientSessionCache* ssl_client_session_cache,
     ClientSocketFactory* client_socket_factory,
     TransportClientSocketPool* transport_pool,
     TransportClientSocketPool* socks_pool,
@@ -69,7 +69,8 @@ SSLClientSocketPool::SSLClientSocketPool(
                                        transport_security_state,
                                        cert_transparency_verifier,
                                        ct_policy_enforcer,
-                                       ssl_session_cache_shard),
+                                       ssl_client_session_cache,
+                                       "shardkey"),
                 network_quality_estimator,
                 net_log)),
       ssl_config_service_(ssl_config_service) {

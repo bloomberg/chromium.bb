@@ -69,7 +69,7 @@ class WebSocketClientSocketHandleAdapterTest
             nullptr,
             nullptr,
             nullptr,
-            "test_shard",
+            nullptr,
             nullptr,
             &websocket_endpoint_lock_manager_,
             nullptr,

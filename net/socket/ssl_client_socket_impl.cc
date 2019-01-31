@@ -24,7 +24,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/ec_private_key.h"
@@ -273,7 +272,6 @@ class SSLClientSocketImpl::SSLContext {
                            base::LeakySingletonTraits<SSLContext>>::get();
   }
   SSL_CTX* ssl_ctx() { return ssl_ctx_.get(); }
-  SSLClientSessionCache* session_cache() { return &session_cache_; }
 
   SSLClientSocketImpl* GetClientSocketFromSSL(const SSL* ssl) {
     DCHECK(ssl);
@@ -298,7 +296,7 @@ class SSLClientSocketImpl::SSLContext {
  private:
   friend struct base::DefaultSingletonTraits<SSLContext>;
 
-  SSLContext() : session_cache_(SSLClientSessionCache::Config()) {
+  SSLContext() {
     crypto::EnsureOpenSSLInit();
     ssl_socket_data_index_ = SSL_get_ex_new_index(0, 0, 0, 0, 0);
     DCHECK_NE(ssl_socket_data_index_, -1);
@@ -395,13 +393,6 @@ class SSLClientSocketImpl::SSLContext {
   bssl::UniquePtr<SSL_CTX> ssl_ctx_;
 
   std::unique_ptr<SSLKeyLogger> ssl_key_logger_;
-
-  // TODO(davidben): Use a separate cache per URLRequestContext.
-  // https://crbug.com/458365
-  //
-  // TODO(davidben): Sessions should be invalidated on fatal
-  // alerts. https://crbug.com/466352
-  SSLClientSessionCache session_cache_;
 };
 
 const SSL_PRIVATE_KEY_METHOD
@@ -410,13 +401,6 @@ const SSL_PRIVATE_KEY_METHOD
         nullptr /* decrypt */,
         &SSLClientSocketImpl::SSLContext::PrivateKeyCompleteCallback,
 };
-
-// static
-void SSLClientSocket::ClearSessionCache() {
-  SSLClientSocketImpl::SSLContext* context =
-      SSLClientSocketImpl::SSLContext::GetInstance();
-  context->session_cache()->Flush();
-}
 
 SSLClientSocketImpl::SSLClientSocketImpl(
     std::unique_ptr<ClientSocketHandle> transport_socket,
@@ -433,6 +417,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       transport_(std::move(transport_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
+      ssl_client_session_cache_(context.ssl_client_session_cache),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
       in_confirm_handshake_(false),
@@ -709,12 +694,6 @@ void SSLClientSocketImpl::ApplySocketTag(const SocketTag& tag) {
   return transport_->socket()->ApplySocketTag(tag);
 }
 
-// static
-void SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd) {
-  SSLContext::GetInstance()->session_cache()->DumpMemoryStats(pmd);
-}
-
 int SSLClientSocketImpl::Read(IOBuffer* buf,
                               int buf_len,
                               CompletionOnceCallback callback) {
@@ -817,9 +796,9 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
-  if (!ssl_session_cache_shard_.empty()) {
+  if (IsCachingEnabled()) {
     bssl::UniquePtr<SSL_SESSION> session =
-        context->session_cache()->Lookup(GetSessionCacheKey());
+        ssl_client_session_cache_->Lookup(GetSessionCacheKey());
     if (session)
       SSL_set_session(ssl_.get(), session.get());
   }
@@ -990,9 +969,8 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     return ERR_SSL_VERSION_INTERFERENCE;
   }
 
-  if (!ssl_session_cache_shard_.empty()) {
-    SSLContext::GetInstance()->session_cache()->ResetLookupCount(
-        GetSessionCacheKey());
+  if (IsCachingEnabled()) {
+    ssl_client_session_cache_->ResetLookupCount(GetSessionCacheKey());
   }
 
   const uint8_t* alpn_proto = NULL;
@@ -1623,14 +1601,12 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   return 1;
 }
 
-// Returns whether we took ownership of the pointer.
 int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
-  if (ssl_session_cache_shard_.empty())
+  if (!IsCachingEnabled())
     return 0;
 
   // OpenSSL passes a reference to |session|.
-  SSLContext::GetInstance()->session_cache()->Insert(GetSessionCacheKey(),
-                                                     session);
+  ssl_client_session_cache_->Insert(GetSessionCacheKey(), session);
   return 0;
 }
 
@@ -1639,11 +1615,6 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 }
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
-  // If there is no session cache shard configured, disable session
-  // caching. GetSessionCacheKey may not be called. When
-  // https://crbug.com/458365 is fixed, this check will not be needed.
-  DCHECK(!ssl_session_cache_shard_.empty());
-
   std::string result = host_and_port_.ToString();
   result.push_back('/');
   result.append(ssl_session_cache_shard_);
@@ -1662,6 +1633,10 @@ bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
       return true;
   }
   return false;
+}
+
+bool SSLClientSocketImpl::IsCachingEnabled() const {
+  return ssl_client_session_cache_ != nullptr;
 }
 
 ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(

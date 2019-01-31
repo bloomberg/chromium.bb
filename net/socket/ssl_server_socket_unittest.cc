@@ -59,6 +59,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -361,7 +362,9 @@ class SSLServerSocketTest : public PlatformTest,
         client_cert_verifier_(new MockClientCertVerifier()),
         transport_security_state_(new TransportSecurityState),
         ct_verifier_(new DoNothingCTVerifier),
-        ct_policy_enforcer_(new MockCTPolicyEnforcer) {}
+        ct_policy_enforcer_(new MockCTPolicyEnforcer),
+        ssl_client_session_cache_(
+            new SSLClientSessionCache(SSLClientSessionCache::Config())) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -427,7 +430,8 @@ class SSLServerSocketTest : public PlatformTest,
     context.transport_security_state = transport_security_state_.get();
     context.cert_transparency_verifier = ct_verifier_.get();
     context.ct_policy_enforcer = ct_policy_enforcer_.get();
-    // Set a dummy session cache shard to enable session caching.
+    // Set a dummy session cache (and shard) to enable session caching.
+    context.ssl_client_session_cache = ssl_client_session_cache_.get();
     context.ssl_session_cache_shard = "shard";
 
     client_socket_ = socket_factory_->CreateSSLClientSocket(
@@ -526,6 +530,7 @@ class SSLServerSocketTest : public PlatformTest,
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   std::unique_ptr<DoNothingCTVerifier> ct_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
+  std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
   std::unique_ptr<SSLServerContext> server_context_;
   std::unique_ptr<crypto::RSAPrivateKey> server_private_key_;
   scoped_refptr<SSLPrivateKey> server_ssl_private_key_;

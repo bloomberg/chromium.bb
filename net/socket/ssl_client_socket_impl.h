@@ -34,12 +34,6 @@
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-namespace base {
-namespace trace_event {
-class ProcessMemoryDump;
-}
-}
-
 namespace crypto {
 class OpenSSLErrStackTracer;
 }
@@ -103,10 +97,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
       SSLCertRequestInfo* cert_request_info) const override;
 
   void ApplySocketTag(const SocketTag& tag) override;
-
-  // Dumps memory allocation stats. |pmd| is the browser process memory dump.
-  static void DumpSSLClientSessionMemoryStats(
-      base::trace_event::ProcessMemoryDump* pmd);
 
   // Socket implementation.
   int Read(IOBuffer* buf,
@@ -182,6 +172,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   // Returns true if renegotiations are allowed.
   bool IsRenegotiationAllowed() const;
+
+  // Returns true when we should be using the ssl_client_session_cache_
+  bool IsCachingEnabled() const;
 
   // Callbacks for operations with the private key.
   ssl_private_key_result_t PrivateKeySignCallback(uint8_t* out,
@@ -272,6 +265,8 @@ class SSLClientSocketImpl : public SSLClientSocket,
   std::unique_ptr<SocketBIOAdapter> transport_adapter_;
   const HostPortPair host_and_port_;
   SSLConfig ssl_config_;
+  // ssl_client_session_cache_ is a non-owning pointer to session cache
+  SSLClientSessionCache* ssl_client_session_cache_;
   // ssl_session_cache_shard_ is an opaque string that partitions the SSL
   // session cache. i.e. sessions created with one value will not attempt to
   // resume on the socket with a different value.

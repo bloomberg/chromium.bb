@@ -181,8 +181,6 @@ class TestSocketFactory : public ClientSocketFactory {
     NOTIMPLEMENTED();
     return nullptr;
   }
-  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
-
   void AddMapping(const IPAddress& dst, const IPAddress& src) {
     mapping_[dst] = src;
   }

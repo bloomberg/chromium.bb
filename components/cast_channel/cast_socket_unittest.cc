@@ -352,7 +352,6 @@ class TestSocketFactory : public net::ClientSocketFactory {
     NOTIMPLEMENTED();
     return nullptr;
   }
-  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
 
   net::IPEndPoint ip_;
   // Simulated connect data

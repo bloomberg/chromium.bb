@@ -724,7 +724,7 @@ CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
                           NULL,
                           NULL,
                           NULL,
-                          std::string(),
+                          NULL,
                           NULL,
                           NULL,
                           NULL,

@@ -38,6 +38,7 @@ class NetworkQualityEstimator;
 class ProxyDelegate;
 class ProxyServer;
 class SocketPerformanceWatcherFactory;
+class SSLClientSessionCache;
 class SSLClientSocketPool;
 class SSLConfigService;
 class TransportClientSocketPool;
@@ -59,7 +60,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
-      const std::string& ssl_session_cache_shard,
+      SSLClientSessionCache* ssl_client_session_cache,
       SSLConfigService* ssl_config_service,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       ProxyDelegate* proxy_delegate,
@@ -110,6 +111,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   TransportSecurityState* const transport_security_state_;
   CTVerifier* const cert_transparency_verifier_;
   CTPolicyEnforcer* const ct_policy_enforcer_;
+  SSLClientSessionCache* const ssl_client_session_cache_;
   const std::string ssl_session_cache_shard_;
   SSLConfigService* const ssl_config_service_;
   ProxyDelegate* const proxy_delegate_;

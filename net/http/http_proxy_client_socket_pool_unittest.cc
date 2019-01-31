@@ -93,7 +93,7 @@ class HttpProxyClientSocketPoolTest
                          NULL /* transport_security_state */,
                          NULL /* cert_transparency_verifier */,
                          NULL /* ct_policy_enforcer */,
-                         std::string() /* ssl_session_cache_shard */,
+                         NULL /* ssl_client_session_cache */,
                          &socket_factory_,
                          &transport_socket_pool_,
                          NULL /* socks_pool */,
