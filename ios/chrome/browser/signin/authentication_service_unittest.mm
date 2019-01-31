@@ -174,8 +174,6 @@ class AuthenticationServiceTest : public PlatformTest,
         ProfileOAuth2TokenServiceFactory::GetForBrowserState(
             browser_state_.get()),
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()),
-        ios::AccountTrackerServiceFactory::GetForBrowserState(
-            browser_state_.get()),
         IdentityManagerFactory::GetForBrowserState(browser_state_.get()),
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
     authentication_service_->Initialize(
@@ -573,6 +571,19 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   account_tracker->Shutdown();
   account_tracker->Initialize(browser_state_->GetPrefs(), base::FilePath());
   account_tracker->SetMigrationDone();
+
+  // Reload all credentials to find account info with the refresh token.
+  // If it tries to find refresh token with gaia ID after
+  // AccountTrackerService::Initialize(), it fails because account ids are
+  // updated with gaia ID from email at MigrateToGaiaId. As IdentityManager
+  // needs refresh token to find account info, it reloads all credentials.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
+          browser_state_.get());
+  ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
+      static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
+          token_service->GetDelegate());
+  token_service_delegate->ReloadCredentials();
 
   // Actually migrate the accounts in prefs.
   MigrateAccountsStoredInPrefsIfNeeded();

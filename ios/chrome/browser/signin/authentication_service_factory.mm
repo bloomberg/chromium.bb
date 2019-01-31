@@ -10,7 +10,6 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -51,7 +50,6 @@ AuthenticationServiceFactory::AuthenticationServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "AuthenticationService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SyncSetupServiceFactory::GetInstance());
@@ -69,7 +67,6 @@ AuthenticationServiceFactory::BuildServiceInstanceFor(
       browser_state->GetPrefs(),
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
       IdentityManagerFactory::GetForBrowserState(browser_state),
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }

@@ -16,7 +16,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync/driver/sync_service.h"
@@ -59,10 +58,16 @@ enum LoginMethodAndSyncState {
 constexpr char kFakeAccountIdForRemovedAccount[] = "0000000000000";
 
 // Returns the account id associated with |identity|.
-std::string ChromeIdentityToAccountID(AccountTrackerService* account_tracker,
-                                      ChromeIdentity* identity) {
+std::string ChromeIdentityToAccountID(
+    identity::IdentityManager* identity_manager,
+    ChromeIdentity* identity) {
   std::string gaia_id = base::SysNSStringToUTF8([identity gaiaID]);
-  return account_tracker->FindAccountInfoByGaiaId(gaia_id).account_id;
+  auto maybe_account =
+      identity_manager->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+          gaia_id);
+  AccountInfo account_info =
+      maybe_account.has_value() ? maybe_account.value() : AccountInfo();
+  return account_info.account_id;
 }
 
 }  // namespace
@@ -71,20 +76,17 @@ AuthenticationService::AuthenticationService(
     PrefService* pref_service,
     ProfileOAuth2TokenService* token_service,
     SyncSetupService* sync_setup_service,
-    AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       token_service_(token_service),
       sync_setup_service_(sync_setup_service),
-      account_tracker_(account_tracker),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
       identity_service_observer_(this),
       weak_pointer_factory_(this) {
   DCHECK(pref_service_);
   DCHECK(sync_setup_service_);
-  DCHECK(account_tracker_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
   token_service_->AddObserver(this);
@@ -246,21 +248,26 @@ bool AuthenticationService::HaveAccountsChanged() {
 }
 
 void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
-  if (account_tracker_->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
+  if (identity_manager_->GetAccountIdMigrationState() ==
+      identity::IdentityManager::AccountIdMigrationState::
+          MIGRATION_NOT_STARTED) {
     return;
   }
-  DCHECK_EQ(AccountTrackerService::MIGRATION_DONE,
-            account_tracker_->GetMigrationState());
+  DCHECK_EQ(identity::IdentityManager::AccountIdMigrationState::MIGRATION_DONE,
+            identity_manager_->GetAccountIdMigrationState());
   if (pref_service_->GetBoolean(prefs::kSigninLastAccountsMigrated)) {
     // Already migrated.
     return;
   }
 
-  std::vector<std::string> emails = GetAccountsInPrefs();
+  std::vector<std::string> account_ids = GetAccountsInPrefs();
   base::ListValue accounts_pref_value;
-  for (const std::string& email : emails) {
-    AccountInfo account_info = account_tracker_->FindAccountInfoByEmail(email);
+  for (const std::string& account_id : account_ids) {
+    auto maybe_account =
+        identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+            account_id);
+    AccountInfo account_info =
+        maybe_account.has_value() ? maybe_account.value() : AccountInfo();
     if (!account_info.email.empty()) {
       DCHECK(!account_info.gaia.empty());
       accounts_pref_value.AppendString(account_info.account_id);
@@ -306,11 +313,8 @@ ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() {
   if (!IsAuthenticated())
     return nil;
 
-  std::string authenticated_account_id =
-      identity_manager_->GetPrimaryAccountId();
-
   std::string authenticated_gaia_id =
-      account_tracker_->GetAccountInfo(authenticated_account_id).gaia;
+      identity_manager_->GetPrimaryAccountInfo().gaia;
   if (authenticated_gaia_id.empty())
     return nil;
 
@@ -334,7 +338,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   info.email = GetCanonicalizedEmailForIdentity(identity);
   info.hosted_domain = hosted_domain;
   std::string new_authenticated_account_id =
-      account_tracker_->SeedAccountInfo(info);
+      identity_manager_->LegacySeedAccountInfo(info);
   std::string old_authenticated_account_id =
       identity_manager_->GetPrimaryAccountId();
   // |SigninManager::SetAuthenticatedAccountId| simply ignores the call if
@@ -403,7 +407,7 @@ void AuthenticationService::SignOut(
 NSDictionary* AuthenticationService::GetCachedMDMInfo(
     ChromeIdentity* identity) {
   auto it = cached_mdm_infos_.find(
-      ChromeIdentityToAccountID(account_tracker_, identity));
+      ChromeIdentityToAccountID(identity_manager_, identity));
 
   if (it == cached_mdm_infos_.end()) {
     return nil;
@@ -492,7 +496,7 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
     }
   };
   if (identity_service->HandleMDMNotification(identity, user_info, callback)) {
-    cached_mdm_infos_[ChromeIdentityToAccountID(account_tracker_, identity)] =
+    cached_mdm_infos_[ChromeIdentityToAccountID(identity_manager_, identity)] =
         user_info;
     return true;
   }

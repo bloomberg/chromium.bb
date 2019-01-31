@@ -25,7 +25,6 @@ namespace identity {
 class IdentityManager;
 }
 
-class AccountTrackerService;
 class AuthenticationServiceDelegate;
 @class ChromeIdentity;
 class PrefService;
@@ -41,7 +40,6 @@ class AuthenticationService : public KeyedService,
   AuthenticationService(PrefService* pref_service,
                         ProfileOAuth2TokenService* token_service,
                         SyncSetupService* sync_setup_service,
-                        AccountTrackerService* account_tracker,
                         identity::IdentityManager* identity_manager,
                         syncer::SyncService* sync_service);
   ~AuthenticationService() override;
@@ -200,7 +198,6 @@ class AuthenticationService : public KeyedService,
   PrefService* pref_service_ = nullptr;
   ProfileOAuth2TokenService* token_service_ = nullptr;
   SyncSetupService* sync_setup_service_ = nullptr;
-  AccountTrackerService* account_tracker_ = nullptr;
   identity::IdentityManager* identity_manager_ = nullptr;
   syncer::SyncService* sync_service_ = nullptr;
 
