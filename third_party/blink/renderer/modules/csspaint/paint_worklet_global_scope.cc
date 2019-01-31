@@ -101,8 +101,8 @@ PaintWorkletGlobalScope* PaintWorkletGlobalScope::Create(
       pending_generator_registry);
   String context_name("PaintWorklet #");
   context_name.append(String::Number(global_scope_number));
-  global_scope->ScriptController()->InitializeContextIfNeeded(context_name,
-                                                              NullURL());
+  // TODO(bashi): Handle a case where the script controller fails to initialize.
+  global_scope->ScriptController()->InitializeContext(context_name, NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
       global_scope->GetFrame(), global_scope->DocumentSecurityOrigin());
