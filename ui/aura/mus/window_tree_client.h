@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ws/public/mojom/screen_provider_observer.mojom.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/transient_window_client_observer.h"
