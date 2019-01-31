@@ -5,6 +5,7 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -145,6 +146,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 // TODO(crbug.com/850870) Plug the leaks.
 #define MAYBE_ResetServiceWhenNavigatingAway \
   DISABLED_ResetServiceWhenNavigatingAway
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
+// crbug.com/927234.
+#define MAYBE_ResetServiceWhenNavigatingAway \
+  DISABLED_ResetServiceWhenNavigatingAway
 #else
 #define MAYBE_ResetServiceWhenNavigatingAway ResetServiceWhenNavigatingAway
 #endif
@@ -172,6 +177,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 
 #if defined(LEAK_SANITIZER)
 // TODO(crbug.com/850870) Plug the leaks.
+#define MAYBE_DontResetServiceForSameDocumentNavigation \
+  DISABLED_DontResetServiceForSameDocumentNavigation
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
+// crbug.com/927234.
 #define MAYBE_DontResetServiceForSameDocumentNavigation \
   DISABLED_DontResetServiceForSameDocumentNavigation
 #else
