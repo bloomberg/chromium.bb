@@ -214,15 +214,19 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
     GrGLFramebufferInfo framebuffer_info;
     framebuffer_info.fFBOID = 0;
-    framebuffer_info.fFormat =
-        gl_version_info_->is_es ? GL_BGRA8_EXT : GL_RGBA8;
+    if (supports_alpha_) {
+      framebuffer_info.fFormat =
+          gl_version_info_->is_es ? GL_BGRA8_EXT : GL_RGBA8;
+    } else {
+      framebuffer_info.fFormat = GL_RGB8_OES;
+    }
 
     GrBackendRenderTarget render_target(size.width(), size.height(), 0, 8,
                                         framebuffer_info);
 
     sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
         gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
-        kBGRA_8888_SkColorType, color_space.ToSkColorSpace(), &surface_props);
+        FramebufferColorType(), color_space.ToSkColorSpace(), &surface_props);
     DCHECK(sk_surface_);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -624,32 +628,39 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL(GpuServiceImpl* gpu_service) {
     return;
 
   auto* context = context_state_->real_context();
+  auto* current_gl = context->GetCurrentGL();
+  api_ = current_gl->Api;
   gl_version_info_ = context->GetVersionInfo();
 
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
 
-  // Get stencil bits from the default frame buffer.
-  auto* current_gl = context->GetCurrentGL();
-  const auto* version = current_gl->Version;
-  auto* api = current_gl->Api;
-  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
+  // Get alpha and stencil bits from the default frame buffer.
+  api_->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
   gr_context()->resetContext(kRenderTarget_GrGLBackendState);
+  const auto* version = current_gl->Version;
   GLint stencil_bits = 0;
+  GLint alpha_bits = 0;
   if (version->is_desktop_core_profile) {
-    api->glGetFramebufferAttachmentParameterivEXTFn(
+    api_->glGetFramebufferAttachmentParameterivEXTFn(
         GL_FRAMEBUFFER, GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE,
         &stencil_bits);
+    api_->glGetFramebufferAttachmentParameterivEXTFn(
+        GL_FRAMEBUFFER, GL_BACK_LEFT, GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE,
+        &alpha_bits);
   } else {
-    api->glGetIntegervFn(GL_STENCIL_BITS, &stencil_bits);
+    api_->glGetIntegervFn(GL_STENCIL_BITS, &stencil_bits);
+    api_->glGetIntegervFn(GL_ALPHA_BITS, &alpha_bits);
   }
   CHECK_GL_ERROR();
   capabilities_.supports_stencil = stencil_bits > 0;
+  supports_alpha_ = alpha_bits > 0;
 }
 
 void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan(
     GpuServiceImpl* gpu_service) {
   context_state_ = gpu_service->GetContextStateForVulkan();
   DCHECK(context_state_);
+  supports_alpha_ = true;
 }
 
 void SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(
@@ -707,7 +718,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
                                         vk_image_info);
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
         gr_context(), render_target, kTopLeft_GrSurfaceOrigin,
-        kBGRA_8888_SkColorType, nullptr, &surface_props);
+        FramebufferColorType(), nullptr, &surface_props);
     DCHECK(sk_surface);
   } else {
     auto backend = sk_surface->getBackendRenderTarget(

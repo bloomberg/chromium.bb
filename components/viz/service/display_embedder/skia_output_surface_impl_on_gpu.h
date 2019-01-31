@@ -38,6 +38,7 @@ class ColorSpace;
 }
 
 namespace gl {
+class GLApi;
 class GLSurface;
 }
 
@@ -174,6 +175,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   GrContext* gr_context() { return context_state_->gr_context(); }
 
+  SkColorType FramebufferColorType() {
+    return supports_alpha_ ? kBGRA_8888_SkColorType : kRGB_888x_SkColorType;
+  }
+
   bool is_using_vulkan() const { return !!vulkan_context_provider_; }
 
   const gpu::SurfaceHandle surface_handle_;
@@ -228,6 +233,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   uint64_t swap_id_ = 0;
 
   ui::LatencyTracker latency_tracker_;
+
+  gl::GLApi* api_ = nullptr;
+  bool supports_alpha_ = false;
 
   THREAD_CHECKER(thread_checker_);
 
