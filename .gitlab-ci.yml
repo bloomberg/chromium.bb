@@ -80,5 +80,5 @@ build-native-meson:
     name: weston-$CI_COMMIT_SHA-$CI_JOB_ID
     when: always
     paths:
-    - build-meson/meson-logs
+    - build-*/meson-logs
     - prefix-*
