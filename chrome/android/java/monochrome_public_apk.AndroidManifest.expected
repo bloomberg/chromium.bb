@@ -1333,16 +1333,6 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
         <activity
-            android:name="org.chromium.chrome.browser.media.remote.ExpandedControllerActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-            android:excludeFromRecents="true"
-            android:hardwareAccelerated="true"
-            android:label="Chrome.ExpandedControllerActivity"
-            android:launchMode="singleTask"
-            android:noHistory="true"
-            android:theme="@style/MainTheme" >
-        </activity>
-        <activity
             android:name="org.chromium.chrome.browser.media.router.caf.remoting.CafExpandedControllerActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:excludeFromRecents="true"

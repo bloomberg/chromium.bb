@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.media.router.caf;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import org.chromium.chrome.browser.media.router.cast.CastMediaSource;
-
 /** Shadow implementation for {@link MediaRouter}. */
 @Implements(CastMediaSource.class)
 public class ShadowCastMediaSource {

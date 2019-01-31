@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.caf.BaseNotificationController;
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.media.router.caf.CafBaseMediaRouteProvider;
-import org.chromium.chrome.browser.media.router.cast.remoting.RemotingMediaSource;
 
 import java.lang.ref.WeakReference;
 

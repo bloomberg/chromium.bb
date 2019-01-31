@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.media.router.ClientRecord;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaSink;
-import org.chromium.chrome.browser.media.router.cast.CastMediaSource;
 
 /**
  * Robolectric tests for CafMediaRouteProvider.

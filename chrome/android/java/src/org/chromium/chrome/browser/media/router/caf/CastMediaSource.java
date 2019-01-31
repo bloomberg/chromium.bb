@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.media.router.cast;
+package org.chromium.chrome.browser.media.router.caf;
 
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * Abstracts parsing the Cast application id and other parameters from the source ID.
  */
-// Reused in CafMRP. No need to migrate. See https://crbug.com/711860.
 public class CastMediaSource implements MediaSource {
     public static final String AUTOJOIN_CUSTOM_CONTROLLER_SCOPED = "custom_controller_scoped";
     public static final String AUTOJOIN_TAB_AND_ORIGIN_SCOPED = "tab_and_origin_scoped";
