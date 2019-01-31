@@ -9,14 +9,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "build/buildflag.h"
-#include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/google/core/browser/google_url_tracker.h"
@@ -137,20 +132,13 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{SigninManagerFactory::GetInstance(),
-             base::BindRepeating(&BuildFakeSigninManagerForTesting)},
-            {ProfileOAuth2TokenServiceFactory::GetInstance(),
-             base::BindRepeating(&BuildFakeProfileOAuth2TokenService)}};
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactories();
   }
 
   // BrowserWithTestWindowTest:
   BrowserWindow* CreateBrowserWindow() override {
     return new SigninUiUtilTestBrowserWindow();
-  }
-
-  // Returns the token service.
-  ProfileOAuth2TokenService* GetTokenService() {
-    return ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
   }
 
   // Returns the identity manager.
