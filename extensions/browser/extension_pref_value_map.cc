@@ -50,8 +50,9 @@ void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
                                              ExtensionPrefsScope scope,
                                              base::Value* value) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
-
-  if (prefs->SetValue(key, base::WrapUnique(value)))
+  std::unique_ptr<base::Value> owned_value = base::WrapUnique(value);
+  if (prefs->SetValue(key,
+                      base::Value::FromUniquePtrValue(std::move(owned_value))))
     NotifyPrefValueChanged(key);
 }
 
