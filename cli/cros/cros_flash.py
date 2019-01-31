@@ -144,7 +144,8 @@ Examples:
     """Perfrom the cros flash command."""
     self.options.Freeze()
 
-    if not cros_build_lib.IsInsideChroot():
+    if (self.options.device.scheme == commandline.DEVICE_SCHEME_SSH and
+        not cros_build_lib.IsInsideChroot()):
       chroot_dir = os.path.join(constants.SOURCE_ROOT,
                                 constants.DEFAULT_CHROOT_DIR)
 
