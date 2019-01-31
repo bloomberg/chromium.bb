@@ -19,10 +19,8 @@ namespace features {
 // regress in performance due to high-priority messages seeing increased
 // latency. Ideally we'd address these cases by giving the affected bindings
 // higher-priority TaskRunners.
-//
-// TODO(https://crbug.com/866708): Enable this by default after M73 branch.
 const base::Feature kTaskPerMessage{"MojoTaskPerMessage",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace mojo
