@@ -224,8 +224,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
       size_t filtered_count) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PasswordFormManagerTest, Clone_DataIsCopied);
-
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.).
   void ProcessFrameInternal(const base::WeakPtr<PasswordManagerDriver>& driver);

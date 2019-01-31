@@ -6,7 +6,6 @@
 
 #include <ctype.h>
 #include <map>
-#include <tuple>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -530,24 +529,6 @@ void VotesUploader::GeneratePasswordAttributesVote(
                                  ? actual_length
                                  : base::RandGenerator(actual_length - 1) + 1;
   form_structure->set_password_length_vote(randomized_length);
-}
-
-bool VotesUploader::operator==(const VotesUploader& other) const {
-  return std::tie(client_, generation_popup_was_shown_, is_manual_generation_,
-                  generation_element_, has_username_edited_vote_,
-                  has_username_correction_vote_, username_correction_vote_,
-                  has_passwords_revealed_vote_, password_overridden_,
-                  is_possible_change_password_form_, has_generated_password_,
-                  generated_password_changed_) ==
-         std::tie(
-             other.client_, other.generation_popup_was_shown_,
-             other.is_manual_generation_, other.generation_element_,
-             other.has_username_edited_vote_,
-             other.has_username_correction_vote_,
-             other.username_correction_vote_,
-             other.has_passwords_revealed_vote_, other.password_overridden_,
-             other.is_possible_change_password_form_,
-             other.has_generated_password_, other.generated_password_changed_);
 }
 
 }  // namespace password_manager
