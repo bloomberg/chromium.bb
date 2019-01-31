@@ -607,20 +607,6 @@ TEST_F(DeviceSettingsProviderTest, DecodeLogUploadSettings) {
   VerifyLogUploadSettings(false);
 }
 
-TEST_F(DeviceSettingsProviderTest, SetWallpaperSettings) {
-  // Invalid format should be ignored.
-  const std::string invalid_format = "\\\\invalid\\format";
-  SetWallpaperSettings(invalid_format);
-  EXPECT_EQ(nullptr, provider_->Get(kDeviceWallpaperImage));
-
-  // Set with valid json format.
-  const std::string valid_format(R"({"url":"foo", "hash": "bar"})");
-  SetWallpaperSettings(valid_format);
-  std::unique_ptr<base::DictionaryValue> expected_value =
-      base::DictionaryValue::From(base::JSONReader::Read(valid_format));
-  EXPECT_EQ(*expected_value, *provider_->Get(kDeviceWallpaperImage));
-}
-
 TEST_F(DeviceSettingsProviderTest, SamlLoginAuthenticationType) {
   using PolicyProto = em::SamlLoginAuthenticationTypeProto;
 
