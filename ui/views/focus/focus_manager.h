@@ -295,8 +295,6 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
     return arrow_key_traversal_enabled_;
   }
 
-  // TODO(weidongg): converts compatible usages of
-  // |arrow_key_traversal_enabled_| to this (https://crbug.com/899431).
   // Similar to above, but only for the widget that owns this FocusManager.
   void set_arrow_key_traversal_enabled_for_widget(bool enabled) {
     arrow_key_traversal_enabled_for_widget_ = enabled;
