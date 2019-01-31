@@ -430,7 +430,7 @@ public class VisualStateTest {
         // JS will notify this observer once it has changed the background color of the page.
         final Object pageChangeNotifier = new Object() {
             public void onPageChanged() {
-                ThreadUtils.postOnUiThread(
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                         () -> awContents.insertVisualStateCallback(20, new VisualStateCallback() {
                             @Override
                             public void onComplete(long id) {

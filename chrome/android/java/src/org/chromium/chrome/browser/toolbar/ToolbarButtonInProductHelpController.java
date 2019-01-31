@@ -10,7 +10,7 @@ import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.ViewRectProvider;
 
 /**
@@ -185,7 +186,7 @@ public class ToolbarButtonInProductHelpController implements Destroyable {
         // Post a request to show the IPH bubble to allow time for a layout pass. Since the bubble
         // is shown on startup, the anchor view may not have a height initially see
         // https://crbug.com/871537.
-        ThreadUtils.postOnUiThread(() -> {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (activity.isActivityDestroyed()) return;
 
             if (TextUtils.equals(featureName, FeatureConstants.NTP_BUTTON_FEATURE)

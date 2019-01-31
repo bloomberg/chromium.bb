@@ -132,7 +132,7 @@ public class SwipeRefreshHandler
                 mDetachRefreshLayoutRunnable = null;
                 detachSwipeRefreshLayoutIfNecessary();
             };
-            ThreadUtils.postOnUiThread(mDetachRefreshLayoutRunnable);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mDetachRefreshLayoutRunnable);
         });
     }
 

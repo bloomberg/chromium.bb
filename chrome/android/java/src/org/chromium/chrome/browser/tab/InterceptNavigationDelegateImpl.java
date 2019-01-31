@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.tab;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ConsoleMessageLevel;
 
@@ -258,7 +259,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             }
             // Defer closing a tab (and the associated WebContents) till the navigation
             // request and the throttle finishes the job with it.
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     mTab.getTabModelSelector().closeTab(mTab);

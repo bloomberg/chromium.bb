@@ -12,8 +12,10 @@ import android.text.TextUtils;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -133,7 +135,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
     }
 
     private void processQueue() {
-        ThreadUtils.postOnUiThread(this::processNextRequest);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::processNextRequest);
     }
 
     private String getKey(String contentId, int bitmapSizePx) {

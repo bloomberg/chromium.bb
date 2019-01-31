@@ -19,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -26,6 +27,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -307,7 +309,7 @@ public class PartnerBrowserCustomizations {
      */
     public static void setOnInitializeAsyncFinished(final Runnable callback) {
         if (sIsInitialized) {
-            ThreadUtils.postOnUiThread(callback);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback);
         } else {
             sInitializeAsyncCallbacks.add(callback);
         }

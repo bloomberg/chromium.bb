@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -19,6 +20,7 @@ import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -76,7 +78,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
             // Do not pass in wrappedCallback because this is a short-circuit reschedule. For UMA
             // purposes, tasks are started when runWithNative is called and does not consider
             // short-circuit reschedules such as this.
-            ThreadUtils.postOnUiThread(buildRescheduleRunnable(callback));
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, buildRescheduleRunnable(callback));
             return true;
         }
 
@@ -115,14 +117,14 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
     protected final void runWithNative(final Context context,
             final Runnable startWithNativeRunnable, final Runnable rescheduleRunnable) {
         if (isNativeLoaded()) {
-            ThreadUtils.postOnUiThread(startWithNativeRunnable);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
             return;
         }
 
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
-                ThreadUtils.postOnUiThread(startWithNativeRunnable);
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, startWithNativeRunnable);
             }
             @Override
             public boolean startServiceManagerOnly() {
@@ -130,11 +132,11 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
             }
             @Override
             public void onStartupFailure() {
-                ThreadUtils.postOnUiThread(rescheduleRunnable);
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, rescheduleRunnable);
             }
         };
 
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 // If task was stopped before we got here, don't start native initialization.

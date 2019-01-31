@@ -15,8 +15,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -132,7 +134,7 @@ public class ScreenshotMonitorTest {
     private void startMonitoringOnUiThreadBlocking() {
         final Semaphore semaphore = new Semaphore(0);
 
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 mTestScreenshotMonitor.startMonitoring();
@@ -150,7 +152,7 @@ public class ScreenshotMonitorTest {
     private void stopMonitoringOnUiThreadBlocking() {
         final Semaphore semaphore = new Semaphore(0);
 
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 mTestScreenshotMonitor.stopMonitoring();
@@ -169,7 +171,7 @@ public class ScreenshotMonitorTest {
     private void assertScreenshotShowUiCountOnUiThreadBlocking(int expectedCount) {
         final Semaphore semaphore = new Semaphore(0);
 
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 semaphore.release();

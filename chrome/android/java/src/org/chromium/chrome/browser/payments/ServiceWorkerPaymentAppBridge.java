@@ -16,11 +16,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -90,7 +92,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         ThreadUtils.assertOnUiThread();
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     callback.onHasServiceWorkerPaymentAppsResponse(false);
@@ -111,7 +113,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         ThreadUtils.assertOnUiThread();
 
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     callback.onGetServiceWorkerPaymentAppsInfo(
@@ -142,7 +144,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         ThreadUtils.assertOnUiThread();
 
         if (sCanMakePaymentForTesting) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     callback.onCanMakePaymentResponse(true);

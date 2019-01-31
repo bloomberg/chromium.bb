@@ -19,9 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandleProxy;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -307,8 +308,10 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     public boolean requestPostMessageChannel(Uri postMessageOrigin) {
         if (mDynamicModulePostMessageHandler == null) return false;
 
-        ThreadUtils.postOnUiThread(() ->
-                mDynamicModulePostMessageHandler.initializeWithPostMessageUri(postMessageOrigin));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                ()
+                        -> mDynamicModulePostMessageHandler.initializeWithPostMessageUri(
+                                postMessageOrigin));
         return true;
     }
 

@@ -11,10 +11,12 @@ import org.junit.Assert;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -73,7 +75,7 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
         // the BrowserStartupControllerImpl#browserStartupComplete() is called on the UI thread when
         // the full browser starts. So we can use it to checks whether the
         // {@link mFullBrowserStartupDone} has been set to true.
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 Assert.assertFalse("The full browser is started instead of ServiceManager only.",
