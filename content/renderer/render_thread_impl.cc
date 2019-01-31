@@ -2163,8 +2163,7 @@ void RenderThreadImpl::CreateFrameProxy(
 
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
     mojom::EmbeddedWorkerInstanceClientRequest client_request) {
-  EmbeddedWorkerInstanceClientImpl::Create(GetIOTaskRunner(),
-                                           std::move(client_request));
+  EmbeddedWorkerInstanceClientImpl::Create(std::move(client_request));
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(

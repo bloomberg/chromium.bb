@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/id_map.h"
-#include "base/single_thread_task_runner.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -58,9 +56,7 @@ class EmbeddedWorkerInstanceClientImpl
   // documentation.
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
-  static void Create(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
-      mojom::EmbeddedWorkerInstanceClientRequest request);
+  static void Create(mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 
@@ -72,8 +68,7 @@ class EmbeddedWorkerInstanceClientImpl
   void StopWorker() override;
 
  private:
-  EmbeddedWorkerInstanceClientImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
+  explicit EmbeddedWorkerInstanceClientImpl(
       mojom::EmbeddedWorkerInstanceClientRequest request);
 
   // mojom::EmbeddedWorkerInstanceClient implementation
@@ -103,8 +98,6 @@ class EmbeddedWorkerInstanceClientImpl
 
   // nullptr means the worker is not running.
   std::unique_ptr<blink::WebEmbeddedWorker> worker_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClientImpl);
 };
