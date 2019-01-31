@@ -341,6 +341,10 @@ class CONTENT_EXPORT AppCacheHost
   // only be one type of callback pending. Also, we have to wait until we have a
   // cache selection prior to responding to these calls, as cache selection
   // involves async loading of a cache or a group from storage.
+  // If any of these callbacks are non-null at the time this AppCacheHost is
+  // destroyed, we have to make sure that they still get called, as the mojo
+  // pipe the callbacks are associated with will outlive this. So make sure to
+  // update the destructor if adding more callbacks here.
   GetStatusCallback pending_get_status_callback_;
   StartUpdateCallback pending_start_update_callback_;
   SwapCacheCallback pending_swap_cache_callback_;
