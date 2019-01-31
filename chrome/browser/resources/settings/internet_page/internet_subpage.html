@@ -125,6 +125,7 @@
         <template is="dom-if"
             if="[[shouldShowNetworkList_(networkStateList_)]]">
           <cr-network-list id="networkList" show-buttons
+              show-technology-badge="[[showTechnologyBadge_]]"
               networks="[[networkStateList_]]"
               on-selected="onNetworkSelected_">
           </cr-network-list>

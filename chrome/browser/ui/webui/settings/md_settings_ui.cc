@@ -324,6 +324,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "lockScreenHideSensitiveNotificationsSupported",
       ash::features::IsLockScreenHideSensitiveNotificationsSupported());
+  html_source->AddBoolean("showTechnologyBadge",
+                          !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean("hasInternalStylus",
                           ash::stylus_utils::HasInternalStylus());
 
