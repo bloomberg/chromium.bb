@@ -1210,6 +1210,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   </int>
 </enum>
 
+<enum name="AndroidSmsFcmMessageType">
+  <int value="0" label="Start"/>
+  <int value="1" label="Resume"/>
+  <int value="2" label="Stop"/>
+</enum>
+
 <enum name="AndroidTabCloseUndoToastEvent">
   <int value="0" label="Undo Shown (Cold)"/>
   <int value="1" label="Undo Shown (Warm)"/>
