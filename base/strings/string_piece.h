@@ -528,28 +528,20 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& o,
 // This hash function is copied from base/strings/string16.h. We don't use the
 // ones already defined for string and string16 directly because it would
 // require the string constructors to be called, which we don't want.
-#define HASH_STRING_PIECE(StringPieceType, string_piece)         \
-  std::size_t result = 0;                                        \
-  for (StringPieceType::const_iterator i = string_piece.begin(); \
-       i != string_piece.end(); ++i)                             \
-    result = (result * 131) + *i;                                \
-  return result
 
-struct StringPieceHash {
-  std::size_t operator()(const StringPiece& sp) const {
-    HASH_STRING_PIECE(StringPiece, sp);
+template <typename StringPieceType>
+struct StringPieceHashImpl {
+  std::size_t operator()(StringPieceType sp) const {
+    std::size_t result = 0;
+    for (auto c : sp)
+      result = (result * 131) + c;
+    return result;
   }
 };
-struct StringPiece16Hash {
-  std::size_t operator()(const StringPiece16& sp16) const {
-    HASH_STRING_PIECE(StringPiece16, sp16);
-  }
-};
-struct WStringPieceHash {
-  std::size_t operator()(const WStringPiece& wsp) const {
-    HASH_STRING_PIECE(WStringPiece, wsp);
-  }
-};
+
+using StringPieceHash = StringPieceHashImpl<StringPiece>;
+using StringPiece16Hash = StringPieceHashImpl<StringPiece16>;
+using WStringPieceHash = StringPieceHashImpl<WStringPiece>;
 
 }  // namespace base
 
