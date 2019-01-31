@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_BUFFER_H_
 
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 
@@ -39,7 +40,7 @@ class CORE_EXPORT FindBuffer {
 
     Results(const Vector<UChar>& buffer,
             String search_text,
-            const mojom::blink::FindOptions& options);
+            const blink::FindOptions options);
 
     class CORE_EXPORT Iterator
         : public std::iterator<std::forward_iterator_tag, BufferMatchResult> {
@@ -78,9 +79,8 @@ class CORE_EXPORT FindBuffer {
   };
 
   // Finds all the match for |search_text| in |buffer_|.
-  std::unique_ptr<Results> FindMatches(
-      const WebString& search_text,
-      const mojom::blink::FindOptions& options) const;
+  std::unique_ptr<Results> FindMatches(const WebString& search_text,
+                                       const blink::FindOptions options) const;
 
   // Gets a flat tree range corresponding to text in the [start_index,
   // end_index) of |buffer|.

@@ -34,11 +34,11 @@ FindBuffer::Results::Results() {
 
 FindBuffer::Results::Results(const Vector<UChar>& buffer,
                              String search_text,
-                             const mojom::blink::FindOptions& options) {
+                             const blink::FindOptions options) {
   // We need to own the |search_text| because |text_searcher_| only has a
   // StringView (doesn't own the search text).
   search_text_ = search_text;
-  text_searcher_.SetPattern(search_text_, options.match_case);
+  text_searcher_.SetPattern(search_text_, !(options & kCaseInsensitive));
   text_searcher_.SetText(buffer.data(), buffer.size());
   text_searcher_.SetOffset(0);
 }
@@ -186,7 +186,7 @@ Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
 
 std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
     const WebString& search_text,
-    const mojom::blink::FindOptions& options) const {
+    const blink::FindOptions options) const {
   if (buffer_.IsEmpty() || search_text.length() > buffer_.size())
     return std::make_unique<Results>();
   String search_text_16_bit = search_text;

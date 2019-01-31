@@ -113,11 +113,17 @@ class FindTaskController::IdleFindTask
     int match_count = 0;
     bool full_range_searched = false;
     PositionInFlatTree next_task_start_position;
+
+    blink::FindOptions find_options =
+        (options_->forward ? 0 : kBackwards) |
+        (options_->match_case ? 0 : kCaseInsensitive) |
+        (options_->find_next ? 0 : kStartInSelection);
+
     do {
       // Find in the whole block.
       FindBuffer buffer(EphemeralRangeInFlatTree(search_start, search_end));
       std::unique_ptr<FindBuffer::Results> match_results =
-          buffer.FindMatches(search_text_, *options_);
+          buffer.FindMatches(search_text_, find_options);
       for (FindBuffer::BufferMatchResult match : *match_results) {
         const EphemeralRangeInFlatTree ephemeral_match_range =
             buffer.RangeFromBufferIndex(match.start,
