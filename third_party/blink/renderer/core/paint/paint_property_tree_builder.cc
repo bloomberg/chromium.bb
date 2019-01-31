@@ -1034,7 +1034,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
   if (&fragment_data_ != &object_.FirstFragment()) {
     // All fragments share the same LinkHighlightEffect node.
     DCHECK(object_.FirstFragment().PaintProperties());
-    DCHECK(object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
+    // TODO(crbug.com/923729): Temporary CHECK to debug the referenced bug. This
+    // should become a DCHECK once the bug is resolved.
+    CHECK(object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
     properties_->SetLinkHighlightEffect(
         object_.FirstFragment().PaintProperties()->LinkHighlightEffect());
     return;
