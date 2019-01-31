@@ -28,6 +28,17 @@ bool PaintChunker::IsInInitialState() const {
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const base::Optional<PaintChunk::Id>& chunk_id,
     const PropertyTreeState& properties) {
+  // TODO(crbug.com/923729): This is a temporary set of checks to determine the
+  // cause of the referenced bug. At this point we should have all of the
+  // properties given to us. Note that scoped objects that restore previous
+  // properties might put us back into uninitialized properties state, but if
+  // we're not being set to uninitialized then we must have all properties set.
+  if (properties != UninitializedProperties()) {
+    CHECK(properties.Transform());
+    CHECK(properties.Clip());
+    CHECK(properties.Effect());
+  }
+
   // If properties are the same, continue to use the previously set
   // |next_chunk_id_| because the id of the outer painting is likely to be
   // more stable to reduce invalidation because of chunk id changes.
