@@ -121,15 +121,15 @@ void ScenicWindow::PrepareForShutdown() {
 }
 
 void ScenicWindow::SetCapture() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::ReleaseCapture() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool ScenicWindow::HasCapture() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
@@ -154,11 +154,11 @@ PlatformWindowState ScenicWindow::GetPlatformWindowState() const {
 }
 
 void ScenicWindow::SetCursor(PlatformCursor cursor) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::MoveCursorTo(const gfx::Point& location) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ScenicWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {

@@ -17,7 +17,7 @@ namespace base {
 bool PathProviderFuchsia(int key, FilePath* result) {
   switch (key) {
     case FILE_MODULE:
-      NOTIMPLEMENTED();
+      NOTIMPLEMENTED() << " for FILE_MODULE.";
       return false;
     case FILE_EXE:
       *result = CommandLine::ForCurrentProcess()->GetProgram();

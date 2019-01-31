@@ -69,7 +69,7 @@ class ScenicPixmap : public gfx::NativePixmap {
                         gfx::Size size,
                         gfx::BufferFormat format)
       : size_(size), format_(format) {
-    NOTIMPLEMENTED();
+    NOTIMPLEMENTED_LOG_ONCE();
   }
 
   bool AreDmaBufFdsValid() const override { return false; }
