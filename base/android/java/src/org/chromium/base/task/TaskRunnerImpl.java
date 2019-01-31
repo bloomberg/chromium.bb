@@ -66,10 +66,8 @@ public class TaskRunnerImpl implements TaskRunner {
         }
     }
 
-    /**
-     * Set this for instances that are cached between tests.
-     */
-    void disableLifetimeCheck() {
+    @Override
+    public void disableLifetimeCheck() {
         LifetimeAssert.setSafeToGc(mLifetimeAssert, true);
     }
 

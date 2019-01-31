@@ -27,6 +27,11 @@ public interface TaskRunner {
     void destroy();
 
     /**
+     * Set this for instances that are cached between tests.
+     */
+    void disableLifetimeCheck();
+
+    /**
      * Posts a task to run after a specified delay.
      *
      * @param task The task to be run.
