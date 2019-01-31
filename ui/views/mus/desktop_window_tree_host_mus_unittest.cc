@@ -933,6 +933,83 @@ TEST_F(DesktopWindowTreeHostMusTest, TransientChildMatchesParentVisibility) {
   transient_child->RemoveObserver(&observer);
 }
 
+class StaticSizedWidgetDelegate : public WidgetDelegateView {
+ public:
+  StaticSizedWidgetDelegate(const gfx::Size& min_size,
+                            const gfx::Size& max_size)
+      : min_size_(min_size), max_size_(max_size) {}
+  ~StaticSizedWidgetDelegate() override = default;
+
+  void SetMinMaxSize(const gfx::Size& min_size, const gfx::Size& max_size) {
+    min_size_ = min_size;
+    max_size_ = max_size;
+  }
+
+ private:
+  // View:
+  gfx::Size GetMinimumSize() const override { return min_size_; }
+  gfx::Size GetMaximumSize() const override { return max_size_; }
+
+  gfx::Size min_size_;
+  gfx::Size max_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(StaticSizedWidgetDelegate);
+};
+
+TEST_F(DesktopWindowTreeHostMusTest, MinMaxSize) {
+  gfx::Size min_size(100, 100);
+  gfx::Size max_size(200, 200);
+  auto* delegate = new StaticSizedWidgetDelegate(min_size, max_size);
+  std::unique_ptr<Widget> widget = CreateWidget(delegate);
+  aura::Window* window = widget->GetNativeWindow()->GetRootWindow();
+
+  // min/max sizes are not yet set.
+  EXPECT_FALSE(window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_FALSE(window->GetProperty(aura::client::kMaximumSize));
+
+  widget->Show();
+  EXPECT_EQ(min_size, *window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_EQ(max_size, *window->GetProperty(aura::client::kMaximumSize));
+
+  // Changing the min/max size isn't propagated immediately.
+  gfx::Size min_size2(120, 130);
+  gfx::Size max_size2(190, 180);
+  delegate->SetMinMaxSize(min_size2, max_size2);
+  EXPECT_EQ(min_size, *window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_EQ(max_size, *window->GetProperty(aura::client::kMaximumSize));
+
+  // Propagated when the widget gets resized.
+  widget->SetBounds(gfx::Rect(0, 0, 150, 150));
+  EXPECT_EQ(min_size2, *window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_EQ(max_size2, *window->GetProperty(aura::client::kMaximumSize));
+
+  delegate->SetMinMaxSize(min_size, max_size);
+  // SizeConstraintsChanged should cause the update of min/max size.
+  widget->OnSizeConstraintsChanged();
+  EXPECT_EQ(min_size, *window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_EQ(max_size, *window->GetProperty(aura::client::kMaximumSize));
+
+  // Re-show should propagate the information.
+  delegate->SetMinMaxSize(min_size2, max_size2);
+  widget->Hide();
+  widget->Show();
+  EXPECT_EQ(min_size2, *window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_EQ(max_size2, *window->GetProperty(aura::client::kMaximumSize));
+
+  // If not changed, properties shouldn't be updated.
+  gfx::Size* min_ptr = window->GetProperty(aura::client::kMinimumSize);
+  gfx::Size* max_ptr = window->GetProperty(aura::client::kMaximumSize);
+  widget->OnSizeConstraintsChanged();
+  EXPECT_EQ(min_ptr, window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_EQ(max_ptr, window->GetProperty(aura::client::kMaximumSize));
+
+  // If there are no limits, properties should be cleared.
+  delegate->SetMinMaxSize(gfx::Size(), gfx::Size());
+  widget->OnSizeConstraintsChanged();
+  EXPECT_FALSE(window->GetProperty(aura::client::kMinimumSize));
+  EXPECT_FALSE(window->GetProperty(aura::client::kMaximumSize));
+}
+
 // DesktopWindowTreeHostMusTest with --force-device-scale-factor=1.25.
 class DesktopWindowTreeHostMusTestFractionalDPI
     : public DesktopWindowTreeHostMusTest {

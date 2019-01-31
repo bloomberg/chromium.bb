@@ -80,6 +80,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // WindowObserver::OnWindowVisibilityChanged().
   void OnWindowTreeHostWindowVisibilityChanged(bool visible);
 
+  // Checks the minimum and the maximum size and notifies to the window service.
+  void UpdateMinAndMaxSize();
+
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
@@ -195,6 +198,10 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // If true, |this| is changing the visibility of window(), or is processing
   // a change in the visibility of window().
   bool is_updating_window_visibility_ = false;
+
+  // The maximum size and the minimum size of the window.
+  gfx::Size max_size_;
+  gfx::Size min_size_;
 
   // aura::WindowObserver on window().
   std::unique_ptr<WindowTreeHostWindowObserver>
