@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -16,13 +17,16 @@
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace content {
 
 class DOMStorageContextWrapperTest : public testing::Test {
  public:
-  DOMStorageContextWrapperTest() = default;
+  DOMStorageContextWrapperTest() {
+    feature_list_.InitAndEnableFeature(blink::features::kOnionSoupDOMStorage);
+  }
 
   void SetUp() override {
     storage_policy_ = new MockSpecialStoragePolicy();
@@ -46,6 +50,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> fake_mojo_task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
