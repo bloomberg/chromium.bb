@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "chrome/services/media_gallery_util/media_parser.h"
 
-namespace media {
-class DataSource;
-}  // namespace media
-
 // The media parser on Android that provides video thumbnail generation utility.
 class MediaParserAndroid : public MediaParser {
  public:
@@ -29,11 +25,6 @@ class MediaParserAndroid : public MediaParser {
       ExtractVideoFrameCallback video_frame_callback) override;
 
  private:
-  // The task runner to do blocking IO. The utility thread cannot be blocked.
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
-
-  std::unique_ptr<media::DataSource> data_source_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaParserAndroid);
 };
 
