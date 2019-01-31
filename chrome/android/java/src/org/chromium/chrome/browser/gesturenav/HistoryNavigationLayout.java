@@ -16,6 +16,9 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * FrameLayout that supports side-wise slide gesture for history navigation. Inheriting
  * class may need to override {@link #isGestureConsumed()} if {@link #onTouchEvent} cannot
@@ -24,6 +27,7 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class HistoryNavigationLayout extends FrameLayout {
     @IntDef({GestureState.NONE, GestureState.STARTED, GestureState.DRAGGED})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface GestureState {
         int NONE = 0;
         int STARTED = 1;

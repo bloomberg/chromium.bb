@@ -31,6 +31,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -65,6 +67,7 @@ public class MinidumpUploadService extends IntentService {
     private static AtomicBoolean sDidBrowserCrashRecently = new AtomicBoolean();
 
     @StringDef({ProcessType.BROWSER, ProcessType.RENDERER, ProcessType.GPU, ProcessType.OTHER})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessType {
         String BROWSER = "Browser";
         String RENDERER = "Renderer";

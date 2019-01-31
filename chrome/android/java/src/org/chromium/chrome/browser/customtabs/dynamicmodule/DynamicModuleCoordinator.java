@@ -82,8 +82,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     @Nullable
     private PostMessageHandler mDynamicModulePostMessageHandler;
 
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({View.VISIBLE, View.INVISIBLE, View.GONE})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface ToolbarVisibility {}
 
     // Default visibility of the Toolbar prior to any header customization.
