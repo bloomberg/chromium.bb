@@ -27,30 +27,37 @@ suite('Bluetooth', function() {
   /** @type {BluetoothPrivate} */
   let bluetoothPrivateApi_;
 
-  /** @type {!Array<!chrome.bluetooth.Device>} */ const fakeDevices_ = [
-    {
-      address: '10:00:00:00:00:01',
-      name: 'FakePairedDevice1',
-      paired: true,
-      connected: true,
-    },
-    {
-      address: '10:00:00:00:00:02',
-      name: 'FakePairedDevice2',
-      paired: true,
-      connected: false,
-    },
-    {
-      address: '00:00:00:00:00:01',
-      name: 'FakeUnpairedDevice1',
-      paired: false,
-    },
-    {
-      address: '00:00:00:00:00:02',
-      name: 'FakeUnpairedDevice2',
-      paired: false,
-    },
-  ];
+  /** @type {!chrome.bluetooth.Device} */
+  let fakeUnpairedDevice1 = {
+    address: '00:00:00:00:00:01',
+    name: 'FakeUnpairedDevice1',
+    paired: false,
+    connected: false,
+  };
+
+  /** @type {!chrome.bluetooth.Device} */
+  let fakeUnpairedDevice2 = {
+    address: '00:00:00:00:00:02',
+    name: 'FakeUnpairedDevice2',
+    paired: false,
+    connected: false,
+  };
+
+  /** @type {!chrome.bluetooth.Device} */
+  let fakePairedDevice1 = {
+    address: '10:00:00:00:00:01',
+    name: 'FakePairedDevice1',
+    paired: true,
+    connected: true,
+  };
+
+  /** @type {!chrome.bluetooth.Device} */
+  let fakePairedDevice2 = {
+    address: '10:00:00:00:00:02',
+    name: 'FakePairedDevice2',
+    paired: true,
+    connected: false,
+  };
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -148,57 +155,11 @@ suite('Bluetooth', function() {
       });
     }
 
-    test('paired device list', async function() {
-      const pairedContainer = subpage.$.pairedContainer;
-      assertTrue(!!pairedContainer);
-      assertTrue(pairedContainer.hidden);
-      assertFalse(subpage.$.noPairedDevices.hidden);
-
-      bluetoothApi_.setDevicesForTest(fakeDevices_);
-
-      await waitForListUpdateTimeout();
-
-      Polymer.dom.flush();
-      assertEquals(4, subpage.deviceList_.length);
-      assertEquals(2, subpage.pairedDeviceList_.length);
-      assertTrue(subpage.$.noPairedDevices.hidden);
-
-      const ironList = subpage.$.pairedDevices;
-      assertTrue(!!ironList);
-      ironList.notifyResize();
-      Polymer.dom.flush();
-      const devices = ironList.querySelectorAll('bluetooth-device-list-item');
-      assertEquals(2, devices.length);
-      assertTrue(devices[0].device.connected);
-      assertFalse(devices[1].device.connected);
-    });
-
-    test('unpaired device list', async function() {
-      const unpairedContainer = subpage.$.unpairedContainer;
-      assertTrue(!!unpairedContainer);
-      assertTrue(unpairedContainer.hidden);
-      assertFalse(subpage.$.noUnpairedDevices.hidden);
-
-      bluetoothApi_.setDevicesForTest(fakeDevices_);
-      await waitForListUpdateTimeout();
-
-      Polymer.dom.flush();
-      assertEquals(4, subpage.deviceList_.length);
-      assertEquals(2, subpage.unpairedDeviceList_.length);
-      assertTrue(subpage.$.noUnpairedDevices.hidden);
-
-      const ironList = subpage.$.unpairedDevices;
-      assertTrue(!!ironList);
-      ironList.notifyResize();
-      Polymer.dom.flush();
-      const devices = ironList.querySelectorAll('bluetooth-device-list-item');
-      assertEquals(2, devices.length);
-      assertFalse(devices[0].device.paired);
-      assertFalse(devices[1].device.paired);
-    });
-
     test('pair device', async function() {
-      bluetoothApi_.setDevicesForTest(fakeDevices_);
+      bluetoothApi_.setDevicesForTest([
+        fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
+        fakePairedDevice2
+      ]);
       await waitForListUpdateTimeout();
 
       Polymer.dom.flush();
@@ -216,7 +177,10 @@ suite('Bluetooth', function() {
     });
 
     test('pair dialog', async function() {
-      bluetoothApi_.setDevicesForTest(fakeDevices_);
+      bluetoothApi_.setDevicesForTest([
+        fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
+        fakePairedDevice2
+      ]);
       await waitForListUpdateTimeout();
 
       Polymer.dom.flush();
@@ -230,5 +194,117 @@ suite('Bluetooth', function() {
       assertTrue(dialog.$.dialog.open);
     });
 
+    suite('Device List', function() {
+      function deviceList() {
+        return subpage.deviceList_;
+      }
+
+      function unpairedDeviceList() {
+        return subpage.unpairedDeviceList_;
+      }
+
+      function pairedDeviceList() {
+        return subpage.pairedDeviceList_;
+      }
+
+      let unpairedContainer;
+      let unpairedDeviceIronList;
+
+      let pairedContainer;
+      let pairedDeviceIronList;
+
+      setup(function() {
+        unpairedContainer = subpage.$.unpairedContainer;
+        assertTrue(!!unpairedContainer);
+        assertTrue(unpairedContainer.hidden);
+        unpairedDeviceIronList = subpage.$.unpairedDevices;
+        assertTrue(!!unpairedDeviceIronList);
+
+        pairedContainer = subpage.$.pairedContainer;
+        assertTrue(!!pairedContainer);
+        assertTrue(pairedContainer.hidden);
+        pairedDeviceIronList = subpage.$.pairedDevices;
+        assertTrue(!!pairedDeviceIronList);
+      });
+
+      test('Unpaired devices: devices added', async function() {
+        bluetoothApi_.setDevicesForTest(
+            [fakeUnpairedDevice1, fakeUnpairedDevice2]);
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(2, deviceList().length);
+        assertEquals(2, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        unpairedDeviceIronList.notifyResize();
+        Polymer.dom.flush();
+
+        const devices = unpairedDeviceIronList.querySelectorAll(
+            'bluetooth-device-list-item');
+        assertEquals(2, devices.length);
+        assertFalse(devices[0].device.paired);
+        assertFalse(devices[1].device.paired);
+      });
+
+      test('Paired devices: devices added', async function() {
+        bluetoothApi_.setDevicesForTest([fakePairedDevice1, fakePairedDevice2]);
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(2, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(2, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        pairedDeviceIronList.notifyResize();
+        Polymer.dom.flush();
+
+        const devices =
+            pairedDeviceIronList.querySelectorAll('bluetooth-device-list-item');
+        assertEquals(2, devices.length);
+        assertTrue(devices[0].device.paired);
+        assertTrue(devices[0].device.connected);
+        assertTrue(devices[1].device.paired);
+        assertFalse(devices[1].device.connected);
+      });
+
+      test('Unpaired and paired devices: devices added', async function() {
+        bluetoothApi_.setDevicesForTest([
+          fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
+          fakePairedDevice2
+        ]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(4, deviceList().length);
+        assertEquals(2, unpairedDeviceList().length);
+        assertEquals(2, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        pairedDeviceIronList.notifyResize();
+        unpairedDeviceIronList.notifyResize();
+        Polymer.dom.flush();
+
+        const unpairedDevices = unpairedDeviceIronList.querySelectorAll(
+            'bluetooth-device-list-item');
+        assertEquals(2, unpairedDevices.length);
+        assertFalse(unpairedDevices[0].device.paired);
+        assertFalse(unpairedDevices[1].device.paired);
+
+        const pairedDevices =
+            pairedDeviceIronList.querySelectorAll('bluetooth-device-list-item');
+        assertEquals(2, pairedDevices.length);
+        assertTrue(pairedDevices[0].device.paired);
+        assertTrue(pairedDevices[0].device.connected);
+        assertTrue(pairedDevices[1].device.paired);
+        assertFalse(pairedDevices[1].device.connected);
+      });
+    });
   });
 });
