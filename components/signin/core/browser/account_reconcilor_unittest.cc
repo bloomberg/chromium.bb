@@ -2206,11 +2206,10 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileAddToCookie) {
 }
 
 TEST_F(AccountReconcilorTest, AuthErrorTriggersListAccount) {
-  class TestGaiaCookieObserver : public GaiaCookieManagerService::Observer {
+  class TestGaiaCookieObserver : public identity::IdentityManager::Observer {
    public:
-    void OnGaiaAccountsInCookieUpdated(
-        const std::vector<gaia::ListedAccount>& accounts,
-        const std::vector<gaia::ListedAccount>& signed_out_accounts,
+    void OnAccountsInCookieUpdated(
+        const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
         const GoogleServiceAuthError& error) override {
       cookies_updated_ = true;
     }
@@ -2233,7 +2232,7 @@ TEST_F(AccountReconcilorTest, AuthErrorTriggersListAccount) {
   const std::string account_id = account_info.account_id;
   identity_test_env()->SetRefreshTokenForAccount(account_id);
   TestGaiaCookieObserver observer;
-  cookie_manager_service()->AddObserver(&observer);
+  identity_test_env()->identity_manager()->AddObserver(&observer);
   AccountReconcilor* reconcilor = GetMockReconcilor();
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
@@ -2257,7 +2256,7 @@ TEST_F(AccountReconcilorTest, AuthErrorTriggersListAccount) {
   EXPECT_TRUE(observer.cookies_updated_);
   testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
 
-  cookie_manager_service()->RemoveObserver(&observer);
+  identity_test_env()->identity_manager()->RemoveObserver(&observer);
 }
 
 #if !defined(OS_CHROMEOS)
