@@ -72,13 +72,18 @@ AX_EXPORT bool IsSetLike(const ax::mojom::Role role);
 // Returns true if the provided role belongs to a non-interactive list.
 AX_EXPORT bool IsStaticList(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a table or grid column, and the
+// table is not used for layout purposes.
+AX_EXPORT bool IsTableColumn(ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a table header.
 AX_EXPORT bool IsTableHeader(ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a table, a grid or a treegrid.
 AX_EXPORT bool IsTableLike(const ax::mojom::Role role);
 
-// Returns true if the provided role belongs to a table or grid row.
+// Returns true if the provided role belongs to a table or grid row, and the
+// table is not used for layout purposes.
 AX_EXPORT bool IsTableRow(ax::mojom::Role role);
 
 // Returns true if the provided role supports expand/collapse.

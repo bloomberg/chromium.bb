@@ -724,7 +724,6 @@ static base::string16 ProcessAccessiblesArray(IUnknown** accessibles,
     return related_accessibles_string;
 
   base::win::ScopedVariant variant_self(CHILDID_SELF);
-
   for (int index = 0; index < num_accessibles; index++) {
     related_accessibles_string += index > 0 ? L"," : L"<";
     Microsoft::WRL::ComPtr<IUnknown> unknown = accessibles[index];

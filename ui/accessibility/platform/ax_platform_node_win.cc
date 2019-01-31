@@ -2628,7 +2628,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnHeaderCells(
     return E_INVALIDARG;
 
   *n_column_header_cells = 0;
-  if (GetData().role != ax::mojom::Role::kCell)
+  if (!IsCellOrTableHeader(GetData().role))
     return S_FALSE;
 
   AXPlatformNodeBase* table = GetTable();
@@ -2697,13 +2697,12 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowHeaderCells(
     return E_INVALIDARG;
 
   *n_row_header_cells = 0;
-  if (GetData().role != ax::mojom::Role::kCell)
+  if (!IsCellOrTableHeader(GetData().role))
     return S_FALSE;
 
   AXPlatformNodeBase* table = GetTable();
-  if (!table) {
+  if (!table)
     return S_FALSE;
-  }
 
   int row = GetTableRow();
   int columns = GetTableColumnCount();

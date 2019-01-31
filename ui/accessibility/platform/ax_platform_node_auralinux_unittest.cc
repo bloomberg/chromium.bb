@@ -86,7 +86,7 @@ static void EnsureAtkObjectDoesNotHaveAttribute(
   AtkAttributeSet* current = attributes;
   while (current) {
     AtkAttribute* attribute = static_cast<AtkAttribute*>(current->data);
-    ASSERT_NE(0, strcmp(attribute_name, attribute->name));
+    ASSERT_NE(0, strcmp(attribute_name, attribute->name)) << attribute_name;
     current = current->next;
   }
   atk_attribute_set_free(attributes);
@@ -575,7 +575,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectBoolAttributes) {
   g_object_unref(root_atk_object);
 }
 
-TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectIntAttributes) {
+TEST_F(AXPlatformNodeAuraLinuxTest, DISABLED_TestAtkObjectIntAttributes) {
   AXNodeData root_data;
   root_data.id = 1;
 

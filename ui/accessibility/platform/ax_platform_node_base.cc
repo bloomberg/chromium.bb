@@ -228,7 +228,7 @@ bool AXPlatformNodeBase::HasIntAttribute(
 int AXPlatformNodeBase::GetIntAttribute(
     ax::mojom::IntAttribute attribute) const {
   if (!delegate_)
-    return false;
+    return 0;
   return GetData().GetIntAttribute(attribute);
 }
 
@@ -426,6 +426,7 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int index) const {
   if (!table)
     return nullptr;
 
+  DCHECK(table->delegate_);
   return static_cast<AXPlatformNodeBase*>(
       table->delegate_->GetFromNodeID(table->delegate_->CellIndexToId(index)));
 }
@@ -444,58 +445,68 @@ AXPlatformNodeBase* AXPlatformNodeBase::GetTableCell(int row,
   if (!table)
     return nullptr;
 
+  DCHECK(table->delegate_);
   int32_t cell_id = table->delegate_->GetCellId(row, column);
   return static_cast<AXPlatformNodeBase*>(
       table->delegate_->GetFromNodeID(cell_id));
 }
 
 int AXPlatformNodeBase::GetTableCellIndex() const {
-  return delegate_->GetTableCellIndex();
+  if (!delegate_)
+    return 0;
+  return int{delegate_->GetTableCellIndex()};
 }
 
 int AXPlatformNodeBase::GetTableColumn() const {
-  return GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex);
+  if (!delegate_)
+    return 0;
+  return int{delegate_->GetTableCellColIndex()};
 }
 
 int AXPlatformNodeBase::GetTableColumnCount() const {
+  if (!delegate_)
+    return 0;
+
   AXPlatformNodeBase* table = GetTable();
   if (!table)
     return 0;
 
-  return table->GetIntAttribute(ax::mojom::IntAttribute::kTableColumnCount);
+  DCHECK(table->delegate_);
+  return int{table->delegate_->GetTableColCount()};
 }
 
 int AXPlatformNodeBase::GetTableColumnSpan() const {
-  if (!IsCellOrTableHeader(GetData().role))
-    return 0;
-
-  int column_span;
-  if (GetIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
-                      &column_span))
-    return column_span;
-  return 1;
+  if (!delegate_)
+    return 1;
+  return int{delegate_->GetTableCellColSpan()};
 }
 
 int AXPlatformNodeBase::GetTableRow() const {
-  return GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex);
+  if (!delegate_)
+    return 0;
+  if (delegate_->IsTableRow())
+    return int{delegate_->GetTableRowRowIndex()};
+  if (delegate_->IsTableCellOrHeader())
+    return int{delegate_->GetTableCellRowIndex()};
+  return 0;
 }
 
 int AXPlatformNodeBase::GetTableRowCount() const {
+  if (!delegate_)
+    return 0;
+
   AXPlatformNodeBase* table = GetTable();
   if (!table)
     return 0;
 
-  return table->GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount);
+  DCHECK(table->delegate_);
+  return int{table->delegate_->GetTableRowCount()};
 }
 
 int AXPlatformNodeBase::GetTableRowSpan() const {
-  if (!IsCellOrTableHeader(GetData().role))
-    return 0;
-
-  int row_span;
-  if (GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan, &row_span))
-    return row_span;
-  return 1;
+  if (!delegate_)
+    return 1;
+  return int{delegate_->GetTableCellRowSpan()};
 }
 
 bool AXPlatformNodeBase::HasCaret() {
@@ -633,6 +644,8 @@ base::string16 AXPlatformNodeBase::GetValue() {
 }
 
 void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
+  DCHECK(delegate_) << "Many attributes need to be retrieved from our "
+                       "AXPlatformNodeDelegate.";
   // Expose some HTML and ARIA attributes in the IAccessible2 attributes string
   // "display", "tag", and "xml-roles" have somewhat unusual names for
   // historical reasons. Aside from that virtually every ARIA attribute
@@ -781,22 +794,31 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   if (GetData().role == ax::mojom::Role::kLayoutTable)
     AddAttributeToList("layout-guess", "true", attributes);
 
-  // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
-  if (IsTableLike(GetData().role)) {
+  // Expose aria-colcount and aria-rowcount in a table, grid or treegrid if they
+  // are different from its physical dimensions.
+  if (IsTableLike(GetData().role) &&
+      (delegate_->GetTableAriaRowCount() != delegate_->GetTableRowCount() ||
+       delegate_->GetTableAriaColCount() != delegate_->GetTableColCount())) {
     AddAttributeToList(ax::mojom::IntAttribute::kAriaColumnCount, "colcount",
                        attributes);
     AddAttributeToList(ax::mojom::IntAttribute::kAriaRowCount, "rowcount",
                        attributes);
   }
 
-  // Expose aria-colindex and aria-rowindex in a cell or row.
-  if (IsCellOrTableHeader(GetData().role) ||
-      GetData().role == ax::mojom::Role::kRow) {
-    if (GetData().role != ax::mojom::Role::kRow)
-      AddAttributeToList(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                         "colindex", attributes);
-    AddAttributeToList(ax::mojom::IntAttribute::kAriaCellRowIndex, "rowindex",
-                       attributes);
+  if (IsCellOrTableHeader(GetData().role) || IsTableRow(GetData().role)) {
+    // Expose aria-colindex and aria-rowindex in a cell or row only if they are
+    // different from the table's physical coordinates.
+    if (delegate_->GetTableCellAriaRowIndex() !=
+            delegate_->GetTableCellRowIndex() ||
+        delegate_->GetTableCellAriaColIndex() !=
+            delegate_->GetTableCellColIndex()) {
+      if (!IsTableRow(GetData().role)) {
+        AddAttributeToList(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                           "colindex", attributes);
+      }
+      AddAttributeToList(ax::mojom::IntAttribute::kAriaCellRowIndex, "rowindex",
+                         attributes);
+    }
 
     // Experimental: expose aria-rowtext / aria-coltext. Not standardized
     // yet, but obscure enough that it's safe to expose.

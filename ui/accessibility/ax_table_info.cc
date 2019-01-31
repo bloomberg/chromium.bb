@@ -236,7 +236,7 @@ void AXTableInfo::BuildCellDataVectorFromRowAndCellNodes(
 
       // Update the row count and col count for the whole table to make
       // sure they're large enough to fit this cell, including its spans.
-      // The -1 in the ARIA calcluations is because ARIA indices are 1-based,
+      // The -1 in the ARIA calculations is because ARIA indices are 1-based,
       // whereas all other indices are zero-based.
       row_count = std::max(row_count, cell_data.row_index + cell_data.row_span);
       col_count = std::max(col_count, cell_data.col_index + cell_data.col_span);

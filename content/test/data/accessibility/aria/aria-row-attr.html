@@ -6,6 +6,9 @@
 @BLINK-ALLOW:ariaRow*
 @BLINK-ALLOW:ariaCellRow*
 -->
+<!-- For compatibility with earlier versions of Jaws, We do not expose
+    aria-row/colcount and aria-row/colindex information if they match the
+    physical coordinates of the table. -->
 <div role="grid" aria-rowcount="5">
   <div role="row">
     <span role="columnheader" aria-rowindex="3">cell 2</span>
