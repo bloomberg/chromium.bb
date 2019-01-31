@@ -55,6 +55,8 @@ jumbo_source_set("base") {
     "audio_fifo.h",
     "audio_hash.cc",
     "audio_hash.h",
+    "audio_processing.cc",
+    "audio_processing.h",
     "audio_pull_fifo.cc",
     "audio_pull_fifo.h",
     "audio_push_fifo.cc",
