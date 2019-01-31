@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -25,13 +24,11 @@ AuthenticationServiceFake::AuthenticationServiceFake(
     PrefService* pref_service,
     ProfileOAuth2TokenService* token_service,
     SyncSetupService* sync_setup_service,
-    AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
     : AuthenticationService(pref_service,
                             token_service,
                             sync_setup_service,
-                            account_tracker,
                             identity_manager,
                             sync_service),
       have_accounts_changed_(false) {}
@@ -80,7 +77,6 @@ AuthenticationServiceFake::CreateAuthenticationService(
       browser_state->GetPrefs(),
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
       IdentityManagerFactory::GetForBrowserState(browser_state),
       ProfileSyncServiceFactory::GetForBrowserState(browser_state)));
   service->Initialize(std::make_unique<AuthenticationServiceDelegateFake>());
