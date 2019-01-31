@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -52,6 +53,15 @@ public class AutofillAssistantFacade {
             "com.google.android.googlequicksearchbox", // GSA
     };
 
+    /**
+     * Synthetic field trial names and group names should match those specified in
+     * google3/analysis/uma/dashboards/
+     * .../variations/generate_server_hashes.py and
+     * .../website/components/variations_dash/variations_histogram_entry.js.
+     */
+    private static final String SYNTHETIC_TRIAL = "AutofillAssistantTriggered";
+    private static final String ENABLED_GROUP = "Enabled";
+
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
     public static boolean isConfigured(@Nullable Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED);
@@ -59,6 +69,8 @@ public class AutofillAssistantFacade {
 
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
+        // Register synthetic trial as soon as possible.
+        UmaSessionStats.registerSyntheticFieldTrial(SYNTHETIC_TRIAL, ENABLED_GROUP);
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
         if (canStart(activity.getInitialIntent())) {
