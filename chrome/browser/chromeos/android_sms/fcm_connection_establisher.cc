@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -41,10 +42,10 @@ const char FcmConnectionEstablisher::kStopFcmMessage[] = "stop_fcm_connection";
 FcmConnectionEstablisher::PendingServiceWorkerMessage::
     PendingServiceWorkerMessage(
         GURL service_worker_scope,
-        std::string message_content,
+        MessageType message_type,
         content::ServiceWorkerContext* service_worker_context)
     : service_worker_scope(service_worker_scope),
-      message_content(message_content),
+      message_type(message_type),
       service_worker_context(service_worker_context) {}
 
 FcmConnectionEstablisher::InFlightMessage::InFlightMessage(
@@ -65,7 +66,7 @@ void FcmConnectionEstablisher::EstablishConnection(
       base::BindOnce(
           &FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries,
           weak_ptr_factory_.GetWeakPtr(), url,
-          GetMessageForConnectionMode(connection_mode),
+          GetMessageTypeForConnectionMode(connection_mode),
           service_worker_context));
 }
 
@@ -76,18 +77,33 @@ void FcmConnectionEstablisher::TearDownConnection(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries,
-          weak_ptr_factory_.GetWeakPtr(), url, kStopFcmMessage,
+          weak_ptr_factory_.GetWeakPtr(), url, MessageType::kStop,
           service_worker_context));
 }
 
 // static
-std::string FcmConnectionEstablisher::GetMessageForConnectionMode(
+FcmConnectionEstablisher::MessageType
+FcmConnectionEstablisher::GetMessageTypeForConnectionMode(
     ConnectionMode connection_mode) {
   switch (connection_mode) {
     case ConnectionMode::kStartConnection:
-      return kStartFcmMessage;
+      return MessageType::kStart;
     case ConnectionMode::kResumeExistingConnection:
+      return MessageType::kResume;
+  }
+  NOTREACHED();
+}
+
+// static
+std::string FcmConnectionEstablisher::GetMessageStringForType(
+    MessageType message_type) {
+  switch (message_type) {
+    case MessageType::kStart:
+      return kStartFcmMessage;
+    case MessageType::kResume:
       return kResumeFcmMessage;
+    case MessageType::kStop:
+      return kStopFcmMessage;
   }
   NOTREACHED();
   return "";
@@ -95,11 +111,11 @@ std::string FcmConnectionEstablisher::GetMessageForConnectionMode(
 
 void FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries(
     const GURL& url,
-    std::string message_string,
+    MessageType message_type,
     content::ServiceWorkerContext* service_worker_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  message_queue_.emplace(url, message_string, service_worker_context);
+  message_queue_.emplace(url, message_type, service_worker_context);
   ProcessMessageQueue();
 }
 
@@ -119,11 +135,11 @@ void FcmConnectionEstablisher::ProcessMessageQueue() {
 void FcmConnectionEstablisher::SendInFlightMessage() {
   const PendingServiceWorkerMessage& message = in_flight_message_->message;
   blink::TransferableMessage msg;
-  msg.owned_encoded_message =
-      blink::EncodeStringMessage(base::UTF8ToUTF16(message.message_content));
+  msg.owned_encoded_message = blink::EncodeStringMessage(
+      base::UTF8ToUTF16(GetMessageStringForType(message.message_type)));
   msg.encoded_message = msg.owned_encoded_message;
 
-  PA_LOG(VERBOSE) << "Dispatching message " << message.message_content;
+  PA_LOG(VERBOSE) << "Dispatching message " << message.message_type;
   message.service_worker_context->StartServiceWorkerAndDispatchMessage(
       message.service_worker_scope, std::move(msg),
       base::BindOnce(&FcmConnectionEstablisher::OnMessageDispatchResult,
@@ -133,12 +149,16 @@ void FcmConnectionEstablisher::SendInFlightMessage() {
 void FcmConnectionEstablisher::OnMessageDispatchResult(bool status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(in_flight_message_);
-  PA_LOG(VERBOSE) << "Service worker message returned status: " << status;
+  PA_LOG(VERBOSE) << "Service worker message returned status " << status
+                  << " for message "
+                  << in_flight_message_->message.message_type;
 
   if (!status && in_flight_message_->retry_count < kMaxRetryCount) {
     base::TimeDelta retry_delay =
         kRetryDelay * (1 << in_flight_message_->retry_count);
     in_flight_message_->retry_count++;
+    UMA_HISTOGRAM_ENUMERATION("AndroidSms.FcmMessageDispatchRetry",
+                              in_flight_message_->message.message_type);
     PA_LOG(VERBOSE) << "Scheduling retry with delay " << retry_delay;
     retry_timer_->Start(
         FROM_HERE, retry_delay,
@@ -147,13 +167,35 @@ void FcmConnectionEstablisher::OnMessageDispatchResult(bool status) {
     return;
   }
 
-  if (in_flight_message_->retry_count >= kMaxRetryCount) {
+  if (status) {
+    UMA_HISTOGRAM_ENUMERATION("AndroidSms.FcmMessageDispatchSuccess",
+                              in_flight_message_->message.message_type);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("AndroidSms.FcmMessageDispatchFailure",
+                              in_flight_message_->message.message_type);
     PA_LOG(WARNING) << "Max retries attempted when dispatching message "
-                    << in_flight_message_->message.message_content;
+                    << in_flight_message_->message.message_type;
   }
 
   in_flight_message_.reset();
   ProcessMessageQueue();
+}
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const FcmConnectionEstablisher::MessageType& message_type) {
+  switch (message_type) {
+    case FcmConnectionEstablisher::MessageType::kStart:
+      stream << "MessageType::kStart";
+      break;
+    case FcmConnectionEstablisher::MessageType::kResume:
+      stream << "MessageType::kResume";
+      break;
+    case FcmConnectionEstablisher::MessageType::kStop:
+      stream << "MessageType::kStop";
+      break;
+  }
+  return stream;
 }
 
 }  // namespace android_sms

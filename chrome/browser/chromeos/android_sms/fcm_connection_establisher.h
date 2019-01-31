@@ -36,13 +36,24 @@ class FcmConnectionEstablisher : public ConnectionEstablisher {
       content::ServiceWorkerContext* service_worker_context) override;
 
  private:
+  // This enum is used for logging metrics. It should be kept in sync with
+  // AndroidSmsFcmMessageType in enums.xml
+  enum class MessageType {
+    kStart = 0,
+    kResume = 1,
+    kStop = 2,
+    kMaxValue = kStop,
+  };
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const MessageType& message_type);
+
   struct PendingServiceWorkerMessage {
     PendingServiceWorkerMessage(
         GURL service_worker_scope,
-        std::string message_content,
+        MessageType message_type,
         content::ServiceWorkerContext* service_worker_context);
     GURL service_worker_scope;
-    std::string message_content;
+    MessageType message_type;
     content::ServiceWorkerContext* service_worker_context;
   };
 
@@ -57,12 +68,14 @@ class FcmConnectionEstablisher : public ConnectionEstablisher {
   FRIEND_TEST_ALL_PREFIXES(FcmConnectionEstablisherTest,
                            TestTearDownConnection);
 
-  static std::string GetMessageForConnectionMode(
+  static MessageType GetMessageTypeForConnectionMode(
       ConnectionMode connection_mode);
+
+  static std::string GetMessageStringForType(MessageType message_type);
 
   void SendMessageToServiceWorkerWithRetries(
       const GURL& url,
-      std::string message_string,
+      MessageType message_type,
       content::ServiceWorkerContext* service_worker_context);
 
   void ProcessMessageQueue();

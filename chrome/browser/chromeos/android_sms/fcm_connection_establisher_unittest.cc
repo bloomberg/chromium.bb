@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "content/public/test/fake_service_worker_context.h"
@@ -44,6 +45,7 @@ class FcmConnectionEstablisherTest : public testing::Test {
 TEST_F(FcmConnectionEstablisherTest, TestEstablishConnection) {
   auto mock_retry_timer = std::make_unique<base::MockOneShotTimer>();
   base::MockOneShotTimer* mock_retry_timer_ptr = mock_retry_timer.get();
+  base::HistogramTester histogram_tester;
 
   content::FakeServiceWorkerContext fake_service_worker_context;
   FcmConnectionEstablisher fcm_connection_establisher(
@@ -64,11 +66,15 @@ TEST_F(FcmConnectionEstablisherTest, TestEstablishConnection) {
                              message_dispatch_calls[0]);
 
   // Return success to result callback and verify that no retries are attempted
+  // and success histogram is recorded.
   std::move(std::get<content::ServiceWorkerContext::ResultCallback>(
                 message_dispatch_calls[0]))
       .Run(true /* status */);
   ASSERT_EQ(1u, message_dispatch_calls.size());
   EXPECT_FALSE(mock_retry_timer_ptr->IsRunning());
+  histogram_tester.ExpectBucketCount(
+      "AndroidSms.FcmMessageDispatchSuccess",
+      FcmConnectionEstablisher::MessageType::kStart, 1);
 
   // Verify that when multiple requests are sent only the first one is
   // dispatched while the others are queued.
@@ -91,6 +97,10 @@ TEST_F(FcmConnectionEstablisherTest, TestEstablishConnection) {
       .Run(false /* status */);
   ASSERT_EQ(2u, message_dispatch_calls.size());
   EXPECT_TRUE(mock_retry_timer_ptr->IsRunning());
+  // Retry shouldn't count success.
+  histogram_tester.ExpectBucketCount(
+      "AndroidSms.FcmMessageDispatchSuccess",
+      FcmConnectionEstablisher::MessageType::kStart, 1);
   mock_retry_timer_ptr->Fire();
   ASSERT_EQ(3u, message_dispatch_calls.size());
   VerifyTransferrableMessage(FcmConnectionEstablisher::kStartFcmMessage,
@@ -119,6 +129,11 @@ TEST_F(FcmConnectionEstablisherTest, TestEstablishConnection) {
       &fake_service_worker_context);
   base::RunLoop().RunUntilIdle();
 
+  int last_retry_bucket_count = histogram_tester.GetBucketCount(
+      "AndroidSms.FcmMessageDispatchRetry",
+      static_cast<base::HistogramBase::Sample>(
+          FcmConnectionEstablisher::MessageType::kStart));
+
   int retry_count = 0;
   while (true) {
     ASSERT_EQ(5u + retry_count, message_dispatch_calls.size());
@@ -134,6 +149,13 @@ TEST_F(FcmConnectionEstablisherTest, TestEstablishConnection) {
   }
 
   EXPECT_EQ(FcmConnectionEstablisher::kMaxRetryCount, retry_count);
+  histogram_tester.ExpectBucketCount(
+      "AndroidSms.FcmMessageDispatchRetry",
+      FcmConnectionEstablisher::MessageType::kStart,
+      retry_count + last_retry_bucket_count);
+  histogram_tester.ExpectBucketCount(
+      "AndroidSms.FcmMessageDispatchFailure",
+      FcmConnectionEstablisher::MessageType::kStart, 1);
 }
 
 TEST_F(FcmConnectionEstablisherTest, TestTearDownConnection) {
