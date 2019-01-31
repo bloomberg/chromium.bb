@@ -179,6 +179,10 @@ vars = {
   # and whatever else without interference from each other.
   'harfbuzz_revision': 'fe532923101586e316b300d419a337d357cd93da',
   # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling Emoji Segmenter
+  # and whatever else without interference from each other.
+  'emoji_segmenter_revision': '9ba6d25d0d9313569665d4a9d2b34f0f39f9a50e',
+  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
   'catapult_revision': '2061050c4d27b3b27bc3cfc7cf20fc99644f66f7',
@@ -769,6 +773,9 @@ deps = {
 
   'src/third_party/harfbuzz-ng/src':
     Var('chromium_git') + '/external/github.com/harfbuzz/harfbuzz.git' + '@' + Var('harfbuzz_revision'),
+
+  'src/third_party/emoji-segmenter/src/':
+    Var('chromium_git') + '/external/github.com/googlei18n/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
 
   # Chrome OS touchpad gestures library.
   'src/third_party/gestures/gestures': {
