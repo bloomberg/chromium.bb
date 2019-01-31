@@ -83,7 +83,7 @@ def PrintKnownConfigs(site_config, production, build_config_fragments):
 
 
 def CbuildbotArgs(options):
-  """Function to generate cbuidlbot command line args.
+  """Function to generate cbuildbot command line args.
 
   This are pre-api version filtering.
 

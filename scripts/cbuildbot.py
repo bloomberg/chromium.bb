@@ -221,7 +221,7 @@ class CustomOption(commandline.FilteringOption):
 
 
 class CustomParser(commandline.FilteringParser):
-  """Custom option parser which supports arguments passed-trhough to trybot"""
+  """Custom option parser which supports arguments passed-through to trybot"""
 
   DEFAULT_OPTION_CLASS = CustomOption
 
@@ -483,6 +483,12 @@ def _CreateParser():
                           help='Run the build as a sanity check build.')
   group.add_remote_option('--debug-cidb', action='store_true', default=False,
                           help='Force Debug CIDB to be used.')
+  # cbuildbot ChromeOS Findit options
+  group.add_remote_option('--cbb_build_packages', action='split_extend',
+                          dest='cbb_build_packages',
+                          default=[],
+                          help='Specify an explicit list of packages to build '
+                               'for integration with Findit.')
 
   parser.add_argument_group(group)
 
