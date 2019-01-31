@@ -55,8 +55,6 @@ import traceback
 
 import common
 
-import run_telemetry_benchmark_as_googletest
-
 CHROMIUM_SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
 PERF_DIR = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
@@ -206,7 +204,7 @@ def execute_telemetry_benchmark(
   # could be any format (chartjson, legacy, histogram). We just pass these
   # through, and expose these as results for this task.
   rc, perf_results, json_test_results, benchmark_log = (
-      run_telemetry_benchmark_as_googletest.run_benchmark(
+      execute_telemetry_benchmark_helper(
           args, per_benchmark_args, is_histograms))
 
   write_results(
@@ -215,6 +213,120 @@ def execute_telemetry_benchmark(
 
   print_duration('executing benchmark %s' % benchmark_name, start)
   return rc
+
+
+def execute_telemetry_benchmark_helper(args, rest_args, histogram_results):
+  """Run benchmark with args.
+
+  Args:
+    args: the option object resulted from parsing commandline args required for
+      IsolatedScriptTest contract (see
+      https://cs.chromium.org/chromium/build/scripts/slave/recipe_modules/chromium_tests/steps.py?rcl=d31f256fb860701e6dc02544f2beffe4e17c9b92&l=1639).
+    rest_args: the args (list of strings) for running Telemetry benchmark.
+    histogram_results: a boolean describes whether to output histograms format
+      for the benchmark.
+
+  Returns: a tuple of (rc, perf_results, json_test_results, benchmark_log)
+    rc: the return code of benchmark
+    perf_results: json object contains the perf test results
+    json_test_results: json object contains the Pass/Fail data of the benchmark.
+    benchmark_log: string contains the stdout/stderr of the benchmark run.
+  """
+  # TODO(crbug.com/920002): These arguments cannot go into
+  # run_performance_tests.py because
+  # run_gtest_perf_tests.py does not yet support them. Note that ideally
+  # we would use common.BaseIsolatedScriptArgsAdapter, but this will take
+  # a good deal of refactoring to accomplish.
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+      '--isolated-script-test-repeat', type=int, required=False)
+  parser.add_argument(
+      '--isolated-script-test-launcher-retry-limit', type=int, required=False,
+      choices=[0])  # Telemetry does not support retries. crbug.com/894254#c21
+  parser.add_argument(
+      '--isolated-script-test-also-run-disabled-tests',
+      default=False, action='store_true', required=False)
+  # Parse leftover args not already parsed in run_performance_tests.py or in
+  # main().
+  args, rest_args = parser.parse_known_args(args=rest_args, namespace=args)
+
+  env = os.environ.copy()
+  env['CHROME_HEADLESS'] = '1'
+
+  # Assume we want to set up the sandbox environment variables all the
+  # time; doing so is harmless on non-Linux platforms and is needed
+  # all the time on Linux.
+  env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
+  tempfile_dir = tempfile.mkdtemp('telemetry')
+  benchmark_log = ''
+  stdoutfile = os.path.join(tempfile_dir, 'benchmark_log.txt')
+  valid = True
+  num_failures = 0
+  perf_results = None
+  json_test_results = None
+
+  results = None
+  cmd_args = rest_args
+  if args.isolated_script_test_filter:
+    filter_list = common.extract_filter_list(args.isolated_script_test_filter)
+    # Need to convert this to a valid regex.
+    filter_regex = '(' + '|'.join(filter_list) + ')'
+    cmd_args.append('--story-filter=' + filter_regex)
+  if args.isolated_script_test_repeat:
+    cmd_args.append('--pageset-repeat=' + str(args.isolated_script_test_repeat))
+  if args.isolated_script_test_also_run_disabled_tests:
+    cmd_args.append('--also-run-disabled-tests')
+  cmd_args.append('--output-dir=' + tempfile_dir)
+  cmd_args.append('--output-format=json-test-results')
+  cmd = [sys.executable] + cmd_args
+  rc = 1  # Set default returncode in case there is an exception.
+  try:
+    if args.xvfb:
+      rc = xvfb.run_executable(cmd, env=env, stdoutfile=stdoutfile)
+    else:
+      rc = test_env.run_command_with_output(cmd, env=env, stdoutfile=stdoutfile)
+
+    with open(stdoutfile) as f:
+      benchmark_log = f.read()
+
+    # If we have also output chartjson read it in and return it.
+    # results-chart.json is the file name output by telemetry when the
+    # chartjson output format is included
+    tempfile_name = None
+    if histogram_results:
+      tempfile_name = os.path.join(tempfile_dir, 'histograms.json')
+    else:
+      tempfile_name = os.path.join(tempfile_dir, 'results-chart.json')
+
+    if tempfile_name is not None:
+      with open(tempfile_name) as f:
+        perf_results = json.load(f)
+
+    # test-results.json is the file name output by telemetry when the
+    # json-test-results format is included
+    tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
+    with open(tempfile_name) as f:
+      json_test_results = json.load(f)
+    num_failures = json_test_results['num_failures_by_type'].get('FAIL', 0)
+    valid = bool(rc == 0 or num_failures != 0)
+
+  except Exception:
+    traceback.print_exc()
+    if results:
+      print 'results, which possibly caused exception: %s' % json.dumps(
+          results, indent=2)
+    valid = False
+  finally:
+    # Add ignore_errors=True because otherwise rmtree may fail due to leaky
+    # processes of tests are still holding opened handles to files under
+    # |tempfile_dir|. For example, see crbug.com/865896
+    shutil.rmtree(tempfile_dir, ignore_errors=True)
+
+  if not valid and num_failures == 0:
+    if rc == 0:
+      rc = 1  # Signal an abnormal exit.
+
+  return rc, perf_results, json_test_results, benchmark_log
 
 
 def append_output_format(args, rest_args):

@@ -2331,8 +2331,8 @@ group("telemetry_perf_unittests") {
     "//testing/xvfb.py",
     "//testing/scripts/run_telemetry_as_googletest.py",
 
-    # For smoke testing run_telemetry_benchmark_as_googletest
-    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+    # For smoke testing run_performance_tests.py
+    "//testing/scripts/run_performance_tests.py",
 
     # For tests in tools/perf/process_perf_results_unittest.py
     "//build/android/pylib/",
@@ -2357,7 +2357,6 @@ group("telemetry_perf_tests") {
     # Needed for isolate script to execute.
     "//testing/scripts/common.py",
     "//testing/xvfb.py",
-    "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
   ]
 }
 
