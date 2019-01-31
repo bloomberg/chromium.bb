@@ -358,15 +358,22 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
                             ClientToServerMessage::Contents_MAX + 1);
 
   std::map<int, std::string> progress_marker_token_per_data_type;
-  for (const sync_pb::DataTypeProgressMarker& progress_marker :
-       msg.get_updates().from_progress_marker()) {
-    progress_marker_token_per_data_type[progress_marker.data_type_id()] =
-        progress_marker.token();
-    UMA_HISTOGRAM_ENUMERATION(
-        "Sync.PostedDataTypeGetUpdatesRequest",
-        ModelTypeToHistogramInt(GetModelTypeFromSpecificsFieldNumber(
-            progress_marker.data_type_id())),
-        static_cast<int>(MODEL_TYPE_COUNT));
+
+  if (msg.has_get_updates()) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.PostedGetUpdatesOrigin",
+                              msg.get_updates().get_updates_origin(),
+                              sync_pb::SyncEnums::GetUpdatesOrigin_ARRAYSIZE);
+
+    for (const sync_pb::DataTypeProgressMarker& progress_marker :
+         msg.get_updates().from_progress_marker()) {
+      progress_marker_token_per_data_type[progress_marker.data_type_id()] =
+          progress_marker.token();
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.PostedDataTypeGetUpdatesRequest",
+          ModelTypeToHistogramInt(GetModelTypeFromSpecificsFieldNumber(
+              progress_marker.data_type_id())),
+          static_cast<int>(MODEL_TYPE_COUNT));
+    }
   }
 
   const base::Time start_time = base::Time::Now();
