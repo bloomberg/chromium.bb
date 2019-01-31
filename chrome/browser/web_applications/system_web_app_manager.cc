@@ -51,14 +51,13 @@ void SystemWebAppManager::Start() {
 }
 
 // static
-bool SystemWebAppManager::ShouldEnableForProfile(Profile* profile) {
-  return AreWebAppsEnabled(profile) &&
-         base::FeatureList::IsEnabled(features::kSystemWebApps);
+bool SystemWebAppManager::IsEnabled() {
+  return base::FeatureList::IsEnabled(features::kSystemWebApps);
 }
 
 void SystemWebAppManager::StartAppInstallation() {
   std::vector<GURL> urls_to_install;
-  if (ShouldEnableForProfile(profile_)) {
+  if (AreWebAppsEnabled(profile_) && IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
     urls_to_install = CreateSystemWebApps();
   }
