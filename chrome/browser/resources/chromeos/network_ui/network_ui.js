@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview Builds UI elements shown in chrome://networks debugging page.
+ */
 var networkUI = {};
 
 /** @typedef {CrOnc.NetworkStateProperties|CrOnc.DeviceStateProperties} */
