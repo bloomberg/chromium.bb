@@ -5061,7 +5061,12 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 							  output->gbm_format,
 							  plane->formats[i].modifiers,
 							  plane->formats[i].count_modifiers);
-	} else
+	}
+
+	/* If allocating with modifiers fails, try again without. This can
+	 * happen when the KMS display device supports modifiers but the
+	 * GBM driver does not, e.g. the old i915 Mesa driver. */
+	if (!output->gbm_surface)
 #endif
 	{
 		output->gbm_surface =
