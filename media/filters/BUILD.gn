@@ -214,7 +214,10 @@ jumbo_source_set("filters") {
       "fuchsia/fuchsia_video_decoder.cc",
       "fuchsia/fuchsia_video_decoder.h",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:mediacodec" ]
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:media",
+      "//third_party/fuchsia-sdk/sdk:mediacodec",
+    ]
   }
 }
 
