@@ -5,7 +5,6 @@
 #include "content/browser/media/session/media_session_service_impl.h"
 
 #include "base/command_line.h"
-#include "base/run_loop.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -14,33 +13,12 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_content_type.h"
+#include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
-
-class MockMediaSessionObserver : public MediaSessionObserver {
- public:
-  explicit MockMediaSessionObserver(
-      MediaSession* session,
-      const base::Closure& closure_on_actions_change)
-      : MediaSessionObserver(session),
-        closure_on_actions_change_(closure_on_actions_change) {}
-
-  void MediaSessionActionsChanged(
-      const std::set<media_session::mojom::MediaSessionAction>& actions)
-      override {
-    // Wait for the page action to be present.
-    if (base::ContainsKey(
-            actions, media_session::mojom::MediaSessionAction::kSeekForward)) {
-      closure_on_actions_change_.Run();
-    }
-  }
-
- private:
-  base::Closure closure_on_actions_change_;
-};
 
 class MockWebContentsObserver : public WebContentsObserver {
  public:
@@ -129,11 +107,12 @@ class MediaSessionServiceImplBrowserTest : public ContentBrowserTest {
   }
 
   bool ExecuteScriptToSetUpMediaSessionSync() {
-    // Using the actions change as the signal of completion.
-    base::RunLoop run_loop;
-    MockMediaSessionObserver observer(GetSession(), run_loop.QuitClosure());
     bool result = ExecuteScript(shell(), kSetUpMediaSessionScript);
-    run_loop.Run();
+    media_session::test::MockMediaSessionMojoObserver observer(*GetSession());
+    observer.WaitForActions();
+    EXPECT_TRUE(base::ContainsKey(
+        observer.actions_set(),
+        media_session::mojom::MediaSessionAction::kSeekForward));
     return result;
   }
 

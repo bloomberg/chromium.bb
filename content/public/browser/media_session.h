@@ -13,7 +13,6 @@
 
 namespace content {
 
-class MediaSessionObserver;
 class WebContents;
 
 // MediaSession manages the media session and audio focus for a given
@@ -92,12 +91,6 @@ class MediaSession : public media_session::mojom::MediaSession {
 
  protected:
   MediaSession() = default;
-
- private:
-  friend class MediaSessionObserver;
-
-  virtual void AddObserver(MediaSessionObserver* observer) = 0;
-  virtual void RemoveObserver(MediaSessionObserver* observer) = 0;
 };
 
 }  // namespace content
