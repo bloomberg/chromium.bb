@@ -20,19 +20,10 @@ WebComponent::~WebComponent() {
                                             termination_reason_);
 }
 
-// static
-std::unique_ptr<WebComponent> WebComponent::ForUrlRequest(
-    WebContentRunner* runner,
-    const GURL& url,
-    fuchsia::sys::StartupInfo startup_info,
-    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-        controller_request) {
+void WebComponent::LoadUrl(const GURL& url) {
   DCHECK(url.is_valid());
-  std::unique_ptr<WebComponent> component(new WebComponent(
-      runner, std::move(startup_info), std::move(controller_request)));
   chromium::web::NavigationControllerPtr navigation_controller;
-  component->frame()->GetNavigationController(
-      navigation_controller.NewRequest());
+  frame()->GetNavigationController(navigation_controller.NewRequest());
 
   // Set the page activation flag on the initial load, so that features like
   // autoplay work as expected when a WebComponent first loads the specified
@@ -41,8 +32,6 @@ std::unique_ptr<WebComponent> WebComponent::ForUrlRequest(
   params->user_activated = true;
 
   navigation_controller->LoadUrl(url.spec(), std::move(params));
-
-  return component;
 }
 
 WebComponent::WebComponent(
@@ -52,6 +41,16 @@ WebComponent::WebComponent(
         controller_request)
     : runner_(runner), controller_binding_(this) {
   DCHECK(runner);
+
+  // Handle the incoming services directory for this component.
+  if (startup_info.launch_info.additional_services &&
+      startup_info.launch_info.additional_services->host_directory) {
+    additional_services_ =
+        std::make_unique<base::fuchsia::ComponentContext>(std::move(
+            startup_info.launch_info.additional_services->host_directory));
+    additional_service_names_ =
+        std::move(startup_info.launch_info.additional_services->names);
+  }
 
   // If the ComponentController request is valid then bind it, and configure it
   // to destroy this component on error.

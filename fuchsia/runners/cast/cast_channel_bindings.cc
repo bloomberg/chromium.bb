@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fuchsia/runners/cast/bindings/cast_channel.h"
+#include "fuchsia/runners/cast/cast_channel_bindings.h"
 
 #include <lib/fit/function.h>
 #include <string>
@@ -22,16 +22,26 @@
 // API to connect to the port.
 const char kMessagePortName[] = "cast.__platform__.channel";
 
-CastChannelImpl::CastChannelImpl(
+CastChannelBindings::CastChannelBindings(
     chromium::web::Frame* frame,
-    webrunner::NamedMessagePortConnector* connector)
-    : frame_(frame), connector_(connector) {
+    webrunner::NamedMessagePortConnector* connector,
+    chromium::cast::CastChannelPtr channel_consumer,
+    base::OnceClosure on_error_closure)
+    : frame_(frame),
+      connector_(connector),
+      on_error_closure_(std::move(on_error_closure)),
+      channel_consumer_(std::move(channel_consumer)) {
   DCHECK(connector_);
   DCHECK(frame_);
 
+  channel_consumer_.set_error_handler([this](zx_status_t status) mutable {
+    ZX_LOG(ERROR, status) << "CastChannel error:";
+    std::move(on_error_closure_).Run();
+  });
+
   connector->Register(
       kMessagePortName,
-      base::BindRepeating(&CastChannelImpl::OnMasterPortReceived,
+      base::BindRepeating(&CastChannelBindings::OnMasterPortReceived,
                           base::Unretained(this)),
       frame_);
 
@@ -40,7 +50,7 @@ CastChannelImpl::CastChannelImpl(
   base::FilePath assets_path;
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
   fuchsia::mem::Buffer bindings_buf = webrunner::MemBufferFromFile(base::File(
-      assets_path.AppendASCII("fuchsia/runners/cast/bindings/cast_channel.js"),
+      assets_path.AppendASCII("fuchsia/runners/cast/cast_channel_bindings.js"),
       base::File::FLAG_OPEN | base::File::FLAG_READ));
   CHECK(bindings_buf.vmo);
 
@@ -55,33 +65,16 @@ CastChannelImpl::CastChannelImpl(
       [](bool success) { CHECK(success) << "Couldn't insert bindings."; });
 }
 
-CastChannelImpl::~CastChannelImpl() {
+CastChannelBindings::~CastChannelBindings() {
   connector_->Unregister(frame_, kMessagePortName);
 }
 
-void CastChannelImpl::OnMasterPortError() {
+void CastChannelBindings::OnMasterPortError() {
   master_port_.Unbind();
 }
 
-void CastChannelImpl::Connect(ConnectCallback callback) {
-  // If there is already a bound Cast Channel ready, then return it.
-  if (pending_channel_) {
-    callback(std::move(pending_channel_));
-    return;
-  }
-
-  pending_connect_cb_ = std::move(callback);
-
-  if (master_port_) {
-    master_port_->ReceiveMessage(
-        fit::bind_member(this, &CastChannelImpl::OnCastChannelMessageReceived));
-  }
-
-  // If there is no master port available at this time, then defer invocation of
-  // |pending_connect_cb_| until the master port has been received.
-}
-
-void CastChannelImpl::OnMasterPortReceived(chromium::web::MessagePortPtr port) {
+void CastChannelBindings::OnMasterPortReceived(
+    chromium::web::MessagePortPtr port) {
   DCHECK(port);
 
   master_port_ = std::move(port);
@@ -90,14 +83,11 @@ void CastChannelImpl::OnMasterPortReceived(chromium::web::MessagePortPtr port) {
         << "Cast Channel master port disconnected.";
     OnMasterPortError();
   });
-
-  if (pending_connect_cb_) {
-    // Resolve the in-flight Connect call.
-    Connect(std::move(pending_connect_cb_));
-  }
+  master_port_->ReceiveMessage(fit::bind_member(
+      this, &CastChannelBindings::OnCastChannelMessageReceived));
 }
 
-void CastChannelImpl::OnCastChannelMessageReceived(
+void CastChannelBindings::OnCastChannelMessageReceived(
     chromium::web::WebMessage message) {
   if (!message.incoming_transfer ||
       !message.incoming_transfer->is_message_port()) {
@@ -106,12 +96,33 @@ void CastChannelImpl::OnCastChannelMessageReceived(
     return;
   }
 
-  // Fulfill an outstanding Connect() operation, if there is one.
-  if (pending_connect_cb_) {
-    pending_connect_cb_(std::move(message.incoming_transfer->message_port()));
-    pending_connect_cb_ = {};
-    return;
-  }
+  SendChannelToConsumer(message.incoming_transfer->message_port().Bind());
 
-  pending_channel_ = std::move(message.incoming_transfer->message_port());
+  master_port_->ReceiveMessage(fit::bind_member(
+      this, &CastChannelBindings::OnCastChannelMessageReceived));
+}
+
+void CastChannelBindings::SendChannelToConsumer(
+    chromium::web::MessagePortPtr channel) {
+  if (consumer_ready_for_port_) {
+    consumer_ready_for_port_ = false;
+    channel_consumer_->OnOpened(
+        std::move(channel),
+        fit::bind_member(this, &CastChannelBindings::OnConsumerReadyForPort));
+  } else {
+    connected_channel_queue_.push_front(std::move(channel));
+  }
+}
+
+void CastChannelBindings::OnConsumerReadyForPort() {
+  DCHECK(!consumer_ready_for_port_);
+
+  consumer_ready_for_port_ = true;
+  if (!connected_channel_queue_.empty()) {
+    // Deliver the next enqueued channel.
+    chromium::web::MessagePortPtr next_port =
+        std::move(connected_channel_queue_.back());
+    SendChannelToConsumer(std::move(next_port));
+    connected_channel_queue_.pop_back();
+  }
 }

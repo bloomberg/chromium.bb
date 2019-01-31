@@ -695,20 +695,6 @@
       },
       {
         "args": [
-          "--qemu-require-kvm"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1"
-            }
-          ]
-        },
-        "test": "cast_runner_unittests"
-      },
-      {
-        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
           "--qemu-require-kvm"
         ],

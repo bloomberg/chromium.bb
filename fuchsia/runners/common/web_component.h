@@ -11,9 +11,11 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "base/fuchsia/component_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
@@ -32,19 +34,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
                      public fuchsia::ui::app::ViewProvider,
                      public fuchsia::ui::viewsv1::ViewProvider {
  public:
-  ~WebComponent() override;
-
-  // Creates a WebComponent and navigates its Frame to |url|.
-  static std::unique_ptr<WebComponent> ForUrlRequest(
-      WebContentRunner* runner,
-      const GURL& url,
-      fuchsia::sys::StartupInfo startup_info,
-      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-          controller_request);
-
-  chromium::web::Frame* frame() { return frame_.get(); }
-
- protected:
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
   // will be published to the service-directory specified in |startup_info|, and
   // if |controller_request| is valid then it will be bound to this component,
@@ -55,6 +44,14 @@ class WebComponent : public fuchsia::sys::ComponentController,
                fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                    controller_request);
 
+  ~WebComponent() override;
+
+  // Navigates this component's Frame to |url|.
+  void LoadUrl(const GURL& url);
+
+  chromium::web::Frame* frame() const { return frame_.get(); }
+
+ protected:
   // fuchsia::sys::ComponentController implementation.
   void Kill() override;
   void Detach() override;
@@ -73,19 +70,36 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   // Reports the supplied exit-code and reason to the |controller_binding_| and
   // requests that the |runner_| delete this component.
-  void DestroyComponent(int termination_exit_code,
-                        fuchsia::sys::TerminationReason reason);
+  virtual void DestroyComponent(int termination_exit_code,
+                                fuchsia::sys::TerminationReason reason);
 
-  base::fuchsia::ServiceDirectory* service_directory() {
+  // Gets a directory of incoming services provided to the component, or returns
+  // nullptr if none was provided.
+  base::fuchsia::ComponentContext* additional_services() const {
+    return additional_services_.get();
+  }
+
+  // Gets the names of services available in additional_services().
+  const std::vector<std::string> additional_service_names() {
+    return additional_service_names_;
+  }
+
+  base::fuchsia::ServiceDirectory* service_directory() const {
     return service_directory_.get();
   }
 
  private:
-  WebContentRunner* runner_ = nullptr;
+  WebContentRunner* const runner_ = nullptr;
 
   chromium::web::FramePtr frame_;
 
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
+
+  // Incoming services provided at component creation.
+  std::unique_ptr<base::fuchsia::ComponentContext> additional_services_;
+
+  // The names of services provided at component creation.
+  std::vector<std::string> additional_service_names_;
 
   // Objects used for binding and exporting the ViewProvider service.
   std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;

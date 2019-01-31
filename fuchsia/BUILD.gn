@@ -63,6 +63,7 @@ source_set("test_support") {
   ]
   public_deps = [
     ":web_fidl",
+    "//skia/public/interfaces",
   ]
 }
 
@@ -383,5 +384,20 @@ group("archive_sources") {
     ":build_id",
     ":license",
     ":restaged_packages",
+  ]
+}
+
+# Used by the top-level "gn_all" target to discover Fuchsia build targets.
+group("gn_all") {
+  testonly = true
+  deps = [
+    ":service_exe",
+    ":webrunner_browsertests",
+    ":webrunner_unittests",
+    "http:http_service_tests",
+    "runners:cast_runner",
+    "runners:cast_runner_browsertests",
+    "runners:cast_runner_integration_tests",
+    "runners:web_runner",
   ]
 }
