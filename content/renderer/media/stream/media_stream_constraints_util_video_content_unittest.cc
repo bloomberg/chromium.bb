@@ -11,7 +11,7 @@
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/mediastream/platform_media_stream_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace content {
