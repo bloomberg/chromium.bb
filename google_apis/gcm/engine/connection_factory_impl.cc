@@ -25,6 +25,7 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
 
 namespace gcm {
 
