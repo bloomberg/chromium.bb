@@ -49,6 +49,7 @@ const char kStopVmConcierge[] = "StopVmConcierge";
 const char kStartVmPluginDispatcher[] = "StartVmPluginDispatcher";
 const char kStopVmPluginDispatcher[] = "StopVmPluginDispatcher";
 const char kSetRlzPingSent[] = "SetRlzPingSent";
+const char kSetSchedulerConfiguration[] = "SetSchedulerConfiguration";
 
 // Values.
 enum DevFeatureFlag {
@@ -73,6 +74,14 @@ enum CupsResult {
 
 // Debug log keys which should be substituted in the system info dialog.
 const char kIwlwifiDumpKey[] = "iwlwifi_dump";
+
+namespace scheduler_configuration {
+
+// Keys which should be given to SetSchedulerConfiguration.
+constexpr char kConservativeScheduler[] = "conservative";
+constexpr char kPerformanceScheduler[] = "performance";
+
+}  // namespace scheduler_configuration
 
 }  // namespace debugd
 
