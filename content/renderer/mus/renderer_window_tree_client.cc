@@ -18,6 +18,7 @@
 #include "content/renderer/mus/mus_embedded_frame.h"
 #include "content/renderer/mus/mus_embedded_frame_delegate.h"
 #include "content/renderer/render_frame_proxy.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
 namespace content {
