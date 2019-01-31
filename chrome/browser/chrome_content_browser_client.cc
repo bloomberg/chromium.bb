@@ -494,6 +494,8 @@
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/convert_web_app.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -3152,12 +3154,37 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->embedded_media_experience_enabled =
           tab_android->ShouldEnableEmbeddedMediaExperience();
 
-      web_prefs->web_app_scope = tab_android->GetWebappManifestScope();
-
       web_prefs->picture_in_picture_enabled =
           tab_android->IsPictureInPictureEnabled();
     }
 #endif  // defined(OS_ANDROID)
+
+    // web_app_scope value is platform specific.
+#if defined(OS_ANDROID)
+    if (tab_android)
+      web_prefs->web_app_scope = tab_android->GetWebappManifestScope();
+#elif BUILDFLAG(ENABLE_EXTENSIONS)
+    {
+      const extensions::Extension* extension = nullptr;
+      Browser* browser = chrome::FindBrowserWithWebContents(contents);
+      if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+          browser && browser->hosted_app_controller() &&
+          browser->hosted_app_controller()->created_for_installed_pwa()) {
+        // When a new window is created to host a PWA, this method will return
+        // the scope of the given PWA. It will stay the same for the PWA as
+        // scopes never change after the window was created. It is not
+        // guaranteed that this method will be called on every navigation but
+        // this is not required for things to work, we only need it to be called
+        // at the window creation time.
+        extension = extensions::util::GetInstalledPwaForUrl(
+            contents->GetBrowserContext(), contents->GetLastCommittedURL());
+      }
+
+      web_prefs->web_app_scope =
+          extension ? extensions::GetScopeURLFromBookmarkApp(extension)
+                    : GURL();
+    }
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
