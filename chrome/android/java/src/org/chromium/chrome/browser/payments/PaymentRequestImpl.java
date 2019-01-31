@@ -228,6 +228,7 @@ public class PaymentRequestImpl
 
     private PaymentRequestClient mClient;
     private boolean mIsCanMakePaymentResponsePending;
+    private boolean mUseLegacyCanMakePayment;
     private boolean mIsHasEnrolledInstrumentResponsePending;
     private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
@@ -696,7 +697,10 @@ public class PaymentRequestImpl
         }
 
         if (mIsCanMakePaymentResponsePending) {
-            respondCanMakePaymentQuery(mArePaymentMethodsSupported);
+            // New canMakePayment doesn't need to wait for all apps to be queried.
+            if (!mUseLegacyCanMakePayment || queryApps.isEmpty()) {
+                respondCanMakePaymentQuery(mUseLegacyCanMakePayment);
+            }
         }
 
         if (mIsHasEnrolledInstrumentResponsePending && queryApps.isEmpty()) {
@@ -1578,25 +1582,41 @@ public class PaymentRequestImpl
      * Called by the merchant website to check if the user has complete payment instruments.
      */
     @Override
-    public void canMakePayment() {
+    public void canMakePayment(boolean legacyMode) {
         if (mClient == null) return;
 
         if (isFinishedQueryingPaymentApps()) {
-            respondCanMakePaymentQuery(mArePaymentMethodsSupported);
+            respondCanMakePaymentQuery(legacyMode);
         } else {
             mIsCanMakePaymentResponsePending = true;
+            mUseLegacyCanMakePayment = legacyMode;
         }
     }
 
-    private void respondCanMakePaymentQuery(boolean response) {
+    private void respondCanMakePaymentQuery(boolean legacyMode) {
         if (mClient == null) return;
 
         mIsCanMakePaymentResponsePending = false;
-        mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
-                                          : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
-        // TODO(https://crbug.com/915907): emit JourneyLogger event once the event names are
-        // updated.
+        boolean response = legacyMode ? mHasEnrolledInstrument : mArePaymentMethodsSupported;
+
+        // Only need to enforce query quota in legacy mode. Per-method quota not supported.
+        if (legacyMode
+                && !CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin,
+                        mPaymentRequestOrigin, mMethodData, /*perMethodQuota=*/false)) {
+            if (shouldEnforceCanMakePaymentQueryQuota()) {
+                mClient.onCanMakePayment(CanMakePaymentQueryResult.QUERY_QUOTA_EXCEEDED);
+            } else {
+                mClient.onCanMakePayment(response
+                                ? CanMakePaymentQueryResult.WARNING_CAN_MAKE_PAYMENT
+                                : CanMakePaymentQueryResult.WARNING_CANNOT_MAKE_PAYMENT);
+            }
+        } else {
+            mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
+                                              : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
+        }
+
+        mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
 
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
@@ -1637,7 +1657,7 @@ public class PaymentRequestImpl
                             : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
         }
 
-        mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
+        mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsIncognito);
 
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
@@ -1745,6 +1765,10 @@ public class PaymentRequestImpl
         int selection = !mPendingInstruments.isEmpty() && mPendingInstruments.get(0).canPreselect()
                 ? 0
                 : SectionInformation.NO_SELECTION;
+
+        if (mIsCanMakePaymentResponsePending) {
+            respondCanMakePaymentQuery(mUseLegacyCanMakePayment);
+        }
 
         if (mIsHasEnrolledInstrumentResponsePending) {
             respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);

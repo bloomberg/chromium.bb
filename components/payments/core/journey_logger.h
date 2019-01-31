@@ -91,6 +91,11 @@ class JourneyLogger {
     EVENT_SELECTED_CREDIT_CARD = 1 << 18,
     EVENT_SELECTED_GOOGLE = 1 << 19,
     EVENT_SELECTED_OTHER = 1 << 20,
+    // hasEnrolledInstrument was called with a result of "true" or "false",
+    // respectively. An absence of both events means hasEnrolledInstrument was
+    // not called, or the user was in incognito mode.
+    EVENT_HAS_ENROLLED_INSTRUMENT_TRUE = 1 << 21,
+    EVENT_HAS_ENROLLED_INSTRUMENT_FALSE = 1 << 22,
     EVENT_ENUM_MAX = 2097152,
   };
 
@@ -140,9 +145,13 @@ class JourneyLogger {
                                    int number,
                                    bool has_valid_suggestion);
 
-  // Records the fact that the merchant called CanMakePayment and records it's
+  // Records the fact that the merchant called CanMakePayment and records its
   // return value.
   void SetCanMakePaymentValue(bool value);
+
+  // Records the fact that the merchant called HasEnrolledInstrument and records
+  // its return value.
+  void SetHasEnrolledInstrumentValue(bool value);
 
   // Records that an event occurred.
   void SetEventOccurred(Event event);

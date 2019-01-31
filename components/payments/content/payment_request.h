@@ -74,7 +74,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void NoUpdatedPaymentDetails() override;
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
-  void CanMakePayment() override;
+  void CanMakePayment(bool legacy_mode) override;
   void HasEnrolledInstrument(bool per_method_quota) override;
 
   // PaymentRequestSpec::Observer:
@@ -144,7 +144,7 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // The callback for PaymentRequestState::CanMakePayment. Checks for query
   // quota and may send QUERY_QUOTA_EXCEEDED.
-  void CanMakePaymentCallback(bool can_make_payment);
+  void CanMakePaymentCallback(bool legacy_mode, bool can_make_payment);
 
   // The callback for PaymentRequestState::HasEnrolledInstrument. Checks for
   // query quota and may send QUERY_QUOTA_EXCEEDED.
