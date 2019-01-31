@@ -225,6 +225,48 @@ class JavaScriptStreamAlgorithmWithExtraArg final : public StreamAlgorithm {
   TraceWrapperV8Reference<v8::Value> extra_arg_;
 };
 
+class JavaScriptStreamStartAlgorithm : public StreamStartAlgorithm {
+ public:
+  JavaScriptStreamStartAlgorithm(v8::Isolate* isolate,
+                                 v8::Local<v8::Object> recv,
+                                 const char* method_name_for_error,
+                                 v8::Local<v8::Value> controller)
+      : recv_(isolate, recv),
+        method_name_for_error_(method_name_for_error),
+        controller_(isolate, controller) {}
+
+  v8::MaybeLocal<v8::Promise> Run(ScriptState* script_state,
+                                  ExceptionState& exception_state) override {
+    auto* isolate = script_state->GetIsolate();
+    // https://streams.spec.whatwg.org/#set-up-writable-stream-default-controller-from-underlying-sink
+    // 3. Let startAlgorithm be the following steps:
+    //    a. Return ? InvokeOrNoop(underlyingSink, "start", « controller »).
+    auto value_maybe = CallOrNoop1(
+        script_state, recv_.NewLocal(isolate), "start", method_name_for_error_,
+        controller_.NewLocal(isolate), exception_state);
+    if (exception_state.HadException()) {
+      return v8::MaybeLocal<v8::Promise>();
+    }
+    v8::Local<v8::Value> value;
+    if (!value_maybe.ToLocal(&value)) {
+      exception_state.ThrowTypeError("internal error");
+      return v8::MaybeLocal<v8::Promise>();
+    }
+    return PromiseResolve(script_state, value);
+  }
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(recv_);
+    visitor->Trace(controller_);
+    StreamStartAlgorithm::Trace(visitor);
+  }
+
+ private:
+  TraceWrapperV8Reference<v8::Object> recv_;
+  const char* const method_name_for_error_;
+  TraceWrapperV8Reference<v8::Value> controller_;
+};
+
 }  // namespace
 
 // TODO(ricea): For optimal performance, method_name should be cached as an
@@ -269,6 +311,16 @@ CORE_EXPORT StreamAlgorithm* CreateAlgorithmFromUnderlyingMethod(
 
   return MakeGarbageCollected<JavaScriptStreamAlgorithmWithExtraArg>(
       isolate, method.As<v8::Function>(), extra_arg_local, underlying_object);
+}
+
+CORE_EXPORT StreamStartAlgorithm* CreateStartAlgorithm(
+    ScriptState* script_state,
+    v8::Local<v8::Object> underlying_object,
+    const char* method_name_for_error,
+    v8::Local<v8::Value> controller) {
+  return MakeGarbageCollected<JavaScriptStreamStartAlgorithm>(
+      script_state->GetIsolate(), underlying_object, method_name_for_error,
+      controller);
 }
 
 CORE_EXPORT v8::MaybeLocal<v8::Value> CallOrNoop1(
