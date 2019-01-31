@@ -51257,6 +51257,22 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Disabled"/>
 </enum>
 
+<enum name="SyncGetUpdatesOrigin">
+  <summary>
+    Equivalent to proto SyncEnums.GetUpdatesOrigin: represents a reason for a
+    client to issue a GetUpdates request to the sync server.
+  </summary>
+  <int value="0" label="UNKNOWN_ORIGIN"/>
+  <int value="4" label="PERIODIC"/>
+  <int value="7" label="NEWLY_SUPPORTED_DATATYPE"/>
+  <int value="8" label="MIGRATION"/>
+  <int value="9" label="NEW_CLIENT"/>
+  <int value="10" label="RECONFIGURATION"/>
+  <int value="12" label="GU_TRIGGER"/>
+  <int value="13" label="RETRY"/>
+  <int value="14" label="PROGRAMMATIC"/>
+</enum>
+
 <enum name="SyncGetUpdatesToken">
   <int value="0" label="New token"/>
   <int value="1" label="Same token"/>
