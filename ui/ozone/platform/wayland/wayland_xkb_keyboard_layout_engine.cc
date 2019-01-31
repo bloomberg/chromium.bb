@@ -17,6 +17,7 @@ void WaylandXkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
   xkb_mod_indexes_.alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
   xkb_mod_indexes_.shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
   xkb_mod_indexes_.caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+  xkb_mod_indexes_.altgr = xkb_keymap_mod_get_index(keymap, "Mod5");
 }
 
 void WaylandXkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed_mods,
@@ -48,6 +49,10 @@ void WaylandXkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed_mods,
     event_modifiers_->SetModifierLock(MODIFIER_CAPS_LOCK, true);
   else
     event_modifiers_->SetModifierLock(MODIFIER_CAPS_LOCK, false);
+
+  if (xkb_state_mod_index_is_active(xkb_state_.get(), xkb_mod_indexes_.altgr,
+                                    component))
+    event_modifiers_->UpdateModifier(MODIFIER_ALTGR, true);
 }
 
 void WaylandXkbKeyboardLayoutEngine::SetEventModifiers(
