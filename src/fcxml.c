@@ -2057,7 +2057,7 @@ FcParseDescription (FcConfigParse *parse)
 static void
 FcParseRemapDir (FcConfigParse *parse)
 {
-    const FcChar8 *path, *attr, *data;
+    const FcChar8 *path, *attr, *data, *salt;
     FcChar8 *prefix = NULL;
 
     data = FcStrBufDoneStatic (&parse->pstack->str);
@@ -2073,12 +2073,13 @@ FcParseRemapDir (FcConfigParse *parse)
 	return;
     }
     attr = FcConfigGetAttribute (parse, "prefix");
+    salt = FcConfigGetAttribute (parse, "salt");
     prefix = _get_real_path_from_prefix (parse, data, attr);
     if (!prefix || prefix[0] == 0)
 	FcConfigMessage (parse, FcSevereWarning, "empty font directory name for remap ignored");
     else if (!parse->scanOnly && (!FcStrUsesHome (prefix) || FcConfigHome ()))
     {
-	if (!FcConfigAddFontDir (parse->config, prefix, path))
+	if (!FcConfigAddFontDir (parse->config, prefix, path, salt))
 	    FcConfigMessage (parse, FcSevereError, "out of memory; cannot create remap data for %s as %s", prefix, path);
     }
     FcStrBufDestroy (&parse->pstack->str);
@@ -2237,7 +2238,7 @@ FcParseUnary (FcConfigParse *parse, FcOp op)
 static void
 FcParseDir (FcConfigParse *parse)
 {
-    const FcChar8 *attr, *data;
+    const FcChar8 *attr, *data, *salt;
     FcChar8 *prefix = NULL;
 
     data = FcStrBufDoneStatic (&parse->pstack->str);
@@ -2247,12 +2248,13 @@ FcParseDir (FcConfigParse *parse)
 	return;
     }
     attr = FcConfigGetAttribute (parse, "prefix");
+    salt = FcConfigGetAttribute (parse, "salt");
     prefix = _get_real_path_from_prefix (parse, data, attr);
     if (!prefix || prefix[0] == 0)
 	FcConfigMessage (parse, FcSevereWarning, "empty font directory name ignored");
     else if (!parse->scanOnly && (!FcStrUsesHome (prefix) || FcConfigHome ()))
     {
-	if (!FcConfigAddFontDir (parse->config, prefix, NULL))
+	if (!FcConfigAddFontDir (parse->config, prefix, NULL, salt))
 	    FcConfigMessage (parse, FcSevereError, "out of memory; cannot add directory %s", prefix);
     }
     FcStrBufDestroy (&parse->pstack->str);

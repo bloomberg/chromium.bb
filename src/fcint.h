@@ -660,7 +660,8 @@ FcConfigAddConfigDir (FcConfig	    *config,
 FcPrivate FcBool
 FcConfigAddFontDir (FcConfig	    *config,
 		    const FcChar8   *d,
-		    const FcChar8   *m);
+		    const FcChar8   *m,
+		    const FcChar8   *salt);
 
 FcPrivate FcBool
 FcConfigResetFontDirs (FcConfig *config);
@@ -668,6 +669,10 @@ FcConfigResetFontDirs (FcConfig *config);
 FcPrivate FcChar8 *
 FcConfigMapFontPath(FcConfig		*config,
 		    const FcChar8	*path);
+
+FcPrivate const FcChar8 *
+FcConfigMapSalt (FcConfig      *config,
+		 const FcChar8 *path);
 
 FcPrivate FcBool
 FcConfigAddCacheDir (FcConfig	    *config,
@@ -1245,13 +1250,16 @@ FcPrivate void
 FcStrSetSort (FcStrSet * set);
 
 FcPrivate FcBool
-FcStrSetAddPair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b);
+FcStrSetAddTriple (FcStrSet *set, const FcChar8 *a, const FcChar8 *b, const FcChar8 *c);
 
-FcPrivate FcChar8 *
-FcStrPairSecond (FcChar8 *s);
+FcPrivate const FcChar8 *
+FcStrTripleSecond (FcChar8 *s);
+
+FcPrivate const FcChar8 *
+FcStrTripleThird (FcChar8 *str);
 
 FcPrivate FcBool
-FcStrSetAddFilenamePair (FcStrSet *strs, const FcChar8 *d, const FcChar8 *m);
+FcStrSetAddFilenamePairWithSalt (FcStrSet *strs, const FcChar8 *d, const FcChar8 *m, const FcChar8 *salt);
 
 FcPrivate FcBool
 FcStrSetDeleteAll (FcStrSet *set);

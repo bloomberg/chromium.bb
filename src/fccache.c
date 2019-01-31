@@ -152,14 +152,25 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
 {
     FcChar8		*new_dir;
     unsigned char 	hash[16];
-    FcChar8		*hex_hash;
+    FcChar8		*hex_hash, *key = NULL;
     int			cnt;
     struct MD5Context 	ctx;
+    const FcChar8	*salt;
 
+    salt = FcConfigMapSalt (config, dir);
     new_dir = FcConfigMapFontPath(config, dir);
     if (new_dir)
 	dir = new_dir;
+    if (salt)
+    {
+	size_t dl = strlen ((const char *) dir);
+	size_t sl = strlen ((const char *) salt);
 
+	key = (FcChar8 *) malloc (dl + sl + 1);
+	memcpy (key, dir, dl);
+	memcpy (key + dl, salt, sl + 1);
+	dir = key;
+    }
     MD5Init (&ctx);
     MD5Update (&ctx, (const unsigned char *)dir, strlen ((const char *) dir));
 
@@ -167,6 +178,8 @@ FcDirCacheBasenameMD5 (FcConfig *config, const FcChar8 *dir, FcChar8 cache_base[
 
     if (new_dir)
 	FcStrFree(new_dir);
+    if (key)
+	FcStrFree (key);
 
     cache_base[0] = '/';
     hex_hash = cache_base + 1;

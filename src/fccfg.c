@@ -540,9 +540,10 @@ FcConfigGetConfigDirs (FcConfig   *config)
 FcBool
 FcConfigAddFontDir (FcConfig	    *config,
 		    const FcChar8   *d,
-		    const FcChar8   *m)
+		    const FcChar8   *m,
+		    const FcChar8   *salt)
 {
-    return FcStrSetAddFilenamePair (config->fontDirs, d, m);
+    return FcStrSetAddFilenamePairWithSalt (config->fontDirs, d, m, salt);
 }
 
 FcBool
@@ -587,7 +588,7 @@ FcConfigMapFontPath(FcConfig		*config,
 {
     FcStrList	*list;
     FcChar8	*dir;
-    FcChar8	*map;
+    const FcChar8 *map;
     FcChar8     *retval;
 
     list = FcConfigGetFontDirs(config);
@@ -599,7 +600,7 @@ FcConfigMapFontPath(FcConfig		*config,
     FcStrListDone(list);
     if (!dir)
 	return 0;
-    map = FcStrPairSecond(dir);
+    map = FcStrTripleSecond(dir);
     if (!map)
 	return 0;
     retval = FcStrBuildFilename(map, path + strlen((char *) dir), NULL);
@@ -613,6 +614,26 @@ FcConfigMapFontPath(FcConfig		*config,
 	}
     }
     return retval;
+}
+
+const FcChar8 *
+FcConfigMapSalt (FcConfig      *config,
+		 const FcChar8 *path)
+{
+    FcStrList *list;
+    FcChar8 *dir;
+
+    list = FcConfigGetFontDirs (config);
+    if (!list)
+	return NULL;
+    while ((dir = FcStrListNext (list)))
+	if (FcConfigPathStartsWith (path, dir))
+	    break;
+    FcStrListDone (list);
+    if (!dir)
+	return NULL;
+
+    return FcStrTripleThird (dir);
 }
 
 FcBool

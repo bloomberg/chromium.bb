@@ -172,6 +172,53 @@ if cmp flist1 flist2 > /dev/null ; then : ; else
   exit 1
 fi
 rm -rf $TESTTMPDIR out1 out2 xxx flist1 flist2 bind-fonts.conf
+
+dotest "Different directory content between host and sandbox"
+prep
+cp $FONT1 $FONTDIR
+$FCCACHE $FONTDIR
+sleep 1
+ls -1 --color=no $CACHEDIR/*cache*> out1
+stat -c '%n %s %y %z' `cat out1` > stat1
+TESTTMPDIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
+TESTTMP2DIR=`mktemp -d /tmp/fontconfig.XXXXXXXX`
+cp $FONT2 $TESTTMP2DIR
+sed "s!@FONTDIR@!$TESTTMPDIR/fonts</dir><dir salt="'"'"salt-to-make-different"'"'">$FONTDIR!
+s!@REMAPDIR@!<remap-dir as-path="'"'"$FONTDIR"'"'">$TESTTMPDIR/fonts</remap-dir>!
+s!@CACHEDIR@!$TESTTMPDIR/cache.dir!" < $TESTDIR/fonts.conf.in > bind-fonts.conf
+$BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind $TESTTMP2DIR $FONTDIR --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/fc-match/fc-match$EXEEXT -f "%{file}\n" ":foundry=Misc" > xxx
+$BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind $TESTTMP2DIR $FONTDIR --bind .. $TESTTMPDIR/build --dev-bind /dev /dev --setenv FONTCONFIG_FILE $TESTTMPDIR/build/test/bind-fonts.conf $TESTTMPDIR/build/test/test-bz106618$EXEEXT | sort > flist1
+$BWRAP --bind / / --bind $CACHEDIR $TESTTMPDIR/cache.dir --bind $FONTDIR $TESTTMPDIR/fonts --bind $TESTTMP2DIR $FONTDIR --bind .. $TESTTMPDIR/build --dev-bind /dev /dev find $TESTTMPDIR/fonts/ -type f -name '*.pcf' | sort > flist2
+ls -1 --color=no $CACHEDIR/*cache* > out2
+stat -c '%n %s %y %z' `cat out1` > stat2
+if cmp stat1 stat2 > /dev/null ; then : ; else
+  echo "*** Test failed: $TEST"
+  echo "cache was created/updated."
+  cat stat1 stat2
+  exit 1
+fi
+if grep -v -- "`cat out1`" out2 > /dev/null ; then : ; else
+  echo "*** Test failed: $TEST"
+  echo "cache wasn't created for dir inside sandbox."
+  cat out1 out2
+  exit 1
+fi
+if [ x`cat xxx` != "x$TESTTMPDIR/fonts/4x6.pcf" ]; then
+  echo "*** Test failed: $TEST"
+  echo "file property doesn't point to the new place: $TESTTMPDIR/fonts/4x6.pcf"
+  exit 1
+fi
+if cmp flist1 flist2 > /dev/null ; then
+  echo "*** Test failed: $TEST"
+  echo "Missing fonts should be available on sandbox"
+  echo "Expected result:"
+  cat flist2
+  echo "Actual result:"
+  cat flist1
+  exit 1
+fi
+rm -rf $TESTTMPDIR $TESTTMP2DIR out1 out2 xxx flist1 flist2 stat1 stat2 bind-fonts.conf
+
 fi
 
 if [ "x$EXEEXT" = "x" ]; then

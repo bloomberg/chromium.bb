@@ -37,11 +37,12 @@ FcStrCopy (const FcChar8 *s)
 }
 
 static FcChar8 *
-FcStrMakePair (const FcChar8 *s1, const FcChar8 *s2)
+FcStrMakeTriple (const FcChar8 *s1, const FcChar8 *s2, const FcChar8 *s3)
 {
     int	    s1l = s1 ? strlen ((char *) s1) : 0;
     int	    s2l = s2 ? strlen ((char *) s2) : 0;
-    int	    l = s1l + 1 + s2l + 1;
+    int     s3l = s3 ? strlen ((char *) s3) : 0;
+    int	    l = s1l + 1 + s2l + 1 + s3l + 1;
     FcChar8 *s = malloc (l);
 
     if (!s)
@@ -54,6 +55,10 @@ FcStrMakePair (const FcChar8 *s1, const FcChar8 *s2)
 	memcpy (s + s1l + 1, s2, s2l + 1);
     else
 	s[s1l + 1] = '\0';
+    if (s3)
+	memcpy (s + s1l + 1 + s2l + 1, s3, s3l + 1);
+    else
+	s[s1l + 1 + s2l + 1] = '\0';
     return s;
 }
 
@@ -1255,9 +1260,9 @@ FcStrSetAdd (FcStrSet *set, const FcChar8 *s)
 }
 
 FcBool
-FcStrSetAddPair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b)
+FcStrSetAddTriple (FcStrSet *set, const FcChar8 *a, const FcChar8 *b, const FcChar8 *c)
 {
-    FcChar8 *new = FcStrMakePair (a, b);
+    FcChar8 *new = FcStrMakeTriple (a, b, c);
     if (!new)
 	return FcFalse;
     if (!_FcStrSetAppend (set, new))
@@ -1268,14 +1273,25 @@ FcStrSetAddPair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b)
     return FcTrue;
 }
 
-FcChar8 *
-FcStrPairSecond (FcChar8 *str)
+const FcChar8 *
+FcStrTripleSecond (FcChar8 *str)
 {
     FcChar8 *second = str + strlen((char *) str) + 1;
 
     if (*second == '\0')
 	return 0;
     return second;
+}
+
+const FcChar8 *
+FcStrTripleThird (FcChar8 *str)
+{
+    FcChar8 *second = str + strlen ((char *) str) + 1;
+    FcChar8 *third = second + strlen ((char *) second) + 1;
+
+    if (*third == '\0')
+	return 0;
+    return third;
 }
 
 FcBool
@@ -1293,7 +1309,7 @@ FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s)
 }
 
 FcBool
-FcStrSetAddFilenamePair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b)
+FcStrSetAddFilenamePairWithSalt (FcStrSet *set, const FcChar8 *a, const FcChar8 *b, const FcChar8 *salt)
 {
     FcChar8 *new_a = NULL;
     FcChar8 *new_b = NULL;
@@ -1315,7 +1331,7 @@ FcStrSetAddFilenamePair (FcStrSet *set, const FcChar8 *a, const FcChar8 *b)
 	    return FcFalse;
 	}
     }
-    ret = FcStrSetAddPair (set, new_a, new_b);
+    ret = FcStrSetAddTriple (set, new_a, new_b, salt);
     if (new_a)
 	FcStrFree (new_a);
     if (new_b)
