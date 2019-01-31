@@ -19,12 +19,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -364,8 +362,8 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
 #if !defined(OS_CHROMEOS)
   // ChromeOS in kiosk mode may start the mint token flow without account.
   DCHECK(!token_key_.account_id.empty());
-  DCHECK(ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile())
-             ->RefreshTokenIsAvailable(token_key_.account_id));
+  DCHECK(IdentityManagerFactory::GetForProfile(GetProfile())
+             ->HasAccountWithRefreshToken(token_key_.account_id));
 #endif
 
   mint_token_flow_type_ = type;
