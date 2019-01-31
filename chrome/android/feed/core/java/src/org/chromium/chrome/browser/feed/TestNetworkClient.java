@@ -24,8 +24,9 @@ import com.google.search.now.wire.feed.ResponseProto.Response;
 import com.google.search.now.wire.feed.mockserver.MockServerProto.ConditionalResponse;
 import com.google.search.now.wire.feed.mockserver.MockServerProto.MockServer;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -118,7 +119,7 @@ public class TestNetworkClient implements NetworkClient {
         if (mResponseDelay <= 0) {
             maybeAccept(httpResponse, responseConsumer);
         } else {
-            ThreadUtils.postOnUiThreadDelayed(
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
                     () -> maybeAccept(httpResponse, responseConsumer), mResponseDelay);
         }
     }

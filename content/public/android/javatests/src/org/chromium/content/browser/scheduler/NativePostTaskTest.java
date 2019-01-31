@@ -77,13 +77,10 @@ public class NativePostTaskTest {
     public void testNativePostDelayedTask() throws Exception {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        PostTask.postDelayedTask(new TaskTraits(), new Runnable() {
-            @Override
-            public void run() {
-                synchronized (lock) {
-                    taskExecuted.set(true);
-                    lock.notify();
-                }
+        PostTask.postDelayedTask(new TaskTraits(), () -> {
+            synchronized (lock) {
+                taskExecuted.set(true);
+                lock.notify();
             }
         }, 1);
 

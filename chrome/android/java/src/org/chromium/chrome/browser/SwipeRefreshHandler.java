@@ -12,6 +12,7 @@ import android.view.ViewGroup.LayoutParams;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.gesturenav.SideSlideLayout;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsUserData;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
 import org.chromium.ui.OverscrollAction;
@@ -114,8 +116,8 @@ public class SwipeRefreshHandler
 
         mSwipeRefreshLayout.setOnRefreshListener(() -> {
             cancelStopRefreshingRunnable();
-            ThreadUtils.postOnUiThreadDelayed(
-                    getStopRefreshingRunnable(), MAX_REFRESH_ANIMATION_DURATION_MS);
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, getStopRefreshingRunnable(),
+                    MAX_REFRESH_ANIMATION_DURATION_MS);
             if (mAccessibilityRefreshString == null) {
                 int resId = R.string.accessibility_swipe_refresh;
                 mAccessibilityRefreshString = context.getResources().getString(resId);

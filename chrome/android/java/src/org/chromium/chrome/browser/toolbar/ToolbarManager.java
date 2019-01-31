@@ -23,12 +23,12 @@ import android.view.View.OnClickListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -108,6 +108,7 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.AsyncViewProvider;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -1563,7 +1564,7 @@ public class ToolbarManager
         // Record startup performance statistics
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
         if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
-            ThreadUtils.postOnUiThreadDelayed(() -> {
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
                 onDeferredStartup(activityCreationTimeMs, activityName);
             }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
             return;

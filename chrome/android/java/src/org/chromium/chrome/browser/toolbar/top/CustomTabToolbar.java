@@ -42,6 +42,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
@@ -62,6 +63,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.GURLUtils;
 import org.chromium.ui.base.Clipboard;
@@ -368,7 +370,8 @@ public class CustomTabToolbar
                 && !title.equals(getToolbarDataProvider().getCurrentUrl())
                 && !title.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
             // Delay the title animation until security icon animation finishes.
-            ThreadUtils.postOnUiThreadDelayed(mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
+            PostTask.postDelayedTask(
+                    UiThreadTaskTraits.DEFAULT, mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
         }
 
         mTitleBar.setText(title);

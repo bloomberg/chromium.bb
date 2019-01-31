@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -119,7 +120,7 @@ class AssistantCoordinator {
             mModel.getHeaderModel().set(AssistantHeaderModel.STATUS_MESSAGE,
                     mActivity.getString(R.string.autofill_assistant_give_up));
         }
-        ThreadUtils.postOnUiThreadDelayed(
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
                 () -> shutdownImmediately(reason), GRACEFUL_SHUTDOWN_DELAY_MS);
     }
 

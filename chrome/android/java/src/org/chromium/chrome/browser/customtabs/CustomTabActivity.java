@@ -42,6 +42,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -89,13 +90,13 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
@@ -713,12 +714,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             // memory consumption, as the current renderer goes away. We create a renderer as a lot
             // of users open several Custom Tabs in a row. The delay is there to avoid jank in the
             // transition animation when closing the tab.
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    WarmupManager.getInstance().createSpareWebContents();
-                }
-            }, 500);
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
+                    () -> WarmupManager.getInstance().createSpareWebContents(), 500);
         }
 
         handleFinishAndClose();

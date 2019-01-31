@@ -14,12 +14,13 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.Toast;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -157,7 +158,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             onVrModuleInstallFinished(success);
         });
 
-        ThreadUtils.postOnUiThreadDelayed(() -> {
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (enterVrHandled.getAndSet(true)) return;
             assert !VrModuleProvider.isModuleInstalled();
             onVrModuleInstallFailure(activity);
