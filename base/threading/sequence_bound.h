@@ -214,6 +214,9 @@ class SequenceBound {
   // might still be pending destruction on the impl thread.
   bool is_null() const { return !t_; }
 
+  // True if and only if we have an object, with the same caveats as is_null().
+  explicit operator bool() const { return !is_null(); }
+
  private:
   // Pointer to the object,  Pointer may be modified on the owning thread.
   T* t_ = nullptr;

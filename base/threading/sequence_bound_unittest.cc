@@ -80,6 +80,7 @@ class SequenceBoundTest : public ::testing::Test {
 TEST_F(SequenceBoundTest, MAYBE_ConstructThenPostThenReset) {
   auto derived = SequenceBound<Derived>(task_runner_, &value);
   EXPECT_FALSE(derived.is_null());
+  EXPECT_TRUE(derived);
 
   // Nothing should happen until we run the message loop.
   EXPECT_EQ(value, kInitialValue);
@@ -96,6 +97,7 @@ TEST_F(SequenceBoundTest, MAYBE_ConstructThenPostThenReset) {
   // report that it is null immediately.
   derived.Reset();
   EXPECT_TRUE(derived.is_null());
+  EXPECT_FALSE(derived);
   EXPECT_EQ(value, kDifferentValue);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(value, kDerivedDtorValue);
