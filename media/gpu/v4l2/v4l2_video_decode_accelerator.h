@@ -400,6 +400,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
 
   void SendBufferToClient(size_t buffer_index, int32_t bitstream_buffer_id);
 
+  // Returns the number of OutputRecords whose state is |state|. This is used to
+  // compute values reported for chrome://tracing.
+  size_t GetNumOfRecordsInState(OutputRecordState state) const;
+
   //
   // Methods run on child thread.
   //
