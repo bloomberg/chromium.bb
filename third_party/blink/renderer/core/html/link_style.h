@@ -79,7 +79,6 @@ class LinkStyle final : public LinkResource, ResourceClient {
   PendingSheetType pending_sheet_type_;
   StyleEngineContext style_engine_context_;
   bool loading_;
-  bool fired_load_;
   bool loaded_sheet_;
 };
 
