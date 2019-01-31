@@ -49,6 +49,20 @@ struct FrameInfo {
   std::string chromedriver_frame_id;
 };
 
+struct InputCancelListEntry {
+  InputCancelListEntry(base::DictionaryValue* input_state,
+                       const MouseEvent* mouse_event,
+                       const TouchEvent* touch_event,
+                       const KeyEvent* key_event);
+  InputCancelListEntry(InputCancelListEntry&& other);
+  ~InputCancelListEntry();
+
+  base::DictionaryValue* input_state;
+  std::unique_ptr<MouseEvent> mouse_event;
+  std::unique_ptr<TouchEvent> touch_event;
+  std::unique_ptr<KeyEvent> key_event;
+};
+
 struct Session {
   static const base::TimeDelta kDefaultImplicitWaitTimeout;
   static const base::TimeDelta kDefaultPageLoadTimeout;
@@ -82,6 +96,8 @@ struct Session {
   // Map between input id and input source state for the corresponding input
   // source. One entry for each item in active_input_sources
   base::DictionaryValue input_state_table;
+  // List of actions for Release Actions command.
+  std::vector<InputCancelListEntry> input_cancel_list;
   // List of |FrameInfo|s for each frame to the current target frame from the
   // first frame element in the root document. If target frame is window.top,
   // this list will be empty.
