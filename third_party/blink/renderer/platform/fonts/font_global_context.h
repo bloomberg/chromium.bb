@@ -46,8 +46,6 @@ class PLATFORM_EXPORT FontGlobalContext {
   // Called by MemoryCoordinator to clear memory.
   static void ClearMemory();
 
-  static void ClearForTesting();
-
  private:
   friend class WTF::ThreadSpecific<FontGlobalContext>;
 

@@ -38,9 +38,4 @@ void FontGlobalContext::ClearMemory() {
   GetFontCache().Invalidate();
 }
 
-void FontGlobalContext::ClearForTesting() {
-  FontGlobalContext* ctx = Get();
-  ctx->font_cache_.Invalidate();
-}
-
 }  // namespace blink
