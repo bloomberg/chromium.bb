@@ -18,10 +18,7 @@
 #include "components/gwp_asan/client/guarded_page_allocator.h"
 
 #if defined(OS_MACOSX)
-// TODO(https://crbug.com/829078): thread_local is not currently supported on
-// macOS; however, it works correctly on other platforms and is noticeably
-// faster.
-#error "macOS does not support thread_local"
+#include <pthread.h>
 #endif
 
 namespace gwp_asan {
@@ -40,6 +37,10 @@ class SamplingState {
   void Init(size_t sampling_frequency) {
     DCHECK_GT(sampling_frequency, 0U);
     sampling_frequency_ = sampling_frequency;
+
+#if defined(OS_MACOSX)
+    pthread_key_create(&tls_key_, nullptr);
+#endif
   }
 
   // Return true if this allocation should be sampled.
@@ -50,12 +51,11 @@ class SamplingState {
     //
     // Instead, use zero to mean 'get a new counter value' and one to mean
     // that this allocation should be sampled.
-    static thread_local size_t tls_counter = 0;
-    size_t samples_left = tls_counter;
+    size_t samples_left = GetCounter();
     if (UNLIKELY(!samples_left))
       samples_left = NextSample();
 
-    tls_counter = samples_left - 1;
+    SetCounter(samples_left - 1);
     return (samples_left == 1);
   }
 
@@ -72,12 +72,36 @@ class SamplingState {
     return next_sample;
   }
 
+#if !defined(OS_MACOSX)
+  ALWAYS_INLINE size_t GetCounter() { return tls_counter_; }
+  ALWAYS_INLINE void SetCounter(size_t value) { tls_counter_ = value; }
+
+  static thread_local size_t tls_counter_;
+#else
+  // On macOS, the first use of a thread_local variable on a new thread will
+  // cause a malloc(), causing infinite recursion. Instead, use pthread TLS to
+  // store the counter.
+  ALWAYS_INLINE size_t GetCounter() {
+    return reinterpret_cast<size_t>(pthread_getspecific(tls_key_));
+  }
+
+  ALWAYS_INLINE void SetCounter(size_t value) {
+    pthread_setspecific(tls_key_, reinterpret_cast<void*>(value));
+  }
+
+  pthread_key_t tls_key_ = 0;
+#endif
+
   size_t sampling_frequency_ = 0;
 
   // Stores the number of allocations we need to skip to reach the end of the
   // current chunk of |sampling_frequency_| allocations.
   size_t increment_ = 0;
 };
+
+#if !defined(OS_MACOSX)
+thread_local size_t SamplingState::tls_counter_ = 0;
+#endif
 
 // By being implemented as a global with inline method definitions, method calls
 // and member acceses are inlined and as efficient as possible in the
