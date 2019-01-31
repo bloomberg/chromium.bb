@@ -8,8 +8,7 @@ cr.define('print_preview', function() {
    * Converts DestinationOrigin to PrinterType.
    * @param {!print_preview.DestinationOrigin} origin The printer's
    *     destination origin.
-   * return {?print_preview.PrinterType} The corresponding PrinterType.
-   *     Returns null if no match is found.
+   * return {!print_preview.PrinterType} The corresponding PrinterType.
    */
   const originToType = function(origin) {
     if (origin === print_preview.DestinationOrigin.LOCAL ||
@@ -22,7 +21,8 @@ cr.define('print_preview', function() {
     if (origin === print_preview.DestinationOrigin.EXTENSION) {
       return print_preview.PrinterType.EXTENSION_PRINTER;
     }
-    return null;
+    assert(print_preview.CloudOrigins.includes(origin));
+    return print_preview.PrinterType.CLOUD_PRINTER;
   };
 
   class DestinationMatch {
@@ -107,12 +107,11 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @return {!Set<?print_preview.PrinterType>} The printer types that
-     *     correspond to this destination match. A null element in the set
-     *     indicates the match may represent a Cloud destination.
+     * @return {!Set<!print_preview.PrinterType>} The printer types that
+     *     correspond to this destination match.
      */
     getTypes() {
-      return new Set(this.origins_.map(origin => originToType(origin)));
+      return new Set(this.origins_.map(originToType));
     }
   }
 
