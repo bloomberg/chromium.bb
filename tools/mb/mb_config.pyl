@@ -605,6 +605,8 @@
       'android_n5x_swarming_dbg': 'android_debug_trybot_arm64',
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_pixel_aosp': 'android_debug_trybot_arm64',
+      'android-deterministic-dbg': 'android_debug_trybot',
+      'android-deterministic-rel': 'android_without_codecs_release_trybot_minimal_symbols',
       'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
       'gpu-manual-try-android-l-nexus-5-32': 'gpu_tests_android_release_trybot',
       'gpu-manual-try-android-l-nexus-6-32': 'gpu_tests_android_release_trybot',
@@ -1028,6 +1030,10 @@
 
     'android_without_codecs_release_bot_minimal_symbols': [
       'android_without_codecs', 'release_bot', 'minimal_symbols', 'strip_debug_info',
+    ],
+
+    'android_without_codecs_release_trybot_minimal_symbols': [
+      'android_without_codecs', 'release_trybot', 'minimal_symbols', 'strip_debug_info',
     ],
 
     'asan_clang_edge_fuzzer_static_v8_heap_minimal_symbols_release_tot': [
