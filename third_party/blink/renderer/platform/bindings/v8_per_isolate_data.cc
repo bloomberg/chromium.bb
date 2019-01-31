@@ -179,6 +179,7 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
   if (data->script_wrappable_visitor_->WrapperTracingInProgress())
     data->script_wrappable_visitor_->AbortTracingForTermination();
   data->script_wrappable_visitor_.reset();
+  data->unified_heap_controller_.reset();
 }
 
 // destroy() clear things that should be cleared after ThreadState::detach()
