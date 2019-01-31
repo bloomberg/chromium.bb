@@ -37,7 +37,7 @@ class GuardedPageAllocator;
 class AllocatorState {
  public:
   // Maximum number of pages this class can allocate.
-  static constexpr size_t kGpaMaxPages = 128;
+  static constexpr size_t kGpaMaxPages = 256;
   // Maximum number of stack trace frames to collect.
   static constexpr size_t kMaxStackFrames = 60;
   // Number of bytes to allocate for packed stack traces. This can hold
