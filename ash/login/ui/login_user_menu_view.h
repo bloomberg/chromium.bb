@@ -45,6 +45,9 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
   ~LoginUserMenuView() override;
 
+  // Resets the user menu to the state where Remove User has not been pressed.
+  void ResetState();
+
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
   gfx::Point CalculatePosition() override;

@@ -123,7 +123,7 @@ class ASH_EXPORT LoginUserView : public views::View,
   // Bubble used for displaying the user dropdown menu. Its parent is the top
   // level view, either LockContentsView or LockDebugView. This allows the menu
   // to be clicked outside the bounds of the user view.
-  LoginBaseBubbleView* menu_ = nullptr;
+  LoginUserMenuView* menu_ = nullptr;
 
   // Show the domain information for public account user.
   UserDomainInfoView* user_domain_ = nullptr;

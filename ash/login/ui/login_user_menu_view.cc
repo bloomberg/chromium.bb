@@ -10,6 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -252,6 +254,13 @@ LoginUserMenuView::LoginUserMenuView(
 
 LoginUserMenuView::~LoginUserMenuView() = default;
 
+void LoginUserMenuView::ResetState() {
+  if (remove_user_confirm_data_) {
+    remove_user_confirm_data_->SetVisible(false);
+    remove_user_label_->SetEnabledColor(kRemoveUserInitialColor);
+  }
+}
+
 LoginButton* LoginUserMenuView::GetBubbleOpener() const {
   return bubble_opener_;
 }
@@ -264,7 +273,6 @@ void LoginUserMenuView::ButtonPressed(views::Button* sender,
     remove_user_confirm_data_->SetVisible(true);
     remove_user_label_->SetEnabledColor(kRemoveUserConfirmColor);
 
-    SetSize(GetPreferredSize());
     Layout();
 
     // Fire an accessibility alert to make ChromeVox read the warning message
@@ -293,6 +301,24 @@ gfx::Point LoginUserMenuView::CalculatePosition() {
 
   if (GetAnchorView())
     position.set_y(position.y() + kAnchorViewUserMenuVerticalSpacingDp);
+
+  gfx::Rect screen_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+
+  // In handling the cases where the bubble could go off screen, we assume that
+  // the bubble can go either off the right side or off the bottom side.
+  if (position.x() + width() > screen_bounds.right() && GetAnchorView()) {
+    // If bubble would go off the right side of the screen, go left instead
+    position.set_x(position.x() + GetAnchorView()->width() - width());
+  } else if (position.y() + height() > screen_bounds.bottom() &&
+             GetAnchorView()) {
+    // If bubble would go off the bottom of the screen, go to the right of the
+    // anchor and upward.
+    position.set_x(position.x() + kAnchorViewUserMenuVerticalSpacingDp +
+                   GetAnchorView()->width());
+    position.set_y(position.y() +
+                   (screen_bounds.bottom() - (position.y() + height())));
+  }
 
   return position;
 }
