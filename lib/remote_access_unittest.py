@@ -305,3 +305,43 @@ class RemoteDeviceTest(cros_test_lib.MockTestCase):
       self.rsh_mock.AddCmdResult(partial_mock.In('rm'))
 
     self.assertEqual(self.rsh_mock.call_count, 2)
+
+
+class ScpTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for RemoteAccess.Scp"""
+
+  def setUp(self):
+    self.mock = cros_test_lib.RunCommandMock()
+    self.mock.AddCmdResult(partial_mock.Ignore())
+
+  def testHostname(self):
+    host = remote_access.RemoteAccess('chromium.org', self.tempdir)
+
+    with self.mock:
+      result = host.Scp(self.tempdir, '/tmp/remote')
+
+    self.assertIn('root@chromium.org:/tmp/remote', result.cmd)
+
+  def testIpV4(self):
+    host = remote_access.RemoteAccess('127.0.0.1', self.tempdir)
+
+    with self.mock:
+      result = host.Scp(self.tempdir, '/tmp/remote')
+
+    self.assertIn('root@127.0.0.1:/tmp/remote', result.cmd)
+
+  def testIpV6ToLocal(self):
+    host = remote_access.RemoteAccess('::1', self.tempdir)
+
+    with self.mock:
+      result = host.Scp(self.tempdir, '/tmp/remote')
+
+    self.assertIn('root@[::1]:/tmp/remote', result.cmd)
+
+  def testIpV6FromRemote(self):
+    host = remote_access.RemoteAccess('::1', self.tempdir)
+
+    with self.mock:
+      result = host.Scp('/tmp/remote', self.tempdir, to_local=True)
+
+    self.assertIn('root@[::1]:/tmp/remote', result.cmd)
