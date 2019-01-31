@@ -62,10 +62,11 @@ class WebWorkerFetchContext;
 // context. It enables communication between the embedder and Blink's
 // ServiceWorkerGlobalScope. It is created when the service worker begins
 // starting up, and destroyed when the service worker stops. It is owned by
-// EmbeddedWorkerInstanceClientImpl's internal WorkerWrapper class.
+// WebEmbeddedWorkerImpl (which is owned by EmbeddedWorkerInstanceClientImpl).
 //
-// Unless otherwise noted (here or in base class documentation), all methods are
-// called on the worker thread.
+// This class is created and destroyed on the main thread. Unless otherwise
+// noted (here or in base class documentation), all methods are called on the
+// worker thread.
 class CONTENT_EXPORT ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient,
       public blink::mojom::ServiceWorker {
@@ -75,12 +76,12 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   static ServiceWorkerContextClient* ThreadSpecificInstance();
 
   // Called on the main thread.
-  // |is_starting_installed_worker| is true if the script is already installed
-  // and will be streamed from the browser process.
-  //
-  // |start_timing| should be initially populated with
-  // |start_worker_received_time|. This instance will fill in the rest during
-  // startup.
+  // - |is_starting_installed_worker| is true if the script is already installed
+  //   and will be streamed from the browser process.
+  // - |owner| must outlive this new instance.
+  // - |start_timing| should be initially populated with
+  //   |start_worker_received_time|. This instance will fill in the rest during
+  //   startup.
   ServiceWorkerContextClient(
       int embedded_worker_id,
       int64_t service_worker_version_id,
@@ -92,11 +93,12 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
+      EmbeddedWorkerInstanceClientImpl* owner,
       mojom::EmbeddedWorkerStartTimingPtr start_timing,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+  // Called on the main thread.
   ~ServiceWorkerContextClient() override;
 
   // WebServiceWorkerContextClient overrides.
@@ -404,8 +406,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
       service_worker_provider_info_;
 
-  // This is valid from the ctor to WorkerContextDestroyed.
-  std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client_;
+  // Must be accessed on the main thread only.
+  EmbeddedWorkerInstanceClientImpl* owner_;
 
   blink::mojom::BlobRegistryPtr blob_registry_;
 

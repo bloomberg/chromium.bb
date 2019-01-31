@@ -31,6 +31,9 @@ void EmbeddedWorkerInstanceClientImpl::Create(
     mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
+  // We can't use MakeStrongBinding because must give the worker thread
+  // a chance to stop by calling TerminateWorkerContext() and waiting
+  // before destructing.
   new EmbeddedWorkerInstanceClientImpl(std::move(request));
 }
 
@@ -38,8 +41,7 @@ void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
   DCHECK(worker_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed");
-  // Destroys |this|.
-  worker_.reset();
+  delete this;
 }
 
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
@@ -68,8 +70,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->renderer_preferences),
       std::move(params->service_worker_request),
       std::move(params->controller_request), std::move(params->instance_host),
-      std::move(params->provider_info), std::move(temporal_self_),
-      std::move(start_timing), std::move(params->preference_watcher_request),
+      std::move(params->provider_info), this, std::move(start_timing),
+      std::move(params->preference_watcher_request),
       std::move(params->subresource_loader_factories),
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
@@ -88,11 +90,11 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
   // StopWorker must be called after StartWorker is called.
-  DCHECK(ChildThreadImpl::current());
   DCHECK(worker_);
 
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
   worker_->TerminateWorkerContext();
+  // We continue in WorkerContextDestroyed() after the worker thread is stopped.
 }
 
 void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
@@ -117,7 +119,7 @@ void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     mojom::EmbeddedWorkerInstanceClientRequest request)
-    : binding_(this, std::move(request)), temporal_self_(this) {
+    : binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(base::BindOnce(
       &EmbeddedWorkerInstanceClientImpl::OnError, base::Unretained(this)));
 }
@@ -125,9 +127,16 @@ EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
 EmbeddedWorkerInstanceClientImpl::~EmbeddedWorkerInstanceClientImpl() {}
 
 void EmbeddedWorkerInstanceClientImpl::OnError() {
-  // Destroys |this| if |temporal_self_| still owns this (i.e., StartWorker()
-  // was not yet called).
-  temporal_self_.reset();
+  // The connection to the browser process broke.
+  if (worker_) {
+    // The worker is running, so tell it to stop. We continue in
+    // WorkerContextDestroyed().
+    StopWorker();
+    return;
+  }
+
+  // Nothing left to do.
+  delete this;
 }
 
 std::unique_ptr<blink::WebEmbeddedWorker>

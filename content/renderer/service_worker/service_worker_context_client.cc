@@ -523,7 +523,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-    std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
+    EmbeddedWorkerInstanceClientImpl* owner,
     mojom::EmbeddedWorkerStartTimingPtr start_timing,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
@@ -539,8 +539,10 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       proxy_(nullptr),
       pending_service_worker_request_(std::move(service_worker_request)),
       pending_controller_request_(std::move(controller_request)),
-      embedded_worker_client_(std::move(embedded_worker_client)),
+      owner_(owner),
       start_timing_(std::move(start_timing)) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(owner_);
   instance_host_ =
       mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
           std::move(instance_host), main_thread_task_runner_);
@@ -579,6 +581,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
 }
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   // TODO(crbug.com/907311): Remove this instrumentation after we identified
   // the cause of crash.
   if (report_debug_log_ && context_) {
@@ -607,8 +610,7 @@ void ServiceWorkerContextClient::WorkerContextFailedToStart() {
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ServiceWorkerContextClient",
                                   this, "Status", "WorkerContextFailedToStart");
 
-  DCHECK(embedded_worker_client_);
-  embedded_worker_client_->WorkerContextDestroyed();
+  owner_->WorkerContextDestroyed();
 }
 
 void ServiceWorkerContextClient::FailedToLoadInstalledClassicScript() {
@@ -762,11 +764,12 @@ void ServiceWorkerContextClient::WorkerContextDestroyed() {
 
   (*instance_host_)->OnStopped();
 
-  DCHECK(embedded_worker_client_);
+  // base::Unretained is safe because |owner_| does not destroy itself until
+  // WorkerContextDestroyed is called.
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed,
-                     std::move(embedded_worker_client_)));
+                     base::Unretained(owner_)));
 }
 
 void ServiceWorkerContextClient::CountFeature(
@@ -1869,8 +1872,7 @@ bool ServiceWorkerContextClient::RequestedTermination() const {
 void ServiceWorkerContextClient::StopWorker() {
   RecordDebugLog("StopWorker");
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  if (embedded_worker_client_)
-    embedded_worker_client_->StopWorker();
+  owner_->StopWorker();
 }
 
 base::WeakPtr<ServiceWorkerContextClient>
