@@ -68,7 +68,6 @@ class FakeScreenCapturer : public webrtc::DesktopCapturer {
     DCHECK(callback_);
     std::unique_ptr<webrtc::DesktopFrame> frame(
         new webrtc::BasicDesktopFrame(webrtc::DesktopSize(10, 10)));
-    memset(frame->data(), 0, frame->stride() * frame->size().height());
     callback_->OnCaptureResult(webrtc::DesktopCapturer::Result::SUCCESS,
                                std::move(frame));
   }
