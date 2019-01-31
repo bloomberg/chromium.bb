@@ -142,6 +142,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void DestroySkImages(std::vector<sk_sp<SkImage>>&& images,
                        uint64_t sync_fence_release);
 
+  bool was_context_lost() { return context_state_->context_lost(); }
+
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
