@@ -142,7 +142,6 @@ crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 crbug.com/771003 virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 crbug.com/771003 virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
-crbug.com/771003 virtual/feature-policy-for-sandbox/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - known differences in product
 # behavior (either accepted for the long-term, or for the short-term):
@@ -154,7 +153,6 @@ crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
 crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 crbug.com/669083 virtual/outofblink-cors-ns/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
-crbug.com/669083 virtual/feature-policy-for-sandbox/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 crbug.com/886588 external/wpt/dom/events/EventListener-addEventListener.sub.window.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
@@ -170,7 +168,6 @@ crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/up
 crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 virtual/outofblink-cors-ns/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/793127 virtual/outofblink-cors/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
-crbug.com/793127 virtual/feature-policy-for-sandbox/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
 crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
@@ -2057,7 +2054,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touc
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518883 crbug.com/390452 virtual/outofblink-cors/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518883 crbug.com/390452 virtual/outofblink-cors-ns/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
-crbug.com/518883 crbug.com/390452 virtual/feature-policy-for-sandbox/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/outofblink-cors-ns/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
@@ -2459,10 +2455,6 @@ crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/XFrameOp
 crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] virtual/outofblink-cors-ns/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/feature-policy-for-sandbox/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/feature-policy-for-sandbox/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
-crbug.com/528062 [ Win ] virtual/feature-policy-for-sandbox/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
@@ -2744,7 +2736,6 @@ crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 virtual/outofblink-cors/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 virtual/outofblink-cors-ns/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
-crbug.com/501659 virtual/feature-policy-for-sandbox/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 crbug.com/545140 [ Mac ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
@@ -2869,7 +2860,6 @@ crbug.com/705125 fast/mediacapturefromelement/CanvasCaptureMediaStream-capture-o
 crbug.com/763830 http/tests/security/cors-rfc1918/ [ Skip ]
 crbug.com/763830 virtual/outofblink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
 crbug.com/763830 virtual/outofblink-cors-ns/http/tests/security/cors-rfc1918/ [ Skip ]
-crbug.com/763830 virtual/feature-policy-for-sandbox/http/tests/security/cors-rfc1918/ [ Skip ]
 
 crbug.com/831729 external/wpt/event-timing/event-timing-crossiframe.html [ Timeout ]
 crbug.com/831729 external/wpt/event-timing/event-timing-observer-manual.html [ Skip ]
@@ -4395,7 +4385,6 @@ crbug.com/914587 external/wpt/webmessaging/without-ports/018.html [ Timeout ]
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 crbug.com/610835 virtual/outofblink-cors/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 crbug.com/610835 virtual/outofblink-cors-ns/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
-crbug.com/610835 virtual/feature-policy-for-sandbox/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 
 # Added 2016-12-12
 crbug.com/673539 [ Linux ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
@@ -4573,8 +4562,6 @@ crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPoli
 crbug.com/724027 virtual/outofblink-cors/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
 crbug.com/724027 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
 crbug.com/724027 virtual/outofblink-cors-ns/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
-crbug.com/724027 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Skip ]
-crbug.com/724027 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/source-list-parsing-04.html [ Skip ]
 
 # Sheriff failures 2017-05-16
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
@@ -4674,7 +4661,6 @@ crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 crbug.com/708994 virtual/outofblink-cors/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 crbug.com/708994 virtual/outofblink-cors-ns/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
-crbug.com/708994 virtual/feature-policy-for-sandbox/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 
 crbug.com/745887 [ Mac ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
 crbug.com/745887 [ Win ] fast/frames/sandboxed-iframe-plugins.html [ Failure Pass ]
@@ -6011,19 +5997,6 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 
 # WebXR feature policy feature name in Chrome doesn't match spec.
 crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Failure ]
-
-# Feature Policy for Sandbox currently causes these tests to fail.
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-empty-subframe.html [ Failure ]
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-empty.html [ Failure ]
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-in-http-header-control.html [ Failure ]
-crbug.com/926245 virtual/feature-policy-for-sandbox/http/tests/security/contentSecurityPolicy/sandbox-invalid-header.html [ Failure ]
-crbug.com/926247 virtual/feature-policy-for-sandbox/http/tests/navigation/new-window-sandboxed-iframe.html [ Failure ]
-crbug.com/926247 virtual/feature-policy-for-sandbox/http/tests/security/popup-allowed-by-sandbox-is-sandboxed.html [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_css_and_js_ie.mht [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_css_and_js_unmht.mht [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_javascript.mht [ Failure ]
-crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/transfer_encoding_8bit.mht [ Failure ]
-crbug.com/926249 virtual/feature-policy-for-sandbox/http/tests/security/sandbox-iframe-blocks-modals.php [ Failure ]
 
 # Sheriff 2019-01-25
 crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
