@@ -4,6 +4,8 @@
 
 #include "content/test/not_implemented_network_url_loader_factory.h"
 
+#include "services/network/public/mojom/url_loader.mojom.h"
+
 namespace content {
 
 NotImplementedNetworkURLLoaderFactory::NotImplementedNetworkURLLoaderFactory() =
