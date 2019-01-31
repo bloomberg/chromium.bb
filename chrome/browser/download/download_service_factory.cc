@@ -80,9 +80,10 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 
 #if defined(CHROMEOS)
   if (!context->IsOffTheRecord()) {
-    clients->insert(std::make_pair(
-        download::DownloadClient::PLUGIN_VM_IMAGE,
-        std::make_unique<plugin_vm::PluginVmImageDownloadClient>()));
+    clients->insert(
+        std::make_pair(download::DownloadClient::PLUGIN_VM_IMAGE,
+                       std::make_unique<plugin_vm::PluginVmImageDownloadClient>(
+                           Profile::FromBrowserContext(context))));
   }
 #endif
 
