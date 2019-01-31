@@ -288,7 +288,11 @@ TEST_F(UkmPageLoadMetricsObserverTest,
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
       test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
-  EXPECT_EQ(0ul, merged_entries.size());
+  for (const auto& kv : merged_entries) {
+    EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName));
+  }
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LastImagePaint) {
@@ -342,7 +346,11 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_DiscardBackgroundResult) {
 
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
       test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
-  EXPECT_EQ(0ul, merged_entries.size());
+  for (const auto& kv : merged_entries) {
+    EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
+        kv.second.get(),
+        PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName));
+  }
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_ReportLastCandidate) {
