@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "device/usb/public/mojom/device.mojom-blink.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
