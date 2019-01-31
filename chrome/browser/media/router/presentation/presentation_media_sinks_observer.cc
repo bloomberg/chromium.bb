@@ -30,8 +30,9 @@ void PresentationMediaSinksObserver::OnSinksReceived(
       result.empty() ? blink::mojom::ScreenAvailability::UNAVAILABLE
                      : blink::mojom::ScreenAvailability::AVAILABLE;
 
-  DVLOG(1) << "PresentationMediaSinksObserver::OnSinksReceived: " << source()
-           << " " << (result.empty() ? "unavailable" : "available");
+  DVLOG(1) << "PresentationMediaSinksObserver::OnSinksReceived: "
+           << (source() ? source()->id() : "Any source") << " "
+           << (result.empty() ? "unavailable" : "available");
 
   // Don't send if new result is same as previous.
   if (previous_availability_ == current_availability)

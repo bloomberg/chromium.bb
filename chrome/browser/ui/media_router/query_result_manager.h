@@ -112,6 +112,7 @@ class QueryResultManager {
 
  private:
   class MediaSourceMediaSinksObserver;
+  class AnyMediaSinksObserver;
 
   FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, Observers);
   FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, StartRoutesDiscovery);
@@ -136,6 +137,9 @@ class QueryResultManager {
   void SetSinksCompatibleWithSource(MediaCastMode cast_mode,
                                     const MediaSource& source,
                                     const std::vector<MediaSink>& new_sinks);
+
+  // Updates the overall list of sinks to match |sinks|.
+  void UpdateSinkList(const std::vector<MediaSink>& sinks);
 
   // Returns the highest-priority source for |cast_mode| contained in
   // |sources_for_sink|. Returns an empty unique_ptr if none exists.
