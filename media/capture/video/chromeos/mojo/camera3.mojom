@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next min version: 2
+// Next min version: 3
 
 module cros.mojom;
 
@@ -73,12 +73,25 @@ enum Camera3BufferStatus {
   CAMERA3_BUFFER_STATUS_ERROR = 1,
 };
 
+// Structure that contains needed information about a camera buffer.
+struct CameraBufferHandle {
+  uint64 buffer_id;
+  array<handle> fds;
+  uint32 drm_format;
+  HalPixelFormat hal_pixel_format;
+  uint32 width;
+  uint32 height;
+  array<uint32> strides;
+  array<uint32> offsets;
+};
+
 struct Camera3StreamBuffer {
   uint64 stream_id;
   uint64 buffer_id;
   Camera3BufferStatus status;
   handle? acquire_fence;
   handle? release_fence;
+  [MinVersion=2] CameraBufferHandle? buffer_handle;
 };
 
 enum Camera3MsgType {
@@ -158,9 +171,8 @@ interface Camera3CallbackOps {
 };
 
 // Camera3DeviceOps is mostly a translation of the camera3_device_ops_t API from
-// Android camera HAL v3, with the additional RegisterBuffer() function to pass
-// buffer handles across processes.  This is the interface to interact with a
-// camera device in the camera HAL.
+// Android camera HAL v3.  This is the interface to interact with a camera
+// device in the camera HAL.
 //
 // The work flow of the Camera3DeviceOps is:
 //
@@ -178,21 +190,15 @@ interface Camera3CallbackOps {
 //   4. Start the capture loop. The capture loop is composed of a series of
 //      capture requests and results.
 //
-//      For each capture request:
-//        a. Call RegisterBuffer() for each buffer associated with the request
-//           to register the buffers which will later be filled by the camera
-//           HAL with capture result.  For example, the client may register one
-//           small buffer for the low-resolution preview stream and one large
-//           buffer for the high-resolution still capture stream.
-//        b. Call ProcessCaptureRequest() to request capturing one frame.  A
-//           request may contain multiple streams and the camera HAL would fill
-//           the buffers of each streams per requirements specified in
-//           ConfigureStreams() and RegisterBuffer().  For example, the camera
-//           HAL may fill a frame to a still capture buffer with the native
-//           capture resolution, and down-scale the same frame to a lower
-//           resolution for the preview buffer.
-//      The client may continue with RegisterBuffer() -> ProcessCaptureRequest()
-//      up to the pipe-line depth configured in ConfigureStreams().
+//      The capture loop shall call ProcessCaptureRequest() to request capturing
+//      each frame.  A request may contain multiple streams and the camera HAL
+//      would fill the buffers of each streams per requirements specified in
+//      ConfigureStreams().  For example, the camera HAL may fill a frame to a
+//      still capture buffer with the native capture resolution, and down-scale
+//      the same frame to a lower resolution for the preview buffer.
+//
+//      The client may continue calling ProcessCaptureRequest() up to the
+//      pipe-line depth configured in ConfigureStreams().
 //
 //      When the camera HAL is done with a capture request, the capture result
 //      is sent back to the client through the callbacks in Camera3CallbackOps.
@@ -247,6 +253,8 @@ interface Camera3DeviceOps {
   // camera HAL to idle state.
   Flush@5() => (int32 result);
 
+  // [Deprecated in version 2]
+  //
   // The type of buffers the CrOS camera service currently supports.
   // GRALLOC is for the platform-specific gralloc buffer allocated by Android.
   // SHM is for the shared memory buffer allocated by Chrome.
@@ -256,6 +264,8 @@ interface Camera3DeviceOps {
     // Add DMABUF when needed.
   };
 
+  // [Deprecated in version 2]
+  //
   // RegisterBuffer() is called to register a buffer with the camera HAL.  The
   // registered buffer can then be specified in ProcessCaptureRequest() for the
   // camera HAL to fill captured frame.  RegisterBuffer() is not part of the

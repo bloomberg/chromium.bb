@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/stream_buffer_manager.h"
+#include "media/capture/video/chromeos/request_manager.h"
 #endif
 
 using ::testing::Return;
