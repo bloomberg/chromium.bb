@@ -67,7 +67,7 @@ class MODULES_EXPORT P2PQuicStreamImpl final : public quic::QuicStream,
  private:
   using quic::QuicStream::Reset;
 
-  // Outlives the P2PQuicStreamImpl.
+  // Must either outlive the P2PQuicStream or unset itself upon destruction.
   Delegate* delegate_;
 
   // The read buffer size of the delegate. The |delegate_read_buffered_amount_|

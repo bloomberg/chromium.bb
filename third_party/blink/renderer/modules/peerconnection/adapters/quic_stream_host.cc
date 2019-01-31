@@ -99,6 +99,7 @@ void QuicStreamHost::OnWriteDataConsumed(uint32_t amount) {
 void QuicStreamHost::Delete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(transport_host_);
+  p2p_stream_->SetDelegate(nullptr);
   // OnRemoveStream will delete |this|.
   transport_host_->OnRemoveStream(this);
 }
