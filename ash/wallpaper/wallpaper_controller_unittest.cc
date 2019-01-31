@@ -207,7 +207,6 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
 
 // See content::RunAllTasksUntilIdle().
 void RunAllTasksUntilIdle() {
-  LOG(ERROR) << "RunAllTasksUntilIdle - before";
   while (true) {
     TaskObserver task_observer;
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
@@ -220,7 +219,6 @@ void RunAllTasksUntilIdle() {
     if (!task_observer.processed())
       break;
   }
-  LOG(ERROR) << "RunAllTasksUntilIdle - after";
 }
 
 // A test implementation of the WallpaperObserver mojo interface.
