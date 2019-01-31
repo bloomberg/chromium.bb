@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PUSH_SUBSCRIPTION_H_
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PUSH_SUBSCRIPTION_H_
 
+#include "media/capture/mojom/image_capture.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

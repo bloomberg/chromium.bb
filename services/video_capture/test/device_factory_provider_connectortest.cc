@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/service_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"

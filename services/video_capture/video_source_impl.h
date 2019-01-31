@@ -12,6 +12,8 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/video_capture/broadcasting_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
+#include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
 namespace video_capture {

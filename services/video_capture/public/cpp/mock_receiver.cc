@@ -5,6 +5,7 @@
 #include "services/video_capture/public/cpp/mock_receiver.h"
 
 #include "base/stl_util.h"
+#include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace video_capture {
 

@@ -14,6 +14,7 @@
 #include "media/capture/video/video_capture_device_info.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
+#include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 
 namespace {

@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
+#include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 namespace video_capture {

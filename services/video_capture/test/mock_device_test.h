@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

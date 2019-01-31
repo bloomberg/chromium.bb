@@ -11,6 +11,7 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
+#include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace video_capture {
 

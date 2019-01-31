@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace video_capture {
 
