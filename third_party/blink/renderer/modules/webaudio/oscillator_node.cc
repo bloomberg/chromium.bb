@@ -489,15 +489,6 @@ bool OscillatorHandler::PropagatesSilence() const {
   return !IsPlayingOrScheduled() || HasFinished() || !periodic_wave_.Get();
 }
 
-void OscillatorHandler::HandleStoppableSourceNode() {
-  double now = Context()->currentTime();
-
-  if (end_time_ != kUnknownTime && IsPlayingOrScheduled() &&
-      now >= end_time_ + kExtraStopFrames / Context()->sampleRate()) {
-    Finish();
-  }
-}
-
 // ----------------------------------------------------------------
 
 OscillatorNode::OscillatorNode(BaseAudioContext& context,

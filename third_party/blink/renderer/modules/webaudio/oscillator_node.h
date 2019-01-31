@@ -64,8 +64,6 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
 
   void SetPeriodicWave(PeriodicWave*);
 
-  void HandleStoppableSourceNode() override;
-
  private:
   OscillatorHandler(AudioNode&,
                     float sample_rate,
@@ -129,9 +127,9 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   AudioParam* detune();
   void setPeriodicWave(PeriodicWave*);
 
+ private:
   OscillatorHandler& GetOscillatorHandler() const;
 
- private:
   Member<AudioParam> frequency_;
   Member<AudioParam> detune_;
 };
