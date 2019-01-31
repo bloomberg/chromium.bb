@@ -47,6 +47,7 @@ public class BrowserTaskExecutor implements TaskExecutor {
             // TODO(alexclarke): ThreadUtils.getUiThreadHandler shouldn't be in base.
             taskRunner =
                     new SingleThreadTaskRunnerImpl(ThreadUtils.getUiThreadHandler(), taskTraits);
+            taskRunner.disableLifetimeCheck();
             mTaskRunners.put(taskTraits, taskRunner);
             return taskRunner;
         }
