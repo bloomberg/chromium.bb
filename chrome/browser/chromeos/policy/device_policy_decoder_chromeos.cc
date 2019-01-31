@@ -768,7 +768,16 @@ void DecodeExternalDataPolicies(
     const em::ChromeDeviceSettingsProto& policy,
     base::WeakPtr<ExternalDataManager> external_data_manager,
     PolicyMap* policies) {
-  // TODO(https://crbug.com/814364): Migrate device wallpaper here.
+  if (policy.has_device_wallpaper_image()) {
+    const em::DeviceWallpaperImageProto& container(
+        policy.device_wallpaper_image());
+    if (container.has_device_wallpaper_image()) {
+      SetExternalDataDevicePolicy(key::kDeviceWallpaperImage,
+                                  container.device_wallpaper_image(),
+                                  external_data_manager, policies);
+    }
+  }
+
   if (policy.has_native_device_printers()) {
     const em::DeviceNativePrintersProto& container(
         policy.native_device_printers());
@@ -951,15 +960,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           std::make_unique<base::Value>(container.quirks_download_enabled()),
           nullptr);
-    }
-  }
-
-  if (policy.has_device_wallpaper_image()) {
-    const em::DeviceWallpaperImageProto& container(
-        policy.device_wallpaper_image());
-    if (container.has_device_wallpaper_image()) {
-      SetJsonDevicePolicy(key::kDeviceWallpaperImage,
-                          container.device_wallpaper_image(), policies);
     }
   }
 

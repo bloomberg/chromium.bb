@@ -103,12 +103,6 @@ base::FilePath& GlobalChromeOSCustomWallpapersDir() {
   return *dir_chrome_os_custom_wallpapers;
 }
 
-// The file path of the device policy wallpaper (if any).
-base::FilePath& GlobalDevicePolicyWallpaperFile() {
-  static base::NoDestructor<base::FilePath> device_policy_wallpaper_file;
-  return *device_policy_wallpaper_file;
-}
-
 void SetGlobalUserDataDir(const base::FilePath& path) {
   base::FilePath& global_path = GlobalUserDataDir();
   global_path = path;
@@ -121,11 +115,6 @@ void SetGlobalChromeOSWallpapersDir(const base::FilePath& path) {
 
 void SetGlobalChromeOSCustomWallpapersDir(const base::FilePath& path) {
   base::FilePath& global_path = GlobalChromeOSCustomWallpapersDir();
-  global_path = path;
-}
-
-void SetGlobalDevicePolicyWallpaperFile(const base::FilePath& path) {
-  base::FilePath& global_path = GlobalDevicePolicyWallpaperFile();
   global_path = path;
 }
 
@@ -875,15 +864,13 @@ void WallpaperController::Init(
     const base::FilePath& user_data_path,
     const base::FilePath& chromeos_wallpapers_path,
     const base::FilePath& chromeos_custom_wallpapers_path,
-    const base::FilePath& device_policy_wallpaper_path,
-    bool is_device_wallpaper_policy_enforced) {
+    const base::FilePath& device_policy_wallpaper_path) {
   DCHECK(!wallpaper_controller_client_.get());
   wallpaper_controller_client_ = std::move(client);
   SetGlobalUserDataDir(user_data_path);
   SetGlobalChromeOSWallpapersDir(chromeos_wallpapers_path);
   SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
-  SetGlobalDevicePolicyWallpaperFile(device_policy_wallpaper_path);
-  is_device_wallpaper_policy_enforced_ = is_device_wallpaper_policy_enforced;
+  SetDevicePolicyWallpaperPath(device_policy_wallpaper_path);
 }
 
 void WallpaperController::SetCustomWallpaper(
@@ -1034,13 +1021,15 @@ void WallpaperController::SetPolicyWallpaper(
                   std::move(callback));
 }
 
-void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
-  bool previous_enforced = is_device_wallpaper_policy_enforced_;
-  is_device_wallpaper_policy_enforced_ = enforced;
-
+void WallpaperController::SetDevicePolicyWallpaperPath(
+    const base::FilePath& device_policy_wallpaper_path) {
+  const bool was_device_policy_wallpaper_enforced =
+      !device_policy_wallpaper_path_.empty();
+  device_policy_wallpaper_path_ = device_policy_wallpaper_path;
   if (ShouldSetDevicePolicyWallpaper()) {
     SetDevicePolicyWallpaper();
-  } else if ((previous_enforced != enforced) && !enforced) {
+  } else if (was_device_policy_wallpaper_enforced &&
+             device_policy_wallpaper_path.empty()) {
     // If the device wallpaper policy is cleared, the wallpaper should revert to
     // the wallpaper of the current user with the large pod in the users list in
     // the login screen. If there is no such user, use the first user in the
@@ -1175,7 +1164,8 @@ void WallpaperController::ShowUserWallpaper(
 
   base::FilePath wallpaper_path;
   if (info.type == DEVICE) {
-    wallpaper_path = GlobalDevicePolicyWallpaperFile();
+    DCHECK(!device_policy_wallpaper_path_.empty());
+    wallpaper_path = device_policy_wallpaper_path_;
   } else {
     std::string sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
     // Wallpaper is not resized when layout is
@@ -2027,16 +2017,12 @@ bool WallpaperController::IsOneShotWallpaper() const {
 bool WallpaperController::ShouldSetDevicePolicyWallpaper() const {
   // Only allow the device wallpaper if the policy is in effect for enterprise
   // managed devices.
-  if (!is_device_wallpaper_policy_enforced_)
+  if (device_policy_wallpaper_path_.empty())
     return false;
 
   // Only set the device wallpaper if we're at the login screen.
-  if (Shell::Get()->session_controller()->GetSessionState() !=
-      session_manager::SessionState::LOGIN_PRIMARY) {
-    return false;
-  }
-
-  return true;
+  return Shell::Get()->session_controller()->GetSessionState() ==
+         session_manager::SessionState::LOGIN_PRIMARY;
 }
 
 void WallpaperController::SetDevicePolicyWallpaper() {
@@ -2044,7 +2030,7 @@ void WallpaperController::SetDevicePolicyWallpaper() {
   ReadAndDecodeWallpaper(
       base::BindRepeating(&WallpaperController::OnDevicePolicyWallpaperDecoded,
                           weak_factory_.GetWeakPtr()),
-      sequenced_task_runner_.get(), GlobalDevicePolicyWallpaperFile());
+      sequenced_task_runner_.get(), device_policy_wallpaper_path_);
 }
 
 void WallpaperController::OnDevicePolicyWallpaperDecoded(
@@ -2060,7 +2046,7 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
     SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
                             /*show_wallpaper=*/true);
   } else {
-    WallpaperInfo info(GlobalDevicePolicyWallpaperFile().value(),
+    WallpaperInfo info(device_policy_wallpaper_path_.value(),
                        WALLPAPER_LAYOUT_CENTER_CROPPED, DEVICE,
                        base::Time::Now().LocalMidnight());
     ShowWallpaperImage(image, info, /*preview_mode=*/false);

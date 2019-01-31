@@ -1916,7 +1916,8 @@ TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
 
   // Verify the device policy wallpaper is shown on login screen.
   SetSessionState(SessionState::LOGIN_PRIMARY);
-  controller_->SetDeviceWallpaperPolicyEnforced(true);
+  controller_->SetDevicePolicyWallpaperPath(
+      base::FilePath(kDefaultSmallWallpaperName));
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_TRUE(IsDevicePolicyWallpaper());

@@ -39,8 +39,7 @@ class TestWallpaperController : ash::mojom::WallpaperController {
             const base::FilePath& user_data_path,
             const base::FilePath& chromeos_wallpapers_path,
             const base::FilePath& chromeos_custom_wallpapers_path,
-            const base::FilePath& device_policy_wallpaper_path,
-            bool is_device_wallpaper_policy_enforced) override;
+            const base::FilePath& device_policy_wallpaper_path) override;
   void SetCustomWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
@@ -70,7 +69,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   void SetPolicyWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
-  void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void SetDevicePolicyWallpaperPath(
+      const base::FilePath& device_policy_wallpaper_path) override;
   void SetThirdPartyWallpaper(
       ash::mojom::WallpaperUserInfoPtr user_info,
       const std::string& wallpaper_files_id,
