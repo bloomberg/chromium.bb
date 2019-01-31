@@ -286,8 +286,9 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   EXPECT_TRUE(observer.WaitForMetadata()->IsEmpty());
 }
 
+// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       NotifyMetadataAndActionsChangeWhenControllable) {
+       DISABLED_NotifyMetadataAndActionsChangeWhenControllable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
@@ -322,8 +323,9 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   }
 }
 
+// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       NotifyMetadataAndActionsChangeWhenTurningControllable) {
+       DISABLED_NotifyMetadataAndActionsChangeWhenTurningControllable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
@@ -359,8 +361,9 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   }
 }
 
+// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       NotifyActionsAndMetadataChangeWhenTurningUncontrollable) {
+       DISABLED_NotifyActionsAndMetadataChangeWhenTurningUncontrollable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
@@ -659,8 +662,9 @@ TEST_F(MediaSessionImplServiceRoutingTest, DefaultActionsAlwaysSupported) {
             observer.actions_set());
 }
 
+// TODO(https://crbug.com/925868): Fix and re-enable this.
 TEST_F(MediaSessionImplServiceRoutingTest,
-       DefaultActionsRemovedIfUncontrollable) {
+       DISABLED_DefaultActionsRemovedIfUncontrollable) {
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_, media::MediaContentType::OneShot);
 

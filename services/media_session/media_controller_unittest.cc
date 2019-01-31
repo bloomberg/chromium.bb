@@ -770,7 +770,8 @@ TEST_F(MediaControllerTest, ActiveController_Actions_AddObserver_WithInfo) {
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_Actions_Observer_Empty) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+TEST_F(MediaControllerTest, DISABLED_ActiveController_Actions_Observer_Empty) {
   test::MockMediaSession media_session;
   media_session.EnableAction(mojom::MediaSessionAction::kPlay);
   media_session.SetIsControllable(true);
@@ -790,7 +791,9 @@ TEST_F(MediaControllerTest, ActiveController_Actions_Observer_Empty) {
   }
 }
 
-TEST_F(MediaControllerTest, ActiveController_Actions_Observer_WithInfo) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+TEST_F(MediaControllerTest,
+       DISABLED_ActiveController_Actions_Observer_WithInfo) {
   test::MockMediaSession media_session;
   media_session.SetIsControllable(true);
 

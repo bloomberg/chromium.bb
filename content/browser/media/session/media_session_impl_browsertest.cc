@@ -818,8 +818,10 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_TRUE(IsActive());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsShowForTransientAndPlaybackStatePaused) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+IN_PROC_BROWSER_TEST_P(
+    MediaSessionImplParamBrowserTest,
+    DISABLED_ControlsShowForTransientAndPlaybackStatePaused) {
   EnsureMediaSessionService();
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
       shell()->web_contents()->GetMainFrame());
@@ -842,8 +844,10 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_TRUE(IsActive());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsShowForTransientAndPlaybackStatePlaying) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+IN_PROC_BROWSER_TEST_P(
+    MediaSessionImplParamBrowserTest,
+    DISABLED_ControlsShowForTransientAndPlaybackStatePlaying) {
   EnsureMediaSessionService();
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
       shell()->web_contents()->GetMainFrame());
@@ -1491,8 +1495,9 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_TRUE(IsActive());
 }
 
+// TODO(https://crbug.com/925868): Fix and re-enable this.
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsDontShowWhenOneShotIsPresent) {
+                       DISABLED_ControlsDontShowWhenOneShotIsPresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1533,8 +1538,10 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsHiddenAfterRemoveOneShotWithoutOtherPlayers) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+IN_PROC_BROWSER_TEST_P(
+    MediaSessionImplParamBrowserTest,
+    DISABLED_ControlsHiddenAfterRemoveOneShotWithoutOtherPlayers) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -1559,8 +1566,10 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_FALSE(IsActive());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       ControlsShowAfterRemoveOneShotWithPersistentPresent) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+IN_PROC_BROWSER_TEST_P(
+    MediaSessionImplParamBrowserTest,
+    DISABLED_ControlsShowAfterRemoveOneShotWithPersistentPresent) {
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
 
   {
@@ -2181,8 +2190,10 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   EXPECT_EQ(expected_metadata, observer.WaitForMetadata());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
-                       AddingObserverNotifiesCurrentInformation_WithInfo) {
+// TODO(https://crbug.com/925868): Fix and re-enable this.
+IN_PROC_BROWSER_TEST_P(
+    MediaSessionImplParamBrowserTest,
+    DISABLED_AddingMojoObserverNotifiesCurrentInformation_WithInfo) {
   // Set up the service and information.
   EnsureMediaSessionService();
 
