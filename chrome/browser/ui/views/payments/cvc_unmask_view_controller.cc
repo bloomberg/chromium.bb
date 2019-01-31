@@ -311,8 +311,6 @@ void CvcUnmaskViewController::CvcConfirmed() {
     }
     unmask_delegate_->OnUnmaskResponse(response);
   }
-
-  dialog()->ShowProcessingSpinner();
 }
 
 void CvcUnmaskViewController::DisplayError(base::string16 error) {

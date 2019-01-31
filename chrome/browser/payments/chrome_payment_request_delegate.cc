@@ -190,4 +190,8 @@ void ChromePaymentRequestDelegate::EmbedPaymentHandlerWindow(
   }
 }
 
+bool ChromePaymentRequestDelegate::IsInteractive() const {
+  return shown_dialog_ && shown_dialog_->IsInteractive();
+}
+
 }  // namespace payments

@@ -456,6 +456,13 @@ void PaymentRequest::OnPaymentResponseAvailable(
     return;
   }
 
+  // If currently interactive, show the processing spinner. Autofill payment
+  // instruments request a CVC, so they are always interactive at this point. A
+  // payment handler may elect to be non-interactive by not showing a
+  // confirmation page to the user.
+  if (delegate_->IsInteractive())
+    delegate_->ShowProcessingSpinner();
+
   client_->OnPaymentResponse(std::move(response));
 }
 
