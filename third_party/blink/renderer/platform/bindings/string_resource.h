@@ -108,7 +108,7 @@ class StringResourceBase {
 
  private:
 #if DCHECK_IS_ON()
-  WTF::ThreadIdentifier thread_id_;
+  base::PlatformThreadId thread_id_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(StringResourceBase);

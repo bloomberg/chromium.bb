@@ -40,13 +40,11 @@
 
 namespace WTF {
 
-using ThreadIdentifier = base::PlatformThreadId;
-
 // Initializes global state required by |currentThread|.
 // Needs to be called once during program execution, before |currentThread|.
 WTF_EXPORT void InitializeCurrentThread();
 
-WTF_EXPORT ThreadIdentifier CurrentThread();
+WTF_EXPORT base::PlatformThreadId CurrentThread();
 
 #if DCHECK_IS_ON()
 WTF_EXPORT bool IsBeforeThreadCreated();
@@ -55,7 +53,6 @@ WTF_EXPORT void WillCreateThread();
 
 }  // namespace WTF
 
-using WTF::ThreadIdentifier;
 using WTF::CurrentThread;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_H_

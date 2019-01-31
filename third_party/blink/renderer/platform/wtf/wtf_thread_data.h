@@ -54,7 +54,7 @@ class WTF_EXPORT WTFThreadData {
 
   ICUConverterWrapper& CachedConverterICU() { return *cached_converter_icu_; }
 
-  ThreadIdentifier ThreadId() const { return thread_id_; }
+  base::PlatformThreadId ThreadId() const { return thread_id_; }
 
   // Must be called on the main thread before any callers to wtfThreadData().
   static void Initialize();
@@ -67,7 +67,7 @@ class WTF_EXPORT WTFThreadData {
   std::unique_ptr<AtomicStringTable> atomic_string_table_;
   std::unique_ptr<ICUConverterWrapper> cached_converter_icu_;
 
-  ThreadIdentifier thread_id_;
+  base::PlatformThreadId thread_id_;
 
 #if defined(OS_WIN) && defined(COMPILER_MSVC)
   size_t thread_stack_size_ = 0u;

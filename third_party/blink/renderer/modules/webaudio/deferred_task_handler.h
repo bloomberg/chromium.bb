@@ -243,7 +243,7 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;
-  std::atomic<ThreadIdentifier> audio_thread_;
+  std::atomic<base::PlatformThreadId> audio_thread_;
 };
 
 }  // namespace blink

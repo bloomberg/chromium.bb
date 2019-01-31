@@ -39,7 +39,7 @@
 namespace WTF {
 
 typedef void MainThreadFunction(void*);
-WTF_EXPORT extern ThreadIdentifier g_main_thread_identifier;
+WTF_EXPORT extern base::PlatformThreadId g_main_thread_identifier;
 
 // This function must be called exactly once from the main thread before using
 // anything else in WTF.

@@ -126,7 +126,7 @@ class PLATFORM_EXPORT ParkableStringImpl final
   const unsigned length_;
 
 #if DCHECK_IS_ON()
-  const ThreadIdentifier owning_thread_;
+  const base::PlatformThreadId owning_thread_;
 #endif
 
   void AssertOnValidThread() const {

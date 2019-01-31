@@ -140,7 +140,7 @@ class SQLiteDatabase {
   Mutex authorizer_lock_;
   CrossThreadPersistent<DatabaseAuthorizer> authorizer_;
 
-  ThreadIdentifier opening_thread_;
+  base::PlatformThreadId opening_thread_;
 
   Mutex database_closing_mutex_;
 

@@ -47,7 +47,7 @@ namespace WTF {
 
 bool g_initialized;
 void (*g_call_on_main_thread_function)(MainThreadFunction, void*);
-ThreadIdentifier g_main_thread_identifier;
+base::PlatformThreadId g_main_thread_identifier;
 
 #if defined(COMPONENT_BUILD) && defined(OS_WIN)
 static thread_local bool g_is_main_thread = false;

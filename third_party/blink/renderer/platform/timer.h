@@ -102,7 +102,7 @@ class PLATFORM_EXPORT TimerBase {
   scoped_refptr<base::SingleThreadTaskRunner> web_task_runner_;
 
 #if DCHECK_IS_ON()
-  ThreadIdentifier thread_;
+  base::PlatformThreadId thread_;
 #endif
   base::WeakPtrFactory<TimerBase> weak_ptr_factory_;
 
