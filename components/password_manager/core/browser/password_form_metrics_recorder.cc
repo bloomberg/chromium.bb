@@ -13,7 +13,9 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
@@ -119,6 +121,26 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
   }
 
   return result;
+}
+
+// Returns whether any value of |submitted_form| is listed in the
+// |interactions_stats| has having been prompted to save as a credential and
+// being ignored too often.
+bool BlacklistedBySmartBubble(
+    const FormData& submitted_form,
+    const std::vector<InteractionsStats>& interactions_stats) {
+  const int show_threshold =
+      password_bubble_experiment::GetSmartBubbleDismissalThreshold();
+  for (const FormFieldData& field : submitted_form.fields) {
+    const base::string16& value =
+        field.typed_value.empty() ? field.value : field.typed_value;
+    for (const InteractionsStats& stat : interactions_stats) {
+      if (stat.username_value == value &&
+          stat.dismissal_count >= show_threshold)
+        return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -400,29 +422,28 @@ void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
 void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     const FormData& submitted_form,
     const std::set<base::string16>& saved_usernames,
-    const std::set<base::string16>& saved_passwords) {
+    const std::set<base::string16>& saved_passwords,
+    const std::vector<InteractionsStats>& interactions_stats) {
   // If the user asked to never save credentials on a domain, an entry with
   // empty password exists for that domain.
   bool blacklisted =
       saved_passwords.find(base::string16()) != saved_passwords.end();
   if (blacklisted && saved_passwords.size() == 1u) {
-    // Note that we miss two nuances here:
+    // Note that we miss a nuance here:
     //
-    // 1) It is possible that the user logs in to a.example.com but
-    // b.example.com is blacklisted. We would still report
-    // kNoSavedCredentialsAndBlacklisted even though the user has not
-    // blacklisted a.example.com and is asked whether they want to save the
-    // credentials.
-    //
-    // 2) It is possible that the user ignored the save bubble a number of times
-    // (default threshold is 3). In this case, no credential is stored and we
-    // report kNoSavedCredentials and not kNoSavedCredentialsAndBlacklisted.
+    // It is possible that the user logs in to a.example.com but b.example.com
+    // is blacklisted. We would still report kNoStoredCredentialsAndBlacklisted
+    // even though the user has not blacklisted a.example.com and is asked
+    // whether they want to save the credentials.
     filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlacklisted;
     return;
   }
 
   if (saved_passwords.empty()) {
-    filling_assistance_ = FillingAssistance::kNoSavedCredentials;
+    filling_assistance_ =
+        BlacklistedBySmartBubble(submitted_form, interactions_stats)
+            ? FillingAssistance::kNoSavedCredentialsAndBlacklistedBySmartBubble
+            : FillingAssistance::kNoSavedCredentials;
     return;
   }
 
