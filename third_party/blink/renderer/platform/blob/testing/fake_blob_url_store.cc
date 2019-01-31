@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob_url_store.h"
 
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+
 namespace blink {
 
 void FakeBlobURLStore::Register(mojom::blink::BlobPtr blob,
