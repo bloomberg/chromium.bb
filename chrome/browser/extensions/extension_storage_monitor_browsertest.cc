@@ -395,9 +395,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
 // Exercises the case where two hosted apps are same-origin but have non-
 // overlapping extents. Disabling one should not suppress storage monitoring for
 // the other.
-// Disabled for flakiness. crbug.com/799022
-IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest,
-                       DISABLED_TwoHostedAppsInSameOrigin) {
+IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, TwoHostedAppsInSameOrigin) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url1 = embedded_test_server()->GetURL(
