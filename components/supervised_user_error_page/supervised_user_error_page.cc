@@ -20,8 +20,8 @@ namespace supervised_user_error_page {
 
 namespace {
 
-static const int kAvatarSize1x = 45;
-static const int kAvatarSize2x = 90;
+static const int kAvatarSize1x = 36;
+static const int kAvatarSize2x = 72;
 
 bool ReasonIsAutomatic(FilteringBehaviorReason reason) {
   return reason == ASYNC_CHECKER || reason == BLACKLIST;
