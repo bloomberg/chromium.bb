@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  Strings for the management disclosure panel
+
+  Disclosing admin capabilities to managed users is an important part of
+  striking a balance between the data needs of admins and the privacy
+  expectations of users.
+
+  Please consult with the privacy team when adding or changing strings.
+-->
+
 <grit-part>
   <message name="IDS_MANAGEMENT_TITLE" desc="Title of chrome://management page, which shows the administrator's capabilities in a managed environment">
     <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> management
