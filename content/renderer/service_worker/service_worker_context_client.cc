@@ -760,19 +760,6 @@ void ServiceWorkerContextClient::WorkerContextDestroyed() {
   DCHECK(g_worker_client_tls.Pointer()->Get() == nullptr);
   RecordDebugLog("WorkerContextDestroyed");
 
-  // TODO(shimazu): The signals to the browser should be in the order:
-  // (1) WorkerStopped (via mojo call EmbeddedWorkerInstanceHost.OnStopped())
-  // (2) ProviderDestroyed (via mojo call
-  // ServiceWorkerDispatcherHost.OnProviderDestroyed()), this is triggered by
-  // the following EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed(),
-  // which will eventually lead to destruction of the service worker provider.
-  // But currently EmbeddedWorkerInstanceHost interface is associated with
-  // EmbeddedWorkerInstanceClient interface, and ServiceWorkerDispatcherHost
-  // interface is associated with the IPC channel, since they are using
-  // different mojo message pipes, the FIFO ordering can not be guaranteed now.
-  // This will be solved once ServiceWorkerProvider{Host,Client} are mojoified
-  // and they are also associated with EmbeddedWorkerInstanceClient in other CLs
-  // (https://crrev.com/2653493009 and https://crrev.com/2779763004).
   (*instance_host_)->OnStopped();
 
   DCHECK(embedded_worker_client_);
