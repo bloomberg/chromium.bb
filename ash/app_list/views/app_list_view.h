@@ -43,6 +43,11 @@ class SearchBoxView;
 class SearchModel;
 class TransitionAnimationObserver;
 
+namespace {
+// The background corner radius in peeking and fullscreen state.
+constexpr int kAppListBackgroundRadius = 28;
+}
+
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 // TODO(newcomer|weidongg): Organize the cc file to match the order of
@@ -239,6 +244,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
+  }
+
+  int get_background_radius_for_test() const {
+    return kAppListBackgroundRadius;
   }
 
   views::View* GetAppListBackgroundShieldForTest();

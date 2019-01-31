@@ -88,9 +88,6 @@ constexpr float kAppListAnimationDurationTestMs = 0;
 constexpr float kAppListAnimationDurationMs = 200;
 constexpr float kAppListAnimationDurationFromFullscreenMs = 250;
 
-// The background corner radius in peeking and fullscreen state.
-constexpr int kAppListBackgroundRadius = 28;
-
 // Events within this threshold from the top of the view will be reserved for
 // home launcher gestures, if they can be processed.
 constexpr int kAppListHomeLaucherGesturesThreshold = 32;
@@ -1225,6 +1222,12 @@ void AppListView::SetState(AppListViewState new_state) {
   RecordStateTransitionForUma(new_state_override);
   model_->SetStateFullscreen(new_state_override);
   app_list_state_ = new_state_override;
+
+  // Animations are skipped for side shelf mode, so trigger a layout to update
+  // children immediately.
+  if (is_side_shelf_)
+    Layout();
+
   if (new_state_override == AppListViewState::CLOSED) {
     return;
   }
