@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableObjectPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
@@ -95,6 +96,33 @@ class KeyboardAccessoryProperties {
                     break;
             }
             return typeName + ": " + mAction;
+        }
+    }
+    /**
+     * This {@link BarItem} is used to render Autofill suggestions into the accessory bar.
+     * For that, it needs (in addition to an {@link Action}) the held {@link AutofillSuggestion}.
+     */
+    public static class AutofillBarItem extends BarItem {
+        private final AutofillSuggestion mSuggestion;
+
+        /**
+         * Creates a new autofill item with a suggestion for the view's representation and an action
+         * to handle the interaction with the rendered View.
+         * @param suggestion An {@link AutofillSuggestion}.
+         * @param action An {@link Action}.
+         */
+        public AutofillBarItem(AutofillSuggestion suggestion, Action action) {
+            super(Type.SUGGESTION, action);
+            mSuggestion = suggestion;
+        }
+
+        public AutofillSuggestion getSuggestion() {
+            return mSuggestion;
+        }
+
+        @Override
+        public String toString() {
+            return "Autofill" + super.toString();
         }
     }
 

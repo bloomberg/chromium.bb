@@ -41,12 +41,17 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DeferredViewStubInflationProvider;
+import org.chromium.ui.DropdownItem;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.ListModel;
@@ -188,5 +193,28 @@ public class KeyboardAccessoryViewTest {
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(doesNotExist());
         onView(withText("Third")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
+    public void testAddsClickableAutofillSuggestions() {
+        AtomicReference<Boolean> clickRecorded = new AtomicReference<>();
+        KeyboardAccessoryData.Action action = new KeyboardAccessoryData.Action(
+                "Unused", AUTOFILL_SUGGESTION, result -> clickRecorded.set(true));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(VISIBLE, true);
+            mModel.get(BAR_ITEMS).set(new BarItem[] {
+                    new AutofillBarItem(
+                            new AutofillSuggestion("Johnathan", "Smithonian-Jackson",
+                                    DropdownItem.NO_ICON, false, 0, false, false, false),
+                            action),
+            });
+        });
+
+        onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
+        onView(withText("Johnathan")).perform(click());
+
+        assertTrue(clickRecorded.get());
     }
 }

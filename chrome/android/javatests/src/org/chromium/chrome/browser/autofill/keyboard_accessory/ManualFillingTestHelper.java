@@ -42,12 +42,15 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
+import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
 import java.util.concurrent.TimeoutException;
@@ -306,18 +309,29 @@ public class ManualFillingTestHelper {
     }
 
     public void addAutofillChips() {
-        KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action[]> suggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<AutofillSuggestion[]> suggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
-        mActivityTestRule.getActivity().getManualFillingController().registerActionProvider(
-                suggestionProvider);
+        mActivityTestRule.getActivity()
+                .getManualFillingController()
+                .getKeyboardAccessory()
+                .registerAutofillProvider(suggestionProvider, new AutofillDelegate() {
+                    @Override
+                    public void dismissed() {}
+                    @Override
+                    public void suggestionSelected(int listIndex) {}
+                    @Override
+                    public void deleteSuggestion(int listIndex) {}
+                    @Override
+                    public void accessibilityFocusCleared() {}
+                });
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            suggestionProvider.notifyObservers(new KeyboardAccessoryData.Action[] {
-                    new KeyboardAccessoryData.Action(
-                            "Jonathan", AccessoryAction.AUTOFILL_SUGGESTION, result -> {}),
-                    new KeyboardAccessoryData.Action(
-                            "Jane", AccessoryAction.AUTOFILL_SUGGESTION, result -> {}),
-                    new KeyboardAccessoryData.Action(
-                            "Marcus", AccessoryAction.AUTOFILL_SUGGESTION, result -> {})});
+            suggestionProvider.notifyObservers(new AutofillSuggestion[] {
+                    new AutofillSuggestion("Johnathan", "Smithonian-Jackson", DropdownItem.NO_ICON,
+                            false, 0, false, false, false),
+                    new AutofillSuggestion("Jane Erika", "Donovanova", DropdownItem.NO_ICON, false,
+                            1, false, false, false),
+                    new AutofillSuggestion("Marcus", "McSpartangregor", DropdownItem.NO_ICON, false,
+                            2, false, false, false)});
         });
     }
 

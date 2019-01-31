@@ -15,16 +15,11 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryMetricsRecorder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
-import org.chromium.components.autofill.PopupItemId;
 import org.chromium.ui.DropdownItem;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.
@@ -37,7 +32,7 @@ public class AutofillKeyboardAccessoryBridge
     private long mNativeAutofillKeyboardAccessory;
     private ManualFillingCoordinator mManualFillingCoordinator;
     private Context mContext;
-    private KeyboardAccessoryData.Provider<KeyboardAccessoryData.Action[]> mChipProvider =
+    private KeyboardAccessoryData.Provider<AutofillSuggestion[]> mChipProvider =
             new KeyboardAccessoryData.PropertyProvider<>(AccessoryAction.AUTOFILL_SUGGESTION);
 
     private AutofillKeyboardAccessoryBridge() {
@@ -56,7 +51,6 @@ public class AutofillKeyboardAccessoryBridge
 
     @Override
     public void suggestionSelected(int listIndex) {
-        KeyboardAccessoryMetricsRecorder.recordActionSelected(AccessoryAction.AUTOFILL_SUGGESTION);
         mManualFillingCoordinator.dismiss();
         if (mNativeAutofillKeyboardAccessory == 0) return;
         nativeSuggestionSelected(mNativeAutofillKeyboardAccessory, listIndex);
@@ -97,8 +91,8 @@ public class AutofillKeyboardAccessoryBridge
         if (mContext instanceof ChromeActivity) {
             mManualFillingCoordinator = ((ChromeActivity) mContext).getManualFillingController();
             if (mManualFillingCoordinator.getKeyboardAccessory() != null) {
-                mManualFillingCoordinator.getKeyboardAccessory().registerActionProvider(
-                        mChipProvider);
+                mManualFillingCoordinator.getKeyboardAccessory().registerAutofillProvider(
+                        mChipProvider, this);
             }
         }
 
@@ -118,7 +112,7 @@ public class AutofillKeyboardAccessoryBridge
      */
     @CalledByNative
     private void dismiss() {
-        mChipProvider.notifyObservers(new KeyboardAccessoryData.Action[0]);
+        mChipProvider.notifyObservers(new AutofillSuggestion[0]);
         mContext = null;
     }
 
@@ -128,27 +122,7 @@ public class AutofillKeyboardAccessoryBridge
      */
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions, boolean isRtl) {
-        mChipProvider.notifyObservers(convertSuggestionsToChips(suggestions));
-    }
-
-    private KeyboardAccessoryData.Action[] convertSuggestionsToChips(
-            AutofillSuggestion[] suggestions) {
-        List<KeyboardAccessoryData.Action> suggestionChips = new ArrayList<>();
-        for (int i = 0; i < suggestions.length; ++i) {
-            AutofillSuggestion suggestion = suggestions[i];
-            // The accessory doesn't need any special options like clearing or managing for now.
-            if (suggestion.getSuggestionId() == PopupItemId.ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY
-                    || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_CLEAR_FORM
-                    || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_SEPARATOR
-                    || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_AUTOFILL_OPTIONS) {
-                continue;
-            }
-            final int triggerPosition = i;
-            suggestionChips.add(new KeyboardAccessoryData.Action(suggestion.getLabel(),
-                    AccessoryAction.AUTOFILL_SUGGESTION,
-                    result -> suggestionSelected(triggerPosition)));
-        }
-        return suggestionChips.toArray(new KeyboardAccessoryData.Action[suggestionChips.size()]);
+        mChipProvider.notifyObservers(suggestions);
     }
 
     // Helper methods for AutofillSuggestion. These are copied from AutofillPopupBridge (which
