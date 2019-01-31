@@ -23,12 +23,12 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
-#import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -189,9 +189,10 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 // Returns a passphrase message item.
 - (TableViewItem*)passphraseMessageItem {
-  CardMultilineItem* item =
-      [[CardMultilineItem alloc] initWithType:ItemTypeMessage];
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeMessage];
   item.text = self.headerMessage;
+  item.enabled = NO;
   return item;
 }
 

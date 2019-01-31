@@ -20,9 +20,9 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
-#import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/passphrase_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -105,7 +105,7 @@ TEST_F(SyncEncryptionPassphraseTableViewControllerTest, TestModel) {
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(2, NumberOfItemsInSection(0));
   // Passphrase message item.
-  CardMultilineItem* item = GetTableViewItem(0, 0);
+  TableViewTextItem* item = GetTableViewItem(0, 0);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY),
               item.text);
   // Passphrase items.

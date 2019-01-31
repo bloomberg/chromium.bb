@@ -13,7 +13,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -84,11 +84,11 @@ TEST_F(SyncEncryptionTableViewControllerTest, TestModel) {
   NSInteger const kSection = 0;
   EXPECT_EQ(2, NumberOfItemsInSection(kSection));
 
-  EncryptionItem* accountItem = GetTableViewItem(kSection, 0);
+  TableViewTextItem* accountItem = GetTableViewItem(kSection, 0);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_SYNC_BASIC_ENCRYPTION_DATA),
               accountItem.text);
 
-  EncryptionItem* passphraseItem = GetTableViewItem(kSection, 1);
+  TableViewTextItem* passphraseItem = GetTableViewItem(kSection, 1);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_SYNC_FULL_ENCRYPTION_DATA),
               passphraseItem.text);
 }

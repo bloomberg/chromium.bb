@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
-#import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"

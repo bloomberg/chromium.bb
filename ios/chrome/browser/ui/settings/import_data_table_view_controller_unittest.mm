@@ -6,7 +6,6 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -71,7 +70,7 @@ TEST_F(ImportDataTableViewControllerTest, TestModelSignedIn) {
   CheckController();
   ASSERT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  CardMultilineItem* item = GetTableViewItem(0, 0);
+  SettingsMultilineDetailItem* item = GetTableViewItem(0, 0);
   EXPECT_NSEQ(
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                               base::SysNSStringToUTF16(@"fromEmail@gmail.com")),
@@ -97,7 +96,7 @@ TEST_F(ImportDataTableViewControllerTest, TestModelSignedOut) {
   CheckController();
   ASSERT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  CardMultilineItem* item = GetTableViewItem(0, 0);
+  SettingsMultilineDetailItem* item = GetTableViewItem(0, 0);
   EXPECT_NSEQ(
       l10n_util::GetNSStringF(IDS_IOS_OPTIONS_IMPORT_DATA_HEADER,
                               base::SysNSStringToUTF16(@"fromEmail@gmail.com")),
