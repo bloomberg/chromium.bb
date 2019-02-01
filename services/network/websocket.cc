@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -252,17 +253,19 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   response_to_pass->socket_address = response->socket_address;
   size_t iter = 0;
   std::string name, value;
+  std::string headers_text =
+      base::StrCat({response->headers->GetStatusLine(), "\r\n"});
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
     if (can_read_raw_cookies ||
         !net::HttpResponseHeaders::IsCookieResponseHeader(name)) {
       // We drop cookie-related headers such as "set-cookie" when the
       // renderer doesn't have access.
       response_to_pass->headers.push_back(mojom::HttpHeader::New(name, value));
+      base::StrAppend(&headers_text, {name, ": ", value, "\r\n"});
     }
   }
-  response_to_pass->headers_text =
-      net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-          response->headers->raw_headers());
+  headers_text.append("\r\n");
+  response_to_pass->headers_text = headers_text;
 
   impl_->client_->OnFinishOpeningHandshake(std::move(response_to_pass));
 }
