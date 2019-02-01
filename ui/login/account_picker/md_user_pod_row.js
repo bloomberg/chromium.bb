@@ -4595,18 +4595,6 @@ cr.define('login', function() {
     },
 
     /**
-     * The pod of the signed-in user, if any; null otherwise.
-     * @type {?UserPod}
-     */
-    get lockedPod() {
-      for (var i = 0, pod; pod = this.pods[i]; ++i) {
-        if (pod.user.signedIn)
-          return pod;
-      }
-      return null;
-    },
-
-    /**
      * The pod that is preselected on user pod row show.
      * @type {?UserPod}
      */
@@ -4629,9 +4617,6 @@ cr.define('login', function() {
         return null;
       }
 
-      var lockedPod = this.lockedPod;
-      if (lockedPod)
-        return lockedPod;
       for (i = 0; pod = this.pods[i]; ++i) {
         if (!pod.multiProfilesPolicyApplied)
           return pod;

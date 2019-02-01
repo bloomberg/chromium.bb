@@ -477,13 +477,6 @@ const base::Feature kPreferHtmlOverPlugins{"PreferHtmlOverPlugins",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS)
-// The lock screen will be preloaded so it is instantly available when the user
-// locks the Chromebook device.
-const base::Feature kPreloadLockScreen{"PreloadLockScreen",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // If enabled, Print Preview will use the CloudPrinterHandler instead of the
 // cloud print interface to communicate with the cloud print server. This

@@ -115,7 +115,6 @@ const char* kKnownDisplayTypes[] = {OobeUI::kAppLaunchSplashDisplay,
                                     OobeUI::kArcKioskSplashDisplay,
                                     OobeUI::kDiscoverDisplay,
                                     OobeUI::kGaiaSigninDisplay,
-                                    OobeUI::kLockDisplay,
                                     OobeUI::kLoginDisplay,
                                     OobeUI::kOobeDisplay,
                                     OobeUI::kUserAddingDisplay};
@@ -133,7 +132,6 @@ constexpr char kCustomElementsUserPodHTMLPath[] =
     "custom_elements_user_pod.html";
 constexpr char kDiscoverJSPath[] = "discover_app.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
-constexpr char kLockJSPath[] = "lock.js";
 constexpr char kLoginJSPath[] = "login.js";
 constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
@@ -208,19 +206,6 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
 }
 
-// Default and non-shared resource definition for kLockDisplay display type.
-// chrome://oobe/lock
-void AddLockDisplayTypeDefaultResources(content::WebUIDataSource* source) {
-  // TODO(crbug.com/810170): Remove the resource files associated with
-  // kShowNonMdLogin switch (IDR_LOCK_HTML/JS and IDR_LOGIN_HTML/JS and the
-  // files those use).
-  source->SetDefaultResource(IDR_MD_LOCK_HTML);
-  source->AddResourcePath(kLockJSPath, IDR_MD_LOCK_JS);
-  source->AddResourcePath(kCustomElementsHTMLPath,
-                          IDR_CUSTOM_ELEMENTS_LOCK_HTML);
-  source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
-}
-
 // Default and non-shared resource definition for kDiscoverDisplay display type.
 // chrome://oobe/discover
 void AddDiscoverDisplayTypeDefaultResources(content::WebUIDataSource* source) {
@@ -256,7 +241,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   if (display_type == OobeUI::kOobeDisplay) {
     AddOobeDisplayTypeDefaultResources(source);
   } else if (display_type == OobeUI::kLockDisplay) {
-    AddLockDisplayTypeDefaultResources(source);
+    NOTREACHED();
   } else if (display_type == OobeUI::kDiscoverDisplay) {
     AddDiscoverDisplayTypeDefaultResources(source);
   } else {
@@ -266,13 +251,11 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   // Configure shared resources
   AddProductLogoResources(source);
 
-  if (display_type != OobeUI::kLockDisplay) {
-    AddSyncConsentResources(source);
-    AddArcScreensResources(source);
-    AddEnterpriseEnrollmentResources(source);
-  }
-  if (display_type == OobeUI::kLockDisplay ||
-      display_type == OobeUI::kLoginDisplay) {
+  AddSyncConsentResources(source);
+  AddArcScreensResources(source);
+  AddEnterpriseEnrollmentResources(source);
+
+  if (display_type == OobeUI::kLoginDisplay) {
     source->AddResourcePath(kCustomElementsUserPodHTMLPath,
                             IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }
@@ -495,9 +478,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   if (display_type_ != OobeUI::kDiscoverDisplay)
     ConfigureOobeDisplay();
 
-  if (display_type_ != OobeUI::kLockDisplay) {
-    AddScreenHandler(std::make_unique<DiscoverScreenHandler>());
-  }
+  AddScreenHandler(std::make_unique<DiscoverScreenHandler>());
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);

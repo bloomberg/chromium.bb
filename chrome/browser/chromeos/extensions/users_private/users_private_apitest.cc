@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
 
 // Screenlock - logged in, screen locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLockStatusTest, ScreenLock) {
-  chromeos::ScreenLockerTester::Create()->Lock();
+  chromeos::ScreenLockerTester().Lock();
   EXPECT_TRUE(RunExtensionSubtest("users_private", "main.html?getLoginStatus",
                                   kFlagLoadAsComponent))
       << message_;

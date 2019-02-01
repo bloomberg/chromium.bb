@@ -217,15 +217,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Displays animations that have to happen once login UI is fully displayed.
-   */
-  Oobe.animateOnceFullyDisplayed = function() {
-    login.HeaderBar.animateIn(true, function() {
-      chrome.send('headerBarVisible');
-    });
-  };
-
-  /**
    * Sets text content for a div with |labelId|.
    * @param {string} labelId Id of the label div.
    * @param {string} labelText Text for the label.
@@ -257,13 +248,6 @@ cr.define('cr.ui', function() {
    */
   Oobe.updateDeviceRequisition = function(requisition) {
     Oobe.getInstance().updateDeviceRequisition(requisition);
-  };
-
-  /**
-   * Enforces focus on user pod of locked user.
-   */
-  Oobe.forceLockedUserPodFocus = function() {
-    login.AccountPickerScreen.forceLockedUserPodFocus();
   };
 
   /**

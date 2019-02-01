@@ -317,8 +317,7 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest, KeyEventOnLockScreen) {
-  std::unique_ptr<chromeos::ScreenLockerTester> tester =
-      chromeos::ScreenLockerTester::Create();
+  chromeos::ScreenLockerTester tester;
 
   // Make sure the signin profile and active profile are different.
   Profile* signin_profile = chromeos::ProfileHelper::GetSigninProfile();
@@ -344,15 +343,15 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest, KeyEventOnLockScreen) {
   EXPECT_EQ(1, user_delegate->GetEventCount());
 
   // Lock screen, and make sure that the key event goes to the signin profile.
-  tester->Lock();
+  tester.Lock();
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
   EXPECT_EQ(0, signin_delegate->GetEventCount());
   EXPECT_EQ(2, user_delegate->GetEventCount());
 
   // Unlock screen, making sure key events go to the user profile again.
-  tester->SetUnlockPassword(AccountId::FromUserEmail(kTestUserEmail), "pass");
-  tester->UnlockWithPassword(AccountId::FromUserEmail(kTestUserEmail), "pass");
+  tester.SetUnlockPassword(AccountId::FromUserEmail(kTestUserEmail), "pass");
+  tester.UnlockWithPassword(AccountId::FromUserEmail(kTestUserEmail), "pass");
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
   EXPECT_EQ(0, signin_delegate->GetEventCount());

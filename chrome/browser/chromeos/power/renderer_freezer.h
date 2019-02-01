@@ -25,8 +25,6 @@ class RenderProcessHost;
 
 namespace chromeos {
 
-class ScreenLocker;
-
 // Freezes the chrome renderers when the system is about to suspend and thaws
 // them after the system fully resumes.  This class registers itself as a
 // PowerManagerClient::Observer on creation and unregisters itself on
@@ -85,9 +83,6 @@ class RendererFreezer : public PowerManagerClient::RenderProcessManagerDelegate,
 
   // Called after thawing the renderers has completed.
   void OnThawRenderersComplete(bool success);
-
-  // Called whenever the screen locker is shown or hidden.
-  void OnScreenLockStateChanged(chromeos::ScreenLocker* locker, bool is_locked);
 
   // Called whenever a new renderer process is created.
   void OnRenderProcessCreated(content::RenderProcessHost* rph);

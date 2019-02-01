@@ -39,19 +39,14 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void OnLockScreenReady();
 
   // ScreenLocker::Delegate:
-  void SetPasswordInputEnabled(bool enabled) override;
   void ShowErrorMessage(int error_msg_id,
                         HelpAppLauncher::HelpTopic help_topic_id) override;
   void ClearErrors() override;
-  void OnLockWebUIReady() override;
-  void OnLockBackgroundDisplayed() override;
-  void OnHeaderBarVisible() override;
   void OnAshLockAnimationFinished() override;
   void SetFingerprintState(const AccountId& account_id,
                            ash::mojom::FingerprintState state) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool success) override;
-  content::WebContents* GetWebContents() override;
 
   // LoginScreenClient::Delegate
   void HandleAuthenticateUserWithPasswordOrPin(

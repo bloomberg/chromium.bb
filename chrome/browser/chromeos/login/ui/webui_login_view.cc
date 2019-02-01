@@ -21,8 +21,6 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
-#include "chrome/browser/chromeos/login/ui/preloaded_web_view.h"
-#include "chrome/browser/chromeos/login/ui/preloaded_web_view_factory.h"
 #include "chrome/browser/chromeos/login/ui/web_contents_forced_title.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
@@ -227,25 +225,13 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
 
 void WebUILoginView::Init() {
   Profile* signin_profile = ProfileHelper::GetSigninProfile();
-
-  if (settings_.check_for_preload) {
-    PreloadedWebView* preloaded_web_view =
-        PreloadedWebViewFactory::GetForProfile(signin_profile);
-    // webui_login_ may still be null after this call if there is no preloaded
-    // instance.
-    webui_login_ = preloaded_web_view->TryTake();
-    is_reusing_webview_ = true;
-  }
-
   if (!webui_login_) {
     webui_login_ = std::make_unique<views::WebView>(signin_profile);
     webui_login_->set_owned_by_client();
-    is_reusing_webview_ = false;
   }
 
   WebContents* web_contents = web_view()->GetWebContents();
-  if (!is_reusing_webview_)
-    InitializeWebView(web_view(), settings_.web_view_title);
+  InitializeWebView(web_view(), settings_.web_view_title);
 
   web_view()->set_allow_accelerators(true);
   AddChildView(web_view());
@@ -316,8 +302,7 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::LoadURL(const GURL& url) {
-  if (!is_reusing_webview_)
-    web_view()->LoadInitialURL(url);
+  web_view()->LoadInitialURL(url);
   web_view()->RequestFocus();
 }
 

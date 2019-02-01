@@ -319,10 +319,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPreferHtmlOverPlugins;
 #endif
 
-#if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPreloadLockScreen;
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCloudPrinterHandler;

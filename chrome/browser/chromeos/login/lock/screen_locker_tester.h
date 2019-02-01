@@ -8,19 +8,17 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
+
 class AccountId;
 
 namespace chromeos {
 
-// ScreenLockerTester provides a high-level API to test the lock screen. This
-// API is meant to be representation independent.
+// ScreenLockerTester provides a high-level API to test the lock screen.
 class ScreenLockerTester {
  public:
-  // Create a new tester.
-  static std::unique_ptr<ScreenLockerTester> Create();
-
   ScreenLockerTester();
-  virtual ~ScreenLockerTester();
+  ~ScreenLockerTester();
 
   // Synchronously lock the device.
   void Lock();
@@ -30,11 +28,29 @@ class ScreenLockerTester {
                          const std::string& password);
 
   // Returns true if the screen is locked.
-  virtual bool IsLocked() = 0;
+  bool IsLocked();
+
+  // Returns true if Restart button is visible.
+  bool IsRestartButtonShown();
+
+  // Returns true if Shutdown button is visible.
+  bool IsShutdownButtonShown();
 
   // Enters and submits the given password for the given account.
-  virtual void UnlockWithPassword(const AccountId& account_id,
-                                  const std::string& password) = 0;
+  void UnlockWithPassword(const AccountId& account_id,
+                          const std::string& password);
+
+  // Returns LoginShelfView update count.
+  int64_t GetUiUpdateCount();
+
+  // Blocks until LoginShelfView::ui_update_count() is creater then
+  // |previous_update_count|.
+  void WaitForUiUpdate(int64_t previous_update_count);
+
+ private:
+  ash::mojom::LoginScreenTestApiPtr test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenLockerTester);
 };
 
 }  // namespace chromeos

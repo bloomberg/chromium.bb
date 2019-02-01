@@ -30,7 +30,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
        'showAppError',
        'updateUserImage',
        'setCapsLockState',
-       'forceLockedUserPodFocus',
        'removeUser',
        'showBannerMessage',
        'showUserPodCustomIcon',
@@ -87,20 +86,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      setPreferredSize: function(width, height) {
        this.preferredWidth_ = width;
        this.preferredHeight_ = height;
-     },
-
-     /**
-      * When the account picker is being used to lock the screen, pressing the
-      * exit accelerator key will sign out the active user as it would when
-      * they are signed in.
-      */
-     exit: function() {
-       // Check and disable the sign out button so that we can never have two
-       // sign out requests generated in a row.
-       if ($('pod-row').lockedPod && !$('sign-out-user-button').disabled) {
-         $('sign-out-user-button').disabled = true;
-         chrome.send('signOutUser');
-       }
      },
 
      /* Cancel user adding if ESC was pressed.
@@ -337,15 +322,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       */
      setCapsLockState: function(enabled) {
        $('pod-row').classList.toggle('capslock-on', enabled);
-     },
-
-     /**
-      * Enforces focus on user pod of locked user.
-      */
-     forceLockedUserPodFocus: function() {
-       var row = $('pod-row');
-       if (row.lockedPod)
-         row.focusPod(row.lockedPod, true);
      },
 
      /**
