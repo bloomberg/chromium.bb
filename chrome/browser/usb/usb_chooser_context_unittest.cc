@@ -622,6 +622,155 @@ void ExpectChooserObjectInfo(const ChooserContextBase::Object* actual,
 
 }  // namespace
 
+TEST_F(UsbChooserContextTest, GetGrantedObjectsWithOnlyPolicyAllowedDevices) {
+  auto* store = GetChooserContext(profile());
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  auto objects = store->GetGrantedObjects(kVendorOrigin, kVendorOrigin);
+  ASSERT_EQ(objects.size(), 1u);
+
+  ExpectChooserObjectInfo(objects[0].get(),
+                          /*requesting_origin=*/kVendorOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_POLICY,
+                          /*incognito=*/false,
+                          /*vendor_id=*/6353,
+                          /*product_id=*/kDeviceIdWildcard,
+                          /*name=*/"Devices from Google Inc.");
+}
+
+TEST_F(UsbChooserContextTest,
+       GetGrantedObjectsWithUserAndPolicyAllowedDevices) {
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  UsbDeviceInfoPtr persistent_device_info =
+      device_manager_.CreateAndAddDevice(1000, 1, "Google", "Gizmo", "123ABC");
+  UsbDeviceInfoPtr ephemeral_device_info =
+      device_manager_.CreateAndAddDevice(1000, 2, "Google", "Gadget", "");
+
+  auto* store = GetChooserContext(profile());
+
+  store->GrantDevicePermission(kVendorOrigin, kVendorOrigin,
+                               *persistent_device_info);
+  store->GrantDevicePermission(kVendorOrigin, kVendorOrigin,
+                               *ephemeral_device_info);
+
+  auto objects = store->GetGrantedObjects(kVendorOrigin, kVendorOrigin);
+  ASSERT_EQ(objects.size(), 3u);
+
+  // The user granted permissions appear before the policy granted permissions.
+  // Within these user granted permissions, the persistent device permissions
+  // appear before ephemeral device permissions. The policy enforced objects
+  // that are returned by GetGrantedObjects() are ordered by the tuple
+  // (vendor_id, product_id) representing the device IDs.  Wildcard IDs are
+  // represented by a value of -1, so they appear first.
+  ExpectChooserObjectInfo(objects[0].get(),
+                          /*requesting_origin=*/kVendorOrigin,
+                          /*embedding_origin=*/kVendorOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_USER,
+                          /*incognito=*/false,
+                          /*vendor_id=*/1000,
+                          /*product_id=*/1,
+                          /*name=*/"Gizmo");
+  ExpectChooserObjectInfo(objects[1].get(),
+                          /*requesting_origin=*/kVendorOrigin,
+                          /*embedding_origin=*/kVendorOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_USER,
+                          /*incognito=*/false,
+                          /*vendor_id=*/1000,
+                          /*product_id=*/2,
+                          /*name=*/"Gadget");
+  ExpectChooserObjectInfo(objects[2].get(),
+                          /*requesting_origin=*/kVendorOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_POLICY,
+                          /*incognito=*/false,
+                          /*vendor_id=*/6353,
+                          /*product_id=*/kDeviceIdWildcard,
+                          /*name=*/"Devices from Google Inc.");
+}
+
+TEST_F(UsbChooserContextTest,
+       GetGrantedObjectsWithUserGrantedDeviceAllowedBySpecificDevicePolicy) {
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  UsbDeviceInfoPtr persistent_device_info = device_manager_.CreateAndAddDevice(
+      6353, 5678, "Google", "Gizmo", "123ABC");
+
+  auto* store = GetChooserContext(profile());
+
+  store->GrantDevicePermission(kProductVendorOrigin, kProductVendorOrigin,
+                               *persistent_device_info);
+
+  auto objects =
+      store->GetGrantedObjects(kProductVendorOrigin, kProductVendorOrigin);
+  ASSERT_EQ(objects.size(), 1u);
+
+  // User granted permissions for a device that is also granted by a specific
+  // device policy will be replaced by the policy permission. The object should
+  // still retain the name of the device.
+  ExpectChooserObjectInfo(objects[0].get(),
+                          /*requesting_origin=*/kProductVendorOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_POLICY,
+                          /*incognito=*/false,
+                          /*vendor_id=*/6353,
+                          /*product_id=*/5678,
+                          /*name=*/"Gizmo");
+}
+
+TEST_F(UsbChooserContextTest,
+       GetGrantedObjectsWithUserGrantedDeviceAllowedByVendorDevicePolicy) {
+  UsbDeviceInfoPtr persistent_device_info = device_manager_.CreateAndAddDevice(
+      6353, 1000, "Vendor", "Product", "123ABC");
+
+  auto* store = GetChooserContext(profile());
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  store->GrantDevicePermission(kVendorOrigin, kVendorOrigin,
+                               *persistent_device_info);
+
+  auto objects = store->GetGrantedObjects(kVendorOrigin, kVendorOrigin);
+  ASSERT_EQ(objects.size(), 1u);
+
+  // User granted permissions for a device that is also granted by a vendor
+  // device policy will be replaced by the policy permission.
+  ExpectChooserObjectInfo(objects[0].get(),
+                          /*requesting_origin=*/kVendorOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_POLICY,
+                          /*incognito=*/false,
+                          /*vendor_id=*/6353,
+                          /*product_id=*/kDeviceIdWildcard,
+                          /*name=*/"Devices from Google Inc.");
+}
+
+TEST_F(UsbChooserContextTest,
+       GetGrantedObjectsWithUserGrantedDeviceAllowedByAnyVendorDevicePolicy) {
+  UsbDeviceInfoPtr persistent_device_info = device_manager_.CreateAndAddDevice(
+      1123, 5813, "Some", "Product", "123ABC");
+
+  auto* store = GetChooserContext(profile());
+  profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                             *base::JSONReader::Read(kPolicySetting));
+
+  store->GrantDevicePermission(kAnyDeviceOrigin, kAnyDeviceOrigin,
+                               *persistent_device_info);
+
+  auto objects = store->GetGrantedObjects(kAnyDeviceOrigin, kAnyDeviceOrigin);
+  ASSERT_EQ(objects.size(), 1u);
+
+  // User granted permissions for a device that is also granted by a wildcard
+  // vendor policy will be replaced by the policy permission.
+  ExpectChooserObjectInfo(objects[0].get(),
+                          /*requesting_origin=*/kAnyDeviceOrigin,
+                          /*source=*/content_settings::SETTING_SOURCE_POLICY,
+                          /*incognito=*/false,
+                          /*vendor_id=*/kDeviceIdWildcard,
+                          /*product_id=*/kDeviceIdWildcard,
+                          /*name=*/"Devices from any vendor");
+}
+
 TEST_F(UsbChooserContextTest,
        GetAllGrantedObjectsWithOnlyPolicyAllowedDevices) {
   auto* store = GetChooserContext(profile());

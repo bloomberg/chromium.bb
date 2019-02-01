@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -319,6 +321,152 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   api_->SetPermissionInfo(list);
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
+}
+
+namespace {
+
+constexpr char kPolicySetting[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 6353, "product_id": 5678 }],
+        "urls": ["http://www.example.com"]
+      }
+    ])";
+
+}  // namespace
+
+// Test UI construction and reconstruction with policy USB devices.
+TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
+  const int kExpectedChildren = 0;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+
+  const GURL origin = GURL(kUrl).GetOrigin();
+
+  // Add the policy setting to prefs.
+  Profile* profile = web_contents_helper_.profile();
+  profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                           *base::JSONReader::Read(kPolicySetting));
+  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
+
+  auto objects = store->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(objects.size(), 1u);
+
+  PermissionInfoList list;
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+
+  ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
+      api_->permissions_view()->child_at(kExpectedChildren));
+  EXPECT_EQ(4, object_view->child_count());
+
+  const int kLabelIndex = 1;
+  views::Label* label =
+      static_cast<views::Label*>(object_view->child_at(kLabelIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
+            label->text());
+
+  const int kButtonIndex = 2;
+  views::Button* button =
+      static_cast<views::Button*>(object_view->child_at(kButtonIndex));
+  EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
+
+  const int kDescIndex = 3;
+  views::Label* desc_label =
+      static_cast<views::Label*>(object_view->child_at(kDescIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
+            desc_label->text());
+
+  // Policy granted USB permissions should not be able to be deleted.
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+  views::ButtonListener* button_listener =
+      static_cast<views::ButtonListener*>(object_view);
+  button_listener->ButtonPressed(button, event);
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+}
+
+// Test UI construction and reconstruction with both user and policy USB
+// devices.
+TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
+  const int kExpectedChildren = 0;
+  EXPECT_EQ(kExpectedChildren, api_->permissions_view()->child_count());
+
+  const GURL origin = GURL(kUrl).GetOrigin();
+
+  // Add the policy setting to prefs.
+  Profile* profile = web_contents_helper_.profile();
+  profile->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                           *base::JSONReader::Read(kPolicySetting));
+
+  // Connect the UsbChooserContext with FakeUsbDeviceManager.
+  device::FakeUsbDeviceManager usb_device_manager;
+  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
+  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
+  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+
+  auto device_info = usb_device_manager.CreateAndAddDevice(
+      0, 0, "Google", "Gizmo", "1234567890");
+  store->GrantDevicePermission(origin, origin, *device_info);
+
+  auto objects = store->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(objects.size(), 2u);
+
+  PermissionInfoList list;
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 2, api_->permissions_view()->child_count());
+
+  // The first object is the user granted permission for the "Gizmo" device.
+  ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
+      api_->permissions_view()->child_at(kExpectedChildren));
+  EXPECT_EQ(4, object_view->child_count());
+
+  const int kLabelIndex = 1;
+  views::Label* label =
+      static_cast<views::Label*>(object_view->child_at(kLabelIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
+
+  const int kButtonIndex = 2;
+  views::Button* button =
+      static_cast<views::Button*>(object_view->child_at(kButtonIndex));
+  EXPECT_NE(button->state(), views::Button::STATE_DISABLED);
+
+  const int kDescIndex = 3;
+  views::Label* desc_label =
+      static_cast<views::Label*>(object_view->child_at(kDescIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->text());
+
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+  views::ButtonListener* button_listener =
+      static_cast<views::ButtonListener*>(object_view);
+  button_listener->ButtonPressed(button, event);
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
+
+  // The policy granted permission should now be the first child, since the user
+  // permission was deleted.
+  object_view = static_cast<ChosenObjectView*>(
+      api_->permissions_view()->child_at(kExpectedChildren));
+  EXPECT_EQ(4, object_view->child_count());
+
+  label = static_cast<views::Label*>(object_view->child_at(kLabelIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
+            label->text());
+
+  button = static_cast<views::Button*>(object_view->child_at(kButtonIndex));
+  EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
+
+  desc_label = static_cast<views::Label*>(object_view->child_at(kDescIndex));
+  EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
+            desc_label->text());
+
+  button_listener = static_cast<views::ButtonListener*>(object_view);
+  button_listener->ButtonPressed(button, event);
+  api_->SetPermissionInfo(list);
+  EXPECT_EQ(kExpectedChildren + 1, api_->permissions_view()->child_count());
 }
 
 TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {

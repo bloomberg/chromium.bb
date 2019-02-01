@@ -301,6 +301,7 @@ ChooserContextBase* GetUsbChooserContext(Profile* profile) {
 const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
      IDS_PAGE_INFO_USB_DEVICE_LABEL, IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
+     IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
      IDS_PAGE_INFO_DELETE_USB_DEVICE, "name"},
 };
 
@@ -899,13 +900,6 @@ void PageInfo::PresentSitePermissions() {
 
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (std::unique_ptr<ChooserContextBase::Object>& object : chosen_objects) {
-      // Ignore policy allowed devices until the UI is able to display them
-      // properly.
-      // TODO(https://crbug.com/854329): Remove this condition when the UI is
-      // capable of displaying policy chooser objects.
-      if (object->source == content_settings::SETTING_SOURCE_POLICY)
-        continue;
-
       chosen_object_info_list.push_back(
           std::make_unique<PageInfoUI::ChosenObjectInfo>(ui_info,
                                                          std::move(object)));
