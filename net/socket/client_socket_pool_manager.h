@@ -37,7 +37,6 @@ class NetLogWithSource;
 class ProxyInfo;
 class ProxyServer;
 class TransportClientSocketPool;
-class SSLClientSocketPool;
 
 struct SSLConfig;
 
@@ -79,14 +78,14 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
   virtual void FlushSocketPoolsWithError(int error) = 0;
   virtual void CloseIdleSockets() = 0;
   virtual TransportClientSocketPool* GetTransportSocketPool() = 0;
-  virtual SSLClientSocketPool* GetSSLSocketPool() = 0;
+  virtual TransportClientSocketPool* GetSSLSocketPool() = 0;
   virtual TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& socks_proxy) = 0;
   // Returns the HttpProxyClientSocketPool for a ProxyServer that uses an
   // "HTTP-like" scheme, as defined by ProxyServer::is_http_like().
   virtual HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) = 0;
-  virtual SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
+  virtual TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
       const ProxyServer& proxy_server) = 0;
   // Creates a Value summary of the state of the socket pools.
   virtual std::unique_ptr<base::Value> SocketPoolInfoToValue() const = 0;

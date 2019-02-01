@@ -31,7 +31,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_client_socket_pool.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_proxy_client_socket.h"
@@ -176,7 +176,7 @@ HttpProxyConnectJob::HttpProxyConnectJob(
     const scoped_refptr<HttpProxySocketParams>& params,
     ProxyDelegate* proxy_delegate,
     TransportClientSocketPool* transport_pool,
-    SSLClientSocketPool* ssl_pool,
+    TransportClientSocketPool* ssl_pool,
     NetworkQualityEstimator* network_quality_estimator,
     Delegate* delegate,
     NetLog* net_log)
@@ -308,7 +308,7 @@ int HttpProxyConnectJob::HandleConnectResult(int result) {
 HttpProxyClientSocketPool::HttpProxyConnectJobFactory::
     HttpProxyConnectJobFactory(
         TransportClientSocketPool* transport_pool,
-        SSLClientSocketPool* ssl_pool,
+        TransportClientSocketPool* ssl_pool,
         ProxyDelegate* proxy_delegate,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log)
@@ -334,7 +334,7 @@ HttpProxyClientSocketPool::HttpProxyClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
     TransportClientSocketPool* transport_pool,
-    SSLClientSocketPool* ssl_pool,
+    TransportClientSocketPool* ssl_pool,
     ProxyDelegate* proxy_delegate,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)

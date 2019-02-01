@@ -23,6 +23,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_proxy_client_socket.h"
@@ -43,7 +44,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     base::TimeDelta connect_timeout_duration,
     base::TimeDelta proxy_negotiation_timeout_duration,
     TransportClientSocketPool* transport_pool,
-    SSLClientSocketPool* ssl_pool,
+    TransportClientSocketPool* ssl_pool,
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
     quic::QuicTransportVersion quic_version,
@@ -557,7 +558,10 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
   return transport_socket_handle_->Init(
-      group_name_, ssl_params_, priority_, initial_socket_tag_, respect_limits_,
+      group_name_,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          ssl_params_),
+      priority_, initial_socket_tag_, respect_limits_,
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
       ssl_pool_, net_log_);

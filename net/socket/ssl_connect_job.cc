@@ -138,8 +138,10 @@ LoadState SSLConnectJob::GetLoadState() const {
 }
 
 bool SSLConnectJob::HasEstablishedConnection() const {
+  // Return true to prevent creating any backup jobs when this is used in a
+  // TransportClientSocketPool.
   // TODO(mmenke): Implement this, as nested pools are removed.
-  return false;
+  return true;
 }
 
 void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {

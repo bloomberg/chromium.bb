@@ -306,7 +306,7 @@ TransportClientSocketPool* HttpNetworkSession::GetTransportSocketPool(
   return GetSocketPoolManager(pool_type)->GetTransportSocketPool();
 }
 
-SSLClientSocketPool* HttpNetworkSession::GetSSLSocketPool(
+TransportClientSocketPool* HttpNetworkSession::GetSSLSocketPool(
     SocketPoolType pool_type) {
   return GetSocketPoolManager(pool_type)->GetSSLSocketPool();
 }
@@ -325,7 +325,7 @@ HttpProxyClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPLikeProxy(
       http_proxy);
 }
 
-SSLClientSocketPool* HttpNetworkSession::GetSocketPoolForSSLWithProxy(
+TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForSSLWithProxy(
     SocketPoolType pool_type,
     const ProxyServer& proxy_server) {
   return GetSocketPoolManager(pool_type)->GetSocketPoolForSSLWithProxy(

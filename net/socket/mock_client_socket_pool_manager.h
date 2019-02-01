@@ -23,26 +23,27 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
 
   // Sets "override" socket pools that get used instead.
   void SetTransportSocketPool(TransportClientSocketPool* pool);
-  void SetSSLSocketPool(SSLClientSocketPool* pool);
+  void SetSSLSocketPool(TransportClientSocketPool* pool);
   // Currently only works for SOCKS proxies.
   void SetSocketPoolForProxy(const ProxyServer& proxy_server,
                              std::unique_ptr<TransportClientSocketPool> pool);
   void SetSocketPoolForHTTPProxy(
       const ProxyServer& http_proxy,
       std::unique_ptr<HttpProxyClientSocketPool> pool);
-  void SetSocketPoolForSSLWithProxy(const ProxyServer& proxy_server,
-                                    std::unique_ptr<SSLClientSocketPool> pool);
+  void SetSocketPoolForSSLWithProxy(
+      const ProxyServer& proxy_server,
+      std::unique_ptr<TransportClientSocketPool> pool);
 
   // ClientSocketPoolManager methods:
   void FlushSocketPoolsWithError(int error) override;
   void CloseIdleSockets() override;
   TransportClientSocketPool* GetTransportSocketPool() override;
-  SSLClientSocketPool* GetSSLSocketPool() override;
+  TransportClientSocketPool* GetSSLSocketPool() override;
   TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       const ProxyServer& socks_proxy) override;
   HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       const ProxyServer& http_proxy) override;
-  SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
+  TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
       const ProxyServer& proxy_server) override;
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
   void DumpMemoryStats(
@@ -54,14 +55,12 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
       std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
   using HTTPProxySocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<HttpProxyClientSocketPool>>;
-  using SSLSocketPoolMap =
-      std::map<ProxyServer, std::unique_ptr<SSLClientSocketPool>>;
 
   std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
-  std::unique_ptr<SSLClientSocketPool> ssl_socket_pool_;
+  std::unique_ptr<TransportClientSocketPool> ssl_socket_pool_;
   TransportClientSocketPoolMap proxy_socket_pools_;
   HTTPProxySocketPoolMap http_proxy_socket_pools_;
-  SSLSocketPoolMap ssl_socket_pools_for_proxies_;
+  TransportClientSocketPoolMap ssl_socket_pools_for_proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketPoolManager);
 };
