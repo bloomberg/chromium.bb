@@ -188,6 +188,22 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Check if the surfaces have been released or post ourselves for later.
   void TryFinishSurfaceSetChange();
 
+  // Different modes of internal buffer allocations.
+  enum class BufferAllocationMode {
+    // Only using |client_|s provided PictureBuffers, none internal.
+    kNone,
+    // Using a reduced amount of |client_|s provided PictureBuffers and
+    // |decoder_|s GetNumReferenceFrames() internallly.
+    kReduced,
+    // Using |client_|s provided PictureBuffers and as many internally
+    // allocated.
+    kNormal,
+  };
+
+  // Decides the concrete buffer allocation mode, depending on the hardware
+  // platform and other parameters.
+  BufferAllocationMode DecideBufferAllocationMode();
+
   // VAVDA state.
   enum State {
     // Initialize() not called yet or failed.
@@ -224,6 +240,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Only used on |decoder_thread_task_runner_|.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
+  // Filled in during Initialize().
+  BufferAllocationMode buffer_allocation_mode_;
+
   // VaapiWrapper for VPP (Video Post Processing). This is used for copying
   // from a decoded surface to a surface bound to client's PictureBuffer.
   scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper_;
@@ -254,14 +273,6 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // once the client gives us more textures via ReusePictureBuffer().
   // Only used on |task_runner_|.
   base::queue<base::OnceClosure> pending_output_cbs_;
-
-  // TODO(crbug.com/912295): Enable these two for IMPORT |output_mode_| as well.
-  // Under some circumstances, we can pass to libva our own VASurfaceIDs to
-  // decode onto, which skips one copy. see https://crbug.com/822346.
-  bool decode_using_client_picture_buffers_;
-  // When |decode_using_client_picture_buffers_| is false and under certain
-  // conditions, we can reduce the number of necessary allocated buffers.
-  bool use_reduced_number_of_allocations_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder
   // thread back to the ChildThread.  Because the decoder thread is a member of
@@ -300,7 +311,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
   // Max number of reference frames needed by |decoder_|. Only used on
-  // |task_runner_| and when |use_reduced_number_of_allocations_| is true.
+  // |task_runner_| and when in BufferAllocationMode::kNone.
   size_t requested_num_reference_frames_;
   size_t previously_requested_num_reference_frames_;
 
