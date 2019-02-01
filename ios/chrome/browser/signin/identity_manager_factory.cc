@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -75,8 +76,33 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
   return instance.get();
 }
 
+void IdentityManagerFactory::AddObserver(
+    IdentityManagerFactoryObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void IdentityManagerFactory::RemoveObserver(
+    IdentityManagerFactoryObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  return std::make_unique<IdentityManagerWrapper>(
+  auto identity_manager = std::make_unique<IdentityManagerWrapper>(
       ios::ChromeBrowserState::FromBrowserState(browser_state));
+
+  for (auto& observer : observer_list_)
+    observer.IdentityManagerCreated(identity_manager.get());
+
+  return identity_manager;
+}
+
+void IdentityManagerFactory::BrowserStateShutdown(web::BrowserState* context) {
+  auto* identity_manager = static_cast<IdentityManagerWrapper*>(
+      GetServiceForBrowserState(context, false));
+  if (identity_manager) {
+    for (auto& observer : observer_list_)
+      observer.IdentityManagerShutdown(identity_manager);
+  }
+  BrowserStateKeyedServiceFactory::BrowserStateShutdown(context);
 }
