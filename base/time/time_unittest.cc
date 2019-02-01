@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"
 #include "build/build_config.h"
@@ -1540,6 +1541,62 @@ TEST(TimeDelta, Overflows) {
   TimeTicks ticks_now = TimeTicks::Now();
   EXPECT_EQ(-kOneSecond, (ticks_now - kOneSecond) - ticks_now);
   EXPECT_EQ(kOneSecond, (ticks_now + kOneSecond) - ticks_now);
+}
+
+TEST(TimeBase, AddSubDeltaSaturates) {
+  constexpr TimeTicks kLargeTimeTicks =
+      TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max() - 1);
+
+  constexpr TimeTicks kLargeNegativeTimeTicks =
+      TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::min() + 1);
+
+  EXPECT_TRUE((kLargeTimeTicks + TimeDelta::Max()).is_max())
+      << (kLargeTimeTicks + TimeDelta::Max());
+  EXPECT_TRUE((kLargeNegativeTimeTicks + TimeDelta::Max()).is_max())
+      << (kLargeNegativeTimeTicks + TimeDelta::Max());
+  EXPECT_TRUE((kLargeTimeTicks - TimeDelta::Max()).is_min())
+      << (kLargeTimeTicks - TimeDelta::Max());
+  EXPECT_TRUE((kLargeNegativeTimeTicks - TimeDelta::Max()).is_min())
+      << (kLargeNegativeTimeTicks - TimeDelta::Max());
+  EXPECT_TRUE((TimeTicks() + TimeDelta::Max()).is_max())
+      << (TimeTicks() + TimeDelta::Max());
+  EXPECT_TRUE((TimeTicks() - TimeDelta::Max()).is_min())
+      << (TimeTicks() - TimeDelta::Max());
+  EXPECT_TRUE((TimeTicks::Now() + TimeDelta::Max()).is_max())
+      << (TimeTicks::Now() + TimeDelta::Max());
+  EXPECT_TRUE((TimeTicks::Now() - TimeDelta::Max()).is_min())
+      << (TimeTicks::Now() - TimeDelta::Max());
+
+  EXPECT_TRUE((kLargeTimeTicks + TimeDelta::Min()).is_min())
+      << (kLargeTimeTicks + TimeDelta::Min());
+  EXPECT_TRUE((kLargeNegativeTimeTicks + TimeDelta::Min()).is_min())
+      << (kLargeNegativeTimeTicks + TimeDelta::Min());
+  EXPECT_TRUE((kLargeTimeTicks - TimeDelta::Min()).is_max())
+      << (kLargeTimeTicks - TimeDelta::Min());
+  EXPECT_TRUE((kLargeNegativeTimeTicks - TimeDelta::Min()).is_max())
+      << (kLargeNegativeTimeTicks - TimeDelta::Min());
+  EXPECT_TRUE((TimeTicks() + TimeDelta::Min()).is_min())
+      << (TimeTicks() + TimeDelta::Min());
+  EXPECT_TRUE((TimeTicks() - TimeDelta::Min()).is_max())
+      << (TimeTicks() - TimeDelta::Min());
+  EXPECT_TRUE((TimeTicks::Now() + TimeDelta::Min()).is_min())
+      << (TimeTicks::Now() + TimeDelta::Min());
+  EXPECT_TRUE((TimeTicks::Now() - TimeDelta::Min()).is_max())
+      << (TimeTicks::Now() - TimeDelta::Min());
+}
+
+TEST(TimeBase, AddSubInfinities) {
+  // CHECK when adding opposite signs or subtracting same sign.
+  EXPECT_CHECK_DEATH({ TimeTicks::Min() + TimeDelta::Max(); });
+  EXPECT_CHECK_DEATH({ TimeTicks::Max() + TimeDelta::Min(); });
+  EXPECT_CHECK_DEATH({ TimeTicks::Min() - TimeDelta::Min(); });
+  EXPECT_CHECK_DEATH({ TimeTicks::Max() - TimeDelta::Max(); });
+
+  // Saturates when adding same sign or subtracting opposite signs.
+  EXPECT_TRUE((TimeTicks::Max() + TimeDelta::Max()).is_max());
+  EXPECT_TRUE((TimeTicks::Min() + TimeDelta::Min()).is_min());
+  EXPECT_TRUE((TimeTicks::Max() - TimeDelta::Min()).is_max());
+  EXPECT_TRUE((TimeTicks::Min() - TimeDelta::Max()).is_min());
 }
 
 constexpr TimeTicks TestTimeTicksConstexprCopyAssignment() {

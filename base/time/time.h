@@ -97,10 +97,12 @@ class TimeDelta;
 // time classes instead.
 namespace time_internal {
 
-// Add or subtract |value| from a TimeDelta. The int64_t argument and return
-// value are in terms of a microsecond timebase.
-BASE_EXPORT int64_t SaturatedAdd(TimeDelta delta, int64_t value);
-BASE_EXPORT int64_t SaturatedSub(TimeDelta delta, int64_t value);
+// Add or subtract a TimeDelta from |value|. TimeDelta::Min()/Max() are treated
+// as infinity and will always saturate the return value (infinity math applies
+// if |value| also is at either limit of its spectrum). The int64_t argument and
+// return value are in terms of a microsecond timebase.
+BASE_EXPORT int64_t SaturatedAdd(int64_t value, TimeDelta delta);
+BASE_EXPORT int64_t SaturatedSub(int64_t value, TimeDelta delta);
 
 }  // namespace time_internal
 
@@ -204,10 +206,10 @@ class BASE_EXPORT TimeDelta {
   // __builtin_(add|sub)_overflow in safe_math_clang_gcc_impl.h :
   // https://chromium-review.googlesource.com/c/chromium/src/+/873352#message-59594ab70827795a67e0780404adf37b4b6c2f14
   TimeDelta operator+(TimeDelta other) const {
-    return TimeDelta(time_internal::SaturatedAdd(*this, other.delta_));
+    return TimeDelta(time_internal::SaturatedAdd(delta_, other));
   }
   TimeDelta operator-(TimeDelta other) const {
-    return TimeDelta(time_internal::SaturatedSub(*this, other.delta_));
+    return TimeDelta(time_internal::SaturatedSub(delta_, other));
   }
 
   TimeDelta& operator+=(TimeDelta other) {
@@ -279,8 +281,8 @@ class BASE_EXPORT TimeDelta {
   }
 
  private:
-  friend int64_t time_internal::SaturatedAdd(TimeDelta delta, int64_t value);
-  friend int64_t time_internal::SaturatedSub(TimeDelta delta, int64_t value);
+  friend int64_t time_internal::SaturatedAdd(int64_t value, TimeDelta delta);
+  friend int64_t time_internal::SaturatedSub(int64_t value, TimeDelta delta);
 
   // Constructs a delta given the duration in microseconds. This is private
   // to avoid confusion by callers with an integer constructor. Use
@@ -393,10 +395,10 @@ class TimeBase {
 
   // Return a new time modified by some delta.
   TimeClass operator+(TimeDelta delta) const {
-    return TimeClass(time_internal::SaturatedAdd(delta, us_));
+    return TimeClass(time_internal::SaturatedAdd(us_, delta));
   }
   TimeClass operator-(TimeDelta delta) const {
-    return TimeClass(-time_internal::SaturatedSub(delta, us_));
+    return TimeClass(time_internal::SaturatedSub(us_, delta));
   }
 
   // Modify by some time delta.
