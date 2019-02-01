@@ -37,12 +37,6 @@ void WebAppTabHelperBase::SetAppId(const AppId& app_id) {
   OnAssociatedAppChanged();
 }
 
-void WebAppTabHelperBase::ResetAppId() {
-  app_id_.clear();
-
-  OnAssociatedAppChanged();
-}
-
 void WebAppTabHelperBase::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -60,6 +54,27 @@ void WebAppTabHelperBase::DidCloneToNewWebContents(
   WebAppTabHelperBase* new_tab_helper = CloneForWebContents(new_web_contents);
   // Clone common state:
   new_tab_helper->SetAppId(app_id());
+}
+
+void WebAppTabHelperBase::OnWebAppInstalled(const AppId& installed_app_id) {
+  // Check if current web_contents url is in scope for the newly installed app.
+  const web_app::AppId app_id = GetAppId(web_contents()->GetURL());
+  if (app_id == installed_app_id)
+    SetAppId(app_id);
+}
+
+void WebAppTabHelperBase::OnWebAppUninstalled(const AppId& uninstalled_app_id) {
+  if (app_id() == uninstalled_app_id)
+    ResetAppId();
+}
+
+void WebAppTabHelperBase::OnWebAppRegistryShutdown() {
+  ResetAppId();
+}
+
+void WebAppTabHelperBase::ResetAppId() {
+  app_id_.clear();
+  OnAssociatedAppChanged();
 }
 
 void WebAppTabHelperBase::OnAssociatedAppChanged() {
