@@ -14,6 +14,7 @@ deps_weston = [
 	dep_libshared,
 	dep_libweston,
 	dep_libinput,
+	dep_libevdev,
 	dep_libdl,
 	dep_threads,
 ]

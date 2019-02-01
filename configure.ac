@@ -235,6 +235,7 @@ if test x$enable_remoting = xyes; then
 fi
 
 
+PKG_CHECK_MODULES(LIBEVDEV, [libevdev])
 PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.8.0])
 PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
 

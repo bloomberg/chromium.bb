@@ -212,12 +212,80 @@ There is also a command line option to do the same.
 The
 .B libinput
 section is used to configure input devices when using the libinput input device
-backend.
+backend. The defaults are determined by libinput and vary according to what is
+most sensible for any given device.
 .PP
 Available configuration are:
 .TP 7
-.BI "enable-tap=" true
-enables tap to click on touchpad devices
+.BI "enable-tap=" false
+Enables tap to click on touchpad devices.
+.TP 7
+.BI "tap-and-drag=" false
+For touchpad devices with \fBenable-tap\fR enabled. If the user taps, then
+taps a second time, this time holding, the virtual mouse button stays down for
+as long as the user keeps their finger on the touchpad, allowing the user to
+click and drag with taps alone.
+.TP 7
+.BI "tap-and-drag-lock=" false
+For touchpad devices with \fBenable-tap\fR and \fBtap-and-drag\fR enabled.
+In the middle of a tap-and-drag, if the user releases the touchpad for less
+than a certain number of milliseconds, then touches it again, the virtual mouse
+button will remain pressed and the drag can continue.
+.TP 7
+.BI "disable-while-typing=" true
+For devices that may be accidentally triggered while typing on the keyboard,
+causing a disruption of the typing.  Disables them while the keyboard is in
+use.
+.TP 7
+.BI "middle-button-emulation=" false
+For pointer devices with left and right buttons, but no middle button.  When
+enabled, a middle button event is emitted when the left and right buttons are
+pressed simultaneously.
+.TP 7
+.BI "left-handed=" false
+Configures the device for use by left-handed people. Exactly what this option
+does depends on the device. For pointers with left and right buttons, the
+buttons are swapped. On tablets, the tablet is logically turned upside down,
+because it will be physically turned upside down.
+.TP 7
+.BI "rotation=" n
+Changes the direction of the logical north, rotating it \fIn\fR degrees
+clockwise away from the default orientation, where \fIn\fR is a whole
+number between 0 and 359 inclusive. Needed for trackballs, mainly. Allows the
+user to orient the trackball sideways, for example.
+.TP 7
+.BI "accel-profile=" "{flat,adaptive}"
+Set the pointer acceleration profile. The pointer's screen speed is
+proportional to the physical speed with a certain constant of proportionality.
+Call that constant alpha. \fIflat\fR keeps alpha fixed. See \fBaccel-speed\fR.
+\fIadaptive\fR causes alpha to increase with physical speed, giving the user
+more control when the speed is slow, and more reach when the speed is high.
+\fIadaptive\fR is the default.
+.TP 7
+.BI "accel-speed=" v
+If \fBaccel-profile\fR is set to \fIflat\fR, it simply sets the value of alpha.
+If \fBaccel-profile\fR is set to \fIadaptive\fR, the effect is more
+complicated, but generally speaking, it will change the pointer's speed.
+\fIv\fR is normalised and must lie in the range [-1, 1]. The exact mapping
+between \fIv\fR and alpha is hardware-dependent, but higher values cause higher
+cursor speeds.
+.TP 7
+.BI "natural-scroll=" false
+Enables natural scrolling, mimicking the behaviour of touchscreen scrolling.
+That is, if the wheel, finger, or fingers are moved down, the surface is
+scrolled up instead of down, as if the finger, or fingers were in contact with
+the surface being scrolled.
+.TP 7
+.BI "scroll-method=" {two-finger,edge,button,none}
+Sets the scroll method. \fItwo-finger\fR scrolls with two fingers on a
+touchpad. \fIedge\fR scrolls with one finger on the right edge of a touchpad.
+\fIbutton\fR scrolls when the pointer is moved while a certain button is
+pressed. See \fBscroll-button\fR. \fInone\fR disables scrolling altogether.
+.TP 7
+.BI "scroll-button=" {BTN_LEFT,BTN_RIGHT,BTN_MIDDLE,...}
+For devices with \fBscroll-method\fR set to \fIbutton\fR. Specifies the
+button that will trigger scrolling. See /usr/include/linux/input-event-codes.h
+for the complete list of possible values.
 .TP 7
 .BI "touchscreen_calibrator=" true
 Advertise the touchscreen calibrator interface to all clients. This is a

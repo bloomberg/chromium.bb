@@ -41,6 +41,8 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <libinput.h>
+#include <libevdev/libevdev.h>
+#include <linux/input-event-codes.h>
 #include <sys/time.h>
 #include <linux/limits.h>
 
@@ -1459,6 +1461,114 @@ wet_set_simple_head_configurator(struct weston_compositor *compositor,
 }
 
 static void
+configure_input_device_accel(struct weston_config_section *s,
+		struct libinput_device *device)
+{
+	char *profile_string = NULL;
+	int is_a_profile = 1;
+	uint32_t profiles;
+	enum libinput_config_accel_profile profile;
+	double speed;
+
+	if (weston_config_section_get_string(s, "accel-profile",
+					     &profile_string, NULL) == 0) {
+		if (strcmp(profile_string, "flat") == 0)
+			profile = LIBINPUT_CONFIG_ACCEL_PROFILE_FLAT;
+		else if (strcmp(profile_string, "adaptive") == 0)
+			profile = LIBINPUT_CONFIG_ACCEL_PROFILE_ADAPTIVE;
+		else {
+			weston_log("warning: no such accel-profile: %s\n",
+				   profile_string);
+			is_a_profile = 0;
+		}
+
+		profiles = libinput_device_config_accel_get_profiles(device);
+		if (is_a_profile && (profile & profiles) != 0) {
+			weston_log("          accel-profile=%s\n",
+				   profile_string);
+			libinput_device_config_accel_set_profile(device,
+					profile);
+		}
+	}
+
+	if (weston_config_section_get_double(s, "accel-speed",
+					     &speed, 0) == 0 &&
+	    speed >= -1. && speed <= 1.) {
+		weston_log("          accel-speed=%.3f\n", speed);
+		libinput_device_config_accel_set_speed(device, speed);
+	}
+
+	free(profile_string);
+}
+
+static void
+configure_input_device_scroll(struct weston_config_section *s,
+		struct libinput_device *device)
+{
+	int natural;
+	char *method_string = NULL;
+	uint32_t methods;
+	enum libinput_config_scroll_method method;
+	char *button_string = NULL;
+	int button;
+
+	if (libinput_device_config_scroll_has_natural_scroll(device) &&
+	    weston_config_section_get_bool(s, "natural-scroll",
+					   &natural, 0) == 0) {
+		weston_log("          natural-scroll=%s\n",
+			   natural ? "true" : "false");
+		libinput_device_config_scroll_set_natural_scroll_enabled(
+				device, natural);
+	}
+
+	if (weston_config_section_get_string(s, "scroll-method",
+					     &method_string, NULL) != 0)
+		goto done;
+	if (strcmp(method_string, "two-finger") == 0)
+		method = LIBINPUT_CONFIG_SCROLL_2FG;
+	else if (strcmp(method_string, "edge") == 0)
+		method = LIBINPUT_CONFIG_SCROLL_EDGE;
+	else if (strcmp(method_string, "button") == 0)
+		method = LIBINPUT_CONFIG_SCROLL_ON_BUTTON_DOWN;
+	else if (strcmp(method_string, "none") == 0)
+		method = LIBINPUT_CONFIG_SCROLL_NO_SCROLL;
+	else {
+		weston_log("warning: no such scroll-method: %s\n",
+			   method_string);
+		goto done;
+	}
+
+	methods = libinput_device_config_scroll_get_methods(device);
+	if (method != LIBINPUT_CONFIG_SCROLL_NO_SCROLL &&
+	    (method & methods) == 0)
+		goto done;
+
+	weston_log("          scroll-method=%s\n", method_string);
+	libinput_device_config_scroll_set_method(device, method);
+
+	if (method == LIBINPUT_CONFIG_SCROLL_ON_BUTTON_DOWN) {
+		if (weston_config_section_get_string(s, "scroll-button",
+						     &button_string,
+						     NULL) != 0)
+			goto done;
+
+		button = libevdev_event_code_from_name(EV_KEY, button_string);
+		if (button == -1) {
+			weston_log("          Bad scroll-button: %s\n",
+				   button_string);
+			goto done;
+		}
+
+		weston_log("          scroll-button=%s\n", button_string);
+		libinput_device_config_scroll_set_button(device, button);
+	}
+
+done:
+	free(method_string);
+	free(button_string);
+}
+
+static void
 configure_input_device(struct weston_compositor *compositor,
 		       struct libinput_device *device)
 {
@@ -1466,6 +1576,15 @@ configure_input_device(struct weston_compositor *compositor,
 	struct weston_config *config = wet_get_config(compositor);
 	int has_enable_tap = 0;
 	int enable_tap;
+	int disable_while_typing;
+	int middle_emulation;
+	int tap_and_drag;
+	int tap_and_drag_lock;
+	int left_handed;
+	unsigned int rotation;
+
+	weston_log("libinput: configuring device \"%s\".\n",
+		   libinput_device_get_name(device));
 
 	s = weston_config_get_section(config,
 				      "libinput", NULL, NULL);
@@ -1482,10 +1601,65 @@ configure_input_device(struct weston_compositor *compositor,
 		if (weston_config_section_get_bool(s, "enable-tap",
 						   &enable_tap, 0) == 0)
 			has_enable_tap = 1;
-		if (has_enable_tap)
+		if (has_enable_tap) {
+			weston_log("          enable-tap=%s.\n",
+				   enable_tap ? "true" : "false");
 			libinput_device_config_tap_set_enabled(device,
 							       enable_tap);
+		}
+		if (weston_config_section_get_bool(s, "tap-and-drag",
+						   &tap_and_drag, 0) == 0) {
+			weston_log("          tap-and-drag=%s.\n",
+				   tap_and_drag ? "true" : "false");
+			libinput_device_config_tap_set_drag_enabled(device,
+					tap_and_drag);
+		}
+		if (weston_config_section_get_bool(s, "tap-and-drag-lock",
+					       &tap_and_drag_lock, 0) == 0) {
+			weston_log("          tap-and-drag-lock=%s.\n",
+				   tap_and_drag_lock ? "true" : "false");
+			libinput_device_config_tap_set_drag_lock_enabled(
+					device, tap_and_drag_lock);
+		}
 	}
+
+	if (libinput_device_config_dwt_is_available(device) &&
+	    weston_config_section_get_bool(s, "disable-while-typing",
+					   &disable_while_typing, 0) == 0) {
+		weston_log("          disable-while-typing=%s.\n",
+			   disable_while_typing ? "true" : "false");
+		libinput_device_config_dwt_set_enabled(device,
+						       disable_while_typing);
+	}
+
+	if (libinput_device_config_middle_emulation_is_available(device) &&
+	    weston_config_section_get_bool(s, "middle-button-emulation",
+					   &middle_emulation, 0) == 0) {
+		weston_log("          middle-button-emulation=%s\n",
+			   middle_emulation ? "true" : "false");
+		libinput_device_config_middle_emulation_set_enabled(
+				device, middle_emulation);
+	}
+
+	if (libinput_device_config_left_handed_is_available(device) &&
+	    weston_config_section_get_bool(s, "left-handed",
+				           &left_handed, 0) == 0) {
+		weston_log("          left-handed=%s\n",
+			   left_handed ? "true" : "false");
+		libinput_device_config_left_handed_set(device, left_handed);
+	}
+
+	if (libinput_device_config_rotation_is_available(device) &&
+	    weston_config_section_get_uint(s, "rotation",
+				           &rotation, 0) == 0) {
+		weston_log("          rotation=%u\n", rotation);
+		libinput_device_config_rotation_set_angle(device, rotation);
+	}
+
+	if (libinput_device_config_accel_is_available(device))
+		configure_input_device_accel(s, device);
+
+	configure_input_device_scroll(s, device);
 }
 
 static int

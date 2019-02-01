@@ -61,6 +61,19 @@ path=@libexecdir@/weston-keyboard
 
 #[libinput]
 #enable-tap=true
+#tap-and-drag=true
+#tap-and-drag-lock=true
+#disable-while-typing=false
+#middle-button-emulation=true
+#left-handed=true
+#rotation=90
+#accel-profile=flat
+#accel-speed=.9
+#natural-scroll=true
+#scroll-method=edge
+# For button-triggered scrolling:
+#scroll-method=button
+#scroll-button=BTN_RIGHT
 
 #[touchpad]
 #constant_accel_factor = 50
