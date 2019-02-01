@@ -189,7 +189,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                                  viz::FrameSinkIdHash>;
   struct TargetData {
     RenderWidgetHostViewBase* target;
-    gfx::Vector2dF delta;
     gfx::Transform transform;
 
     TargetData() : target(nullptr) {}
@@ -331,11 +330,11 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // The following variable is temporary, for diagnosis of
   // https://crbug.com/824774.
   bool touchscreen_gesture_target_in_map_;
-  TargetData touchpad_gesture_target_;
+  RenderWidgetHostViewBase* touchpad_gesture_target_ = nullptr;
   RenderWidgetHostViewBase* bubbling_gesture_scroll_target_ = nullptr;
   RenderWidgetHostViewChildFrame* bubbling_gesture_scroll_origin_ = nullptr;
   // Used to target wheel events for the duration of a scroll.
-  TargetData wheel_target_;
+  RenderWidgetHostViewBase* wheel_target_ = nullptr;
   // Maintains the same target between mouse down and mouse up.
   TargetData mouse_capture_target_;
 

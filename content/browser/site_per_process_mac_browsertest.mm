@@ -313,20 +313,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
       contents->GetRenderWidgetHostView());
 
   RenderWidgetHostInputEventRouter* router = contents->GetInputEventRouter();
-  EXPECT_EQ(nullptr, router->touchpad_gesture_target_.target);
+  EXPECT_EQ(nullptr, router->touchpad_gesture_target_);
 
   gfx::Point main_frame_point(25, 575);
   gfx::Point child_center(150, 450);
 
   // Send touchpad pinch sequence to main-frame.
   SendMacTouchpadPinchSequenceWithExpectedTarget(
-      rwhv_parent, main_frame_point, router->touchpad_gesture_target_.target,
+      rwhv_parent, main_frame_point, router->touchpad_gesture_target_,
       rwhv_parent);
 
   // Send touchpad pinch sequence to child.
   SendMacTouchpadPinchSequenceWithExpectedTarget(
-      rwhv_parent, child_center, router->touchpad_gesture_target_.target,
-      rwhv_child);
+      rwhv_parent, child_center, router->touchpad_gesture_target_, rwhv_child);
 }
 
 }  // namespace content

@@ -264,8 +264,8 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   }
   touch_event_ack_queue_->UpdateQueueAfterTargetDestroyed(view);
 
-  if (view == wheel_target_.target)
-    wheel_target_.target = nullptr;
+  if (view == wheel_target_)
+    wheel_target_ = nullptr;
 
   // If the target that's being destroyed is in the gesture target map, we
   // replace it with nullptr so that we maintain the 1:1 correspondence between
@@ -281,8 +281,8 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   if (view == touchscreen_gesture_target_.target)
     touchscreen_gesture_target_.target = nullptr;
 
-  if (view == touchpad_gesture_target_.target)
-    touchpad_gesture_target_.target = nullptr;
+  if (view == touchpad_gesture_target_)
+    touchpad_gesture_target_ = nullptr;
 
   if (view == bubbling_gesture_scroll_target_) {
     bubbling_gesture_scroll_target_ = nullptr;
@@ -586,20 +586,13 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
     const blink::WebMouseWheelEvent& mouse_wheel_event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
-  base::Optional<gfx::PointF> point_in_target = target_location;
   if (!root_view->IsMouseLocked()) {
     if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
-      wheel_target_.target = target;
-      if (target_location.has_value()) {
-        wheel_target_.delta =
-            target_location.value() - mouse_wheel_event.PositionInWidget();
-      }
+      wheel_target_ = target;
     } else {
-      if (wheel_target_.target) {
-        DCHECK(!target && !target_location.has_value());
-        target = wheel_target_.target;
-        point_in_target.emplace(mouse_wheel_event.PositionInWidget() +
-                                wheel_target_.delta);
+      if (wheel_target_) {
+        DCHECK(!target);
+        target = wheel_target_;
       } else if ((mouse_wheel_event.phase ==
                       blink::WebMouseWheelEvent::kPhaseEnded ||
                   mouse_wheel_event.momentum_phase ==
@@ -618,21 +611,22 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
                              INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     return;
   }
-  // If target_location doesn't have a value, it can be for two reasons:
-  // 1. |target| is null, in which case we would have early returned from the
-  // check above.
-  // 2. The event we are receiving is not a phaseBegan, in which case we should
-  // have got a valid |point_in_target| from wheel_target_.delta above.
-  DCHECK(point_in_target.has_value());
 
   blink::WebMouseWheelEvent event = mouse_wheel_event;
-  event.SetPositionInWidget(point_in_target->x(), point_in_target->y());
+  gfx::PointF point_in_target;
+  if (target_location) {
+    point_in_target = target_location.value();
+  } else {
+    point_in_target = target->TransformRootPointToViewCoordSpace(
+        mouse_wheel_event.PositionInWidget());
+  }
+  event.SetPositionInWidget(point_in_target.x(), point_in_target.y());
   target->ProcessMouseWheelEvent(event, latency);
 
   if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseEnded ||
       mouse_wheel_event.momentum_phase ==
           blink::WebMouseWheelEvent::kPhaseEnded) {
-    wheel_target_.target = nullptr;
+    wheel_target_ = nullptr;
   }
 }
 
@@ -1023,7 +1017,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // should inform the child view, so that it does not go on to send us
     // the updates. See https://crbug.com/828422
     if (target_view == touchscreen_gesture_target_.target ||
-        target_view == touchpad_gesture_target_.target ||
+        target_view == touchpad_gesture_target_ ||
         target_view == touch_target_.target) {
       return;
     }
@@ -1524,12 +1518,14 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
   // of routing.
   if (touchpad_gesture_event.GetType() ==
       blink::WebInputEvent::kGestureFlingStart) {
-    if (wheel_target_.target) {
+    if (wheel_target_) {
       blink::WebGestureEvent gesture_fling = touchpad_gesture_event;
-      gesture_fling.SetPositionInWidget(gesture_fling.PositionInWidget() +
-                                        wheel_target_.delta);
-      wheel_target_.target->ProcessGestureEvent(gesture_fling, latency);
-      last_fling_start_target_ = wheel_target_.target;
+      gfx::PointF point_in_target =
+          wheel_target_->TransformRootPointToViewCoordSpace(
+              gesture_fling.PositionInWidget());
+      gesture_fling.SetPositionInWidget(point_in_target);
+      wheel_target_->ProcessGestureEvent(gesture_fling, latency);
+      last_fling_start_target_ = wheel_target_;
     } else {
       root_view->GestureEventAck(touchpad_gesture_event,
                                  INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -1552,37 +1548,35 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
   }
 
   if (target) {
-    touchpad_gesture_target_.target = target;
-    // TODO(mohsen): Instead of just computing a delta, we should extract the
-    // complete transform. We assume it doesn't change for the duration of the
-    // touchpad gesture sequence, though this could be wrong; a better approach
-    // might be to always transform each point to the
-    // |touchpad_gesture_target_.target| for the duration of the sequence.
-    DCHECK(target_location.has_value());
-    touchpad_gesture_target_.delta =
-        target_location.value() - touchpad_gesture_event.PositionInWidget();
+    touchpad_gesture_target_ = target;
 
     // Abort any scroll bubbling in progress to avoid double entry.
-    CancelScrollBubblingIfConflicting(touchpad_gesture_target_.target);
+    CancelScrollBubblingIfConflicting(touchpad_gesture_target_);
   }
 
-  if (!touchpad_gesture_target_.target) {
+  if (!touchpad_gesture_target_) {
     root_view->GestureEventAck(touchpad_gesture_event,
                                INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     return;
   }
 
   blink::WebGestureEvent gesture_event = touchpad_gesture_event;
-  // TODO(mohsen): Add tests to check event location.
-  gesture_event.SetPositionInWidget(gesture_event.PositionInWidget() +
-                                    touchpad_gesture_target_.delta);
-  touchpad_gesture_target_.target->ProcessGestureEvent(gesture_event, latency);
+  gfx::PointF point_in_target;
+  if (target_location) {
+    point_in_target = target_location.value();
+  } else {
+    point_in_target =
+        touchpad_gesture_target_->TransformRootPointToViewCoordSpace(
+            gesture_event.PositionInWidget());
+  }
+  gesture_event.SetPositionInWidget(point_in_target);
+  touchpad_gesture_target_->ProcessGestureEvent(gesture_event, latency);
 
   if (touchpad_gesture_event.GetType() ==
           blink::WebInputEvent::kGesturePinchEnd ||
       touchpad_gesture_event.GetType() ==
           blink::WebInputEvent::kGestureDoubleTap) {
-    touchpad_gesture_target_.target = nullptr;
+    touchpad_gesture_target_ = nullptr;
   }
 }
 
