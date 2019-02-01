@@ -52,7 +52,7 @@ bool IsValidCreditCardNumber(const base::string16& text);
 bool HasCorrectLength(const base::string16& number);
 
 // Returns true if |number| passes the validation by Luhn formula.
-bool PassesLuhnCheck(base::string16& number);
+bool PassesLuhnCheck(const base::string16& number);
 
 // Returns true if |code| looks like a valid credit card security code
 // for the given credit card type.
