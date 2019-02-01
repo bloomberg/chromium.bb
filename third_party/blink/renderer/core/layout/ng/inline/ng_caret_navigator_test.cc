@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
@@ -250,6 +251,146 @@ TEST_F(NGCaretNavigatorTest, RightPositionOfBasic) {
 
   EXPECT_TRUE(RightPositionOf(CaretAfter(8)).IsWithinContext());
   EXPECT_EQ(CaretBefore(5), *RightPositionOf(CaretAfter(8)).position);
+}
+
+// Tests below check caret movement crossing line boundaries
+
+TEST_F(NGCaretNavigatorTest, HardLineBreak) {
+  SetupHtml("container", "<div id=container>abc<br>def</div>");
+
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(0)).IsBeforeContext());
+
+  EXPECT_TRUE(RightPositionOf(CaretAfter(2)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretAfter(2)).position);
+
+  EXPECT_TRUE(RightPositionOf(CaretBefore(3)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretBefore(3)).position);
+
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *LeftPositionOf(CaretBefore(4)).position);
+
+  EXPECT_TRUE(RightPositionOf(CaretAfter(6)).IsAfterContext());
+}
+
+TEST_F(NGCaretNavigatorTest, SoftLineWrapAtSpace) {
+  SetupHtml("container", "<div id=container style=\"width:0\">abc def</div>");
+
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(0)).IsBeforeContext());
+
+  EXPECT_TRUE(RightPositionOf(CaretAfter(2)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretAfter(2)).position);
+
+  EXPECT_TRUE(RightPositionOf(CaretBefore(3)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretBefore(3)).position);
+
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(2), *LeftPositionOf(CaretBefore(4)).position);
+
+  EXPECT_TRUE(RightPositionOf(CaretAfter(6)).IsAfterContext());
+}
+
+TEST_F(NGCaretNavigatorTest, BidiAndSoftLineWrapAtSpaceLtr) {
+  LoadAhem();
+  SetupHtml("container",
+            "<div id=container style='font: 10px/10px Ahem; width: 100px'>"
+            "before    &#x05D0;&#x05D1;&#x05D2;&#x05D3; "
+            "&#x05D4;&#x05D5;&#x05D6;&#x05D7;&#x05D8;&#x05D9;"
+            "&#x05DA;&#x05DB;&#x05DC;&#x05DD;&#x05DE;&#x05DF;"
+            "&#x05E0;&#x05E1;&#x05E2;&#x05E3;&#x05E4;&#x05E5;"
+            "</div>");
+
+  // Moving left from "|before DCBA" should be before context
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(0)).IsBeforeContext());
+
+  // Moving right from "before |DCBA" should yield "before D|CBA"
+  EXPECT_TRUE(RightPositionOf(CaretAfter(10)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(10), *RightPositionOf(CaretAfter(10)).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(6)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(10), *RightPositionOf(CaretAfter(6)).position);
+
+  // Moving left from "before |DCBA" should yield "before| DCBA"
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(10)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(6), *LeftPositionOf(CaretAfter(10)).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(6)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(6), *LeftPositionOf(CaretAfter(6)).position);
+
+  // Moving right from "before DCBA|" should yield "V|UTSRQPONMLKJIHGFE"
+  EXPECT_TRUE(RightPositionOf(CaretBefore(7)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(29), *RightPositionOf(CaretBefore(7)).position);
+
+  // Moving left from "|VUTSRQPONMLKJIHGFE" should yield "before DCB|A"
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(29)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(7), *LeftPositionOf(CaretAfter(29)).position);
+
+  // Moving right from "VUTSRQPONMLKJIHGFE|" should be after context
+  EXPECT_TRUE(RightPositionOf(CaretBefore(12)).IsAfterContext());
+}
+
+TEST_F(NGCaretNavigatorTest, BidiAndSoftLineWrapAtSpaceRtl) {
+  LoadAhem();
+  SetupHtml(
+      "container",
+      "<div dir=rtl id=container style='font: 10px/10px Ahem; width: 120px'>"
+      "&#x05D0;&#x05D1;&#x05D2;&#x05D3;    after encyclopedia"
+      "</div>");
+
+  // Moving right from "after DCBA|" should be before context
+  EXPECT_TRUE(RightPositionOf(CaretBefore(0)).IsBeforeContext());
+
+  // Moving left from "after| DCBA" should yield "afte|r DCBA"
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(9), *LeftPositionOf(CaretAfter(4)).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(9)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(9), *LeftPositionOf(CaretAfter(9)).position);
+
+  // Moving right from "after| DCBA" should yield "after |DCBA"
+  EXPECT_TRUE(RightPositionOf(CaretAfter(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretAfter(4)).position);
+  EXPECT_TRUE(RightPositionOf(CaretAfter(9)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *RightPositionOf(CaretAfter(9)).position);
+
+  // Moving left from "|after DCBA" should yield "encyclopedi|a"
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(5)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(22), *LeftPositionOf(CaretBefore(5)).position);
+
+  // Moving right from "encyclopedia|" should yield "a|fter DCBA"
+  EXPECT_TRUE(RightPositionOf(CaretAfter(22)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(5), *RightPositionOf(CaretAfter(22)).position);
+
+  // Moving left from "|encyclopedia" should be after context
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(11)).IsAfterContext());
+}
+
+TEST_F(NGCaretNavigatorTest, SoftLineWrapAtHyphen) {
+  SetupHtml("container", "<div id=container style=\"width:0\">abc-def</div>");
+
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(0)).IsBeforeContext());
+
+  // 3 -> 4
+  EXPECT_TRUE(RightPositionOf(CaretAfter(2)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(3), *RightPositionOf(CaretAfter(2)).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(3)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(3), *RightPositionOf(CaretBefore(3)).position);
+
+  // 4 -> 5
+  EXPECT_TRUE(RightPositionOf(CaretAfter(3)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(4), *RightPositionOf(CaretAfter(3)).position);
+  EXPECT_TRUE(RightPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretAfter(4), *RightPositionOf(CaretBefore(4)).position);
+
+  // 5 -> 4
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(5)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *LeftPositionOf(CaretBefore(5)).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(4), *LeftPositionOf(CaretAfter(4)).position);
+
+  // 4 -> 3
+  EXPECT_TRUE(LeftPositionOf(CaretBefore(4)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *LeftPositionOf(CaretBefore(4)).position);
+  EXPECT_TRUE(LeftPositionOf(CaretAfter(3)).IsWithinContext());
+  EXPECT_EQ(CaretBefore(3), *LeftPositionOf(CaretAfter(3)).position);
+
+  EXPECT_TRUE(RightPositionOf(CaretAfter(6)).IsAfterContext());
 }
 
 }  // namespace blink
