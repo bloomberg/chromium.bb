@@ -18507,7 +18507,7 @@ void GLES2DecoderImpl::DoFlushDriverCachesCHROMIUM(void) {
   // On Adreno Android devices we need to use a workaround to force caches to
   // clear.
   if (workarounds().unbind_egl_context_to_flush_driver_caches) {
-    context_->ReleaseCurrent(nullptr);
+    context_->ReleaseCurrent(surface_.get());
     context_->MakeCurrent(surface_.get());
   }
 }
