@@ -38,11 +38,6 @@ enum ActionType {
   CONFIRM_SYNC_SETTINGS,  // User needs to confirm sync settings.
 };
 
-enum StatusLabelStyle {
-  PLAIN_TEXT,  // Label will be plain-text only.
-  WITH_HTML    // Label may contain an HTML-formatted link.
-};
-
 // Sync errors that should be exposed to the user through the avatar button.
 enum AvatarSyncErrorType {
   NO_SYNC_ERROR,                     // No sync error.

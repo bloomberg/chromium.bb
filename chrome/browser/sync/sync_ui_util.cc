@@ -33,7 +33,6 @@ namespace {
 // and can connect to the sync server. If the user hasn't yet authenticated, an
 // empty string is returned.
 base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service,
-                                         StatusLabelStyle style,
                                          bool sync_everything) {
   if (!service || service->HasDisableReason(
                       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
@@ -50,20 +49,9 @@ base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service,
     return base::string16();
   }
 
-  // Message may also carry additional advice with an HTML link, if acceptable.
-  switch (style) {
-    case PLAIN_TEXT:
-      return l10n_util::GetStringUTF16(
-          sync_everything ? IDS_SYNC_ACCOUNT_SYNCING
-                          : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
-    case WITH_HTML:
-      return l10n_util::GetStringFUTF16(
-          IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK,
-          base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
+  return l10n_util::GetStringUTF16(
+      sync_everything ? IDS_SYNC_ACCOUNT_SYNCING
+                      : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
 }
 
 void GetStatusForActionableError(const syncer::SyncProtocolError& error,
@@ -163,7 +151,6 @@ void GetStatusForAuthError(Profile* profile,
 MessageType GetStatusInfo(Profile* profile,
                           const syncer::SyncService* service,
                           identity::IdentityManager* identity_manager,
-                          StatusLabelStyle style,
                           base::string16* status_label,
                           base::string16* link_label,
                           ActionType* action_type) {
@@ -249,7 +236,7 @@ MessageType GetStatusInfo(Profile* profile,
           status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
         if (status_label) {
           status_label->assign(
-              GetSyncedStateStatusLabel(service, style, sync_everything));
+              GetSyncedStateStatusLabel(service, sync_everything));
         }
         return PRE_SYNCED;
       }
@@ -257,8 +244,7 @@ MessageType GetStatusInfo(Profile* profile,
 
     // There is no error. Display "Last synced..." message.
     if (status_label) {
-      status_label->assign(
-          GetSyncedStateStatusLabel(service, style, sync_everything));
+      status_label->assign(GetSyncedStateStatusLabel(service, sync_everything));
     }
     return SYNCED;
   } else {
@@ -326,8 +312,8 @@ MessageType GetStatusLabels(Profile* profile,
                             ActionType* action_type) {
   DCHECK(status_label);
   DCHECK(link_label);
-  return GetStatusInfo(profile, service, identity_manager, PLAIN_TEXT,
-                       status_label, link_label, action_type);
+  return GetStatusInfo(profile, service, identity_manager, status_label,
+                       link_label, action_type);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -418,8 +404,8 @@ MessageType GetStatus(Profile* profile,
                       const syncer::SyncService* service,
                       identity::IdentityManager* identity_manager) {
   ActionType action_type = NO_ACTION;
-  return GetStatusInfo(profile, service, identity_manager, WITH_HTML, nullptr,
-                       nullptr, &action_type);
+  return GetStatusInfo(profile, service, identity_manager, nullptr, nullptr,
+                       &action_type);
 }
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
