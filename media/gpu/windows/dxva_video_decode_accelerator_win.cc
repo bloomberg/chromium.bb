@@ -2941,6 +2941,9 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     int width,
     int height,
     const gfx::ColorSpace& color_space) {
+  // This code path is never used by PictureBufferMechanism::BIND paths.
+  DCHECK_NE(GetPictureBufferMechanism(), PictureBufferMechanism::BIND);
+
   if (width < processor_width_ || height != processor_height_) {
     d3d11_processor_.Reset();
     enumerator_.Reset();
@@ -2974,76 +2977,81 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
         d3d11_processor_.Get(), 0, false);
   }
 
-  if (GetPictureBufferMechanism() == PictureBufferMechanism::COPY_TO_NV12 ||
+  // If we're copying textures or just not using color space information, set
+  // the same color space on input and output.
+  if ((!use_color_info_ && !use_fp16_) ||
+      GetPictureBufferMechanism() == PictureBufferMechanism::COPY_TO_NV12 ||
       GetPictureBufferMechanism() ==
           PictureBufferMechanism::DELAYED_COPY_TO_NV12) {
-    // If we're copying NV12 textures, make sure we set the same
-    // color space on input and output.
     const auto d3d11_color_space =
         gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
     video_context_->VideoProcessorSetOutputColorSpace(d3d11_processor_.Get(),
                                                       &d3d11_color_space);
-
     video_context_->VideoProcessorSetStreamColorSpace(d3d11_processor_.Get(), 0,
                                                       &d3d11_color_space);
     dx11_converter_output_color_space_ = color_space;
+    return true;
+  }
+
+  // This path is only used for copying to RGB textures.
+  DCHECK_EQ(GetPictureBufferMechanism(), PictureBufferMechanism::COPY_TO_RGB);
+
+  // On platforms prior to Windows 10 we won't have a ID3D11VideoContext1.
+  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context1;
+  if (FAILED(video_context_.As(&video_context1))) {
+    auto d3d11_color_space =
+        gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
+    video_context_->VideoProcessorSetStreamColorSpace(d3d11_processor_.Get(), 0,
+                                                      &d3d11_color_space);
+
+    // Since older platforms won't have HDR, just use SRGB.
+    dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSRGB();
+    d3d11_color_space = gfx::ColorSpaceWin::GetD3D11ColorSpace(
+        dx11_converter_output_color_space_);
+    video_context_->VideoProcessorSetOutputColorSpace(d3d11_processor_.Get(),
+                                                      &d3d11_color_space);
+    return true;
+  }
+
+  // Since the video processor doesn't support HLG, lets just do the YUV->RGB
+  // conversion and let the output color space be HLG. This won't work well
+  // unless color management is on, but if color management is off we don't
+  // support HLG anyways.
+  if (color_space == gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                                     gfx::ColorSpace::TransferID::ARIB_STD_B67,
+                                     gfx::ColorSpace::MatrixID::BT709,
+                                     gfx::ColorSpace::RangeID::LIMITED)) {
+    video_context1->VideoProcessorSetStreamColorSpace1(
+        d3d11_processor_.Get(), 0,
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
+    video_context1->VideoProcessorSetOutputColorSpace1(
+        d3d11_processor_.Get(), DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
+    dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
+    return true;
+  }
+
+  if (use_fp16_ && config_.target_color_space.IsHDR() && color_space.IsHDR()) {
+    // Note, we only use the SCRGBLinear output color space when the input is
+    // PQ, because nvidia drivers will not convert G22 to G10 for some reason.
+    dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
   } else {
     dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSRGB();
-    if (use_color_info_ || use_fp16_) {
-      Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context1;
-      HRESULT hr = video_context_.CopyTo(video_context1.GetAddressOf());
-      if (SUCCEEDED(hr)) {
-        if (use_fp16_ && config_.target_color_space.IsHDR() &&
-            color_space.IsHDR()) {
-          // Note, we only use the SCRGBLinear output color space when
-          // the input is PQ, because nvidia drivers will not convert
-          // G22 to G10 for some reason.
-          dx11_converter_output_color_space_ =
-              gfx::ColorSpace::CreateSCRGBLinear();
-        }
-        // Since the video processor doesn't support HLG, let's just do the
-        // YUV->RGB conversion and let the output color space be HLG.
-        // This won't work well unless color management is on, but if color
-        // management is off we don't support HLG anyways.
-        if (color_space ==
-            gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                            gfx::ColorSpace::TransferID::ARIB_STD_B67,
-                            gfx::ColorSpace::MatrixID::BT709,
-                            gfx::ColorSpace::RangeID::LIMITED)) {
-          video_context1->VideoProcessorSetStreamColorSpace1(
-              d3d11_processor_.Get(), 0,
-              DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
-          video_context1->VideoProcessorSetOutputColorSpace1(
-              d3d11_processor_.Get(),
-              DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
-          dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
-        } else {
-          DVLOG(2) << "input color space: " << color_space
-                   << " DXGIColorSpace: "
-                   << gfx::ColorSpaceWin::GetDXGIColorSpace(color_space);
-          DVLOG(2) << "output color space:"
-                   << dx11_converter_output_color_space_ << " DXGIColorSpace: "
-                   << gfx::ColorSpaceWin::GetDXGIColorSpace(
-                          dx11_converter_output_color_space_);
-          video_context1->VideoProcessorSetStreamColorSpace1(
-              d3d11_processor_.Get(), 0,
-              gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
-          video_context1->VideoProcessorSetOutputColorSpace1(
-              d3d11_processor_.Get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
-                                          dx11_converter_output_color_space_));
-        }
-      } else {
-        D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
-            gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
-        video_context_->VideoProcessorSetStreamColorSpace(
-            d3d11_processor_.Get(), 0, &d3d11_color_space);
-        d3d11_color_space = gfx::ColorSpaceWin::GetD3D11ColorSpace(
-            dx11_converter_output_color_space_);
-        video_context_->VideoProcessorSetOutputColorSpace(
-            d3d11_processor_.Get(), &d3d11_color_space);
-      }
-    }
   }
+
+  DVLOG(2) << "input color space: " << color_space << " DXGIColorSpace: "
+           << gfx::ColorSpaceWin::GetDXGIColorSpace(color_space);
+  DVLOG(2) << "output color space:" << dx11_converter_output_color_space_
+           << " DXGIColorSpace: "
+           << gfx::ColorSpaceWin::GetDXGIColorSpace(
+                  dx11_converter_output_color_space_);
+
+  video_context1->VideoProcessorSetStreamColorSpace1(
+      d3d11_processor_.Get(), 0,
+      gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
+  video_context1->VideoProcessorSetOutputColorSpace1(
+      d3d11_processor_.Get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
+                                  dx11_converter_output_color_space_));
+
   return true;
 }
 
