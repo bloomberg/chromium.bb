@@ -116,6 +116,8 @@ static_library("test_support") {
     "fake_cryptauth_device_manager.h",
     "fake_cryptauth_enrollment_manager.cc",
     "fake_cryptauth_enrollment_manager.h",
+    "fake_cryptauth_enrollment_scheduler.cc",
+    "fake_cryptauth_enrollment_scheduler.h",
     "fake_cryptauth_gcm_manager.cc",
     "fake_cryptauth_gcm_manager.h",
     "fake_device_sync.cc",

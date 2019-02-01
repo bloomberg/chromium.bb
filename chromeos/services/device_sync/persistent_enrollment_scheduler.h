@@ -35,6 +35,7 @@ class PersistentEnrollmentScheduler : public CryptAuthEnrollmentScheduler {
    public:
     static Factory* Get();
     static void SetFactoryForTesting(Factory* test_factory);
+    virtual ~Factory();
     virtual std::unique_ptr<CryptAuthEnrollmentScheduler> BuildInstance(
         Delegate* delegate,
         PrefService* pref_service,
