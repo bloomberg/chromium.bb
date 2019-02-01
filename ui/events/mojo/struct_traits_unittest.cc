@@ -194,22 +194,30 @@ TEST(StructTraitsTest, MouseWheelEvent) {
 }
 
 TEST(StructTraitsTest, FloatingPointLocations) {
-  MouseEvent input_event(
-      ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(201), EF_NONE, 0,
-      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                     MouseEvent::kMousePointerId));
+  // Create some events with non-integer locations.
+  const gfx::PointF location(11.1, 22.2);
+  const gfx::PointF root_location(33.3, 44.4);
+  const base::TimeTicks time_stamp = base::TimeTicks::Now();
+  MouseEvent mouse_event(ET_MOUSE_PRESSED, location, root_location, time_stamp,
+                         EF_NONE, EF_NONE);
+  MouseWheelEvent wheel_event(gfx::Vector2d(1, 0), location, root_location,
+                              time_stamp, EF_NONE, EF_NONE);
+  ScrollEvent scroll_event(ET_SCROLL, location, root_location, time_stamp,
+                           EF_NONE, 1, 2, 3, 4, 5);
+  TouchEvent touch_event(ET_TOUCH_PRESSED, location, root_location, time_stamp,
+                         {}, EF_NONE);
+  Event* test_data[] = {&mouse_event, &wheel_event, &scroll_event,
+                        &touch_event};
 
-  input_event.set_location_f(gfx::PointF(10.1, 10.2));
-  input_event.set_root_location_f(gfx::PointF(20.2, 30.3));
-
-  std::unique_ptr<Event> expected_copy = Event::Clone(input_event);
-  std::unique_ptr<Event> output;
-  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(&expected_copy,
-                                                                &output));
-  ASSERT_TRUE(output->IsMouseEvent());
-
-  ExpectEventsEqual(input_event, *output->AsMouseEvent());
+  // Serialize and deserialize does not round or truncate the locations.
+  for (Event* event : test_data) {
+    std::unique_ptr<Event> event_copy = Event::Clone(*event);
+    std::unique_ptr<Event> output;
+    ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::Event>(&event_copy,
+                                                                  &output));
+    EXPECT_EQ(location, output->AsLocatedEvent()->location_f());
+    EXPECT_EQ(root_location, output->AsLocatedEvent()->root_location_f());
+  }
 }
 
 TEST(StructTraitsTest, KeyEventPropertiesSerialized) {

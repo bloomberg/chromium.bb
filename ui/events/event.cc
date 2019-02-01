@@ -528,17 +528,13 @@ MouseEvent::MouseEvent(const PlatformEvent& native_event)
 }
 
 MouseEvent::MouseEvent(EventType type,
-                       const gfx::Point& location,
-                       const gfx::Point& root_location,
+                       const gfx::PointF& location,
+                       const gfx::PointF& root_location,
                        base::TimeTicks time_stamp,
                        int flags,
                        int changed_button_flags,
                        const PointerDetails& pointer_details)
-    : LocatedEvent(type,
-                   gfx::PointF(location),
-                   gfx::PointF(root_location),
-                   time_stamp,
-                   flags),
+    : LocatedEvent(type, location, root_location, time_stamp, flags),
       changed_button_flags_(changed_button_flags),
       pointer_details_(pointer_details) {
   DCHECK_NE(ET_MOUSEWHEEL, type);
@@ -549,6 +545,21 @@ MouseEvent::MouseEvent(EventType type,
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
 }
+
+MouseEvent::MouseEvent(EventType type,
+                       const gfx::Point& location,
+                       const gfx::Point& root_location,
+                       base::TimeTicks time_stamp,
+                       int flags,
+                       int changed_button_flags,
+                       const PointerDetails& pointer_details)
+    : MouseEvent(type,
+                 gfx::PointF(location),
+                 gfx::PointF(root_location),
+                 time_stamp,
+                 flags,
+                 changed_button_flags,
+                 pointer_details) {}
 
 MouseEvent::MouseEvent(const MouseEvent& other) = default;
 
@@ -695,8 +706,8 @@ MouseWheelEvent::MouseWheelEvent(const MouseWheelEvent& mouse_wheel_event)
 }
 
 MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
-                                 const gfx::Point& location,
-                                 const gfx::Point& root_location,
+                                 const gfx::PointF& location,
+                                 const gfx::PointF& root_location,
                                  base::TimeTicks time_stamp,
                                  int flags,
                                  int changed_button_flags)
@@ -712,6 +723,19 @@ MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
   // a MouseWheelEvent.
   SetType(ui::ET_MOUSEWHEEL);
 }
+
+MouseWheelEvent::MouseWheelEvent(const gfx::Vector2d& offset,
+                                 const gfx::Point& location,
+                                 const gfx::Point& root_location,
+                                 base::TimeTicks time_stamp,
+                                 int flags,
+                                 int changed_button_flags)
+    : MouseWheelEvent(offset,
+                      gfx::PointF(location),
+                      gfx::PointF(root_location),
+                      time_stamp,
+                      flags,
+                      changed_button_flags) {}
 
 MouseWheelEvent::~MouseWheelEvent() = default;
 
@@ -743,15 +767,12 @@ TouchEvent::TouchEvent(const PlatformEvent& native_event)
 }
 
 TouchEvent::TouchEvent(EventType type,
-                       const gfx::Point& location,
+                       const gfx::PointF& location,
+                       const gfx::PointF& root_location,
                        base::TimeTicks time_stamp,
                        const PointerDetails& pointer_details,
                        int flags)
-    : LocatedEvent(type,
-                   gfx::PointF(location),
-                   gfx::PointF(location),
-                   time_stamp,
-                   flags),
+    : LocatedEvent(type, location, root_location, time_stamp, flags),
       unique_event_id_(ui::GetNextTouchEventId()),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
@@ -759,6 +780,18 @@ TouchEvent::TouchEvent(EventType type,
       pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
 }
+
+TouchEvent::TouchEvent(EventType type,
+                       const gfx::Point& location,
+                       base::TimeTicks time_stamp,
+                       const PointerDetails& pointer_details,
+                       int flags)
+    : TouchEvent(type,
+                 gfx::PointF(location),
+                 gfx::PointF(location),
+                 time_stamp,
+                 pointer_details,
+                 flags) {}
 
 TouchEvent::TouchEvent(const TouchEvent& copy)
     : LocatedEvent(copy),
@@ -1168,7 +1201,8 @@ ScrollEvent::ScrollEvent(const PlatformEvent& native_event)
 }
 
 ScrollEvent::ScrollEvent(EventType type,
-                         const gfx::Point& location,
+                         const gfx::PointF& location,
+                         const gfx::PointF& root_location,
                          base::TimeTicks time_stamp,
                          int flags,
                          float x_offset,
@@ -1178,7 +1212,7 @@ ScrollEvent::ScrollEvent(EventType type,
                          int finger_count,
                          EventMomentumPhase momentum_phase,
                          ScrollEventPhase scroll_event_phase)
-    : MouseEvent(type, location, location, time_stamp, flags, 0),
+    : MouseEvent(type, location, root_location, time_stamp, flags, 0),
       x_offset_(x_offset),
       y_offset_(y_offset),
       x_offset_ordinal_(x_offset_ordinal),
@@ -1189,6 +1223,30 @@ ScrollEvent::ScrollEvent(EventType type,
   CHECK(IsScrollEvent());
   latency()->set_source_event_type(ui::SourceEventType::WHEEL);
 }
+
+ScrollEvent::ScrollEvent(EventType type,
+                         const gfx::Point& location,
+                         base::TimeTicks time_stamp,
+                         int flags,
+                         float x_offset,
+                         float y_offset,
+                         float x_offset_ordinal,
+                         float y_offset_ordinal,
+                         int finger_count,
+                         EventMomentumPhase momentum_phase,
+                         ScrollEventPhase scroll_event_phase)
+    : ScrollEvent(type,
+                  gfx::PointF(location),
+                  gfx::PointF(location),
+                  time_stamp,
+                  flags,
+                  x_offset,
+                  y_offset,
+                  x_offset_ordinal,
+                  y_offset_ordinal,
+                  finger_count,
+                  momentum_phase,
+                  scroll_event_phase) {}
 
 ScrollEvent::ScrollEvent(const ScrollEvent& other) = default;
 

@@ -420,13 +420,15 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 
   // Location of the event relative to the target window and in the target
   // window's coordinate space. If there is no target this is the same as
-  // |root_location_|.
+  // |root_location_|. Native events may generate float values with sub-pixel
+  // precision.
   gfx::PointF location_;
 
   // Location of the event. What coordinate system this is in depends upon the
   // phase of event dispatch. For client code (meaning EventHanalders) it is
   // generally in screen coordinates, but early on it may be in pixels and
-  // relative to a display.
+  // relative to a display. Native events may generate float values with
+  // sub-pixel precision.
   gfx::PointF root_location_;
 };
 
@@ -537,6 +539,17 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   }
 
   // Note: Use the ctor for MouseWheelEvent if type is ET_MOUSEWHEEL.
+  MouseEvent(EventType type,
+             const gfx::PointF& location,
+             const gfx::PointF& root_location,
+             base::TimeTicks time_stamp,
+             int flags,
+             int changed_button_flags,
+             const PointerDetails& pointer_details =
+                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                                kMousePointerId));
+
+  // DEPRECATED: Prefer constructor that takes gfx::PointF.
   MouseEvent(EventType type,
              const gfx::Point& location,
              const gfx::Point& root_location,
@@ -654,6 +667,14 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   // Used for synthetic events in testing and by the gesture recognizer.
   MouseWheelEvent(const gfx::Vector2d& offset,
+                  const gfx::PointF& location,
+                  const gfx::PointF& root_location,
+                  base::TimeTicks time_stamp,
+                  int flags,
+                  int changed_button_flags);
+
+  // DEPRECATED: Prefer the constructor that takes gfx::PointF.
+  MouseWheelEvent(const gfx::Vector2d& offset,
                   const gfx::Point& location,
                   const gfx::Point& root_location,
                   base::TimeTicks time_stamp,
@@ -689,6 +710,14 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
         hovering_(false),
         pointer_details_(model.pointer_details_) {}
 
+  TouchEvent(EventType type,
+             const gfx::PointF& location,
+             const gfx::PointF& root_location,
+             base::TimeTicks time_stamp,
+             const PointerDetails& pointer_details,
+             int flags = 0);
+
+  // DEPRECATED: Prefer the constructor that takes gfx::PointF.
   TouchEvent(EventType type,
              const gfx::Point& location,
              base::TimeTicks time_stamp,
@@ -977,6 +1006,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {
  public:
   explicit ScrollEvent(const PlatformEvent& native_event);
+
   template <class T>
   ScrollEvent(const ScrollEvent& model, T* source, T* target)
       : MouseEvent(model, source, target),
@@ -988,6 +1018,20 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
         momentum_phase_(model.momentum_phase_),
         scroll_event_phase_(model.scroll_event_phase_) {}
 
+  ScrollEvent(EventType type,
+              const gfx::PointF& location,
+              const gfx::PointF& root_location,
+              base::TimeTicks time_stamp,
+              int flags,
+              float x_offset,
+              float y_offset,
+              float x_offset_ordinal,
+              float y_offset_ordinal,
+              int finger_count,
+              EventMomentumPhase momentum_phase = EventMomentumPhase::NONE,
+              ScrollEventPhase phase = ScrollEventPhase::kNone);
+
+  // DEPRECATED: Prefer the constructor that takes gfx::PointF.
   ScrollEvent(EventType type,
               const gfx::Point& location,
               base::TimeTicks time_stamp,
