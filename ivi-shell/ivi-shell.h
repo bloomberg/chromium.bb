@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include "compositor.h"
+#include "libweston-desktop/libweston-desktop.h"
 
 struct ivi_shell
 {
@@ -38,6 +39,7 @@ struct ivi_shell
 
 	struct weston_compositor *compositor;
 
+	struct weston_desktop *desktop;
 	struct wl_list ivi_surface_list; /* struct ivi_shell_surface::link */
 };
 

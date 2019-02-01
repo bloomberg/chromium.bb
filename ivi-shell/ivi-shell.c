@@ -44,7 +44,7 @@
 
 #include "ivi-shell.h"
 #include "ivi-application-server-protocol.h"
-#include "ivi-layout-export.h"
+#include "ivi-layout-private.h"
 #include "ivi-layout-shell.h"
 #include "shared/helpers.h"
 #include "compositor/weston.h"
@@ -264,6 +264,8 @@ application_surface_create(struct wl_client *client,
 				       "by another app");
 		return;
 	}
+
+	layout_surface->weston_desktop_surface = NULL;
 
 	ivisurf = zalloc(sizeof *ivisurf);
 	if (ivisurf == NULL) {

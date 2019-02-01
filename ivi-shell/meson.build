@@ -12,7 +12,7 @@ if get_option('shell-ivi')
 		'ivi-shell',
 		srcs_shell_ivi,
 		include_directories: include_directories('..', '../shared'),
-		dependencies: dep_libweston,
+		dependencies: [ dep_lib_desktop, dep_libweston ],
 		name_prefix: '',
 		install: true,
 		install_dir: dir_module_weston
