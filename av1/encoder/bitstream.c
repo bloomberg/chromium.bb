@@ -2867,24 +2867,25 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   int frame_size_override_flag = 0;
 
   if (seq_params->reduced_still_picture_hdr) {
-    assert(cm->width == seq_params->max_frame_width &&
-           cm->height == seq_params->max_frame_height);
+    assert(cm->superres_upscaled_width == seq_params->max_frame_width &&
+           cm->superres_upscaled_height == seq_params->max_frame_height);
   } else {
     if (seq_params->frame_id_numbers_present_flag) {
       int frame_id_len = seq_params->frame_id_length;
       aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
     }
 
-    if (cm->width > seq_params->max_frame_width ||
-        cm->height > seq_params->max_frame_height) {
+    if (cm->superres_upscaled_width > seq_params->max_frame_width ||
+        cm->superres_upscaled_height > seq_params->max_frame_height) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Frame dimensions are larger than the maximum values");
     }
 
     frame_size_override_flag =
-        frame_is_sframe(cm) ? 1
-                            : (cm->width != seq_params->max_frame_width ||
-                               cm->height != seq_params->max_frame_height);
+        frame_is_sframe(cm)
+            ? 1
+            : (cm->superres_upscaled_width != seq_params->max_frame_width ||
+               cm->superres_upscaled_height != seq_params->max_frame_height);
     if (!frame_is_sframe(cm)) aom_wb_write_bit(wb, frame_size_override_flag);
 
     if (seq_params->order_hint_info.enable_order_hint)
