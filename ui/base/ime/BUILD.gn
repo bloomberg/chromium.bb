@@ -41,6 +41,18 @@ jumbo_component("ime_types") {
     ":text_input_types",
     "//skia",
   ]
+
+  if (is_chromeos || use_ozone) {
+    sources += [
+      "character_composer.cc",
+      "character_composer.h",
+    ]
+    deps += [
+      "//ui/events:dom_keycode_converter",
+      "//ui/events:events",
+      "//ui/events:events_base",
+    ]
+  }
 }
 
 jumbo_component("ime") {
@@ -171,14 +183,6 @@ jumbo_component("ime") {
       "linux/text_edit_key_bindings_delegate_auralinux.cc",
       "linux/text_edit_key_bindings_delegate_auralinux.h",
     ]
-  }
-
-  if (is_chromeos || use_ozone) {
-    sources += [
-      "character_composer.cc",
-      "character_composer.h",
-    ]
-    deps += [ "//ui/events:dom_keycode_converter" ]
   }
 
   if (!toolkit_views && !use_aura) {
