@@ -51,6 +51,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
       CTPolicyEnforcer* ct_policy_enforcer,
+      SSLClientSessionCache* ssl_client_session_cache,
       const std::string& ssl_session_cache_shard,
       SSLConfigService* ssl_config_service,
       NetworkQualityEstimator* network_quality_estimator,

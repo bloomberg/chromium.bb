@@ -2082,6 +2082,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
           nullptr /* transport_security_state */,
           nullptr /* cert_transparency_verifier */,
           nullptr /* ct_policy_enforcer */,
+          nullptr /* ssl_client_session_cache */,
           std::string() /* ssl_session_cache_shard */,
           nullptr /* ssl_config_service */,
           nullptr /* socket_performance_watcher_factory */,
