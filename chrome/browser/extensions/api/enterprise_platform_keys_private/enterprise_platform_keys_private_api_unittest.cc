@@ -374,7 +374,7 @@ TEST_P(EPKPChallengeMachineKeyAllProfilesTest, Success) {
   EXPECT_EQ("cmVzcG9uc2U=" /* Base64 encoding of 'response' */, response);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AllProfiles,
     EPKPChallengeMachineKeyAllProfilesTest,
     ::testing::Values(EPKPChallengeKeyTestBase::ProfileType::USER_PROFILE,
