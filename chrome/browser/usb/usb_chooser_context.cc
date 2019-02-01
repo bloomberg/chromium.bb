@@ -238,6 +238,62 @@ UsbChooserContext::GetGrantedObjects(const GURL& requesting_origin,
     }
   }
 
+  // Iterate through the user granted objects and create a mapping of device IDs
+  // to device object if the object is also allowed by policy. Any objects that
+  // have been granted by policy are removed from |objects| to avoid duplicate
+  // permissions from being displayed.
+  // TODO(https://crbug.com/926984): This logic is very similar to the logic for
+  // GetAllGrantedObjects(), so it could potentially be centralized.
+  std::map<std::pair<int, int>, base::Value> device_ids_to_object_map;
+  for (auto it = objects.begin(); it != objects.end();) {
+    ChooserContextBase::Object& object = **it;
+    auto device_ids = GetDeviceIds(object.value);
+
+    if (usb_policy_allowed_devices_->IsDeviceAllowed(
+            requesting_origin, embedding_origin, device_ids)) {
+      device_ids_to_object_map[device_ids] = std::move(object.value);
+      it = objects.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  for (const auto& allowed_devices_entry : usb_policy_allowed_devices_->map()) {
+    // The map key is a tuple of (vendor_id, product_id).
+    const int vendor_id = allowed_devices_entry.first.first;
+    const int product_id = allowed_devices_entry.first.second;
+
+    for (const auto& url_pair : allowed_devices_entry.second) {
+      // Skip entries that do not match the |requesting_origin|.
+      if (url_pair.first.GetOrigin() != requesting_origin.GetOrigin())
+        continue;
+
+      // Skip entries that have a non-empty embedding origin that does not match
+      // the given |embedding_origin|.
+      if (!url_pair.second.is_empty() &&
+          url_pair.second.GetOrigin() != embedding_origin.GetOrigin()) {
+        continue;
+      }
+
+      // If there is an entry for the device in |device_ids_to_object_map|, use
+      // that object to represent the device. Otherwise, attempt to figure out
+      // the name of the device from the |vendor_id| and |product_id|.
+      std::unique_ptr<base::DictionaryValue> object;
+      auto it =
+          device_ids_to_object_map.find(std::make_pair(vendor_id, product_id));
+      if (it != device_ids_to_object_map.end()) {
+        object = base::DictionaryValue::From(
+            base::Value::ToUniquePtrValue(std::move(it->second)));
+      } else {
+        object = DeviceIdsToDictValue(vendor_id, product_id);
+      }
+
+      objects.push_back(std::make_unique<ChooserContextBase::Object>(
+          url_pair.first, url_pair.second, object.get(),
+          content_settings::SETTING_SOURCE_POLICY, is_incognito_));
+    }
+  }
+
   return objects;
 }
 
@@ -266,17 +322,18 @@ UsbChooserContext::GetAllGrantedObjects() {
   // Iterate through the user granted objects to create a mapping of device IDs
   // to device object for the policy granted objects to use, and remove
   // objects that have already been granted permission by the policy.
+  // TODO(https://crbug.com/926984): This logic is very similar to the logic for
+  // GetGrantedObjects(), so it could potentially be centralized.
   std::map<std::pair<int, int>, base::Value> device_ids_to_object_map;
   for (auto it = objects.begin(); it != objects.end();) {
-    const Object& object = **it;
+    Object& object = **it;
     auto device_ids = GetDeviceIds(object.value);
     const GURL& requesting_origin = object.requesting_origin;
     const GURL& embedding_origin = object.embedding_origin;
 
-    device_ids_to_object_map[device_ids] = object.value.Clone();
-
     if (usb_policy_allowed_devices_->IsDeviceAllowed(
             requesting_origin, embedding_origin, device_ids)) {
+      device_ids_to_object_map[device_ids] = std::move(object.value);
       it = objects.erase(it);
     } else {
       ++it;
@@ -289,6 +346,9 @@ UsbChooserContext::GetAllGrantedObjects() {
     const int product_id = allowed_devices_entry.first.second;
 
     for (const auto& url_pair : allowed_devices_entry.second) {
+      // If there is an entry for the device in |device_ids_to_object_map|, use
+      // that object to represent the device. Otherwise, attempt to figure out
+      // the name of the device from the |vendor_id| and |product_id|.
       std::unique_ptr<base::DictionaryValue> object;
       auto it =
           device_ids_to_object_map.find(std::make_pair(vendor_id, product_id));
