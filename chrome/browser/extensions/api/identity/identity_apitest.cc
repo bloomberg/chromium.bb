@@ -48,7 +48,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -465,7 +464,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
 
     GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
         context,
-        base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+        base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
                             &test_url_loader_factory_));
 
     // Ensure that AccountFetcherService is (1) created at all and (2) created
@@ -759,12 +758,7 @@ class GetAuthTokenFunctionTest
   void SetUpOnMainThread() override {
     IdentityTestWithSignin::SetUpOnMainThread();
     identity_test_env()->identity_manager()->AddDiagnosticsObserver(this);
-
-    FakeGaiaCookieManagerService* fake_gcms =
-        static_cast<FakeGaiaCookieManagerService*>(
-            GaiaCookieManagerServiceFactory::GetForProfile(
-                browser()->profile()));
-    fake_gcms->SetListAccountsResponseNoAccounts();
+    signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
   }
 
   void TearDownOnMainThread() override {
@@ -1544,12 +1538,11 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   AccountInfo account_info =
       identity_test_env()->MakeAccountAvailable("email@example.com");
   content::RunAllTasksUntilIdle();  // Flush pending ListAccounts calls.
-  FakeGaiaCookieManagerService* fake_gcms =
-      static_cast<FakeGaiaCookieManagerService*>(
-          GaiaCookieManagerServiceFactory::GetForProfile(profile));
-  fake_gcms->SetListAccountsResponseOneAccount(account_info.email,
-                                               account_info.gaia);
-  fake_gcms->set_list_accounts_stale_for_testing(true);
+  signin::SetListAccountsResponseOneAccount(
+      account_info.email, account_info.gaia, &test_url_loader_factory_);
+  GaiaCookieManagerService* gcms =
+      GaiaCookieManagerServiceFactory::GetForProfile(profile);
+  gcms->set_list_accounts_stale_for_testing(true);
 
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
