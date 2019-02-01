@@ -22,34 +22,34 @@ TEST(SigninStatusMetricsProviderTest, UpdateInitialSigninStatus) {
             metrics_provider.GetSigninStatusForTesting());
 }
 
-TEST(SigninStatusMetricsProviderTest, GoogleSigninSucceeded) {
+TEST(SigninStatusMetricsProviderTest, OnPrimaryAccountSet) {
   SigninStatusMetricsProvider metrics_provider(nullptr, true);
 
   // Initial status is all signed out and then one of the profiles is signed in.
   metrics_provider.UpdateInitialSigninStatus(2, 0);
-  metrics_provider.GoogleSigninSucceeded(AccountInfo());
+  metrics_provider.OnPrimaryAccountSet(AccountInfo());
   EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed in.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.GoogleSigninSucceeded(AccountInfo());
+  metrics_provider.OnPrimaryAccountSet(AccountInfo());
   EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
 
-TEST(SigninStatusMetricsProviderTest, GoogleSignedOut) {
+TEST(SigninStatusMetricsProviderTest, OnPrimaryAccountCleared) {
   SigninStatusMetricsProvider metrics_provider(nullptr, true);
 
   // Initial status is all signed in and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 2);
-  metrics_provider.GoogleSignedOut(AccountInfo());
+  metrics_provider.OnPrimaryAccountCleared(AccountInfo());
   EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 
   // Initial status is mixed and then one of the profiles is signed out.
   metrics_provider.UpdateInitialSigninStatus(2, 1);
-  metrics_provider.GoogleSignedOut(AccountInfo());
+  metrics_provider.OnPrimaryAccountCleared(AccountInfo());
   EXPECT_EQ(SigninStatusMetricsProviderBase::MIXED_SIGNIN_STATUS,
             metrics_provider.GetSigninStatusForTesting());
 }
