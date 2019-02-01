@@ -199,6 +199,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // context is made current.
   void DirtyVirtualContextState();
 
+  // Notifies this class of a new virtual GLContext owner.
+  void AddVirtualOwner(GLContext* owner);
+  // Removes a virtual GLContext owner.
+  void RemoveVirtualOwner(GLContext* owner);
+
 #if defined(OS_MACOSX)
   // Create a fence for all work submitted to this context so far, and return a
   // monotonically increasing handle to it. This returned handle never needs to
@@ -247,6 +252,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   GLApi* gl_api() { return gl_api_.get(); }
 
+  // Returns true if the provided |context| is the only remaining virtual owner
+  // of this context.
+  bool IsLastVirtualOwner(GLContext* context);
+
  private:
   friend class base::RefCounted<GLContext>;
 
@@ -280,6 +289,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   bool state_dirtied_externally_ = false;
   std::unique_ptr<GLStateRestorer> state_restorer_;
   std::unique_ptr<GLVersionInfo> version_info_;
+
+  base::flat_set<GLContext*> virtual_owners_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };
