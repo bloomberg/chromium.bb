@@ -22,7 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ui/views/test/widget_test.h"
@@ -58,7 +58,7 @@ void CocoaProfileTest::SetUp() {
   // Always fake out the Gaia service to avoid issuing network requests.
   TestingProfile::TestingFactories testing_factories = {
       {GaiaCookieManagerServiceFactory::GetInstance(),
-       base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithURLLoader,
+       base::BindRepeating(&BuildGaiaCookieManagerServiceWithURLLoader,
                            &test_url_loader_factory_)}};
 
   profile_ = profile_manager_.CreateTestingProfile(
@@ -80,12 +80,7 @@ void CocoaProfileTest::SetUp() {
       base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
 
   // Configure the GaiaCookieManagerService to return no accounts.
-  // This is copied from
-  // chrome/browser/ui/views/frame/test_with_browser_view.cc.
-  FakeGaiaCookieManagerService* gcms =
-      static_cast<FakeGaiaCookieManagerService*>(
-          GaiaCookieManagerServiceFactory::GetForProfile(profile_));
-  gcms->SetListAccountsResponseHttpNotFound();
+  signin::SetListAccountsResponseHttpNotFound(&test_url_loader_factory_);
 
   profile_->CreateBookmarkModel(true);
   bookmarks::test::WaitForBookmarkModelToLoad(
