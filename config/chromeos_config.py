@@ -162,6 +162,8 @@ def GeneralTemplates(site_config, ge_build_config):
       # so use settings to build from scratch, and archive the results.
       usepkg_build_packages=False,
       chrome_sdk=True,
+      # Increase master timeout: crbug.com/927886
+      build_timeout=6 * 60 * 60,
       display_label=config_lib.DISPLAY_LABEL_FULL,
       build_type=constants.FULL_TYPE,
       archive_build_debug=True,
