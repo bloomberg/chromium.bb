@@ -251,9 +251,9 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   bool is_verion_99_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSimpleServerStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSimpleServerStreamTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSimpleServerStreamTest, TestFraming) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _))

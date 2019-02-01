@@ -168,9 +168,9 @@ class QuicSpdyStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   HttpEncoder encoder_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSpdyStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSpdyStreamTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdyStreamTest, ProcessHeaderList) {
   Initialize(kShouldProcessData);

@@ -37,9 +37,9 @@ std::vector<TestParams> GetTestParams() {
 
 class QuicDataWriterTest : public QuicTestWithParam<TestParams> {};
 
-INSTANTIATE_TEST_CASE_P(QuicDataWriterTests,
-                        QuicDataWriterTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(QuicDataWriterTests,
+                         QuicDataWriterTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicDataWriterTest, SanityCheckUFloat16Consts) {
   // Check the arithmetic on the constants - otherwise the values below make

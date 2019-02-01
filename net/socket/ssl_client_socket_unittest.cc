@@ -984,9 +984,9 @@ class SSLClientSocketReadTest : public SSLClientSocketTest,
   const bool read_if_ready_enabled_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SSLClientSocketReadTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SSLClientSocketReadTest,
+                         ::testing::Bool());
 
 // Verifies the correctness of GetSSLCertRequestInfo.
 class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
@@ -5148,9 +5148,9 @@ class TLS13DowngradeMetricsTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        TLS13DowngradeMetricsTest,
-                        ::testing::ValuesIn(kTLS13DowngradeMetricsParams));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TLS13DowngradeMetricsTest,
+                         ::testing::ValuesIn(kTLS13DowngradeMetricsParams));
 
 TEST_P(TLS13DowngradeMetricsTest, Metrics) {
   const TLS13DowngradeMetricsParams& params = GetParam();

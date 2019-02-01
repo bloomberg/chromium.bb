@@ -56,9 +56,9 @@ class QuicReceivedPacketManagerTest : public QuicTestWithParam<TestParams> {
   QuicReceivedPacketManager received_manager_;
 };
 
-INSTANTIATE_TEST_CASE_P(QuicReceivedPacketManagerTest,
-                        QuicReceivedPacketManagerTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(QuicReceivedPacketManagerTest,
+                         QuicReceivedPacketManagerTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
   QuicPacketHeader header;

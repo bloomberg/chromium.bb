@@ -303,9 +303,9 @@ TestData response_headers_tests[] = {
      HttpVersion(1, 1), 200, "OK"},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        CommonHttpResponseHeadersTest,
-                        testing::ValuesIn(response_headers_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         CommonHttpResponseHeadersTest,
+                         testing::ValuesIn(response_headers_tests));
 
 struct PersistData {
   HttpResponseHeaders::PersistOptions options;
@@ -495,9 +495,9 @@ const struct PersistData persistence_tests[] = {
      "Bar: 1\n"},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        PersistenceTest,
-                        testing::ValuesIn(persistence_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         PersistenceTest,
+                         testing::ValuesIn(persistence_tests));
 
 TEST(HttpResponseHeadersTest, EnumerateHeader_Coalesced) {
   // Ensure that commas in quoted strings are not regarded as value separators.
@@ -824,9 +824,9 @@ const ContentTypeTestData mimetype_tests[] = {
 };
 // clang-format on
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        ContentTypeTest,
-                        testing::ValuesIn(mimetype_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         ContentTypeTest,
+                         testing::ValuesIn(mimetype_tests));
 
 struct RequiresValidationTestData {
   const char* headers;
@@ -1022,9 +1022,9 @@ const struct RequiresValidationTestData requires_validation_tests[] = {
     // TODO(darin): Add many many more tests here.
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        RequiresValidationTest,
-                        testing::ValuesIn(requires_validation_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         RequiresValidationTest,
+                         testing::ValuesIn(requires_validation_tests));
 
 struct UpdateTestData {
   const char* orig_headers;
@@ -1159,9 +1159,9 @@ const UpdateTestData update_tests[] = {
      "Content-Location: /example_page.html\n"},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        UpdateTest,
-                        testing::ValuesIn(update_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         UpdateTest,
+                         testing::ValuesIn(update_tests));
 
 struct EnumerateHeaderTestData {
   const char* headers;
@@ -1217,9 +1217,9 @@ const EnumerateHeaderTestData enumerate_header_tests[] = {
      "Foo: ,, 1,, 2, 3,,\n"},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        EnumerateHeaderLinesTest,
-                        testing::ValuesIn(enumerate_header_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         EnumerateHeaderLinesTest,
+                         testing::ValuesIn(enumerate_header_tests));
 
 struct IsRedirectTestData {
   const char* headers;
@@ -1304,9 +1304,9 @@ const IsRedirectTestData is_redirect_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        IsRedirectTest,
-                        testing::ValuesIn(is_redirect_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         IsRedirectTest,
+                         testing::ValuesIn(is_redirect_tests));
 
 struct ContentLengthTestData {
   const char* headers;
@@ -1381,9 +1381,9 @@ const ContentLengthTestData content_length_tests[] = {
      -1},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        GetContentLengthTest,
-                        testing::ValuesIn(content_length_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         GetContentLengthTest,
+                         testing::ValuesIn(content_length_tests));
 
 struct ContentRangeTestData {
   const char* headers;
@@ -1435,9 +1435,9 @@ const ContentRangeTestData content_range_tests[] = {
      false, -1, -1, -1},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        ContentRangeTest,
-                        testing::ValuesIn(content_range_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         ContentRangeTest,
+                         testing::ValuesIn(content_range_tests));
 
 struct KeepAliveTestData {
   const char* headers;
@@ -1603,9 +1603,9 @@ const KeepAliveTestData keepalive_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        IsKeepAliveTest,
-                        testing::ValuesIn(keepalive_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         IsKeepAliveTest,
+                         testing::ValuesIn(keepalive_tests));
 
 struct HasStrongValidatorsTestData {
   const char* headers;
@@ -1673,9 +1673,9 @@ const HasStrongValidatorsTestData strong_validators_tests[] = {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        HasStrongValidatorsTest,
-                        testing::ValuesIn(strong_validators_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         HasStrongValidatorsTest,
+                         testing::ValuesIn(strong_validators_tests));
 
 TEST(HttpResponseHeadersTest, HasValidatorsNone) {
   std::string headers("HTTP/1.1 200 OK");
@@ -1819,9 +1819,9 @@ const AddHeaderTestData add_header_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        AddHeaderTest,
-                        testing::ValuesIn(add_header_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         AddHeaderTest,
+                         testing::ValuesIn(add_header_tests));
 
 struct RemoveHeaderTestData {
   const char* orig_headers;
@@ -1873,9 +1873,9 @@ const RemoveHeaderTestData remove_header_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        RemoveHeaderTest,
-                        testing::ValuesIn(remove_header_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         RemoveHeaderTest,
+                         testing::ValuesIn(remove_header_tests));
 
 struct RemoveHeadersTestData {
   const char* orig_headers;
@@ -1935,9 +1935,9 @@ const RemoveHeadersTestData remove_headers_tests[] = {
      "connection: keep-alive\n"},
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        RemoveHeadersTest,
-                        testing::ValuesIn(remove_headers_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         RemoveHeadersTest,
+                         testing::ValuesIn(remove_headers_tests));
 
 struct RemoveIndividualHeaderTestData {
   const char* orig_headers;
@@ -2038,9 +2038,9 @@ const RemoveIndividualHeaderTestData remove_individual_header_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        RemoveIndividualHeaderTest,
-                        testing::ValuesIn(remove_individual_header_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         RemoveIndividualHeaderTest,
+                         testing::ValuesIn(remove_individual_header_tests));
 
 struct ReplaceStatusTestData {
   const char* orig_headers;
@@ -2102,9 +2102,9 @@ const ReplaceStatusTestData replace_status_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        ReplaceStatusTest,
-                        testing::ValuesIn(replace_status_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         ReplaceStatusTest,
+                         testing::ValuesIn(replace_status_tests));
 
 struct UpdateWithNewRangeTestData {
   const char* orig_headers;
@@ -2163,9 +2163,9 @@ const UpdateWithNewRangeTestData update_range_tests[] = {
   },
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        UpdateWithNewRangeTest,
-                        testing::ValuesIn(update_range_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         UpdateWithNewRangeTest,
+                         testing::ValuesIn(update_range_tests));
 
 TEST_F(HttpResponseHeadersCacheControlTest, AbsentMaxAgeReturnsFalse) {
   InitializeHeadersWithCacheControl("nocache");
@@ -2244,9 +2244,9 @@ const MaxAgeTestData max_age_tests[] = {
      std::numeric_limits<int64_t>::max()},  // Overflow int64_t.
 };
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeadersCacheControl,
-                        MaxAgeEdgeCasesTest,
-                        testing::ValuesIn(max_age_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeadersCacheControl,
+                         MaxAgeEdgeCasesTest,
+                         testing::ValuesIn(max_age_tests));
 
 TEST_F(HttpResponseHeadersCacheControlTest,
        AbsentStaleWhileRevalidateReturnsFalse) {
@@ -2337,9 +2337,9 @@ const struct GetCurrentAgeTestData get_current_age_tests[] = {
      "Fri, 20 Jan 2011 10:40:08 GMT", "Fri, 20 Jan 2011 10:40:12 GMT",
      "Fri, 20 Jan 2011 10:40:14 GMT", 7}};
 
-INSTANTIATE_TEST_CASE_P(HttpResponseHeaders,
-                        GetCurrentAgeTest,
-                        testing::ValuesIn(get_current_age_tests));
+INSTANTIATE_TEST_SUITE_P(HttpResponseHeaders,
+                         GetCurrentAgeTest,
+                         testing::ValuesIn(get_current_age_tests));
 
 }  // namespace
 

@@ -383,8 +383,9 @@ TEST_P(UrlUtilNonUniqueNameTest, IsHostnameNonUnique) {
   EXPECT_EQ(test_data.is_unique, IsUnique(test_data.hostname));
 }
 
-INSTANTIATE_TEST_CASE_P(, UrlUtilNonUniqueNameTest,
-                        testing::ValuesIn(kNonUniqueNameTestData));
+INSTANTIATE_TEST_SUITE_P(,
+                         UrlUtilNonUniqueNameTest,
+                         testing::ValuesIn(kNonUniqueNameTestData));
 
 TEST(UrlUtilTest, IsLocalhost) {
   EXPECT_TRUE(HostStringIsLocalhost("localhost"));

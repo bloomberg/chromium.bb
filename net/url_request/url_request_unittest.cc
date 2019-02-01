@@ -3319,9 +3319,9 @@ class URLRequestTestParameterizedSameSite
   EmbeddedTestServer https_server_{EmbeddedTestServer::TYPE_HTTPS};
 };
 
-INSTANTIATE_TEST_CASE_P(URLRequestTest,
-                        URLRequestTestParameterizedSameSite,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(URLRequestTest,
+                         URLRequestTestParameterizedSameSite,
+                         ::testing::Bool());
 
 TEST_P(URLRequestTestParameterizedSameSite, CookieAgeMetrics) {
   const bool same_site = GetParam();
@@ -10999,9 +10999,9 @@ TEST_P(HTTPSOCSPVerifyTest, VerifyResult) {
     EXPECT_EQ(test.cert_status, ssl_info.ocsp_result.revocation_status);
 }
 
-INSTANTIATE_TEST_CASE_P(OCSPVerify,
-                        HTTPSOCSPVerifyTest,
-                        testing::ValuesIn(kOCSPVerifyData));
+INSTANTIATE_TEST_SUITE_P(OCSPVerify,
+                         HTTPSOCSPVerifyTest,
+                         testing::ValuesIn(kOCSPVerifyData));
 
 class HTTPSAIATest : public HTTPSOCSPTest {
  public:

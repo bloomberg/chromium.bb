@@ -234,9 +234,9 @@ std::string TransportClientSocketTest::ReadServerData(int expected_bytes_read) {
 }
 
 // TODO(leighton):  Add SCTP to this list when it is ready.
-INSTANTIATE_TEST_CASE_P(StreamSocket,
-                        TransportClientSocketTest,
-                        ::testing::Values(TCP));
+INSTANTIATE_TEST_SUITE_P(StreamSocket,
+                         TransportClientSocketTest,
+                         ::testing::Values(TCP));
 
 TEST_P(TransportClientSocketTest, Connect) {
   TestCompletionCallback callback;

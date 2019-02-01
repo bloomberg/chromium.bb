@@ -446,9 +446,9 @@ class QuicSessionTestServer : public QuicSessionTestBase {
   QuicFramer client_framer_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSessionTestServer,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSessionTestServer,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSessionTestServer, PeerAddress) {
   EXPECT_EQ(QuicSocketAddress(QuicIpAddress::Loopback4(), kTestPort),
@@ -1612,9 +1612,9 @@ class QuicSessionTestClient : public QuicSessionTestBase {
   QuicSessionTestClient() : QuicSessionTestBase(Perspective::IS_CLIENT) {}
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSessionTestClient,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSessionTestClient,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSessionTestClient, AvailableBidirectionalStreamsClient) {
   ASSERT_TRUE(session_.GetOrCreateDynamicStream(

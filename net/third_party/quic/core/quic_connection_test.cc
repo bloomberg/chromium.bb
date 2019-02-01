@@ -1340,9 +1340,9 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
 };
 
 // Run all end to end tests with all supported versions.
-INSTANTIATE_TEST_CASE_P(SupportedVersion,
-                        QuicConnectionTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(SupportedVersion,
+                         QuicConnectionTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicConnectionTest, SelfAddressChangeAtClient) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));

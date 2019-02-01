@@ -148,7 +148,7 @@ class QuicStreamTest : public QuicStreamTestBase {};
 
 // Index value of 1 has the test run with supported-version[1], which is some
 // version OTHER than 99.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     QuicStreamTests,
     QuicStreamTest,
     ::testing::ValuesIn(ParsedVersionOfIndex(AllSupportedVersions(), 1)));
@@ -156,9 +156,9 @@ INSTANTIATE_TEST_CASE_P(
 // Make a parameterized version of the QuicStreamTest for those tests
 // that need to differentiate based on version number.
 class QuicParameterizedStreamTest : public QuicStreamTestBase {};
-INSTANTIATE_TEST_CASE_P(QuicParameterizedStreamTests,
-                        QuicParameterizedStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(QuicParameterizedStreamTests,
+                         QuicParameterizedStreamTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicStreamTest, PendingStreamTooMuchData) {
   Initialize();

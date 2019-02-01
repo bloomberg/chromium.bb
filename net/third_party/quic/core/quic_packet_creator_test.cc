@@ -261,9 +261,9 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
 // Run all packet creator tests with all supported versions of QUIC, and with
 // and without version in the packet header, as well as doing a run for each
 // length of truncated connection id.
-INSTANTIATE_TEST_CASE_P(QuicPacketCreatorTests,
-                        QuicPacketCreatorTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(QuicPacketCreatorTests,
+                         QuicPacketCreatorTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicPacketCreatorTest, SerializeFrames) {
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {

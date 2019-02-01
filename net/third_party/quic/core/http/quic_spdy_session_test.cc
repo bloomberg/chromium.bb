@@ -388,9 +388,9 @@ class QuicSpdySessionTestServer : public QuicSpdySessionTestBase {
       : QuicSpdySessionTestBase(Perspective::IS_SERVER) {}
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSpdySessionTestServer,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSpdySessionTestServer,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdySessionTestServer, ShouldBufferIncomingStreamUnidirectional) {
   if (connection_->transport_version() != QUIC_VERSION_99) {
@@ -1499,9 +1499,9 @@ class QuicSpdySessionTestClient : public QuicSpdySessionTestBase {
       : QuicSpdySessionTestBase(Perspective::IS_CLIENT) {}
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSpdySessionTestClient,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSpdySessionTestClient,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdySessionTestClient, AvailableStreamsClient) {
   ASSERT_TRUE(session_.GetOrCreateDynamicStream(

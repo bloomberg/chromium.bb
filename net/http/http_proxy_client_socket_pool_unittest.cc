@@ -281,9 +281,9 @@ class HttpProxyClientSocketPoolTest
 
 // All tests are run with three different proxy types: HTTP, HTTPS (non-SPDY)
 // and SPDY.
-INSTANTIATE_TEST_CASE_P(HttpProxyType,
-                        HttpProxyClientSocketPoolTest,
-                        ::testing::Values(HTTP, HTTPS, SPDY));
+INSTANTIATE_TEST_SUITE_P(HttpProxyType,
+                         HttpProxyClientSocketPoolTest,
+                         ::testing::Values(HTTP, HTTPS, SPDY));
 
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   TestProxyDelegate proxy_delegate;

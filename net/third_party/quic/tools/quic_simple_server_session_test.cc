@@ -266,9 +266,9 @@ class QuicSimpleServerSessionTest
   QuicConnectionVisitorInterface* visitor_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSimpleServerSessionTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSimpleServerSessionTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSimpleServerSessionTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
@@ -629,9 +629,9 @@ class QuicSimpleServerSessionServerPushTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSimpleServerSessionServerPushTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSimpleServerSessionServerPushTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSimpleServerSessionServerPushTest, TestPromisePushResources) {
   // Tests that given more than kMaxOpenStreamForTest resources, all their

@@ -415,9 +415,9 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   std::unique_ptr<CryptoHandshakeMessage> server_config_;
 };
 
-INSTANTIATE_TEST_CASE_P(CryptoServerTests,
-                        CryptoServerTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(CryptoServerTests,
+                         CryptoServerTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(CryptoServerTest, BadSNI) {
   // clang-format off

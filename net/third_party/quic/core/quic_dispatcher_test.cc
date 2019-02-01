@@ -1033,9 +1033,9 @@ class QuicDispatcherStatelessRejectTest
 // Parameterized test for stateless rejects.  Should test all
 // combinations of enabling/disabling, reject/no-reject for stateless
 // rejects.
-INSTANTIATE_TEST_CASE_P(QuicDispatcherStatelessRejectTests,
-                        QuicDispatcherStatelessRejectTest,
-                        ::testing::ValuesIn(GetStatelessRejectTestParams()));
+INSTANTIATE_TEST_SUITE_P(QuicDispatcherStatelessRejectTests,
+                         QuicDispatcherStatelessRejectTest,
+                         ::testing::ValuesIn(GetStatelessRejectTestParams()));
 
 TEST_P(QuicDispatcherStatelessRejectTest, ParameterizedBasicTest) {
   CreateTimeWaitListManager();
@@ -1626,7 +1626,7 @@ class BufferedPacketStoreTest
   CryptoHandshakeMessage full_chlo_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BufferedPacketStoreTests,
     BufferedPacketStoreTest,
     ::testing::ValuesIn(GetBufferedPacketStoreTestParams()));

@@ -200,9 +200,9 @@ MATCHER_P(EqualsProto, network_params, "") {
               reference.previous_connection_state());
 }
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicServerSessionBaseTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicServerSessionBaseTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 TEST_P(QuicServerSessionBaseTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
@@ -626,9 +626,9 @@ class StreamMemberLifetimeTest : public QuicServerSessionBaseTest {
   QuicCryptoServerConfigPeer crypto_config_peer_;
 };
 
-INSTANTIATE_TEST_CASE_P(StreamMemberLifetimeTests,
-                        StreamMemberLifetimeTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(StreamMemberLifetimeTests,
+                         StreamMemberLifetimeTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 // Trigger an operation which causes an async invocation of
 // ProofSource::GetProof.  Delay the completion of the operation until after the
