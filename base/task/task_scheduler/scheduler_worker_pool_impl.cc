@@ -72,6 +72,12 @@ constexpr size_t kMaxNumberOfWorkers = 256;
 //    be scheduled concurrently when we believe that a BEST_EFFORT task is
 //    blocked forever.
 // Currently, only 1. is true as the configuration is per pool.
+// TODO(https://crbug.com/927755): Fix racy condition when MayBlockThreshold ==
+// BlockedWorkersPoll.
+constexpr TimeDelta kForegroundMayBlockThreshold =
+    TimeDelta::FromMilliseconds(1000);
+constexpr TimeDelta kForegroundBlockedWorkersPoll =
+    TimeDelta::FromMilliseconds(1200);
 constexpr TimeDelta kBackgroundMayBlockThreshold = TimeDelta::FromSeconds(10);
 constexpr TimeDelta kBackgroundBlockedWorkersPoll = TimeDelta::FromSeconds(12);
 
@@ -191,7 +197,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
 
   // Returns true iff this worker has been within a MAY_BLOCK ScopedBlockingCall
-  // for more than |outer_->MayBlockThreshold()|. The max tasks must be
+  // for more than |may_block_threshold|. The max tasks must be
   // incremented if this returns true.
   bool MustIncrementMaxTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
@@ -367,17 +373,13 @@ void SchedulerWorkerPoolImpl::Start(
   DCHECK(workers_.empty());
 
   in_start().may_block_threshold =
-      may_block_threshold
-          ? may_block_threshold.value()
-          : (priority_hint_ == ThreadPriority::NORMAL
-                 ? TimeDelta::FromMicroseconds(
-                       kMayBlockThresholdMicrosecondsParam.Get())
-                 : kBackgroundMayBlockThreshold);
+      may_block_threshold ? may_block_threshold.value()
+                          : (priority_hint_ == ThreadPriority::NORMAL
+                                 ? kForegroundMayBlockThreshold
+                                 : kBackgroundMayBlockThreshold);
   in_start().blocked_workers_poll_period =
-      priority_hint_ == ThreadPriority::NORMAL
-          ? TimeDelta::FromMicroseconds(
-                kBlockedWorkersPollMicrosecondsParam.Get())
-          : kBackgroundBlockedWorkersPoll;
+      priority_hint_ == ThreadPriority::NORMAL ? kForegroundBlockedWorkersPoll
+                                               : kBackgroundBlockedWorkersPoll;
 
   max_tasks_ = params.max_tasks();
   DCHECK_GE(max_tasks_, 1U);
@@ -995,7 +997,7 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
   if (!incremented_max_tasks_since_blocked_ &&
       !read_any().may_block_start_time.is_null() &&
       TimeTicks::Now() - read_any().may_block_start_time >=
-          outer_->MayBlockThreshold()) {
+          outer_->after_start().may_block_threshold) {
     incremented_max_tasks_since_blocked_ = true;
 
     --outer_->num_pending_may_block_workers_;
@@ -1108,7 +1110,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
   const size_t previous_max_tasks = max_tasks_;
 
   // Increment max tasks for each worker that has been within a MAY_BLOCK
-  // ScopedBlockingCall for more than MayBlockThreshold().
+  // ScopedBlockingCall for more than may_block_threshold.
   for (scoped_refptr<SchedulerWorker> worker : workers_) {
     // The delegates of workers inside a SchedulerWorkerPoolImpl should be
     // SchedulerWorkerDelegateImpls.
@@ -1133,14 +1135,6 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
   }
 
   MaintainAtLeastOneIdleWorkerLockRequired(&executor);
-}
-
-TimeDelta SchedulerWorkerPoolImpl::MayBlockThreshold() const {
-  // This value is usually smaller than
-  // |after_start().blocked_workers_poll_period| because we hope than when
-  // multiple workers block around the same time, a single AdjustMaxTasks() call
-  // will perform all the necessary max tasks adjustments.
-  return after_start().may_block_threshold;
 }
 
 void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasks() {

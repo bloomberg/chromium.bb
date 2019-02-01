@@ -14,6 +14,7 @@
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/containers/stack.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -163,10 +164,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   class SchedulerWorkerActionExecutor;
   class SchedulerWorkerDelegateImpl;
 
-  // Friend tests so that they can access |kBlockedWorkersPollPeriod| and
-  // BlockedThreshold().
+  // Friend tests so that they can access |blocked_workers_poll_period| and
+  // may_block_threshold().
   friend class TaskSchedulerWorkerPoolBlockingTest;
   friend class TaskSchedulerWorkerPoolMayBlockTest;
+  FRIEND_TEST_ALL_PREFIXES(TaskSchedulerWorkerPoolBlockingTest,
+                           ThreadBlockUnblockPremature);
 
   // SchedulerWorkerPool:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
@@ -216,7 +219,16 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Returns the threshold after which the max tasks is increased to compensate
   // for a worker that is within a MAY_BLOCK ScopedBlockingCall.
-  TimeDelta MayBlockThreshold() const;
+  TimeDelta may_block_threshold_for_testing() const {
+    return after_start().may_block_threshold;
+  }
+
+  // Interval at which the service thread checks for workers in this pool
+  // that have been in a MAY_BLOCK ScopedBlockingCall for more than
+  // may_block_threshold().
+  TimeDelta blocked_workers_poll_period_for_testing() const {
+    return after_start().blocked_workers_poll_period;
+  }
 
   // Starts calling AdjustMaxTasks() periodically on
   // |service_thread_task_runner_|.
