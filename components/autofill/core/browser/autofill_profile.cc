@@ -828,6 +828,38 @@ void AutofillProfile::RecordAndLogUse() {
   RecordUse();
 }
 
+bool AutofillProfile::HasGreaterFrescocencyThan(
+    const AutofillProfile* other,
+    base::Time comparison_time,
+    bool use_client_validation,
+    bool use_server_validation) const {
+  bool is_valid = (!use_client_validation || IsValidByClient()) &&
+                  (!use_server_validation || IsValidByServer());
+  bool other_is_valid = (!use_client_validation || other->IsValidByClient()) &&
+                        (!use_server_validation || other->IsValidByServer());
+  if (is_valid == other_is_valid)
+    return CompareFrecency(other, comparison_time);
+  if (is_valid && !other_is_valid)
+    return true;
+  return false;
+}
+
+bool AutofillProfile::IsValidByClient() const {
+  for (auto const& it : client_validity_states_) {
+    if (it.second == INVALID)
+      return false;
+  }
+  return true;
+}
+
+bool AutofillProfile::IsValidByServer() const {
+  for (auto const& it : server_validity_states_) {
+    if (it.second == INVALID)
+      return false;
+  }
+  return true;
+}
+
 bool AutofillProfile::IsAnInvalidPhoneNumber(ServerFieldType type) const {
   if (GetValidityState(type, SERVER) == VALID ||
       (type != PHONE_HOME_WHOLE_NUMBER && type != PHONE_HOME_NUMBER &&
@@ -890,6 +922,7 @@ void AutofillProfile::SetValidityState(
     return;
   }
   DCHECK_EQ(SERVER, validation_source);
+  LOG(ERROR) << __FUNCTION__;
   server_validity_states_[type] = validity;
 }
 

@@ -2274,6 +2274,135 @@ TEST_F(PersonalDataManagerTest,
   }
 }
 
+// Tests that suggestions based on invalid data are handled correctly.
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
+  // Set up 2 different profiles: one valid and one invalid.
+  AutofillProfile valid_profile(test::GetFullValidProfileForCanada());
+  valid_profile.set_use_date(AutofillClock::Now() -
+                             base::TimeDelta::FromDays(200));
+  valid_profile.set_use_count(1);
+  AddProfileToPersonalDataManager(valid_profile);
+
+  AutofillProfile invalid_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&invalid_profile, "Marion1", "Mitchell", "Morrison",
+                       "invalid email", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "Invalid Phone");
+  invalid_profile.set_use_date(AutofillClock::Now());
+  invalid_profile.set_use_count(1000);
+  AddProfileToPersonalDataManager(invalid_profile);
+
+  auto profiles = personal_data_->GetProfiles();
+  ASSERT_EQ(2U, profiles.size());
+
+  // Invalid based on client, and not invalid by server. Relying on both
+  // validity sources.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillProfileServerValidation,
+                              features::kAutofillProfileClientValidation},
+        /*disabled_features=*/{features::kAutofillSuppressDisusedAddresses});
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(EMAIL_ADDRESS), base::string16(), false,
+        std::vector<ServerFieldType>());
+
+    for (auto* profile : profiles) {
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByClient());
+      ASSERT_TRUE(profile->IsValidByServer());
+    }
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("alice@wonderland.ca"), suggestions[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("invalid email"), suggestions[1].value);
+  }
+
+  // Set the validity state of ADDRESS_HOME_STATE to INVALID on the prefs.
+  {
+    ProfileValidityMap profile_validity_map;
+    UserProfileValidityMap user_profile_validity_map;
+    std::string autofill_profile_validity;
+    personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                             autofill_profile_validity);
+    (*profile_validity_map.mutable_field_validity_states())[static_cast<int>(
+        ADDRESS_HOME_STATE)] = static_cast<int>(AutofillProfile::INVALID);
+    (*user_profile_validity_map
+          .mutable_profile_validity())[invalid_profile.guid()] =
+        profile_validity_map;
+    ASSERT_TRUE(user_profile_validity_map.SerializeToString(
+        &autofill_profile_validity));
+    base::Base64Encode(autofill_profile_validity, &autofill_profile_validity);
+    personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
+                                             autofill_profile_validity);
+  }
+  // Invalid based on client, and server. Relying on both validity sources.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillProfileClientValidation,
+                              features::kAutofillProfileServerValidation},
+        /*disabled_features=*/{features::kAutofillSuppressDisusedAddresses});
+
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(EMAIL_ADDRESS), base::string16(), false,
+        std::vector<ServerFieldType>());
+
+    for (auto* profile : profiles) {
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByClient());
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByServer());
+    }
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("alice@wonderland.ca"), suggestions[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("invalid email"), suggestions[1].value);
+  }
+  // Invalid based on client, and server. Relying only on the client source.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillProfileClientValidation},
+        /*disabled_features=*/{features::kAutofillSuppressDisusedAddresses,
+                               features::kAutofillProfileServerValidation});
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(EMAIL_ADDRESS), base::string16(), false,
+        std::vector<ServerFieldType>());
+
+    for (auto* profile : profiles) {
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByClient());
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByServer());
+    }
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("alice@wonderland.ca"), suggestions[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("invalid email"), suggestions[1].value);
+  }
+  // Invalid based on client, and server. Relying on server as a validity
+  // source.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillProfileServerValidation},
+        /*disabled_features=*/{features::kAutofillProfileClientValidation,
+                               features::kAutofillSuppressDisusedAddresses});
+
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(EMAIL_ADDRESS), base::string16(), false,
+        std::vector<ServerFieldType>());
+
+    for (auto* profile : profiles) {
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByClient());
+      ASSERT_EQ(profile->guid() == valid_profile.guid(),
+                profile->IsValidByServer());
+    }
+    ASSERT_EQ(2U, suggestions.size());
+    EXPECT_EQ(base::ASCIIToUTF16("alice@wonderland.ca"), suggestions[0].value);
+    EXPECT_EQ(base::ASCIIToUTF16("invalid email"), suggestions[1].value);
+  }
+}
+
 // Test that local and server profiles are not shown if
 // |kAutofillProfileEnabled| is set to |false|.
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {

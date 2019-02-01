@@ -1102,12 +1102,20 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
 
   std::vector<AutofillProfile*> profiles = GetProfiles();
 
-  // Rank the suggestions by frecency (see AutofillDataModel for details).
+  bool use_server_validation = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillProfileServerValidation);
+  bool use_client_validation = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillProfileClientValidation);
+
+  // Rank the suggestions by frescocency (see AutofillDataModel for details).
+  // Frescocency is frecency + validity score.
   const base::Time comparison_time = AutofillClock::Now();
   std::sort(profiles.begin(), profiles.end(),
-            [comparison_time](const AutofillDataModel* a,
-                              const AutofillDataModel* b) {
-              return a->CompareFrecency(b, comparison_time);
+            [comparison_time, use_client_validation, use_server_validation](
+                const AutofillProfile* a, const AutofillProfile* b) {
+              return a->HasGreaterFrescocencyThan(b, comparison_time,
+                                                  use_client_validation,
+                                                  use_server_validation);
             });
 
   return profiles;
@@ -1124,6 +1132,10 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   AutofillProfileComparator comparator(app_locale_);
   base::string16 field_contents_canon =
       comparator.NormalizeForComparison(field_contents);
+
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillProfileServerValidation))
+    UpdateProfilesServerValidityMapsIfNeeded(GetProfiles());
 
   // Get the profiles to suggest, which are already sorted.
   std::vector<AutofillProfile*> sorted_profiles = GetProfilesToSuggest();

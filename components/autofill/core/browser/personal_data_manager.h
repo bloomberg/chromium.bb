@@ -481,7 +481,7 @@ class PersonalDataManager : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            RequestProfileServerValidity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           GetProfileSuggestions_InvalidDataBasedOnServer);
+                           GetProfileSuggestions_Validity);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
                            UpdateProfilesValidityStates_MoveToJapan);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerMockTest,
