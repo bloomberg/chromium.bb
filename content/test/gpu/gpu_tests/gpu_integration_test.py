@@ -70,7 +70,17 @@ class GpuIntegrationTest(
     # TODO: remove this once the bug is addressed.
     if os.name == 'nt':
       browser_options.logging_verbosity = browser_options.VERBOSE_LOGGING
-      logging.getLogger().setLevel(logging.DEBUG)
+      # Fix up logging to provide filename and line number:
+      # First need to remove any existing handles so that logging.basicConfig
+      # works (see
+      # https://docs.python.org/2/library/logging.html#logging.basicConfig)
+      root_logger = logging.getLogger()
+      for handler in root_logger.handlers:
+        root_logger.removeHandler(handler)
+      # Now set the basic config so we can find the filename and line number:
+      FORMAT = "[%(levelname)s:%(filename)s:%(lineno)s] %(message)s"
+      logging.basicConfig(format=FORMAT)
+      root_logger.setLevel(logging.DEBUG)
 
     # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
     # the browser to collect gpu info. A command line switch is added here to
