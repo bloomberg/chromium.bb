@@ -10,18 +10,20 @@
 // On 10.13 and below: returns false, since there are no system media capture
 // permissions.
 bool SystemAudioCapturePermissionIsDisallowed();
+bool SystemVideoCapturePermissionIsDisallowed();
 
 // On 10.14 and above: if system permission is not determined, requests
 // permission. Otherwise, does nothing. When requesting permission, the OS will
 // show a user dialog and respond asynchronously. This function does not wait
 // for the response and nothing is done at the response. The reason
 // for explicitly requesting permission is that if only implicitly requesting
-// permission (when media::AUAudioInputStream::Start() calls
+// permission (e.g. for audio when media::AUAudioInputStream::Start() calls
 // AudioOutputUnitStart()), the OS returns not determined when we ask what the
 // permission state is, even though it's actually set to something else, until
 // browser restart.
 // On 10.13 and below: does nothing, since there are no system media capture
 // permissions.
-void EnsureSystemAudioCapturePermission();
+void EnsureSystemAudioCapturePermissionIsOrGetsDetermined();
+void EnsureSystemVideoCapturePermissionIsOrGetsDetermined();
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_SYSTEM_MEDIA_CAPTURE_PERMISSIONS_MAC_H_
