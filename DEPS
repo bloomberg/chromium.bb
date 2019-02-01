@@ -694,7 +694,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '3e7bf99febab8ef7e92de19df90e73e1ef70129d',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'b1908cf0075bc7f7a1f4794a109f1ce609cad055',
       'condition': 'checkout_linux',
   },
 
