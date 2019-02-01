@@ -14,6 +14,25 @@ import("//buildtools/deps_revisions.gni")
 # This build configuration is used by both Fuchsia and POSIX systems.
 assert(is_posix || is_fuchsia)
 
+declare_args() {
+  # lldb pretty printing only works when libc++ is built in the __1 (or __ndk1)
+  # namespaces.  For pretty printing to work out-of-the-box on Mac (where lldb
+  # is primarily used), this flag is set to false to build with the __1
+  # namespace (to maintain ABI compatibility, this implies building without
+  # _LIBCPP_ABI_UNSTABLE).  This is not necessary on non-component builds
+  # because we leave the ABI version set to __1 in that case because libc++
+  # symbols are not exported.
+  # TODO(thomasanderson): Set this to true by default once rL352899 is available
+  # in MacOS's lldb.
+  libcxx_abi_unstable = !(is_mac && is_debug && is_component_build)
+}
+
+# TODO(xiaohuic): https://crbug/917533 Crashes on internal ChromeOS build.
+# Do unconditionally once the underlying problem is fixed.
+if (is_chromeos && is_chrome_branded) {
+  libcxx_abi_unstable = false
+}
+
 group("posix") {
   visibility = [ "//:optimize_gn_gen" ]
 }
@@ -35,12 +54,18 @@ config("runtime_library") {
   libs = []
 
   if (use_custom_libcxx) {
+    if (libcxx_abi_unstable) {
+      defines += [ "_LIBCPP_ABI_UNSTABLE" ]
+    }
+
     if (is_component_build) {
       # In component builds, symbols from libc++.so are exported for all DSOs to
       # use.  If the system libc++ gets loaded (indirectly through a system
       # library), then it will conflict with our libc++.so.  Add a custom ABI
-      # version to avoid conflicts.
-      defines += [ "_LIBCPP_ABI_VERSION=Cr" ]
+      # version if we're building with _LIBCPP_ABI_UNSTABLE to avoid conflicts.
+      if (libcxx_abi_unstable) {
+        defines += [ "_LIBCPP_ABI_VERSION=Cr" ]
+      }
     } else {
       # Don't leak any symbols on a static build.
       defines += [ "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS" ]
@@ -58,12 +83,6 @@ config("runtime_library") {
       "CR_LIBCXXABI_REVISION=$libcxxabi_svn_revision",
       "_LIBCPP_ENABLE_NODISCARD",
     ]
-
-    # TODO(xiaohuic): https://crbug/917533 Crashes on internal ChromeOS build.
-    # Do unconditionally once the underlying problem is fixed.
-    if (!(is_chromeos && is_chrome_branded)) {
-      defines += [ "_LIBCPP_ABI_UNSTABLE" ]
-    }
 
     # Make sure we don't link against libc++ or libstdc++.
     if (is_clang) {
