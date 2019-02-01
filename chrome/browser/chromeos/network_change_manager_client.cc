@@ -5,15 +5,14 @@
 #include "chrome/browser/chromeos/network_change_manager_client.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/network_service_util.h"
 #include "net/base/network_change_notifier_chromeos.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace chromeos {
@@ -26,7 +25,7 @@ NetworkChangeManagerClient::NetworkChangeManagerClient(
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (content::IsOutOfProcessNetworkService())
     ConnectToNetworkChangeManager();
 
   // Update initial connection state.
@@ -38,7 +37,7 @@ NetworkChangeManagerClient::~NetworkChangeManagerClient() {
   NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                  FROM_HERE);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
-};
+}
 
 void NetworkChangeManagerClient::SuspendDone(
     const base::TimeDelta& sleep_duration) {

@@ -123,8 +123,17 @@ base::LazyInstance<std::map<std::string, base::WeakPtr<UtilityProcessHost>>>::
 
 // If enabled, network service will run in it's own thread when running
 // in-process, otherwise it is run on the IO thread.
+// On ChromeOS the network service has to run on the IO thread because
+// ProfileIOData and NetworkContext both try to set up NSS, which has has to be
+// called from the IO thread.
 const base::Feature kNetworkServiceDedicatedThread{
-    "NetworkServiceDedicatedThread", base::FEATURE_ENABLED_BY_DEFAULT};
+  "NetworkServiceDedicatedThread",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
