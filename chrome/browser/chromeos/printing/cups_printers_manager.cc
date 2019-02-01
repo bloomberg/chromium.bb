@@ -80,7 +80,7 @@ void FilterOutPrinters(std::vector<Printer>* printers,
 
 // Return true if this is a USB printer.
 bool IsUsbPrinter(const Printer& printer) {
-  return base::StringPiece(printer.uri()).starts_with("usb://");
+  return printer.GetProtocol() == Printer::kUsb;
 }
 
 class CupsPrintersManagerImpl : public CupsPrintersManager,
