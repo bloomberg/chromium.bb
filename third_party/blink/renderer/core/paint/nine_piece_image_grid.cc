@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
 
-#include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
@@ -35,8 +34,8 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
                                        bool include_rigt_edge)
     : border_image_area_(border_image_area),
       image_size_(image_size),
-      horizontal_tile_rule_((Image::TileRule)nine_piece_image.HorizontalRule()),
-      vertical_tile_rule_((Image::TileRule)nine_piece_image.VerticalRule()),
+      horizontal_tile_rule_(nine_piece_image.HorizontalRule()),
+      vertical_tile_rule_(nine_piece_image.VerticalRule()),
       fill_(nine_piece_image.Fill()) {
   top_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Top(),
                                 image_size.Height());
@@ -160,13 +159,13 @@ static inline void SetHorizontalEdge(
     const NinePieceImageGrid::Edge& edge,
     const FloatRect& source,
     const FloatRect& destination,
-    Image::TileRule tile_rule) {
+    ENinePieceImageRule tile_rule) {
   draw_info.is_drawable = edge.IsDrawable() && source.Width() > 0;
   if (draw_info.is_drawable) {
     draw_info.source = source;
     draw_info.destination = destination;
     draw_info.tile_scale = FloatSize(edge.Scale(), edge.Scale());
-    draw_info.tile_rule = {tile_rule, Image::kStretchTile};
+    draw_info.tile_rule = {tile_rule, kStretchImageRule};
   }
 }
 
@@ -175,13 +174,13 @@ static inline void SetVerticalEdge(
     const NinePieceImageGrid::Edge& edge,
     const FloatRect& source,
     const FloatRect& destination,
-    Image::TileRule tile_rule) {
+    ENinePieceImageRule tile_rule) {
   draw_info.is_drawable = edge.IsDrawable() && source.Height() > 0;
   if (draw_info.is_drawable) {
     draw_info.source = source;
     draw_info.destination = destination;
     draw_info.tile_scale = FloatSize(edge.Scale(), edge.Scale());
-    draw_info.tile_rule = {Image::kStretchTile, tile_rule};
+    draw_info.tile_rule = {kStretchImageRule, tile_rule};
   }
 }
 
@@ -268,11 +267,11 @@ void NinePieceImageGrid::SetDrawInfoMiddle(NinePieceDrawInfo& draw_info) const {
     // factor unless they have a rule other than "stretch". The middle however
     // can have "stretch" specified in one axis but not the other, so we have to
     // correct the scale here.
-    if (horizontal_tile_rule_ == (Image::TileRule)kStretchImageRule)
+    if (horizontal_tile_rule_ == kStretchImageRule)
       middle_scale_factor.SetWidth((float)destination_size.Width() /
                                    source_size.Width());
 
-    if (vertical_tile_rule_ == (Image::TileRule)kStretchImageRule)
+    if (vertical_tile_rule_ == kStretchImageRule)
       middle_scale_factor.SetHeight((float)destination_size.Height() /
                                     source_size.Height());
   }

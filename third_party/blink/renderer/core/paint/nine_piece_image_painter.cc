@@ -4,9 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 
-#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
@@ -18,6 +16,74 @@
 namespace blink {
 
 namespace {
+
+std::tuple<bool, float> CalculateSpaceNeeded(const float destination,
+                                             const float source) {
+  DCHECK_GT(source, 0);
+  DCHECK_GT(destination, 0);
+
+  float repeat_tiles_count = floorf(destination / source);
+  if (!repeat_tiles_count)
+    return std::make_tuple(false, -1);
+
+  float space = destination;
+  space -= source * repeat_tiles_count;
+  space /= repeat_tiles_count + 1.0;
+
+  return std::make_tuple(true, space);
+}
+
+struct TileParameters {
+  float scale_factor;
+  float phase;
+  float spacing;
+};
+
+bool ComputeTileParameters(ENinePieceImageRule tile_rule,
+                           float dst_pos,
+                           float dst_extent,
+                           float src_pos,
+                           float src_extent,
+                           float provided_tile_scale_factor,
+                           TileParameters& tile) {
+  tile.scale_factor = provided_tile_scale_factor;
+  switch (tile_rule) {
+    case kRoundImageRule: {
+      float repetitions =
+          std::max(1.0f, roundf(dst_extent / (src_extent * tile.scale_factor)));
+      tile.scale_factor = dst_extent / (src_extent * repetitions);
+      tile.phase = src_pos * tile.scale_factor;
+      tile.spacing = 0;
+      break;
+    }
+    case kRepeatImageRule: {
+      float scaled_tile_extent = src_extent * tile.scale_factor;
+      // We want to construct the phase such that the pattern is centered (when
+      // stretch is not set for a particular rule).
+      tile.phase = src_pos * tile.scale_factor;
+      tile.phase -= (dst_extent - scaled_tile_extent) / 2;
+      tile.spacing = 0;
+      break;
+    }
+    case kSpaceImageRule: {
+      std::tuple<bool, float> space =
+          CalculateSpaceNeeded(dst_extent, src_extent);
+      if (!std::get<0>(space))
+        return false;
+      tile.spacing = std::get<1>(space);
+      tile.scale_factor = 1;
+      tile.phase = src_pos - tile.spacing;
+      break;
+    }
+    case kStretchImageRule:
+      tile.phase = src_pos * tile.scale_factor;
+      tile.spacing = 0;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return true;
+}
 
 void PaintPieces(GraphicsContext& context,
                  const LayoutRect& border_image_rect,
@@ -44,11 +110,44 @@ void PaintPieces(GraphicsContext& context,
         // use kSync by default.
         context.DrawImage(image, Image::kSyncDecode, draw_info.destination,
                           &draw_info.source);
+      } else if (draw_info.tile_rule.horizontal == kStretchImageRule &&
+                 draw_info.tile_rule.vertical == kStretchImageRule) {
+        // Just do a scale.
+        // Since there is no way for the developer to specify decode behavior,
+        // use kSync by default.
+        context.DrawImage(image, Image::kSyncDecode, draw_info.destination,
+                          &draw_info.source);
       } else {
-        context.DrawTiledImage(image, draw_info.destination, draw_info.source,
-                               draw_info.tile_scale,
-                               draw_info.tile_rule.horizontal,
-                               draw_info.tile_rule.vertical);
+        // TODO(cavalcantii): see crbug.com/662513.
+        TileParameters h_tile, v_tile;
+        if (!ComputeTileParameters(
+                draw_info.tile_rule.horizontal, draw_info.destination.X(),
+                draw_info.destination.Width(), draw_info.source.X(),
+                draw_info.source.Width(), draw_info.tile_scale.Width(), h_tile))
+          continue;
+        if (!ComputeTileParameters(
+                draw_info.tile_rule.vertical, draw_info.destination.Y(),
+                draw_info.destination.Height(), draw_info.source.Y(),
+                draw_info.source.Height(), draw_info.tile_scale.Height(),
+                v_tile))
+          continue;
+
+        FloatSize tile_scale_factor(h_tile.scale_factor, v_tile.scale_factor);
+        FloatPoint tile_phase(draw_info.destination.X() - h_tile.phase,
+                              draw_info.destination.Y() - v_tile.phase);
+
+        // TODO(cavalcantii): see crbug.com/662507.
+        if (draw_info.tile_rule.horizontal == kRoundImageRule ||
+            draw_info.tile_rule.vertical == kRoundImageRule) {
+          ScopedInterpolationQuality interpolation_quality_scope(
+              context, kInterpolationLow);
+          context.DrawImageTiled(image, draw_info.destination, draw_info.source,
+                                 tile_scale_factor, tile_phase, FloatSize());
+        } else {
+          FloatSize tile_spacing(h_tile.spacing, v_tile.spacing);
+          context.DrawImageTiled(image, draw_info.destination, draw_info.source,
+                                 tile_scale_factor, tile_phase, tile_spacing);
+        }
       }
     }
   }
