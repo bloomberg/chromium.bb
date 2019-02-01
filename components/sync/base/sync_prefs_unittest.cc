@@ -260,7 +260,6 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(APP_NOTIFICATIONS);
       expected_preferred_types.Put(APP_SETTINGS);
       expected_preferred_types.Put(ARC_PACKAGE);
-      expected_preferred_types.Put(READING_LIST);
     }
     if (type == EXTENSIONS) {
       expected_preferred_types.Put(EXTENSION_SETTINGS);

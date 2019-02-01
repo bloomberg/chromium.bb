@@ -34,7 +34,6 @@ PrefGroupsMap ComputePrefGroups() {
   pref_groups[APPS].Put(APP_SETTINGS);
   pref_groups[APPS].Put(APP_LIST);
   pref_groups[APPS].Put(ARC_PACKAGE);
-  pref_groups[APPS].Put(READING_LIST);
 
   pref_groups[AUTOFILL].Put(AUTOFILL_PROFILE);
   pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_DATA);
