@@ -5,18 +5,10 @@
 <script src="/gen/third_party/blink/public/mojom/contacts/contacts_manager.mojom.js"></script>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/helpers.js"></script>
 <script src="resources/mock_contacts_manager.js"></script>
 <script>
 'use strict';
-
-// Creates a "user gesture" using Blink's test-only eventSender.
-function triggerUserGesture() {
-  if (!window.eventSender)
-    throw new Error('The `eventSender` must be available for this test');
-
-  eventSender.mouseDown();
-  eventSender.mouseUp();
-}
 
 // Verifies that |func|, when invoked, throws a TypeError exception.
 async function expectTypeError(func) {
