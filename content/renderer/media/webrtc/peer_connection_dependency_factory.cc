@@ -337,8 +337,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   webrtc::PeerConnectionDependencies dependencies(observer);
   dependencies.allocator = CreatePortAllocator(web_frame);
-  dependencies.async_resolver_factory =
-      std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
+  dependencies.async_resolver_factory = CreateAsyncResolverFactory();
   return GetPcFactory()
       ->CreatePeerConnection(config, std::move(dependencies))
       .get();
@@ -460,6 +459,11 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
     port_allocator->SetPortRange(min_port, max_port);
 
   return port_allocator;
+}
+
+std::unique_ptr<webrtc::AsyncResolverFactory>
+PeerConnectionDependencyFactory::CreateAsyncResolverFactory() {
+  return std::make_unique<ProxyAsyncResolverFactory>(socket_factory_.get());
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>

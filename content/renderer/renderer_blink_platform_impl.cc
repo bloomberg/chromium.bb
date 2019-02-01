@@ -733,6 +733,16 @@ RendererBlinkPlatformImpl::CreateWebRtcPortAllocator(
   return rtc_dependency_factory->CreatePortAllocator(frame);
 }
 
+std::unique_ptr<webrtc::AsyncResolverFactory>
+RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  PeerConnectionDependencyFactory* rtc_dependency_factory =
+      render_thread->GetPeerConnectionDependencyFactory();
+  rtc_dependency_factory->EnsureInitialized();
+  return rtc_dependency_factory->CreateAsyncResolverFactory();
+}
+
 //------------------------------------------------------------------------------
 
 std::unique_ptr<WebCanvasCaptureHandler>

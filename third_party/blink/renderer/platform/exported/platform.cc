@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/webrtc/api/async_resolver_factory.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/p2p/base/port_allocator.h"
 
@@ -312,6 +313,11 @@ Platform::CreateRTCPeerConnectionHandler(
 
 std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
     WebLocalFrame* frame) {
+  return nullptr;
+}
+
+std::unique_ptr<webrtc::AsyncResolverFactory>
+Platform::CreateWebRtcAsyncResolverFactory() {
   return nullptr;
 }
 

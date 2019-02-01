@@ -94,6 +94,7 @@ class Local;
 
 namespace webrtc {
 struct RtpCapabilities;
+class AsyncResolverFactory;
 }
 
 namespace blink {
@@ -634,6 +635,10 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       WebLocalFrame* frame);
+
+  // May return null if WebRTC functionality is not implemented.
+  virtual std::unique_ptr<webrtc::AsyncResolverFactory>
+  CreateWebRtcAsyncResolverFactory();
 
   // Creates a WebCanvasCaptureHandler to capture Canvas output.
   virtual std::unique_ptr<WebCanvasCaptureHandler>
