@@ -145,7 +145,15 @@ template("chrome_public_common_apk_or_module_tmpl") {
       native_lib_version_rule = "//build/util:chrome_version_json"
     }
     if (!defined(aapt_locale_whitelist)) {
-      aapt_locale_whitelist = locales - android_chrome_omitted_locales
+      if (target_type == "android_apk") {
+        # For APKs, do not include the resource strings files from our
+        # omitted locale list in order to save size.
+        aapt_locale_whitelist = locales - android_chrome_omitted_locales
+      } else {
+        # For bundles, only include resource strings files from our full
+        # locale list, but nothing more.
+        aapt_locale_whitelist = locales
+      }
     }
 
     if (!_is_monochrome) {
@@ -311,9 +319,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
     app_as_shared_lib = true
     use_chromium_linker = false
     min_sdk_version = 24
-
-    # Webview supports all locales (has no omitted ones).
-    aapt_locale_whitelist = locales
 
     # Resources config for blocklisting resource names from obfuscation
     resources_config_path = "//android_webview/aapt2.config"

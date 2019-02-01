@@ -1978,6 +1978,12 @@ if (enable_java_templates) {
   #     to the list from the input R.txt file. Overrides shared_resources
   #     when both are specified.
   #
+  #   shared_resources_whitelist_locales: (optional)
+  #     If shared_resources_whitelist is used, provide an optional list of
+  #     Chromium locale names to determine which localized shared string
+  #     resources to put in the final output, even if aapt_locale_whitelist
+  #     is defined to a smaller subset.
+  #
   #   support_zh_hk: (optional)
   #     If true, support zh-HK in Chrome on Android by using the resources
   #     from zh-TW. See https://crbug.com/780847.
@@ -2215,6 +2221,10 @@ if (enable_java_templates) {
           "--shared-resources-whitelist",
           rebase_path(invoker.shared_resources_whitelist, root_build_dir),
         ]
+      }
+      if (defined(invoker.shared_resources_whitelist_locales)) {
+        args += [ "--shared-resources-whitelist-locales=" +
+                  "${invoker.shared_resources_whitelist_locales}" ]
       }
 
       if (defined(invoker.proguard_file)) {
