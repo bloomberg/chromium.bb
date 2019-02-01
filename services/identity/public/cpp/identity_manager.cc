@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/identity_manager.h"
 
+#include <string>
+
 #include "build/build_config.h"
 #include "components/signin/core/browser/ubertoken_fetcher_impl.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -450,6 +452,12 @@ void IdentityManager::OnAccessTokenRequested(
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnAccessTokenRequested(account_id, consumer_id, scopes);
   }
+}
+
+void IdentityManager::OnAccessTokenRemoved(const std::string& account_id,
+                                           const ScopeSet& scopes) {
+  for (auto& observer : diagnostics_observer_list_)
+    observer.OnAccessTokenRemovedFromCache(account_id, scopes);
 }
 
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
