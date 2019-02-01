@@ -522,7 +522,6 @@ test("browser_tests") {
     }
 
     deps += [
-      "//ash:interactive_ui_test_support",
       "//ash:test_support",
       "//ash/public/interfaces:test_interfaces",
       "//chrome/browser/chromeos:arc_test_support",
@@ -1962,10 +1961,6 @@ test("browser_tests") {
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/settings/chromeos/device_power_handler_browsertest.cc",
         "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
-        "//ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
-        "//ash/app_list/app_list_interactive_uitest.cc",
-        "//ash/drag_drop/drag_drop_interactive_uitest.cc",
-        "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
         "base/interactive_test_utils.cc",
         "base/interactive_test_utils.h",
         "base/interactive_test_utils_aura.cc",

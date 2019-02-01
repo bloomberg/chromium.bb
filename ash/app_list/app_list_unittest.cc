@@ -13,30 +13,31 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/test/ash_interactive_ui_test_base.h"
+#include "ash/test/ash_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 
-using AppListTest = ash::AshInteractiveUITestBase;
+namespace ash {
+
+using AppListTest = AshTestBase;
 
 // An integration test to toggle the app list by pressing the shelf button.
 TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
-  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
-  ash::Shelf* shelf = ash::Shelf::ForWindow(root_window);
-  ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
-  ash::ShelfView* shelf_view = shelf->GetShelfViewForTesting();
-  ash::ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
-  ash::AppListButton* app_list_button = shelf_widget->GetAppListButton();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  Shelf* shelf = Shelf::ForWindow(root_window);
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
+  ShelfView* shelf_view = shelf->GetShelfViewForTesting();
+  ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
+  AppListButton* app_list_button = shelf_widget->GetAppListButton();
   // Ensure animations progressed to give the app list button a non-empty size.
   ASSERT_GT(app_list_button->GetBoundsInScreen().height(), 0);
 
   aura::Window* app_list_container =
-      root_window->GetChildById(ash::kShellWindowId_AppListContainer);
+      root_window->GetChildById(kShellWindowId_AppListContainer);
   ui::test::EventGenerator generator(root_window);
 
   // Click the app list button to show the app list.
-  ash::Shell* shell = ash::Shell::Get();
-  auto* controller = shell->app_list_controller();
+  auto* controller = Shell::Get()->app_list_controller();
   auto* presenter = controller->presenter();
   EXPECT_FALSE(controller->GetTargetVisibility());
   EXPECT_FALSE(presenter->GetTargetVisibility());
@@ -63,3 +64,5 @@ TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
   EXPECT_EQ(1u, app_list_container->children().size());
   EXPECT_FALSE(app_list_button->is_showing_app_list());
 }
+
+}  // namespace ash
