@@ -1180,7 +1180,12 @@ message ClientSafeBrowsingReportRequest {
 
   // URL of the page in the address bar.
   optional string url = 1;
+
+  // Must be set if the ReportType is not one of DANGEROUS_DOWNLOAD_RECOVERY,
+  // DANGEROUS_DOWNLOAD_WARNING, DANGEROUS_DOWNLOAD_BY_API,
+  // DANGEROUS_DOWNLOAD_OPENED, URL_PASSWORD_PROTECTION_PHISHING.
   optional string page_url = 2;
+
   optional string referrer_url = 3;
 
   repeated Resource resources = 4;

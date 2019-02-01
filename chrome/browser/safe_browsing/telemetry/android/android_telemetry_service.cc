@@ -259,6 +259,7 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
   report->set_type(
       safe_browsing::ClientSafeBrowsingReportRequest::APK_DOWNLOAD);
   report->set_url(item->GetOriginalUrl().spec());
+  report->set_page_url(item->GetTabUrl().spec());
 
   // Fill referrer chain.
   content::WebContents* web_contents =
