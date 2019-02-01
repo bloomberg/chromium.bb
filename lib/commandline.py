@@ -396,6 +396,31 @@ VALID_ACTIONS = {
     'split_extend': _SplitExtendAction,
 }
 
+_DEPRECATE_ACTIONS = [None, 'store', 'store_const', 'store_true', 'store_false',
+                      'append', 'append_const', 'count'] + VALID_ACTIONS.keys()
+
+
+class _DeprecatedAction(object):
+  """Base functionality to allow adding warnings for deprecated arguments.
+
+  To add a deprecated warning, simply include a deprecated=message argument
+  to the add_argument call for the deprecated argument. Beside logging the
+  deprecation warning, the argument will behave as normal.
+  """
+
+  def __init__(self, *args, **kwargs):
+    """Init override to extract the deprecated argument when it exists."""
+    self.deprecated_message = kwargs.pop('deprecated', None)
+    super(_DeprecatedAction, self).__init__(*args, **kwargs)
+
+  def __call__(self, parser, namespace, values, option_string=None):
+    """Log the message then defer to the parent action."""
+    if self.deprecated_message:
+      logging.warning('Argument %s is deprecated: %s', option_string,
+                      self.deprecated_message)
+    return super(_DeprecatedAction, self).__call__(
+        parser, namespace, values, option_string=option_string)
+
 
 def OptparseWrapCheck(desc, check_f, _option, opt, value):
   """Optparse adapter for type checking functionality."""
@@ -752,6 +777,7 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
     argparse.ArgumentParser.__init__(self, usage=usage, **kwargs)
     self._SetupTypes()
     self.SetupOptions()
+    self._RegisterActions()
 
   def _SetupTypes(self):
     """Register types with ArgumentParser."""
@@ -759,6 +785,27 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
       self.register('type', t, check_f)
     for a, class_a in VALID_ACTIONS.iteritems():
       self.register('action', a, class_a)
+
+  def _RegisterActions(self):
+    """Update the container's actions.
+
+    This method builds out a new action class to register for each action type.
+    The new action class allows handling the deprecated argument without any
+    other changes to the argument parser logic. See _DeprecatedAction.
+    """
+    for action in _DEPRECATE_ACTIONS:
+      current_class = self._registry_get('action', action, object)
+      # Base classes for the new class. The _DeprecatedAction must be first to
+      # ensure its method overrides are called first.
+      bases = (_DeprecatedAction, current_class)
+      try:
+        self.register('action', action, type('deprecated-wrapper', bases, {}))
+      except TypeError:
+        # Method resolution order error. This occurs when the _DeprecatedAction
+        # class is inherited multiple times, so we've already registered the
+        # replacement class. The underlying _ActionsContainer gets passed
+        # around, so this may get triggered in non-obvious ways.
+        continue
 
   def add_common_argument_to_group(self, group, *args, **kwargs):
     """Adds the given argument to the group.
