@@ -12,8 +12,6 @@
   <template>
     <style include="cr-shared-style">
       :host {
-        /* TODO(crbug/925209): GG 900 in light mode seems overly dark. */
-        --cr-search-field-border-color: var(--cr-primary-text-color);
         display: flex;
         user-select: none;
       }
@@ -41,7 +39,7 @@
         --cr-input-error-display: none;
         --cr-input-input: {
           height: 100%;
-          border-bottom: 1px solid var(--cr-search-field-border-color);
+          border-bottom: 1px solid var(--cr-secondary-text-color);
         }
         --cr-input-padding-end: 0;
         --cr-input-padding-start: 0;
@@ -60,7 +58,6 @@
          * background of the container cr-input to white). Can we just not set
          * these rules? */
         --cr-input-background-color: inherit;
-        --cr-search-field-border-color: var(--cr-secondary-text-color);
       }
 
       :host([has-search-text]) cr-input {
