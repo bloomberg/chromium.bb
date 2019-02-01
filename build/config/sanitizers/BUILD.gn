@@ -259,7 +259,6 @@ config("default_sanitizer_ldflags") {
       # Incremental linking causes padding that messes up SanitizerCoverage.
       # Don't do it.
       ldflags = [ "/INCREMENTAL:NO" ]
-      libs = [ "clang_rt.fuzzer_no_main-x86_64.lib" ]
     }
   }
 }
