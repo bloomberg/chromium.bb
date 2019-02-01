@@ -7545,6 +7545,8 @@
       'tags': [],
       'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
+      This policy only prevents users from proceeding on Safe Browsing warnings (e.g. malware and phishing) not for SSL certificate related issues like invalid or expired certificates.
+
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
 
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
