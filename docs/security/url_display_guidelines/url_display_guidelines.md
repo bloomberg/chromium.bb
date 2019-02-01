@@ -324,6 +324,10 @@ In some cases, a domain owner is willing to supply content from a third-party wi
 
 This is, generally, outside of the client threat-model, although in some cases (e.g., AMP), the client platform may attempt to introduce new UI to clarify the situation.
 
+## Testing URL Displays
+
+Chromium's open-source [Trickuri](https://github.com/chromium/trickuri) tool is a Go-based proxy server designed to enable manual testing of URL display behavior.
+
 ## Further Reading
 
 * [The Trouble with URLs](https://docs.google.com/presentation/d/1Nr47m1qlLjV8xZfw03jVKU3GQpSwbC0PWLHhXcyMcQM/) (LocoMoco Sec Conference talk)
