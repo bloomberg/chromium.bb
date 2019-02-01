@@ -153,6 +153,8 @@ class PresentationConnection : public EventTargetWithInlineData,
   HeapDeque<Member<Message>> messages_;
 
   BinaryType binary_type_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 };
 
 // Represents the controller side of a connection of either a 1-UA or 2-UA

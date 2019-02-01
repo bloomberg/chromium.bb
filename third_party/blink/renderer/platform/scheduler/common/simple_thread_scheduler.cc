@@ -50,6 +50,11 @@ SimpleThreadScheduler::IPCTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+SimpleThreadScheduler::DeprecatedDefaultTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
+}
+
 std::unique_ptr<PageScheduler> SimpleThreadScheduler::CreatePageScheduler(
     PageScheduler::Delegate* delegate) {
   return nullptr;

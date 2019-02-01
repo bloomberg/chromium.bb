@@ -80,6 +80,15 @@ class PLATFORM_EXPORT ThreadScheduler {
   // Returns a task runner for handling IPC messages.
   virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() = 0;
 
+  // Returns a default task runner. This is basically same as the default task
+  // runner, but is explicitly allowed to run JavaScript. We plan to forbid V8
+  // execution on per-thread task runners (crbug.com/913912). If you need to
+  // replace a default task runner usages that executes JavaScript but it is
+  // hard to replace with an appropriate (per-context) task runner, use this as
+  // a temporal step.
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  DeprecatedDefaultTaskRunner() = 0;
+
   // Creates a new PageScheduler for a given Page. Must be called from the
   // associated WebThread.
   virtual std::unique_ptr<PageScheduler> CreatePageScheduler(

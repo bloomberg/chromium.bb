@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/fileapi/file_reader_sync.h"
 
+#include <memory>
+
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
@@ -53,7 +55,8 @@ enum class WorkerType {
 };
 }  // namespace
 
-FileReaderSync::FileReaderSync(ExecutionContext* context) {
+FileReaderSync::FileReaderSync(ExecutionContext* context)
+    : task_runner_(context->GetTaskRunner(TaskType::kFileReading)) {
   WorkerType type = WorkerType::OTHER;
   if (context->IsDedicatedWorkerGlobalScope())
     type = WorkerType::DEDICATED_WORKER;
@@ -72,8 +75,8 @@ DOMArrayBuffer* FileReaderSync::readAsArrayBuffer(
     ExceptionState& exception_state) {
   DCHECK(blob);
 
-  std::unique_ptr<FileReaderLoader> loader =
-      FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, nullptr);
+  std::unique_ptr<FileReaderLoader> loader = std::make_unique<FileReaderLoader>(
+      FileReaderLoader::kReadAsArrayBuffer, nullptr, task_runner_);
   StartLoading(*loader, *blob, exception_state);
 
   return loader->ArrayBufferResult();
@@ -83,8 +86,8 @@ String FileReaderSync::readAsBinaryString(Blob* blob,
                                           ExceptionState& exception_state) {
   DCHECK(blob);
 
-  std::unique_ptr<FileReaderLoader> loader =
-      FileReaderLoader::Create(FileReaderLoader::kReadAsBinaryString, nullptr);
+  std::unique_ptr<FileReaderLoader> loader = std::make_unique<FileReaderLoader>(
+      FileReaderLoader::kReadAsBinaryString, nullptr, task_runner_);
   StartLoading(*loader, *blob, exception_state);
   return loader->StringResult();
 }
@@ -94,8 +97,8 @@ String FileReaderSync::readAsText(Blob* blob,
                                   ExceptionState& exception_state) {
   DCHECK(blob);
 
-  std::unique_ptr<FileReaderLoader> loader =
-      FileReaderLoader::Create(FileReaderLoader::kReadAsText, nullptr);
+  std::unique_ptr<FileReaderLoader> loader = std::make_unique<FileReaderLoader>(
+      FileReaderLoader::kReadAsText, nullptr, task_runner_);
   loader->SetEncoding(encoding);
   StartLoading(*loader, *blob, exception_state);
   return loader->StringResult();
@@ -105,8 +108,8 @@ String FileReaderSync::readAsDataURL(Blob* blob,
                                      ExceptionState& exception_state) {
   DCHECK(blob);
 
-  std::unique_ptr<FileReaderLoader> loader =
-      FileReaderLoader::Create(FileReaderLoader::kReadAsDataURL, nullptr);
+  std::unique_ptr<FileReaderLoader> loader = std::make_unique<FileReaderLoader>(
+      FileReaderLoader::kReadAsDataURL, nullptr, task_runner_);
   loader->SetDataType(blob->type());
   StartLoading(*loader, *blob, exception_state);
   return loader->StringResult();

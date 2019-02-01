@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -165,7 +166,11 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
       scoped_refptr<BlobDataHandle> blob,
       base::OnceCallback<void(scoped_refptr<SharedBuffer>)> callback)
       : blob_(std::move(blob)), callback_(std::move(callback)) {
-    loader_ = FileReaderLoader::Create(FileReaderLoader::kReadByClient, this);
+    // TODO(hajimehoshi): Use a per-ExecutionContext task runner of
+    // TaskType::kFileReading
+    loader_ = std::make_unique<FileReaderLoader>(
+        FileReaderLoader::kReadByClient, this,
+        ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
   }
 
   ~InspectorFileReaderLoaderClient() override = default;

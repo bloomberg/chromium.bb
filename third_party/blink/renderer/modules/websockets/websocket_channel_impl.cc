@@ -80,7 +80,9 @@ class WebSocketChannelImpl::BlobLoader final
     : public GarbageCollectedFinalized<WebSocketChannelImpl::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  BlobLoader(scoped_refptr<BlobDataHandle>, WebSocketChannelImpl*);
+  BlobLoader(scoped_refptr<BlobDataHandle>,
+             WebSocketChannelImpl*,
+             scoped_refptr<base::SingleThreadTaskRunner>);
   ~BlobLoader() override = default;
 
   void Cancel();
@@ -123,10 +125,13 @@ class WebSocketChannelImpl::Message
 
 WebSocketChannelImpl::BlobLoader::BlobLoader(
     scoped_refptr<BlobDataHandle> blob_data_handle,
-    WebSocketChannelImpl* channel)
+    WebSocketChannelImpl* channel,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : channel_(channel),
-      loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
-                                       this)) {
+      loader_(std::make_unique<FileReaderLoader>(
+          FileReaderLoader::kReadAsArrayBuffer,
+          this,
+          std::move(task_runner))) {
   loader_->Start(std::move(blob_data_handle));
 }
 
@@ -192,7 +197,9 @@ WebSocketChannelImpl::WebSocketChannelImpl(
       received_data_size_for_flow_control_(0),
       sent_size_of_top_message_(0),
       location_at_construction_(std::move(location)),
-      throttle_passed_(false) {
+      throttle_passed_(false),
+      file_reading_task_runner_(
+          execution_context->GetTaskRunner(TaskType::kFileReading)) {
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
     scope->EnsureFetcher();
 }
@@ -464,8 +471,8 @@ void WebSocketChannelImpl::ProcessSendQueue() {
         CHECK(!blob_loader_);
         CHECK(message);
         CHECK(message->blob_data_handle);
-        blob_loader_ =
-            MakeGarbageCollected<BlobLoader>(message->blob_data_handle, this);
+        blob_loader_ = MakeGarbageCollected<BlobLoader>(
+            message->blob_data_handle, this, file_reading_task_runner_);
         break;
       case kMessageTypeArrayBuffer:
         CHECK(message->array_buffer);
@@ -791,6 +798,10 @@ bool WebSocketChannelImpl::ShouldDisallowConnection(const KURL& url) {
 BaseFetchContext* WebSocketChannelImpl::GetBaseFetchContext() const {
   ResourceFetcher* resource_fetcher = execution_context_->Fetcher();
   return static_cast<BaseFetchContext*>(&resource_fetcher->Context());
+}
+
+ExecutionContext* WebSocketChannelImpl::GetExecutionContext() {
+  return execution_context_;
 }
 
 void WebSocketChannelImpl::Trace(blink::Visitor* visitor) {

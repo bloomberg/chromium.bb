@@ -123,10 +123,13 @@ class PresentationConnection::BlobLoader final
       public FileReaderLoaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle> blob_data_handle,
-             PresentationConnection* presentation_connection)
+             PresentationConnection* presentation_connection,
+             scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : presentation_connection_(presentation_connection),
-        loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
-                                         this)) {
+        loader_(std::make_unique<FileReaderLoader>(
+            FileReaderLoader::kReadAsArrayBuffer,
+            this,
+            std::move(task_runner))) {
     loader_->Start(std::move(blob_data_handle));
   }
   ~BlobLoader() override = default;
@@ -161,7 +164,8 @@ PresentationConnection::PresentationConnection(LocalFrame& frame,
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
       connection_binding_(this),
-      binary_type_(kBinaryTypeArrayBuffer) {}
+      binary_type_(kBinaryTypeArrayBuffer),
+      file_reading_task_runner_(frame.GetTaskRunner(TaskType::kFileReading)) {}
 
 PresentationConnection::~PresentationConnection() {
   DCHECK(!blob_loader_);
@@ -498,8 +502,8 @@ void PresentationConnection::HandleMessageQueue() {
         break;
       case kMessageTypeBlob:
         DCHECK(!blob_loader_);
-        blob_loader_ =
-            MakeGarbageCollected<BlobLoader>(message->blob_data_handle, this);
+        blob_loader_ = MakeGarbageCollected<BlobLoader>(
+            message->blob_data_handle, this, file_reading_task_runner_);
         break;
     }
   }

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -443,8 +444,12 @@ class CachedResponseFileReaderLoaderClient final
   CachedResponseFileReaderLoaderClient(
       scoped_refptr<BlobDataHandle>&& blob,
       std::unique_ptr<RequestCachedResponseCallback>&& callback)
-      : loader_(
-            FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)),
+      // TODO(hajimehoshi): Use a per-ExecutionContext task runner of
+      // TaskType::kFileReading
+      : loader_(std::make_unique<FileReaderLoader>(
+            FileReaderLoader::kReadByClient,
+            static_cast<FileReaderLoaderClient*>(this),
+            ThreadScheduler::Current()->DeprecatedDefaultTaskRunner())),
         callback_(std::move(callback)),
         data_(SharedBuffer::Create()) {
     loader_->Start(std::move(blob));

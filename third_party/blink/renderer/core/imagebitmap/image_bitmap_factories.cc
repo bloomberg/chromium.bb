@@ -252,8 +252,10 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     ScriptState* script_state,
     const ImageBitmapOptions* options)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
-      loader_(
-          FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, this)),
+      loader_(std::make_unique<FileReaderLoader>(
+          FileReaderLoader::kReadAsArrayBuffer,
+          this,
+          GetExecutionContext()->GetTaskRunner(TaskType::kFileReading))),
       factory_(&factory),
       resolver_(ScriptPromiseResolver::Create(script_state)),
       crop_rect_(crop_rect),
