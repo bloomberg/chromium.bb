@@ -367,8 +367,9 @@ UserMediaRequest* UserMediaRequest::Create(
     return nullptr;
 
   if (media_type == WebUserMediaRequest::MediaType::kDisplayMedia) {
-    // https://w3c.github.io/mediacapture-screen-share/#navigator-additions
-    // 5.1 Navigator Additions
+    // https://w3c.github.io/mediacapture-screen-share/#mediadevices-additions
+    // MediaDevices Additions
+    // The user agent MUST reject audio-only requests.
     // 1. Let constraints be the method's first argument.
     // 2. For each member present in constraints whose value, value, is a
     // dictionary, run the following steps:
@@ -396,19 +397,17 @@ UserMediaRequest* UserMediaRequest::Create(
       error_state.ThrowTypeError("exact constraints are not supported");
       return nullptr;
     }
+    if (!options->audio().IsNull() && options->audio().GetAsBoolean() &&
+        (options->video().IsNull() || !options->video().GetAsBoolean())) {
+      error_state.ThrowTypeError("Audio only requests are not supported");
+      return nullptr;
+    }
     if (audio.IsNull() && video.IsNull()) {
       video = ParseOptions(context,
                            BooleanOrMediaTrackConstraints::FromBoolean(true),
                            error_state);
       if (error_state.HadException())
         return nullptr;
-    }
-
-    // TODO(emircan): Enable when audio capture is actually supported, see
-    // https://crbug.com/896333.
-    if (!options->audio().IsNull() && options->audio().GetAsBoolean()) {
-      error_state.ThrowTypeError("Audio capture is not supported");
-      return nullptr;
     }
   }
 
