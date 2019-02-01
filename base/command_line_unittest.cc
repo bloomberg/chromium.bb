@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@ TEST(CommandLineTest, CommandLineConstructor) {
       FILE_PATH_LITERAL("--not-a-switch"),
       FILE_PATH_LITERAL("\"in the time of submarines...\""),
       FILE_PATH_LITERAL("unquoted arg-with-space")};
-  CommandLine cl(base::size(argv), argv);
+  CommandLine cl(size(argv), argv);
 
   EXPECT_FALSE(cl.GetCommandLineString().empty());
   EXPECT_FALSE(cl.HasSwitch("cruller"));
@@ -106,14 +107,14 @@ TEST(CommandLineTest, CommandLineConstructor) {
 
 TEST(CommandLineTest, CommandLineFromString) {
 #if defined(OS_WIN)
-  CommandLine cl = CommandLine::FromString(
-      L"program --foo= -bAr  /Spaetzel=pierogi /Baz flim "
-      L"--other-switches=\"--dog=canine --cat=feline\" "
-      L"-spaetzle=Crepe   -=loosevalue  FLAN "
-      L"--input-translation=\"45\"--output-rotation "
-      L"--quotes=" + kTrickyQuoted + L" "
-      L"-- -- --not-a-switch "
-      L"\"in the time of submarines...\"");
+  CommandLine cl = CommandLine::FromString(StrCat(
+      {STRING16_LITERAL("program --foo= -bAr  /Spaetzel=pierogi /Baz flim "),
+       STRING16_LITERAL("--other-switches=\"--dog=canine --cat=feline\" "),
+       STRING16_LITERAL("-spaetzle=Crepe   -=loosevalue  FLAN "),
+       STRING16_LITERAL("--input-translation=\"45\"--output-rotation "),
+       STRING16_LITERAL("--quotes="), kTrickyQuoted, STRING16_LITERAL(" "),
+       STRING16_LITERAL("-- -- --not-a-switch "),
+       STRING16_LITERAL("\"in the time of submarines...\"")}));
 
   EXPECT_FALSE(cl.GetCommandLineString().empty());
   EXPECT_FALSE(cl.HasSwitch("cruller"));
@@ -170,7 +171,7 @@ TEST(CommandLineTest, CommandLineFromString) {
 // Tests behavior with an empty input string.
 TEST(CommandLineTest, EmptyString) {
 #if defined(OS_WIN)
-  CommandLine cl_from_string = CommandLine::FromString(L"");
+  CommandLine cl_from_string = CommandLine::FromString(string16());
   EXPECT_TRUE(cl_from_string.GetCommandLineString().empty());
   EXPECT_TRUE(cl_from_string.GetProgram().empty());
   EXPECT_EQ(1U, cl_from_string.argv().size());
@@ -290,16 +291,17 @@ TEST(CommandLineTest, AppendSwitches) {
   EXPECT_EQ(value5, cl.GetSwitchValueNative(switch5));
 
 #if defined(OS_WIN)
-  EXPECT_EQ(L"Program "
-            L"--switch1 "
-            L"--switch2=value "
-            L"--switch3=\"a value with spaces\" "
-            L"--switch4=\"\\\"a value with quotes\\\"\" "
-            // Even though the switches are unique, appending can add repeat
-            // switches to argv.
-            L"--quotes=\"\\\"a value with quotes\\\"\" "
-            L"--quotes=\"" + kTrickyQuoted + L"\"",
-            cl.GetCommandLineString());
+  EXPECT_EQ(
+      StrCat({STRING16_LITERAL("Program "), STRING16_LITERAL("--switch1 "),
+              STRING16_LITERAL("--switch2=value "),
+              STRING16_LITERAL("--switch3=\"a value with spaces\" "),
+              STRING16_LITERAL("--switch4=\"\\\"a value with quotes\\\"\" "),
+              // Even though the switches are unique, appending can add
+              // repeat switches to argv.
+              STRING16_LITERAL("--quotes=\"\\\"a value with quotes\\\"\" "),
+              STRING16_LITERAL("--quotes=\""), kTrickyQuoted,
+              STRING16_LITERAL("\"")}),
+      cl.GetCommandLineString());
 #endif
 }
 
@@ -307,7 +309,7 @@ TEST(CommandLineTest, AppendSwitchesDashDash) {
  const CommandLine::CharType* raw_argv[] = { FILE_PATH_LITERAL("prog"),
                                              FILE_PATH_LITERAL("--"),
                                              FILE_PATH_LITERAL("--arg1") };
- CommandLine cl(base::size(raw_argv), raw_argv);
+ CommandLine cl(size(raw_argv), raw_argv);
 
  cl.AppendSwitch("switch1");
  cl.AppendSwitchASCII("switch2", "foo");
@@ -355,12 +357,12 @@ TEST(CommandLineTest, AppendArguments) {
 // against regressions.
 TEST(CommandLineTest, ProgramQuotes) {
   // Check that quotes are not added for paths without spaces.
-  const FilePath kProgram(L"Program");
+  const FilePath kProgram(STRING16_LITERAL("Program"));
   CommandLine cl_program(kProgram);
   EXPECT_EQ(kProgram.value(), cl_program.GetProgram().value());
   EXPECT_EQ(kProgram.value(), cl_program.GetCommandLineString());
 
-  const FilePath kProgramPath(L"Program Path");
+  const FilePath kProgramPath(STRING16_LITERAL("Program Path"));
 
   // Check that quotes are not returned from GetProgram().
   CommandLine cl_program_path(kProgramPath);
@@ -368,12 +370,13 @@ TEST(CommandLineTest, ProgramQuotes) {
 
   // Check that quotes are added to command line string paths containing spaces.
   CommandLine::StringType cmd_string(cl_program_path.GetCommandLineString());
-  EXPECT_EQ(L"\"Program Path\"", cmd_string);
+  EXPECT_EQ(STRING16_LITERAL("\"Program Path\""), cmd_string);
 
   // Check the optional quoting of placeholders in programs.
-  CommandLine cl_quote_placeholder(FilePath(L"%1"));
-  EXPECT_EQ(L"%1", cl_quote_placeholder.GetCommandLineString());
-  EXPECT_EQ(L"\"%1\"",
+  CommandLine cl_quote_placeholder(FilePath(STRING16_LITERAL("%1")));
+  EXPECT_EQ(STRING16_LITERAL("%1"),
+            cl_quote_placeholder.GetCommandLineString());
+  EXPECT_EQ(STRING16_LITERAL("\"%1\""),
             cl_quote_placeholder.GetCommandLineStringWithPlaceholders());
 }
 #endif

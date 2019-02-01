@@ -51,6 +51,8 @@ TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathLinuxTest) {
 // characters are given as wide strings since its more convenient to specify
 // unicode characters. For Mac they should be converted to UTF-8.
 static const struct goodbad_pair {
+  // TODO(https://crbug.com/911896): Make these UTF16 literals once
+  // base::string16 is std::u16string.
   const wchar_t* bad_name;
   const wchar_t* good_name;
 } kIllegalCharacterCases[] = {
@@ -87,9 +89,9 @@ static const struct goodbad_pair {
 TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathTest) {
   for (auto i : kIllegalCharacterCases) {
 #if defined(OS_WIN)
-    std::wstring bad_name(i.bad_name);
+    string16 bad_name(WideToUTF16(i.bad_name));
     ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(i.good_name, bad_name);
+    EXPECT_EQ(WideToUTF16(i.good_name), bad_name);
 #else
     std::string bad_name(WideToUTF8(i.bad_name));
     ReplaceIllegalCharactersInPath(&bad_name, '-');
@@ -126,7 +128,7 @@ static const struct normalize_name_encoding_test_cases {
 };
 
 TEST_F(FileUtilICUTest, NormalizeFileNameEncoding) {
-  for (size_t i = 0; i < base::size(kNormalizeFileNameEncodingTestCases); i++) {
+  for (size_t i = 0; i < size(kNormalizeFileNameEncodingTestCases); i++) {
     FilePath path(kNormalizeFileNameEncodingTestCases[i].original_path);
     NormalizeFileNameEncoding(&path);
     EXPECT_EQ(FilePath(kNormalizeFileNameEncodingTestCases[i].normalized_path),

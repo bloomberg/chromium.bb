@@ -44,11 +44,11 @@ class BASE_EXPORT FileVersionInfoWin : public FileVersionInfo {
   bool is_official_build() override;
 
   // Lets you access other properties not covered above.
-  bool GetValue(const wchar_t* name, std::wstring* value);
+  bool GetValue(const base::char16* name, base::string16* value);
 
-  // Similar to GetValue but returns a wstring (empty string if the property
+  // Similar to GetValue but returns a string16 (empty string if the property
   // does not exist).
-  std::wstring GetStringValue(const wchar_t* name);
+  base::string16 GetStringValue(const base::char16* name);
 
   // Get the fixed file info if it exists. Otherwise NULL
   const VS_FIXEDFILEINFO* fixed_file_info() const { return fixed_file_info_; }

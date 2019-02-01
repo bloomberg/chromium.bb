@@ -15,8 +15,9 @@
 namespace registry_util {
 
 namespace {
-const wchar_t kTestKeyPath[] = L"Software\\Chromium\\Foo\\Baz\\TestKey";
-const wchar_t kTestValueName[] = L"TestValue";
+const base::char16 kTestKeyPath[] =
+    STRING16_LITERAL("Software\\Chromium\\Foo\\Baz\\TestKey");
+const base::char16 kTestValueName[] = STRING16_LITERAL("TestValue");
 }  // namespace
 
 class RegistryOverrideManagerTest : public testing::Test {
@@ -60,7 +61,7 @@ class RegistryOverrideManagerTest : public testing::Test {
   }
 
   base::string16 FakeOverrideManagerPath(const base::Time& time) {
-    return fake_test_key_root_ + L"\\" +
+    return fake_test_key_root_ + STRING16_LITERAL("\\") +
            base::Int64ToString16(time.ToInternalValue());
   }
 
@@ -104,7 +105,8 @@ TEST_F(RegistryOverrideManagerTest, DeleteStaleKeys) {
   base::Time kTestTime;
   EXPECT_TRUE(base::Time::FromUTCExploded(kTestTimeExploded, &kTestTime));
 
-  base::string16 path_garbage = fake_test_key_root_ + L"\\Blah";
+  base::string16 path_garbage =
+      fake_test_key_root_ + STRING16_LITERAL("\\Blah");
   base::string16 path_very_stale =
       FakeOverrideManagerPath(kTestTime - base::TimeDelta::FromDays(100));
   base::string16 path_stale =

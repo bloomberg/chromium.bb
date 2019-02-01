@@ -234,26 +234,26 @@ TEST(StringUtilTest, TruncateUTF8ToByteSize) {
 TEST(StringUtilTest, wdata) {
   char16 rw_buffer[10] = {};
   static_assert(std::is_same<wchar_t*, decltype(wdata(rw_buffer))>::value, "");
-  EXPECT_EQ(rw_buffer, wdata(rw_buffer));
+  EXPECT_EQ(static_cast<void*>(rw_buffer), wdata(rw_buffer));
 
   string16 rw_str(10, '\0');
   static_assert(std::is_same<wchar_t*, decltype(wdata(rw_str))>::value, "");
-  EXPECT_EQ(rw_str.data(), wdata(rw_str));
+  EXPECT_EQ(static_cast<const void*>(rw_str.data()), wdata(rw_str));
 
   const char16 ro_buffer[10] = {};
   static_assert(std::is_same<const wchar_t*, decltype(wdata(ro_buffer))>::value,
                 "");
-  EXPECT_EQ(ro_buffer, wdata(ro_buffer));
+  EXPECT_EQ(static_cast<const void*>(ro_buffer), wdata(ro_buffer));
 
   const string16 ro_str(10, '\0');
   static_assert(std::is_same<const wchar_t*, decltype(wdata(ro_str))>::value,
                 "");
-  EXPECT_EQ(ro_str.data(), wdata(ro_str));
+  EXPECT_EQ(static_cast<const void*>(ro_str.data()), wdata(ro_str));
 
   StringPiece16 piece = ro_buffer;
   static_assert(std::is_same<const wchar_t*, decltype(wdata(piece))>::value,
                 "");
-  EXPECT_EQ(piece.data(), wdata(piece));
+  EXPECT_EQ(static_cast<const void*>(piece.data()), wdata(piece));
 }
 #endif  // defined(WCHAR_T_IS_UTF16)
 
@@ -463,28 +463,25 @@ TEST(StringUtilTest, IsStringASCII) {
     }
   }
 
+#if defined(WCHAR_T_IS_UTF32)
   {
     const size_t string_length = wchar_ascii.length();
     for (size_t len = 0; len < string_length; ++len) {
       EXPECT_TRUE(IsStringASCII(wchar_ascii.substr(0, len)));
       for (size_t char_pos = 0; char_pos < len; ++char_pos) {
         wchar_ascii[char_pos] |= 0x80;
-        EXPECT_FALSE(
-            IsStringASCII(wchar_ascii.substr(0, len)));
+        EXPECT_FALSE(IsStringASCII(wchar_ascii.substr(0, len)));
         wchar_ascii[char_pos] &= ~0x80;
         wchar_ascii[char_pos] |= 0x100;
-        EXPECT_FALSE(
-            IsStringASCII(wchar_ascii.substr(0, len)));
+        EXPECT_FALSE(IsStringASCII(wchar_ascii.substr(0, len)));
         wchar_ascii[char_pos] &= ~0x100;
-#if defined(WCHAR_T_IS_UTF32)
         wchar_ascii[char_pos] |= 0x10000;
-        EXPECT_FALSE(
-            IsStringASCII(wchar_ascii.substr(0, len)));
+        EXPECT_FALSE(IsStringASCII(wchar_ascii.substr(0, len)));
         wchar_ascii[char_pos] &= ~0x10000;
-#endif  // WCHAR_T_IS_UTF32
       }
     }
   }
+#endif  // WCHAR_T_IS_UTF32
 }
 
 TEST(StringUtilTest, ConvertASCII) {

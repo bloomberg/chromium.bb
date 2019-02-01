@@ -21,8 +21,9 @@ namespace registry_util {
 
 namespace {
 
-const wchar_t kTimestampDelimiter[] = L"$";
-const wchar_t kTempTestKeyPath[] = L"Software\\Chromium\\TempTestKeys";
+const base::char16 kTimestampDelimiter[] = STRING16_LITERAL("$");
+const base::char16 kTempTestKeyPath[] =
+    STRING16_LITERAL("Software\\Chromium\\TempTestKeys");
 
 void DeleteStaleTestKeys(const base::Time& now,
                          const base::string16& test_key_root) {
@@ -61,7 +62,8 @@ void DeleteStaleTestKeys(const base::Time& now,
 base::string16 GenerateTempKeyPath(const base::string16& test_key_root,
                                    const base::Time& timestamp) {
   base::string16 key_path = test_key_root;
-  key_path += L"\\" + base::Int64ToString16(timestamp.ToInternalValue());
+  key_path += STRING16_LITERAL("\\") +
+              base::Int64ToString16(timestamp.ToInternalValue());
   key_path += kTimestampDelimiter + base::ASCIIToUTF16(base::GenerateGUID());
 
   return key_path;
@@ -77,7 +79,7 @@ RegistryOverrideManager::ScopedRegistryKeyOverride::ScopedRegistryKeyOverride(
 RegistryOverrideManager::
     ScopedRegistryKeyOverride::~ScopedRegistryKeyOverride() {
   ::RegOverridePredefKey(override_, NULL);
-  base::win::RegKey(HKEY_CURRENT_USER, L"", KEY_QUERY_VALUE)
+  base::win::RegKey(HKEY_CURRENT_USER, STRING16_LITERAL(""), KEY_QUERY_VALUE)
       .DeleteKey(key_path_.c_str());
 }
 

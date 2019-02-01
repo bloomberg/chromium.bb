@@ -95,7 +95,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
     // directory as the library may have dependencies on DLLs in this
     // directory.
     module = ::LoadLibraryExW(
-        library_path.value().c_str(), nullptr,
+        wdata(library_path.value()), nullptr,
         LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
     // If LoadLibraryExW succeeds, log this metric and return.
     if (module) {
@@ -122,7 +122,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
       restore_directory = true;
     }
   }
-  module = ::LoadLibraryW(library_path.value().c_str());
+  module = ::LoadLibraryW(wdata(library_path.value()));
 
   // GetLastError() needs to be called immediately after LoadLibraryW call.
   if (!module && error)

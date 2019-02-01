@@ -9,6 +9,7 @@
 
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,18 +48,18 @@ void GetDebugInfoForModule(HMODULE module_handle,
   }
 
   FilePath::StringType pdb_filename;
-  if (!base::UTF8ToWide(pdb_file, pdb_file_length, &pdb_filename))
+  if (!UTF8ToUTF16(pdb_file, pdb_file_length, &pdb_filename))
     return;
   *pdb_name = FilePath(std::move(pdb_filename)).BaseName();
 
   const int kGUIDSize = 39;
   string16 buffer;
   int result =
-      ::StringFromGUID2(guid, WriteInto(&buffer, kGUIDSize), kGUIDSize);
+      ::StringFromGUID2(guid, wdata(WriteInto(&buffer, kGUIDSize)), kGUIDSize);
   if (result != kGUIDSize)
     return;
-  RemoveChars(buffer, L"{}-", &buffer);
-  StringAppendF(&buffer, L"%d", age);
+  RemoveChars(buffer, STRING16_LITERAL("{}-"), &buffer);
+  buffer.append(IntToString16(age));
   *build_id = UTF16ToUTF8(buffer);
 }
 
