@@ -299,7 +299,8 @@ void FileSystemDispatcher::ReadDirectory(
       GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
   op_listeners_.AddBinding(
       std::make_unique<ReadDirectoryListener>(std::move(callbacks)),
-      std::move(request));
+      std::move(request),
+      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
   GetFileSystemManager().ReadDirectory(path, std::move(ptr));
 }
 
@@ -394,7 +395,8 @@ void FileSystemDispatcher::Write(const KURL& path,
           WTF::Bind(&FileSystemDispatcher::WriteErrorCallback,
                     WrapWeakPersistent(this), std::move(error_callback),
                     operation_id)),
-      std::move(request));
+      std::move(request),
+      GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
 
   GetFileSystemManager().Write(path, blob_id, offset, std::move(op_request),
                                std::move(listener_ptr));
