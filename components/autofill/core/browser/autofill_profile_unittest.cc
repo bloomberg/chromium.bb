@@ -1873,7 +1873,7 @@ TEST(AutofillProfileTest, EqualsForClientValidationPurpose) {
 
 enum Expectation { GREATER, LESS, EQUAL };
 
-struct CompareFrescocencyTestCase {
+struct HasGreaterFrescocencyTestCase {
   const AutofillProfile::ValidityState client_validity_state_a;
   const AutofillProfile::ValidityState server_validity_state_a;
   const AutofillProfile::ValidityState client_validity_state_b;
@@ -1884,10 +1884,10 @@ struct CompareFrescocencyTestCase {
   Expectation expectation;
 };
 
-class CompareFrescocencyTest
-    : public testing::TestWithParam<CompareFrescocencyTestCase> {};
+class HasGreaterFrescocencyTest
+    : public testing::TestWithParam<HasGreaterFrescocencyTestCase> {};
 
-TEST_P(CompareFrescocencyTest, CompareFrescocency) {
+TEST_P(HasGreaterFrescocencyTest, HasGreaterFrescocency) {
   auto test_case = GetParam();
   AutofillProfile profile_a("00000000-0000-0000-0000-000000000001", "");
   AutofillProfile profile_b("00000000-0000-0000-0000-000000000002", "");
@@ -1908,7 +1908,7 @@ TEST_P(CompareFrescocencyTest, CompareFrescocency) {
   base::Time now = base::Time::Now();
 
   if (test_case.expectation == EQUAL) {
-    EXPECT_EQ(profile_a.CompareFrecency(&profile_b, now),
+    EXPECT_EQ(profile_a.HasGreaterFrecencyThan(&profile_b, now),
               profile_a.HasGreaterFrescocencyThan(
                   &profile_b, now, test_case.use_client_validation,
                   test_case.use_server_validation));
@@ -1927,58 +1927,58 @@ TEST_P(CompareFrescocencyTest, CompareFrescocency) {
 
 INSTANTIATE_TEST_CASE_P(
     AutofillProfileTest,
-    CompareFrescocencyTest,
+    HasGreaterFrescocencyTest,
     testing::Values(
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::VALID, AutofillProfile::INVALID,
             AutofillProfile::VALID, AutofillProfile::UNVALIDATED, false, false,
             EQUAL},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::INVALID, AutofillProfile::VALID,
             AutofillProfile::VALID, AutofillProfile::INVALID, false, false,
             EQUAL},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::INVALID, AutofillProfile::VALID,
             AutofillProfile::VALID, AutofillProfile::INVALID, false, true,
             GREATER},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::INVALID, AutofillProfile::INVALID,
             AutofillProfile::VALID, AutofillProfile::INVALID, false, true,
             EQUAL},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::INVALID, AutofillProfile::VALID,
             AutofillProfile::VALID, AutofillProfile::VALID, false, true, EQUAL},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::INVALID, AutofillProfile::INVALID,
             AutofillProfile::VALID, AutofillProfile::UNVALIDATED, false, true,
             LESS},
-        CompareFrescocencyTestCase{AutofillProfile::INVALID,
-                                   AutofillProfile::VALID,
-                                   AutofillProfile::VALID,
-                                   AutofillProfile::INVALID, true, true, EQUAL},
-        CompareFrescocencyTestCase{AutofillProfile::INVALID,
-                                   AutofillProfile::INVALID,
-                                   AutofillProfile::UNVALIDATED,
-                                   AutofillProfile::VALID, true, true, LESS},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
+            AutofillProfile::INVALID, AutofillProfile::VALID,
+            AutofillProfile::VALID, AutofillProfile::INVALID, true, true,
+            EQUAL},
+        HasGreaterFrescocencyTestCase{AutofillProfile::INVALID,
+                                      AutofillProfile::INVALID,
+                                      AutofillProfile::UNVALIDATED,
+                                      AutofillProfile::VALID, true, true, LESS},
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::VALID, AutofillProfile::VALID,
             AutofillProfile::VALID, AutofillProfile::VALID, true, true, EQUAL},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::VALID, AutofillProfile::UNVALIDATED,
             AutofillProfile::VALID, AutofillProfile::INVALID, true, true,
             GREATER},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::VALID, AutofillProfile::INVALID,
             AutofillProfile::INVALID, AutofillProfile::VALID, true, false,
             GREATER},
-        CompareFrescocencyTestCase{AutofillProfile::INVALID,
-                                   AutofillProfile::INVALID,
-                                   AutofillProfile::UNVALIDATED,
-                                   AutofillProfile::VALID, true, false, LESS},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
+            AutofillProfile::INVALID, AutofillProfile::INVALID,
+            AutofillProfile::UNVALIDATED, AutofillProfile::VALID, true, false,
+            LESS},
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::VALID, AutofillProfile::INVALID,
             AutofillProfile::VALID, AutofillProfile::VALID, true, false, EQUAL},
-        CompareFrescocencyTestCase{
+        HasGreaterFrescocencyTestCase{
             AutofillProfile::VALID, AutofillProfile::UNVALIDATED,
             AutofillProfile::INVALID, AutofillProfile::INVALID, true, false,
             GREATER}));

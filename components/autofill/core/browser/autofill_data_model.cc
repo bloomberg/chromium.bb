@@ -37,8 +37,9 @@ bool AutofillDataModel::UseDateEqualsInSeconds(
   return !((other->use_date() - use_date()).InSeconds());
 }
 
-bool AutofillDataModel::CompareFrecency(const AutofillDataModel* other,
-                                        base::Time comparison_time) const {
+bool AutofillDataModel::HasGreaterFrecencyThan(
+    const AutofillDataModel* other,
+    base::Time comparison_time) const {
   double score = GetFrecencyScore(comparison_time);
   double other_score = other->GetFrecencyScore(comparison_time);
 

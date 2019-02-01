@@ -56,8 +56,8 @@ class AutofillDataModel : public FormGroup {
   // a combination of frequency and recency to determine the relevance of the
   // profile. |comparison_time_| allows consistent sorting throughout the
   // comparisons.
-  bool CompareFrecency(const AutofillDataModel* other,
-                       base::Time comparison_time) const;
+  bool HasGreaterFrecencyThan(const AutofillDataModel* other,
+                              base::Time comparison_time) const;
 
   // Gets the metadata associated with this autofill data model.
   virtual AutofillMetadata GetMetadata() const;
