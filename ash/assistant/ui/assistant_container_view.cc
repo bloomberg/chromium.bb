@@ -5,11 +5,14 @@
 #include "ash/assistant/ui/assistant_container_view.h"
 
 #include <algorithm>
+#include <set>
+#include <vector>
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_container_view_animator.h"
 #include "ash/assistant/ui/assistant_main_view.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
+#include "ash/assistant/ui/assistant_overlay.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
@@ -26,6 +29,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -36,6 +40,76 @@ constexpr SkColor kBackgroundColor = SK_ColorWHITE;
 
 // Window properties.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false);
+
+// AssistantContainerClientView ------------------------------------------------
+
+// AssistantContainerClientView is the client view for AssistantContainerView
+// which provides support for adding overlays to the Assistant view hierarchy.
+// Because overlays are added to the AssistantContainerView client view, they
+// paint to a higher level in the layer tree than do direct children of
+// AssistantContainerView. This allows AssistantMainView, for example, to
+// pseudo-parent overlays that draw over top of Assistant cards.
+class AssistantContainerClientView : public views::DialogClientView,
+                                     public views::ViewObserver {
+ public:
+  AssistantContainerClientView(views::Widget* widget,
+                               views::View* contents_view)
+      : views::DialogClientView(widget, contents_view) {}
+
+  ~AssistantContainerClientView() override = default;
+
+  // views::DialogClientView:
+  const char* GetClassName() const override {
+    return "AssistantContainerClientView";
+  }
+
+  void Layout() override {
+    views::DialogClientView::Layout();
+    for (AssistantOverlay* overlay : overlays_) {
+      AssistantOverlay::LayoutParams layout_params = overlay->GetLayoutParams();
+      gfx::Size preferred_size = overlay->GetPreferredSize();
+
+      int left = layout_params.margins.left();
+      int top = layout_params.margins.top();
+      int width = preferred_size.width();
+      int height = preferred_size.height();
+
+      // Gravity::kBottom.
+      using Gravity = AssistantOverlay::LayoutParams::Gravity;
+      if ((layout_params.gravity & Gravity::kBottom) != 0)
+        top = this->height() - height - layout_params.margins.bottom();
+
+      // Gravity::kCenterHorizontal.
+      if ((layout_params.gravity & Gravity::kCenterHorizontal) != 0)
+        left = (this->width() - width) / 2 - layout_params.margins.left();
+
+      overlay->SetBounds(left, top, width, height);
+    }
+  }
+
+  // views::ViewObserver:
+  void OnViewIsDeleting(views::View* view) override {
+    view->RemoveObserver(this);
+
+    // We need to keep |overlays_| in sync with the view hierarchy.
+    auto it = overlays_.find(static_cast<AssistantOverlay*>(view));
+    DCHECK(it != overlays_.end());
+    overlays_.erase(it);
+  }
+
+  void AddOverlays(std::vector<AssistantOverlay*> overlays) {
+    for (AssistantOverlay* overlay : overlays) {
+      overlays_.insert(overlay);
+      overlay->AddObserver(this);
+      AddChildView(overlay);
+    }
+  }
+
+ private:
+  std::set<AssistantOverlay*> overlays_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssistantContainerClientView);
+};
 
 // AssistantContainerEventTargeter ---------------------------------------------
 
@@ -249,6 +323,14 @@ void AssistantContainerView::OnBeforeBubbleWidgetInit(
   params->context = delegate_->GetRootWindowForNewWindows();
   params->corner_radius = kCornerRadiusDip;
   params->keep_on_top = true;
+}
+
+views::ClientView* AssistantContainerView::CreateClientView(
+    views::Widget* widget) {
+  AssistantContainerClientView* client_view =
+      new AssistantContainerClientView(widget, GetContentsView());
+  client_view->AddOverlays(assistant_main_view_->GetOverlays());
+  return client_view;
 }
 
 void AssistantContainerView::Init() {

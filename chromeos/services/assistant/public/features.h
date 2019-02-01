@@ -24,6 +24,10 @@ extern const base::Feature kAssistantWarmerWelcomeFeature;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantAppSupport;
 
+// Enables in-Assistant notifications.
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+extern const base::Feature kInAssistantNotifications;
+
 // Enables DSP for hotword detection.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableDspHotword;
@@ -43,6 +47,9 @@ extern const base::Feature kTimerNotification;
 // notifications will be updated at each tick.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerTicks;
+
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsInAssistantNotificationsEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsDspHotwordEnabled();
 

@@ -50,6 +50,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   void SizeToContents() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
+  views::ClientView* CreateClientView(views::Widget* widget) override;
   void Init() override;
   void RequestFocus() override;
 
