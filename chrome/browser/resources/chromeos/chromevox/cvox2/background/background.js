@@ -151,6 +151,11 @@ Background = function() {
   FindHandler.init();
 
   Notifications.onStartup();
+
+  chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
+      (announceText) => {
+        cvox.ChromeVox.tts.speak(announceText.join(' '), cvox.QueueMode.FLUSH);
+      });
 };
 
 Background.prototype = {
