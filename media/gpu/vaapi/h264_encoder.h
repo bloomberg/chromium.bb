@@ -147,8 +147,8 @@ class H264Encoder : public AcceleratedVideoEncoder {
   // idr_pic_id (spec section 7.4.3) to be used for the next frame.
   unsigned int idr_pic_id_ = 0;
 
-  // True if encoding parameters have changed and we need to submit a keyframe
-  // with updated parameters.
+  // True if encoding parameters have changed that affect decoder process, then
+  // we need to submit a keyframe with updated parameters.
   bool encoding_parameters_changed_ = false;
 
   // Currently active reference frames.
