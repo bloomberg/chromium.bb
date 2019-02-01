@@ -4,12 +4,12 @@
 // See https://github.com/google/googletest/issues/389
 #define WRAPPED_TYPED_TEST_P(CaseName, TestName) \
   TYPED_TEST_P(CaseName, TestName)
-#define WRAPPED_REGISTER_TYPED_TEST_CASE_P(CaseName, ...) \
-  REGISTER_TYPED_TEST_CASE_P(CaseName, __VA_ARGS__)
+#define WRAPPED_REGISTER_TYPED_TEST_SUITE_P(CaseName, ...) \
+  REGISTER_TYPED_TEST_SUITE_P(CaseName, __VA_ARGS__)
 
 template <typename PkitsTestDelegate>
 class PkitsTest01SignatureVerification : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest01SignatureVerification);
+TYPED_TEST_SUITE_P(PkitsTest01SignatureVerification);
 
 // 4.1.1 Valid Signatures Test1
 WRAPPED_TYPED_TEST_P(PkitsTest01SignatureVerification,
@@ -91,17 +91,17 @@ WRAPPED_TYPED_TEST_P(PkitsTest01SignatureVerification,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(PkitsTest01SignatureVerification,
-                                   Section1ValidSignaturesTest1,
-                                   Section1InvalidCASignatureTest2,
-                                   Section1InvalidEESignatureTest3,
-                                   Section1ValidDSASignaturesTest4,
-                                   Section1ValidDSAParameterInheritanceTest5,
-                                   Section1InvalidDSASignatureTest6);
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(PkitsTest01SignatureVerification,
+                                    Section1ValidSignaturesTest1,
+                                    Section1InvalidCASignatureTest2,
+                                    Section1InvalidEESignatureTest3,
+                                    Section1ValidDSASignaturesTest4,
+                                    Section1ValidDSAParameterInheritanceTest5,
+                                    Section1InvalidDSASignatureTest6);
 
 template <typename PkitsTestDelegate>
 class PkitsTest02ValidityPeriods : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest02ValidityPeriods);
+TYPED_TEST_SUITE_P(PkitsTest02ValidityPeriods);
 
 // 4.2.1 Invalid CA notBefore Date Test1
 WRAPPED_TYPED_TEST_P(PkitsTest02ValidityPeriods,
@@ -209,7 +209,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest02ValidityPeriods,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest02ValidityPeriods,
     Section2InvalidCAnotBeforeDateTest1,
     Section2InvalidEEnotBeforeDateTest2,
@@ -222,7 +222,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest03VerifyingNameChaining : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest03VerifyingNameChaining);
+TYPED_TEST_SUITE_P(PkitsTest03VerifyingNameChaining);
 
 // 4.3.1 Invalid Name Chaining EE Test1
 WRAPPED_TYPED_TEST_P(PkitsTest03VerifyingNameChaining,
@@ -380,7 +380,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest03VerifyingNameChaining,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest03VerifyingNameChaining,
     Section3InvalidNameChainingEETest1,
     Section3InvalidNameChainingOrderTest2,
@@ -397,7 +397,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 template <typename PkitsTestDelegate>
 class PkitsTest04BasicCertificateRevocationTests
     : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest04BasicCertificateRevocationTests);
+TYPED_TEST_SUITE_P(PkitsTest04BasicCertificateRevocationTests);
 
 // 4.4.1 Missing CRL Test1
 WRAPPED_TYPED_TEST_P(PkitsTest04BasicCertificateRevocationTests,
@@ -705,7 +705,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest04BasicCertificateRevocationTests,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest04BasicCertificateRevocationTests,
     Section4MissingCRLTest1,
     Section4InvalidRevokedCATest2,
@@ -732,7 +732,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 template <typename PkitsTestDelegate>
 class PkitsTest05VerifyingPathswithSelfIssuedCertificates
     : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest05VerifyingPathswithSelfIssuedCertificates);
+TYPED_TEST_SUITE_P(PkitsTest05VerifyingPathswithSelfIssuedCertificates);
 
 // 4.5.1 Valid Basic Self-Issued Old With New Test1
 WRAPPED_TYPED_TEST_P(PkitsTest05VerifyingPathswithSelfIssuedCertificates,
@@ -868,7 +868,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest05VerifyingPathswithSelfIssuedCertificates,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest05VerifyingPathswithSelfIssuedCertificates,
     Section5ValidBasicSelfIssuedOldWithNewTest1,
     Section5InvalidBasicSelfIssuedOldWithNewTest2,
@@ -882,7 +882,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 template <typename PkitsTestDelegate>
 class PkitsTest06VerifyingBasicConstraints
     : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest06VerifyingBasicConstraints);
+TYPED_TEST_SUITE_P(PkitsTest06VerifyingBasicConstraints);
 
 // 4.6.1 Invalid Missing basicConstraints Test1
 WRAPPED_TYPED_TEST_P(PkitsTest06VerifyingBasicConstraints,
@@ -1165,7 +1165,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest06VerifyingBasicConstraints,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest06VerifyingBasicConstraints,
     Section6InvalidMissingbasicConstraintsTest1,
     Section6InvalidcAFalseTest2,
@@ -1187,7 +1187,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest07KeyUsage : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest07KeyUsage);
+TYPED_TEST_SUITE_P(PkitsTest07KeyUsage);
 
 // 4.7.1 Invalid keyUsage Critical keyCertSign False Test1
 WRAPPED_TYPED_TEST_P(PkitsTest07KeyUsage,
@@ -1263,7 +1263,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest07KeyUsage,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest07KeyUsage,
     Section7InvalidkeyUsageCriticalkeyCertSignFalseTest1,
     Section7InvalidkeyUsageNotCriticalkeyCertSignFalseTest2,
@@ -1273,7 +1273,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest08CertificatePolicies : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest08CertificatePolicies);
+TYPED_TEST_SUITE_P(PkitsTest08CertificatePolicies);
 
 // 4.8.1 All Certificates Same Policy Test1 (Subpart 1)
 WRAPPED_TYPED_TEST_P(PkitsTest08CertificatePolicies,
@@ -1816,7 +1816,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest08CertificatePolicies,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest08CertificatePolicies,
     Section8AllCertificatesSamePolicyTest1Subpart1,
     Section8AllCertificatesSamePolicyTest1Subpart2,
@@ -1856,7 +1856,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest09RequireExplicitPolicy : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest09RequireExplicitPolicy);
+TYPED_TEST_SUITE_P(PkitsTest09RequireExplicitPolicy);
 
 // 4.9.1 Valid RequireExplicitPolicy Test1
 WRAPPED_TYPED_TEST_P(PkitsTest09RequireExplicitPolicy,
@@ -2019,7 +2019,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest09RequireExplicitPolicy,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest09RequireExplicitPolicy,
     Section9ValidRequireExplicitPolicyTest1,
     Section9ValidRequireExplicitPolicyTest2,
@@ -2032,7 +2032,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest10PolicyMappings : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest10PolicyMappings);
+TYPED_TEST_SUITE_P(PkitsTest10PolicyMappings);
 
 // 4.10.1 Valid Policy Mapping Test1 (Subpart 1)
 WRAPPED_TYPED_TEST_P(PkitsTest10PolicyMappings,
@@ -2372,32 +2372,32 @@ WRAPPED_TYPED_TEST_P(PkitsTest10PolicyMappings,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(PkitsTest10PolicyMappings,
-                                   Section10ValidPolicyMappingTest1Subpart1,
-                                   Section10ValidPolicyMappingTest1Subpart2,
-                                   Section10ValidPolicyMappingTest1Subpart3,
-                                   Section10InvalidPolicyMappingTest2Subpart1,
-                                   Section10InvalidPolicyMappingTest2Subpart2,
-                                   Section10ValidPolicyMappingTest3Subpart1,
-                                   Section10ValidPolicyMappingTest3Subpart2,
-                                   Section10InvalidPolicyMappingTest4,
-                                   Section10ValidPolicyMappingTest5Subpart1,
-                                   Section10ValidPolicyMappingTest5Subpart2,
-                                   Section10ValidPolicyMappingTest6Subpart1,
-                                   Section10ValidPolicyMappingTest6Subpart2,
-                                   Section10InvalidMappingFromanyPolicyTest7,
-                                   Section10InvalidMappingToanyPolicyTest8,
-                                   Section10ValidPolicyMappingTest9,
-                                   Section10InvalidPolicyMappingTest10,
-                                   Section10ValidPolicyMappingTest11,
-                                   Section10ValidPolicyMappingTest12Subpart1,
-                                   Section10ValidPolicyMappingTest12Subpart2,
-                                   Section10ValidPolicyMappingTest13,
-                                   Section10ValidPolicyMappingTest14);
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(PkitsTest10PolicyMappings,
+                                    Section10ValidPolicyMappingTest1Subpart1,
+                                    Section10ValidPolicyMappingTest1Subpart2,
+                                    Section10ValidPolicyMappingTest1Subpart3,
+                                    Section10InvalidPolicyMappingTest2Subpart1,
+                                    Section10InvalidPolicyMappingTest2Subpart2,
+                                    Section10ValidPolicyMappingTest3Subpart1,
+                                    Section10ValidPolicyMappingTest3Subpart2,
+                                    Section10InvalidPolicyMappingTest4,
+                                    Section10ValidPolicyMappingTest5Subpart1,
+                                    Section10ValidPolicyMappingTest5Subpart2,
+                                    Section10ValidPolicyMappingTest6Subpart1,
+                                    Section10ValidPolicyMappingTest6Subpart2,
+                                    Section10InvalidMappingFromanyPolicyTest7,
+                                    Section10InvalidMappingToanyPolicyTest8,
+                                    Section10ValidPolicyMappingTest9,
+                                    Section10InvalidPolicyMappingTest10,
+                                    Section10ValidPolicyMappingTest11,
+                                    Section10ValidPolicyMappingTest12Subpart1,
+                                    Section10ValidPolicyMappingTest12Subpart2,
+                                    Section10ValidPolicyMappingTest13,
+                                    Section10ValidPolicyMappingTest14);
 
 template <typename PkitsTestDelegate>
 class PkitsTest11InhibitPolicyMapping : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest11InhibitPolicyMapping);
+TYPED_TEST_SUITE_P(PkitsTest11InhibitPolicyMapping);
 
 // 4.11.1 Invalid inhibitPolicyMapping Test1
 WRAPPED_TYPED_TEST_P(PkitsTest11InhibitPolicyMapping,
@@ -2611,7 +2611,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest11InhibitPolicyMapping,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest11InhibitPolicyMapping,
     Section11InvalidinhibitPolicyMappingTest1,
     Section11ValidinhibitPolicyMappingTest2,
@@ -2627,7 +2627,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest12InhibitAnyPolicy : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest12InhibitAnyPolicy);
+TYPED_TEST_SUITE_P(PkitsTest12InhibitAnyPolicy);
 
 // 4.12.1 Invalid inhibitAnyPolicy Test1
 WRAPPED_TYPED_TEST_P(PkitsTest12InhibitAnyPolicy,
@@ -2811,7 +2811,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest12InhibitAnyPolicy,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest12InhibitAnyPolicy,
     Section12InvalidinhibitAnyPolicyTest1,
     Section12ValidinhibitAnyPolicyTest2,
@@ -2827,7 +2827,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest13NameConstraints : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest13NameConstraints);
+TYPED_TEST_SUITE_P(PkitsTest13NameConstraints);
 
 // 4.13.1 Valid DN nameConstraints Test1
 WRAPPED_TYPED_TEST_P(PkitsTest13NameConstraints,
@@ -3380,7 +3380,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest13NameConstraints,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest13NameConstraints,
     Section13ValidDNnameConstraintsTest1,
     Section13InvalidDNnameConstraintsTest2,
@@ -3423,7 +3423,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest14DistributionPoints : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest14DistributionPoints);
+TYPED_TEST_SUITE_P(PkitsTest14DistributionPoints);
 
 // 4.14.1 Valid distributionPoint Test1
 WRAPPED_TYPED_TEST_P(PkitsTest14DistributionPoints,
@@ -3934,7 +3934,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest14DistributionPoints,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest14DistributionPoints,
     Section14ValiddistributionPointTest1,
     Section14InvaliddistributionPointTest2,
@@ -3974,7 +3974,7 @@ WRAPPED_REGISTER_TYPED_TEST_CASE_P(
 
 template <typename PkitsTestDelegate>
 class PkitsTest15DeltaCRLs : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest15DeltaCRLs);
+TYPED_TEST_SUITE_P(PkitsTest15DeltaCRLs);
 
 // 4.15.1 Invalid deltaCRLIndicator No Base Test1
 WRAPPED_TYPED_TEST_P(PkitsTest15DeltaCRLs,
@@ -4108,22 +4108,23 @@ WRAPPED_TYPED_TEST_P(PkitsTest15DeltaCRLs, Section15InvaliddeltaCRLTest10) {
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(PkitsTest15DeltaCRLs,
-                                   Section15InvaliddeltaCRLIndicatorNoBaseTest1,
-                                   Section15ValiddeltaCRLTest2,
-                                   Section15InvaliddeltaCRLTest3,
-                                   Section15InvaliddeltaCRLTest4,
-                                   Section15ValiddeltaCRLTest5,
-                                   Section15InvaliddeltaCRLTest6,
-                                   Section15ValiddeltaCRLTest7,
-                                   Section15ValiddeltaCRLTest8,
-                                   Section15InvaliddeltaCRLTest9,
-                                   Section15InvaliddeltaCRLTest10);
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
+    PkitsTest15DeltaCRLs,
+    Section15InvaliddeltaCRLIndicatorNoBaseTest1,
+    Section15ValiddeltaCRLTest2,
+    Section15InvaliddeltaCRLTest3,
+    Section15InvaliddeltaCRLTest4,
+    Section15ValiddeltaCRLTest5,
+    Section15InvaliddeltaCRLTest6,
+    Section15ValiddeltaCRLTest7,
+    Section15ValiddeltaCRLTest8,
+    Section15InvaliddeltaCRLTest9,
+    Section15InvaliddeltaCRLTest10);
 
 template <typename PkitsTestDelegate>
 class PkitsTest16PrivateCertificateExtensions
     : public PkitsTest<PkitsTestDelegate> {};
-TYPED_TEST_CASE_P(PkitsTest16PrivateCertificateExtensions);
+TYPED_TEST_SUITE_P(PkitsTest16PrivateCertificateExtensions);
 
 // 4.16.1 Valid Unknown Not Critical Certificate Extension Test1
 WRAPPED_TYPED_TEST_P(
@@ -4154,7 +4155,7 @@ WRAPPED_TYPED_TEST_P(PkitsTest16PrivateCertificateExtensions,
   this->RunTest(certs, crls, info);
 }
 
-WRAPPED_REGISTER_TYPED_TEST_CASE_P(
+WRAPPED_REGISTER_TYPED_TEST_SUITE_P(
     PkitsTest16PrivateCertificateExtensions,
     Section16ValidUnknownNotCriticalCertificateExtensionTest1,
     Section16InvalidUnknownCriticalCertificateExtensionTest2);

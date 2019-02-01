@@ -18,7 +18,7 @@ struct CachedItem {
 
 class QuicLRUCacheTest : public QuicTestWithParam<bool> {};
 
-INSTANTIATE_TEST_CASE_P(QuicLRUCacheTests, QuicLRUCacheTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(QuicLRUCacheTests, QuicLRUCacheTest, testing::Bool());
 
 TEST_P(QuicLRUCacheTest, InsertAndLookup) {
   QuicLRUCache<int, CachedItem> cache(5, GetParam());

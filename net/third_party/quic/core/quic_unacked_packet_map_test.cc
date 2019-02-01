@@ -178,7 +178,7 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
   StrictMock<MockSessionNotifier> notifier_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicUnackedPacketMapTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Tests, QuicUnackedPacketMapTest, testing::Bool());
 
 TEST_P(QuicUnackedPacketMapTest, RttOnly) {
   // Acks are only tracked for RTT measurement purposes.

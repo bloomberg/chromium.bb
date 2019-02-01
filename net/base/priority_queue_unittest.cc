@@ -239,9 +239,9 @@ TEST_P(PriorityQueueTest, FindIf) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(PriorityQueues,
-                        PriorityQueueTest,
-                        testing::Range(static_cast<size_t>(0), kNumQueues));
+INSTANTIATE_TEST_SUITE_P(PriorityQueues,
+                         PriorityQueueTest,
+                         testing::Range(static_cast<size_t>(0), kNumQueues));
 
 }  // namespace
 

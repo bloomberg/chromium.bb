@@ -625,7 +625,7 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
       GetQuicVersionDigitOnes()
 
 // Run all framer tests with all supported versions of QUIC.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     QuicFramerTests,
     QuicFramerTest,
     ::testing::ValuesIn(AllSupportedVersionsIncludingTls()));

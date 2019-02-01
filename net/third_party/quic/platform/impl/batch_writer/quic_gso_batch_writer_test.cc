@@ -51,7 +51,7 @@ class QuicGsoBatchWriterIOTestDelegate
   std::unique_ptr<QuicGsoBatchWriter> writer_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     QuicGsoBatchWriterTest,
     QuicUdpBatchWriterIOTest,
     testing::ValuesIn(

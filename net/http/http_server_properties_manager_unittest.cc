@@ -150,9 +150,9 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        HttpServerPropertiesManagerTest,
-                        ::testing::ValuesIn(kHttpServerPropertiesVersions));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HttpServerPropertiesManagerTest,
+                         ::testing::ValuesIn(kHttpServerPropertiesVersions));
 
 TEST_P(HttpServerPropertiesManagerTest,
        SingleUpdateForTwoSpdyServerPrefChanges) {

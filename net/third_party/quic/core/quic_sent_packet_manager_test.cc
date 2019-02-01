@@ -322,7 +322,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
   StrictMock<MockSessionNotifier> notifier_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, QuicSentPacketManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Tests, QuicSentPacketManagerTest, testing::Bool());
 
 TEST_P(QuicSentPacketManagerTest, IsUnacked) {
   VerifyUnackedPackets(nullptr, 0);

@@ -363,9 +363,9 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParams> {
 };
 
 // Run all tests with each version and perspective (client or server).
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicHeadersStreamTest,
-                        ::testing::ValuesIn(GetTestParams()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicHeadersStreamTest,
+                         ::testing::ValuesIn(GetTestParams()));
 
 TEST_P(QuicHeadersStreamTest, StreamId) {
   EXPECT_EQ(QuicUtils::GetHeadersStreamId(connection_->transport_version()),

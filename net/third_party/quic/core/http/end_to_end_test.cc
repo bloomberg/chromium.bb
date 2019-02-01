@@ -644,21 +644,21 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 };
 
 // Run all end to end tests with all supported versions.
-INSTANTIATE_TEST_CASE_P(EndToEndTests,
-                        EndToEndTest,
-                        ::testing::ValuesIn(GetTestParams(false, false)));
+INSTANTIATE_TEST_SUITE_P(EndToEndTests,
+                         EndToEndTest,
+                         ::testing::ValuesIn(GetTestParams(false, false)));
 
 class EndToEndTestWithTls : public EndToEndTest {};
 
-INSTANTIATE_TEST_CASE_P(EndToEndTestsWithTls,
-                        EndToEndTestWithTls,
-                        ::testing::ValuesIn(GetTestParams(true, false)));
+INSTANTIATE_TEST_SUITE_P(EndToEndTestsWithTls,
+                         EndToEndTestWithTls,
+                         ::testing::ValuesIn(GetTestParams(true, false)));
 
 class EndToEndTestWithStatelessReject : public EndToEndTest {};
 
-INSTANTIATE_TEST_CASE_P(WithStatelessReject,
-                        EndToEndTestWithStatelessReject,
-                        ::testing::ValuesIn(GetTestParams(false, true)));
+INSTANTIATE_TEST_SUITE_P(WithStatelessReject,
+                         EndToEndTestWithStatelessReject,
+                         ::testing::ValuesIn(GetTestParams(false, true)));
 
 TEST_P(EndToEndTestWithTls, HandshakeSuccessful) {
   ASSERT_TRUE(Initialize());
@@ -2847,9 +2847,9 @@ class EndToEndTestServerPush : public EndToEndTest {
 };
 
 // Run all server push end to end tests with all supported versions.
-INSTANTIATE_TEST_CASE_P(EndToEndTestsServerPush,
-                        EndToEndTestServerPush,
-                        ::testing::ValuesIn(GetTestParams(false, false)));
+INSTANTIATE_TEST_SUITE_P(EndToEndTestsServerPush,
+                         EndToEndTestServerPush,
+                         ::testing::ValuesIn(GetTestParams(false, false)));
 
 TEST_P(EndToEndTestServerPush, ServerPush) {
   ASSERT_TRUE(Initialize());
@@ -3554,9 +3554,9 @@ class EndToEndPacketReorderingTest : public EndToEndTest {
   PacketReorderingWriter* reorder_writer_;
 };
 
-INSTANTIATE_TEST_CASE_P(EndToEndPacketReorderingTests,
-                        EndToEndPacketReorderingTest,
-                        testing::ValuesIn(GetTestParams(false, false)));
+INSTANTIATE_TEST_SUITE_P(EndToEndPacketReorderingTests,
+                         EndToEndPacketReorderingTest,
+                         testing::ValuesIn(GetTestParams(false, false)));
 
 TEST_P(EndToEndPacketReorderingTest, ReorderedConnectivityProbing) {
   ASSERT_TRUE(Initialize());

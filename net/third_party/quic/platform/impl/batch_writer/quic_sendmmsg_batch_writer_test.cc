@@ -24,7 +24,7 @@ class QuicSendmmsgBatchWriterIOTestDelegate
   std::unique_ptr<QuicSendmmsgBatchWriter> writer_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     QuicSendmmsgBatchWriterTest,
     QuicUdpBatchWriterIOTest,
     testing::ValuesIn(MakeQuicBatchWriterTestParams<

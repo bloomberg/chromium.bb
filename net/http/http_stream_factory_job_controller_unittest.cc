@@ -499,7 +499,7 @@ class JobControllerReconsiderProxyAfterErrorTest
   HttpStreamFactory::JobFactory default_job_factory_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     JobControllerReconsiderProxyAfterErrorTest,
     ::testing::Combine(::testing::Bool(),
@@ -2723,7 +2723,7 @@ class HttpStreamFactoryJobControllerMisdirectedRequestRetry
     : public HttpStreamFactoryJobControllerTest,
       public ::testing::WithParamInterface<::testing::tuple<bool, bool>> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HttpStreamFactoryJobControllerMisdirectedRequestRetry,
     ::testing::Combine(::testing::Bool(), ::testing::Bool()));
@@ -2814,7 +2814,7 @@ class HttpStreamFactoryJobControllerPreconnectTest
   HttpRequestInfo request_info_;
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HttpStreamFactoryJobControllerPreconnectTest,
     ::testing::Bool());

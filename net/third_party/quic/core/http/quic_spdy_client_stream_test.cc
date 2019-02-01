@@ -101,9 +101,9 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
   HttpEncoder encoder_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSpdyClientStreamTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSpdyClientStreamTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
   headers_[":status"] = "200 ok";

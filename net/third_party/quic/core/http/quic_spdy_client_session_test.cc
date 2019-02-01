@@ -172,9 +172,9 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicStreamId associated_stream_id_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicSpdyClientSessionTest,
-                        ::testing::ValuesIn(AllSupportedVersions()));
+INSTANTIATE_TEST_SUITE_P(Tests,
+                         QuicSpdyClientSessionTest,
+                         ::testing::ValuesIn(AllSupportedVersions()));
 
 TEST_P(QuicSpdyClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
