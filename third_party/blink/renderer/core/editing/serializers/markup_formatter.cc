@@ -148,8 +148,7 @@ String MarkupFormatter::ResolveURLIfNeeded(const Element& element,
 }
 
 void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
-                                        const Node& node,
-                                        Namespaces* namespaces) {
+                                        const Node& node) {
   switch (node.getNodeType()) {
     case Node::kTextNode:
       NOTREACHED();

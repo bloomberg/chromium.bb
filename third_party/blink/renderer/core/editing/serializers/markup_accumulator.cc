@@ -80,7 +80,7 @@ void MarkupAccumulator::AppendStartMarkup(StringBuilder& result,
       formatter_.AppendAttributeValue(result, ToAttr(node).value(), false);
       break;
     default:
-      formatter_.AppendStartMarkup(result, node, namespaces);
+      formatter_.AppendStartMarkup(result, node);
       break;
   }
 }
