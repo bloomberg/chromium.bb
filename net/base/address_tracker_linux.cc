@@ -118,7 +118,6 @@ AddressTrackerLinux::AddressTrackerLinux()
       address_callback_(base::DoNothing()),
       link_callback_(base::DoNothing()),
       tunnel_callback_(base::DoNothing()),
-      netlink_fd_(-1),
       watcher_(FROM_HERE),
       ignored_interfaces_(),
       connection_type_initialized_(false),
@@ -136,7 +135,6 @@ AddressTrackerLinux::AddressTrackerLinux(
       address_callback_(address_callback),
       link_callback_(link_callback),
       tunnel_callback_(tunnel_callback),
-      netlink_fd_(-1),
       watcher_(FROM_HERE),
       ignored_interfaces_(ignored_interfaces),
       connection_type_initialized_(false),
@@ -149,12 +147,12 @@ AddressTrackerLinux::AddressTrackerLinux(
 }
 
 AddressTrackerLinux::~AddressTrackerLinux() {
-  CloseSocket();
+  watcher_.StopWatchingFileDescriptor();
 }
 
 void AddressTrackerLinux::Init() {
-  netlink_fd_ = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-  if (netlink_fd_ < 0) {
+  netlink_fd_.reset(socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE));
+  if (!netlink_fd_.is_valid()) {
     PLOG(ERROR) << "Could not create NETLINK socket";
     AbortAndForceOnline();
     return;
@@ -171,8 +169,8 @@ void AddressTrackerLinux::Init() {
     // http://crbug.com/113993
     addr.nl_groups =
         RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_NOTIFY | RTMGRP_LINK;
-    rv = bind(
-        netlink_fd_, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr));
+    rv = bind(netlink_fd_.get(), reinterpret_cast<struct sockaddr*>(&addr),
+              sizeof(addr));
     if (rv < 0) {
       PLOG(ERROR) << "Could not bind NETLINK socket";
       AbortAndForceOnline();
@@ -195,9 +193,9 @@ void AddressTrackerLinux::Init() {
   request.header.nlmsg_pid = getpid();
   request.msg.rtgen_family = AF_UNSPEC;
 
-  rv = HANDLE_EINTR(sendto(netlink_fd_, &request, request.header.nlmsg_len,
-                           0, reinterpret_cast<struct sockaddr*>(&peer),
-                           sizeof(peer)));
+  rv = HANDLE_EINTR(
+      sendto(netlink_fd_.get(), &request, request.header.nlmsg_len, 0,
+             reinterpret_cast<struct sockaddr*>(&peer), sizeof(peer)));
   if (rv < 0) {
     PLOG(ERROR) << "Could not send NETLINK request";
     AbortAndForceOnline();
@@ -214,9 +212,9 @@ void AddressTrackerLinux::Init() {
   // Request dump of link state
   request.header.nlmsg_type = RTM_GETLINK;
 
-  rv = HANDLE_EINTR(sendto(netlink_fd_, &request, request.header.nlmsg_len, 0,
-                           reinterpret_cast<struct sockaddr*>(&peer),
-                           sizeof(peer)));
+  rv = HANDLE_EINTR(
+      sendto(netlink_fd_.get(), &request, request.header.nlmsg_len, 0,
+             reinterpret_cast<struct sockaddr*>(&peer), sizeof(peer)));
   if (rv < 0) {
     PLOG(ERROR) << "Could not send NETLINK request";
     AbortAndForceOnline();
@@ -233,7 +231,8 @@ void AddressTrackerLinux::Init() {
 
   if (tracking_) {
     rv = base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-        netlink_fd_, true, base::MessagePumpForIO::WATCH_READ, &watcher_, this);
+        netlink_fd_.get(), true, base::MessagePumpForIO::WATCH_READ, &watcher_,
+        this);
     if (rv < 0) {
       PLOG(ERROR) << "Could not watch NETLINK socket";
       AbortAndForceOnline();
@@ -243,7 +242,8 @@ void AddressTrackerLinux::Init() {
 }
 
 void AddressTrackerLinux::AbortAndForceOnline() {
-  CloseSocket();
+  watcher_.StopWatchingFileDescriptor();
+  netlink_fd_.reset();
   AddressTrackerAutoLock lock(*this, connection_type_lock_);
   current_connection_type_ = NetworkChangeNotifier::CONNECTION_UNKNOWN;
   connection_type_initialized_ = true;
@@ -300,7 +300,7 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
     }
 
     for (;;) {
-      int rv = HANDLE_EINTR(recv(netlink_fd_, buffer, sizeof(buffer),
+      int rv = HANDLE_EINTR(recv(netlink_fd_.get(), buffer, sizeof(buffer),
                                  // Block the first time through loop.
                                  first_loop ? 0 : MSG_DONTWAIT));
       first_loop = false;
@@ -425,7 +425,7 @@ void AddressTrackerLinux::HandleMessage(char* buffer,
 }
 
 void AddressTrackerLinux::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(netlink_fd_, fd);
+  DCHECK_EQ(netlink_fd_.get(), fd);
   bool address_changed;
   bool link_changed;
   bool tunnel_changed;
@@ -439,12 +439,6 @@ void AddressTrackerLinux::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void AddressTrackerLinux::OnFileCanWriteWithoutBlocking(int /* fd */) {}
-
-void AddressTrackerLinux::CloseSocket() {
-  if (netlink_fd_ >= 0 && IGNORE_EINTR(close(netlink_fd_)) < 0)
-    PLOG(ERROR) << "Could not close NETLINK socket.";
-  netlink_fd_ = -1;
-}
 
 bool AddressTrackerLinux::IsTunnelInterface(int interface_index) const {
   char buf[IFNAMSIZ] = {0};
