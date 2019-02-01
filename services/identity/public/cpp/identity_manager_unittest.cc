@@ -77,6 +77,12 @@ class CustomFakeProfileOAuth2TokenService
       EXPECT_EQ(expected_account_id_to_invalidate_, account_id);
       EXPECT_EQ(expected_scopes_to_invalidate_, scopes);
       EXPECT_EQ(expected_access_token_to_invalidate_, access_token);
+
+      // It should trigger OnAccessTokenRemovedFromCache from
+      // IdentityManager::DiagnosticsObserver.
+      for (auto& observer : GetDiagnicsObservers())
+        observer.OnAccessTokenRemoved(account_id, scopes);
+
       std::move(on_access_token_invalidated_callback_).Run();
     }
   }
@@ -438,6 +444,12 @@ class TestIdentityManagerDiagnosticsObserver
   const identity::ScopeSet& token_requestor_scopes() {
     return token_requestor_scopes_;
   }
+  const std::string& token_remover_account_id() {
+    return token_remover_account_id_;
+  }
+  const identity::ScopeSet& token_remover_scopes() {
+    return token_remover_scopes_;
+  }
 
  private:
   // IdentityManager::DiagnosticsObserver:
@@ -452,11 +464,19 @@ class TestIdentityManagerDiagnosticsObserver
       std::move(on_access_token_requested_callback_).Run();
   }
 
+  void OnAccessTokenRemovedFromCache(const std::string& account_id,
+                                     const ScopeSet& scopes) override {
+    token_remover_account_id_ = account_id;
+    token_remover_scopes_ = scopes;
+  }
+
   IdentityManager* identity_manager_;
   base::OnceClosure on_access_token_requested_callback_;
   std::string token_requestor_account_id_;
   std::string token_requestor_consumer_id_;
+  std::string token_remover_account_id_;
   identity::ScopeSet token_requestor_scopes_;
+  identity::ScopeSet token_remover_scopes_;
 };
 
 }  // namespace
@@ -1298,6 +1318,14 @@ TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
                                                  access_token);
 
   run_loop.Run();
+
+  // RemoveAccessTokenFromCache should lead to OnAccessTokenRemovedFromCache
+  // from IdentityManager::DiagnosticsObserver.
+  EXPECT_EQ(
+      account_id,
+      identity_manager_diagnostics_observer()->token_remover_account_id());
+  EXPECT_EQ(scopes,
+            identity_manager_diagnostics_observer()->token_remover_scopes());
 }
 
 TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {

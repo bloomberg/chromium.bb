@@ -5,6 +5,8 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_MANAGER_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_MANAGER_H_
 
+#include <string>
+
 #include "base/observer_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -173,6 +175,10 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnAccessTokenRequested(const std::string& account_id,
                                         const std::string& consumer_id,
                                         const identity::ScopeSet& scopes) {}
+
+    // Called when an access token was removed.
+    virtual void OnAccessTokenRemovedFromCache(const std::string& account_id,
+                                               const ScopeSet& scopes) {}
   };
 
   // Possible values for the account ID migration state, needs to be kept in
@@ -482,6 +488,8 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
+  void OnAccessTokenRemoved(const std::string& account_id,
+                            const ScopeSet& scopes) override;
 
   // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;
