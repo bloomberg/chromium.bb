@@ -233,10 +233,7 @@ ServiceWatcherImplMac::NetServiceBrowserContainer::DiscoverOnDiscoveryThread() {
   DVLOG(1) << "Listening for service type '" << [type UTF8String]
            << "' on domain '" << [domain UTF8String] << "'";
 
-  base::Time start_time = base::Time::Now();
   [browser_ searchForServicesOfType:type inDomain:domain];
-  UMA_HISTOGRAM_TIMES("LocalDiscovery.MacBrowseCallTimes",
-                      base::Time::Now() - start_time);
 }
 
 void ServiceWatcherImplMac::NetServiceBrowserContainer::OnServicesUpdate(
