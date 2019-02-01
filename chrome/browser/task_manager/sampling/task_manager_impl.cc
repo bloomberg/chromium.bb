@@ -635,6 +635,9 @@ void TaskManagerImpl::StartUpdating() {
     io_thread_helper_manager_.reset(new IoThreadHelperManager(
         base::BindRepeating(&TaskManagerImpl::OnMultipleBytesTransferredUI)));
   }
+  // Kick off fetch of asynchronous data, e.g., memory footprint, so that it
+  // will be displayed sooner after opening the task manager.
+  Refresh();
 }
 
 void TaskManagerImpl::StopUpdating() {
