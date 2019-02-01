@@ -12,14 +12,14 @@ import cq_cfg_presubmit
 
 
 class CqCfgPresubmitTest(unittest.TestCase):
-  def test_verify_path_regexp_exists(self):
+  def test_verify_location_regexp_exists(self):
     with mock.patch('cq_cfg_presubmit.os.path.exists') as exists:
       exists.side_effect = [True]
-      self.assertTrue(cq_cfg_presubmit.verify_path_regexps([
-          'simple/file',
+      self.assertTrue(cq_cfg_presubmit.verify_location_regexps([
+          cq_cfg_presubmit.REGEX_PREFIX + 'simple/file',
       ]))
 
-  def test_verify_path_regexp_os_walk_found(self):
+  def test_verify_location_regexp_os_walk_found(self):
     with mock.patch('cq_cfg_presubmit.os.walk') as walk:
       walk.side_effect = [(
           (os.path.join(cq_cfg_presubmit.CHROMIUM_DIR, 'random'),
@@ -29,11 +29,11 @@ class CqCfgPresubmitTest(unittest.TestCase):
       )]
       with mock.patch('cq_cfg_presubmit.os.path.exists') as exists:
         exists.side_effect = [False]
-        self.assertTrue(cq_cfg_presubmit.verify_path_regexps([
-            'simple/file/.+',
+        self.assertTrue(cq_cfg_presubmit.verify_location_regexps([
+            cq_cfg_presubmit.REGEX_PREFIX + 'simple/file/.+',
         ], False))
 
-  def test_verify_path_regexp_os_walk_not_found(self):
+  def test_verify_location_regexp_os_walk_not_found(self):
     with mock.patch('cq_cfg_presubmit.os.walk') as walk:
       walk.side_effect = [(
           (os.path.join(cq_cfg_presubmit.CHROMIUM_DIR, 'random'),
@@ -41,8 +41,8 @@ class CqCfgPresubmitTest(unittest.TestCase):
       )]
       with mock.patch('cq_cfg_presubmit.os.path.exists') as exists:
         exists.side_effect = [False]
-        self.assertFalse(cq_cfg_presubmit.verify_path_regexps([
-            'simple/file/.+',
+        self.assertFalse(cq_cfg_presubmit.verify_location_regexps([
+            cq_cfg_presubmit.REGEX_PREFIX + 'simple/file/.+',
         ], False))
 
 
