@@ -477,12 +477,8 @@ TEST_P(TransportClientSocketTest, DISABLED_FullDuplex_WriteFirst) {
   int rv = write_callback.WaitForResult();
   EXPECT_GE(rv, 0);
 
-  // It's possible the read is blocked because it's already read all the data.
-  // Close the server socket, so there will at least be a 0-byte read.
-  CloseServerSocket();
-
   rv = callback.WaitForResult();
-  EXPECT_GE(rv, 0);
+  EXPECT_GT(rv, 0);
 }
 
 }  // namespace net
