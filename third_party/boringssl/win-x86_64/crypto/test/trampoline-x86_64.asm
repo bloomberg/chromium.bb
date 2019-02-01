@@ -521,7 +521,7 @@ abi_test_get_and_clear_direction_flag:
 	pushfq
 	pop	rax
 	and	rax,0x400
-	shl	rax,10
+	shr	rax,10
 	cld
 	DB	0F3h,0C3h		;repret
 
