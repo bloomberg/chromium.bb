@@ -48,6 +48,16 @@ bool FakeModelTypeChangeProcessor::IsEntityUnsynced(
   return false;
 }
 
+base::Time FakeModelTypeChangeProcessor::GetEntityCreationTime(
+    const std::string& storage_key) const {
+  return base::Time();
+}
+
+base::Time FakeModelTypeChangeProcessor::GetEntityModificationTime(
+    const std::string& storage_key) const {
+  return base::Time();
+}
+
 void FakeModelTypeChangeProcessor::OnModelStarting(
     ModelTypeSyncBridge* bridge) {}
 
