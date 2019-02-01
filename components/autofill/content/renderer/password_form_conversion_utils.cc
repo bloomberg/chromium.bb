@@ -660,8 +660,8 @@ bool GetPasswordForm(
   // attributes) the passwords list is empty, build list based on user input (if
   // there is any non-empty password field) and the type of a field. Also mark
   // that the form should be available only for fallback saving (automatic
-  // bubble will not pop up).
-  password_form->only_for_fallback_saving = plausible_passwords.empty();
+  // bubble will not pop up) and filling.
+  password_form->only_for_fallback = plausible_passwords.empty();
   if (plausible_passwords.empty()) {
     plausible_passwords = std::move(passwords_without_heuristics);
     preceding_text_input_for_plausible_password =

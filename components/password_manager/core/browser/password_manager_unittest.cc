@@ -44,6 +44,7 @@
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
+using autofill::PasswordFormFillData;
 using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
@@ -207,6 +208,20 @@ void CheckMetricHasValue(const ukm::TestUkmRecorder& test_ukm_recorder,
       static_cast<int64_t>(value));
 }
 
+// Sets |unique_id| in fields on iOS.
+void SetUniqueIdIfNeeded(FormData* form) {
+  // On iOS the unique_id member uniquely addresses this field in the DOM.
+  // This is an ephemeral value which is not guaranteed to be stable across
+  // page loads. It serves to allow a given field to be found during the
+  // current navigation.
+  // TODO(crbug.com/896689): Expand the logic/application of this to other
+  // platforms and/or merge this concept with |unique_renderer_id|.
+#if defined(OS_IOS)
+  for (auto& f : form->fields)
+    f.unique_id = f.id_attribute;
+#endif
+}
+
 }  // namespace
 
 class PasswordManagerTest : public testing::Test {
@@ -270,7 +285,7 @@ class PasswordManagerTest : public testing::Test {
     form.form_data.name = ASCIIToUTF16("the-form-name");
     form.form_data.unique_renderer_id = 10;
 
-    autofill::FormFieldData field;
+    FormFieldData field;
     field.name = ASCIIToUTF16("Email");
     field.id_attribute = field.name;
     field.name_attribute = field.name;
@@ -287,17 +302,7 @@ class PasswordManagerTest : public testing::Test {
     field.unique_renderer_id = 3;
     form.form_data.fields.push_back(field);
 
-// On iOS the unique_id member uniquely addresses this field in the DOM.
-// This is an ephemeral value which is not guaranteed to be stable across
-// page loads. It serves to allow a given field to be found during the
-// current navigation.
-// TODO(crbug.com/896689): Expand the logic/application of this to other
-// platforms and/or merge this concept with |unique_renderer_id|.
-#if defined(OS_IOS)
-    for (auto& f : form.form_data.fields) {
-      f.unique_id = f.id_attribute;
-    }
-#endif
+    SetUniqueIdIfNeeded(&form.form_data);
 
     return form;
   }
@@ -373,6 +378,38 @@ class PasswordManagerTest : public testing::Test {
     PasswordForm form(MakeSimpleForm());
     form.username_element.clear();
     form.username_value.clear();
+    return form;
+  }
+
+  PasswordForm MakeSimpleCreditCardForm() {
+    PasswordForm form;
+    form.origin = GURL("https://accounts.google.com");
+    form.signon_realm = form.origin.spec();
+    form.username_element = ASCIIToUTF16("cc-number");
+    form.password_element = ASCIIToUTF16("cvc");
+    form.username_value = ASCIIToUTF16("1234567");
+    form.password_value = ASCIIToUTF16("123");
+    form.form_data.origin = form.origin;
+
+    FormFieldData field;
+    field.name = form.username_element;
+    field.id_attribute = field.name;
+    field.value = form.username_value;
+    field.form_control_type = "text";
+    field.unique_renderer_id = 2;
+    field.autocomplete_attribute = "cc-name";
+    form.form_data.fields.push_back(field);
+
+    field.name = form.password_element;
+    field.id_attribute = field.name;
+    field.value = form.password_value;
+    field.form_control_type = "password";
+    field.unique_renderer_id = 3;
+    field.autocomplete_attribute = "cc-number";
+    form.form_data.fields.push_back(field);
+
+    SetUniqueIdIfNeeded(&form.form_data);
+
     return form;
   }
 
@@ -3360,6 +3397,58 @@ TEST_F(PasswordManagerTest, NoSavePromptAfterStoreCalled) {
     EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
 
     manager()->OnPasswordFormsRendered(&driver_, {}, true);
+    testing::Mock::VerifyAndClearExpectations(&client_);
+  }
+}
+
+// Check that on non-password form, saving and filling fallbacks are available
+// but no automatic filling and saving are available.
+TEST_F(PasswordManagerTest, FillingAndSavingFallbacksOnNonPasswordForm) {
+  NewPasswordFormManager::set_wait_for_server_predictions_for_filling(false);
+  for (bool is_new_parsing_on : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_new_parsing_on = " << is_new_parsing_on);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (is_new_parsing_on)
+      TurnOnNewParsingForSaving(&scoped_feature_list);
+
+    EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
+        .WillRepeatedly(Return(true));
+
+    PasswordForm saved_match(MakeSimpleForm());
+    PasswordForm credit_card_form(MakeSimpleCreditCardForm());
+    credit_card_form.only_for_fallback = true;
+
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(WithArg<1>(InvokeConsumer(saved_match)));
+
+    PasswordFormFillData form_data;
+    EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&form_data));
+
+    manager()->OnPasswordFormsParsed(&driver_, {credit_card_form});
+    // Check that manual filling fallback available.
+    EXPECT_EQ(saved_match.username_value, form_data.username_field.value);
+    EXPECT_EQ(saved_match.password_value, form_data.password_field.value);
+    // Check that no automatic filling available.
+    uint32_t renderer_id_not_set = FormFieldData::kNotSetFormControlRendererId;
+    EXPECT_EQ(renderer_id_not_set, form_data.username_field.unique_renderer_id);
+    EXPECT_EQ(renderer_id_not_set, form_data.password_field.unique_renderer_id);
+
+    // Check that saving fallback is available.
+    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+    EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+    manager()->ShowManualFallbackForSaving(&driver_, credit_card_form);
+    ASSERT_TRUE(form_manager_to_save);
+    EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
+                FormMatches(credit_card_form));
+
+    // Check that no automatic save prompt is shown.
+    OnPasswordFormSubmitted(credit_card_form);
+    EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+    manager()->DidNavigateMainFrame(true);
+    manager()->OnPasswordFormsRendered(&driver_, {}, true);
+
     testing::Mock::VerifyAndClearExpectations(&client_);
   }
 }

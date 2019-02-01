@@ -679,8 +679,8 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.submission_event;
   }
 
-  static bool only_for_fallback_saving(const autofill::PasswordForm& r) {
-    return r.only_for_fallback_saving;
+  static bool only_for_fallback(const autofill::PasswordForm& r) {
+    return r.only_for_fallback;
   }
 
   static bool is_gaia_with_skip_save_password_form(
