@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/elements/top_aligned_image_view.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_grid/grid/top_aligned_image_view.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

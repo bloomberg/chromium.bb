@@ -12,6 +12,8 @@ source_set("elements") {
     "selector_picker_view_controller.h",
     "selector_picker_view_controller.mm",
     "selector_view_controller_delegate.h",
+    "top_aligned_image_view.h",
+    "top_aligned_image_view.mm",
   ]
   deps = [
     "//base",
