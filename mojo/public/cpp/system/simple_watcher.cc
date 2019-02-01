@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/public/c/system/trap.h"
 
 namespace mojo {
@@ -283,6 +284,10 @@ void SimpleWatcher::OnHandleReady(int watch_id,
   // NOTE: It's legal for |callback| to delete |this|.
   if (!callback.is_null()) {
     TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(heap_profiler_tag_);
+    // Lot of janks caused are grouped to OnHandleReady tasks. This trace event helps identify the
+    // cause of janks. It is ok to pass |heap_profiler_tag_| here since it is a string literal.
+    // TODO(927206): Consider renaming |heap_profiler_tag_|.
+    TRACE_EVENT0("toplevel", heap_profiler_tag_);
 
     base::WeakPtr<SimpleWatcher> weak_self = weak_factory_.GetWeakPtr();
     callback.Run(result, state);
