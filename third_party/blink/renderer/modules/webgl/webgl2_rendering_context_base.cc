@@ -4703,6 +4703,8 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
       ContextGL()->GetInteger64i_v(target, index, &value);
       return WebGLAny(script_state, value);
     }
+    case GL_MAX_COMPUTE_WORK_GROUP_COUNT:
+    case GL_MAX_COMPUTE_WORK_GROUP_SIZE:
     case GL_ATOMIC_COUNTER_BUFFER_SIZE:
     case GL_ATOMIC_COUNTER_BUFFER_START:
     case GL_SHADER_STORAGE_BUFFER_SIZE:
@@ -4716,6 +4718,7 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
       ContextGL()->GetInteger64i_v(target, index, &value);
       return WebGLAny(script_state, value);
     }
+
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getIndexedParameter",
                         "invalid parameter name");

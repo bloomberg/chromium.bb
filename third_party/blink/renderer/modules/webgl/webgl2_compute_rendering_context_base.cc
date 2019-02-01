@@ -75,6 +75,28 @@ ScriptValue WebGL2ComputeRenderingContextBase::getParameter(
                       "WebGL 2.0 Compute (" +
                           String(ContextGL()->GetString(GL_VERSION)) + ")");
     }
+    case GL_MAX_ATOMIC_COUNTER_BUFFER_SIZE:
+    case GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS:
+    case GL_MAX_COMBINED_ATOMIC_COUNTER_BUFFERS:
+    case GL_MAX_COMBINED_ATOMIC_COUNTERS:
+    case GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS:
+    case GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS:
+    case GL_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+    case GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS:
+    case GL_MAX_COMPUTE_UNIFORM_COMPONENTS:
+    case GL_MAX_COMPUTE_UNIFORM_BLOCKS:
+    case GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS:
+    case GL_MAX_COMPUTE_IMAGE_UNIFORMS:
+    case GL_MAX_FRAGMENT_ATOMIC_COUNTER_BUFFERS:
+    case GL_MAX_FRAGMENT_ATOMIC_COUNTERS:
+    case GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS:
+    case GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS:
+    case GL_MAX_VERTEX_ATOMIC_COUNTER_BUFFERS:
+    case GL_MAX_VERTEX_ATOMIC_COUNTERS:
+    case GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS:
+      return GetIntParameter(script_state, pname);
+    case GL_MAX_SHADER_STORAGE_BLOCK_SIZE:
+      return GetInt64Parameter(script_state, pname);
 
     default:
       return WebGL2RenderingContextBase::getParameter(script_state, pname);

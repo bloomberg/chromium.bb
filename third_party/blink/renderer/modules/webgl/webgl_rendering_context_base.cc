@@ -3420,7 +3420,15 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(
       ContextGL()->GetProgramiv(ObjectOrZero(program), pname, &value);
       return WebGLAny(script_state, value);
     case GL_TRANSFORM_FEEDBACK_BUFFER_MODE:
-      if (IsWebGL2OrHigher()) {
+      if (!IsWebGL2OrHigher()) {
+        SynthesizeGLError(GL_INVALID_ENUM, "getProgramParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state);
+      }
+      ContextGL()->GetProgramiv(ObjectOrZero(program), pname, &value);
+      return WebGLAny(script_state, static_cast<unsigned>(value));
+    case GL_ACTIVE_ATOMIC_COUNTER_BUFFERS:
+      if (context_type_ == Platform::kWebGL2ComputeContextType) {
         ContextGL()->GetProgramiv(ObjectOrZero(program), pname, &value);
         return WebGLAny(script_state, static_cast<unsigned>(value));
       }
