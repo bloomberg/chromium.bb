@@ -29,6 +29,8 @@
 
 #include <unicode/usearch.h>
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/text/text_boundaries.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
@@ -96,6 +98,30 @@ class ICULockableSearcher {
 
 }  // namespace
 
+static bool IsWholeWordMatch(const UChar* text,
+                             int text_length,
+                             MatchResultICU& result) {
+  DCHECK_LE((int)(result.start + result.length), text_length);
+  UChar32 first_character;
+  U16_GET(text, 0, result.start, result.length, first_character);
+
+  // Chinese and Japanese lack word boundary marks, and there is no clear
+  // agreement on what constitutes a word, so treat the position before any CJK
+  // character as a word start.
+  if (Character::IsCJKIdeographOrSymbol(first_character))
+    return true;
+
+  wtf_size_t word_break_search_start = result.start + result.length;
+  while (word_break_search_start > result.start) {
+    word_break_search_start =
+        FindNextWordBackward(text, text_length, word_break_search_start);
+  }
+  if (word_break_search_start != result.start)
+    return false;
+  return static_cast<int>(result.start + result.length) ==
+         FindWordEndBoundary(text, text_length, word_break_search_start);
+}
+
 // Grab the single global searcher.
 // If we ever have a reason to do more than once search buffer at once, we'll
 // have to move to multiple searchers.
@@ -112,8 +138,9 @@ TextSearcherICU::~TextSearcherICU() {
 }
 
 void TextSearcherICU::SetPattern(const StringView& pattern,
-                                 bool case_sensitive) {
-  SetCaseSensitivity(case_sensitive);
+                                 FindOptions options) {
+  options_ = options;
+  SetCaseSensitivity(!(options & kCaseInsensitive));
   SetPattern(pattern.Characters16(), pattern.length());
   if (ContainsKanaLetters(pattern.ToString())) {
     NormalizeCharactersIntoNFCForm(pattern.Characters16(), pattern.length(),
@@ -163,17 +190,25 @@ bool TextSearcherICU::NextMatchResultInternal(MatchResultICU& result) {
 }
 
 bool TextSearcherICU::ShouldSkipCurrentMatch(MatchResultICU& result) const {
-  if (normalized_search_text_.IsEmpty())
-    return false;
-  Vector<UChar> normalized_match;
   int32_t text_length;
   const UChar* text = usearch_getText(searcher_, &text_length);
   DCHECK_LE((int32_t)(result.start + result.length), text_length);
+  DCHECK_GT(result.length, 0u);
 
+  if (!normalized_search_text_.IsEmpty() && !IsCorrectKanaMatch(text, result))
+    return true;
+
+  if ((options_ & kWholeWord) && !IsWholeWordMatch(text, text_length, result))
+    return true;
+  return false;
+}
+
+bool TextSearcherICU::IsCorrectKanaMatch(const UChar* text,
+                                         MatchResultICU& result) const {
+  Vector<UChar> normalized_match;
   NormalizeCharactersIntoNFCForm(text + result.start, result.length,
                                  normalized_match);
-
-  return !CheckOnlyKanaLettersInStrings(
+  return CheckOnlyKanaLettersInStrings(
       normalized_search_text_.data(), normalized_search_text_.size(),
       normalized_match.begin(), normalized_match.size());
 }

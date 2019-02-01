@@ -441,6 +441,21 @@ TEST_F(FindBufferTest, KanaHalfFull) {
             buffer.FindMatches("ラキナ", kCaseInsensitive)->CountForTesting());
 }
 
+TEST_F(FindBufferTest, WholeWordTest) {
+  SetBodyContent("foo bar foobar 六本木");
+  FindBuffer buffer(WholeDocumentRange());
+  EXPECT_EQ(2u, buffer.FindMatches("foo", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("foo", kCaseInsensitive | kWholeWord)
+                    ->CountForTesting());
+  EXPECT_EQ(2u, buffer.FindMatches("bar", kCaseInsensitive)->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("bar", kCaseInsensitive | kWholeWord)
+                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("六", kCaseInsensitive | kWholeWord)
+                    ->CountForTesting());
+  EXPECT_EQ(1u, buffer.FindMatches("本木", kCaseInsensitive | kWholeWord)
+                    ->CountForTesting());
+}
+
 TEST_F(FindBufferTest, KanaDecomposed) {
   SetBodyContent("は　゛");
   FindBuffer buffer(WholeDocumentRange());
