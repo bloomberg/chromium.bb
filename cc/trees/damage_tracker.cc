@@ -395,10 +395,27 @@ void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
     }
   }
 
-  // Property changes from animaiton will not be considered as damage from
-  // contributing content.
-  if (layer_is_new || layer->LayerPropertyChangedNotFromPropertyTrees() ||
-      !layer->update_rect().IsEmpty() || !layer->damage_rect().IsEmpty()) {
+  // Property changes on effect or transform nodes that are shared by the
+  // render target are not considered damage to that target itself.  This
+  // is the case where the render target itself changes opacity or moves.
+  // The damage goes to the target's target instead.  This is not perfect,
+  // as the target and layer could share an effect but not a transform,
+  // but there's no tracking on the layer to differentiate that the
+  // LayerPropertyChangedFromPropertyTrees is for the effect not the transform.
+  bool property_change_on_non_target_node = false;
+  if (layer->LayerPropertyChangedFromPropertyTrees()) {
+    auto effect_id = layer->render_target()->EffectTreeIndex();
+    auto* effect_node =
+        layer->layer_tree_impl()->property_trees()->effect_tree.Node(effect_id);
+    auto transform_id = effect_node->transform_id;
+    property_change_on_non_target_node =
+        layer->effect_tree_index() != effect_id ||
+        layer->transform_tree_index() != transform_id;
+  }
+
+  if (layer_is_new || !layer->update_rect().IsEmpty() ||
+      layer->LayerPropertyChangedNotFromPropertyTrees() ||
+      !layer->damage_rect().IsEmpty() || property_change_on_non_target_node) {
     has_damage_from_contributing_content_ |= !damage_for_this_update_.IsEmpty();
   }
 }

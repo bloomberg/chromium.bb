@@ -495,6 +495,54 @@ TEST_F(DamageTrackerTest,
                   ->has_damage_from_contributing_content());
 }
 
+// Regression test for http://crbug.com/923794
+TEST_F(DamageTrackerTest, EffectPropertyChangeNoSurface) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->test_properties()->children[0];
+
+  // Create a separate effect node for the child, but no render surface.
+  child->test_properties()->opacity = 0.5;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+
+  EXPECT_EQ(root->transform_tree_index(), child->transform_tree_index());
+  EXPECT_NE(root->effect_tree_index(), child->effect_tree_index());
+
+  // Change the child's opacity, which should damage its target.
+  ClearDamageForAllSurfaces(root);
+  root->layer_tree_impl()->SetOpacityMutated(child->element_id(), 0.4f);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+}
+
+// Regression test for http://crbug.com/923794
+TEST_F(DamageTrackerTest, TransformPropertyChangeNoSurface) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
+  LayerImpl* child = root->test_properties()->children[0];
+
+  // Create a separate transform node for the child, but no render surface.
+  gfx::Transform trans1;
+  trans1.Scale(2, 1);
+  child->test_properties()->transform = trans1;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+
+  EXPECT_NE(root->transform_tree_index(), child->transform_tree_index());
+  EXPECT_EQ(root->effect_tree_index(), child->effect_tree_index());
+
+  // Change the child's transform , which should damage its target.
+  ClearDamageForAllSurfaces(root);
+  gfx::Transform trans2;
+  trans2.Scale(1, 2);
+  root->layer_tree_impl()->SetTransformMutated(child->element_id(), trans2);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+}
+
 TEST_F(DamageTrackerTest,
        VerifyDamageForUpdateAndDamageRectsFromContributingContents) {
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
