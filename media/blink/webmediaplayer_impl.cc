@@ -128,10 +128,6 @@ bool IsBackgroundVideoPauseOptimizationEnabled() {
   return base::FeatureList::IsEnabled(kBackgroundVideoPauseOptimization);
 }
 
-bool IsNewRemotePlaybackPipelineEnabled() {
-  return base::FeatureList::IsEnabled(kNewRemotePlaybackPipeline);
-}
-
 bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
   bool result = state == blink::WebMediaPlayer::kNetworkStateFormatError ||
                 state == blink::WebMediaPlayer::kNetworkStateNetworkError ||
@@ -2399,7 +2395,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (observer_ && IsNewRemotePlaybackPipelineEnabled() && mb_data_source_)
+  if (observer_ && mb_data_source_)
     observer_->OnDataSourceInitialized(mb_data_source_->GetUrlAfterRedirects());
 
   if (!success) {

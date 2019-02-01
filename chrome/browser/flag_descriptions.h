@@ -766,9 +766,6 @@ extern const char kNewPasswordFormParsingDescription[];
 extern const char kNewPasswordFormParsingForSavingName[];
 extern const char kNewPasswordFormParsingForSavingDescription[];
 
-extern const char kNewRemotePlaybackPipelineName[];
-extern const char kNewRemotePlaybackPipelineDescription[];
-
 extern const char kOnlyNewPasswordFormParsingName[];
 extern const char kOnlyNewPasswordFormParsingDescription[];
 
