@@ -5,16 +5,18 @@
 #ifndef CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
 #define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_STATUS_METRICS_PROVIDER_DELEGATE_H_
 
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
 
 class ChromeSigninStatusMetricsProviderDelegate
     : public SigninStatusMetricsProviderDelegate,
       public BrowserListObserver,
-      public SigninManagerFactory::Observer {
+      public IdentityManagerFactory::Observer {
  public:
   ChromeSigninStatusMetricsProviderDelegate();
   ~ChromeSigninStatusMetricsProviderDelegate() override;
@@ -26,14 +28,17 @@ class ChromeSigninStatusMetricsProviderDelegate
   // SigninStatusMetricsProviderDelegate:
   void Initialize() override;
   AccountsStatus GetStatusOfAllAccounts() override;
-  std::vector<SigninManager*> GetSigninManagersForAllAccounts() override;
+  std::vector<identity::IdentityManager*> GetIdentityManagersForAllAccounts()
+      override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
 
-  // SigninManagerFactoryObserver:
-  void SigninManagerCreated(SigninManagerBase* manager) override;
-  void SigninManagerShutdown(SigninManagerBase* manager) override;
+  // IdentityManagerFactoryObserver:
+  void IdentityManagerCreated(
+      identity::IdentityManager* identity_manager) override;
+  void IdentityManagerShutdown(
+      identity::IdentityManager* identity_manager) override;
 
   // Updates the sign-in status right after a new browser is opened.
   void UpdateStatusWhenBrowserAdded(bool signed_in);
