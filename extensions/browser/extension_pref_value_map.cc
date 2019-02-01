@@ -4,6 +4,8 @@
 
 #include "extensions/browser/extension_pref_value_map.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_value_map.h"
@@ -48,11 +50,9 @@ void ExtensionPrefValueMap::Shutdown() {
 void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
                                              const std::string& key,
                                              ExtensionPrefsScope scope,
-                                             base::Value* value) {
+                                             base::Value value) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
-  std::unique_ptr<base::Value> owned_value = base::WrapUnique(value);
-  if (prefs->SetValue(key,
-                      base::Value::FromUniquePtrValue(std::move(owned_value))))
+  if (prefs->SetValue(key, std::move(value)))
     NotifyPrefValueChanged(key);
 }
 

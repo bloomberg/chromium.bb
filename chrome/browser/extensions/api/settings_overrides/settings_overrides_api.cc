@@ -129,8 +129,10 @@ void SettingsOverridesAPI::SetPref(const std::string& extension_id,
   PreferenceAPI* prefs = PreferenceAPI::Get(profile_);
   if (!prefs)
     return;  // Expected in unit tests.
+  DCHECK(value);
   prefs->SetExtensionControlledPref(
-      extension_id, pref_key, kExtensionPrefsScopeRegular, value.release());
+      extension_id, pref_key, kExtensionPrefsScopeRegular,
+      base::Value::FromUniquePtrValue(std::move(value)));
 }
 
 void SettingsOverridesAPI::UnsetPref(const std::string& extension_id,
