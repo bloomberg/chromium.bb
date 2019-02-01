@@ -114,7 +114,9 @@ def main():
     assert options.zip_file
     deps = []
     for root, _, filenames in os.walk(options.input_dir):
-      deps.extend(os.path.join(root, f) for f in filenames)
+      # Ignore .pyc files here, it might be re-generated during build.
+      deps.extend(os.path.join(root, f) for f in filenames
+                  if not f.endswith('.pyc'))
     build_utils.WriteDepfile(options.depfile, options.zip_file, deps)
   # Clean up temporary output directory.
   build_utils.DeleteDirectory(unzipped_jar_path)
