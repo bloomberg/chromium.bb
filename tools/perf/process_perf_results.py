@@ -48,6 +48,15 @@ DATA_FORMAT_CHARTJSON = 'chartjson'
 DATA_FORMAT_HISTOGRAMS = 'histograms'
 DATA_FORMAT_UNKNOWN = 'unknown'
 
+# See https://crbug.com/923564.
+# We want to switch over to using histograms for everything, but converting from
+# the format output by gtest perf tests to histograms has introduced several
+# problems. So, only perform the conversion on tests that are whitelisted and
+# are okay with potentially encountering issues.
+GTEST_CONVERSION_WHITELIST = [
+  'xr.vr.common_perftests',
+]
+
 
 def _GetMachineGroup(build_properties):
   machine_group = None
@@ -94,6 +103,13 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
   if ('build' in buildbucket and
       buildbucket['build'].get('bucket') == 'luci.chrome.ci'):
     is_luci = True
+
+  if is_luci and _is_gtest(json_to_upload) and (
+      name in GTEST_CONVERSION_WHITELIST):
+    path_util.AddTracingToPath()
+    from tracing.value import gtest_json_converter
+    gtest_json_converter.ConvertGtestJsonFile(json_to_upload)
+    _data_format_cache[json_to_upload] = DATA_FORMAT_HISTOGRAMS
 
   if 'build' in buildbucket:
     args += [
