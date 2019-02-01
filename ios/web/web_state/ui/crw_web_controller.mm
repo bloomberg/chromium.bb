@@ -4939,7 +4939,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // |context| will be nil if this navigation has been already committed and
   // finished.
   if (context) {
-    context->SetHasCommitted(true);
+    web::NavigationManager* navigationManager =
+        _webStateImpl->GetNavigationManager();
+    if ((navigationManager->GetPendingItem()) ||
+        (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+         ui::PageTransitionCoreTypeIs(context->GetPageTransition(),
+                                      ui::PAGE_TRANSITION_RELOAD) &&
+         navigationManager->GetLastCommittedItem())) {
+      // TODO(crbug.com/925304): Pending item should be owned by
+      // NavigationContext and should never be null.
+
+      // TODO(crbug.com/676129): Reload does not create a pending item but
+      // operates on last committed item instead.
+      context->SetHasCommitted(true);
+    }
     context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
   }
 
