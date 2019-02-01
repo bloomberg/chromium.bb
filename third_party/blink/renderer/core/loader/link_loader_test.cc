@@ -161,10 +161,16 @@ constexpr PreloadTestParams kPreloadTestParams[] = {
      mojom::RequestContextType::STYLE, true},
     // TODO(yoav): It doesn't seem like the audio context is ever used. That
     // should probably be fixed (or we can consolidate audio and video).
+    //
+    // Until the preload cache is defined in terms of range requests and media
+    // fetches we can't reliably preload audio/video content and expect it to be
+    // served from the cache correctly. Until
+    // https://github.com/w3c/preload/issues/97 is resolved and implemented we
+    // need to disable these preloads.
     {"http://example.test/cat.wav", "audio", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::AUDIO, true},
+     mojom::RequestContextType::AUDIO, false},
     {"http://example.test/cat.mp4", "video", ResourceLoadPriority::kLow,
-     mojom::RequestContextType::VIDEO, true},
+     mojom::RequestContextType::VIDEO, false},
     {"http://example.test/cat.vtt", "track", ResourceLoadPriority::kLow,
      mojom::RequestContextType::TRACK, true},
     {"http://example.test/cat.woff", "font", ResourceLoadPriority::kHigh,
@@ -229,13 +235,18 @@ constexpr PreloadMimeTypeTestParams kPreloadMimeTypeTestParams[] = {
     {"http://example.test/cat.css", "style", "text/sass",
      ResourceLoadPriority::kUnresolved, mojom::RequestContextType::STYLE,
      false},
+    // Until the preload cache is defined in terms of range requests and media
+    // fetches we can't reliably preload audio/video content and expect it to be
+    // served from the cache correctly. Until
+    // https://github.com/w3c/preload/issues/97 is resolved and implemented we
+    // need to disable these preloads.
     {"http://example.test/cat.wav", "audio", "audio/wav",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::AUDIO, true},
+     ResourceLoadPriority::kLow, mojom::RequestContextType::AUDIO, false},
     {"http://example.test/cat.wav", "audio", "audio/mp57",
      ResourceLoadPriority::kUnresolved, mojom::RequestContextType::AUDIO,
      false},
     {"http://example.test/cat.webm", "video", "video/webm",
-     ResourceLoadPriority::kLow, mojom::RequestContextType::VIDEO, true},
+     ResourceLoadPriority::kLow, mojom::RequestContextType::VIDEO, false},
     {"http://example.test/cat.mp199", "video", "video/mp199",
      ResourceLoadPriority::kUnresolved, mojom::RequestContextType::VIDEO,
      false},

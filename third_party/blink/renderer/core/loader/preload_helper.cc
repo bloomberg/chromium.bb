@@ -159,6 +159,11 @@ void PreloadHelper::PreconnectIfNeeded(
   }
 }
 
+// Until the preload cache is defined in terms of range requests and media
+// fetches we can't reliably preload audio/video content and expect it to be
+// served from the cache correctly. Until
+// https://github.com/w3c/preload/issues/97 is resolved and implemented we need
+// to disable these preloads.
 base::Optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
     const String& as) {
   DCHECK_EQ(as.DeprecatedLower(), as);
@@ -168,10 +173,6 @@ base::Optional<ResourceType> PreloadHelper::GetResourceTypeFromAsAttribute(
     return ResourceType::kScript;
   if (as == "style")
     return ResourceType::kCSSStyleSheet;
-  if (as == "video")
-    return ResourceType::kVideo;
-  if (as == "audio")
-    return ResourceType::kAudio;
   if (as == "track")
     return ResourceType::kTextTrack;
   if (as == "font")
