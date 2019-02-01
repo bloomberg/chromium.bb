@@ -259,8 +259,6 @@ class PassthroughTouchEventQueueTest : public testing::Test,
                               base::TimeDelta::FromSecondsD(seconds));
   }
 
-  void ResetTouchEvent() { touch_event_ = SyntheticWebTouchEvent(); }
-
   size_t GetAndResetAckedEventCount() {
     size_t count = acked_event_count_;
     acked_event_count_ = 0;
@@ -290,10 +288,6 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   bool IsTimeoutRunning() const { return queue_->IsTimeoutRunningForTesting(); }
 
   size_t queued_event_count() const { return queue_->SizeForTesting(); }
-
-  const WebTouchEvent& latest_event() const {
-    return queue_->GetLatestEventForTesting().event;
-  }
 
   const WebTouchEvent& acked_event() const { return last_acked_event_; }
 
