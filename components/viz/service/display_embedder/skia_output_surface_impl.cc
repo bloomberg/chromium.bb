@@ -134,7 +134,8 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
         backend_format, size_.width(), size_.height(), mipmap_,
         kTopLeft_GrSurfaceOrigin /* origin */, color_type, alpha_type_,
         color_space_, PromiseTextureHelper::Fulfill,
-        PromiseTextureHelper::Release, PromiseTextureHelper::Done, this);
+        PromiseTextureHelper::Release, PromiseTextureHelper::Done, this,
+        SkDeferredDisplayListRecorder::DelayReleaseCallback::kYes);
   }
 
   static sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
@@ -267,7 +268,8 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
         yuv_color_space, formats, yuva_sizes, indices, yuva_sizes[0].width(),
         yuva_sizes[0].height(), kTopLeft_GrSurfaceOrigin,
         nullptr /* color_space */, PromiseTextureHelper::Fulfill,
-        PromiseTextureHelper::Release, PromiseTextureHelper::Done, contexts);
+        PromiseTextureHelper::Release, PromiseTextureHelper::Done, contexts,
+        SkDeferredDisplayListRecorder::DelayReleaseCallback::kYes);
     return image;
   }
 
