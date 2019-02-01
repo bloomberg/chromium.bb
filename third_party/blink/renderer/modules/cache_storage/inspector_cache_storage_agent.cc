@@ -654,8 +654,13 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   auto request = mojom::blink::FetchAPIRequest::New();
   request->url = KURL(request_url);
   request->method = String("GET");
+
+  auto multi_query_params = mojom::blink::MultiQueryParams::New();
+  multi_query_params->query_params = mojom::blink::QueryParams::New();
+  multi_query_params->cache_name = cache_name;
+
   cache_storage->Match(
-      std::move(request), mojom::blink::QueryParams::New(),
+      std::move(request), std::move(multi_query_params),
       WTF::Bind(
           [](std::unique_ptr<RequestCachedResponseCallback> callback,
              mojom::blink::MatchResultPtr result) {

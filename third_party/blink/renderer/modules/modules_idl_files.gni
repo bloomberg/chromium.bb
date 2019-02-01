@@ -500,6 +500,7 @@ modules_dictionary_idl_files =
           "bluetooth/bluetooth_le_scan_options.idl",
           "bluetooth/request_device_options.idl",
           "cache_storage/cache_query_options.idl",
+          "cache_storage/multi_cache_query_options.idl",
           "canvas/canvas2d/canvas_rendering_context_2d_settings.idl",
           "canvas/canvas2d/hit_region_options.idl",
           "canvas/htmlcanvas/canvas_context_creation_attributes_module.idl",

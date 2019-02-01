@@ -662,7 +662,6 @@ mojom::blink::QueryParamsPtr Cache::ToQueryParams(
   query_params->ignore_search = options->ignoreSearch();
   query_params->ignore_method = options->ignoreMethod();
   query_params->ignore_vary = options->ignoreVary();
-  query_params->cache_name = options->cacheName();
   return query_params;
 }
 

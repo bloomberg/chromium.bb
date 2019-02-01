@@ -39,9 +39,14 @@ struct CacheStorageVerboseError {
 
 // Controls how requests are matched in the Cache API.
 struct QueryParams {
-  bool ignore_search;
-  bool ignore_method;
-  bool ignore_vary;
+  bool ignore_search = false;
+  bool ignore_method = false;
+  bool ignore_vary = false;
+};
+
+// Controls how requests are matched in the CacheStorage API.
+struct MultiQueryParams {
+  QueryParams query_params;
   mojo_base.mojom.String16? cache_name;
 };
 
@@ -135,7 +140,7 @@ interface CacheStorage {
   // Returns the first cached response that matches |request| and
   // |match_params|. It can search on all caches if |cache_name| isn't provided
   // on |match_params|.
-  Match(blink.mojom.FetchAPIRequest request, QueryParams match_params)
+  Match(blink.mojom.FetchAPIRequest request, MultiQueryParams match_params)
       => (MatchResult result);
 
   // Opens and returns a mojo interface to a cache, it creates if doesn't exist.
