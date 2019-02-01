@@ -840,10 +840,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainExit(
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingStarted(
     BlockingType blocking_type) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
-  // Blocking calls made outside of tasks should not influence the max tasks.
-  if (!worker_only().is_running_task)
-    return;
+  DCHECK(worker_only().is_running_task);
 
   switch (blocking_type) {
     case BlockingType::MAY_BLOCK:
@@ -858,6 +855,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingStarted(
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     BlockingTypeUpgraded() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  DCHECK(worker_only().is_running_task);
 
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
@@ -882,10 +880,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingEnded() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
-  // Ignore blocking calls made outside of tasks.
-  if (!worker_only().is_running_task)
-    return;
+  DCHECK(worker_only().is_running_task);
 
   AutoSchedulerLock auto_lock(outer_->lock_);
   if (incremented_max_tasks_since_blocked_) {
@@ -904,6 +899,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingEnded() {
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  DCHECK(worker_only().is_running_task);
 
   bool must_schedule_adjust_max_tasks = false;
   {
@@ -925,6 +921,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  DCHECK(worker_only().is_running_task);
 
   bool must_schedule_adjust_max_tasks = false;
   SchedulerWorkerActionExecutor executor(outer_);
