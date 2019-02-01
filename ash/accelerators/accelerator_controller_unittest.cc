@@ -1001,6 +1001,43 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   controller->FlushMojoForTesting();
   EXPECT_FALSE(controller->IsCapsLockEnabled());
   controller->UpdateCapsLockState(false);
+  generator->ReleaseKey(ui::VKEY_M, ui::EF_NONE);
+  generator->ReleaseKey(ui::VKEY_LWIN, ui::EF_ALT_DOWN);
+
+  // 6. Toggle CapsLock shortcut should still work after the partial screenshot
+  // shortcut is used. (https://crbug.com/920030)
+  {
+    TestScreenshotDelegate* delegate = GetScreenshotDelegate();
+    delegate->set_can_take_screenshot(true);
+
+    EXPECT_EQ(0, delegate->handle_take_partial_screenshot_count());
+
+    // Press Ctrl+Shift+F5 then release to enter the partial screenshot session.
+    const ui::Accelerator press_partial_screenshot_shortcut(
+        ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+    EXPECT_TRUE(ProcessInController(press_partial_screenshot_shortcut));
+    const ui::Accelerator release_partial_screenshot_shortcut =
+        CreateReleaseAccelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
+                                 ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+    EXPECT_FALSE(ProcessInController(release_partial_screenshot_shortcut));
+
+    // Press mouse left button, move mouse and release mouse button. Then
+    // the partial screenshot is taken.
+    generator->MoveMouseTo(0, 0);
+    generator->PressLeftButton();
+    generator->MoveMouseTo(10, 10);
+    generator->ReleaseLeftButton();
+    EXPECT_EQ(1, delegate->handle_take_partial_screenshot_count());
+
+    // Press Search, Press Alt, Release Search, Release Alt. CapsLock should be
+    // triggered.
+    EXPECT_FALSE(ProcessInController(press_search_then_alt));
+    EXPECT_TRUE(ProcessInController(release_search_before_alt));
+    controller->FlushMojoForTesting();
+    EXPECT_EQ(5, client.set_caps_lock_count_);
+    EXPECT_TRUE(controller->IsCapsLockEnabled());
+    controller->UpdateCapsLockState(false);
+  }
 }
 
 class PreferredReservedAcceleratorsTest : public AshTestBase {

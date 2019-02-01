@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screenshot_delegate.h"
@@ -460,6 +461,19 @@ void ScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
   // they should be able to continue manipulating the screen.
   if (!pen_events_only_)
     event->StopPropagation();
+
+  // Key event is blocked. So have to record current accelerator here.
+  if (event->stopped_propagation()) {
+    // Filter accelerators in the same way with AcceleratorFilter::OnKeyEvent.
+    if (event->is_char() || !event->target())
+      return;
+
+    ui::Accelerator accelerator(*event);
+    ash::Shell::Get()
+        ->accelerator_controller()
+        ->accelerator_history()
+        ->StoreCurrentAccelerator(accelerator);
+  }
 }
 
 void ScreenshotController::OnMouseEvent(ui::MouseEvent* event) {
