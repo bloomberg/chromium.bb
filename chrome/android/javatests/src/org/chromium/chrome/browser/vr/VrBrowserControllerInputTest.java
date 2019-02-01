@@ -11,6 +11,8 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.graphics.PointF;
+import android.os.Build;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -187,7 +189,7 @@ public class VrBrowserControllerInputTest {
      * scroll of the same speed scrolls further.
      */
     @Test
-    @MediumTest
+    @LargeTest
     public void testControllerFlingScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
@@ -203,82 +205,117 @@ public class VrBrowserControllerInputTest {
             return coord.getScrollXPixInt();
         };
 
-        // Test fling scrolling down.
-        // Perform a fast non-fling scroll and record how far it causes the page to scroll.
-        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.DOWN);
-        waitForScrollQuiescence(getYCoord);
-        final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
-        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
-        // Check that we scroll further than we did with the non-fling scroll. This should be a very
-        // violent fling, so we expect the fling to go much further than the non-fling case.
-        // Choose 3 times as far since it's high enough to demonstrate that the fling is actually
-        // working properly, but not high enough to run into flakiness issues.
-        final int diffMultiplier = 3;
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> {
-                    return coord.getScrollYPixInt() - endScrollPoint.get()
-                            > diffMultiplier * endScrollPoint.get();
-                },
-                "Controller failed to fling scroll down", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
+        // Scrolling can be inconsistent on older/slower devices. So, try each direction up to
+        // 3 times to try to work around flakiness. Only enable this on problematic devices (
+        // currently first generation Pixel devices).
+        int numAttempts = 1;
+        if (Build.DEVICE.equals("marlin") || Build.DEVICE.equals("sailfish")) {
+            numAttempts = 3;
+        }
+        final int diffMultiplier = 2;
 
-        // Scroll the page all the way to the bottom so we can test the fling up.
-        waitForScrollQuiescence(getYCoord);
-        mVrBrowserTestFramework.runJavaScriptOrFail(
-                "window.scrollTo(0, document.documentElement.scrollHeight)", POLL_TIMEOUT_SHORT_MS);
-        waitForScrollQuiescence(getYCoord);
-        final AtomicInteger startScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
+        int startPoint;
+        int nonFlingEndpoint;
+        int nonFlingDistance;
+        boolean succeeded = false;
+
+        // Test fling scrolling down.
+        for (int i = 0; i < numAttempts; ++i) {
+            startPoint = coord.getScrollYPixInt();
+            // Perform a fast non-fling scroll and record how far it causes the page to scroll.
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.DOWN);
+            waitForScrollQuiescence(getYCoord);
+            nonFlingEndpoint = coord.getScrollYPixInt();
+            nonFlingDistance = nonFlingEndpoint - startPoint;
+            // Perform a fling scroll and check that it goes sufficiently further than the non-fling
+            // scroll.
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
+            waitForScrollQuiescence(getYCoord);
+            if (coord.getScrollYPixInt() - nonFlingEndpoint >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+            // Reset to the top of the page to try again.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getYCoord);
+        }
+        Assert.assertTrue(
+                "Fling scroll down was unable to go sufficiently further than non-fling scroll",
+                succeeded);
+        succeeded = false;
 
         // Test fling scrolling up.
-        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.UP);
-        waitForScrollQuiescence(getYCoord);
-        endScrollPoint.set(coord.getScrollYPixInt());
-        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.UP);
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> {
-                    return endScrollPoint.get() - coord.getScrollYPixInt()
-                            > diffMultiplier * (startScrollPoint.get() - endScrollPoint.get());
-                },
-                "Controller failed  to fling scroll up", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
+        for (int i = 0; i < numAttempts; ++i) {
+            // Ensure we're at the bottom of the page.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(0, document.documentElement.scrollHeight)",
+                    POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getYCoord);
+            startPoint = coord.getScrollYPixInt();
+            // Perform the actual test.
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.UP);
+            waitForScrollQuiescence(getYCoord);
+            nonFlingEndpoint = coord.getScrollYPixInt();
+            nonFlingDistance = startPoint - nonFlingEndpoint;
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.UP);
+            waitForScrollQuiescence(getYCoord);
+            if (nonFlingEndpoint - coord.getScrollYPixInt() >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+        }
+        Assert.assertTrue(
+                "Fling scroll up was unable to go sufficiently further than non-fling scroll",
+                succeeded);
+        succeeded = false;
 
         // Test fling scrolling right.
-        waitForScrollQuiescence(getYCoord);
-        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.RIGHT);
-        waitForScrollQuiescence(getXCoord);
-        endScrollPoint.set(coord.getScrollXPixInt());
-        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.RIGHT);
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> {
-                    return coord.getScrollXPixInt() - endScrollPoint.get()
-                            > diffMultiplier * endScrollPoint.get();
-                },
-                "Controller failed to fling scroll right", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
-
-        // Scroll the page all the way to the right.
-        waitForScrollQuiescence(getYCoord);
-        mVrBrowserTestFramework.runJavaScriptOrFail(
-                "window.scrollTo(document.documentElement.scrollWidth, 0)", POLL_TIMEOUT_SHORT_MS);
-        waitForScrollQuiescence(getXCoord);
-        startScrollPoint.set(coord.getScrollXPixInt());
+        for (int i = 0; i < numAttempts; ++i) {
+            startPoint = coord.getScrollXPixInt();
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.RIGHT);
+            waitForScrollQuiescence(getXCoord);
+            nonFlingEndpoint = coord.getScrollXPixInt();
+            nonFlingDistance = nonFlingEndpoint - startPoint;
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.RIGHT);
+            waitForScrollQuiescence(getXCoord);
+            if (coord.getScrollXPixInt() - nonFlingEndpoint >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+            // Reset to the left side to try again
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getXCoord);
+        }
+        Assert.assertTrue(
+                "Fling scroll right was unable to go sufficiently further than non-fling scroll",
+                succeeded);
+        succeeded = false;
 
         // Test fling scrolling left.
-        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.LEFT);
-        waitForScrollQuiescence(getXCoord);
-        endScrollPoint.set(coord.getScrollXPixInt());
-        NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.LEFT);
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> {
-                    return endScrollPoint.get() - coord.getScrollXPixInt()
-                            > diffMultiplier * (startScrollPoint.get() - endScrollPoint.get());
-                },
-                "Controller failed to fling scroll left", POLL_TIMEOUT_SHORT_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
+        for (int i = 0; i < numAttempts; ++i) {
+            // Ensure we're on the right side of the page.
+            mVrBrowserTestFramework.runJavaScriptOrFail(
+                    "window.scrollTo(document.documentElement.scrollWidth, 0)",
+                    POLL_TIMEOUT_SHORT_MS);
+            waitForScrollQuiescence(getXCoord);
+            startPoint = coord.getScrollXPixInt();
+            // Perform the actual test.
+            NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.LEFT);
+            waitForScrollQuiescence(getXCoord);
+            nonFlingEndpoint = coord.getScrollXPixInt();
+            nonFlingDistance = startPoint - nonFlingEndpoint;
+            NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.LEFT);
+            waitForScrollQuiescence(getXCoord);
+            if (nonFlingEndpoint - coord.getScrollXPixInt() >= diffMultiplier * nonFlingDistance) {
+                succeeded = true;
+                break;
+            }
+        }
+        Assert.assertTrue(
+                "Fling scroll left was unable to go sufficiently further than non-fling scroll",
+                succeeded);
     }
 
     /**
