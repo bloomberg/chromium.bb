@@ -2517,6 +2517,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
 }
 
 void WebLocalFrameImpl::OnPortalActivated() {
+  GetFrame()->GetPage()->SetInsidePortal(false);
   PortalActivateEvent* event = PortalActivateEvent::Create();
   GetFrame()->DomWindow()->DispatchEvent(*event);
 }
