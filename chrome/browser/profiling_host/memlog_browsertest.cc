@@ -84,13 +84,7 @@ class MemlogBrowserTest : public InProcessBrowserTest,
 
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
-// TODO(crbug.com/921036): Test is flaky.
-#if defined(OS_LINUX)
-#define MAYBE_EndToEnd DISABLED_EndToEnd
-#else
-#define MAYBE_EndToEnd EndToEnd
-#endif
-IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, MAYBE_EndToEnd) {
+IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   LOG(INFO) << "Memlog mode: " << static_cast<int>(GetParam().mode);
   LOG(INFO) << "Memlog stack mode: " << static_cast<int>(GetParam().stack_mode);
   LOG(INFO) << "Stream samples: " << GetParam().stream_samples;
@@ -126,60 +120,37 @@ std::vector<TestParam> GetParams() {
   stack_modes.push_back(mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES);
   stack_modes.push_back(mojom::StackMode::PSEUDO);
 
-  for (const auto& mode : dynamic_start_modes) {
-    for (const auto& stack_mode : stack_modes) {
-      params.push_back({mode, stack_mode, true /* stream_samples */,
-                        false /* start_profiling_with_command_line_flag */,
-                        false /* should_sample */,
-                        false /* sample_everything*/});
+  for (bool stream_samples : (bool[]){true, false}) {
+    for (const auto& mode : dynamic_start_modes) {
+      for (const auto& stack_mode : stack_modes) {
+        params.push_back({mode, stack_mode, stream_samples,
+                          false /* start_profiling_with_command_line_flag */,
+                          true /* should_sample */,
+                          false /* sample_everything*/});
+      }
     }
-  }
 
 // For unknown reasons, renderer profiling has become flaky on ChromeOS. This is
 // likely happening because the renderers are never being given the signal to
 // start profiling. It's unclear why this happens. https://crbug.com/843843.
 // https://crbug.com/843467.
 #if !defined(OS_CHROMEOS)
-  // Non-browser processes must be profiled with a command line flag, since
-  // otherwise, profiling will start after the relevant processes have been
-  // created, thus that process will be not be profiled.
-  std::vector<Mode> command_line_start_modes;
-  command_line_start_modes.push_back(Mode::kAll);
-  command_line_start_modes.push_back(Mode::kAllRenderers);
-  for (const auto& mode : command_line_start_modes) {
-    for (const auto& stack_mode : stack_modes) {
-      params.push_back({mode, stack_mode, true /* stream_samples */,
-                        true /* start_profiling_with_command_line_flag */,
-                        false /* should_sample */,
-                        false /* sample_everything*/});
+    // Non-browser processes must be profiled with a command line flag, since
+    // otherwise, profiling will start after the relevant processes have been
+    // created, thus that process will be not be profiled.
+    std::vector<Mode> command_line_start_modes;
+    command_line_start_modes.push_back(Mode::kAll);
+    command_line_start_modes.push_back(Mode::kAllRenderers);
+    for (const auto& mode : command_line_start_modes) {
+      for (const auto& stack_mode : stack_modes) {
+        params.push_back({mode, stack_mode, stream_samples,
+                          true /* start_profiling_with_command_line_flag */,
+                          true /* should_sample */,
+                          false /* sample_everything*/});
+      }
     }
-  }
 #endif  // defined(OS_CHROMEOS)
-
-  // Test sampling all allocations.
-  params.push_back({Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
-                    false /* stream_samples */,
-                    false /* start_profiling_with_command_line_flag */,
-                    true /* should_sample */, true /* sample_everything*/});
-
-  // Test sampling some allocations.
-  params.push_back({Mode::kBrowser, mojom::StackMode::PSEUDO,
-                    false /* stream_samples */,
-                    false /* start_profiling_with_command_line_flag */,
-                    true /* should_sample */, false /* sample_everything*/});
-
-  // Test thread names for native profiling.
-  params.push_back({Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
-                    false /* stream_samples */,
-                    false /* start_profiling_with_command_line_flag */});
-
-  // Profile all utility processes and the browser process. The main goal is
-  // to check that there is no deadlock in the profiling process.
-  params.push_back({Mode::kUtilityAndBrowser,
-                    mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
-                    false /* stream_samples */,
-                    false /* start_profiling_with_command_line_flag */,
-                    true /* should_sample */, false /* sample_everything*/});
+  }
 
   return params;
 }
