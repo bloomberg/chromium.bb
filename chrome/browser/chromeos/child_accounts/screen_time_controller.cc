@@ -202,8 +202,10 @@ void ScreenTimeController::UpdateTimeLimitsMessage(
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
       account_id, !visible,
       visible ? next_unlock_time : base::Optional<base::Time>());
-  if (base::FeatureList::IsEnabled(features::kParentAccessCode))
-    LoginScreenClient::Get()->login_screen()->SetShowParentAccess(visible);
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
+    LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(
+        visible);
+  }
 }
 
 void ScreenTimeController::OnPolicyChanged() {

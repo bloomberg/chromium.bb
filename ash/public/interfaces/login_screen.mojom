@@ -219,7 +219,7 @@ interface LoginScreen {
   SetShowGuestButtonInOobe(bool show);
 
   // Sets whether parent access button can be shown on the login shelf.
-  SetShowParentAccess(bool show);
+  SetShowParentAccessButton(bool show);
 
   // Transitions focus to the shelf area. If |reverse|, focuses the status area.
   FocusLoginShelf(bool reverse);
