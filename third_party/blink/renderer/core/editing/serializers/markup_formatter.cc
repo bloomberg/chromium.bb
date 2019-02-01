@@ -308,14 +308,9 @@ void MarkupFormatter::AppendProcessingInstruction(StringBuilder& result,
 }
 
 void MarkupFormatter::AppendOpenTag(StringBuilder& result,
-                                    const Element& element,
-                                    Namespaces* namespaces) {
+                                    const Element& element) {
   result.Append('<');
   result.Append(element.TagQName().ToString());
-  if (!SerializeAsHTMLDocument(element) && namespaces &&
-      ShouldAddNamespaceElement(element, *namespaces))
-    AppendNamespace(result, element.prefix(), element.namespaceURI(),
-                    *namespaces);
 }
 
 void MarkupFormatter::AppendCloseTag(StringBuilder& result,
@@ -426,21 +421,6 @@ void MarkupFormatter::AppendCDATASection(StringBuilder& result,
   result.Append("<![CDATA[");
   result.Append(section);
   result.Append("]]>");
-}
-
-bool MarkupFormatter::ShouldAddNamespaceElement(const Element& element,
-                                                Namespaces& namespaces) const {
-  // Don't add namespace attribute if it is already defined for this elem.
-  const AtomicString& prefix = element.prefix();
-  if (prefix.IsEmpty()) {
-    if (element.hasAttribute(g_xmlns_atom)) {
-      namespaces.Set(g_empty_atom, element.namespaceURI());
-      return false;
-    }
-    return true;
-  }
-
-  return !element.hasAttribute(WTF::g_xmlns_with_colon + prefix);
 }
 
 bool MarkupFormatter::ShouldAddNamespaceAttribute(

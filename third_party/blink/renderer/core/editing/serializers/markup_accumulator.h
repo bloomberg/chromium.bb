@@ -84,6 +84,8 @@ class MarkupAccumulator {
   virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
 
  private:
+  bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
+
   MarkupFormatter formatter_;
   StringBuilder markup_;
 

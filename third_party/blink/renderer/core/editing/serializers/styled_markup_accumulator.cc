@@ -139,7 +139,7 @@ void StyledMarkupAccumulator::AppendElementWithInlineStyle(
     const Element& element,
     EditingStyle* style) {
   const bool document_is_html = element.GetDocument().IsHTMLDocument();
-  formatter_.AppendOpenTag(out, element, nullptr);
+  formatter_.AppendOpenTag(out, element);
   AttributeCollection attributes = element.Attributes();
   for (const auto& attribute : attributes) {
     // We'll handle the style attribute separately, below.
@@ -162,7 +162,7 @@ void StyledMarkupAccumulator::AppendElement(const Element& element) {
 
 void StyledMarkupAccumulator::AppendElement(StringBuilder& out,
                                             const Element& element) {
-  formatter_.AppendOpenTag(out, element, nullptr);
+  formatter_.AppendOpenTag(out, element);
   AttributeCollection attributes = element.Attributes();
   for (const auto& attribute : attributes)
     formatter_.AppendAttribute(out, element, attribute, nullptr);
