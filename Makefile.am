@@ -10,7 +10,7 @@ libweston_module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
-AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
+AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install --enable-autotools
 
 EXTRA_DIST = weston.ini.in ivi-shell/weston.ini.in
 

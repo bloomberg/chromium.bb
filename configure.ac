@@ -84,6 +84,21 @@ AC_PROG_SED
 LT_PREREQ([2.2])
 LT_INIT([disable-static])
 
+AC_ARG_ENABLE(autotools,
+	      AS_HELP_STRING([--enable-autotools],
+			     [Allow building with autotools]),,
+	      enable_autotools=no)
+if test "x$enable_autotools" = "xno"; then
+	AC_ERROR([
+	*** Autotools support will be removed after the 6.0.0 release ***
+
+	Please, try the Meson based build and report any problems you might have
+	with it. Instructions and references can be found in README.md.
+	If you still want to continue building with autotools,
+	use --enable-autotools configure option.
+	])
+fi
+
 AC_ARG_VAR([WESTON_NATIVE_BACKEND],
            [Set the native backend to use, if Weston is not running under Wayland nor X11. @<:@default=drm-backend.so@:>@])
 AC_ARG_VAR([WESTON_SHELL_CLIENT],
