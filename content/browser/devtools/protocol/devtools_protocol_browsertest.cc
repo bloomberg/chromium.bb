@@ -572,9 +572,6 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
   PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 2.0, 1.);
   PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 0.5, 1.);
 
-  // Ensure that content outside the emulated frame is painted, too.
-  PlaceAndCaptureBox(kFrameSize, gfx::Size(10, 8192), 1.0, 1.);
-
   // Check non-1 device scale factor.
   PlaceAndCaptureBox(kFrameSize, gfx::Size(100, 200), 1.0, 2.);
   // Ensure not emulating device scale factor works.
