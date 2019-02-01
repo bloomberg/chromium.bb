@@ -9160,7 +9160,6 @@ static INLINE void obmc_check_identical_mv(MACROBLOCKD *xd, int rel_mi_col,
       nb_mi->interp_filters != current_mi->interp_filters) {
     ctxt->mv_field_check_result = 0;
   }
-  return;
 }
 
 // Check if the neighbors' motions used by obmc have same parameters as for
