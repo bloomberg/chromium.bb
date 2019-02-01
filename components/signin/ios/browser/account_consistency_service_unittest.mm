@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -153,6 +154,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
     ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(true);
     AccountConsistencyService::RegisterPrefs(prefs_.registry());
     AccountTrackerService::RegisterPrefs(prefs_.registry());
+    AccountFetcherService::RegisterPrefs(prefs_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(prefs_.registry());
     content_settings::CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
@@ -163,12 +165,16 @@ class AccountConsistencyServiceTest : public PlatformTest {
     signin_client_.reset(new TestSigninClient(&prefs_));
     account_tracker_service_.Initialize(&prefs_, base::FilePath());
     token_service_.reset(new FakeProfileOAuth2TokenService(&prefs_));
+    account_fetcher_service_.Initialize(
+        signin_client_.get(), token_service_.get(), &account_tracker_service_,
+        std::make_unique<TestImageDecoder>());
     signin_manager_.reset(
         new FakeSigninManager(signin_client_.get(), token_service_.get(),
                               &account_tracker_service_, nullptr));
     signin_manager_->Initialize(nullptr);
     identity_test_env_.reset(new identity::IdentityTestEnvironment(
-        &account_tracker_service_, token_service_.get(), signin_manager_.get(),
+        &account_tracker_service_, &account_fetcher_service_,
+        token_service_.get(), signin_manager_.get(),
         gaia_cookie_manager_service_.get()));
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* incognito_profile */, false /* guest_profile */,
@@ -187,6 +193,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
     account_consistency_service_->Shutdown();
     settings_map_->ShutdownOnUIThread();
     ActiveStateManager::FromBrowserState(&browser_state_)->SetActive(false);
+    account_fetcher_service_.Shutdown();
+    account_tracker_service_.Shutdown();
     identity_test_env_.reset();
     PlatformTest::TearDown();
   }
@@ -269,6 +277,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   // thread.
   web::TestWebThreadBundle thread_bundle_;
   AccountTrackerService account_tracker_service_;
+  FakeAccountFetcherService account_fetcher_service_;
   web::TestBrowserState browser_state_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestWebState web_state_;

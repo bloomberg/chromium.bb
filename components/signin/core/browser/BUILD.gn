@@ -289,6 +289,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/content_settings/core/browser",
     "//components/image_fetcher/core",
+    "//components/image_fetcher/core:test_support",
     "//components/os_crypt:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
