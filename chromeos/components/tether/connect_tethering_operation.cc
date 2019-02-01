@@ -148,7 +148,7 @@ void ConnectTetheringOperation::OnMessageReceived(
     }
   } else {
     PA_LOG(WARNING)
-        << "Received ConnectTetheringResponse from unexpected device with ID "
+        << "Received failing ConnectTetheringResponse from device with ID "
         << remote_device.GetTruncatedDeviceIdForLogs() << " and "
         << "response_code == " << response->response_code() << ".";
     error_code_to_return_ = ConnectTetheringResponseCodeToHostResponseErrorCode(
