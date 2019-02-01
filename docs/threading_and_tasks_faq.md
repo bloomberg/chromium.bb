@@ -37,6 +37,22 @@ As explained in [Prefer Sequences to Threads](threading_and_tasks.md#Prefer-Sequ
 tasks should generally run on a sequence in a thread pool rather than on a
 dedicated thread.
 
+### Does release of a TaskRunner block on posted tasks?
+
+Releasing a TaskRunner reference does not wait for tasks previously posted to
+the TaskRunner to complete their execution. Tasks can run normally after the
+last client reference to the TaskRunner to which they were posted has been
+released and it can even be kept alive indefinitely through
+`SequencedTaskRunnerHandle::Get()` or `ThreadTaskRunnerHandle::Get()`.
+
+If you want some state to be deleted only after all tasks currently posted to a
+SequencedTaskRunner have run, store that state in a helper object and schedule
+deletion of that helper object on the SequencedTaskRunner using
+`base::OnTaskRunnerDeleter` after posting the last task. See
+[example CL](https://crrev.com/c/1416271/15/chrome/browser/performance_monitor/system_monitor.h).
+But be aware that any task posting back to its "current" sequence can enqueue
+itself after that "last" task.
+
 ## Making blocking calls (which do not use the CPU)
 
 ### How to make a blocking call without preventing other tasks from being scheduled?
