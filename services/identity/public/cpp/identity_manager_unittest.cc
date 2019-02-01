@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "services/identity/public/cpp/identity_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -270,6 +272,11 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return error_from_add_account_to_cookie_completed_callback_;
   }
 
+  const GoogleServiceAuthError&
+  error_from_set_accounts_in_cookie_completed_callback() const {
+    return error_from_set_accounts_in_cookie_completed_callback_;
+  }
+
   const GoogleServiceAuthError& error_from_signin_failed_callback() const {
     return google_signin_failed_error_;
   }
@@ -351,6 +358,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     account_from_add_account_to_cookie_completed_callback_ = account_id;
     error_from_add_account_to_cookie_completed_callback_ = error;
   }
+  void OnSetAccountsInCookieCompleted(
+      const GoogleServiceAuthError& error) override {
+    error_from_set_accounts_in_cookie_completed_callback_ = error;
+  }
 
   void OnStartBatchOfRefreshTokenStateChanges() override {
     EXPECT_FALSE(is_inside_batch_);
@@ -395,6 +406,7 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountsInCookieJarInfo accounts_info_from_cookie_change_callback_;
   std::string account_from_add_account_to_cookie_completed_callback_;
   GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback_;
+  GoogleServiceAuthError error_from_set_accounts_in_cookie_completed_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
   bool is_inside_batch_ = false;
   bool was_called_account_removed_with_info_callback_ = false;
@@ -574,6 +586,11 @@ class IdentityManagerTest : public testing::Test {
       GaiaAuthConsumer* consumer,
       const GoogleServiceAuthError& error) {
     consumer->OnMergeSessionFailure(error);
+  }
+
+  void SimulateOAuthMultiloginFinished(GaiaAuthConsumer* consumer,
+                                       const OAuthMultiloginResult& result) {
+    consumer->OnOAuthMultiloginFinished(result);
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -2072,6 +2089,67 @@ TEST_F(IdentityManagerTest, CallbackSentOnFailureAdditionOfAccountToCookie) {
             kTestAccountId);
   EXPECT_EQ(identity_manager_observer()
                 ->error_from_add_account_to_cookie_completed_callback(),
+            error);
+}
+
+TEST_F(IdentityManagerTest,
+       CallbackSentOnSetAccountsInCookieCompleted_Success) {
+  const char kTestAccountId[] = "account_id";
+  const char kTestAccountId2[] = "account_id2";
+  const std::vector<std::string> account_ids = {kTestAccountId,
+                                                kTestAccountId2};
+
+  // Needed to insert request in the queue.
+  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
+                                                     gaia::GaiaSource::kChrome);
+
+  // Sample success cookie response.
+  std::string data =
+      R"()]}'
+      {
+        "status": "OK",
+        "cookies":[
+        {
+            "name":"SID",
+            "value":"vAlUe1",
+            "domain":".google.ru",
+            "path":"/",
+            "isSecure":true,
+            "isHttpOnly":false,
+            "priority":"HIGH",
+            "maxAge":63070000
+          }
+        ]
+      }
+    )";
+  OAuthMultiloginResult result(data);
+
+  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+
+  EXPECT_EQ(identity_manager_observer()
+                ->error_from_set_accounts_in_cookie_completed_callback(),
+            GoogleServiceAuthError::AuthErrorNone());
+}
+
+TEST_F(IdentityManagerTest,
+       CallbackSentOnSetAccountsInCookieCompleted_Failure) {
+  const char kTestAccountId[] = "account_id";
+  const char kTestAccountId2[] = "account_id2";
+  const std::vector<std::string> account_ids = {kTestAccountId,
+                                                kTestAccountId2};
+
+  // Needed to insert request in the queue.
+  gaia_cookie_manager_service()->SetAccountsInCookie(account_ids,
+                                                     gaia::GaiaSource::kChrome);
+
+  // Sample an erroneous response.
+  GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
+  OAuthMultiloginResult result(error);
+
+  SimulateOAuthMultiloginFinished(gaia_cookie_manager_service(), result);
+
+  EXPECT_EQ(identity_manager_observer()
+                ->error_from_set_accounts_in_cookie_completed_callback(),
             error);
 }
 
