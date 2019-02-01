@@ -28,9 +28,10 @@ import "url/mojom/url.mojom";
 // Parameters to launch a service worker. This is passed from the browser to the
 // renderer at mojom::EmbeddedWorkerInstanceClient::StartWorker().
 struct EmbeddedWorkerStartParams {
-  // The id of the embedded worker. This changes when the service worker is
-  // stopped and restarted.
+  // DEPRECATED: This is only used in unit tests.
+  // TODO(https://crbug.com/927651): Remove this.
   int32 embedded_worker_id;
+
   // The id of the service worker being started. This remains fixed even if the
   // worker is stopped and restarted, or even if the browser restarts.
   int64 service_worker_version_id;

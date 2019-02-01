@@ -64,8 +64,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       params->renderer_preferences->enable_referrers);
 
   auto client = std::make_unique<ServiceWorkerContextClient>(
-      params->embedded_worker_id, params->service_worker_version_id,
-      params->scope, params->script_url,
+      params->service_worker_version_id, params->scope, params->script_url,
       !params->installed_scripts_info.is_null(),
       std::move(params->renderer_preferences),
       std::move(params->service_worker_request),
