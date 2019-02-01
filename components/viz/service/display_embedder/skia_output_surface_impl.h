@@ -22,6 +22,15 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace gl {
+class GLSurface;
+}
+
+namespace gpu {
+class CommandBufferTaskExecutor;
+class SharedContextState;
+}  // namespace gpu
+
 namespace viz {
 
 class GpuServiceImpl;
@@ -44,6 +53,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                         gpu::SurfaceHandle surface_handle,
                         SyntheticBeginFrameSource* synthetic_begin_frame_source,
                         bool show_overdraw_feedback);
+  SkiaOutputSurfaceImpl(
+      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      scoped_refptr<gl::GLSurface> gl_surface,
+      scoped_refptr<gpu::SharedContextState> shared_context_state);
   ~SkiaOutputSurfaceImpl() override;
 
   // OutputSurface implementation:
@@ -121,7 +134,15 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                        std::vector<gpu::SyncToken> sync_tokens);
 
   uint64_t sync_fence_release_ = 0;
+
   GpuServiceImpl* const gpu_service_;
+
+  // Stuffs for running with |task_executor_| instead of |gpu_service_|.
+  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  scoped_refptr<gl::GLSurface> gl_surface_;
+  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+  std::unique_ptr<gpu::CommandBufferTaskExecutor::Sequence> sequence_;
+
   const bool is_using_vulkan_;
   const gpu::SurfaceHandle surface_handle_;
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;

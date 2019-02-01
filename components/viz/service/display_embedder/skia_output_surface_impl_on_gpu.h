@@ -43,6 +43,7 @@ class GLSurface;
 }
 
 namespace gpu {
+class CommandBufferTaskExecutor;
 class SyncPointClientState;
 class SharedImageRepresentationSkia;
 
@@ -89,6 +90,15 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
+  SkiaOutputSurfaceImplOnGpu(
+      gpu::CommandBufferTaskExecutor* task_executor,
+      scoped_refptr<gl::GLSurface> gl_surface,
+      scoped_refptr<gpu::SharedContextState> shared_context_state,
+      gpu::SequenceId sequence_id,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+      const BufferPresentedCallback& buffer_presented_callback,
+      const ContextLostCallback& context_lost_callback);
+
   ~SkiaOutputSurfaceImplOnGpu() override;
 
   gpu::CommandBufferId command_buffer_id() const {
@@ -111,12 +121,13 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
+      std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release);
   void SwapBuffers(OutputSurfaceFrame frame);
-  void FinishPaintRenderPass(
-      RenderPassId id,
-      std::unique_ptr<SkDeferredDisplayList> ddl,
-      uint64_t sync_fence_release);
+  void FinishPaintRenderPass(RenderPassId id,
+                             std::unique_ptr<SkDeferredDisplayList> ddl,
+                             std::vector<gpu::SyncToken> sync_tokens,
+                             uint64_t sync_fence_release);
   void RemoveRenderPassResource(std::vector<RenderPassId> ids);
   void CopyOutput(RenderPassId id,
                   const gfx::Rect& copy_rect,
@@ -159,7 +170,11 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
 
-  void InitializeForGL(GpuServiceImpl* gpu_service);
+  void InitializeForGL();
+  void InitializeForGLWithGpuService(GpuServiceImpl* gpu_service);
+  void InitializeForGLWithTaskExecutor(
+      gpu::CommandBufferTaskExecutor* task_executor,
+      scoped_refptr<gl::GLSurface> gl_surface);
   void InitializeForVulkan(GpuServiceImpl* gpu_service);
 
   void BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base);
@@ -167,11 +182,16 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   // Generage the next swap ID and push it to our pending swap ID queues.
   void OnSwapBuffers();
 
+  void CreateSkSurfaceForGL();
   void CreateSkSurfaceForVulkan();
 
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
   bool MakeCurrent();
+
+  void PullTextureUpdates(std::vector<gpu::SyncToken> sync_token);
+
+  void ReleaseFenceSyncAndPushTextureUpdates(uint64_t sync_fence_release);
 
   GrContext* gr_context() { return context_state_->gr_context(); }
 
@@ -199,7 +219,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 #endif
 
   gpu::GpuPreferences gpu_preferences_;
+  gfx::Size size_;
+  gfx::ColorSpace color_space_;
   scoped_refptr<gl::GLSurface> gl_surface_;
+  unsigned int backing_framebuffer_object_ = 0;
   sk_sp<SkSurface> sk_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;

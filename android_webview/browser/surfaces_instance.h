@@ -23,17 +23,18 @@ class Size;
 class Transform;
 }
 
+namespace gpu {
+class SharedContextState;
+}
+
 namespace viz {
 class BeginFrameSource;
 class CompositorFrameSinkSupport;
 class Display;
 class FrameSinkManagerImpl;
-class ParentLocalSurfaceIdAllocator;
 }  // namespace viz
 
 namespace android_webview {
-
-class ParentOutputSurface;
 
 class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
                          public viz::DisplayClient,
@@ -102,10 +103,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   std::vector<viz::SurfaceId> child_ids_;
   viz::FrameTokenGenerator next_frame_token_;
 
-  // This is owned by |display_|.
-  ParentOutputSurface* output_surface_;
-
   gfx::Size surface_size_;
+
+  scoped_refptr<gpu::SharedContextState> shared_context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);
 };
