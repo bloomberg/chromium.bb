@@ -364,6 +364,20 @@
         "description": "Called when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
         "parameters": [],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "onAnnounceForAccessibility",
+        "type": "function",
+        "description": "Called when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
+        "parameters": [
+          {
+            "name": "announceText",
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Text to be announced."
+          }
+        ],
+        "platforms": ["chromeos"]
       }
     ]
   }

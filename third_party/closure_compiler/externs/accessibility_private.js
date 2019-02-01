@@ -265,3 +265,11 @@ chrome.accessibilityPrivate.onTwoFingerTouchStop;
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
+
+/**
+ * Called when an internal component within accessibility wants to force speech
+ * output for an accessibility extension. Do not use without approval from
+ * accessibility owners.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onAnnounceForAccessibility;

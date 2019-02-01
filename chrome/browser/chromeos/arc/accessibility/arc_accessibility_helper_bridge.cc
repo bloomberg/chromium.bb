@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chrome/common/extensions/api/accessibility_private.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -291,6 +292,21 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       }
 
       tree_source = input_method_tree_.get();
+    } else if (event_data->event_type ==
+                   arc::mojom::AccessibilityEventType::ANNOUNCEMENT &&
+               event_data->eventText.has_value()) {
+      extensions::EventRouter* event_router =
+          extensions::EventRouter::Get(profile_);
+      std::unique_ptr<base::ListValue> event_args(
+          extensions::api::accessibility_private::OnAnnounceForAccessibility::
+              Create(*(event_data->eventText)));
+      std::unique_ptr<extensions::Event> event(new extensions::Event(
+          extensions::events::
+              ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
+          extensions::api::accessibility_private::OnAnnounceForAccessibility::
+              kEventName,
+          std::move(event_args)));
+      event_router->BroadcastEvent(std::move(event));
     } else {
       if (event_data->task_id == kNoTaskId)
         return;
