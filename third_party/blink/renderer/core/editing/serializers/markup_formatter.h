@@ -112,12 +112,23 @@ class MarkupFormatter final {
                        const Attribute&,
                        Namespaces*);
 
-  bool ShouldAddNamespaceAttribute(const Attribute&, const Element&) const;
+  static bool ShouldAddNamespaceAttribute(const Attribute&, const Element&);
   EntityMask EntityMaskForText(const Text&) const;
   bool ShouldSelfClose(const Element&) const;
 
  private:
-  String ResolveURLIfNeeded(const Element&, const String&) const;
+  String ResolveURLIfNeeded(const Element&, const Attribute& attribute) const;
+  static void AppendAttributeAsHTML(StringBuilder& result,
+                                    const Attribute& attribute,
+                                    const String& value);
+  static void AppendAttributeAsXMLWithoutNamespace(StringBuilder& result,
+                                                   const Attribute& attribute,
+                                                   const String& value);
+  static void AppendAttributeAsXMLWithNamespace(StringBuilder& result,
+                                                const Element& element,
+                                                const Attribute& attribute,
+                                                const String& value,
+                                                Namespaces& namespaces);
 
   const EAbsoluteURLs resolve_urls_method_;
   SerializationType serialization_type_;
