@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
@@ -49,14 +48,13 @@ constexpr char kAuthorizationHeader[] = "Bearer %s";
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
     : delegate_(delegate),
       picture_status_(PICTURE_FAILED),
-      account_tracker_service_(AccountTrackerServiceFactory::GetForProfile(
-          delegate_->GetBrowserProfile())),
       identity_manager_(IdentityManagerFactory::GetForProfile(
           delegate_->GetBrowserProfile())),
       identity_manager_observer_(this),
-      waiting_for_account_info_(false) {
+      waiting_for_account_info_(false),
+      waiting_for_refresh_token_(false) {
   DCHECK(delegate_);
-  account_tracker_service_->AddObserver(this);
+  identity_manager_observer_.Add(identity_manager_);
 }
 
 void ProfileDownloader::Start() {
@@ -80,7 +78,7 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
   if (identity_manager_->HasAccountWithRefreshToken(account_id_))
     StartFetchingOAuth2AccessToken();
   else
-    identity_manager_observer_.Add(identity_manager_);
+    waiting_for_refresh_token_ = true;
 }
 
 base::string16 ProfileDownloader::GetProfileHostedDomain() const {
@@ -120,7 +118,11 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
-  account_info_ = account_tracker_service_->GetAccountInfo(account_id_);
+  auto maybe_account_info =
+      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          account_id_);
+  if (maybe_account_info.has_value())
+    account_info_ = maybe_account_info.value();
 
   if (delegate_->IsPreSignin()) {
     AccountFetcherServiceFactory::GetForProfile(delegate_->GetBrowserProfile())
@@ -153,7 +155,7 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
 
 ProfileDownloader::~ProfileDownloader() {
   oauth2_access_token_fetcher_.reset();
-  account_tracker_service_->RemoveObserver(this);
+  identity_manager_observer_.Remove(identity_manager_);
 }
 
 void ProfileDownloader::FetchImageData() {
@@ -292,10 +294,10 @@ void ProfileDownloader::OnDecodeImageFailed() {
 
 void ProfileDownloader::OnRefreshTokenUpdatedForAccount(
     const AccountInfo& account_info) {
-  if (account_info.account_id != account_id_)
+  if (account_info.account_id != account_id_ || !waiting_for_refresh_token_)
     return;
 
-  identity_manager_observer_.Remove(identity_manager_);
+  waiting_for_refresh_token_ = false;
   StartFetchingOAuth2AccessToken();
 }
 
