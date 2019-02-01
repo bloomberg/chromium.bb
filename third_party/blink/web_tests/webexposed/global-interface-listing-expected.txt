@@ -5620,14 +5620,22 @@ interface RTCDtlsTransport : EventTarget
     setter onstatechange
 interface RTCIceCandidate
     attribute @@toStringTag
+    getter address
     getter candidate
+    getter component
+    getter foundation
+    getter port
+    getter priority
+    getter protocol
+    getter relatedAddress
+    getter relatedPort
     getter sdpMLineIndex
     getter sdpMid
+    getter tcpType
+    getter type
+    getter usernameFragment
     method constructor
     method toJSON
-    setter candidate
-    setter sdpMLineIndex
-    setter sdpMid
 interface RTCIceTransport : EventTarget
     attribute @@toStringTag
     getter gatheringState

@@ -64,7 +64,7 @@ RTCIceCandidate* RTCIceCandidate::Create(
   if (candidate_init->hasSdpMid())
     sdp_mid = candidate_init->sdpMid();
 
-  // TODO(guidou): Change default value to -1. crbug.com/614958.
+  // TODO(crbug.com/614958): Change default value to -1.
   uint16_t sdp_m_line_index = 0;
   if (candidate_init->hasSdpMLineIndex()) {
     sdp_m_line_index = candidate_init->sdpMLineIndex();
@@ -74,7 +74,8 @@ RTCIceCandidate* RTCIceCandidate::Create(
   }
 
   return MakeGarbageCollected<RTCIceCandidate>(WebRTCICECandidate::Create(
-      candidate_init->candidate(), sdp_mid, sdp_m_line_index));
+      candidate_init->candidate(), sdp_mid, sdp_m_line_index,
+      candidate_init->usernameFragment()));
 }
 
 RTCIceCandidate* RTCIceCandidate::Create(
@@ -94,7 +95,9 @@ String RTCIceCandidate::sdpMid() const {
   return web_candidate_->SdpMid();
 }
 
-uint16_t RTCIceCandidate::sdpMLineIndex() const {
+uint16_t RTCIceCandidate::sdpMLineIndex(bool& is_null) const {
+  // TODO(crbug.com/614958): Handle case when SdpMLineIndex has no value.
+  is_null = false;
   return web_candidate_->SdpMLineIndex();
 }
 
@@ -102,16 +105,51 @@ scoped_refptr<WebRTCICECandidate> RTCIceCandidate::WebCandidate() const {
   return web_candidate_;
 }
 
-void RTCIceCandidate::setCandidate(String candidate) {
-  web_candidate_->SetCandidate(candidate);
+String RTCIceCandidate::foundation() const {
+  return web_candidate_->Foundation();
 }
 
-void RTCIceCandidate::setSdpMid(String sdp_mid) {
-  web_candidate_->SetSdpMid(sdp_mid);
+String RTCIceCandidate::component() const {
+  return web_candidate_->Component();
 }
 
-void RTCIceCandidate::setSdpMLineIndex(uint16_t sdp_m_line_index) {
-  web_candidate_->SetSdpMLineIndex(sdp_m_line_index);
+uint32_t RTCIceCandidate::priority(bool& is_null) const {
+  is_null = !web_candidate_->Priority().has_value();
+  return is_null ? 0 : *web_candidate_->Priority();
+}
+
+String RTCIceCandidate::address() const {
+  return web_candidate_->Address();
+}
+
+String RTCIceCandidate::protocol() const {
+  return web_candidate_->Protocol();
+}
+
+uint16_t RTCIceCandidate::port(bool& is_null) const {
+  is_null = !web_candidate_->Port().has_value();
+  return is_null ? 0 : *web_candidate_->Port();
+}
+
+String RTCIceCandidate::type() const {
+  return web_candidate_->Type();
+}
+
+String RTCIceCandidate::tcpType() const {
+  return web_candidate_->TcpType();
+}
+
+String RTCIceCandidate::relatedAddress() const {
+  return web_candidate_->RelatedAddress();
+}
+
+uint16_t RTCIceCandidate::relatedPort(bool& is_null) const {
+  is_null = !web_candidate_->RelatedPort().has_value();
+  return is_null ? 0 : *web_candidate_->RelatedPort();
+}
+
+String RTCIceCandidate::usernameFragment() const {
+  return web_candidate_->UsernameFragment();
 }
 
 ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* script_state) {
