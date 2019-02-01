@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkFont.h"
+#include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "ui/gfx/canvas.h"

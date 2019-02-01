@@ -13,6 +13,7 @@
 #include "ui/gfx/buffer_types.h"
 
 class SkCanvas;
+class SkSurfaceProps;
 
 namespace cc {
 class PaintCanvas;
