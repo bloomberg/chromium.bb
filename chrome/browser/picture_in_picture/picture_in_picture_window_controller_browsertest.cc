@@ -1921,22 +1921,19 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
 
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
-                                     "setMediaSessionSkipAdActionHandler();"));
 
   // Skip Ad button is not displayed if video is not playing even if mouse is
   // hovering over the window and media session action handler has been set.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "setMediaSessionActionHandler('skipad');"));
   base::RunLoop().RunUntilIdle();
   MoveMouseOver(overlay_window);
   EXPECT_FALSE(
       overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
 
-  EXPECT_FALSE(
-      overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
-  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-
-  // Set action handler and check that Skip Ad button is now displayed when
+  // Play video and check that Skip Ad button is now displayed when
   // video plays and mouse is hovering over the window.
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
   base::RunLoop().RunUntilIdle();
   MoveMouseOver(overlay_window);
   EXPECT_TRUE(
@@ -1945,11 +1942,86 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   // Unset action handler and check that Skip Ad button is not displayed when
   // video plays and mouse is hovering over the window.
   ASSERT_TRUE(content::ExecuteScript(
-      active_web_contents, "unsetMediaSessionSkipAdActionHandler();"));
+      active_web_contents, "unsetMediaSessionActionHandler('skipad');"));
   base::RunLoop().RunUntilIdle();
   MoveMouseOver(overlay_window);
   EXPECT_FALSE(
       overlay_window->skip_ad_controls_view_for_testing()->layer()->visible());
+}
+
+// Tests that the Play/Plause button is displayed in the Picture-in-Picture
+// window when Media Session actions "play" and "pause" are handled by the
+// website even if video is a media stream.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       PlayPauseButtonVisibility) {
+  LoadTabAndEnterPictureInPicture(browser());
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Play/Pause button is hidden if playing video is a mediastream and mouse is
+  // hovering over the window.
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "changeVideoSrcToMediaStream();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+
+  // Play second video (non-muted) so that Media Session becomes active.
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "secondVideo.play();"));
+
+  // Set Media Session action "play" handler and check that Play/Pause button
+  // is still hidden when mouse is hovering over the window.
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionActionHandler('play');"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+
+  // Set Media Session action "pause" handler and check that Play/Pause button
+  // is now displayed when mouse is hovering over the window.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionActionHandler('pause');"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_TRUE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+
+  // Unset Media Session action "pause" handler and check that Play/Pause button
+  // is hidden when mouse is hovering over the window.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "unsetMediaSessionActionHandler('pause');"));
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_FALSE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
+
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
+
+  // Reset Media Session action "pause" handler and check that Play/Pause button
+  // is now displayed when mouse is hovering over the window when it enters
+  // Picture-in-Picture again.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionActionHandler('pause');"));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+  base::RunLoop().RunUntilIdle();
+  MoveMouseOver(overlay_window);
+  EXPECT_TRUE(
+      overlay_window->play_pause_controls_view_for_testing()->IsDrawn());
 }
 #endif
 
@@ -1961,13 +2033,46 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
-  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
-                                     "setMediaSessionSkipAdActionHandler();"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_web_contents, "setMediaSessionActionHandler('skipad');"));
   base::RunLoop().RunUntilIdle();
 
   // Simulates user clicking "Skip Ad" and check the handler function is called.
   window_controller()->SkipAd();
   base::string16 expected_title = base::ASCIIToUTF16("skipad");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
+// Tests that clicking the Play/Pause button in the Picture-in-Picture window
+// calls the Media Session actions "play" and "pause" handler functions.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       PlayPauseHandlersCalled) {
+  LoadTabAndEnterPictureInPicture(browser());
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionActionHandler('play');"));
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents,
+                                     "setMediaSessionActionHandler('pause');"));
+  base::RunLoop().RunUntilIdle();
+
+  // Simulates user clicking "Play/Pause" and check that the "pause" handler
+  // function is called.
+  window_controller()->TogglePlayPause();
+  base::string16 expected_title = base::ASCIIToUTF16("pause");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  EXPECT_TRUE(content::ExecuteScript(active_web_contents, "video.pause();"));
+
+  // Simulates user clicking "Play/Pause" and check that the "play" handler
+  // function is called.
+  window_controller()->TogglePlayPause();
+  expected_title = base::ASCIIToUTF16("play");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());

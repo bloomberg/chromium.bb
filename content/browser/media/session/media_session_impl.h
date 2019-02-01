@@ -236,6 +236,9 @@ class MediaSessionImpl : public MediaSession,
     return audio_focus_group_id_;
   }
 
+  // Returns whether the action should be routed to |routed_service_|.
+  bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;
@@ -326,9 +329,6 @@ class MediaSessionImpl : public MediaSession,
   // Compute the MediaSessionService that should be routed, which will be used
   // to update |routed_service_|.
   CONTENT_EXPORT MediaSessionServiceImpl* ComputeServiceForRouting();
-
-  // Returns whether the action should be routed to |routed_service_|.
-  bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
 
   // Rebuilds |actions_| and notifies observers if they have changed.
   void RebuildAndNotifyActionsChanged();

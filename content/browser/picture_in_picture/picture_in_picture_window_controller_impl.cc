@@ -4,13 +4,15 @@
 
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 
+#include <set>
+
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/picture_in_picture/overlay_surface_embedder.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/media_session.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -55,8 +57,7 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
     WebContents* initiator)
-    : initiator_(static_cast<WebContentsImpl* const>(initiator)),
-      observer_binding_(this) {
+    : initiator_(static_cast<WebContentsImpl* const>(initiator)) {
   DCHECK(initiator_);
 
   media_web_contents_observer_ = initiator_->media_web_contents_observer();
@@ -69,17 +70,18 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   DCHECK(window_);
   DCHECK(surface_id_.is_valid());
 
+  MediaSessionImpl* media_session = MediaSessionImpl::Get(initiator_);
+  media_session_action_play_handled_ = media_session->ShouldRouteAction(
+      media_session::mojom::MediaSessionAction::kPlay);
+  media_session_action_pause_handled_ = media_session->ShouldRouteAction(
+      media_session::mojom::MediaSessionAction::kPause);
+  media_session_action_skip_ad_handled_ = media_session->ShouldRouteAction(
+      media_session::mojom::MediaSessionAction::kSkipAd);
+
+  UpdatePlayPauseButtonVisibility();
+  window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
   window_->Show();
-  window_->SetSkipAdButtonVisibility(false);
   initiator_->SetHasPictureInPictureVideo(true);
-
-  if (observer_binding_.is_bound()) {
-    observer_binding_.Close();
-  }
-
-  media_session::mojom::MediaSessionObserverPtr observer;
-  observer_binding_.Bind(mojo::MakeRequest(&observer));
-  MediaSession::Get(initiator_)->AddObserver(std::move(observer));
 
   return window_->GetBounds().size();
 }
@@ -184,16 +186,27 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_);
 
   if (IsPlayerActive()) {
+    if (media_session_action_pause_handled_) {
+      MediaSessionImpl::Get(initiator_)
+          ->Suspend(MediaSession::SuspendType::kUI);
+      return true /* still playing */;
+    }
+
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
         media_player_id_->render_frame_host->GetRoutingID(),
         media_player_id_->delegate_id));
-    return false;
+    return false /* paused */;
+  }
+
+  if (media_session_action_play_handled_) {
+    MediaSessionImpl::Get(initiator_)->Resume(MediaSession::SuspendType::kUI);
+    return false /* still paused */;
   }
 
   media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Play(
       media_player_id_->render_frame_host->GetRoutingID(),
       media_player_id_->delegate_id));
-  return true;
+  return true /* playing */;
 }
 
 void PictureInPictureWindowControllerImpl::CustomControlPressed(
@@ -208,31 +221,38 @@ void PictureInPictureWindowControllerImpl::CustomControlPressed(
 
 void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
     bool is_visible) {
-  if (!window_)
-    return;
-
-  window_->SetAlwaysHidePlayPauseButton(is_visible);
+  always_hide_play_pause_button_ = is_visible;
+  UpdatePlayPauseButtonVisibility();
 }
 
 void PictureInPictureWindowControllerImpl::SkipAd() {
-  if (base::FeatureList::IsEnabled(media::kSkipAd))
+  if (base::FeatureList::IsEnabled(media::kSkipAd) &&
+      media_session_action_skip_ad_handled_)
     MediaSession::Get(initiator_)->SkipAd();
 }
 
 void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
-    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
-  if (!window_)
-    return;
-
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
   // TODO(crbug.com/919842): Currently, the first Media Session to be created
   // (independently of the frame) will be used. This means, we could show a
   // Skip Ad button for a PiP video from another frame. Ideally, we should have
   // a Media Session per frame, not per tab. This is not implemented yet.
 
-  auto result = std::find(std::begin(actions), std::end(actions),
-                          media_session::mojom::MediaSessionAction::kSkipAd);
-  bool show_skip_ad_button = result != actions.end();
-  window_->SetSkipAdButtonVisibility(show_skip_ad_button);
+  media_session_action_pause_handled_ =
+      actions.find(media_session::mojom::MediaSessionAction::kPause) !=
+      actions.end();
+  media_session_action_play_handled_ =
+      actions.find(media_session::mojom::MediaSessionAction::kPlay) !=
+      actions.end();
+  media_session_action_skip_ad_handled_ =
+      actions.find(media_session::mojom::MediaSessionAction::kSkipAd) !=
+      actions.end();
+
+  if (!window_)
+    return;
+
+  UpdatePlayPauseButtonVisibility();
+  window_->SetSkipAdButtonVisibility(media_session_action_skip_ad_handled_);
 }
 
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
@@ -265,10 +285,6 @@ void PictureInPictureWindowControllerImpl::CloseInternal(
 
   initiator_->SetHasPictureInPictureVideo(false);
   OnLeavingPictureInPicture(should_pause_video, should_reset_pip_player);
-
-  if (observer_binding_.is_bound()) {
-    observer_binding_.Close();
-  }
 }
 
 void PictureInPictureWindowControllerImpl::EnsureWindow() {
@@ -277,6 +293,15 @@ void PictureInPictureWindowControllerImpl::EnsureWindow() {
 
   window_ =
       GetContentClient()->browser()->CreateWindowForPictureInPicture(this);
+}
+
+void PictureInPictureWindowControllerImpl::UpdatePlayPauseButtonVisibility() {
+  if (!window_)
+    return;
+
+  window_->SetAlwaysHidePlayPauseButton((media_session_action_pause_handled_ &&
+                                         media_session_action_play_handled_) ||
+                                        always_hide_play_pause_button_);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PictureInPictureWindowControllerImpl)

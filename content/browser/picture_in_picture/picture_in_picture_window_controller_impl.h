@@ -10,8 +10,6 @@
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
@@ -29,8 +27,7 @@ class MediaWebContentsObserver;
 // work with it. https://crbug.com/589840.
 class PictureInPictureWindowControllerImpl
     : public PictureInPictureWindowController,
-      public WebContentsUserData<PictureInPictureWindowControllerImpl>,
-      public media_session::mojom::MediaSessionObserver {
+      public WebContentsUserData<PictureInPictureWindowControllerImpl> {
  public:
   // Gets a reference to the controller associated with |initiator| and creates
   // one if it does not exist. The returned pointer is guaranteed to be
@@ -62,14 +59,8 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   CONTENT_EXPORT void SkipAd() override;
 
-  // media_session::mojom::MediaSessionObserver overrides.
-  CONTENT_EXPORT void MediaSessionInfoChanged(
-      media_session::mojom::MediaSessionInfoPtr session_info) override {}
-  CONTENT_EXPORT void MediaSessionMetadataChanged(
-      const base::Optional<media_session::MediaMetadata>& metadata) override {}
   CONTENT_EXPORT void MediaSessionActionsChanged(
-      const std::vector<media_session::mojom::MediaSessionAction>& actions)
-      override;
+      const std::set<media_session::mojom::MediaSessionAction>& actions);
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;
@@ -91,11 +82,14 @@ class PictureInPictureWindowControllerImpl
   // because of the system control of the window.
   void EnsureWindow();
 
+  // Allow play/pause button to be visible if Media Session actions "play" and
+  // "pause" are both handled by the website or if
+  // always_hide_play_pause_button_ is false.
+  void UpdatePlayPauseButtonVisibility();
+
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
   WebContentsImpl* const initiator_;
-
-  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_;
 
   // Used to determine the state of the media player and route messages to
   // the corresponding media player with id |media_player_id_|.
@@ -103,6 +97,17 @@ class PictureInPictureWindowControllerImpl
   base::Optional<WebContentsObserver::MediaPlayerId> media_player_id_;
 
   viz::SurfaceId surface_id_;
+
+  // Used to show/hide some actions in Picture-in-Picture window. These are set
+  // to true when website handles some Media Session actions.
+  bool media_session_action_play_handled_ = false;
+  bool media_session_action_pause_handled_ = false;
+  bool media_session_action_skip_ad_handled_ = false;
+
+  // Used to hide play/pause button if video is a MediaStream or has infinite
+  // duration. Play/pause button visibility can be overridden by the Media
+  // Session API in UpdatePlayPauseButtonVisibility().
+  bool always_hide_play_pause_button_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
