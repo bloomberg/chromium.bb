@@ -3260,7 +3260,7 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/viewportanchor_x_50_percent.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/viewportanchor_y_50_percent.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/regions/width_50_percent.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-backgrounds/border-image-width-008.html [ Failure ]
+crbug.com/767352 external/wpt/css/css-backgrounds/border-image-width-008.html [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-004.svg [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [ Failure ]
 
