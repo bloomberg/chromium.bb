@@ -680,7 +680,7 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_CTS_test.filter",
-          "--enable-features=NetworkService",
+          "--enable-features=NetworkService,NetworkServiceInProcess",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
