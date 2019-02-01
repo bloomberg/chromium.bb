@@ -173,8 +173,9 @@ void AndroidSmsAppManagerImpl::OnSetUpNewAppResult(bool success) {
 
   // Finish the migration by removing the old app now that it has been replaced.
   setup_controller_->RemoveApp(
-      GetAndroidMessagesURLOld(),
-      GetAndroidMessagesURLOld(true /* use_install_url */),
+      GetAndroidMessagesURLOld() /* app_url */,
+      GetAndroidMessagesURLOld(true /* use_install_url */) /* install_url */,
+      GetAndroidMessagesURL() /* migrated_to_app_url */,
       base::BindOnce(&AndroidSmsAppManagerImpl::OnRemoveOldAppResult,
                      weak_ptr_factory_.GetWeakPtr()));
 }

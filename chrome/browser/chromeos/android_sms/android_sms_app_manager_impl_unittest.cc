@@ -294,6 +294,7 @@ TEST_F(AndroidSmsAppManagerImplTest,
       GetAndroidMessagesURLOld() /* expected_app_url */,
       GetAndroidMessagesURLOld(
           true /* use_install_url */) /* expected_install_url */,
+      GetAndroidMessagesURL() /* expected_migrated_to_app_url */,
       true /* success */);
   EXPECT_EQ(1u, test_observer()->num_installed_app_url_changed_events());
 }

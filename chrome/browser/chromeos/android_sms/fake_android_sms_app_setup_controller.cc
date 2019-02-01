@@ -96,6 +96,7 @@ void FakeAndroidSmsAppSetupController::CompletePendingDeleteCookieRequest(
 void FakeAndroidSmsAppSetupController::CompleteRemoveAppRequest(
     const GURL& expected_app_url,
     const GURL& expected_install_url,
+    const GURL& expected_migrated_to_app_url,
     bool should_succeed) {
   DCHECK(!pending_remove_app_requests_.empty());
 
@@ -103,17 +104,18 @@ void FakeAndroidSmsAppSetupController::CompleteRemoveAppRequest(
   pending_remove_app_requests_.erase(pending_remove_app_requests_.begin());
   DCHECK_EQ(expected_app_url, std::get<0>(*request));
   DCHECK_EQ(expected_install_url, std::get<1>(*request));
+  DCHECK_EQ(expected_migrated_to_app_url, std::get<2>(*request));
 
   if (should_succeed)
     SetAppAtUrl(expected_install_url, base::nullopt /* id_for_app */);
 
-  std::move(std::get<2>(*request)).Run(should_succeed);
+  std::move(std::get<3>(*request)).Run(should_succeed);
 }
 
 void FakeAndroidSmsAppSetupController::SetUpApp(const GURL& app_url,
                                                 const GURL& install_url,
                                                 SuccessCallback callback) {
-  pending_set_up_app_requests_.push_back(std::make_unique<AppRequestData>(
+  pending_set_up_app_requests_.push_back(std::make_unique<SetUpAppData>(
       app_url, install_url, std::move(callback)));
 }
 
@@ -129,14 +131,16 @@ void FakeAndroidSmsAppSetupController::DeleteRememberDeviceByDefaultCookie(
     const GURL& app_url,
     SuccessCallback callback) {
   pending_delete_cookie_requests_.push_back(
-      std::make_unique<RequestData>(app_url, std::move(callback)));
+      std::make_unique<DeleteCookieData>(app_url, std::move(callback)));
 }
 
-void FakeAndroidSmsAppSetupController::RemoveApp(const GURL& app_url,
-                                                 const GURL& install_url,
-                                                 SuccessCallback callback) {
-  pending_remove_app_requests_.push_back(std::make_unique<AppRequestData>(
-      app_url, install_url, std::move(callback)));
+void FakeAndroidSmsAppSetupController::RemoveApp(
+    const GURL& app_url,
+    const GURL& install_url,
+    const GURL& migrated_to_app_url,
+    SuccessCallback callback) {
+  pending_remove_app_requests_.push_back(std::make_unique<RemoveAppData>(
+      app_url, install_url, migrated_to_app_url, std::move(callback)));
 }
 
 }  // namespace android_sms

@@ -25,10 +25,11 @@ class AndroidSmsAppSetupController {
 
   using SuccessCallback = base::OnceCallback<void(bool)>;
 
-  // Performs the setup process for the app at |url|, which includes:
+  // Performs the setup process for the app at |app_url|, which includes:
   //   (1) Installing the PWA,
   //   (2) Granting permission for the PWA to show notifications, and
-  //   (3) Setting a cookie which defaults the PWA to remember this computer.
+  //   (3) Removing previously set migration cookie, if any.
+  //   (4) Setting a cookie which defaults the PWA to remember this computer.
   // The |app_url|  parameter should have the root URL of the app to install
   // and should be the same as the service worker scope
   // The |install_url| parameter is the url to install the app from and cannot
@@ -37,8 +38,8 @@ class AndroidSmsAppSetupController {
                         const GURL& install_url,
                         SuccessCallback callback) = 0;
 
-  // Returns the extension for the PWA at |url|; if no PWA exists, null is
-  // returned.
+  // Returns the extension for the PWA at |install_url|; if no PWA exists, null
+  // is returned.
   virtual const extensions::Extension* GetPwa(const GURL& install_url) = 0;
 
   // Deletes the cookie which causes the PWA to remember this computer by
@@ -49,10 +50,16 @@ class AndroidSmsAppSetupController {
       const GURL& app_url,
       SuccessCallback callback) = 0;
 
-  // Uninstalls the app at |url| and deletes relevant cookies from the setup
-  // process.
+  // Uninstalls the app at |app_url| and deletes relevant cookies from the setup
+  // process. This also sets a migration cookie that allows the client to start
+  // redirecting users to the new domain.
+  // The |app_url| parameter should have the root URL of the app to install
+  // and should be the same as the service worker scope
+  // The |install_url| parameter is the url to that was used to install the app.
+  // The |migrated_to_app_url| should be the url that the PWA was migrated to.
   virtual void RemoveApp(const GURL& app_url,
                          const GURL& install_url,
+                         const GURL& migrated_to_app_url,
                          SuccessCallback callback) = 0;
 
  private:

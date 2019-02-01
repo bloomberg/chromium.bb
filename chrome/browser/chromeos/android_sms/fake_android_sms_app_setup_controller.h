@@ -67,6 +67,7 @@ class FakeAndroidSmsAppSetupController : public AndroidSmsAppSetupController {
   // app will remain in place.
   void CompleteRemoveAppRequest(const GURL& expected_app_url,
                                 const GURL& expected_install_url,
+                                const GURL& expected_migrated_to_app_url,
                                 bool success);
 
  private:
@@ -79,14 +80,17 @@ class FakeAndroidSmsAppSetupController : public AndroidSmsAppSetupController {
                                            SuccessCallback callback) override;
   void RemoveApp(const GURL& app_url,
                  const GURL& install_url,
+                 const GURL& migrated_to_app_url,
                  SuccessCallback callback) override;
 
-  using AppRequestData = std::tuple<GURL, GURL, SuccessCallback>;
-  using RequestData = std::pair<GURL, SuccessCallback>;
+  using SetUpAppData = std::tuple<GURL, GURL, SuccessCallback>;
+  std::list<std::unique_ptr<SetUpAppData>> pending_set_up_app_requests_;
 
-  std::list<std::unique_ptr<RequestData>> pending_delete_cookie_requests_;
-  std::list<std::unique_ptr<AppRequestData>> pending_set_up_app_requests_;
-  std::list<std::unique_ptr<AppRequestData>> pending_remove_app_requests_;
+  using RemoveAppData = std::tuple<GURL, GURL, GURL, SuccessCallback>;
+  std::list<std::unique_ptr<RemoveAppData>> pending_remove_app_requests_;
+
+  using DeleteCookieData = std::pair<GURL, SuccessCallback>;
+  std::list<std::unique_ptr<DeleteCookieData>> pending_delete_cookie_requests_;
 
   base::flat_map<GURL, AppMetadata> install_url_to_metadata_map_;
 

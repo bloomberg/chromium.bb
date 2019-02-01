@@ -59,6 +59,7 @@ class FakeCookieManager : public network::mojom::CookieManager {
 
   void InvokePendingSetCanonicalCookieCallback(
       const std::string& expected_cookie_name,
+      const std::string& expected_cookie_value,
       bool expected_secure_source,
       bool expected_modify_http_only,
       bool success) {
@@ -67,6 +68,7 @@ class FakeCookieManager : public network::mojom::CookieManager {
     set_canonical_cookie_calls_.erase(set_canonical_cookie_calls_.begin());
 
     EXPECT_EQ(expected_cookie_name, std::get<0>(params).Name());
+    EXPECT_EQ(expected_cookie_value, std::get<0>(params).Value());
     EXPECT_EQ(expected_secure_source, std::get<1>(params));
     EXPECT_EQ(expected_modify_http_only, std::get<2>(params));
 
@@ -223,8 +225,12 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
         "default_to_persist" /* expected_cookie_name */,
-        true /* expected_secure_source */,
+        "true" /* expected_cookie_value */, true /* expected_secure_source */,
         false /* expected_modify_http_only */, true /* success */);
+
+    fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
+        app_url, "cros_migrated_to" /* expected_cookie_name */,
+        true /* success */);
 
     // If the PWA was not already installed at the URL, SetUpApp() should
     // install it.
@@ -267,6 +273,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
   void CallRemoveApp(const GURL& app_url,
                      const GURL& install_url,
+                     const GURL& migrated_to_app_url,
                      size_t num_expected_app_uninstalls) {
     const auto& uninstall_requests =
         test_pending_app_manager_->uninstall_requests();
@@ -276,7 +283,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     base::HistogramTester histogram_tester;
 
     setup_controller_->RemoveApp(
-        app_url, install_url,
+        app_url, install_url, migrated_to_app_url,
         base::BindOnce(&AndroidSmsAppSetupControllerImplTest::OnRemoveAppResult,
                        base::Unretained(this), run_loop.QuitClosure()));
 
@@ -286,6 +293,12 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
       EXPECT_EQ(num_uninstall_requests_before_call + 1u,
                 uninstall_requests.size());
       EXPECT_EQ(install_url, uninstall_requests.back());
+
+      fake_cookie_manager_->InvokePendingSetCanonicalCookieCallback(
+          "cros_migrated_to" /* expected_cookie_name */,
+          migrated_to_app_url.GetContent() /* expected_cookie_value */,
+          true /* expected_secure_source */,
+          false /* expected_modify_http_only */, true /* success */);
 
       fake_cookie_manager_->InvokePendingDeleteCookiesCallback(
           app_url, "default_to_persist" /* expected_cookie_name */,
@@ -381,6 +394,7 @@ TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpAppThenRemove) {
                1u /* num_expected_app_installs */);
   test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), true);
   CallRemoveApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
+                GURL(kTestUrl2) /* migrated_to_app_url */,
                 1u /* num_expected_app_uninstalls */);
   test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), false);
 
@@ -389,6 +403,7 @@ TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpAppThenRemove) {
                1u /* num_expected_app_installs */);
   test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), true);
   CallRemoveApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
+                GURL(kTestUrl2) /* migrated_to_app_url */,
                 1u /* num_expected_app_uninstalls */);
   test_pwa_delegate()->SetHasPwa(GURL(kTestInstallUrl1), false);
 }
@@ -396,6 +411,7 @@ TEST_F(AndroidSmsAppSetupControllerImplTest, SetUpAppThenRemove) {
 TEST_F(AndroidSmsAppSetupControllerImplTest, RemoveApp_NoInstalledApp) {
   // Do not have an installed app before attempting to remove it.
   CallRemoveApp(GURL(kTestUrl1), GURL(kTestInstallUrl1),
+                GURL(kTestUrl2) /* migrated_to_app_url */,
                 0u /* num_expected_app_uninstalls */);
 }
 
