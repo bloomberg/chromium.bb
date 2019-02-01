@@ -4,11 +4,21 @@
 
 #include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/portal/portal_host.h"
+#include "third_party/blink/renderer/core/page/page.h"
+
 namespace blink {
 
 // static
 PortalHost* DOMWindowPortalHost::portalHost(LocalDOMWindow& window) {
-  return nullptr;
+  // The portal host is only exposed in the main frame of a page
+  // embedded in a portal.
+  if (!window.GetFrame() || !window.GetFrame()->IsMainFrame() ||
+      !window.GetFrame()->GetPage()->InsidePortal())
+    return nullptr;
+  return &PortalHost::From(window);
 }
 
 }  // namespace blink

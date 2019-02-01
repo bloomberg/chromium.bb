@@ -669,6 +669,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHost* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   void DidCommitAndDrawCompositorFrame(RenderViewHostImpl* source) override;
+  bool IsPortal() const override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1019,7 +1020,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // then this WebContents is embedded in a portal and its outer WebContents can
   // be found by using GetOuterWebContents().
   void set_portal(Portal* portal) { portal_ = portal; }
-  Portal* portal() { return portal_; }
+  Portal* portal() const { return portal_; }
 
  private:
   friend class WebContentsObserver;
