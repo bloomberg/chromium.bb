@@ -346,7 +346,7 @@ void BleConnectionManagerImpl::OnReceivedAdvertisement(
       weave::BluetoothLowEnergyWeaveClientConnection::Factory::NewInstance(
           remote_device, bluetooth_adapter_,
           device::BluetoothUUID(kGattServerUuid), bluetooth_device,
-          false /* should_set_low_connection_latency */);
+          true /* should_set_low_connection_latency */);
 
   SetAuthenticatingChannel(
       remote_device.GetDeviceId(),
