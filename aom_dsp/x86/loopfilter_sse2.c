@@ -23,8 +23,8 @@ static INLINE __m128i abs_diff(__m128i a, __m128i b) {
 }
 
 // this function treats its input as 2 parallel 8x4 matrices, transposes each of
-// them to 4x8  independently while flipping the second matrix horizontaly. Used
-// for 14 taps pq pairs creation
+// them to 4x8  independently while flipping the second matrix horizontally.
+// Used for 14 taps pq pairs creation
 static INLINE void transpose_pq_14_sse2(__m128i *x0, __m128i *x1, __m128i *x2,
                                         __m128i *x3, __m128i *q0p0,
                                         __m128i *q1p1, __m128i *q2p2,

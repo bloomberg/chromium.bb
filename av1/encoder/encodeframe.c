@@ -3564,7 +3564,7 @@ static int simple_motion_search_get_best_ref(
 }
 
 // Performs fullpixel simple_motion_search with LAST_FRAME and ALTREF_FRAME on
-// each subblocks and extract the variance and sse of residues. Then store the
+// each subblock and extract the variance and sse of residues. Then store the
 // var and sse from each partition subblock to features. The DC qindex is also
 // stored in features.
 // Here features is assumed to be a length 19 array.

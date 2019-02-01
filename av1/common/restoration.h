@@ -22,7 +22,7 @@
 extern "C" {
 #endif
 
-// Boarder for Loop restoration buffer
+// Border for Loop restoration buffer
 #define AOM_RESTORATION_FRAME_BORDER 32
 #define CLIP(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 #define RINT(x) ((x) < 0 ? (int)((x)-0.5) : (int)((x) + 0.5))

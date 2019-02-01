@@ -110,7 +110,7 @@ struct av1_extracfg {
   int allow_warped_motion;       // frame level
   int enable_filter_intra;       // enable filter intra for sequence
   int enable_smooth_intra;       // enable smooth intra modes for sequence
-  int enable_paeth_intra;        // enable Peeth intra mode for sequence
+  int enable_paeth_intra;        // enable Paeth intra mode for sequence
   int enable_cfl_intra;          // enable CFL uv intra mode for sequence
   int enable_superres;
   int enable_palette;
