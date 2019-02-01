@@ -316,6 +316,11 @@ _CONFIG = [
             # STL types such as std::unique_ptr are encouraged.
             'std::.+',
 
+            # UI Keyconverter
+            'ui::DomCode',
+            'ui::DomKey',
+            'ui::KeycodeConverter',
+
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
         ],

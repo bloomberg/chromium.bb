@@ -683,36 +683,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual const char* GetBrowserServiceName() const { return ""; }
 
-  // This method converts from the supplied DOM code enum to the
-  // embedder's DOM code value for the key pressed. |dom_code| values are
-  // based on the value defined in
-  // ui/events/keycodes/dom4/keycode_converter_data.h.
-  // Returns null string, if DOM code value is not found.
-  virtual WebString DomCodeStringFromEnum(int dom_code) { return WebString(); }
-
-  // This method converts from the suppled DOM code value to the
-  // embedder's DOM code enum for the key pressed. |code_string| is defined in
-  // ui/events/keycodes/dom4/keycode_converter_data.h.
-  // Returns 0, if DOM code enum is not found.
-  virtual int DomEnumFromCodeString(const WebString& code_string) { return 0; }
-
-  // This method converts from the supplied DOM |key| enum to the
-  // corresponding DOM |key| string value for the key pressed. |dom_key| values
-  // are based on the value defined in ui/events/keycodes/dom3/dom_key_data.h.
-  // Returns empty string, if DOM key value is not found.
-  virtual WebString DomKeyStringFromEnum(int dom_key) { return WebString(); }
-
-  // This method converts from the suppled DOM |key| value to the
-  // embedder's DOM |key| enum for the key pressed. |key_string| is defined in
-  // ui/events/keycodes/dom3/dom_key_data.h.
-  // Returns 0 if DOM key enum is not found.
-  virtual int DomKeyEnumFromString(const WebString& key_string) { return 0; }
-
-  // This method returns whether the specified |dom_key| is a modifier key.
-  // |dom_key| values are based on the value defined in
-  // ui/events/keycodes/dom3/dom_key_data.h.
-  virtual bool IsDomKeyForModifier(int dom_key) { return false; }
-
   // WebDatabase --------------------------------------------------------
 
   virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }

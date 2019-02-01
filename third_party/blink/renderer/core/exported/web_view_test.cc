@@ -131,6 +131,7 @@
 #include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
@@ -3354,7 +3355,7 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
     WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                                WebInputEvent::kNoModifiers,
                                WebInputEvent::GetStaticTimeStampForTests());
-    key_event.dom_key = Platform::Current()->DomKeyEnumFromString("\b");
+    key_event.dom_key = ui::DomKey::BACKSPACE;
     key_event.windows_key_code = VKEY_BACK;
     web_view->MainFrameWidget()->HandleInputEvent(
         WebCoalescedInputEvent(key_event));
@@ -3565,7 +3566,7 @@ static void OpenDateTimeChooser(WebView* web_view,
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
-  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -4020,7 +4021,7 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent) {
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
-  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -5085,7 +5086,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
@@ -5102,7 +5103,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   clock.Advance(TimeDelta::FromMilliseconds(60));
   key_event2.SetTimeStamp(CurrentTimeTicks());
@@ -5141,7 +5142,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
@@ -5153,7 +5154,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(longest_input_timestamp);
   clock.Advance(TimeDelta::FromMilliseconds(100));
@@ -5163,7 +5164,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event3.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(70));
@@ -5193,7 +5194,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
@@ -5203,7 +5204,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
@@ -5213,7 +5214,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event3.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(70));
@@ -5263,7 +5264,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   WebKeyboardEvent key_event1(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event1.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   TimeTicks key_event1_time = CurrentTimeTicks();
   key_event1.SetTimeStamp(key_event1_time);
@@ -5274,7 +5275,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());
-  key_event2.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(100));
@@ -5317,7 +5318,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
-  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(100));
@@ -5359,7 +5360,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
-  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   TimeTicks key_event_time = CurrentTimeTicks();
   key_event.SetTimeStamp(key_event_time);
@@ -5645,7 +5646,7 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
-  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(CurrentTimeTicks());
 
@@ -5691,7 +5692,7 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
                              WebInputEvent::GetStaticTimeStampForTests());
-  key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
+  key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(CurrentTimeTicks());
 

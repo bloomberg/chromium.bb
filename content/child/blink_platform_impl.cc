@@ -51,7 +51,6 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/layout.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
 
 using blink::WebData;
 using blink::WebLocalizedString;
@@ -678,31 +677,6 @@ size_t BlinkPlatformImpl::MaxDecodedImageBytes() {
 
 bool BlinkPlatformImpl::IsLowEndDevice() {
   return base::SysInfo::IsLowEndDevice();
-}
-
-WebString BlinkPlatformImpl::DomCodeStringFromEnum(int dom_code) {
-  return WebString::FromUTF8(ui::KeycodeConverter::DomCodeToCodeString(
-      static_cast<ui::DomCode>(dom_code)));
-}
-
-int BlinkPlatformImpl::DomEnumFromCodeString(const WebString& code) {
-  return static_cast<int>(
-      ui::KeycodeConverter::CodeStringToDomCode(code.Utf8()));
-}
-
-WebString BlinkPlatformImpl::DomKeyStringFromEnum(int dom_key) {
-  return WebString::FromUTF8(ui::KeycodeConverter::DomKeyToKeyString(
-      static_cast<ui::DomKey>(dom_key)));
-}
-
-int BlinkPlatformImpl::DomKeyEnumFromString(const WebString& key_string) {
-  return static_cast<int>(
-      ui::KeycodeConverter::KeyStringToDomKey(key_string.Utf8()));
-}
-
-bool BlinkPlatformImpl::IsDomKeyForModifier(int dom_key) {
-  return ui::KeycodeConverter::IsDomKeyForModifier(
-      static_cast<ui::DomKey>(dom_key));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> BlinkPlatformImpl::GetIOTaskRunner()

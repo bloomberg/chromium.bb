@@ -162,6 +162,7 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
 using blink::url_test_helpers::ToKURL;
@@ -4631,8 +4632,8 @@ TEST_F(WebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
                             WebInputEvent::GetStaticTimeStampForTests());
   WebKeyboardEvent tab_up(WebInputEvent::kKeyUp, WebInputEvent::kNoModifiers,
                           WebInputEvent::GetStaticTimeStampForTests());
-  tab_down.dom_key = Platform::Current()->DomKeyEnumFromString("\t");
-  tab_up.dom_key = Platform::Current()->DomKeyEnumFromString("\t");
+  tab_down.dom_key = ui::DomKey::TAB;
+  tab_up.dom_key = ui::DomKey::TAB;
   tab_down.windows_key_code = VKEY_TAB;
   tab_up.windows_key_code = VKEY_TAB;
 
