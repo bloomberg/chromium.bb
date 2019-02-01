@@ -75,12 +75,12 @@ const CGFloat kButtonPadding = 12;
     // the ripple effect on the button won't be seen.
     [UIView animateWithDuration:kActivityIndicatorVisbilityAnimationDuration
                      animations:^{
-                       self.activityIndicator.hidden = NO;
-                       self.button.hidden = YES;
+                       self.activityIndicator.alpha = 1.0;
+                       self.button.alpha = 0.0;
                      }];
   } else {
-    self.button.hidden = NO;
-    self.activityIndicator.hidden = YES;
+    self.button.alpha = 1.0;
+    self.activityIndicator.alpha = 0.0;
     [self.activityIndicator stopAnimating];
 
     [self.button setTitleColor:[self titleColor] forState:UIControlStateNormal];
@@ -96,7 +96,7 @@ const CGFloat kButtonPadding = 12;
   self.activityIndicator.cycleColors =
       @[ [[MDCPalette cr_bluePalette] tint500] ];
   [self.activityIndicator setRadius:kActivityIndicatorRadius];
-  self.activityIndicator.hidden = YES;  // Initially hidden.
+  self.activityIndicator.alpha = 0.0;  // Initially hidden.
   [self addSubview:self.activityIndicator];
 
   [NSLayoutConstraint activateConstraints:@[
