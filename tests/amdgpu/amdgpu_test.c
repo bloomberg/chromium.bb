@@ -56,6 +56,7 @@
 #define UVD_ENC_TESTS_STR "UVD ENC Tests"
 #define DEADLOCK_TESTS_STR "Deadlock Tests"
 #define VM_TESTS_STR "VM Tests"
+#define RAS_TESTS_STR "RAS Tests"
 
 /**
  *  Open handles for amdgpu devices
@@ -116,6 +117,12 @@ static CU_SuiteInfo suites[] = {
 		.pCleanupFunc = suite_vm_tests_clean,
 		.pTests = vm_tests,
 	},
+	{
+		.pName = RAS_TESTS_STR,
+		.pInitFunc = suite_ras_tests_init,
+		.pCleanupFunc = suite_ras_tests_clean,
+		.pTests = ras_tests,
+	},
 
 	CU_SUITE_INFO_NULL,
 };
@@ -164,6 +171,10 @@ static Suites_Active_Status suites_active_stat[] = {
 		{
 			.pName = VM_TESTS_STR,
 			.pActive = suite_vm_tests_enable,
+		},
+		{
+			.pName = RAS_TESTS_STR,
+			.pActive = suite_ras_tests_enable,
 		},
 };
 

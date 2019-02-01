@@ -24,7 +24,7 @@ if dep_cunit.found()
     files(
       'amdgpu_test.c', 'basic_tests.c', 'bo_tests.c', 'cs_tests.c',
       'vce_tests.c', 'uvd_enc_tests.c', 'vcn_tests.c', 'deadlock_tests.c',
-      'vm_tests.c',
+      'vm_tests.c', 'ras_tests.c',
     ),
     dependencies : [dep_cunit, dep_threads],
     include_directories : [inc_root, inc_drm, include_directories('../../amdgpu')],
