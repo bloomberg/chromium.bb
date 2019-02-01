@@ -470,7 +470,7 @@ std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Array(
   // Only fields with integer keys are carried over to the ListValue.
   for (uint32_t i = 0; i < val->Length(); ++i) {
     v8::TryCatch try_catch(isolate);
-    v8::Local<v8::Value> child_v8 = val->Get(i);
+    v8::Local<v8::Value> child_v8;
     v8::MaybeLocal<v8::Value> maybe_child =
         val->Get(isolate->GetCurrentContext(), i);
     if (try_catch.HasCaught() || !maybe_child.ToLocal(&child_v8)) {

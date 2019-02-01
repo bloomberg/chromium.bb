@@ -120,7 +120,8 @@ bool Equals(const PP_Var& var,
     if (v8_array->Length() != array_var->elements().size())
       return false;
     for (uint32_t i = 0; i < v8_array->Length(); ++i) {
-      v8::Local<v8::Value> child_v8 = v8_array->Get(i);
+      v8::Local<v8::Value> child_v8 =
+          v8_array->Get(context, i).ToLocalChecked();
       if (!Equals(array_var->elements()[i].get(), child_v8, visited_ids))
         return false;
     }
@@ -394,7 +395,7 @@ TEST_F(V8VarConverterTest, Cycles) {
     ASSERT_FALSE(FromV8ValueSync(object, context, &var_result));
 
     // Array with self reference.
-    array->Set(0, array);
+    array->Set(context, 0, array).Check();
     ASSERT_FALSE(FromV8ValueSync(array, context, &var_result));
   }
 }
