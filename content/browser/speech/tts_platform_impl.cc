@@ -5,7 +5,10 @@
 #include "content/browser/speech/tts_platform_impl.h"
 
 #include "build/build_config.h"
+
+#if defined(OS_CHROMEOS)
 #include "content/public/browser/content_browser_client.h"
+#endif
 
 #include <string>
 
