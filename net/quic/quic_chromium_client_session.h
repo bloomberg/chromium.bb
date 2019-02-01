@@ -374,13 +374,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool require_confirmation,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
-      bool go_away_on_path_degrading,
       NetworkChangeNotifier::NetworkHandle default_network,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
       int max_migrations_to_non_default_network_on_path_degrading,
       int yield_after_packets,
       quic::QuicTime::Delta yield_after_duration,
+      bool go_away_on_path_degrading,
       bool headers_include_h2_stream_dependency,
       int cert_verify_flags,
       const quic::QuicConfig& config,
@@ -745,7 +745,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool require_confirmation_;
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
-  bool go_away_on_path_degrading_;
   base::TimeDelta max_time_on_non_default_network_;
   // Maximum allowed number of migrations to non-default network triggered by
   // packet write error per default network.
@@ -758,6 +757,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   quic::QuicClock* clock_;  // Unowned.
   int yield_after_packets_;
   quic::QuicTime::Delta yield_after_duration_;
+  bool go_away_on_path_degrading_;
 
   base::TimeTicks most_recent_path_degrading_timestamp_;
   base::TimeTicks most_recent_network_disconnected_timestamp_;

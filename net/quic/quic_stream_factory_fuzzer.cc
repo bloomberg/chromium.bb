@@ -138,13 +138,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           quic::kMaxTimeForCryptoHandshakeSecs, quic::kInitialIdleTimeoutSecs,
           migrate_sessions_on_network_change_v2, migrate_sessions_early_v2,
           retry_on_alternate_network_before_handshake,
-          race_stale_dns_on_connection, go_away_on_path_degrading,
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
           kMaxMigrationsToNonDefaultNetworkOnWriteError,
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
-          allow_server_migration, race_cert_verification, estimate_initial_rtt,
-          headers_include_h2_stream_dependency, env->connection_options,
-          env->client_connection_options, enable_socket_recv_optimization);
+          allow_server_migration, race_stale_dns_on_connection,
+          go_away_on_path_degrading, race_cert_verification,
+          estimate_initial_rtt, headers_include_h2_stream_dependency,
+          env->connection_options, env->client_connection_options,
+          enable_socket_recv_optimization);
 
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;

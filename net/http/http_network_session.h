@@ -191,11 +191,6 @@ class NET_EXPORT HttpNetworkSession {
     // If true, a new connection may be kicked off on an alternate network when
     // a connection fails on the default network before handshake is confirmed.
     bool quic_retry_on_alternate_network_before_handshake;
-    // If true, the quic stream factory may race connection from stale dns
-    // result with the original dns resolution
-    bool quic_race_stale_dns_on_connection;
-    // If true, the quic session may mark itself as GOAWAY on path degrading.
-    bool quic_go_away_on_path_degrading;
     // Maximum time the session could be on the non-default network before
     // migrates back to default network. Defaults to
     // kMaxTimeOnNonDefaultNetwork.
@@ -212,6 +207,11 @@ class NET_EXPORT HttpNetworkSession {
     // If true, allows QUIC to use alternative services with a different
     // hostname from the origin.
     bool quic_allow_remote_alt_svc;
+    // If true, the quic stream factory may race connection from stale dns
+    // result with the original dns resolution
+    bool quic_race_stale_dns_on_connection;
+    // If true, the quic session may mark itself as GOAWAY on path degrading.
+    bool quic_go_away_on_path_degrading;
     // If true, bidirectional streams over QUIC will be disabled.
     bool quic_disable_bidirectional_streams;
     // If true, enable force HOL blocking.  For measurement purposes.

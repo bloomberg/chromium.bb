@@ -210,7 +210,6 @@ class QuicProxyClientSocketTest
                        SocketTag()),
         /*require_confirmation=*/false, /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
-        /*go_away_on_path_degrading*/ false,
         /*default_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
@@ -218,6 +217,7 @@ class QuicProxyClientSocketTest
         kQuicYieldAfterPacketsRead,
         quic::QuicTime::Delta::FromMilliseconds(
             kQuicYieldAfterDurationMilliseconds),
+        /*go_away_on_path_degrading*/ false,
         client_headers_include_h2_stream_dependency_, /*cert_verify_flags=*/0,
         quic::test::DefaultQuicConfig(), &crypto_config_, "CONNECTION_UNKNOWN",
         dns_start, dns_end, &push_promise_index_, nullptr,

@@ -161,7 +161,6 @@ class QuicChromiumClientSessionTest
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)), session_key_,
         /*require_confirmation=*/false, migrate_session_early_v2_,
         /*migrate_session_on_network_change_v2=*/false,
-        /*go_away_on_path_degrading*/ false,
         /*defaulet_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
@@ -169,7 +168,8 @@ class QuicChromiumClientSessionTest
         kQuicYieldAfterPacketsRead,
         quic::QuicTime::Delta::FromMilliseconds(
             kQuicYieldAfterDurationMilliseconds),
-        /*cert_verify_flags=*/0, client_headers_include_h2_stream_dependency_,
+        /*cert_verify_flags=*/0, /*go_away_on_path_degrading*/ false,
+        client_headers_include_h2_stream_dependency_,
         quic::test::DefaultQuicConfig(), &crypto_config_, "CONNECTION_UNKNOWN",
         base::TimeTicks::Now(), base::TimeTicks::Now(), &push_promise_index_,
         &test_push_delegate_, base::ThreadTaskRunnerHandle::Get().get(),
