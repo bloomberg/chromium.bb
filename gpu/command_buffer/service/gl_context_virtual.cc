@@ -27,7 +27,9 @@ GLContextVirtual::GLContextVirtual(
     base::WeakPtr<GLContextVirtualDelegate> delegate)
     : GLContext(share_group),
       shared_context_(shared_context),
-      delegate_(delegate) {}
+      delegate_(delegate) {
+  shared_context_->AddVirtualOwner(this);
+}
 
 bool GLContextVirtual::Initialize(gl::GLSurface* compatible_surface,
                                   const gl::GLContextAttribs& attribs) {
@@ -36,7 +38,8 @@ bool GLContextVirtual::Initialize(gl::GLSurface* compatible_surface,
 }
 
 void GLContextVirtual::Destroy() {
-  shared_context_->OnReleaseVirtuallyCurrent(this);
+  ReleaseCurrent(nullptr);
+  shared_context_->RemoveVirtualOwner(this);
   shared_context_ = nullptr;
 }
 
@@ -54,10 +57,17 @@ bool GLContextVirtual::MakeCurrent(gl::GLSurface* surface) {
 }
 
 void GLContextVirtual::ReleaseCurrent(gl::GLSurface* surface) {
-  if (IsCurrent(surface)) {
-    shared_context_->OnReleaseVirtuallyCurrent(this);
+  if (!IsCurrent(surface))
+    return;
+
+  shared_context_->OnReleaseVirtuallyCurrent(this);
+
+  // If we are releasing a specific surface, we need to call ReleaseCurrent, as
+  // the surface may need to be destroyed.
+  // Additionally, if this is the last virtual context owner of a real context
+  // we may be tearing down and should also release.
+  if (surface || shared_context_->IsLastVirtualOwner(this))
     shared_context_->ReleaseCurrent(surface);
-  }
 }
 
 bool GLContextVirtual::IsCurrent(gl::GLSurface* surface) {
