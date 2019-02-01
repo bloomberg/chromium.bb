@@ -322,6 +322,28 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceMockClock) {
   EXPECT_EQ(start_time + kDelay, clock->Now());
 }
 
+TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTime) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+
+  const Time start_time = base::Time::Now();
+  scoped_task_environment.FastForwardBy(kDelay);
+  EXPECT_EQ(start_time + kDelay, base::Time::Now());
+}
+
+TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+
+  const TimeTicks start_time = base::TimeTicks::Now();
+  scoped_task_environment.FastForwardBy(kDelay);
+  EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
+}
+
 #if defined(OS_WIN)
 // Regression test to ensure that ScopedTaskEnvironment enables the MTA in the
 // thread pool (so that the test environment matches that of the browser process
