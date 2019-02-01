@@ -837,12 +837,14 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
     }
   }
 
+#if defined(OS_CHROMEOS)
   // Update num lock mask.
   num_lock_mod_mask_ = 0;
   xkb_mod_index_t num_mod_index =
       xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
   if (num_mod_index != XKB_MOD_INVALID)
     num_lock_mod_mask_ = static_cast<xkb_mod_mask_t>(1) << num_mod_index;
+#endif
 }
 
 xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
@@ -852,8 +854,10 @@ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
     if (ui_flags & entry.ui_flag)
       xkb_flags |= entry.xkb_flag;
   }
-  // NumLock is always on.
+#if defined(OS_CHROMEOS)
+  // In ChromeOS NumLock is always on.
   xkb_flags |= num_lock_mod_mask_;
+#endif
   return xkb_flags;
 }
 
