@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
       << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CheckSystemTokenAvailability,
     EnterprisePlatformKeysTest,
     ::testing::Values(
