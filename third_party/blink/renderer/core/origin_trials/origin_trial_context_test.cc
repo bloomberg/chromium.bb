@@ -9,10 +9,12 @@
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
@@ -220,6 +222,34 @@ TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated) {
   EXPECT_FALSE(OriginTrialContext::ParseHeaderValue("\"foo\" 'bar'"));
   EXPECT_FALSE(OriginTrialContext::ParseHeaderValue("foo 'bar'"));
   EXPECT_FALSE(OriginTrialContext::ParseHeaderValue("\"foo\" bar"));
+}
+
+TEST_F(OriginTrialContextTest, FeaturePolicy) {
+  // Create a dummy document with an OriginTrialContext.
+  std::unique_ptr<DummyPageHolder> dummy = DummyPageHolder::Create();
+  Document* document = &dummy->GetDocument();
+  OriginTrialContext* context = OriginTrialContext::FromOrCreate(document);
+
+  // Enable the sample origin trial API ("Frobulate").
+  context->AddFeature(origin_trials::kOriginTrialsSampleAPITrialName);
+  EXPECT_TRUE(
+      context->IsTrialEnabled(origin_trials::kOriginTrialsSampleAPITrialName));
+
+  // Make a mock feature name map with "frobulate".
+  FeatureNameMap feature_map;
+  feature_map.Set("frobulate", mojom::FeaturePolicyFeature::kFrobulate);
+
+  // Attempt to parse the "frobulate" feature policy. This will only work if the
+  // feature policy is successfully enabled via the origin trial.
+  scoped_refptr<const SecurityOrigin> security_origin =
+      SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
+  Vector<String> messages;
+  ParsedFeaturePolicy result;
+  result = ParseFeaturePolicy("frobulate", security_origin, nullptr, &messages,
+                              feature_map, document);
+  EXPECT_TRUE(messages.IsEmpty());
+  ASSERT_EQ(1u, result.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kFrobulate, result[0].feature);
 }
 
 }  // namespace blink

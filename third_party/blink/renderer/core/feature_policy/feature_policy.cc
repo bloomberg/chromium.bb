@@ -7,6 +7,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -18,12 +20,39 @@
 
 namespace blink {
 
+namespace {
+
+// Returns true if this feature is currently disabled by an origin trial (it is
+// origin trial controlled, and the origin trial is not enabled).
+bool IsOriginTrialDisabled(const String& feature_name,
+                           const ExecutionContext* execution_context) {
+  bool (*origin_trial_enabled)(const blink::ExecutionContext*);
+
+  // All origin trial controlled features should be listed here.
+  if (feature_name == "frobulate") {
+    origin_trial_enabled = origin_trials::OriginTrialsSampleAPIEnabled;
+  } else {
+    return false;
+  }
+
+  // Impossible to know without an ExecutionContext, so block.
+  if (!execution_context)
+    return true;
+
+  // Check whether this feature's origin trial is enabled, and block otherwise.
+  DCHECK(origin_trial_enabled);
+  return !origin_trial_enabled(execution_context);
+}
+
+}  // namespace
+
 ParsedFeaturePolicy ParseFeaturePolicyHeader(
     const String& policy,
     scoped_refptr<const SecurityOrigin> origin,
-    Vector<String>* messages) {
+    Vector<String>* messages,
+    ExecutionContext* execution_context) {
   return ParseFeaturePolicy(policy, origin, nullptr, messages,
-                            GetDefaultFeatureNameMap());
+                            GetDefaultFeatureNameMap(), execution_context);
 }
 
 ParsedFeaturePolicy ParseFeaturePolicyAttribute(
@@ -42,7 +71,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     scoped_refptr<const SecurityOrigin> src_origin,
     Vector<String>* messages,
     const FeatureNameMap& feature_names,
-    Document* document) {
+    ExecutionContext* execution_context) {
   ParsedFeaturePolicy allowlists;
   BitVector features_specified(
       static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
@@ -65,10 +94,19 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       // Empty policy. Skip.
       if (tokens.IsEmpty())
         continue;
+
       String feature_name = tokens[0];
       if (!feature_names.Contains(feature_name)) {
         if (messages) {
           messages->push_back("Unrecognized feature: '" + tokens[0] + "'.");
+        }
+        continue;
+      }
+
+      if (IsOriginTrialDisabled(feature_name, execution_context)) {
+        if (messages) {
+          messages->push_back("Origin trial controlled feature not enabled: '" +
+                              tokens[0] + "'.");
         }
         continue;
       }
@@ -81,6 +119,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 
       // Count the use of this feature policy.
       if (src_origin) {
+        Document* document = DynamicTo<Document>(execution_context);
         if (!document || !document->IsParsedFeaturePolicy(feature)) {
           UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.Allow",
                                     feature);

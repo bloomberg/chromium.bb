@@ -6324,7 +6324,7 @@ void Document::ApplyFeaturePolicyFromHeader(
     UseCounter::Count(*this, WebFeature::kFeaturePolicyHeader);
   Vector<String> messages;
   const ParsedFeaturePolicy& declared_policy = ParseFeaturePolicyHeader(
-      feature_policy_header, GetSecurityOrigin(), &messages);
+      feature_policy_header, GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
     AddConsoleMessage(
         ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
@@ -6388,7 +6388,7 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
   UseCounter::Count(*this, WebFeature::kFeaturePolicyReportOnlyHeader);
   Vector<String> messages;
   const ParsedFeaturePolicy& report_only_policy = ParseFeaturePolicyHeader(
-      feature_policy_report_only_header, GetSecurityOrigin(), &messages);
+      feature_policy_report_only_header, GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
     AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
