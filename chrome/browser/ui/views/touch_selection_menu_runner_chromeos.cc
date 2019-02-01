@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/touch_selection_menu_chromeos.h"
 #include "components/arc/arc_bridge_service.h"
@@ -79,6 +81,7 @@ bool TouchSelectionMenuRunnerChromeOS::RequestTextSelection(
   const display::Screen* screen = display::Screen::GetScreen();
   DCHECK(screen);
 
+  base::RecordAction(base::UserMetricsAction("Arc.SmartTextSelection.Request"));
   // Fetch actions for selected text and then show quick menu.
   instance->RequestTextSelectionActions(
       converted_text,
