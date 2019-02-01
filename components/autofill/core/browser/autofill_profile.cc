@@ -838,7 +838,7 @@ bool AutofillProfile::HasGreaterFrescocencyThan(
   bool other_is_valid = (!use_client_validation || other->IsValidByClient()) &&
                         (!use_server_validation || other->IsValidByServer());
   if (is_valid == other_is_valid)
-    return CompareFrecency(other, comparison_time);
+    return HasGreaterFrecencyThan(other, comparison_time);
   if (is_valid && !other_is_valid)
     return true;
   return false;
@@ -922,7 +922,6 @@ void AutofillProfile::SetValidityState(
     return;
   }
   DCHECK_EQ(SERVER, validation_source);
-  LOG(ERROR) << __FUNCTION__;
   server_validity_states_[type] = validity;
 }
 

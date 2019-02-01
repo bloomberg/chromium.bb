@@ -1134,8 +1134,9 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
       comparator.NormalizeForComparison(field_contents);
 
   if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillProfileServerValidation))
+          autofill::features::kAutofillProfileServerValidation)) {
     UpdateProfilesServerValidityMapsIfNeeded(GetProfiles());
+  }
 
   // Get the profiles to suggest, which are already sorted.
   std::vector<AutofillProfile*> sorted_profiles = GetProfilesToSuggest();
@@ -1212,7 +1213,7 @@ const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest(
                      if (a_is_expired != b->IsExpired(comparison_time))
                        return !a_is_expired;
 
-                     return a->CompareFrecency(b, comparison_time);
+                     return a->HasGreaterFrecencyThan(b, comparison_time);
                    });
 
   return cards_to_suggest;
@@ -1467,7 +1468,7 @@ std::string PersonalDataManager::MergeProfile(
                               const std::unique_ptr<AutofillProfile>& b) {
               if (a->IsVerified() != b->IsVerified())
                 return !a->IsVerified();
-              return a->CompareFrecency(b.get(), comparison_time);
+              return a->HasGreaterFrecencyThan(b.get(), comparison_time);
             });
 
   // Set to true if |existing_profiles| already contains an equivalent profile.
@@ -2193,7 +2194,7 @@ void PersonalDataManager::DedupeProfiles(
                               const std::unique_ptr<AutofillProfile>& b) {
               if (a->IsVerified() != b->IsVerified())
                 return !a->IsVerified();
-              return a->CompareFrecency(b.get(), comparison_time);
+              return a->HasGreaterFrecencyThan(b.get(), comparison_time);
             });
 
   AutofillProfileComparator comparator(app_locale_);
