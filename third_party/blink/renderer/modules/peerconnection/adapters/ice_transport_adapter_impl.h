@@ -21,6 +21,7 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
   IceTransportAdapterImpl(
       Delegate* delegate,
       std::unique_ptr<cricket::PortAllocator> port_allocator,
+      std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory,
       rtc::Thread* thread);
   ~IceTransportAdapterImpl() override;
 
@@ -51,6 +52,7 @@ class IceTransportAdapterImpl final : public IceTransportAdapter,
 
   Delegate* const delegate_;
   std::unique_ptr<cricket::PortAllocator> port_allocator_;
+  std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory_;
   std::unique_ptr<cricket::IceTransportInternal> p2p_transport_channel_;
   std::unique_ptr<P2PQuicPacketTransport> quic_packet_transport_adapter_;
 };

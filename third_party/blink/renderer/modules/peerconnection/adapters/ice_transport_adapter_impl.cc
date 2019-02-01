@@ -11,8 +11,11 @@ namespace blink {
 IceTransportAdapterImpl::IceTransportAdapterImpl(
     Delegate* delegate,
     std::unique_ptr<cricket::PortAllocator> port_allocator,
+    std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory,
     rtc::Thread* thread)
-    : delegate_(delegate), port_allocator_(std::move(port_allocator)) {
+    : delegate_(delegate),
+      port_allocator_(std::move(port_allocator)),
+      async_resolver_factory_(std::move(async_resolver_factory)) {
   // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
   if (!rtc::ThreadManager::Instance()->CurrentThread()) {
     rtc::ThreadManager::Instance()->SetCurrentThread(thread);
@@ -28,7 +31,7 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
   port_allocator_->Initialize();
 
   p2p_transport_channel_ = std::make_unique<cricket::P2PTransportChannel>(
-      "", 0, port_allocator_.get());
+      "", 0, port_allocator_.get(), async_resolver_factory.get());
   p2p_transport_channel_->SignalGatheringState.connect(
       this, &IceTransportAdapterImpl::OnGatheringStateChanged);
   p2p_transport_channel_->SignalCandidateGathered.connect(
