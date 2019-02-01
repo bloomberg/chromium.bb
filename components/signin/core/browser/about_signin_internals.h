@@ -16,6 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 

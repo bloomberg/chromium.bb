@@ -35,7 +35,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class AccountTrackerService;
