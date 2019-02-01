@@ -46,18 +46,22 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestGpuChannelManagerDelegate);
 };
 
-GpuChannelTestCommon::GpuChannelTestCommon()
-    : GpuChannelTestCommon(std::vector<int32_t>()) {}
+GpuChannelTestCommon::GpuChannelTestCommon(bool use_stub_bindings)
+    : GpuChannelTestCommon(std::vector<int32_t>(), use_stub_bindings) {}
 
 GpuChannelTestCommon::GpuChannelTestCommon(
-    std::vector<int32_t> enabled_workarounds)
+    std::vector<int32_t> enabled_workarounds,
+    bool use_stub_bindings)
     : task_runner_(new base::TestSimpleTaskRunner),
       io_task_runner_(new base::TestSimpleTaskRunner),
       sync_point_manager_(new SyncPointManager()),
       scheduler_(new Scheduler(task_runner_, sync_point_manager_.get())),
       channel_manager_delegate_(new TestGpuChannelManagerDelegate()) {
   // We need GL bindings to actually initialize command buffers.
-  gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
+  if (use_stub_bindings)
+    gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
+  else
+    gl::GLSurfaceTestSupport::InitializeOneOff();
 
   GpuFeatureInfo feature_info;
   feature_info.enabled_gpu_driver_bug_workarounds =

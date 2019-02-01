@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -782,11 +783,21 @@ void CommandBufferStub::RemoveDestructionObserver(
 }
 
 std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker(
-    const GPUCreateCommandBufferConfig init_params) const {
+    const GPUCreateCommandBufferConfig& init_params) const {
+  MemoryTrackerFactory current_factory = GetMemoryTrackerFactory();
+  if (current_factory)
+    return current_factory.Run(init_params);
+
   return std::make_unique<GpuCommandBufferMemoryTracker>(
       channel_->client_id(), channel_->client_tracing_id(),
       command_buffer_id_.GetUnsafeValue(), init_params.attribs.context_type,
       channel_->task_runner());
+}
+
+// static
+void CommandBufferStub::SetMemoryTrackerFactoryForTesting(
+    MemoryTrackerFactory factory) {
+  SetOrGetMemoryTrackerFactory(factory);
 }
 
 MemoryTracker* CommandBufferStub::GetMemoryTracker() const {
@@ -818,6 +829,22 @@ void CommandBufferStub::MarkContextLost() {
   if (decoder_context_)
     decoder_context_->MarkContextLost(error::kUnknown);
   command_buffer_->SetParseError(error::kLostContext);
+}
+
+// static
+CommandBufferStub::MemoryTrackerFactory
+CommandBufferStub::GetMemoryTrackerFactory() {
+  return SetOrGetMemoryTrackerFactory(base::NullCallback());
+}
+
+// static
+CommandBufferStub::MemoryTrackerFactory
+CommandBufferStub::SetOrGetMemoryTrackerFactory(MemoryTrackerFactory factory) {
+  static base::NoDestructor<MemoryTrackerFactory> current_factory{
+      base::NullCallback()};
+  if (factory)
+    *current_factory = factory;
+  return *current_factory;
 }
 
 }  // namespace gpu
