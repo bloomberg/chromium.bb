@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -208,11 +208,11 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestClearsCookies) {
 IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestCannotSignin) {
   Browser* guest_browser = OpenGuestBrowser();
 
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(
-      guest_browser->profile());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(guest_browser->profile());
 
-  // Guest profiles can't sign in without a SigninManager.
-  ASSERT_FALSE(signin_manager);
+  // Guest profiles can't sign in without a IdentityManager.
+  ASSERT_FALSE(identity_manager);
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestAppMenuLacksBookmarks) {
