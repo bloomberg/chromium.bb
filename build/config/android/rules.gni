@@ -2223,6 +2223,7 @@ if (enable_java_templates) {
                              [
                                "app_as_shared_lib",
                                "shared_resources",
+                               "shared_resources_whitelist_locales",
                                "support_zh_hk",
                                "aapt_locale_whitelist",
                                "package_name",
@@ -2982,6 +2983,7 @@ if (enable_java_templates) {
                                "secondary_native_lib_placeholders",
                                "shared_libraries",
                                "shared_resources",
+                               "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
                                "srcjar_deps",
                                "support_zh_hk",
@@ -3021,6 +3023,7 @@ if (enable_java_templates) {
       assert(!defined(invoker.app_as_shared_lib))
       assert(!defined(invoker.shared_resources))
       assert(!defined(invoker.shared_resources_whitelist_target))
+      assert(!defined(invoker.shared_resources_whitelist_locales))
       assert(!defined(invoker.build_hooks_android_impl_deps))
       assert(!defined(invoker.shared_libraries))
       assert(defined(invoker.base_module_target))
@@ -3087,6 +3090,7 @@ if (enable_java_templates) {
                                "secondary_native_lib_placeholders",
                                "shared_libraries",
                                "shared_resources",
+                               "shared_resources_whitelist_locales",
                                "shared_resources_whitelist_target",
                                "srcjar_deps",
                                "support_zh_hk",

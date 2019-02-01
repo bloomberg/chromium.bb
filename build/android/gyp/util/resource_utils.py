@@ -143,6 +143,10 @@ def FindLocaleInStringResourceFilePath(file_path):
   return qualifier if IsAndroidLocaleQualifier(qualifier) else None
 
 
+def ToAndroidLocaleList(locale_list):
+  """Convert a list of Chromium locales into the corresponding Android list."""
+  return sorted(ToAndroidLocaleName(locale) for locale in locale_list)
+
 # Represents a line from a R.txt file.
 _TextSymbolEntry = collections.namedtuple('RTextEntry',
     ('java_type', 'resource_type', 'name', 'value'))
@@ -668,3 +672,112 @@ def HandleCommonOptions(options):
 
   if not options.aapt2_path:
     options.aapt2_path = options.aapt_path + '2'
+
+
+def ParseAndroidResourceStringsFromXml(xml_data):
+  """Parse and Android xml resource file and extract strings from it.
+
+  Args:
+    xml_data: XML file data.
+  Returns:
+    A (dict, namespaces) tuple, where |dict| maps string names to their UTF-8
+    encoded value, and |namespaces| is a dictionary mapping prefixes to URLs
+    corresponding to namespaces declared in the <resources> element.
+  """
+  # NOTE: This uses regular expression matching because parsing with something
+  # like ElementTree makes it tedious to properly parse some of the structured
+  # text found in string resources, e.g.:
+  #      <string msgid="3300176832234831527" \
+  #         name="abc_shareactionprovider_share_with_application">\
+  #             "Condividi tramite <ns1:g id="APPLICATION_NAME">%s</ns1:g>"\
+  #      </string>
+  result = {}
+
+  # Find <resources> start tag and extract namespaces from it.
+  m = re.search('<resources([^>]*)>', xml_data, re.MULTILINE)
+  if not m:
+    raise Exception('<resources> start tag expected: ' + xml_data)
+  input_data = xml_data[m.end():]
+  resource_attrs = m.group(1)
+  re_namespace = re.compile('\s*(xmlns:(\w+)="([^"]+)")')
+  namespaces = {}
+  while resource_attrs:
+    m = re_namespace.match(resource_attrs)
+    if not m:
+      break
+    namespaces[m.group(2)] = m.group(3)
+    resource_attrs = resource_attrs[m.end(1):]
+
+  # Find each string element now.
+  re_string_element_start = re.compile('<string ([^>]* )?name="([^">]+)"[^>]*>')
+  re_string_element_end = re.compile('</string>')
+  while input_data:
+    m = re_string_element_start.search(input_data)
+    if not m:
+      break
+    name = m.group(2)
+    input_data = input_data[m.end():]
+    m2 = re_string_element_end.search(input_data)
+    if not m2:
+      raise Exception('Expected closing string tag: ' + input_data)
+    text = input_data[:m2.start()]
+    input_data = input_data[m2.end():]
+    if len(text) and text[0] == '"' and text[-1] == '"':
+      text = text[1:-1]
+    result[name] = text
+
+  return result, namespaces
+
+
+def GenerateAndroidResourceStringsXml(names_to_utf8_text, namespaces=None):
+  """Generate an XML text corresponding to an Android resource strings map.
+
+  Args:
+    names_to_text: A dictionary mapping resource names to localized
+      text (encoded as UTF-8).
+    namespaces: A map of namespace prefix to URL.
+  Returns:
+    New non-Unicode string containing an XML data structure describing the
+    input as an Android resource .xml file.
+  """
+  result = '<?xml version="1.0" encoding="utf-8"?>\n'
+  result += '<resources'
+  if namespaces:
+    for prefix, url in sorted(namespaces.iteritems()):
+      result += ' xmlns:%s="%s"' % (prefix, url)
+  result += '>\n'
+  if not names_to_utf8_text:
+    result += '<!-- this file intentionally empty -->\n'
+  else:
+    for name, utf8_text in sorted(names_to_utf8_text.iteritems()):
+      result += '<string name="%s">"%s"</string>\n' % (name, utf8_text)
+  result += '</resources>\n'
+  return result
+
+
+def FilterAndroidResourceStringsXml(xml_file_path, string_predicate):
+  """Remove unwanted localized strings from an Android resource .xml file.
+
+  This function takes a |string_predicate| callable object that will
+  receive a resource string name, and should return True iff the
+  corresponding <string> element should be kept in the file.
+
+  Args:
+    xml_file_path: Android resource strings xml file path.
+    string_predicate: A predicate function which will receive the string name
+      and shal
+  """
+  with open(xml_file_path) as f:
+    xml_data = f.read()
+  strings_map, namespaces = ParseAndroidResourceStringsFromXml(xml_data)
+
+  string_deletion = False
+  for name in strings_map.keys():
+    if not string_predicate(name):
+      del strings_map[name]
+      string_deletion = True
+
+  if string_deletion:
+    new_xml_data = GenerateAndroidResourceStringsXml(strings_map, namespaces)
+    with open(xml_file_path, 'wb') as f:
+      f.write(new_xml_data)

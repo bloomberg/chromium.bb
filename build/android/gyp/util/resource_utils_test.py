@@ -19,27 +19,42 @@ sys.path.insert(1, _BUILD_ANDROID_GYP_ROOT)
 
 import resource_utils  # pylint: disable=relative-import
 
-_RES_STRINGS_1 = {
-    'low_memory_error': 'Eelmist toimingut ei saa vähese mälu tõttu lõpetada',
-    'opening_file_error': 'Valit. faili avamine ebaõnnestus',
-    'copy_to_clipboard_failure_message': 'Lõikelauale kopeerimine ebaõnnestus'
-}
-
 # pylint: disable=line-too-long
-_EXPECTED_XML_1 = '''<?xml version="1.0" encoding="utf-8"?>
+
+_TEST_XML_INPUT_1 = '''<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 <string name="copy_to_clipboard_failure_message">"Lõikelauale kopeerimine ebaõnnestus"</string>
 <string name="low_memory_error">"Eelmist toimingut ei saa vähese mälu tõttu lõpetada"</string>
 <string name="opening_file_error">"Valit. faili avamine ebaõnnestus"</string>
+<string name="structured_text">"This is <android:g id="STRUCTURED_TEXT">%s</android:g>"</string>
 </resources>
 '''
-# pylint: enable=line-too-long
 
-_XML_RESOURCES_PREFIX = r'''<?xml version="1.0" encoding="utf-8"?>
+_TEST_XML_OUTPUT_2 = '''<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+<string name="low_memory_error">"Eelmist toimingut ei saa vähese mälu tõttu lõpetada"</string>
+<string name="structured_text">"This is <android:g id="STRUCTURED_TEXT">%s</android:g>"</string>
+</resources>
 '''
 
-_XML_RESOURCES_SUFFIX = '</resources>\n'
+# pylint: enable=line-too-long
+
+_TEST_XML_OUTPUT_EMPTY = '''<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- this file intentionally empty -->
+</resources>
+'''
+
+_TEST_RESOURCES_MAP_1 = {
+    'low_memory_error': 'Eelmist toimingut ei saa vähese mälu tõttu lõpetada',
+    'opening_file_error': 'Valit. faili avamine ebaõnnestus',
+    'copy_to_clipboard_failure_message': 'Lõikelauale kopeerimine ebaõnnestus',
+    'structured_text': 'This is <android:g id="STRUCTURED_TEXT">%s</android:g>',
+}
+
+_TEST_NAMESPACES_1 = {'android': 'http://schemas.android.com/apk/res/android'}
+
+_TEST_RESOURCES_WHITELIST_1 = ['low_memory_error', 'structured_text']
 
 # Extracted from one generated Chromium R.txt file, with string resource
 # names shuffled randomly.
@@ -206,6 +221,45 @@ class ResourceUtilsTest(unittest.TestCase):
         None,
         resource_utils.FindLocaleInStringResourceFilePath(
             'res/values-foo/ignore-subdirs/whatever.xml'))
+
+  def test_ParseAndroidResourceStringsFromXml(self):
+    ret, namespaces = resource_utils.ParseAndroidResourceStringsFromXml(
+        _TEST_XML_INPUT_1)
+    self.assertDictEqual(ret, _TEST_RESOURCES_MAP_1)
+    self.assertDictEqual(namespaces, _TEST_NAMESPACES_1)
+
+  def test_GenerateAndroidResourceStringsXml(self):
+    # Fist, an empty strings map, with no namespaces
+    result = resource_utils.GenerateAndroidResourceStringsXml({})
+    self.assertEqual(result, _TEST_XML_OUTPUT_EMPTY)
+
+    result = resource_utils.GenerateAndroidResourceStringsXml(
+        _TEST_RESOURCES_MAP_1, _TEST_NAMESPACES_1)
+    self.assertEqual(result, _TEST_XML_INPUT_1)
+
+  @staticmethod
+  def _CreateTestResourceFile(output_dir, locale, string_map, namespaces):
+    values_dir = os.path.join(output_dir, 'values-' + locale)
+    build_utils.MakeDirectory(values_dir)
+    file_path = os.path.join(values_dir, 'strings.xml')
+    with open(file_path, 'w') as f:
+      file_data = resource_utils.GenerateAndroidResourceStringsXml(
+          string_map, namespaces)
+      f.write(file_data)
+    return file_path
+
+  def _CheckTestResourceFile(self, file_path, expected_data):
+    with open(file_path) as f:
+      file_data = f.read()
+    self.assertEqual(file_data, expected_data)
+
+  def test_FilterAndroidResourceStringsXml(self):
+    with build_utils.TempDir() as tmp_path:
+      test_file = self._CreateTestResourceFile(
+          tmp_path, 'foo', _TEST_RESOURCES_MAP_1, _TEST_NAMESPACES_1)
+      resource_utils.FilterAndroidResourceStringsXml(
+          test_file, lambda x: x in _TEST_RESOURCES_WHITELIST_1)
+      self._CheckTestResourceFile(test_file, _TEST_XML_OUTPUT_2)
 
 
 if __name__ == '__main__':
