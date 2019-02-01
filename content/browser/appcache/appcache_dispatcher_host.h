@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_frontend_proxy.h"
@@ -56,12 +55,8 @@ class AppCacheDispatcherHost : public blink::mojom::AppCacheBackend {
   void GetResourceList(int32_t host_id,
                        GetResourceListCallback callback) override;
 
-  // This object is owned by the |ChromeAppCacheService|, so this is safe.
-  ChromeAppCacheService* appcache_service_;
   AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;
-
-  base::WeakPtrFactory<AppCacheDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);
 };
