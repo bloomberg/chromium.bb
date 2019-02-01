@@ -100,11 +100,12 @@ class ScopedTaskEnvironment {
   };
 
   enum class NowSource {
-    // base::TimeTicks::Now is real time.
+    // base::Time::Now() and base::TimeTicks::Now() are real time.
     REAL_TIME,
 
-    // base::TimeTicks::Now is driven from the main thread's MOCK_TIME. This
-    // may alter the order of delayed and non-delayed tasks on other threads.
+    // base::Time::Now() and base::TimeTicks::Now() are driven from the main
+    // thread's MOCK_TIME. This may alter the order of delayed and non-delayed
+    // tasks on other threads.
     //
     // Warning some platform APIs are still real time, and don't interact with
     // MOCK_TIME as expected, e.g.:
