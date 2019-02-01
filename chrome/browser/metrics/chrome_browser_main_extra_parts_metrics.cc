@@ -173,14 +173,6 @@ enum UMATouchEventFeatureDetectionState {
   UMA_TOUCH_EVENT_FEATURE_DETECTION_STATE_COUNT
 };
 
-#if defined(OS_ANDROID) && defined(__arm__)
-enum UMAAndroidArmFpu {
-  UMA_ANDROID_ARM_FPU_VFPV3_D16,  // The ARM CPU only supports vfpv3-d16.
-  UMA_ANDROID_ARM_FPU_NEON,       // The Arm CPU supports NEON.
-  UMA_ANDROID_ARM_FPU_COUNT
-};
-#endif  // defined(OS_ANDROID) && defined(__arm__)
-
 void RecordMicroArchitectureStats() {
 #if defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
@@ -188,19 +180,6 @@ void RecordMicroArchitectureStats() {
   UMA_HISTOGRAM_ENUMERATION("Platform.IntelMaxMicroArchitecture", arch,
                             base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
 #endif  // defined(ARCH_CPU_X86_FAMILY)
-#if defined(OS_ANDROID) && defined(__arm__)
-  // Detect NEON support.
-  // TODO(fdegans): Remove once non-NEON support has been removed.
-  if (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) {
-    UMA_HISTOGRAM_ENUMERATION("Android.ArmFpu",
-                              UMA_ANDROID_ARM_FPU_NEON,
-                              UMA_ANDROID_ARM_FPU_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Android.ArmFpu",
-                              UMA_ANDROID_ARM_FPU_VFPV3_D16,
-                              UMA_ANDROID_ARM_FPU_COUNT);
-  }
-#endif  // defined(OS_ANDROID) && defined(__arm__)
   base::UmaHistogramSparse("Platform.LogicalCpuCount",
                            base::SysInfo::NumberOfProcessors());
 }
