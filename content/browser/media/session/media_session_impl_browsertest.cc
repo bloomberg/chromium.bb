@@ -2197,11 +2197,18 @@ IN_PROC_BROWSER_TEST_P(
   // Set up the service and information.
   EnsureMediaSessionService();
 
-  media_session::MediaMetadata metadata;
-  metadata.title = base::ASCIIToUTF16("title");
-  metadata.artist = base::ASCIIToUTF16("artist");
-  metadata.album = base::ASCIIToUTF16("album");
-  mock_media_session_service_->SetMetadata(metadata);
+  media_session::MediaMetadata expected_metadata;
+  expected_metadata.title = base::ASCIIToUTF16("title");
+  expected_metadata.artist = base::ASCIIToUTF16("artist");
+  expected_metadata.album = base::ASCIIToUTF16("album");
+  expected_metadata.source_title = GetExpectedSourceTitle();
+
+  blink::mojom::SpecMediaMetadataPtr spec_metadata(
+      blink::mojom::SpecMediaMetadata::New());
+  spec_metadata->title = base::ASCIIToUTF16("title");
+  spec_metadata->artist = base::ASCIIToUTF16("artist");
+  spec_metadata->album = base::ASCIIToUTF16("album");
+  mock_media_session_service_->SetMetadata(std::move(spec_metadata));
 
   // Make sure the service is routed,
   auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>(
@@ -2212,8 +2219,7 @@ IN_PROC_BROWSER_TEST_P(
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
     ResolveAudioFocusSuccess();
 
-    metadata.source_title = GetExpectedSourceTitle();
-    EXPECT_EQ(metadata, observer.WaitForNonEmptyMetadata());
+    EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
   }
 }
 

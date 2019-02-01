@@ -54,63 +54,32 @@ bool CheckMediaImageSanity(
   return true;
 }
 
-// Sanitize MediaImage. The method should not be called if |image.src| is bad.
-media_session::MediaMetadata::MediaImage SanitizeMediaImage(
-    const media_session::MediaMetadata::MediaImage& image) {
-  media_session::MediaMetadata::MediaImage sanitized_image;
-
-  sanitized_image.src = image.src;
-  sanitized_image.type = image.type.substr(0, kMaxMediaImageTypeLength);
-  for (const auto& size : image.sizes) {
-    sanitized_image.sizes.push_back(size);
-    if (sanitized_image.sizes.size() == kMaxNumberOfMediaImageSizes)
-      break;
-  }
-
-  return sanitized_image;
-}
-
 }  // anonymous namespace
 
-bool MediaMetadataSanitizer::CheckSanity(
-    const media_session::MediaMetadata& metadata) {
-  if (metadata.title.size() > kMaxIPCStringLength)
+bool MediaMetadataSanitizer::SanitizeAndConvert(
+    const blink::mojom::SpecMediaMetadataPtr& metadata,
+    media_session::MediaMetadata* metadata_out) {
+  if (metadata->title.size() > kMaxIPCStringLength)
     return false;
-  if (metadata.artist.size() > kMaxIPCStringLength)
+  if (metadata->artist.size() > kMaxIPCStringLength)
     return false;
-  if (metadata.album.size() > kMaxIPCStringLength)
+  if (metadata->album.size() > kMaxIPCStringLength)
     return false;
-  if (metadata.artwork.size() > kMaxNumberOfMediaImages)
+  if (metadata->artwork.size() > kMaxNumberOfMediaImages)
     return false;
 
-  for (const auto& image : metadata.artwork) {
+  metadata_out->title = metadata->title;
+  metadata_out->artist = metadata->artist;
+  metadata_out->album = metadata->album;
+
+  for (const auto& image : metadata->artwork) {
     if (!CheckMediaImageSanity(image))
       return false;
+
+    metadata_out->artwork.push_back(image);
   }
 
   return true;
-}
-
-media_session::MediaMetadata MediaMetadataSanitizer::Sanitize(
-    const media_session::MediaMetadata& metadata) {
-  media_session::MediaMetadata sanitized_metadata;
-
-  sanitized_metadata.title = metadata.title.substr(0, kMaxIPCStringLength);
-  sanitized_metadata.artist = metadata.artist.substr(0, kMaxIPCStringLength);
-  sanitized_metadata.album = metadata.album.substr(0, kMaxIPCStringLength);
-
-  for (const auto& image : metadata.artwork) {
-    if (!CheckMediaImageSrcSanity(image.src))
-      continue;
-
-    sanitized_metadata.artwork.push_back(
-        CheckMediaImageSanity(image) ? image : SanitizeMediaImage(image));
-
-    if (sanitized_metadata.artwork.size() == kMaxNumberOfMediaImages)
-      break;
-  }
-
-  return sanitized_metadata;
 }
 
 }  // namespace content

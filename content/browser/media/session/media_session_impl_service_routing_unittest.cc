@@ -277,7 +277,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  services_[main_frame_]->SetMetadata(media_session::MediaMetadata());
+  services_[main_frame_]->SetMetadata(nullptr);
   services_[main_frame_]->EnableAction(MediaSessionAction::kPlay);
 
   observer.WaitForActions();
@@ -312,7 +312,13 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
 
-    services_[main_frame_]->SetMetadata(expected_metadata);
+    blink::mojom::SpecMediaMetadataPtr spec_metadata(
+        blink::mojom::SpecMediaMetadata::New());
+    spec_metadata->title = base::ASCIIToUTF16("title");
+    spec_metadata->artist = base::ASCIIToUTF16("artist");
+    spec_metadata->album = base::ASCIIToUTF16("album");
+
+    services_[main_frame_]->SetMetadata(std::move(spec_metadata));
     services_[main_frame_]->EnableAction(MediaSessionAction::kSeekForward);
 
     observer.WaitForActions();
@@ -334,7 +340,16 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  services_[main_frame_]->SetMetadata(expected_metadata);
+  {
+    blink::mojom::SpecMediaMetadataPtr spec_metadata(
+        blink::mojom::SpecMediaMetadata::New());
+    spec_metadata->title = base::ASCIIToUTF16("title");
+    spec_metadata->artist = base::ASCIIToUTF16("artist");
+    spec_metadata->album = base::ASCIIToUTF16("album");
+
+    services_[main_frame_]->SetMetadata(std::move(spec_metadata));
+  }
+
   services_[main_frame_]->EnableAction(MediaSessionAction::kSeekForward);
 
   {
@@ -372,7 +387,15 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   CreateServiceForFrame(main_frame_);
 
-  services_[main_frame_]->SetMetadata(expected_metadata);
+  {
+    blink::mojom::SpecMediaMetadataPtr spec_metadata(
+        blink::mojom::SpecMediaMetadata::New());
+    spec_metadata->title = base::ASCIIToUTF16("title");
+    spec_metadata->artist = base::ASCIIToUTF16("artist");
+    spec_metadata->album = base::ASCIIToUTF16("album");
+
+    services_[main_frame_]->SetMetadata(std::move(spec_metadata));
+  }
 
   StartPlayerForFrame(main_frame_);
 
@@ -577,7 +600,15 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
-    services_[main_frame_]->SetMetadata(expected_metadata);
+
+    blink::mojom::SpecMediaMetadataPtr spec_metadata(
+        blink::mojom::SpecMediaMetadata::New());
+    spec_metadata->title = base::ASCIIToUTF16("title");
+    spec_metadata->artist = base::ASCIIToUTF16("artist");
+    spec_metadata->album = base::ASCIIToUTF16("album");
+
+    services_[main_frame_]->SetMetadata(std::move(spec_metadata));
+
     EXPECT_EQ(expected_metadata, observer.WaitForNonEmptyMetadata());
   }
 }
@@ -593,7 +624,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   {
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
-    services_[main_frame_]->SetMetadata(base::nullopt);
+    services_[main_frame_]->SetMetadata(nullptr);
 
     // When the session becomes controllable we should receive default
     // metadata. The |is_controllable| boolean will also become true.

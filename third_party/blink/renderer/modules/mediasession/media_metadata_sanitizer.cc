@@ -87,21 +87,18 @@ media_session::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
 
 }  // anonymous namespace
 
-media_session::mojom::blink::MediaMetadataPtr
+blink::mojom::blink::SpecMediaMetadataPtr
 MediaMetadataSanitizer::SanitizeAndConvertToMojo(const MediaMetadata* metadata,
                                                  ExecutionContext* context) {
-  media_session::mojom::blink::MediaMetadataPtr mojo_metadata;
   if (!metadata)
-    return mojo_metadata;
+    return blink::mojom::blink::SpecMediaMetadataPtr();
 
-  mojo_metadata = media_session::mojom::blink::MediaMetadata::New();
+  blink::mojom::blink::SpecMediaMetadataPtr mojo_metadata(
+      blink::mojom::blink::SpecMediaMetadata::New());
 
   mojo_metadata->title = metadata->title().Left(kMaxStringLength);
   mojo_metadata->artist = metadata->artist().Left(kMaxStringLength);
   mojo_metadata->album = metadata->album().Left(kMaxStringLength);
-
-  // |source_title_| is populated by content::MediaSessionImpl.
-  mojo_metadata->source_title = g_empty_string16_bit;
 
   for (const MediaImage* image : metadata->artwork()) {
     media_session::mojom::blink::MediaImagePtr mojo_image =
