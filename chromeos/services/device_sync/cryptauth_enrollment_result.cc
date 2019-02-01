@@ -40,6 +40,9 @@ CryptAuthEnrollmentResult::CryptAuthEnrollmentResult(
     const base::Optional<cryptauthv2::ClientDirective>& client_directive)
     : result_code_(result_code), client_directive_(client_directive) {}
 
+CryptAuthEnrollmentResult::CryptAuthEnrollmentResult(
+    const CryptAuthEnrollmentResult& other) = default;
+
 CryptAuthEnrollmentResult::~CryptAuthEnrollmentResult() = default;
 
 bool CryptAuthEnrollmentResult::IsSuccess() const {

@@ -15,6 +15,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/services/device_sync/fake_cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,47 +51,6 @@ std::string ClientDirectiveToPrefString(
 
   return encoded_serialized_client_directive;
 }
-
-class FakeDelegate : public CryptAuthEnrollmentScheduler::Delegate {
- public:
-  FakeDelegate() = default;
-
-  ~FakeDelegate() override = default;
-
-  void OnEnrollmentRequested(const base::Optional<cryptauthv2::PolicyReference>&
-                                 client_directive_policy_reference) override {
-    policy_reference_history_.push_back(client_directive_policy_reference);
-  }
-
-  const std::vector<base::Optional<cryptauthv2::PolicyReference>>&
-  policy_reference_history() {
-    return policy_reference_history_;
-  }
-
-  void VerifyReceivedPolicyReference(
-      size_t num_expected_received_policy_references,
-      const base::Optional<cryptauthv2::PolicyReference>&
-          last_expected_received_policy_reference) {
-    EXPECT_EQ(num_expected_received_policy_references,
-              policy_reference_history_.size());
-
-    if (policy_reference_history_.empty())
-      return;
-
-    EXPECT_EQ(last_expected_received_policy_reference.has_value(),
-              policy_reference_history_.back().has_value());
-
-    if (policy_reference_history_.back().has_value() &&
-        last_expected_received_policy_reference.has_value()) {
-      EXPECT_EQ(last_expected_received_policy_reference->SerializeAsString(),
-                policy_reference_history_.back()->SerializeAsString());
-    }
-  }
-
- private:
-  std::vector<base::Optional<cryptauthv2::PolicyReference>>
-      policy_reference_history_;
-};
 
 }  // namespace
 
@@ -130,7 +90,43 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
     test_task_runner->RunUntilIdle();
   }
 
-  FakeDelegate* delegate() { return &fake_delegate_; }
+  void VerifyReceivedPolicyReference(
+      size_t num_expected_received_policy_references,
+      const base::Optional<cryptauthv2::PolicyReference>&
+          last_expected_received_policy_reference) {
+    EXPECT_EQ(
+        num_expected_received_policy_references,
+        fake_delegate_.policy_references_from_enrollment_requests().size());
+
+    if (fake_delegate_.policy_references_from_enrollment_requests().empty())
+      return;
+
+    EXPECT_EQ(last_expected_received_policy_reference.has_value(),
+              fake_delegate_.policy_references_from_enrollment_requests()
+                  .back()
+                  .has_value());
+
+    if (fake_delegate_.policy_references_from_enrollment_requests()
+            .back()
+            .has_value() &&
+        last_expected_received_policy_reference.has_value()) {
+      EXPECT_EQ(last_expected_received_policy_reference->SerializeAsString(),
+                fake_delegate_.policy_references_from_enrollment_requests()
+                    .back()
+                    ->SerializeAsString());
+    }
+  }
+
+  void VerifyLastEnrollmentAttemptTimePref(const base::Time& expected_time) {
+    EXPECT_EQ(
+        pref_service_.GetTime(
+            prefs::kCryptAuthEnrollmentSchedulerLastEnrollmentAttemptTime),
+        expected_time);
+  }
+
+  FakeCryptAuthEnrollmentSchedulerDelegate* delegate() {
+    return &fake_delegate_;
+  }
 
   PrefService* pref_service() { return &pref_service_; }
 
@@ -144,15 +140,8 @@ class DeviceSyncPersistentEnrollmentSchedulerTest : public testing::Test {
     return fake_client_directive_;
   }
 
-  void VerifyLastEnrollmentAttemptTimePref(const base::Time& expected_time) {
-    EXPECT_EQ(
-        pref_service_.GetTime(
-            prefs::kCryptAuthEnrollmentSchedulerLastEnrollmentAttemptTime),
-        expected_time);
-  }
-
  private:
-  FakeDelegate fake_delegate_;
+  FakeCryptAuthEnrollmentSchedulerDelegate fake_delegate_;
   TestingPrefServiceSimple pref_service_;
   base::SimpleTestClock test_clock_;
   base::MockOneShotTimer* mock_timer_;
@@ -181,7 +170,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
   timer()->Fire();
 
   EXPECT_TRUE(scheduler()->IsWaitingForEnrollmentResult());
-  delegate()->VerifyReceivedPolicyReference(1, base::nullopt);
+  VerifyReceivedPolicyReference(1, base::nullopt);
 
   CryptAuthEnrollmentResult result(
       CryptAuthEnrollmentResult::ResultCode::kSuccessNewKeysEnrolled,
@@ -202,8 +191,7 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
 
   timer()->Fire();
 
-  delegate()->VerifyReceivedPolicyReference(
-      2, fake_client_directive().policy_reference());
+  VerifyReceivedPolicyReference(2, fake_client_directive().policy_reference());
 }
 
 TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
@@ -237,7 +225,8 @@ TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,
 
   scheduler()->RequestEnrollmentNow();
   EXPECT_TRUE(scheduler()->IsWaitingForEnrollmentResult());
-  EXPECT_EQ(1u, delegate()->policy_reference_history().size());
+  EXPECT_EQ(1u,
+            delegate()->policy_references_from_enrollment_requests().size());
 }
 
 TEST_F(DeviceSyncPersistentEnrollmentSchedulerTest,

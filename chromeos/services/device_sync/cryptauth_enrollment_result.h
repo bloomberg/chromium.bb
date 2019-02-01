@@ -59,6 +59,7 @@ class CryptAuthEnrollmentResult {
   CryptAuthEnrollmentResult(
       ResultCode result_code,
       const base::Optional<cryptauthv2::ClientDirective>& client_directive);
+  CryptAuthEnrollmentResult(const CryptAuthEnrollmentResult& other);
 
   ~CryptAuthEnrollmentResult();
 

@@ -124,6 +124,8 @@ void PersistentEnrollmentScheduler::Factory::SetFactoryForTesting(
   test_factory_ = test_factory;
 }
 
+PersistentEnrollmentScheduler::Factory::~Factory() = default;
+
 std::unique_ptr<CryptAuthEnrollmentScheduler>
 PersistentEnrollmentScheduler::Factory::BuildInstance(
     Delegate* delegate,
