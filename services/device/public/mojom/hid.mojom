@@ -16,6 +16,7 @@ const uint16 kPageSimulation = 0x02;
 const uint16 kPageVirtualReality = 0x03;
 const uint16 kPageSport = 0x04;
 const uint16 kPageGame = 0x05;
+const uint16 kPageGenericDevice = 0x06;
 const uint16 kPageKeyboard = 0x07;
 const uint16 kPageLed = 0x08;
 const uint16 kPageButton = 0x09;
