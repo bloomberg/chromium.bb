@@ -81,6 +81,7 @@ class HttpProxyClientSocketPoolTest
                                session_deps_.transport_security_state.get(),
                                session_deps_.cert_transparency_verifier.get(),
                                session_deps_.ct_policy_enforcer.get(),
+                               nullptr /* ssl_client_session_cache */,
                                std::string() /* ssl_session_cache_shard */,
                                session_deps_.ssl_config_service.get(),
                                nullptr /* socket_performance_watcher_factory */,

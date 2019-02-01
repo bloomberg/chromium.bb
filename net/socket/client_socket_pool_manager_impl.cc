@@ -81,6 +81,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                                        transport_security_state,
                                        cert_transparency_verifier,
                                        ct_policy_enforcer,
+                                       ssl_client_session_cache,
                                        ssl_session_cache_shard_,
                                        ssl_config_service,
                                        network_quality_estimator,
@@ -96,6 +97,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                                        transport_security_state,
                                        cert_transparency_verifier,
                                        ct_policy_enforcer,
+                                       ssl_client_session_cache,
                                        ssl_session_cache_shard_,
                                        ssl_config_service,
                                        socket_performance_watcher_factory_,
@@ -217,8 +219,9 @@ ClientSocketPoolManagerImpl::GetSocketPoolForSOCKSProxy(
               sockets_per_proxy_server, sockets_per_group, socket_factory_,
               host_resolver_, cert_verifier_, channel_id_service_,
               transport_security_state_, cert_transparency_verifier_,
-              ct_policy_enforcer_, ssl_session_cache_shard_,
-              ssl_config_service_, nullptr /* socket_performance_watcher */,
+              ct_policy_enforcer_, ssl_client_session_cache_,
+              ssl_session_cache_shard_, ssl_config_service_,
+              nullptr /* socket_performance_watcher */,
               network_quality_estimator_, net_log_)));
 
   return ret.first->second.get();
@@ -257,9 +260,10 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
               sockets_per_proxy_server, sockets_per_group, socket_factory_,
               host_resolver_, cert_verifier_, channel_id_service_,
               transport_security_state_, cert_transparency_verifier_,
-              ct_policy_enforcer_, ssl_session_cache_shard_,
-              ssl_config_service_, socket_performance_watcher_factory_,
-              network_quality_estimator_, net_log_)));
+              ct_policy_enforcer_, ssl_client_session_cache_,
+              ssl_session_cache_shard_, ssl_config_service_,
+              socket_performance_watcher_factory_, network_quality_estimator_,
+              net_log_)));
   DCHECK(tcp_http_ret.second);
 
   std::pair<TransportSocketPoolMap::iterator, bool> tcp_https_ret =
@@ -269,9 +273,10 @@ ClientSocketPoolManagerImpl::GetSocketPoolForHTTPLikeProxy(
               sockets_per_proxy_server, sockets_per_group, socket_factory_,
               host_resolver_, cert_verifier_, channel_id_service_,
               transport_security_state_, cert_transparency_verifier_,
-              ct_policy_enforcer_, ssl_session_cache_shard_,
-              ssl_config_service_, socket_performance_watcher_factory_,
-              network_quality_estimator_, net_log_)));
+              ct_policy_enforcer_, ssl_client_session_cache_,
+              ssl_session_cache_shard_, ssl_config_service_,
+              socket_performance_watcher_factory_, network_quality_estimator_,
+              net_log_)));
   DCHECK(tcp_https_ret.second);
 
   std::pair<SSLSocketPoolMap::iterator, bool> ssl_https_ret =
