@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/metrics_service.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
