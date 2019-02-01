@@ -118,8 +118,6 @@ source_set("test_support") {
     "authentication_service_fake.mm",
     "fake_gaia_cookie_manager_service_builder.cc",
     "fake_gaia_cookie_manager_service_builder.h",
-    "fake_oauth2_token_service_builder.h",
-    "fake_oauth2_token_service_builder.mm",
     "identity_test_environment_chrome_browser_state_adaptor.cc",
     "identity_test_environment_chrome_browser_state_adaptor.h",
   ]
