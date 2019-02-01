@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/core/qpack/qpack_encoder_stream_sender.h"
 
+#include "net/third_party/quic/core/qpack/qpack_encoder_test_utils.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,19 +17,12 @@ namespace quic {
 namespace test {
 namespace {
 
-class MockSenderDelegate : public QpackEncoderStreamSender::Delegate {
- public:
-  ~MockSenderDelegate() override = default;
-
-  MOCK_METHOD1(WriteEncoderStreamData, void(QuicStringPiece data));
-};
-
 class QpackEncoderStreamSenderTest : public QuicTest {
  protected:
   QpackEncoderStreamSenderTest() : stream_(&delegate_) {}
   ~QpackEncoderStreamSenderTest() override = default;
 
-  StrictMock<MockSenderDelegate> delegate_;
+  StrictMock<MockEncoderStreamSenderDelegate> delegate_;
   QpackEncoderStreamSender stream_;
 };
 
