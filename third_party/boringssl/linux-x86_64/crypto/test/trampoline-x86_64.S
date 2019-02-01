@@ -489,7 +489,7 @@ abi_test_get_and_clear_direction_flag:
 	pushfq
 	popq	%rax
 	andq	$0x400,%rax
-	shlq	$10,%rax
+	shrq	$10,%rax
 	cld
 	.byte	0xf3,0xc3
 .size	abi_test_get_and_clear_direction_flag,.-abi_test_get_and_clear_direction_flag
