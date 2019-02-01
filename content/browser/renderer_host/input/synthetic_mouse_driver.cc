@@ -27,7 +27,11 @@ void SyntheticMouseDriver::Press(float x,
                                  float y,
                                  int index,
                                  SyntheticPointerActionParams::Button button,
-                                 int key_modifiers) {
+                                 int key_modifiers,
+                                 float width,
+                                 float height,
+                                 float rotation_angle,
+                                 float force) {
   DCHECK_EQ(index, 0);
   int modifiers =
       SyntheticPointerActionParams::GetWebMouseEventModifier(button);
@@ -43,7 +47,11 @@ void SyntheticMouseDriver::Press(float x,
 void SyntheticMouseDriver::Move(float x,
                                 float y,
                                 int index,
-                                int key_modifiers) {
+                                int key_modifiers,
+                                float width,
+                                float height,
+                                float rotation_angle,
+                                float force) {
   DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::kMouseMove, x, y, key_modifiers | last_modifiers_,

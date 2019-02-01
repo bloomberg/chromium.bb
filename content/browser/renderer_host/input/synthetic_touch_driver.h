@@ -27,8 +27,19 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
              int index,
              SyntheticPointerActionParams::Button button =
                  SyntheticPointerActionParams::Button::LEFT,
-             int key_modifiers = 0) override;
-  void Move(float x, float y, int index, int key_modifiers = 0) override;
+             int key_modifiers = 0,
+             float width = 40.f,
+             float height = 40.f,
+             float rotation_angle = 0.f,
+             float force = 1.f) override;
+  void Move(float x,
+            float y,
+            int index,
+            int key_modifiers = 0,
+            float width = 40.f,
+            float height = 40.f,
+            float rotation_angle = 0.f,
+            float force = 1.f) override;
   void Release(int index,
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT,

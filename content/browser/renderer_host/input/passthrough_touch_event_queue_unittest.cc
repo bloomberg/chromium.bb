@@ -183,12 +183,12 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   }
 
   void PressTouchPoint(float x, float y) {
-    touch_event_.PressPoint(x, y);
+    touch_event_.PressPoint(x, y, radius_x_, radius_y_);
     SendTouchEvent();
   }
 
   void MoveTouchPoint(int index, float x, float y) {
-    touch_event_.MovePoint(index, x, y);
+    touch_event_.MovePoint(index, x, y, radius_x_, radius_y_);
     SendTouchEvent();
   }
 
@@ -323,6 +323,9 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   }
 
   int GetUniqueTouchEventID() { return sent_events_ids_.back(); }
+
+  const float radius_x_ = 20.0f;
+  const float radius_y_ = 20.0f;
 
  private:
   void SendTouchEvent() {
@@ -1630,8 +1633,8 @@ TEST_F(PassthroughTouchEventQueueTest,
   PressTouchPoint(1, 1);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
 
-  // Default initial radiusX/Y is (1.f, 1.f).
-  // Default initial rotationAngle is 1.f.
+  // Default initial radiusX/Y is (20.f, 20.f).
+  // Default initial rotationAngle is 0.f.
   // Default initial force is 1.f.
 
   // Change touch point radius only.
@@ -1690,7 +1693,7 @@ TEST_F(PassthroughTouchEventQueueTest, FilterTouchMovesWhenNoPointerChanged) {
 
   // Do not really move any touch points, but use previous values.
   MoveTouchPoint(0, 10, 10);
-  ChangeTouchPointRadius(1, 20, 20);
+  ChangeTouchPointRadius(1, radius_x_, radius_y_);
   MoveTouchPoint(1, 2, 2);
   EXPECT_EQ(4U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());

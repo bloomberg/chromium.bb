@@ -33,8 +33,19 @@ class CONTENT_EXPORT SyntheticPointerDriver {
                      int index = 0,
                      SyntheticPointerActionParams::Button button =
                          SyntheticPointerActionParams::Button::LEFT,
-                     int key_modifiers = 0) = 0;
-  virtual void Move(float x, float y, int index = 0, int key_modifiers = 0) = 0;
+                     int key_modifiers = 0,
+                     float width = 1.f,
+                     float height = 1.f,
+                     float rotation_angle = 0.f,
+                     float force = 1.f) = 0;
+  virtual void Move(float x,
+                    float y,
+                    int index = 0,
+                    int key_modifiers = 0,
+                    float width = 1.f,
+                    float height = 1.f,
+                    float rotation_angle = 0.f,
+                    float force = 1.f) = 0;
   virtual void Release(int index = 0,
                        SyntheticPointerActionParams::Button button =
                            SyntheticPointerActionParams::Button::LEFT,
