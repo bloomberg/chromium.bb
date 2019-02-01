@@ -4,13 +4,19 @@
 
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
-#include "ios/chrome/browser/signin/fake_oauth2_token_service_builder.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 
@@ -32,6 +38,19 @@ std::unique_ptr<KeyedService> BuildFakeSigninManager(
   ios::SigninManagerFactory::GetInstance()
       ->NotifyObserversOfSigninManagerCreationForTesting(manager.get());
   return manager;
+}
+
+std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
+    web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  std::unique_ptr<OAuth2TokenServiceDelegate> delegate =
+      std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
+          SigninClientFactory::GetForBrowserState(browser_state),
+          std::make_unique<ProfileOAuth2TokenServiceIOSProviderImpl>(),
+          ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
+  return std::make_unique<FakeProfileOAuth2TokenService>(
+      browser_state->GetPrefs(), std::move(delegate));
 }
 
 TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
