@@ -126,7 +126,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
     case ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColor:
-    case ui::NativeTheme::kColorId_DefaultIconColor:
       return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           color_id);
 
@@ -321,6 +320,11 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
               : ui::NativeThemeDarkAura::instance();
       return fallback_theme->GetSystemColor(color_id);
     }
+
+    case ui::NativeTheme::kColorId_DefaultIconColor:
+      if (GtkVersionCheck(3, 20))
+        return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #radio");
+      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.radio");
 
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();
