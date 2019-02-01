@@ -1481,7 +1481,7 @@ bool V4L2VideoDecodeAccelerator::DequeueOutputBuffer() {
     return false;
   }
 
-  V4L2ReadableBufferRef buf = ret.second;
+  V4L2ReadableBufferRef buf(std::move(ret.second));
 
   DCHECK_LT(buf->BufferId(), output_buffer_map_.size());
   OutputRecord& output_record = output_buffer_map_[buf->BufferId()];
