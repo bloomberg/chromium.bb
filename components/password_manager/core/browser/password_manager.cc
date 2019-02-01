@@ -1180,13 +1180,11 @@ void PasswordManager::OnLoginSuccessful() {
           submitted_manager->GetPendingCredentials());
     }
 
-    if (submitted_manager->HasGeneratedPassword()) {
+    if (submitted_manager->HasGeneratedPassword())
       client_->AutomaticPasswordSave(MoveOwnedSubmittedManager());
-    } else {
-      provisional_save_manager_.reset();
-      owned_submitted_form_manager_.reset();
-    }
   }
+  provisional_save_manager_.reset();
+  owned_submitted_form_manager_.reset();
 }
 
 void PasswordManager::MaybeSavePasswordHash(
