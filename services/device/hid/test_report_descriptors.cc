@@ -26,10 +26,10 @@ const uint8_t kDigitizer[] = {
     0x26, 0xe0, 0x2e,  //   Logical Maximum (12000)
     0x35, 0x00,        //   Physical Minimum (0)
     0x45, 0x0c,        //   Physical Maximum (12)
-    0x65, 0x13,        //   Unit (19)
+    0x65, 0x13,        //   Unit (Inch)
     0x55, 0x00,        //   Unit Exponent (0)
     0xa4,              //   Push
-    0x81, 0x02,        //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,        //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x05, 0x0d,        //   Usage Page (Digitizer)
     0x09, 0x32,        //   Usage (0x32)
     0x09, 0x44,        //   Usage (0x44)
@@ -41,10 +41,10 @@ const uint8_t kDigitizer[] = {
     0x75, 0x01,        //   Report Size (1)
     0x95, 0x03,        //   Report Count (3)
     0x65, 0x00,        //   Unit (0)
-    0x81, 0x02,        //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,        //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x01,        //   Report Count (1)
     0x75, 0x05,        //   Report Size (5)
-    0x81, 0x03,        //   Input (Con|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x03,        //   Input (Con|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xc0,              //  End Collection
     0x85, 0x02,        //  Report ID (0x2)
     0x09, 0x20,        //  Usage (0x20)
@@ -53,7 +53,7 @@ const uint8_t kDigitizer[] = {
     0xa4,              //   Push
     0x09, 0x30,        //   Usage (0x30)
     0x09, 0x31,        //   Usage (0x31)
-    0x81, 0x02,        //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,        //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x05, 0x0d,        //   Usage Page (Digitizer)
     0x09, 0x32,        //   Usage (0x32)
     0x15, 0x00,        //   Logical Minimum (0)
@@ -62,15 +62,15 @@ const uint8_t kDigitizer[] = {
     0x45, 0x01,        //   Physical Maximum (1)
     0x65, 0x00,        //   Unit (0)
     0x75, 0x01,        //   Report Size (1)
-    0x81, 0x02,        //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,        //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x05, 0x09,        //   Usage Page (Button)
     0x19, 0x00,        //   Usage Minimum (0)
     0x29, 0x10,        //   Usage Maximum (16)
     0x25, 0x10,        //   Logical Maximum (16)
     0x75, 0x05,        //   Report Size (5)
-    0x81, 0x40,        //   Input (Dat|Var|Rel|NoWrp|Lin|Prf|Null|BitF)
+    0x81, 0x40,        //   Input (Dat|Arr|Abs|NoWrp|Lin|Prf|Null|BitF)
     0x75, 0x02,        //   Report Size (2)
-    0x81, 0x01,        //   Input (Con|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x01,        //   Input (Con|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xc0,              //  End Collection
     0x85, 0x03,        //  Report ID (0x3)
     0x05, 0x0d,        //  Usage Page (Digitizer)
@@ -79,7 +79,7 @@ const uint8_t kDigitizer[] = {
     0xb4,              //   Pop
     0x09, 0x30,        //   Usage (0x30)
     0x09, 0x31,        //   Usage (0x31)
-    0x81, 0x02,        //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,        //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x05, 0x0d,        //   Usage Page (Digitizer)
     0x09, 0x32,        //   Usage (0x32)
     0x09, 0x44,        //   Usage (0x44)
@@ -89,20 +89,20 @@ const uint8_t kDigitizer[] = {
     0x35, 0x00,        //   Physical Minimum (0)
     0x45, 0x01,        //   Physical Maximum (1)
     0x65, 0x00,        //   Unit (0)
-    0x81, 0x02,        //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,        //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x06,        //   Report Count (6)
-    0x81, 0x03,        //   Input (Con|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x03,        //   Input (Con|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x09, 0x30,        //   Usage (0x30)
     0x15, 0x00,        //   Logical Minimum (0)
     0x25, 0x7f,        //   Logical Maximum (127)
     0x35, 0x00,        //   Physical Minimum (0)
     0x45, 0x2d,        //   Physical Maximum (45)
-    0x67, 0x11, 0xe1,  //   Unit (57617)
+    0x67, 0x11, 0xe1,  //   Unit (Newtons)
     0x00, 0x00,        //   Default
     0x55, 0x04,        //   Unit Exponent (4)
     0x75, 0x08,        //   Report Size (8)
     0x95, 0x01,        //   Report Count (1)
-    0x81, 0x12,        //   Input (Dat|Arr|Rel|NoWrp|NoLin|Prf|NoNull|BitF)
+    0x81, 0x12,        //   Input (Dat|Var|Abs|NoWrp|NoLin|Prf|NoNull|BitF)
     0xc0,              //  End Collection
     0xc0               // End Collection
 };
@@ -121,19 +121,19 @@ const uint8_t kKeyboard[] = {
     0x25, 0x01,  //  Logical Maximum (1)
     0x75, 0x01,  //  Report Size (1)
     0x95, 0x08,  //  Report Count (8)
-    0x81, 0x02,  //  Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,  //  Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x01,  //  Report Count (1)
     0x75, 0x08,  //  Report Size (8)
-    0x81, 0x03,  //  Input (Con|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x03,  //  Input (Con|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x05,  //  Report Count (5)
     0x75, 0x01,  //  Report Size (1)
     0x05, 0x08,  //  Usage Page (Led)
     0x19, 0x01,  //  Usage Minimum (1)
     0x29, 0x05,  //  Usage Maximum (5)
-    0x91, 0x02,  //  Output (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x91, 0x02,  //  Output (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x01,  //  Report Count (1)
     0x75, 0x03,  //  Report Size (3)
-    0x91, 0x03,  //  Output (Con|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x91, 0x03,  //  Output (Con|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x06,  //  Report Count (6)
     0x75, 0x08,  //  Report Size (8)
     0x15, 0x00,  //  Logical Minimum (0)
@@ -141,7 +141,7 @@ const uint8_t kKeyboard[] = {
     0x05, 0x07,  //  Usage Page (Keyboard)
     0x19, 0x00,  //  Usage Minimum (0)
     0x29, 0x65,  //  Usage Maximum (101)
-    0x81, 0x00,  //  Input (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x00,  //  Input (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xc0         // End Collection
 };
 const size_t kKeyboardSize = base::size(kKeyboard);
@@ -158,11 +158,11 @@ const uint8_t kMonitor[] = {
     0x75, 0x08,        //  Report Size (8)
     0x95, 0x80,        //  Report Count (128)
     0x09, 0x02,        //  Usage (0x2)
-    0xb2, 0x02, 0x01,  //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|Buff)
+    0xb2, 0x02, 0x01,  //  Feature (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|Buff)
     0x85, 0x02,        //  Report ID (0x2)
     0x95, 0xf3,        //  Report Count (243)
     0x09, 0x03,        //  Usage (0x3)
-    0xb2, 0x02, 0x01,  //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|Buff)
+    0xb2, 0x02, 0x01,  //  Feature (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|Buff)
     0x85, 0x03,        //  Report ID (0x3)
     0x05, 0x82,        //  Usage Page (Monitor 2)
     0x67, 0xE1, 0x00,  //  Unit (System: SI, Lum. Intensity: Candela)
@@ -172,11 +172,11 @@ const uint8_t kMonitor[] = {
     0x75, 0x10,        //  Report Size (16)
     0x26, 0xc8, 0x00,  //  Logical Maximum (200)
     0x09, 0x10,        //  Usage (0x10)
-    0xb1, 0x02,        //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0xb1, 0x02,        //  Feature (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x85, 0x04,        //  Report ID (0x4)
     0x25, 0x64,        //  Logical Maximum (100)
     0x09, 0x12,        //  Usage (0x12)
-    0xb1, 0x02,        //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0xb1, 0x02,        //  Feature (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x06,        //  Report Count (6)
     0x26, 0xff, 0x00,  //  Logical Maximum (255)
     0x09, 0x16,        //  Usage (0x16)
@@ -185,7 +185,7 @@ const uint8_t kMonitor[] = {
     0x09, 0x6c,        //  Usage (0x6C)
     0x09, 0x6e,        //  Usage (0x6E)
     0x09, 0x70,        //  Usage (0x70)
-    0xb1, 0x02,        //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0xb1, 0x02,        //  Feature (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x85, 0x05,        //  Report ID (0x5)
     0x25, 0x7f,        //  Logical Maximum (127)
     0x09, 0x20,        //  Usage (0x20)
@@ -194,7 +194,7 @@ const uint8_t kMonitor[] = {
     0x09, 0x32,        //  Usage (0x32)
     0x09, 0x42,        //  Usage (0x42)
     0x09, 0x44,        //  Usage (0x44)
-    0xb1, 0x02,        //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0xb1, 0x02,        //  Feature (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xc0               // End Collection
 };
 const size_t kMonitorSize = base::size(kMonitor);
@@ -214,10 +214,10 @@ const uint8_t kMouse[] = {
     0x25, 0x01,  //   Logical Maximum (1)
     0x95, 0x03,  //   Report Count (3)
     0x75, 0x01,  //   Report Size (1)
-    0x81, 0x02,  //   Input (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x02,  //   Input (Dat|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x95, 0x01,  //   Report Count (1)
     0x75, 0x05,  //   Report Size (5)
-    0x81, 0x03,  //   Input (Con|Arr|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x03,  //   Input (Con|Var|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x05, 0x01,  //   Usage Page (Generic Desktop)
     0x09, 0x30,  //   Usage (0x30)
     0x09, 0x31,  //   Usage (0x31)
@@ -225,7 +225,7 @@ const uint8_t kMouse[] = {
     0x25, 0x7f,  //   Logical Maximum (127)
     0x75, 0x08,  //   Report Size (8)
     0x95, 0x02,  //   Report Count (2)
-    0x81, 0x06,  //   Input (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x06,  //   Input (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
     0xc0,        //  End Collection
     0xc0         // End Collection
 };
@@ -242,9 +242,9 @@ const uint8_t kLogitechUnifyingReceiver[] = {
     0x15, 0x00,        //  Logical Minimum (0)
     0x26, 0xFF, 0x00,  //  Logical Maximum (255)
     0x09, 0x01,        //  Usage (0x1)
-    0x81, 0x00,        //  Input (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x00,        //  Input (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x09, 0x01,        //  Usage (0x1)
-    0x91, 0x00,        //  Output (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x91, 0x00,        //  Output (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xC0,              // End Collection
     0x06, 0x00, 0xFF,  // Usage Page (Vendor)
     0x09, 0x02,        // Usage (0x2)
@@ -255,9 +255,9 @@ const uint8_t kLogitechUnifyingReceiver[] = {
     0x15, 0x00,        //  Logical Minimum (0)
     0x26, 0xFF, 0x00,  //  Logical Maximum (255)
     0x09, 0x02,        //  Usage (0x2)
-    0x81, 0x00,        //  Input (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x00,        //  Input (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x09, 0x02,        //  Usage (0x2)
-    0x91, 0x00,        //  Output (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x91, 0x00,        //  Output (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xC0,              // End Collection
     0x06, 0x00, 0xFF,  // Usage Page (Vendor)
     0x09, 0x04,        // Usage (0x4)
@@ -268,17 +268,17 @@ const uint8_t kLogitechUnifyingReceiver[] = {
     0x15, 0x00,        //  Logical Minimum (0)
     0x26, 0xFF, 0x00,  //  Logical Maximum (255)
     0x09, 0x41,        //  Usage (0x41)
-    0x81, 0x00,        //  Input (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x00,        //  Input (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x09, 0x41,        //  Usage (0x41)
-    0x91, 0x00,        //  Output (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x91, 0x00,        //  Output (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x85, 0x21,        //  Report ID (0x21)
     0x95, 0x1F,        //  Report Count (31)
     0x15, 0x00,        //  Logical Minimum (0)
     0x26, 0xFF, 0x00,  //  Logical Maximum (255)
     0x09, 0x42,        //  Usage (0x42)
-    0x81, 0x00,        //  Input (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x81, 0x00,        //  Input (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0x09, 0x42,        //  Usage (0x42)
-    0x91, 0x00,        //  Output (Dat|Var|Rel|NoWrp|Lin|Prf|NoNull|BitF)
+    0x91, 0x00,        //  Output (Dat|Arr|Abs|NoWrp|Lin|Prf|NoNull|BitF)
     0xC0               // End Collection
 };
 const size_t kLogitechUnifyingReceiverSize =
@@ -288,8 +288,8 @@ const size_t kLogitechUnifyingReceiverSize =
 const uint8_t kSonyDualshock3[] = {
     0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
     0x09, 0x04,        // Usage (Joystick)
-    0xA1, 0x01,        // Collection (Physical)
-    0xA1, 0x02,        //   Collection (Application)
+    0xA1, 0x01,        // Collection (Application)
+    0xA1, 0x02,        //   Collection (Logical)
     0x85, 0x01,        //     Report ID (1)
     0x75, 0x08,        //     Report Size (8)
     0x95, 0x01,        //     Report Count (1)
@@ -318,7 +318,7 @@ const uint8_t kSonyDualshock3[] = {
     0x26, 0xFF, 0x00,  //     Logical Maximum (255)
     0x05, 0x01,        //     Usage Page (Generic Desktop Ctrls)
     0x09, 0x01,        //     Usage (Pointer)
-    0xA1, 0x00,        //     Collection (Undefined)
+    0xA1, 0x00,        //     Collection (Physical)
     0x75, 0x08,        //       Report Size (8)
     0x95, 0x04,        //       Report Count (4)
     0x35, 0x00,        //       Physical Minimum (0)
@@ -347,7 +347,7 @@ const uint8_t kSonyDualshock3[] = {
     0xB1, 0x02,        //     Feature (Data,Var,Abs,No Wrap,Linear,Preferred
                        //     State,No Null Position,Non-volatile)
     0xC0,              //   End Collection
-    0xA1, 0x02,        //   Collection (Application)
+    0xA1, 0x02,        //   Collection (Logical)
     0x85, 0x02,        //     Report ID (2)
     0x75, 0x08,        //     Report Size (8)
     0x95, 0x30,        //     Report Count (48)
@@ -355,7 +355,7 @@ const uint8_t kSonyDualshock3[] = {
     0xB1, 0x02,        //     Feature (Data,Var,Abs,No Wrap,Linear,Preferred
                        //     State,No Null Position,Non-volatile)
     0xC0,              //   End Collection
-    0xA1, 0x02,        //   Collection (Application)
+    0xA1, 0x02,        //   Collection (Logical)
     0x85, 0xEE,        //     Report ID (238)
     0x75, 0x08,        //     Report Size (8)
     0x95, 0x30,        //     Report Count (48)
@@ -363,7 +363,7 @@ const uint8_t kSonyDualshock3[] = {
     0xB1, 0x02,        //     Feature (Data,Var,Abs,No Wrap,Linear,Preferred
                        //     State,No Null Position,Non-volatile)
     0xC0,              //   End Collection
-    0xA1, 0x02,        //   Collection (Application)
+    0xA1, 0x02,        //   Collection (Logical)
     0x85, 0xEF,        //     Report ID (239)
     0x75, 0x08,        //     Report Size (8)
     0x95, 0x30,        //     Report Count (48)
@@ -1641,5 +1641,329 @@ const uint8_t kMicrosoftXboxAdaptiveController[] = {
 };
 const size_t kMicrosoftXboxAdaptiveControllerSize =
     base::size(kMicrosoftXboxAdaptiveController);
+
+const uint8_t kNexusPlayerController[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x05,        // Usage (Game Pad)
+    0xA1, 0x01,        // Collection (Application)
+    0x85, 0x01,        //   Report ID (1)
+    0x05, 0x09,        //   Usage Page (Button)
+    0x0A, 0x01, 0x00,  //   Usage (0x01)
+    0x0A, 0x02, 0x00,  //   Usage (0x02)
+    0x0A, 0x04, 0x00,  //   Usage (0x04)
+    0x0A, 0x05, 0x00,  //   Usage (0x05)
+    0x0A, 0x07, 0x00,  //   Usage (0x07)
+    0x0A, 0x08, 0x00,  //   Usage (0x08)
+    0x0A, 0x0E, 0x00,  //   Usage (0x0E)
+    0x0A, 0x0F, 0x00,  //   Usage (0x0F)
+    0x0A, 0x0D, 0x00,  //   Usage (0x0D)
+    0x05, 0x0C,        //   Usage Page (Consumer)
+    0x0A, 0x24, 0x02,  //   Usage (AC Back)
+    0x0A, 0x23, 0x02,  //   Usage (AC Home)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x25, 0x01,        //   Logical Maximum (1)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x0B,        //   Report Count (11)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x01,        //   Report Count (1)
+    0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+    0x75, 0x04,        //   Report Size (4)
+    0x95, 0x01,        //   Report Count (1)
+    0x25, 0x07,        //   Logical Maximum (7)
+    0x46, 0x3B, 0x01,  //   Physical Maximum (315)
+    0x66, 0x14, 0x00,  //   Unit (System: English Rotation, Length: Centimeter)
+    0x09, 0x39,        //   Usage (Hat switch)
+    0x81, 0x42,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   Null State)
+    0x66, 0x00, 0x00,  //   Unit (None)
+    0xA1, 0x00,        //   Collection (Physical)
+    0x09, 0x30,        //     Usage (X)
+    0x09, 0x31,        //     Usage (Y)
+    0x09, 0x32,        //     Usage (Z)
+    0x09, 0x35,        //     Usage (Rz)
+    0x05, 0x02,        //     Usage Page (Sim Ctrls)
+    0x09, 0xC5,        //     Usage (Brake)
+    0x09, 0xC4,        //     Usage (Accelerator)
+    0x15, 0x00,        //     Logical Minimum (0)
+    0x26, 0xFF, 0x00,  //     Logical Maximum (255)
+    0x35, 0x00,        //     Physical Minimum (0)
+    0x46, 0xFF, 0x00,  //     Physical Maximum (255)
+    0x75, 0x08,        //     Report Size (8)
+    0x95, 0x06,        //     Report Count (6)
+    0x81, 0x02,        //     Input (Data,Var,Abs,No Wrap,Linear,Preferred
+                       //     State,No Null Position)
+    0xC0,              //   End Collection
+    0x85, 0x02,        //   Report ID (2)
+    0x05, 0x08,        //   Usage Page (LEDs)
+    0x0A, 0x01, 0x00,  //   Usage (Num Lock)
+    0x0A, 0x02, 0x00,  //   Usage (Caps Lock)
+    0x0A, 0x03, 0x00,  //   Usage (Scroll Lock)
+    0x0A, 0x04, 0x00,  //   Usage (Compose)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x25, 0x01,        //   Logical Maximum (1)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x04,        //   Report Count (4)
+    0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position,Non-volatile)
+    0x75, 0x04,        //   Report Size (4)
+    0x95, 0x01,        //   Report Count (1)
+    0x91, 0x03,        //   Output (Const,Var,Abs,No Wrap,Linear,Preferred
+                       //   State,No Null Position,Non-volatile)
+    0xC0,              // End Collection
+    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x05,        // Usage (Game Pad)
+    0xA1, 0x01,        // Collection (Application)
+    0x85, 0x03,        //   Report ID (3)
+    0x05, 0x06,        //   Usage Page (Generic Dev Ctrls)
+    0x09, 0x20,        //   Usage (Battery Strength)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+    0x75, 0x08,        //   Report Size (8)
+    0x95, 0x01,        //   Report Count (1)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x06, 0xBC, 0xFF,  //   Usage Page (Vendor Defined 0xFFBC)
+    0x0A, 0xAD, 0xBD,  //   Usage (0xBDAD)
+    0x75, 0x08,        //   Report Size (8)
+    0x95, 0x06,        //   Report Count (6)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0xC0,              // End Collection
+    0x00,              // Unknown (bTag: 0x00, bType: 0x00)
+};
+const size_t kNexusPlayerControllerSize = base::size(kNexusPlayerController);
+
+const uint8_t kSteamControllerKeyboard[] = {
+    0x05, 0x01,  // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x06,  // Usage (Keyboard)
+    0x95, 0x01,  // Report Count (1)
+    0xA1, 0x01,  // Collection (Application)
+    0x05, 0x07,  //   Usage Page (Kbrd/Keypad)
+    0x19, 0xE0,  //   Usage Minimum (0xE0)
+    0x29, 0xE7,  //   Usage Maximum (0xE7)
+    0x15, 0x00,  //   Logical Minimum (0)
+    0x25, 0x01,  //   Logical Maximum (1)
+    0x75, 0x01,  //   Report Size (1)
+    0x95, 0x08,  //   Report Count (8)
+    0x81, 0x02,  //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                 //   No Null Position)
+    0x95, 0x01,  //   Report Count (1)
+    0x75, 0x08,  //   Report Size (8)
+    0x81, 0x01,  //   Input (Const,Array,Abs,No Wrap,Linear,Preferred
+                 //   State,No Null Position)
+    0x95, 0x05,  //   Report Count (5)
+    0x75, 0x01,  //   Report Size (1)
+    0x05, 0x08,  //   Usage Page (LEDs)
+    0x19, 0x01,  //   Usage Minimum (Num Lock)
+    0x29, 0x05,  //   Usage Maximum (Kana)
+    0x91, 0x02,  //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                 //   No Null Position,Non-volatile)
+    0x95, 0x01,  //   Report Count (1)
+    0x75, 0x03,  //   Report Size (3)
+    0x91, 0x01,  //   Output (Const,Array,Abs,No Wrap,Linear,Preferred
+                 //   State,No Null Position,Non-volatile)
+    0x95, 0x06,  //   Report Count (6)
+    0x75, 0x08,  //   Report Size (8)
+    0x15, 0x00,  //   Logical Minimum (0)
+    0x25, 0x65,  //   Logical Maximum (101)
+    0x05, 0x07,  //   Usage Page (Kbrd/Keypad)
+    0x19, 0x00,  //   Usage Minimum (0x00)
+    0x29, 0x65,  //   Usage Maximum (0x65)
+    0x81, 0x00,  //   Input (Data,Array,Abs,No Wrap,Linear,Preferred
+                 //   State,No Null Position)
+    0xC0,        // End Collection
+};
+const size_t kSteamControllerKeyboardSize =
+    base::size(kSteamControllerKeyboard);
+
+const uint8_t kSteamControllerMouse[] = {
+    0x05, 0x01,  // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x02,  // Usage (Mouse)
+    0xA1, 0x01,  // Collection (Application)
+    0x09, 0x01,  //   Usage (Pointer)
+    0xA1, 0x00,  //   Collection (Physical)
+    0x05, 0x09,  //     Usage Page (Button)
+    0x19, 0x01,  //     Usage Minimum (0x01)
+    0x29, 0x05,  //     Usage Maximum (0x05)
+    0x15, 0x00,  //     Logical Minimum (0)
+    0x25, 0x01,  //     Logical Maximum (1)
+    0x95, 0x05,  //     Report Count (5)
+    0x75, 0x01,  //     Report Size (1)
+    0x81, 0x02,  //     Input (Data,Var,Abs,No Wrap,Linear,Preferred
+                 //     State,No Null Position)
+    0x95, 0x01,  //     Report Count (1)
+    0x75, 0x03,  //     Report Size (3)
+    0x81, 0x01,  //     Input (Const,Array,Abs,No Wrap,Linear,Preferred
+                 //     State,No Null Position)
+    0x05, 0x01,  //     Usage Page (Generic Desktop Ctrls)
+    0x09, 0x30,  //     Usage (X)
+    0x09, 0x31,  //     Usage (Y)
+    0x09, 0x38,  //     Usage (Wheel)
+    0x15, 0x81,  //     Logical Minimum (-127)
+    0x25, 0x7F,  //     Logical Maximum (127)
+    0x75, 0x08,  //     Report Size (8)
+    0x95, 0x03,  //     Report Count (3)
+    0x81, 0x06,  //     Input (Data,Var,Rel,No Wrap,Linear,Preferred
+                 //     State,No Null Position)
+    0xC0,        //   End Collection
+    0xC0,        // End Collection
+};
+const size_t kSteamControllerMouseSize = base::size(kSteamControllerMouse);
+
+const uint8_t kSteamControllerVendor[] = {
+    0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+    0x09, 0x01,        // Usage (0x01)
+    0xA1, 0x01,        // Collection (Application)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+    0x75, 0x08,        //   Report Size (8)
+    0x95, 0x40,        //   Report Count (64)
+    0x09, 0x01,        //   Usage (0x01)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x95, 0x40,        //   Report Count (64)
+    0x09, 0x01,        //   Usage (0x01)
+    0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position,Non-volatile)
+    0x95, 0x40,        //   Report Count (64)
+    0x09, 0x01,        //   Usage (0x01)
+    0xB1, 0x02,        //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred
+                       //   State,No Null Position,Non-volatile)
+    0xC0,              // End Collection
+};
+const size_t kSteamControllerVendorSize = base::size(kSteamControllerVendor);
+
+const uint8_t kXSkillsUsbAdapter[] = {
+    0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x04,        // Usage (Joystick)
+    0xA1, 0x01,        // Collection (Application)
+    0x05, 0x09,        //   Usage Page (Button)
+    0x19, 0x01,        //   Usage Minimum (0x01)
+    0x29, 0x0C,        //   Usage Maximum (0x0C)
+    0x15, 0x00,        //   Logical Minimum (0)
+    0x25, 0x01,        //   Logical Maximum (1)
+    0x35, 0x00,        //   Physical Minimum (0)
+    0x45, 0x01,        //   Physical Maximum (1)
+    0x75, 0x01,        //   Report Size (1)
+    0x95, 0x0C,        //   Report Count (12)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x95, 0x04,        //   Report Count (4)
+    0x81, 0x03,        //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
+    0x09, 0x30,        //   Usage (X)
+    0x09, 0x31,        //   Usage (Y)
+    0x09, 0x35,        //   Usage (Rz)
+    0x09, 0x32,        //   Usage (Z)
+    0x26, 0xFF, 0x00,  //   Logical Maximum (255)
+    0x46, 0xFF, 0x00,  //   Physical Maximum (255)
+    0x66, 0x00, 0x00,  //   Unit (None)
+    0x75, 0x08,        //   Report Size (8)
+    0x95, 0x04,        //   Report Count (4)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x09, 0x33,        //   Usage (Rx)
+    0x09, 0x34,        //   Usage (Ry)
+    0x26, 0x0F, 0x00,  //   Logical Maximum (15)
+    0x46, 0x0F, 0x00,  //   Physical Maximum (15)
+    0x75, 0x04,        //   Report Size (4)
+    0x95, 0x02,        //   Report Count (2)
+    0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position)
+    0x75, 0x08,        //   Report Size (8)
+    0x06, 0x00, 0xFF,  //   Usage Page (Vendor Defined 0xFF00)
+    0x19, 0x01,        //   Usage Minimum (0x01)
+    0x29, 0x04,        //   Usage Maximum (0x04)
+    0x95, 0x04,        //   Report Count (4)
+    0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                       //   No Null Position,Non-volatile)
+    0xC0,              // End Collection
+};
+const size_t kXSkillsUsbAdapterSize = base::size(kXSkillsUsbAdapter);
+
+const uint8_t kBelkinNostromoKeyboard[] = {
+    0x05, 0x01,  // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x06,  // Usage (Keyboard)
+    0xA1, 0x01,  // Collection (Application)
+    0x05, 0x07,  //   Usage Page (Kbrd/Keypad)
+    0x19, 0xE0,  //   Usage Minimum (0xE0)
+    0x29, 0xE7,  //   Usage Maximum (0xE7)
+    0x15, 0x00,  //   Logical Minimum (0)
+    0x25, 0x01,  //   Logical Maximum (1)
+    0x75, 0x01,  //   Report Size (1)
+    0x95, 0x08,  //   Report Count (8)
+    0x81, 0x02,  //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,
+                 //   No Null Position)
+    0x95, 0x01,  //   Report Count (1)
+    0x75, 0x08,  //   Report Size (8)
+    0x81, 0x01,  //   Input (Const,Array,Abs,No Wrap,Linear,Preferred
+                 //   State,No Null Position)
+    0x95, 0x06,  //   Report Count (6)
+    0x75, 0x08,  //   Report Size (8)
+    0x15, 0x00,  //   Logical Minimum (0)
+    0x25, 0x65,  //   Logical Maximum (101)
+    0x05, 0x07,  //   Usage Page (Kbrd/Keypad)
+    0x19, 0x00,  //   Usage Minimum (0x00)
+    0x29, 0x65,  //   Usage Maximum (0x65)
+    0x81, 0x00,  //   Input (Data,Array,Abs,No Wrap,Linear,Preferred
+                 //   State,No Null Position)
+    0xC0,        // End Collection
+};
+const size_t kBelkinNostromoKeyboardSize = base::size(kBelkinNostromoKeyboard);
+
+const uint8_t kBelkinNostromoMouseAndExtra[] = {
+    0x05, 0x01,  // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x02,  // Usage (Mouse)
+    0xA1, 0x01,  // Collection (Application)
+    0x09, 0x01,  //   Usage (Pointer)
+    0xA1, 0x00,  //   Collection (Physical)
+    0x05, 0x09,  //     Usage Page (Button)
+    0x19, 0x01,  //     Usage Minimum (0x01)
+    0x29, 0x03,  //     Usage Maximum (0x03)
+    0x15, 0x00,  //     Logical Minimum (0)
+    0x25, 0x01,  //     Logical Maximum (1)
+    0x95, 0x03,  //     Report Count (3)
+    0x75, 0x01,  //     Report Size (1)
+    0x81, 0x02,  //     Input (Data,Var,Abs,No Wrap,Linear,Preferred
+                 //     State,No Null Position)
+    0x95, 0x01,  //     Report Count (1)
+    0x75, 0x05,  //     Report Size (5)
+    0x81, 0x01,  //     Input (Const,Array,Abs,No Wrap,Linear,Preferred
+                 //     State,No Null Position)
+    0x05, 0x01,  //     Usage Page (Generic Desktop Ctrls)
+    0x09, 0x30,  //     Usage (X)
+    0x09, 0x31,  //     Usage (Y)
+    0x09, 0x38,  //     Usage (Wheel)
+    0x15, 0x81,  //     Logical Minimum (-127)
+    0x25, 0x7F,  //     Logical Maximum (127)
+    0x75, 0x08,  //     Report Size (8)
+    0x95, 0x03,  //     Report Count (3)
+    0x81, 0x06,  //     Input (Data,Var,Rel,No Wrap,Linear,Preferred
+                 //     State,No Null Position)
+    0x05, 0x08,  //     Usage Page (LEDs)
+    0x19, 0x01,  //     Usage Minimum (Num Lock)
+    0x29, 0x03,  //     Usage Maximum (Scroll Lock)
+    0x15, 0x00,  //     Logical Minimum (0)
+    0x25, 0x01,  //     Logical Maximum (1)
+    0x35, 0x00,  //     Physical Minimum (0)
+    0x45, 0x01,  //     Physical Maximum (1)
+    0x75, 0x01,  //     Report Size (1)
+    0x95, 0x03,  //     Report Count (3)
+    0x91, 0x02,  //     Output (Data,Var,Abs,No Wrap,Linear,Preferred
+                 //     State,No Null Position,Non-volatile)
+    0x75, 0x05,  //     Report Size (5)
+    0x95, 0x01,  //     Report Count (1)
+    0x91, 0x01,  //     Output (Const,Array,Abs,No Wrap,Linear,Preferred
+                 //     State,No Null Position,Non-volatile)
+    0xC0,        //   End Collection
+    0xC0,        // End Collection
+};
+const size_t kBelkinNostromoMouseAndExtraSize =
+    base::size(kBelkinNostromoMouseAndExtra);
 
 }  // namespace device
