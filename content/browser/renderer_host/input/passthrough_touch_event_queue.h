@@ -182,7 +182,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   void AckCompletedEvents();
 
   bool IsTimeoutRunningForTesting() const;
-  const TouchEventWithLatencyInfo& GetLatestEventForTesting() const;
   size_t SizeForTesting() const;
 
   // Handles touch event forwarding and ack'ed event dispatch.

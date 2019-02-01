@@ -403,9 +403,4 @@ bool PassthroughTouchEventQueue::IsTimeoutRunningForTesting() const {
   return timeout_handler_ && timeout_handler_->IsTimeoutTimerRunning();
 }
 
-const TouchEventWithLatencyInfo&
-PassthroughTouchEventQueue::GetLatestEventForTesting() const {
-  return *outstanding_touches_.rbegin();
-}
-
 }  // namespace content
