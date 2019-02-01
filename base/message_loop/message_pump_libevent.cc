@@ -33,13 +33,6 @@
 // StopWatchingFileDescriptor().
 // It is moved into and out of lists in struct event_base by
 // the libevent functions event_add() and event_del().
-//
-// TODO(dkegel):
-// At the moment bad things happen if a FdWatchController
-// is active after its MessagePumpLibevent has been destroyed.
-// See MessageLoopTest.FdWatchControllerOutlivesMessageLoop
-// Not clear yet whether that situation occurs in practice,
-// but if it does, we need to fix it.
 
 namespace base {
 
@@ -49,7 +42,7 @@ MessagePumpLibevent::FdWatchController::FdWatchController(
 
 MessagePumpLibevent::FdWatchController::~FdWatchController() {
   if (event_) {
-    StopWatchingFileDescriptor();
+    CHECK(StopWatchingFileDescriptor());
   }
   if (was_destroyed_) {
     DCHECK(!*was_destroyed_);

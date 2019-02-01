@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/condition_variable.h"
@@ -132,9 +133,6 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int /* fd */) override;
 
-  // Close |netlink_fd_|
-  void CloseSocket();
-
   // Does |interface_index| refer to a tunnel interface?
   bool IsTunnelInterface(int interface_index) const;
 
@@ -157,7 +155,8 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux
   base::Closure link_callback_;
   base::Closure tunnel_callback_;
 
-  int netlink_fd_;
+  // Note that |watcher_| must be inactive when |netlink_fd_| is closed.
+  base::ScopedFD netlink_fd_;
   base::MessagePumpForIO::FdWatchController watcher_;
 
   mutable base::Lock address_map_lock_;

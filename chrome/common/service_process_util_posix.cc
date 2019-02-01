@@ -139,6 +139,9 @@ ServiceProcessState::StateData::~StateData() {
   // with base::FilePathWatcher::Watch().
   DCHECK(!task_runner || task_runner->BelongsToCurrentThread());
 
+  // Cancel any pending file-descriptor watch before closing the descriptor.
+  watcher.StopWatchingFileDescriptor();
+
   if (sockets[0] != -1) {
     if (IGNORE_EINTR(close(sockets[0]))) {
       DPLOG(ERROR) << "close";
