@@ -69,6 +69,8 @@ TrainingData::TrainingData(TrainingData&& rhs) = default;
 
 TrainingData::~TrainingData() = default;
 
+TrainingData& TrainingData::operator=(const TrainingData& rhs) = default;
+
 TrainingData& TrainingData::operator=(TrainingData&& rhs) = default;
 
 TrainingData TrainingData::DeDuplicate() const {

@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "media/learning/impl/distribution_reporter.h"
+#include "media/learning/impl/feature_provider.h"
 #include "media/learning/impl/learning_task_controller.h"
 #include "media/learning/impl/random_number_generator.h"
 #include "media/learning/impl/training_algorithm.h"
@@ -27,13 +28,19 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
  public:
   LearningTaskControllerImpl(
       const LearningTask& task,
-      std::unique_ptr<DistributionReporter> reporter = nullptr);
+      std::unique_ptr<DistributionReporter> reporter = nullptr,
+      SequenceBoundFeatureProvider feature_provider =
+          SequenceBoundFeatureProvider());
   ~LearningTaskControllerImpl() override;
 
   // LearningTaskController
   void AddExample(const LabelledExample& example) override;
 
  private:
+  // Called when a new example has been finished by |feature_provider_|, if
+  // needed, to actually add the example.
+  void OnExampleReady(LabelledExample example);
+
   // Called by |training_cb_| when the model is trained.
   void OnModelTrained(std::unique_ptr<Model> model);
 
@@ -56,6 +63,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
 
   // Training algorithm that we'll use.
   std::unique_ptr<TrainingAlgorithm> trainer_;
+
+  // Optional feature provider.
+  SequenceBoundFeatureProvider feature_provider_;
 
   // Optional reporter for training accuracy.
   std::unique_ptr<DistributionReporter> reporter_;

@@ -16,6 +16,8 @@ component("impl") {
     "distribution_reporter.h",
     "extra_trees_trainer.cc",
     "extra_trees_trainer.h",
+    "feature_provider.cc",
+    "feature_provider.h",
     "learning_session_impl.cc",
     "learning_session_impl.h",
     "learning_task_controller.h",
