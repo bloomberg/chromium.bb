@@ -8,8 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -17,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "ui/views/window/dialog_client_view.h"
 
 class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
@@ -26,15 +26,14 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
 #if !defined(OS_CHROMEOS)
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(browser()->profile());
     if (name == "bookmark_details") {
-      SigninManagerFactory::GetForProfile(browser()->profile())
-          ->SignOut(signin_metrics::SIGNOUT_TEST,
-                    signin_metrics::SignoutDelete::IGNORE_METRIC);
+      identity::ClearPrimaryAccount(
+          identity_manager, identity::ClearPrimaryAccountPolicy::DEFAULT);
     } else {
-      constexpr char kTestGaiaID[] = "test";
       constexpr char kTestUserEmail[] = "testuser@gtest.com";
-      SigninManagerFactory::GetForProfile(browser()->profile())
-          ->SetAuthenticatedAccountInfo(kTestGaiaID, kTestUserEmail);
+      identity::MakePrimaryAccountAvailable(identity_manager, kTestUserEmail);
     }
 #endif
 
