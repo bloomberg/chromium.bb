@@ -37,6 +37,7 @@ cr.define('extensions', function() {
         type: Boolean,
         value: false,
         observer: 'onInDevModeChanged_',
+        reflectToAttribute: true,
       },
 
       devModeControlledByPolicy: Boolean,

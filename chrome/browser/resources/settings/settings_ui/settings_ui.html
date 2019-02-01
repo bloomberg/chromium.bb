@@ -38,11 +38,13 @@
 
       cr-toolbar {
         @apply --layout-center;
-        --iron-icon-fill-color: white;
         background-color: var(--md-toolbar-color);
-        color: white;
         min-height: 56px;
         z-index: 2;
+      }
+
+      :host-context(html:not([dark])) cr-toolbar {
+        --iron-icon-fill-color: white;
       }
 
       #container {
