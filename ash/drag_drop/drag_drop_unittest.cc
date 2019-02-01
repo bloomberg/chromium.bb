@@ -5,13 +5,15 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 
 #include "ash/shell.h"
-#include "ash/test/ash_interactive_ui_test_base.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/test/ui_controls_factory_ash.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/base/test/ui_controls_aura.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -111,11 +113,13 @@ void DragDropAcrossMultiDisplay_Step1() {
 
 }  // namespace
 
-using DragDropTest = AshInteractiveUITestBase;
+using DragDropTest = AshTestBase;
 
 // Test if the mouse gets moved properly to another display
 // during drag & drop operation.
 TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
+  ui_controls::InstallUIControlsAura(test::CreateAshUIControls());
+
   UpdateDisplay("400x400,400x400");
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   views::View* draggable_view = new DraggableView();
@@ -142,6 +146,8 @@ TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
 
   source->Close();
   target->Close();
+
+  ui_controls::InstallUIControlsAura(nullptr);
 }
 
 }  // namespace ash
