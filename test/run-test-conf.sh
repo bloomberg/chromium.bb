@@ -33,5 +33,11 @@ BUILDTESTDIR=${builddir-"$MyPWD"}
 
 RUNNER=../test/test-conf$EXEEXT
 
-$RUNNER $TESTDIR/../conf.d/60-generic.conf $TESTDIR/test-60-generic.json
-$RUNNER $TESTDIR/../conf.d/90-synthetic.conf $TESTDIR/test-90-synthetic.json
+for i in \
+	60-generic.conf \
+	90-synthetic.conf \
+    ; do
+    test_json=$(echo test-$i|sed s'/\.conf/.json/')
+    echo $RUNNER $TESTDIR/../conf.d/$i $TESTDIR/$test_json
+    $RUNNER $TESTDIR/../conf.d/$i $TESTDIR/$test_json
+done
