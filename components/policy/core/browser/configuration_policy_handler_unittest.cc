@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
@@ -116,7 +117,9 @@ class StringListPolicyHandler : public ListPolicyHandler {
  protected:
   void ApplyList(std::unique_ptr<base::ListValue> filtered_list,
                  PrefValueMap* prefs) override {
-    prefs->SetValue(kTestPref, std::move(filtered_list));
+    DCHECK(filtered_list);
+    prefs->SetValue(kTestPref,
+                    base::Value::FromUniquePtrValue(std::move(filtered_list)));
   }
 };
 
