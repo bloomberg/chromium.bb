@@ -563,9 +563,8 @@ void MetricsWebContentsObserver::OnVisibilityChanged(
   if (web_contents_will_soon_be_destroyed_)
     return;
 
-  // TODO(bmcquade): Consider handling an OCCLUDED tab as not in foreground.
   bool was_in_foreground = in_foreground_;
-  in_foreground_ = visibility != content::Visibility::HIDDEN;
+  in_foreground_ = visibility == content::Visibility::VISIBLE;
   if (in_foreground_ == was_in_foreground)
     return;
 
