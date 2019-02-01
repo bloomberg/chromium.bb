@@ -312,21 +312,28 @@ void RemoveTransientDescendants(std::vector<aura::Window*>* out_window_list) {
   }
 }
 
-void HideAndMinimizeWithoutAnimation(aura::Window* window) {
-  // Disable the animations using |disable|. However, doing so will skip
-  // detaching and recreating layers that animating does which has memory
-  // implications, so use recreate layers to get the same effect. See
-  // crbug.com/924802.
-  ScopedAnimationDisabler disable(window);
-  window->Hide();
-  wm::GetWindowState(window)->Minimize();
-  std::unique_ptr<ui::LayerTreeOwner> owner = ::wm::RecreateLayers(window);
-}
+void HideAndMaybeMinimizeWithoutAnimation(std::vector<aura::Window*> windows,
+                                          bool minimize) {
+  for (auto* window : windows) {
+    ScopedAnimationDisabler disable(window);
 
-void HideWithoutAnimation(aura::Window* window) {
-  ScopedAnimationDisabler disable(window);
-  window->Hide();
-  std::unique_ptr<ui::LayerTreeOwner> owner = ::wm::RecreateLayers(window);
+    // ARC windows are minimized asynchronously, so hide here now.
+    // TODO(oshima): Investigate better way to handle ARC apps immediately.
+    window->Hide();
+
+    if (minimize)
+      wm::GetWindowState(window)->Minimize();
+  }
+  if (windows.size()) {
+    // Disable the animations using |disable|. However, doing so will skip
+    // detaching the resources associated with the layer. So we have to trick
+    // the compositor into releasing the resources.
+    // crbug.com/924802.
+    auto* compositor = windows[0]->layer()->GetCompositor();
+    bool was_visible = compositor->IsVisible();
+    compositor->SetVisible(false);
+    compositor->SetVisible(was_visible);
+  }
 }
 
 }  // namespace wm
