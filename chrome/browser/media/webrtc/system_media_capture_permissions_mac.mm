@@ -4,7 +4,8 @@
 //
 // Authorization functions and types are available on 10.14+.
 // To avoid availability compile errors, use performSelector invocation of
-// functions and NSInteger instead of AVAuthorizationStatus.
+// functions, NSInteger instead of AVAuthorizationStatus, and NSString* instead
+// of AVMediaType.
 // The AVAuthorizationStatus enum is defined as follows (10.14 SDK):
 // AVAuthorizationStatusNotDetermined = 0,
 // AVAuthorizationStatusRestricted    = 1,
@@ -21,14 +22,14 @@
 
 namespace {
 
-NSInteger AudioAuthorizationStatus() {
+NSInteger MediaAuthorizationStatus(NSString* media_type) {
   if (@available(macOS 10.14, *)) {
     AVCaptureDevice* target = [AVCaptureDevice class];
     SEL selector = @selector(authorizationStatusForMediaType:);
     NSInteger auth_status = 0;
     if ([target respondsToSelector:selector]) {
-      auth_status = (NSInteger)[target performSelector:selector
-                                            withObject:AVMediaTypeAudio];
+      auth_status =
+          (NSInteger)[target performSelector:selector withObject:media_type];
     } else {
       DLOG(WARNING) << "authorizationStatusForMediaType could not be executed";
     }
@@ -39,24 +40,23 @@ NSInteger AudioAuthorizationStatus() {
   return 0;
 }
 
-}  // namespace
-
-bool SystemAudioCapturePermissionIsDisallowed() {
+bool SystemMediaCapturePermissionIsDisallowed(NSString* media_type) {
   if (@available(macOS 10.14, *)) {
-    NSInteger auth_status = AudioAuthorizationStatus();
+    NSInteger auth_status = MediaAuthorizationStatus(media_type);
     return auth_status == 1 || auth_status == 2;
   }
   return false;
 }
 
-void EnsureSystemAudioCapturePermission() {
+void EnsureSystemMediaCapturePermissionIsOrGetsDetermined(
+    NSString* media_type) {
   if (@available(macOS 10.14, *)) {
-    if (AudioAuthorizationStatus() == 0) {
+    if (MediaAuthorizationStatus(media_type) == 0) {
       AVCaptureDevice* target = [AVCaptureDevice class];
       SEL selector = @selector(requestAccessForMediaType:completionHandler:);
       if ([target respondsToSelector:selector]) {
         [target performSelector:selector
-                     withObject:AVMediaTypeAudio
+                     withObject:media_type
                      withObject:^(BOOL granted){
                      }];
       } else {
@@ -64,4 +64,22 @@ void EnsureSystemAudioCapturePermission() {
       }
     }
   }
+}
+
+}  // namespace
+
+bool SystemAudioCapturePermissionIsDisallowed() {
+  return SystemMediaCapturePermissionIsDisallowed(AVMediaTypeAudio);
+}
+
+bool SystemVideoCapturePermissionIsDisallowed() {
+  return SystemMediaCapturePermissionIsDisallowed(AVMediaTypeVideo);
+}
+
+void EnsureSystemAudioCapturePermissionIsOrGetsDetermined() {
+  EnsureSystemMediaCapturePermissionIsOrGetsDetermined(AVMediaTypeAudio);
+}
+
+void EnsureSystemVideoCapturePermissionIsOrGetsDetermined() {
+  EnsureSystemMediaCapturePermissionIsOrGetsDetermined(AVMediaTypeVideo);
 }
