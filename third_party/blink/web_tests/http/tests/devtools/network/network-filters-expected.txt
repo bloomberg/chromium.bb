@@ -39,4 +39,10 @@ Found results: 1
 filterText: -is:from-cache
 Found results: 3
 
+hide data URLs unchecked
+Found results: 6
+
+hide data URLs checked
+Found results: 4
+
 
