@@ -9,6 +9,7 @@
       "fuchsia.media.Audio",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.LegacySocketProvider",
+      "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
       "fuchsia.sys.Launcher",
