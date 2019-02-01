@@ -11,7 +11,7 @@ include_rules = [
   "+build/buildflag.h",
   "+cc/paint",
   "+chromeos/assistant",
-  "+chromeos/services/assistant/public/mojom",
+  "+chromeos/services/assistant/public",
   "+mojo/public/cpp",
   "+services/content/public",
   "+third_party/skia/include/core",

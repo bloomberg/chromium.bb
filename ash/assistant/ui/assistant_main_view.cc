@@ -5,10 +5,11 @@
 #include "ash/assistant/ui/assistant_main_view.h"
 
 #include <algorithm>
-#include <memory>
+#include <utility>
 
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/ui/assistant_notification_overlay.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/caption_bar.h"
@@ -17,6 +18,7 @@
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
@@ -95,6 +97,14 @@ void AssistantMainView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
   min_height_dip_ = std::max(min_height_dip_, height());
 }
 
+void AssistantMainView::VisibilityChanged(views::View* starting_from,
+                                          bool visible) {
+  // Overlays behave like children of AssistantMainView so they should only be
+  // visible while AssistantMainView is visible.
+  for (std::unique_ptr<AssistantOverlay>& overlay : overlays_)
+    overlay->SetVisible(visible);
+}
+
 void AssistantMainView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 
@@ -116,6 +126,13 @@ views::View* AssistantMainView::FindFirstFocusableView() {
   // In those instances in which we want to override views::FocusSearch
   // behavior, DialogPlate will identify the first focusable view.
   return dialog_plate_->FindFirstFocusableView();
+}
+
+std::vector<AssistantOverlay*> AssistantMainView::GetOverlays() {
+  std::vector<AssistantOverlay*> overlays;
+  for (std::unique_ptr<AssistantOverlay>& overlay : overlays_)
+    overlays.push_back(overlay.get());
+  return overlays;
 }
 
 void AssistantMainView::InitLayout() {
@@ -147,6 +164,14 @@ void AssistantMainView::InitLayout() {
   dialog_plate_->layer()->SetFillsBoundsOpaquely(false);
 
   AddChildView(dialog_plate_);
+
+  // Notification overlay.
+  if (chromeos::assistant::features::IsInAssistantNotificationsEnabled()) {
+    auto notification_overlay =
+        std::make_unique<AssistantNotificationOverlay>();
+    notification_overlay->set_owned_by_client();
+    overlays_.push_back(std::move(notification_overlay));
+  }
 }
 
 void AssistantMainView::OnUiVisibilityChanged(
