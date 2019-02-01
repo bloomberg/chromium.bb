@@ -384,8 +384,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
                     parsed_form->other_possible_usernames);
         }
         if (mode == FormDataParser::Mode::kSaving) {
-          EXPECT_EQ(test_case.fallback_only,
-                    parsed_form->only_for_fallback_saving);
+          EXPECT_EQ(test_case.fallback_only, parsed_form->only_for_fallback);
         }
       }
       if (test_case.readonly_status) {
@@ -921,12 +920,13 @@ TEST(FormParserTest, SkippingFieldsWithCreditCardFields) {
   CheckTestData({
       {
           "Simple form, all fields are credit-card-related",
-          {
-              {.form_control_type = "text",
-               .autocomplete_attribute = "cc-name"},
-              {.form_control_type = "password",
-               .autocomplete_attribute = "cc-any-string"},
-          },
+          {{.role = ElementRole::USERNAME,
+            .form_control_type = "text",
+            .autocomplete_attribute = "cc-name"},
+           {.role = ElementRole::CURRENT_PASSWORD,
+            .form_control_type = "password",
+            .autocomplete_attribute = "cc-any-string"}},
+          .fallback_only = true,
       },
       {
           .description_for_logging = "Non-CC fields are considered",

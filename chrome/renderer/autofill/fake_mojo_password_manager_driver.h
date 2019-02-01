@@ -51,12 +51,12 @@ class FakeMojoPasswordManagerDriver
 
   bool called_password_form_submitted() const {
     return called_password_form_submitted_ && password_form_submitted_ &&
-           !password_form_submitted_->only_for_fallback_saving;
+           !password_form_submitted_->only_for_fallback;
   }
 
   bool called_password_form_submitted_only_for_fallback() const {
     return called_password_form_submitted_ && password_form_submitted_ &&
-           password_form_submitted_->only_for_fallback_saving;
+           password_form_submitted_->only_for_fallback;
   }
 
   const base::Optional<autofill::PasswordForm>& password_form_submitted()

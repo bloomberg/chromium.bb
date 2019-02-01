@@ -453,7 +453,7 @@ void PasswordManager::ProvisionallySavePassword(
     const password_manager::PasswordManagerDriver* driver) {
   // If the form was declined by some heuristics, don't show automatic bubble
   // for it, only fallback saving should be available.
-  if (form.only_for_fallback_saving)
+  if (form.only_for_fallback)
     return;
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -893,6 +893,9 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
+  if (store_password_called_)
+    return nullptr;
+
   // No need to report PasswordManagerMetricsRecorder::EMPTY_PASSWORD, because
   // PasswordToSave in NewPasswordFormManager DCHECKs that the password is never
   // empty.
@@ -900,36 +903,34 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
   // TODO(https://crbug.com/831123): Add the
   // ShouldBlockPasswordForSameOriginButDifferentScheme check.
 
-  NewPasswordFormManager* matching_form_manager = nullptr;
-  for (const auto& manager : form_managers_) {
-    if (manager->ProvisionallySaveIfIsManaged(submitted_form, driver)) {
-      matching_form_manager = manager.get();
-      break;
-    }
-  }
+  NewPasswordFormManager* matched_manager =
+      GetMatchedManager(driver, submitted_form);
+
   auto availability =
-      matching_form_manager
+      matched_manager
           ? PasswordManagerMetricsRecorder::FormManagerAvailable::kSuccess
           : PasswordManagerMetricsRecorder::FormManagerAvailable::
                 kMissingProvisionallySave;
   if (client_ && client_->GetMetricsRecorder())
     client_->GetMetricsRecorder()->RecordFormManagerAvailable(availability);
 
-  if (!matching_form_manager && !store_password_called_) {
+  if (!matched_manager) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::NO_MATCHING_FORM, submitted_form.origin,
         logger.get());
-    matching_form_manager = CreateFormManager(driver, submitted_form);
-    matching_form_manager->ProvisionallySaveIfIsManaged(submitted_form, driver);
+    matched_manager = CreateFormManager(driver, submitted_form);
   }
+
+  if (!matched_manager->ProvisionallySave(submitted_form, driver))
+    return nullptr;
 
   // Set all other form managers to no submission state.
   for (const auto& manager : form_managers_) {
-    if (manager.get() != matching_form_manager)
+    if (manager.get() != matched_manager)
       manager->set_not_submitted();
   }
 
-  return matching_form_manager;
+  return matched_manager;
 }
 
 void PasswordManager::ReportSpecPriorityForGeneratedPassword(
@@ -1001,7 +1002,7 @@ bool PasswordManager::IsAutomaticSavePromptAvailable() {
     return false;
   }
 
-  return !submitted_manager->GetPendingCredentials().only_for_fallback_saving;
+  return !submitted_manager->GetPendingCredentials().only_for_fallback;
 }
 
 bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
@@ -1141,7 +1142,7 @@ void PasswordManager::OnLoginSuccessful() {
       submitted_manager->GetSubmittedForm()->origin.SchemeIsCryptographic());
 
   // If the form is eligible only for saving fallback, it shouldn't go here.
-  DCHECK(!submitted_manager->GetPendingCredentials().only_for_fallback_saving);
+  DCHECK(!submitted_manager->GetPendingCredentials().only_for_fallback);
 
   // TODO(https://crbug.com/831123): Remove logging when the old form parsing is
   // removed.
@@ -1403,12 +1404,8 @@ scoped_refptr<PasswordFormMetricsRecorder>
 PasswordManager::GetMetricRecorderFromNewPasswordFormManager(
     const FormData& form,
     const PasswordManagerDriver* driver) {
-  for (auto& form_manager : form_managers_) {
-    if (form_manager->DoesManage(form, driver))
-      return form_manager->metrics_recorder();
-  }
-
-  return nullptr;
+  NewPasswordFormManager* matched_manager = GetMatchedManager(driver, form);
+  return matched_manager ? matched_manager->metrics_recorder() : nullptr;
 }
 
 // TODO(https://crbug.com/831123): Implement creating missing
@@ -1419,8 +1416,14 @@ PasswordFormManagerInterface* PasswordManager::GetMatchedManager(
   if (!is_new_form_parsing_for_saving_enabled_)
     return GetMatchingPendingManager(form);
 
+  return GetMatchedManager(driver, form.form_data);
+}
+
+NewPasswordFormManager* PasswordManager::GetMatchedManager(
+    const PasswordManagerDriver* driver,
+    const FormData& form) {
   for (auto& form_manager : form_managers_) {
-    if (form_manager->DoesManage(form.form_data, driver))
+    if (form_manager->DoesManage(form, driver))
       return form_manager.get();
   }
   return nullptr;

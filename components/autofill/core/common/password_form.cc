@@ -75,7 +75,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   std::ostringstream submission_event_string_stream;
   submission_event_string_stream << form.submission_event;
   target->SetString("submission_event", submission_event_string_stream.str());
-  target->SetBoolean("only_for_fallback_saving", form.only_for_fallback_saving);
+  target->SetBoolean("only_for_fallback", form.only_for_fallback);
   target->SetBoolean("is_gaia_with_skip_save_password_form",
                      form.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
@@ -98,7 +98,7 @@ PasswordForm::PasswordForm()
       is_public_suffix_match(false),
       is_affiliation_based_match(false),
       submission_event(SubmissionIndicatorEvent::NONE),
-      only_for_fallback_saving(false),
+      only_for_fallback(false),
       is_gaia_with_skip_save_password_form(false) {}
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
@@ -161,7 +161,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          app_display_name == form.app_display_name &&
          app_icon_url == form.app_icon_url &&
          submission_event == form.submission_event &&
-         only_for_fallback_saving == form.only_for_fallback_saving &&
+         only_for_fallback == form.only_for_fallback &&
          is_gaia_with_skip_save_password_form ==
              form.is_gaia_with_skip_save_password_form &&
          is_new_password_reliable == form.is_new_password_reliable;

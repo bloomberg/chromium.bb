@@ -286,6 +286,11 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
       const PasswordManagerDriver* driver,
       const autofill::PasswordForm& form);
 
+  // Returns the manager which manages |form|. |driver| is needed to determine
+  // the match. Returns nullptr when no matched manager is found.
+  NewPasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
+                                            const autofill::FormData& form);
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //

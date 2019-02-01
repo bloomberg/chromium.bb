@@ -545,11 +545,10 @@ void NewPasswordFormManager::ProcessMatches(
   }
 }
 
-bool NewPasswordFormManager::ProvisionallySaveIfIsManaged(
+bool NewPasswordFormManager::ProvisionallySave(
     const autofill::FormData& submitted_form,
     const PasswordManagerDriver* driver) {
-  if (!DoesManage(submitted_form, driver))
-    return false;
+  DCHECK(DoesManage(submitted_form, driver));
 
   std::unique_ptr<PasswordForm> parsed_submitted_form =
       ParseFormAndMakeLogging(submitted_form, FormDataParser::Mode::kSaving);

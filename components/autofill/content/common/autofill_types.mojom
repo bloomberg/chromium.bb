@@ -274,7 +274,7 @@ struct PasswordForm {
   bool is_public_suffix_match;
   bool is_affiliation_based_match;
   SubmissionIndicatorEvent submission_event;
-  bool only_for_fallback_saving;
+  bool only_for_fallback;
   bool is_gaia_with_skip_save_password_form;
 };
 
