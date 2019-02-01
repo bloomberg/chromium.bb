@@ -1267,11 +1267,6 @@ const char kNewPasswordFormParsingForSavingDescription[] =
     "version, currently under development. WARNING: when enabled, Password "
     "Manager might stop working";
 
-const char kNewRemotePlaybackPipelineName[] =
-    "Enable the new remote playback pipeline.";
-const char kNewRemotePlaybackPipelineDescription[] =
-    "Enable the new pipeline for playing media element remotely via "
-    "RemotePlayback API or native controls.";
 const char kUseSurfaceLayerForVideoName[] =
     "Enable the use of SurfaceLayer objects for videos.";
 const char kUseSurfaceLayerForVideoDescription[] =

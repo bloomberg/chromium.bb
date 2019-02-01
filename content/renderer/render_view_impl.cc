@@ -908,8 +908,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetSmoothScrollForFindEnabled(prefs.smooth_scroll_for_find_enabled);
 
   settings->SetHideDownloadUI(prefs.hide_download_ui);
-  WebRuntimeFeatures::EnableNewRemotePlaybackPipeline(
-      base::FeatureList::IsEnabled(media::kNewRemotePlaybackPipeline));
 
   settings->SetPresentationReceiver(prefs.presentation_receiver);
 

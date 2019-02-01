@@ -3320,12 +3320,16 @@ void HTMLMediaElement::RequestSeek(double time) {
 
 void HTMLMediaElement::RemoteRouteAvailabilityChanged(
     WebRemotePlaybackAvailability availability) {
-  if (RemotePlaybackClient() &&
-      !RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
-    // The new remote playback pipeline is using the Presentation API for
-    // remote playback device availability monitoring.
+  // The new remote playback pipeline is using the Presentation API for
+  // remote playback device availability monitoring.
+  // This code is left as is because many tests depend on this path for the
+  // moment, but it will be cleaned up.
+  // TODO(https://crbug.com/927099): Clean up old discovery paths.
+  // TODO(https://crubg.com/927451): Remove test depencencies on
+  // RemoteRouteAvailabilityChanged
+
+  if (RemotePlaybackClient())
     RemotePlaybackClient()->AvailabilityChanged(availability);
-  }
 }
 
 bool HTMLMediaElement::HasRemoteRoutes() const {
@@ -3358,10 +3362,8 @@ void HTMLMediaElement::RemotePlaybackStarted() {
 
 void HTMLMediaElement::RemotePlaybackCompatibilityChanged(const WebURL& url,
                                                           bool is_compatible) {
-  if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
-      RemotePlaybackClient()) {
+  if (RemotePlaybackClient())
     RemotePlaybackClient()->SourceChanged(url, is_compatible);
-  }
 }
 
 bool HTMLMediaElement::HasSelectedVideoTrack() {
