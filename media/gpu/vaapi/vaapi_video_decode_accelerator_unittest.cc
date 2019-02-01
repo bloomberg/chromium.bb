@@ -168,12 +168,10 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     // TODO(crbug.com/917999): add IMPORT mode to test variations.
     vda_.output_mode_ = VideoDecodeAccelerator::Config::OutputMode::ALLOCATE;
 
-    vda_.decode_using_client_picture_buffers_ =
-        GetParam().decode_using_client_picture_buffers;
-    vda_.use_reduced_number_of_allocations_ =
-        !vda_.decode_using_client_picture_buffers_ &&
-        vda_.output_mode_ ==
-            VideoDecodeAccelerator::Config::OutputMode::ALLOCATE;
+    vda_.buffer_allocation_mode_ =
+        GetParam().decode_using_client_picture_buffers
+            ? VaapiVideoDecodeAccelerator::BufferAllocationMode::kNone
+            : VaapiVideoDecodeAccelerator::BufferAllocationMode::kReduced;
 
     vda_.state_ = VaapiVideoDecodeAccelerator::kIdle;
   }
@@ -239,7 +237,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     }
 
     const size_t expected_num_picture_buffers_requested =
-        vda_.use_reduced_number_of_allocations_
+        vda_.buffer_allocation_mode_ ==
+                VaapiVideoDecodeAccelerator::BufferAllocationMode::kReduced
             ? num_pictures - kNumReferenceFrames
             : num_pictures;
 
