@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/overview_controller.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "ash/app_list/app_list_controller_impl.h"
@@ -333,11 +334,15 @@ bool OverviewController::ToggleOverview(
       // those widgets will be slid out of overview. Otherwise,
       // HomeLauncherGestureHandler will handle sliding the windows out and when
       // this function is called, we do not need to create minimized widgets.
-      for (aura::Window* window : windows) {
-        if (wm::GetWindowState(window)->IsMinimized())
-          continue;
-        wm::HideAndMinimizeWithoutAnimation(window);
-      }
+      std::vector<aura::Window*> windows_to_hide_minimize(windows.size());
+      auto it = std::copy_if(
+          windows.begin(), windows.end(), windows_to_hide_minimize.begin(),
+          [](aura::Window* window) {
+            return !wm::GetWindowState(window)->IsMinimized();
+          });
+      windows_to_hide_minimize.resize(
+          std::distance(windows_to_hide_minimize.begin(), it));
+      wm::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize, true);
     }
 
     OnSelectionEnded();

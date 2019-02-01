@@ -475,16 +475,20 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     window2_->ResetOpacityAndTransform();
 
   if (is_final_state_show) {
-    wm::HideAndMinimizeWithoutAnimation(GetWindow1());
+    std::vector<aura::Window*> windows_to_hide_minimize;
+    windows_to_hide_minimize.push_back(GetWindow1());
 
     if (window2_)
-      wm::HideAndMinimizeWithoutAnimation(GetWindow2());
+      windows_to_hide_minimize.push_back(GetWindow2());
 
     // Minimize the hidden windows so they can be used normally with alt+tab
     // and overview. Minimize in reverse order to preserve mru ordering.
-    std::reverse(hidden_windows_.begin(), hidden_windows_.end());
-    for (auto* window : hidden_windows_)
-      wm::HideAndMinimizeWithoutAnimation(window);
+    windows_to_hide_minimize.resize(windows_to_hide_minimize.size() +
+                                    hidden_windows_.size());
+    std::copy(hidden_windows_.rbegin(), hidden_windows_.rend(),
+              windows_to_hide_minimize.end() - hidden_windows_.size());
+    wm::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize,
+                                             /*minimize=*/true);
   } else {
     // Reshow all windows previously hidden.
     for (auto* window : hidden_windows_) {
@@ -825,9 +829,10 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
       if (window->IsVisible()) {
         hidden_windows_.push_back(window);
         window->AddObserver(this);
-        wm::HideWithoutAnimation(window);
       }
     }
+    wm::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
+                                             /*minimize=*/false);
   }
 
   return true;
