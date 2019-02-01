@@ -10,9 +10,15 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_mode_observer.h"
+
+#if defined(OS_WIN)
+#include <memory>
+#include "ui/gfx/win/singleton_hwnd_observer.h"
+#endif
 
 namespace content {
 
@@ -92,6 +98,11 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   std::vector<base::Closure> histogram_callbacks_;
 
   bool disable_hot_tracking_;
+
+#if defined(OS_WIN)
+  // Only used on Windows
+  std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityStateImpl);
 };

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "ui/gfx/animation/animation_container_element.h"
 #include "ui/gfx/animation/animation_export.h"
@@ -80,8 +81,9 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
   static bool ScrollAnimationsEnabledBySystem();
 
   // Determines whether the user desires reduced motion based on platform APIs.
-  // Should only be called from the browser process.
+  // Should only be called from the browser process, on the UI thread.
   static bool PrefersReducedMotion();
+  static void UpdatePrefersReducedMotion();
 
  protected:
   // Invoked from Start to allow subclasses to prepare for the animation.
@@ -127,6 +129,10 @@ class ANIMATION_EXPORT Animation : public AnimationContainerElement {
 
   // Time we started at.
   base::TimeTicks start_time_;
+
+  // Obtaining the PrefersReducedMotion system setting can be expensive, so it
+  // is cached in this boolean.
+  static base::Optional<bool> prefers_reduced_motion_;
 
   DISALLOW_COPY_AND_ASSIGN(Animation);
 };
