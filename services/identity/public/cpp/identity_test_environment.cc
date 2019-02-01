@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -36,6 +37,8 @@ class IdentityManagerDependenciesOwner {
 
   AccountTrackerService* account_tracker_service();
 
+  FakeAccountFetcherService* account_fetcher_service();
+
   SigninManagerForTest* signin_manager();
 
   FakeProfileOAuth2TokenService* token_service();
@@ -52,6 +55,7 @@ class IdentityManagerDependenciesOwner {
   sync_preferences::TestingPrefServiceSyncable* raw_pref_service_ = nullptr;
 
   AccountTrackerService account_tracker_;
+  FakeAccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   SigninManagerForTest signin_manager_;
@@ -95,19 +99,32 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
         &token_service_, &signin_client_);
   }
   AccountTrackerService::RegisterPrefs(pref_service()->registry());
+  AccountFetcherService::RegisterPrefs(pref_service()->registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service()->registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service()->registry());
   SigninManagerBase::RegisterPrefs(pref_service()->registry());
 
   account_tracker_.Initialize(pref_service(), base::FilePath());
+  account_fetcher_.Initialize(&signin_client_, &token_service_,
+                              &account_tracker_,
+                              std::make_unique<TestImageDecoder>());
   signin_manager_.Initialize(pref_service());
 }
 
-IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() {}
+IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() {
+  signin_manager_.Shutdown();
+  account_fetcher_.Shutdown();
+  account_tracker_.Shutdown();
+}
 
 AccountTrackerService*
 IdentityManagerDependenciesOwner::account_tracker_service() {
   return &account_tracker_;
+}
+
+FakeAccountFetcherService*
+IdentityManagerDependenciesOwner::account_fetcher_service() {
+  return &account_fetcher_;
 }
 
 SigninManagerForTest* IdentityManagerDependenciesOwner::signin_manager() {
@@ -138,6 +155,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     signin::AccountConsistencyMethod account_consistency)
     : IdentityTestEnvironment(
           /*account_tracker_service=*/nullptr,
+          /*account_fetcher_service=*/nullptr,
           /*token_service=*/nullptr,
           /*signin_manager=*/nullptr,
           /*gaia_cookie_manager_service=*/nullptr,
@@ -150,11 +168,13 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 
 IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
+    FakeAccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerForTest* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     network::TestURLLoaderFactory* test_url_loader_factory)
     : IdentityTestEnvironment(account_tracker_service,
+                              account_fetcher_service,
                               token_service,
                               signin_manager,
                               gaia_cookie_manager_service,
@@ -164,12 +184,14 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 
 IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
+    FakeAccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerForTest* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     IdentityManager* identity_manager,
     network::TestURLLoaderFactory* test_url_loader_factory)
     : IdentityTestEnvironment(account_tracker_service,
+                              account_fetcher_service,
                               token_service,
                               signin_manager,
                               gaia_cookie_manager_service,
@@ -179,6 +201,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 
 IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
+    FakeAccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerForTest* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -194,26 +217,38 @@ IdentityTestEnvironment::IdentityTestEnvironment(
          "base::test::ScopedTaskEnvironment.";
 
   if (dependencies_owner) {
-    DCHECK(!(account_tracker_service || token_service || signin_manager ||
-             gaia_cookie_manager_service || identity_manager));
+    DCHECK(!(account_tracker_service || account_fetcher_service ||
+             token_service || signin_manager || gaia_cookie_manager_service ||
+             identity_manager));
 
     dependencies_owner_ = std::move(dependencies_owner);
 
     account_tracker_service_ = dependencies_owner_->account_tracker_service();
+    account_fetcher_service_ = dependencies_owner_->account_fetcher_service();
     token_service_ = dependencies_owner_->token_service();
     signin_manager_ = dependencies_owner_->signin_manager();
     gaia_cookie_manager_service_ =
         dependencies_owner_->gaia_cookie_manager_service();
 
   } else {
-    DCHECK(account_tracker_service && token_service && signin_manager &&
-           gaia_cookie_manager_service);
+    DCHECK(account_tracker_service && account_fetcher_service &&
+           token_service && signin_manager && gaia_cookie_manager_service);
 
     account_tracker_service_ = account_tracker_service;
+    account_fetcher_service_ = account_fetcher_service;
     token_service_ = token_service;
     signin_manager_ = signin_manager;
     gaia_cookie_manager_service_ = gaia_cookie_manager_service;
   }
+
+  // TODO(sdefresne): services should be initialized when this version of
+  // the constructor is used. However, this break a large number of tests
+  // (all those that use an IdentityTestEnvironment and its dependencies
+  // as member fields; they should be changed to before the check can be
+  // enabled).
+  // DCHECK(account_tracker_service_->account_fetcher_service())
+  //     << "IdentityTestEnvironment requires its services to be initialized "
+  //     << "before passing them to the constructor.";
 
   if (identity_manager) {
     raw_identity_manager_ = identity_manager;

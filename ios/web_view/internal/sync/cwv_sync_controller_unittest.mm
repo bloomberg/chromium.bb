@@ -14,6 +14,7 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -99,6 +100,7 @@ class CWVSyncControllerTest : public PlatformTest {
                         &account_tracker_service_,
                         &gaia_cookie_manager_service_),
         identity_test_env_(&account_tracker_service_,
+                           &account_fetcher_service_,
                            &token_service_,
                            &signin_manager_,
                            &gaia_cookie_manager_service_),
@@ -118,6 +120,9 @@ class CWVSyncControllerTest : public PlatformTest {
 
     account_tracker_service_.Initialize(browser_state_.GetPrefs(),
                                         base::FilePath());
+    account_fetcher_service_.Initialize(&signin_client_, &token_service_,
+                                        &account_tracker_service_,
+                                        std::make_unique<TestImageDecoder>());
     signin_manager_.Initialize(
         ApplicationContext::GetInstance()->GetLocalState());
 
@@ -133,6 +138,8 @@ class CWVSyncControllerTest : public PlatformTest {
 
   ~CWVSyncControllerTest() override {
     EXPECT_CALL(*profile_sync_service_, RemoveObserver(_));
+    account_fetcher_service_.Shutdown();
+    account_tracker_service_.Shutdown();
   }
 
   void AddObserver(syncer::SyncServiceObserver* observer) {
@@ -149,6 +156,7 @@ class CWVSyncControllerTest : public PlatformTest {
   web::TestWebState web_state_;
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> profile_sync_service_;
   AccountTrackerService account_tracker_service_;
+  FakeAccountFetcherService account_fetcher_service_;
   TestSigninClient signin_client_;
 
   // Weak, owned by the token service.

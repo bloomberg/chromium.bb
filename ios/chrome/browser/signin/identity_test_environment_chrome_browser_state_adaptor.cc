@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
@@ -53,8 +54,25 @@ std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
       browser_state->GetPrefs(), std::move(delegate));
 }
 
+std::unique_ptr<KeyedService> BuildFakeAccountFetcherService(
+    web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  auto account_fetcher_service = std::make_unique<FakeAccountFetcherService>();
+  account_fetcher_service->Initialize(
+      SigninClientFactory::GetForBrowserState(browser_state),
+      ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
+      ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
+      std::make_unique<TestImageDecoder>());
+  return account_fetcher_service;
+}
+
 TestChromeBrowserState::TestingFactories GetIdentityTestEnvironmentFactories() {
-  return {{ProfileOAuth2TokenServiceFactory::GetInstance(),
+  return {{ios::AccountFetcherServiceFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeAccountFetcherService)},
+          {ios::GaiaCookieManagerServiceFactory::GetInstance(),
+           base::BindRepeating(&BuildFakeGaiaCookieManagerService)},
+          {ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeOAuth2TokenService)},
           {ios::SigninManagerFactory::GetInstance(),
            base::BindRepeating(&BuildFakeSigninManager)}};
@@ -121,6 +139,9 @@ IdentityTestEnvironmentChromeBrowserStateAdaptor::
         ios::ChromeBrowserState* browser_state)
     : identity_test_env_(
           ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
+          static_cast<FakeAccountFetcherService*>(
+              ios::AccountFetcherServiceFactory::GetForBrowserState(
+                  browser_state)),
           static_cast<FakeProfileOAuth2TokenService*>(
               ProfileOAuth2TokenServiceFactory::GetForBrowserState(
                   browser_state)),

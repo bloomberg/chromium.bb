@@ -19,10 +19,13 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -304,6 +307,7 @@ class AccountReconcilorTest : public ::testing::Test {
   DiceTestSigninClient test_signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
+  FakeAccountFetcherService account_fetcher_;
   GaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
@@ -370,13 +374,16 @@ AccountReconcilorTest::AccountReconcilorTest()
                       &token_service_,
                       &account_tracker_,
                       &cookie_manager_service_),
+
 #endif
       identity_test_env_(&account_tracker_,
+                         &account_fetcher_,
                          &token_service_,
                          &signin_manager_,
                          &cookie_manager_service_,
                          &test_url_loader_factory_) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
+  AccountFetcherService::RegisterPrefs(pref_service_.registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
@@ -384,6 +391,9 @@ AccountReconcilorTest::AccountReconcilorTest()
       prefs::kTokenServiceDiceCompatible, false);
 
   account_tracker_.Initialize(&pref_service_, base::FilePath());
+  account_fetcher_.Initialize(
+      &test_signin_client_, &token_service_, &account_tracker_,
+      std::make_unique<image_fetcher::FakeImageDecoder>());
   signin::SetListAccountsResponseHttpNotFound(&test_url_loader_factory_);
   signin_manager_.Initialize(nullptr);
 
@@ -416,6 +426,7 @@ AccountReconcilorTest::~AccountReconcilorTest() {
     mock_reconcilor_->Shutdown();
   signin_manager_.Shutdown();
   cookie_manager_service_.Shutdown();
+  account_fetcher_.Shutdown();
   account_tracker_.Shutdown();
   test_signin_client_.Shutdown();
   token_service_.Shutdown();

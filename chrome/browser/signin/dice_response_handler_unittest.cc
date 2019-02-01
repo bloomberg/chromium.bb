@@ -21,6 +21,7 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
@@ -104,6 +105,7 @@ class DiceResponseHandlerTest : public testing::Test,
                         nullptr),
         cookie_service_(&token_service_, &signin_client_),
         identity_test_env_(&account_tracker_service_,
+                           &account_fetcher_service_,
                            &token_service_,
                            &signin_manager_,
                            &cookie_service_),
@@ -121,8 +123,13 @@ class DiceResponseHandlerTest : public testing::Test,
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    AccountFetcherService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
+    account_fetcher_service_.Initialize(&signin_client_, &token_service_,
+                                        &account_tracker_service_,
+                                        std::make_unique<TestImageDecoder>());
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
             &signin_client_, signin::AccountConsistencyMethod::kDiceMigration);
@@ -130,7 +137,6 @@ class DiceResponseHandlerTest : public testing::Test,
         identity_test_env_.identity_manager(), &signin_client_, nullptr,
         std::move(account_reconcilor_delegate));
     about_signin_internals_.Initialize(&signin_client_);
-    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
     account_reconcilor_->AddObserver(this);
   }
 
@@ -141,6 +147,7 @@ class DiceResponseHandlerTest : public testing::Test,
     cookie_service_.Shutdown();
     signin_error_controller_.Shutdown();
     signin_manager_.Shutdown();
+    account_fetcher_service_.Shutdown();
     account_tracker_service_.Shutdown();
     token_service_.Shutdown();
     signin_client_.Shutdown();
@@ -200,6 +207,7 @@ class DiceResponseHandlerTest : public testing::Test,
   DiceTestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
+  FakeAccountFetcherService account_fetcher_service_;
   FakeSigninManager signin_manager_;
   GaiaCookieManagerService cookie_service_;
   identity::IdentityTestEnvironment identity_test_env_;

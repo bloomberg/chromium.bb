@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -84,6 +85,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // completed). NOTE: The passed-in objects must all outlive this object.
   IdentityTestEnvironment(
       AccountTrackerService* account_tracker_service,
+      FakeAccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
       SigninManagerForTest* signin_manager,
       GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -291,6 +293,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // contact blundell@chromium.org.
   IdentityTestEnvironment(
       AccountTrackerService* account_tracker_service,
+      FakeAccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
       SigninManagerForTest* signin_manager,
       GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -310,6 +313,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // supplied dependencies.
   IdentityTestEnvironment(
       AccountTrackerService* account_tracker_service,
+      FakeAccountFetcherService* account_fetcher_service,
       FakeProfileOAuth2TokenService* token_service,
       SigninManagerForTest* signin_manager,
       GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -340,6 +344,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // the IdentityTestEnvironment constructor.
   std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner_;
   AccountTrackerService* account_tracker_service_ = nullptr;
+  FakeAccountFetcherService* account_fetcher_service_ = nullptr;
   FakeProfileOAuth2TokenService* token_service_ = nullptr;
   SigninManagerForTest* signin_manager_ = nullptr;
   GaiaCookieManagerService* gaia_cookie_manager_service_ = nullptr;
