@@ -39,17 +39,6 @@ function copyAttributes_(source, destination) {
 }
 
 /**
- * Apply localization to |element| with i18n_template.js if available.
- * @param {Element} element Element to be localized.
- * @private
- */
-function localize_(element) {
-  if (window.i18nTemplate && window.loadTimeData) {
-    i18nTemplate.process(element, loadTimeData);
-  }
-}
-
-/**
  * Returns 'N/A' (Not Available) text if |value| is undefined.
  * @param {*} value Object to print.
  * @return {string} 'N/A' or ''.
@@ -396,7 +385,6 @@ function handleStatistics(event) {
     entry.detail = data[key];
     entry.innerHTML = '<td>' + stringToText_(key) + '</td>' +
         '<td>' + stringToText_(entry.detail) + '</td>';
-    localize_(entry);
   }
 }
 
@@ -432,7 +420,6 @@ function updateDescription() {
       const row = cr.doc.createElement('tr');
       row.innerHTML = '<td>' + label + '</td>' +
           '<td>' + normalize(entry) + '</td>';
-      localize_(row);
       tbody.appendChild(row);
     }
   }

@@ -14,7 +14,6 @@ js_type_check("closure_compile") {
 js_library("event_handler") {
   deps = [
     "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_template_no_process",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:tabs",
     "//ui/webui/resources/js/cr/ui:tree",
