@@ -6425,6 +6425,8 @@ fuzzer_test("net_qpack_encoder_stream_sender_fuzzer") {
   ]
   deps = [
     ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
     "//base",
     "//net",
   ]
