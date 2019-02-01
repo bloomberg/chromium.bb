@@ -47,7 +47,7 @@ void MediaSessionServiceImpl::DidFinishNavigation() {
   // At this point the BrowsingContext of the frame has changed, so the members
   // need to be reset, and notify MediaSessionImpl.
   SetPlaybackState(blink::mojom::MediaSessionPlaybackState::NONE);
-  SetMetadata(base::nullopt);
+  SetMetadata(nullptr);
   ClearActions();
 }
 
@@ -69,19 +69,25 @@ void MediaSessionServiceImpl::SetPlaybackState(
 }
 
 void MediaSessionServiceImpl::SetMetadata(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+    blink::mojom::SpecMediaMetadataPtr metadata) {
+  metadata_.reset();
+
   // When receiving a MediaMetadata, the browser process can't trust that it is
   // coming from a known and secure source. It must be processed accordingly.
-  if (metadata.has_value() &&
-      !MediaMetadataSanitizer::CheckSanity(metadata.value())) {
-    RenderFrameHost* rfh = GetRenderFrameHost();
-    if (rfh) {
-      rfh->GetProcess()->ShutdownForBadMessage(
-          RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
+  if (!metadata.is_null()) {
+    media_session::MediaMetadata new_metadata;
+
+    if (!MediaMetadataSanitizer::SanitizeAndConvert(metadata, &new_metadata)) {
+      RenderFrameHost* rfh = GetRenderFrameHost();
+      if (rfh) {
+        rfh->GetProcess()->ShutdownForBadMessage(
+            RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
+      }
+      return;
     }
-    return;
+
+    metadata_ = new_metadata;
   }
-  metadata_ = metadata;
 
   MediaSessionImpl* session = GetMediaSession();
   if (session)

@@ -21,6 +21,15 @@ interface MediaSessionClient {
   DidReceiveAction(media_session.mojom.MediaSessionAction action);
 };
 
+// MediaMetadata
+// Spec: https://wicg.github.io/mediasession/
+struct SpecMediaMetadata {
+  mojo_base.mojom.String16 title;
+  mojo_base.mojom.String16 artist;
+  mojo_base.mojom.String16 album;
+  array<media_session.mojom.MediaImage> artwork;
+};
+
 interface MediaSessionService {
   // MediaSessionClient interface is used to notify Blink MediaSession of
   // media control actions.
@@ -31,7 +40,7 @@ interface MediaSessionService {
 
   // Notifies the browser that the metadata is set, |metadata| will be displayed
   // on the UI.
-  SetMetadata(media_session.mojom.MediaMetadata? metadata);
+  SetMetadata(SpecMediaMetadata? metadata);
 
   // Notifies the browser that the event handler for |action| has been set,
   // browser needs to show a media button in the UI or register listeners to the
