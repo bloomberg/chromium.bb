@@ -5979,6 +5979,8 @@ crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.html [ Failur
 crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.serviceworker.html [ Failure ]
 crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.sharedworker.html [ Failure ]
 crbug.com/926311 external/wpt/wasm/webapi/instantiateStreaming.any.worker.html [ Failure ]
+crbug.com/926311 external/wpt/wasm/jsapi/constructor/compile.any.html [ Pass Failure ]
+crbug.com/926311 external/wpt/wasm/jsapi/constructor/compile.any.worker.html [ Pass Failure ]
 
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/module/customSections.any.worker.html [ Pass Failure ]
