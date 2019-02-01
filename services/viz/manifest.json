@@ -16,6 +16,10 @@
       "provides": {
         "viz_host": [
           "viz.mojom.VizMain"
+        ],
+        "ozone": [
+          "ui.ozone.mojom.DeviceCursor",
+          "ui.ozone.mojom.DrmDevice"
         ]
       },
       "requires": {

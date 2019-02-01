@@ -343,8 +343,8 @@ void Env::Init(service_manager::Connector* connector) {
   if (connector) {
     // Supplying a connector implies this process is hosting Viz.
     params.connector = connector;
-    // Hosting viz is currently single-process only.
-    params.single_process = true;
+    if (!features::IsMashOopVizEnabled())
+      params.single_process = true;
     params.using_mojo = true;
   }
 
