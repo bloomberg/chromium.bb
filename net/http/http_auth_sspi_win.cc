@@ -55,14 +55,14 @@ int AcquireExplicitCredentials(SSPILibrary* library,
                                CredHandle* cred) {
   SEC_WINNT_AUTH_IDENTITY identity;
   identity.Flags = SEC_WINNT_AUTH_IDENTITY_UNICODE;
-  identity.User =
-      reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(user.c_str()));
+  identity.User = reinterpret_cast<unsigned short*>(
+      const_cast<wchar_t*>(base::wdata(user)));
   identity.UserLength = user.size();
-  identity.Domain =
-      reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(domain.c_str()));
+  identity.Domain = reinterpret_cast<unsigned short*>(
+      const_cast<wchar_t*>(base::wdata(domain)));
   identity.DomainLength = domain.size();
-  identity.Password =
-      reinterpret_cast<unsigned short*>(const_cast<wchar_t*>(password.c_str()));
+  identity.Password = reinterpret_cast<unsigned short*>(
+      const_cast<wchar_t*>(base::wdata(password)));
   identity.PasswordLength = password.size();
 
   TimeStamp expiry;
@@ -422,18 +422,18 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
   DWORD context_attribute;
   base::string16 spn16 = base::ASCIIToUTF16(spn);
   SECURITY_STATUS status = library_->InitializeSecurityContext(
-      &cred_,                                    // phCredential
-      ctxt_ptr,                                  // phContext
-      const_cast<base::char16*>(spn16.c_str()),  // pszTargetName
-      context_flags,                             // fContextReq
-      0,                                         // Reserved1 (must be 0)
-      SECURITY_NATIVE_DREP,                      // TargetDataRep
-      in_buffer_desc_ptr,                        // pInput
-      0,                                         // Reserved2 (must be 0)
-      &ctxt_,                                    // phNewContext
-      &out_buffer_desc,                          // pOutput
-      &context_attribute,                        // pfContextAttr
-      nullptr);                                  // ptsExpiry
+      &cred_,                // phCredential
+      ctxt_ptr,              // phContext
+      base::wdata(spn16),    // pszTargetName
+      context_flags,         // fContextReq
+      0,                     // Reserved1 (must be 0)
+      SECURITY_NATIVE_DREP,  // TargetDataRep
+      in_buffer_desc_ptr,    // pInput
+      0,                     // Reserved2 (must be 0)
+      &ctxt_,                // phNewContext
+      &out_buffer_desc,      // pOutput
+      &context_attribute,    // pfContextAttr
+      nullptr);              // ptsExpiry
   int rv = MapInitializeSecurityContextStatusToError(status);
   if (rv != OK) {
     ResetSecurityContext();

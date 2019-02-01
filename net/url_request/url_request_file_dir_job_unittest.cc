@@ -308,7 +308,7 @@ TEST_F(URLRequestFileDirTest, RootDirectory) {
   for (int slashes_to_test = 1; slashes_to_test < 4; ++slashes_to_test) {
     base::FilePath::StringType root_dir_string;
 #if defined(OS_WIN)
-    root_dir_string = L"C:";
+    root_dir_string = FILE_PATH_LITERAL("C:");
 #endif
     root_dir_string.append(slashes_to_test, base::FilePath::kSeparators[0]);
     base::FilePath root_dir(root_dir_string);

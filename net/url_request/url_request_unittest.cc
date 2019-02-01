@@ -1453,7 +1453,7 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
   app_path = app_path.Append(kTestFilePath);
   app_path = app_path.AppendASCII("with-headers.html");
 
-  std::wstring lnk_path = app_path.value() + L".lnk";
+  base::string16 lnk_path = app_path.value() + FILE_PATH_LITERAL(".lnk");
 
   base::win::ScopedCOMInitializer com_initializer;
 
@@ -1464,9 +1464,9 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
         CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell))));
     Microsoft::WRL::ComPtr<IPersistFile> persist;
     ASSERT_TRUE(SUCCEEDED(shell.CopyTo(persist.GetAddressOf())));
-    EXPECT_TRUE(SUCCEEDED(shell->SetPath(app_path.value().c_str())));
+    EXPECT_TRUE(SUCCEEDED(shell->SetPath(base::wdata(app_path.value()))));
     EXPECT_TRUE(SUCCEEDED(shell->SetDescription(L"ResolveShortcutTest")));
-    EXPECT_TRUE(SUCCEEDED(persist->Save(lnk_path.c_str(), TRUE)));
+    EXPECT_TRUE(SUCCEEDED(persist->Save(base::wdata(lnk_path), TRUE)));
   }
 
   TestDelegate d;
@@ -1481,11 +1481,11 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
     d.RunUntilComplete();
 
     WIN32_FILE_ATTRIBUTE_DATA data;
-    GetFileAttributesEx(app_path.value().c_str(),
-                        GetFileExInfoStandard, &data);
-    HANDLE file = CreateFile(app_path.value().c_str(), GENERIC_READ,
-                             FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                             FILE_ATTRIBUTE_NORMAL, NULL);
+    GetFileAttributesEx(base::wdata(app_path.value()), GetFileExInfoStandard,
+                        &data);
+    HANDLE file =
+        CreateFile(base::wdata(app_path.value()), GENERIC_READ, FILE_SHARE_READ,
+                   NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     EXPECT_NE(INVALID_HANDLE_VALUE, file);
     std::unique_ptr<char[]> buffer(new char[data.nFileSizeLow]);
     DWORD read_size;
@@ -1501,7 +1501,7 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
   }
 
   // Clean the shortcut
-  DeleteFile(lnk_path.c_str());
+  DeleteFile(base::wdata(lnk_path));
 }
 #endif  // defined(OS_WIN)
 

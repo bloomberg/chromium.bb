@@ -35,16 +35,18 @@ struct GenerateFilenameCase {
 };
 
 // The expected filenames are coded as wchar_t for convenience.
+// TODO(https://crbug.com/911896): Make these char16_t once base::string16 is
+// std::u16string.
 std::wstring FilePathAsWString(const base::FilePath& path) {
 #if defined(OS_WIN)
-  return path.value();
+  return base::UTF16ToWide(path.value());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::UTF8ToWide(path.value());
 #endif
 }
 base::FilePath WStringAsFilePath(const std::wstring& str) {
 #if defined(OS_WIN)
-  return base::FilePath(str);
+  return base::FilePath(base::WideToUTF16(str));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::FilePath(base::WideToUTF8(str));
 #endif
@@ -305,8 +307,9 @@ TEST(FilenameUtilTest, FileURLConversion) {
 #if defined(OS_WIN)
     // On Windows, invalid UTF-8 bytes are interpreted using the default ANSI
     // code page. This defaults to Windows-1252 (which we assume here).
-    const wchar_t expected_output[] = L"D:\\Blah\\\u2026\u2122.doc";
-    EXPECT_EQ(std::wstring(expected_output), output.value());
+    const base::FilePath::CharType expected_output[] =
+        FILE_PATH_LITERAL("D:\\Blah\\\u2026\u2122.doc");
+    EXPECT_EQ(expected_output, output.value());
 #elif defined(OS_POSIX)
     // No conversion should happen, and the invalid UTF-8 should be preserved.
     const char expected_output[] = "/d:/Blah/\x85\x99.doc";
@@ -321,8 +324,9 @@ TEST(FilenameUtilTest, FileURLConversion) {
 #if defined(OS_WIN)
     // On Windows, invalid UTF-8 bytes are interpreted using the default ANSI
     // code page. This defaults to Windows-1252 (which we assume here).
-    const wchar_t expected_output[] = L"D:\\Blah\\\u2026\u2122.doc";
-    EXPECT_EQ(std::wstring(expected_output), output.value());
+    const base::FilePath::CharType expected_output[] =
+        FILE_PATH_LITERAL("D:\\Blah\\\u2026\u2122.doc");
+    EXPECT_EQ(expected_output, output.value());
 #elif defined(OS_POSIX)
     // No conversion should happen, and the invalid UTF-8 should be preserved.
     const char expected_output[] = "/d:/Blah/\x85\x99.doc";
@@ -380,7 +384,7 @@ TEST(FilenameUtilTest, GenerateSafeFileName) {
   };
 
 #if defined(OS_WIN)
-  base::FilePath base_path(L"C:\\foo");
+  base::FilePath base_path(FILE_PATH_LITERAL("C:\\foo"));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FilePath base_path("/foo");
 #endif

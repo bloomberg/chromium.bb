@@ -158,7 +158,7 @@ base::HistogramBase* GetMediumTimeHistogram(const std::string& name) {
 
 std::string AsUTF8ForSQL(const base::FilePath& path) {
 #if defined(OS_WIN)
-  return base::WideToUTF8(path.value());
+  return base::UTF16ToUTF8(path.value());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return path.value();
 #endif
@@ -540,7 +540,7 @@ base::FilePath Database::DbPath() const {
   const char* path = sqlite3_db_filename(db_, "main");
   const base::StringPiece db_path(path);
 #if defined(OS_WIN)
-  return base::FilePath(base::UTF8ToWide(db_path));
+  return base::FilePath(base::UTF8ToUTF16(db_path));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::FilePath(db_path);
 #else
