@@ -40,6 +40,9 @@ class AllocatorState {
   static constexpr size_t kGpaMaxPages = 256;
   // Maximum number of stack trace frames to collect.
   static constexpr size_t kMaxStackFrames = 60;
+  // Number of bytes to allocate for packed stack traces. This can hold
+  // approximately kMaxStackFrames under normal conditions.
+  static constexpr size_t kMaxPackedTraceLength = 200;
 
   enum class ErrorType {
     kUseAfterFree = 0,
@@ -65,9 +68,9 @@ class AllocatorState {
       // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
       // occurred.
       base::PlatformThreadId tid = base::kInvalidThreadId;
-      // Stack trace contents.
-      uintptr_t trace[kMaxStackFrames];
-      // Stack trace length.
+      // Packed stack trace.
+      uint8_t packed_trace[kMaxPackedTraceLength];
+      // Length used to encode the packed stack trace.
       size_t trace_len = 0;
       // Whether a stack trace has been collected for this (de)allocation.
       bool trace_collected = false;

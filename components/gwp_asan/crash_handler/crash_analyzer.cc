@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
+#include "components/gwp_asan/common/pack_stack_trace.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/snapshot/cpu_context.h"
@@ -153,17 +154,26 @@ void CrashAnalyzer::ReadAllocationInfo(
   if (!slot_info.trace_len || !slot_info.trace_collected)
     return;
 
-  if (slot_info.trace_len > AllocatorState::kMaxStackFrames) {
+  if (slot_info.trace_len > AllocatorState::kMaxPackedTraceLength) {
     DLOG(ERROR) << "Stack trace length is corrupted: " << slot_info.trace_len;
     return;
   }
 
-  // On 32-bit platforms we can't copy directly to
+  uintptr_t unpacked_stack_trace[AllocatorState::kMaxPackedTraceLength];
+  size_t unpacked_len =
+      Unpack(slot_info.packed_trace, slot_info.trace_len, unpacked_stack_trace,
+             AllocatorState::kMaxPackedTraceLength);
+  if (!unpacked_len) {
+    DLOG(ERROR) << "Failed to unpack stack trace.";
+    return;
+  }
+
+  // On 32-bit platforms we can't copy directly into
   // proto_info->mutable_stack_trace()->mutable_data().
-  proto_info->mutable_stack_trace()->Resize(slot_info.trace_len, 0);
+  proto_info->mutable_stack_trace()->Resize(unpacked_len, 0);
   uint64_t* output = proto_info->mutable_stack_trace()->mutable_data();
-  for (size_t i = 0; i < slot_info.trace_len; i++)
-    output[i] = slot_info.trace[i];
+  for (size_t i = 0; i < unpacked_len; i++)
+    output[i] = unpacked_stack_trace[i];
 }
 
 }  // namespace internal
