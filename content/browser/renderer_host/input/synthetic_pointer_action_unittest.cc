@@ -142,6 +142,13 @@ class MockSyntheticPointerTouchActionTarget
       positions_[num_dispatched_pointer_actions_] =
           gfx::PointF(touch_event.touches[i].PositionInWidget());
       states_[num_dispatched_pointer_actions_] = touch_event.touches[i].state;
+      widths_[num_dispatched_pointer_actions_] =
+          2 * touch_event.touches[i].radius_x;
+      heights_[num_dispatched_pointer_actions_] =
+          2 * touch_event.touches[i].radius_y;
+      rotation_angles_[num_dispatched_pointer_actions_] =
+          touch_event.touches[i].rotation_angle;
+      forces_[num_dispatched_pointer_actions_] = touch_event.touches[i].force;
       num_dispatched_pointer_actions_++;
     }
   }
@@ -165,6 +172,31 @@ class MockSyntheticPointerTouchActionTarget
                << "Pointer position at index " << index << " was "
                << positions_[index].ToString() << ", expected "
                << param.position().ToString() << ".";
+      }
+
+      if (widths_[index] != param.width()) {
+        return testing::AssertionFailure()
+               << "Pointer width at index " << index << " was "
+               << widths_[index] << ", expected " << param.width() << ".";
+      }
+
+      if (heights_[index] != param.height()) {
+        return testing::AssertionFailure()
+               << "Pointer height at index " << index << " was "
+               << heights_[index] << ", expected " << param.height() << ".";
+      }
+
+      if (rotation_angles_[index] != param.rotation_angle()) {
+        return testing::AssertionFailure()
+               << "Pointer rotation_angle at index " << index << " was "
+               << rotation_angles_[index] << ", expected "
+               << param.rotation_angle() << ".";
+      }
+
+      if (forces_[index] != param.force()) {
+        return testing::AssertionFailure()
+               << "Pointer force at index " << index << " was "
+               << forces_[index] << ", expected " << param.force() << ".";
       }
     }
 
@@ -204,6 +236,10 @@ class MockSyntheticPointerTouchActionTarget
   gfx::PointF positions_[WebTouchEvent::kTouchesLengthCap];
   uint32_t indexes_[WebTouchEvent::kTouchesLengthCap];
   WebTouchPoint::State states_[WebTouchEvent::kTouchesLengthCap];
+  float widths_[WebTouchEvent::kTouchesLengthCap];
+  float heights_[WebTouchEvent::kTouchesLengthCap];
+  float rotation_angles_[WebTouchEvent::kTouchesLengthCap];
+  float forces_[WebTouchEvent::kTouchesLengthCap];
 };
 
 class MockSyntheticPointerMouseActionTarget
@@ -369,6 +405,10 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
       SyntheticPointerActionParams::PointerActionType::PRESS);
   param1.set_pointer_id(0);
   param1.set_position(gfx::PointF(54, 89));
+  param1.set_width(30);
+  param1.set_height(45);
+  param1.set_rotation_angle(10);
+  param1.set_force(15);
   SyntheticPointerActionListParams::ParamList param_list1;
   param_list1.push_back(param1);
   params_.PushPointerActionParamsList(param_list1);
@@ -382,6 +422,10 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
       SyntheticPointerActionParams::PointerActionType::PRESS);
   param2.set_pointer_id(1);
   param2.set_position(gfx::PointF(79, 132));
+  param2.set_width(10);
+  param2.set_height(35);
+  param2.set_rotation_angle(30);
+  param2.set_force(10);
   SyntheticPointerActionListParams::ParamList param_list2;
   param_list2.push_back(param1);
   param_list2.push_back(param2);

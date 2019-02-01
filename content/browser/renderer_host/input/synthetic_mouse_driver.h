@@ -25,8 +25,19 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
              int index = 0,
              SyntheticPointerActionParams::Button button =
                  SyntheticPointerActionParams::Button::LEFT,
-             int key_modifiers = 0) override;
-  void Move(float x, float y, int index = 0, int key_modifiers = 0) override;
+             int key_modifiers = 0,
+             float width = 1.f,
+             float height = 1.f,
+             float rotation_angle = 0.f,
+             float force = 1.f) override;
+  void Move(float x,
+            float y,
+            int index = 0,
+            int key_modifiers = 0,
+            float width = 1.f,
+            float height = 1.f,
+            float rotation_angle = 0.f,
+            float force = 1.f) override;
   void Release(int index = 0,
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT,

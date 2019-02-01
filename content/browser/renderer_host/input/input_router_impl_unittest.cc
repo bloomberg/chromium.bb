@@ -356,10 +356,12 @@ class InputRouterImplTestBase : public testing::Test {
     return touch_event_id;
   }
 
-  int PressTouchPoint(int x, int y) { return touch_event_.PressPoint(x, y); }
+  int PressTouchPoint(int x, int y) {
+    return touch_event_.PressPoint(x, y, radius_x_, radius_y_);
+  }
 
   void MoveTouchPoint(int index, int x, int y) {
-    touch_event_.MovePoint(index, x, y);
+    touch_event_.MovePoint(index, x, y, radius_x_, radius_y_);
   }
 
   void ReleaseTouchPoint(int index) { touch_event_.ReleasePoint(index); }
@@ -474,6 +476,8 @@ class InputRouterImplTestBase : public testing::Test {
     EXPECT_EQ(input_router_->AllowedTouchAction(), expected_touch_action);
   }
 
+  const float radius_x_ = 20.0f;
+  const float radius_y_ = 20.0f;
   InputRouter::Config config_;
   std::unique_ptr<MockInputRouterImplClient> client_;
   std::unique_ptr<InputRouterImpl> input_router_;
@@ -2207,15 +2211,15 @@ class InputRouterImplScaleTouchEventTest
     EXPECT_EQ(40, sent_event->touches[0].PositionInWidget().y);
     EXPECT_EQ(10, sent_event->touches[0].PositionInScreen().x);
     EXPECT_EQ(20, sent_event->touches[0].PositionInScreen().y);
-    EXPECT_EQ(40, sent_event->touches[0].radius_x);
-    EXPECT_EQ(40, sent_event->touches[0].radius_y);
+    EXPECT_EQ(2 * radius_x_, sent_event->touches[0].radius_x);
+    EXPECT_EQ(2 * radius_x_, sent_event->touches[0].radius_y);
 
     EXPECT_EQ(200, sent_event->touches[1].PositionInWidget().x);
     EXPECT_EQ(400, sent_event->touches[1].PositionInWidget().y);
     EXPECT_EQ(100, sent_event->touches[1].PositionInScreen().x);
     EXPECT_EQ(200, sent_event->touches[1].PositionInScreen().y);
-    EXPECT_EQ(40, sent_event->touches[1].radius_x);
-    EXPECT_EQ(40, sent_event->touches[1].radius_y);
+    EXPECT_EQ(2 * radius_x_, sent_event->touches[1].radius_x);
+    EXPECT_EQ(2 * radius_x_, sent_event->touches[1].radius_y);
 
     const WebTouchEvent* filter_event = GetFilterWebInputEvent<WebTouchEvent>();
     ASSERT_EQ(2u, filter_event->touches_length);
@@ -2223,15 +2227,15 @@ class InputRouterImplScaleTouchEventTest
     EXPECT_EQ(20, filter_event->touches[0].PositionInWidget().y);
     EXPECT_EQ(10, filter_event->touches[0].PositionInScreen().x);
     EXPECT_EQ(20, filter_event->touches[0].PositionInScreen().y);
-    EXPECT_EQ(20, filter_event->touches[0].radius_x);
-    EXPECT_EQ(20, filter_event->touches[0].radius_y);
+    EXPECT_EQ(radius_x_, filter_event->touches[0].radius_x);
+    EXPECT_EQ(radius_x_, filter_event->touches[0].radius_y);
 
     EXPECT_EQ(100, filter_event->touches[1].PositionInWidget().x);
     EXPECT_EQ(200, filter_event->touches[1].PositionInWidget().y);
     EXPECT_EQ(100, filter_event->touches[1].PositionInScreen().x);
     EXPECT_EQ(200, filter_event->touches[1].PositionInScreen().y);
-    EXPECT_EQ(20, filter_event->touches[1].radius_x);
-    EXPECT_EQ(20, filter_event->touches[1].radius_y);
+    EXPECT_EQ(radius_x_, filter_event->touches[1].radius_x);
+    EXPECT_EQ(radius_x_, filter_event->touches[1].radius_y);
   }
 
   void FlushTouchEvent(WebInputEvent::Type type) {

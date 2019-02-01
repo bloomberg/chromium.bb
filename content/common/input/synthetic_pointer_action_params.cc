@@ -6,20 +6,13 @@
 
 namespace content {
 
-SyntheticPointerActionParams::SyntheticPointerActionParams()
-    : pointer_action_type_(PointerActionType::NOT_INITIALIZED),
-      pointer_id_(0),
-      button_(Button::LEFT),
-      key_modifiers_(0) {}
+SyntheticPointerActionParams::SyntheticPointerActionParams() = default;
 
 SyntheticPointerActionParams::SyntheticPointerActionParams(
     PointerActionType action_type)
-    : pointer_action_type_(action_type),
-      pointer_id_(0),
-      button_(Button::LEFT),
-      key_modifiers_(0) {}
+    : pointer_action_type_(action_type) {}
 
-SyntheticPointerActionParams::~SyntheticPointerActionParams() {}
+SyntheticPointerActionParams::~SyntheticPointerActionParams() = default;
 
 // static
 unsigned SyntheticPointerActionParams::GetWebMouseEventModifier(

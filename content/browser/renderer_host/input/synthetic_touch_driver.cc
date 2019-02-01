@@ -28,10 +28,15 @@ void SyntheticTouchDriver::Press(float x,
                                  float y,
                                  int index,
                                  SyntheticPointerActionParams::Button button,
-                                 int key_modifiers) {
+                                 int key_modifiers,
+                                 float width,
+                                 float height,
+                                 float rotation_angle,
+                                 float force) {
   DCHECK_GE(index, 0);
   DCHECK(pointer_id_map_.find(index) == pointer_id_map_.end());
-  int touch_index = touch_event_.PressPoint(x, y);
+  int touch_index = touch_event_.PressPoint(x, y, width / 2.f, height / 2.f,
+                                            rotation_angle, force);
   touch_event_.touches[touch_index].id = index;
   pointer_id_map_[index] = touch_index;
 }
@@ -39,10 +44,15 @@ void SyntheticTouchDriver::Press(float x,
 void SyntheticTouchDriver::Move(float x,
                                 float y,
                                 int index,
-                                int key_modifiers) {
+                                int key_modifiers,
+                                float width,
+                                float height,
+                                float rotation_angle,
+                                float force) {
   DCHECK_GE(index, 0);
   DCHECK(pointer_id_map_.find(index) != pointer_id_map_.end());
-  touch_event_.MovePoint(pointer_id_map_[index], x, y);
+  touch_event_.MovePoint(pointer_id_map_[index], x, y, width / 2.f,
+                         height / 2.f, rotation_angle, force);
 }
 
 void SyntheticTouchDriver::Release(int index,
