@@ -5,9 +5,19 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_navigator.h"
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
+
+std::ostream& operator<<(std::ostream& out,
+                         const NGCaretNavigator::Position& position) {
+  return out << position.index << "/"
+             << (position.IsBeforeCharacter() ? "BeforeCharacter"
+                                              : "AfterCharacter");
+}
 
 NGCaretNavigator::~NGCaretNavigator() = default;
 
@@ -89,6 +99,68 @@ bool NGCaretNavigator::TowardsSameDirection(MoveDirection move_direction,
   return move_direction == MoveDirection::kTowardsLeft;
 }
 
+NGCaretNavigator::Line NGCaretNavigator::ContainingLineOf(
+    unsigned index) const {
+  DCHECK_LT(index, GetText().length());
+  // TODO(xiaochengh): Make it work for multi-col
+  DCHECK(context_.CurrentFragment());
+  unsigned last_line_end = 0;
+  for (const auto child : context_.CurrentFragment()->Children()) {
+    if (!child->IsLineBox())
+      continue;
+    const NGPhysicalLineBoxFragment* line =
+        ToNGPhysicalLineBoxFragment(child.get());
+    DCHECK(line->BreakToken());
+    DCHECK(line->BreakToken()->IsInlineType());
+    const NGInlineBreakToken* token = ToNGInlineBreakToken(line->BreakToken());
+    const unsigned line_end =
+        token->IsFinished() ? GetText().length() : token->TextOffset();
+    if (line_end > index)
+      return {last_line_end, line_end, line->BaseDirection()};
+    last_line_end = line_end;
+  }
+  NOTREACHED();
+  return {};
+}
+
+bool NGCaretNavigator::IsValidCaretPosition(const Position& position) const {
+  unsigned index = position.index;
+  if (position.IsAfterCharacter() && IsLineBreak(index))
+    return false;
+  if (IsCollapsedSpaceByLineWrap(index))
+    return false;
+  if (IsIgnoredInCaretMovement(index))
+    return false;
+  // TODO(xiaochengh): Handle other cases
+  return true;
+}
+
+bool NGCaretNavigator::IsCollapsibleWhitespace(unsigned index) const {
+  DCHECK_LT(index, GetText().length());
+  if (GetText()[index] != kSpaceCharacter)
+    return false;
+  const NGInlineItem& item = GetData().FindItemForTextOffset(index);
+  return item.Style()->CollapseWhiteSpace();
+}
+
+bool NGCaretNavigator::IsLineBreak(unsigned index) const {
+  DCHECK_LT(index, GetText().length());
+  return GetText()[index] == kNewlineCharacter;
+}
+
+bool NGCaretNavigator::IsCollapsedSpaceByLineWrap(unsigned index) const {
+  DCHECK_LT(index, GetText().length());
+  if (!IsCollapsibleWhitespace(index))
+    return false;
+  return index + 1 == ContainingLineOf(index).end_offset;
+}
+
+bool NGCaretNavigator::IsIgnoredInCaretMovement(unsigned index) const {
+  // TODO(xiaochengh): Include floats, out-of-flows and CSS-generated contents.
+  return IsCollapsedSpaceByLineWrap(index) &&
+         index != VisualLastCharacterOf(ContainingLineOf(index));
+}
+
 NGCaretNavigator::Position NGCaretNavigator::LeftEdgeOf(unsigned index) const {
   return EdgeOfInternal(index, MoveDirection::kTowardsLeft);
 }
@@ -117,67 +189,90 @@ NGCaretNavigator::RightCharacterOf(unsigned index) const {
   return MoveCharacterInternal(index, MoveDirection::kTowardsRight);
 }
 
-// static
-base::Optional<unsigned> NGCaretNavigator::MoveVisualIndex(
-    unsigned visual_index,
-    unsigned length,
-    MoveDirection move_direction) {
-  if (move_direction == MoveDirection::kTowardsLeft) {
-    if (!visual_index)
-      return base::nullopt;
-    return visual_index - 1;
-  }
-
-  if (visual_index + 1 == length)
-    return base::nullopt;
-  return visual_index + 1;
-}
-
-Vector<int32_t, 32> NGCaretNavigator::IndicesInVisualOrder() const {
+Vector<int32_t, 32> NGCaretNavigator::CharacterIndicesInVisualOrder(
+    const Line& line) const {
   DCHECK(IsBidiEnabled());
 
   Vector<UBiDiLevel, 32> levels;
-  levels.resize(GetText().length());
-  for (unsigned i = 0; i < GetText().length(); ++i)
-    levels[i] = BidiLevelAt(i);
+  levels.ReserveCapacity(line.end_offset - line.start_offset);
+  for (unsigned i = line.start_offset; i < line.end_offset; ++i)
+    levels.push_back(BidiLevelAt(i));
 
-  Vector<int32_t, 32> result;
-  result.resize(levels.size());
-  NGBidiParagraph::IndicesInVisualOrder(levels, &result);
-  return result;
+  Vector<int32_t, 32> indices(levels.size());
+  NGBidiParagraph::IndicesInVisualOrder(levels, &indices);
+
+  for (auto& index : indices)
+    index += line.start_offset;
+  return indices;
 }
 
-unsigned NGCaretNavigator::VisualIndexOf(unsigned index) const {
-  if (!IsBidiEnabled())
-    return index;
+unsigned NGCaretNavigator::VisualMostForwardCharacterOf(
+    const Line& line,
+    MoveDirection direction) const {
+  if (!IsBidiEnabled()) {
+    if (direction == MoveDirection::kTowardsLeft)
+      return line.start_offset;
+    return line.end_offset - 1;
+  }
 
-  const auto indices_in_visual_order = IndicesInVisualOrder();
-  const auto* visual_iterator = std::find(indices_in_visual_order.begin(),
-                                          indices_in_visual_order.end(), index);
-  DCHECK_NE(visual_iterator, indices_in_visual_order.end());
-  return std::distance(indices_in_visual_order.begin(), visual_iterator);
+  const auto indices_in_visual_order = CharacterIndicesInVisualOrder(line);
+  if (direction == MoveDirection::kTowardsLeft)
+    return indices_in_visual_order.front();
+  return indices_in_visual_order.back();
+}
+
+unsigned NGCaretNavigator::VisualFirstCharacterOf(const Line& line) const {
+  return VisualMostForwardCharacterOf(line, IsLtr(line.base_direction)
+                                                ? MoveDirection::kTowardsLeft
+                                                : MoveDirection::kTowardsRight);
+}
+
+unsigned NGCaretNavigator::VisualLastCharacterOf(const Line& line) const {
+  return VisualMostForwardCharacterOf(line, IsLtr(line.base_direction)
+                                                ? MoveDirection::kTowardsRight
+                                                : MoveDirection::kTowardsLeft);
 }
 
 NGCaretNavigator::VisualCharacterMovementResult
 NGCaretNavigator::MoveCharacterInternal(unsigned index,
                                         MoveDirection move_direction) const {
-  DCHECK_LT(index, GetText().length());
-  const unsigned visual_index = VisualIndexOf(index);
-  const TextDirection base_direction = GetData().BaseDirection();
+  const Line line = ContainingLineOf(index);
 
-  const base::Optional<unsigned> maybe_result_visual_index =
-      MoveVisualIndex(visual_index, GetText().length(), move_direction);
-  if (!maybe_result_visual_index.has_value()) {
-    if (TowardsSameDirection(move_direction, base_direction))
-      return {VisualMovementResultType::kAfterContext, base::nullopt};
-    return {VisualMovementResultType::kBeforeContext, base::nullopt};
+  if (index == VisualMostForwardCharacterOf(line, move_direction)) {
+    if (TowardsSameDirection(move_direction, line.base_direction)) {
+      if (line.end_offset == GetText().length())
+        return {VisualMovementResultType::kAfterContext, base::nullopt};
+      const Line next_line = ContainingLineOf(line.end_offset);
+      return {VisualMovementResultType::kWithinContext,
+              VisualFirstCharacterOf(next_line)};
+    }
+
+    if (!line.start_offset)
+      return {VisualMovementResultType::kBeforeContext, base::nullopt};
+    const Line last_line = ContainingLineOf(line.start_offset - 1);
+    return {VisualMovementResultType::kWithinContext,
+            VisualLastCharacterOf(last_line)};
   }
 
-  const unsigned result_visual_index = maybe_result_visual_index.value();
-  const unsigned result_index =
-      IsBidiEnabled() ? IndicesInVisualOrder()[result_visual_index]
-                      : result_visual_index;
-  return {VisualMovementResultType::kWithinContext, result_index};
+  if (!IsBidiEnabled()) {
+    if (move_direction == MoveDirection::kTowardsLeft)
+      return {VisualMovementResultType::kWithinContext, index - 1};
+    return {VisualMovementResultType::kWithinContext, index + 1};
+  }
+
+  Vector<int32_t, 32> indices_in_visual_order =
+      CharacterIndicesInVisualOrder(line);
+  const int32_t* visual_location = std::find(
+      indices_in_visual_order.begin(), indices_in_visual_order.end(), index);
+  DCHECK_NE(visual_location, indices_in_visual_order.end());
+  if (move_direction == MoveDirection::kTowardsLeft) {
+    DCHECK_NE(visual_location, indices_in_visual_order.begin());
+    return {VisualMovementResultType::kWithinContext,
+            *std::prev(visual_location)};
+  }
+  DCHECK_NE(std::next(visual_location), indices_in_visual_order.end());
+  return {VisualMovementResultType::kWithinContext,
+          *std::next(visual_location)};
 }
 
 NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::LeftPositionOf(
@@ -190,7 +285,8 @@ NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::RightPositionOf(
   return MoveCaretInternal(caret_position, MoveDirection::kTowardsRight);
 }
 
-NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::MoveCaretInternal(
+NGCaretNavigator::UnvalidatedVisualCaretMovementResult
+NGCaretNavigator::MoveCaretWithoutValidation(
     const Position& caret_position,
     MoveDirection move_direction) const {
   const unsigned index = caret_position.index;
@@ -198,19 +294,45 @@ NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::MoveCaretInternal(
   if (caret_position == EdgeOfInternal(index, opposite_direction)) {
     // TODO(xiaochengh): Consider grapheme cluster
     return {VisualMovementResultType::kWithinContext,
-            EdgeOfInternal(index, move_direction)};
+            EdgeOfInternal(index, move_direction),
+            !IsIgnoredInCaretMovement(index)};
   }
 
   VisualCharacterMovementResult forward_character =
       MoveCharacterInternal(index, move_direction);
-  if (forward_character.IsWithinContext()) {
-    DCHECK(forward_character.index.has_value());
-    const Position forward_caret =
-        EdgeOfInternal(forward_character.index.value(), opposite_direction);
-    return MoveCaretInternal(forward_caret, move_direction);
-  }
+  if (!forward_character.IsWithinContext())
+    return {forward_character.type};
 
-  return {forward_character.type, base::nullopt};
+  DCHECK(forward_character.index.has_value());
+  const Position forward_caret =
+      EdgeOfInternal(forward_character.index.value(), opposite_direction);
+  return {VisualMovementResultType::kWithinContext, forward_caret};
+}
+
+NGCaretNavigator::VisualCaretMovementResult NGCaretNavigator::MoveCaretInternal(
+    const Position& caret_position,
+    MoveDirection move_direction) const {
+  bool has_passed_character = false;
+  base::Optional<Position> last_position;
+  for (Position runner = caret_position;
+       !has_passed_character || !IsValidCaretPosition(runner);) {
+    const UnvalidatedVisualCaretMovementResult next =
+        MoveCaretWithoutValidation(runner, move_direction);
+    if (next.type != VisualMovementResultType::kWithinContext)
+      return {next.type, base::nullopt};
+
+    // TODO(xiaochengh): Handle editing-ignored contents, e.g., CSS-generated.
+    if (next.has_passed_character)
+      has_passed_character = true;
+
+    runner = next.position.value();
+    last_position = runner;
+
+    // TODO(xiaochengh): Handle the case where we reach a different line with a
+    // different base direction, which occurs with 'unicode-bidi: plain-text'.
+  }
+  DCHECK(last_position.has_value());
+  return {VisualMovementResultType::kWithinContext, last_position.value()};
 }
 
 }  // namespace blink

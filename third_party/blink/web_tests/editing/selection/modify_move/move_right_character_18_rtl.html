@@ -3,6 +3,8 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../assert_selection.js"></script>
 <script>
+const usesBidiAffinity = window.internals && internals.runtimeFlags.bidiCaretAffinityEnabled;
+
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">|\u05DC\u05E4\u05E0\u05D9    after encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
@@ -36,25 +38,33 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9 |   after encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
   '18-5 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9  |  after encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
   '18-6 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9   | after encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
   '18-7 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    |after encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>',
   '18-8 rtl right character');
 
 selection_test(
@@ -78,19 +88,25 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    afte|r encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9 |   after encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after| encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9 |   after encyclopedia</div>',
   '18-12 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after| encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9|    after encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>',
   '18-13 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after |encyclopedia</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after| encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after e|ncyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after| encyclopedia</div>',
   '18-14 rtl right character');
 
 selection_test(
@@ -156,12 +172,16 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after encyclopedi|a</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after |encyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after encyclopedia|</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after |encyclopedia</div>',
   '18-25 rtl right character');
 
 selection_test(
   '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after encyclopedia|</div>',
   selection => selection.modify('move', 'right', 'character'),
-  '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after e|ncyclopedia</div>',
+  usesBidiAffinity
+      ? '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    a|fter encyclopedia</div>'
+      : '<div contenteditable dir="rtl" style="width: 120px;">\u05DC\u05E4\u05E0\u05D9    after e|ncyclopedia</div>',
   '18-26 rtl right character');
 </script>
