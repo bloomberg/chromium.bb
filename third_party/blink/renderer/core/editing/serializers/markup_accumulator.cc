@@ -138,7 +138,12 @@ void MarkupAccumulator::AppendElement(StringBuilder& result,
 void MarkupAccumulator::AppendOpenTag(StringBuilder& result,
                                       const Element& element,
                                       Namespaces* namespaces) {
-  formatter_.AppendOpenTag(result, element, namespaces);
+  formatter_.AppendOpenTag(result, element);
+  if (!SerializeAsHTMLDocument(element) && namespaces &&
+      ShouldAddNamespaceElement(element, *namespaces)) {
+    MarkupFormatter::AppendNamespace(result, element.prefix(),
+                                     element.namespaceURI(), *namespaces);
+  }
 }
 
 void MarkupAccumulator::AppendCloseTag(StringBuilder& result,
@@ -159,6 +164,22 @@ EntityMask MarkupAccumulator::EntityMaskForText(const Text& text) const {
 
 bool MarkupAccumulator::SerializeAsHTMLDocument(const Node& node) const {
   return formatter_.SerializeAsHTMLDocument(node);
+}
+
+bool MarkupAccumulator::ShouldAddNamespaceElement(
+    const Element& element,
+    Namespaces& namespaces) const {
+  // Don't add namespace attribute if it is already defined for this elem.
+  const AtomicString& prefix = element.prefix();
+  if (prefix.IsEmpty()) {
+    if (element.hasAttribute(g_xmlns_atom)) {
+      namespaces.Set(g_empty_atom, element.namespaceURI());
+      return false;
+    }
+    return true;
+  }
+
+  return !element.hasAttribute(WTF::g_xmlns_with_colon + prefix);
 }
 
 std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
