@@ -53,7 +53,7 @@ ColorSpace::ColorSpace(PrimaryID primaries,
       range_(RangeID::FULL) {}
 
 ColorSpace::ColorSpace(PrimaryID primaries,
-                       const SkColorSpaceTransferFn& fn,
+                       const skcms_TransferFunction& fn,
                        MatrixID matrix,
                        RangeID range)
     : primaries_(primaries), matrix_(matrix), range_(range) {
@@ -65,7 +65,7 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
                  TransferID::INVALID,
                  MatrixID::RGB,
                  RangeID::FULL) {
-  SkColorSpaceTransferFn fn;
+  skcms_TransferFunction fn;
   skcms_Matrix3x3 to_XYZD50;
   if (!sk_color_space.isNumericalTransferFn(&fn) ||
       !sk_color_space.toXYZD50(&to_XYZD50)) {
@@ -83,7 +83,7 @@ bool ColorSpace::IsValid() const {
 
 // static
 ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
-                                    const SkColorSpaceTransferFn& fn) {
+                                    const skcms_TransferFunction& fn) {
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM,
                     ColorSpace::TransferID::CUSTOM, ColorSpace::MatrixID::RGB,
                     ColorSpace::RangeID::FULL);
@@ -123,7 +123,7 @@ void ColorSpace::SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50) {
   primaries_ = PrimaryID::CUSTOM;
 }
 
-void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
+void ColorSpace::SetCustomTransferFunction(const skcms_TransferFunction& fn) {
   // These are all TransferIDs that will return a transfer function from
   // GetTransferFunction. When multiple ids map to the same function, this list
   // prioritizes the most common name (eg IEC61966_2_1).
@@ -135,21 +135,21 @@ void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
       TransferID::SMPTEST428_1,
   };
   for (TransferID id : kIDsToCheck) {
-    SkColorSpaceTransferFn id_fn;
+    skcms_TransferFunction id_fn;
     GetTransferFunction(id, &id_fn);
-    if (FloatsEqualWithinTolerance(&fn.fG, &id_fn.fG, 7, 0.001f)) {
+    if (FloatsEqualWithinTolerance(&fn.g, &id_fn.g, 7, 0.001f)) {
       transfer_ = id;
       return;
     }
   }
 
-  custom_transfer_params_[0] = fn.fA;
-  custom_transfer_params_[1] = fn.fB;
-  custom_transfer_params_[2] = fn.fC;
-  custom_transfer_params_[3] = fn.fD;
-  custom_transfer_params_[4] = fn.fE;
-  custom_transfer_params_[5] = fn.fF;
-  custom_transfer_params_[6] = fn.fG;
+  custom_transfer_params_[0] = fn.a;
+  custom_transfer_params_[1] = fn.b;
+  custom_transfer_params_[2] = fn.c;
+  custom_transfer_params_[3] = fn.d;
+  custom_transfer_params_[4] = fn.e;
+  custom_transfer_params_[5] = fn.f;
+  custom_transfer_params_[6] = fn.g;
   transfer_ = TransferID::CUSTOM;
 }
 
@@ -340,10 +340,10 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(TransferID, IEC61966_2_1_HDR)
     PRINT_ENUM_CASE(TransferID, LINEAR_HDR)
     case TransferID::CUSTOM: {
-      SkColorSpaceTransferFn fn;
+      skcms_TransferFunction fn;
       GetTransferFunction(&fn);
-      ss << fn.fC << "*x + " << fn.fF << " if x < " << fn.fD << " else (";
-      ss << fn.fA << "*x + " << fn.fB << ")**" << fn.fG << " + " << fn.fE;
+      ss << fn.c << "*x + " << fn.f << " if x < " << fn.d << " else (";
+      ss << fn.a << "*x + " << fn.b << ")**" << fn.g << " + " << fn.e;
       break;
     }
   }
@@ -474,7 +474,7 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       transfer_fn = SkNamedTransferFn::kLinear;
       break;
     default:
-      if (!GetTransferFunction((SkColorSpaceTransferFn*)&transfer_fn)) {
+      if (!GetTransferFunction(&transfer_fn)) {
         DLOG(ERROR) << "Failed to transfer function for SkColorSpace";
         return nullptr;
       }
@@ -683,38 +683,38 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
 
 // static
 bool ColorSpace::GetTransferFunction(TransferID transfer,
-                                     SkColorSpaceTransferFn* fn) {
+                                     skcms_TransferFunction* fn) {
   // Default to F(x) = pow(x, 1)
-  fn->fA = 1;
-  fn->fB = 0;
-  fn->fC = 0;
-  fn->fD = 0;
-  fn->fE = 0;
-  fn->fF = 0;
-  fn->fG = 1;
+  fn->a = 1;
+  fn->b = 0;
+  fn->c = 0;
+  fn->d = 0;
+  fn->e = 0;
+  fn->f = 0;
+  fn->g = 1;
 
   switch (transfer) {
     case ColorSpace::TransferID::LINEAR:
     case ColorSpace::TransferID::LINEAR_HDR:
       return true;
     case ColorSpace::TransferID::GAMMA18:
-      fn->fG = 1.801f;
+      fn->g = 1.801f;
       return true;
     case ColorSpace::TransferID::GAMMA22:
-      fn->fG = 2.2f;
+      fn->g = 2.2f;
       return true;
     case ColorSpace::TransferID::GAMMA24:
-      fn->fG = 2.4f;
+      fn->g = 2.4f;
       return true;
     case ColorSpace::TransferID::GAMMA28:
-      fn->fG = 2.8f;
+      fn->g = 2.8f;
       return true;
     case ColorSpace::TransferID::SMPTE240M:
-      fn->fA = 0.899626676224f;
-      fn->fB = 0.100373323776f;
-      fn->fC = 0.250000000000f;
-      fn->fD = 0.091286342118f;
-      fn->fG = 2.222222222222f;
+      fn->a = 0.899626676224f;
+      fn->b = 0.100373323776f;
+      fn->c = 0.250000000000f;
+      fn->d = 0.091286342118f;
+      fn->g = 2.222222222222f;
       return true;
     case ColorSpace::TransferID::BT709:
     case ColorSpace::TransferID::SMPTE170M:
@@ -731,19 +731,19 @@ bool ColorSpace::GetTransferFunction(TransferID transfer,
     // media players.
     case ColorSpace::TransferID::IEC61966_2_1:
     case ColorSpace::TransferID::IEC61966_2_1_HDR:
-      fn->fA = 0.947867345704f;
-      fn->fB = 0.052132654296f;
-      fn->fC = 0.077399380805f;
-      fn->fD = 0.040449937172f;
-      fn->fG = 2.400000000000f;
+      fn->a = 0.947867345704f;
+      fn->b = 0.052132654296f;
+      fn->c = 0.077399380805f;
+      fn->d = 0.040449937172f;
+      fn->g = 2.400000000000f;
       return true;
     case ColorSpace::TransferID::BT709_APPLE:
-      fn->fG = 1.961000000000f;
+      fn->g = 1.961000000000f;
       return true;
     case ColorSpace::TransferID::SMPTEST428_1:
-      fn->fA = 0.225615407568f;
-      fn->fE = -1.091041666667f;
-      fn->fG = 2.600000000000f;
+      fn->a = 0.225615407568f;
+      fn->e = -1.091041666667f;
+      fn->g = 2.600000000000f;
       return true;
     case ColorSpace::TransferID::IEC61966_2_4:
       // This could potentially be represented the same as IEC61966_2_1, but
@@ -763,22 +763,22 @@ bool ColorSpace::GetTransferFunction(TransferID transfer,
   return false;
 }
 
-bool ColorSpace::GetTransferFunction(SkColorSpaceTransferFn* fn) const {
+bool ColorSpace::GetTransferFunction(skcms_TransferFunction* fn) const {
   if (transfer_ == TransferID::CUSTOM) {
-    fn->fA = custom_transfer_params_[0];
-    fn->fB = custom_transfer_params_[1];
-    fn->fC = custom_transfer_params_[2];
-    fn->fD = custom_transfer_params_[3];
-    fn->fE = custom_transfer_params_[4];
-    fn->fF = custom_transfer_params_[5];
-    fn->fG = custom_transfer_params_[6];
+    fn->a = custom_transfer_params_[0];
+    fn->b = custom_transfer_params_[1];
+    fn->c = custom_transfer_params_[2];
+    fn->d = custom_transfer_params_[3];
+    fn->e = custom_transfer_params_[4];
+    fn->f = custom_transfer_params_[5];
+    fn->g = custom_transfer_params_[6];
     return true;
   } else {
     return GetTransferFunction(transfer_, fn);
   }
 }
 
-bool ColorSpace::GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const {
+bool ColorSpace::GetInverseTransferFunction(skcms_TransferFunction* fn) const {
   if (!GetTransferFunction(fn))
     return false;
   *fn = SkTransferFnInverse(*fn);

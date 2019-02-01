@@ -431,10 +431,10 @@ TEST(SimpleColorSpace, ShaderSourceTrFnOptimizations) {
   skcms_Matrix3x3 primaries;
   gfx::ColorSpace::CreateSRGB().GetPrimaryMatrix(&primaries);
 
-  SkColorSpaceTransferFn fn_no_pow = {
+  skcms_TransferFunction fn_no_pow = {
       1.f, 2.f, 0.f, 1.f, 0.f, 0.f, 0.f,
   };
-  SkColorSpaceTransferFn fn_yes_pow = {
+  skcms_TransferFunction fn_yes_pow = {
       2.f, 2.f, 0.f, 1.f, 0.f, 0.f, 0.f,
   };
   gfx::ColorSpace src;

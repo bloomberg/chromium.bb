@@ -117,7 +117,7 @@ float FromLinear(ColorSpace::TransferID id, float v) {
     }
 
     default:
-      // Handled by SkColorSpaceTransferFn.
+      // Handled by skcms_TransferFunction.
       break;
   }
   NOTREACHED();
@@ -194,7 +194,7 @@ float ToLinear(ColorSpace::TransferID id, float v) {
     }
 
     default:
-      // Handled by SkColorSpaceTransferFn.
+      // Handled by skcms_TransferFunction.
       break;
   }
   NOTREACHED();
@@ -415,7 +415,7 @@ class ColorTransformPerChannelTransferFn : public ColorTransformStep {
 
 class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
  public:
-  explicit ColorTransformSkTransferFn(const SkColorSpaceTransferFn& fn,
+  explicit ColorTransformSkTransferFn(const skcms_TransferFunction& fn,
                                       bool extended)
       : ColorTransformPerChannelTransferFn(extended), fn_(fn) {}
   // ColorTransformStep implementation.
@@ -427,13 +427,13 @@ class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
     if (!extended_ && !next->extended_ &&
         SkTransferFnsApproximatelyCancel(fn_, next->fn_)) {
       // Set to be the identity.
-      fn_.fA = 1;
-      fn_.fB = 0;
-      fn_.fC = 1;
-      fn_.fD = 0;
-      fn_.fE = 0;
-      fn_.fF = 0;
-      fn_.fG = 1;
+      fn_.a = 1;
+      fn_.b = 0;
+      fn_.c = 1;
+      fn_.d = 0;
+      fn_.e = 0;
+      fn_.f = 0;
+      fn_.g = 1;
       return true;
     }
     return false;
@@ -453,32 +453,32 @@ class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
     //   linear = C * x + F
     // Elide operations that will be close to the identity.
     std::string linear = "v";
-    if (std::abs(fn_.fC - 1.f) > kEpsilon)
-      linear = Str(fn_.fC) + " * " + linear;
-    if (std::abs(fn_.fF) > kEpsilon)
-      linear = linear + " + " + Str(fn_.fF);
+    if (std::abs(fn_.c - 1.f) > kEpsilon)
+      linear = Str(fn_.c) + " * " + linear;
+    if (std::abs(fn_.f) > kEpsilon)
+      linear = linear + " + " + Str(fn_.f);
 
     // Construct the nonlinear segment.
     //   nonlinear = pow(A * x + B, G) + E
     // Elide operations (especially the pow) that will be close to the
     // identity.
     std::string nonlinear = "v";
-    if (std::abs(fn_.fA - 1.f) > kEpsilon)
-      nonlinear = Str(fn_.fA) + " * " + nonlinear;
-    if (std::abs(fn_.fB) > kEpsilon)
-      nonlinear = nonlinear + " + " + Str(fn_.fB);
-    if (std::abs(fn_.fG - 1.f) > kEpsilon)
-      nonlinear = "pow(" + nonlinear + ", " + Str(fn_.fG) + ")";
-    if (std::abs(fn_.fE) > kEpsilon)
-      nonlinear = nonlinear + " + " + Str(fn_.fE);
+    if (std::abs(fn_.a - 1.f) > kEpsilon)
+      nonlinear = Str(fn_.a) + " * " + nonlinear;
+    if (std::abs(fn_.b) > kEpsilon)
+      nonlinear = nonlinear + " + " + Str(fn_.b);
+    if (std::abs(fn_.g - 1.f) > kEpsilon)
+      nonlinear = "pow(" + nonlinear + ", " + Str(fn_.g) + ")";
+    if (std::abs(fn_.e) > kEpsilon)
+      nonlinear = nonlinear + " + " + Str(fn_.e);
 
-    *result << "  if (v < " << Str(fn_.fD) << ")" << endl;
+    *result << "  if (v < " << Str(fn_.d) << ")" << endl;
     *result << "    return " << linear << ";" << endl;
     *result << "  return " << nonlinear << ";" << endl;
   }
 
  private:
-  SkColorSpaceTransferFn fn_;
+  skcms_TransferFunction fn_;
 };
 
 class ColorTransformFromLinear : public ColorTransformPerChannelTransferFn {
@@ -851,7 +851,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (!dst.IsValid())
     return;
 
-  SkColorSpaceTransferFn src_to_linear_fn;
+  skcms_TransferFunction src_to_linear_fn;
   if (src.GetTransferFunction(&src_to_linear_fn)) {
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         src_to_linear_fn, src.HasExtendedSkTransferFn()));
@@ -878,7 +878,7 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
         std::make_unique<ColorTransformMatrix>(GetTransferMatrix(dst)));
   }
 
-  SkColorSpaceTransferFn dst_from_linear_fn;
+  skcms_TransferFunction dst_from_linear_fn;
   if (dst.GetInverseTransferFunction(&dst_from_linear_fn)) {
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         dst_from_linear_fn, dst.HasExtendedSkTransferFn()));

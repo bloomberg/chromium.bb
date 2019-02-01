@@ -132,7 +132,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
         range_(full_range) {}
 
   ColorSpace(PrimaryID primaries,
-             const SkColorSpaceTransferFn& fn,
+             const skcms_TransferFunction& fn,
              MatrixID matrix,
              RangeID full_range);
   explicit ColorSpace(const SkColorSpace& sk_color_space);
@@ -150,7 +150,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
                       MatrixID::RGB, RangeID::FULL);
   }
   static ColorSpace CreateCustom(const skcms_Matrix3x3& to_XYZD50,
-                                 const SkColorSpaceTransferFn& fn);
+                                 const skcms_TransferFunction& fn);
   static constexpr ColorSpace CreateXYZD50() {
     return ColorSpace(PrimaryID::XYZ_D50, TransferID::LINEAR, MatrixID::RGB,
                       RangeID::FULL);
@@ -240,8 +240,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   void GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const;
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;
-  bool GetTransferFunction(SkColorSpaceTransferFn* fn) const;
-  bool GetInverseTransferFunction(SkColorSpaceTransferFn* fn) const;
+  bool GetTransferFunction(skcms_TransferFunction* fn) const;
+  bool GetInverseTransferFunction(skcms_TransferFunction* fn) const;
 
   // For most formats, this is the RGB to YUV matrix.
   void GetTransferMatrix(SkMatrix44* matrix) const;
@@ -249,13 +249,13 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
  private:
   static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);
-  static bool GetTransferFunction(TransferID, SkColorSpaceTransferFn* fn);
+  static bool GetTransferFunction(TransferID, skcms_TransferFunction* fn);
 
-  void SetCustomTransferFunction(const SkColorSpaceTransferFn& fn);
+  void SetCustomTransferFunction(const skcms_TransferFunction& fn);
   void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
 
   // Returns true if the transfer function is defined by an
-  // SkColorSpaceTransferFn which is extended to all real values.
+  // skcms_TransferFunction which is extended to all real values.
   bool HasExtendedSkTransferFn() const;
 
   PrimaryID primaries_ = PrimaryID::INVALID;
@@ -267,7 +267,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   float custom_primary_matrix_[9] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   // Only used if transfer_ is TransferID::CUSTOM. This array consists of the A
-  // through G entries of the SkColorSpaceTransferFn structure in alphabetical
+  // through G entries of the skcms_TransferFunction structure in alphabetical
   // order.
   float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
