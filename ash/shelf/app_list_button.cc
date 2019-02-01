@@ -65,6 +65,7 @@ AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
   DCHECK(shelf_);
   Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   SetAccessibleName(
@@ -82,10 +83,12 @@ AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
 }
 
 AppListButton::~AppListButton() {
-  // AppListController is destroyed early when Shell is being destroyed, it may
-  // not exist.
+  // AppListController and TabletModeController are destroyed early when Shell
+  // is being destroyed, they may not exist.
   if (Shell::Get()->app_list_controller())
     Shell::Get()->app_list_controller()->RemoveObserver(this);
+  if (Shell::Get()->tablet_mode_controller())
+    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
 }
@@ -304,6 +307,10 @@ void AppListButton::OnActiveUserSessionChanged(const AccountId& account_id) {
       !assistant_overlay_ && chromeos::switches::IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
+}
+
+void AppListButton::OnTabletModeStarted() {
+  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 }
 
 void AppListButton::StartVoiceInteractionAnimation() {
