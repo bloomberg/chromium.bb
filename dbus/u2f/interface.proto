@@ -1,0 +1,19 @@
+// Copyright 2019 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
+
+package u2f;
+
+// UserNotification signal payload.
+message UserNotification {
+  enum EventType {
+    // This event is periodically sent when confirming physical presence is
+    // required for the integrated U2F device. In response, the UI should
+    // start/continue showing the 'touch powerbutton' user prompt.
+    TOUCH_NEEDED = 0;
+  }
+  EventType event_type = 1;
+}

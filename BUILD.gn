@@ -25,6 +25,7 @@ group("all") {
     ":system_api-runtime_probe-protos",
     ":system_api-seneschal-protos",
     ":system_api-smbprovider-protos",
+    ":system_api-u2f-protos",
     ":system_api-vm_applications-protos",
     ":system_api-vm_cicerone-goprotos",
     ":system_api-vm_cicerone-protos",
@@ -275,6 +276,15 @@ proto_library("system_api-vm_plugin_dispatcher-protos") {
   proto_out_dir = "include/vm_plugin_dispatcher/proto_bindings"
   sources = [
     "${proto_in_dir}/service.proto",
+  ]
+  standalone = true
+}
+
+proto_library("system_api-u2f-protos") {
+  proto_in_dir = "dbus/u2f"
+  proto_out_dir = "include/u2f/proto_bindings"
+  sources = [
+    "${proto_in_dir}/interface.proto",
   ]
   standalone = true
 }
