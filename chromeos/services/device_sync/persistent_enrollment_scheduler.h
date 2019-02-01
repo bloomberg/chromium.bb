@@ -2,30 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_SCHEDULER_IMPL_H_
-#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_SCHEDULER_IMPL_H_
-
-#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_PERSISTENT_ENROLLMENT_SCHEDULER_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_PERSISTENT_ENROLLMENT_SCHEDULER_H_
 
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
+#include "base/timer/timer.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler.h"
 #include "chromeos/services/device_sync/proto/cryptauth_directive.pb.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
-namespace base {
-class Clock;
-class OneShotTimer;
-}  // namespace base
-
 namespace chromeos {
 
 namespace device_sync {
 
-// Implementation of CryptAuthEnrollmentScheduler.
-class CryptAuthEnrollmentSchedulerImpl : public CryptAuthEnrollmentScheduler {
+// CryptAuthEnrollmentScheduler implementation which stores scheduling metadata
+// persistently so that the enrollment schedule is saved across device reboots.
+// If this class is instantiated before at least one enrollment has been
+// completed successfully, it requests enrollment immediately. Once enrollment
+// has been completed successfully, this class schedules the next enrollment
+// attempt at a time provided by the server via a ClientDirective proto.
+class PersistentEnrollmentScheduler : public CryptAuthEnrollmentScheduler {
  public:
   class Factory {
    public:
@@ -34,8 +38,11 @@ class CryptAuthEnrollmentSchedulerImpl : public CryptAuthEnrollmentScheduler {
     virtual std::unique_ptr<CryptAuthEnrollmentScheduler> BuildInstance(
         Delegate* delegate,
         PrefService* pref_service,
-        base::Clock* clock,
-        std::unique_ptr<base::OneShotTimer> timer);
+        base::Clock* clock = base::DefaultClock::GetInstance(),
+        std::unique_ptr<base::OneShotTimer> timer =
+            std::make_unique<base::OneShotTimer>(),
+        scoped_refptr<base::TaskRunner> task_runner =
+            base::ThreadTaskRunnerHandle::Get());
 
    private:
     static Factory* test_factory_;
@@ -44,13 +51,14 @@ class CryptAuthEnrollmentSchedulerImpl : public CryptAuthEnrollmentScheduler {
   // Registers the prefs used by this class to the given |registry|.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  ~CryptAuthEnrollmentSchedulerImpl() override;
+  ~PersistentEnrollmentScheduler() override;
 
  private:
-  CryptAuthEnrollmentSchedulerImpl(Delegate* delegate,
-                                   PrefService* pref_service,
-                                   base::Clock* clock,
-                                   std::unique_ptr<base::OneShotTimer> timer);
+  PersistentEnrollmentScheduler(Delegate* delegate,
+                                PrefService* pref_service,
+                                base::Clock* clock,
+                                std::unique_ptr<base::OneShotTimer> timer,
+                                scoped_refptr<base::TaskRunner> task_runner);
 
   // CryptAuthEnrollmentScheduler:
   void RequestEnrollmentNow() override;
@@ -78,12 +86,13 @@ class CryptAuthEnrollmentSchedulerImpl : public CryptAuthEnrollmentScheduler {
   base::Clock* clock_;
   std::unique_ptr<base::OneShotTimer> timer_;
   cryptauthv2::ClientDirective client_directive_;
+  base::WeakPtrFactory<PersistentEnrollmentScheduler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CryptAuthEnrollmentSchedulerImpl);
+  DISALLOW_COPY_AND_ASSIGN(PersistentEnrollmentScheduler);
 };
 
 }  // namespace device_sync
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_SCHEDULER_IMPL_H_
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_PERSISTENT_ENROLLMENT_SCHEDULER_H_
