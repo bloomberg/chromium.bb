@@ -35,7 +35,6 @@ extern const char kInvisibleChange[];
 extern const char kLanguage[];
 extern const char kLazyReattach[];
 extern const char kLinkColorChange[];
-extern const char kNodeInserted[];
 extern const char kPlatformColorChange[];
 extern const char kPolicyViolation[];
 extern const char kPropertyRegistration[];

@@ -990,9 +990,9 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   }
   if (!change.IsChildInsertion())
     return;
-  if (!isConnected())
+  if (!InActiveDocument())
     return;
-  if (!IsDocumentNode() && !IsShadowRoot() && !GetComputedStyle()) {
+  if (IsElementNode() && !GetComputedStyle()) {
     // There is no need to mark for style recalc if the parent element does not
     // Already have a ComputedStyle. For instance if we insert nodes into a
     // display:none subtree. If this ContainerNode gets a ComputedStyle during
@@ -1000,13 +1000,9 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
     // the ComputedStyle goes from null to non-null.
     return;
   }
-  if (change.sibling_changed->getNodeType() == Node::kCommentNode)
-    return;
-  if (change.sibling_changed->getNodeType() == Node::kProcessingInstructionNode)
-    return;
-  change.sibling_changed->SetNeedsStyleRecalc(
-      kLocalStyleChange,
-      StyleChangeReasonForTracing::Create(style_change_reason::kNodeInserted));
+  Node* inserted_node = change.sibling_changed;
+  if (inserted_node->IsContainerNode() || inserted_node->IsTextNode())
+    inserted_node->SetStyleChangeOnInsertion();
 }
 
 void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {

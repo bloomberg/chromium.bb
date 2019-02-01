@@ -452,6 +452,17 @@ class CORE_EXPORT Node : public EventTarget {
   // Propagates a dirty bit breadcrumb for this element up the ancestor chain.
   void MarkAncestorsWithChildNeedsStyleRecalc();
 
+  // Nodes which are not connected are style clean. Mark them for style recalc
+  // when inserting them into a document. This method was added as a light-
+  // weight alternative to SetNeedsStyleRecalc because using that method caused
+  // a micro-benchmark regression (https://crbug.com/926343).
+  void SetStyleChangeOnInsertion() {
+    DCHECK(isConnected());
+    if (!NeedsStyleRecalc())
+      SetStyleChange(kLocalStyleChange);
+    MarkAncestorsWithChildNeedsStyleRecalc();
+  }
+
   bool NeedsReattachLayoutTree() const {
     return GetFlag(kNeedsReattachLayoutTree);
   }
@@ -1000,7 +1011,9 @@ class CORE_EXPORT Node : public EventTarget {
   void UpdateDistributionInternal();
   void RecalcDistribution();
 
-  void SetStyleChange(StyleChangeType);
+  void SetStyleChange(StyleChangeType change_type) {
+    node_flags_ = (node_flags_ & ~kStyleChangeMask) | change_type;
+  }
 
   virtual const ComputedStyle* VirtualEnsureComputedStyle(
       PseudoId = kPseudoIdNone);
