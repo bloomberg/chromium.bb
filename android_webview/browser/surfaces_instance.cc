@@ -14,17 +14,23 @@
 #include "android_webview/browser/parent_output_surface.h"
 #include "base/stl_util.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_share_group.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace android_webview {
 
@@ -33,6 +39,11 @@ namespace {
 // from RenderWidgetHostImpl.
 constexpr uint32_t kDefaultClientId = 0u;
 SurfacesInstance* g_surfaces_instance = nullptr;
+
+void OnContextLost() {
+  NOTREACHED() << "Non owned context lost!";
+}
+
 }  // namespace
 
 // static
@@ -54,12 +65,14 @@ SurfacesInstance::SurfacesInstance()
   // Webview does not own the surface so should not clear it.
   settings.should_clear_root_render_pass = false;
 
+  settings.use_skia_renderer = features::IsUsingSkiaRenderer();
+
   // The SharedBitmapManager is null as we do not support or use software
   // compositing on Android.
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
       /*shared_bitmap_manager=*/nullptr);
-  parent_local_surface_id_allocator_.reset(
-      new viz::ParentLocalSurfaceIdAllocator());
+  parent_local_surface_id_allocator_ =
+      std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
 
   constexpr bool is_root = true;
   constexpr bool needs_sync_points = true;
@@ -67,19 +80,47 @@ SurfacesInstance::SurfacesInstance()
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 
-  begin_frame_source_.reset(new viz::StubBeginFrameSource);
-  std::unique_ptr<ParentOutputSurface> output_surface_holder(
-      new ParentOutputSurface(AwRenderThreadContextProvider::Create(
-          base::WrapRefCounted(new AwGLSurface),
-          DeferredGpuCommandService::GetInstance())));
-  output_surface_ = output_surface_holder.get();
+  std::unique_ptr<viz::OutputSurface> output_surface;
+  viz::SkiaOutputSurface* skia_output_surface = nullptr;
+  if (settings.use_skia_renderer) {
+    auto* task_executor = DeferredGpuCommandService::GetInstance();
+    if (!shared_context_state_) {
+      auto surface = base::MakeRefCounted<AwGLSurface>();
+      auto gl_context =
+          gl::init::CreateGLContext(task_executor->share_group().get(),
+                                    surface.get(), gl::GLContextAttribs());
+      gl_context->MakeCurrent(surface.get());
+      shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
+          task_executor->share_group(), std::move(surface),
+          std::move(gl_context), false /* use_virtualized_gl_contexts */,
+          base::BindOnce(&OnContextLost),
+          nullptr /* vulkan_context_provider */);
+      shared_context_state_->InitializeGrContext(
+          gpu::GpuDriverBugWorkarounds(task_executor->gpu_feature_info()
+                                           .enabled_gpu_driver_bug_workarounds),
+          nullptr /* gr_shader_cache */);
+    }
+    output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+        task_executor, base::MakeRefCounted<AwGLSurface>(),
+        shared_context_state_);
+    skia_output_surface =
+        static_cast<viz::SkiaOutputSurface*>(output_surface.get());
+  } else {
+    auto context_provider = AwRenderThreadContextProvider::Create(
+        base::MakeRefCounted<AwGLSurface>(),
+        DeferredGpuCommandService::GetInstance());
+    output_surface =
+        std::make_unique<ParentOutputSurface>(std::move(context_provider));
+  }
+
+  begin_frame_source_ = std::make_unique<viz::StubBeginFrameSource>();
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source_.get(), nullptr /* current_task_runner */,
-      output_surface_holder->capabilities().max_frames_pending);
+      output_surface->capabilities().max_frames_pending);
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */, settings, frame_sink_id_,
-      std::move(output_surface_holder), std::move(scheduler),
-      nullptr /* current_task_runner */);
+      std::move(output_surface), std::move(scheduler),
+      nullptr /* current_task_runner */, skia_output_surface);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        false /* enable_shared_images */);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
@@ -95,6 +136,8 @@ SurfacesInstance::~SurfacesInstance() {
   DCHECK_EQ(g_surfaces_instance, this);
   frame_sink_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
   g_surfaces_instance = nullptr;
+  display_ = nullptr;
+  DCHECK(!shared_context_state_ || shared_context_state_->HasOneRef());
   DCHECK(child_ids_.empty());
 }
 
@@ -169,6 +212,10 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   support_->SubmitCompositorFrame(root_id_allocation_.local_surface_id(),
                                   std::move(frame));
 
+  if (shared_context_state_) {
+    // GL state could be changed across frames, so we need reset GrContext.
+    shared_context_state_->PessimisticallyResetGrContext();
+  }
   display_->Resize(viewport);
   display_->DrawAndSwap();
   display_->DidReceiveSwapBuffersAck();

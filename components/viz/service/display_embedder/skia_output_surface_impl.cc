@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -23,6 +24,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/ipc/command_buffer_task_executor.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -45,6 +47,8 @@ template <typename... Args>
 base::RepeatingCallback<void(Args...)> CreateSafeCallback(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const base::RepeatingCallback<void(Args...)>& callback) {
+  if (!task_runner)
+    return callback;
   return base::BindRepeating(&PostAsyncTask<Args...>, task_runner, callback);
 }
 
@@ -291,6 +295,20 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
+SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    scoped_refptr<gl::GLSurface> gl_surface,
+    scoped_refptr<gpu::SharedContextState> shared_context_state)
+    : gpu_service_(nullptr),
+      task_executor_(std::move(task_executor)),
+      gl_surface_(std::move(gl_surface)),
+      shared_context_state_(std::move(shared_context_state)),
+      is_using_vulkan_(false),
+      surface_handle_(gpu::kNullSurfaceHandle),
+      synthetic_begin_frame_source_(nullptr),
+      show_overdraw_feedback_(false),
+      weak_ptr_factory_(this) {}
+
 SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   recorder_.reset();
@@ -311,8 +329,12 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
 
   client_ = client;
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-  client_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
+  if (task_executor_) {
+    DCHECK(!sequence_);
+    sequence_ = task_executor_->CreateSequence();
+  } else {
+    client_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  }
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::InitializeOnGpuThread,
@@ -572,12 +594,12 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint() {
     callback = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass,
         base::Unretained(impl_on_gpu_.get()), current_render_pass_id_,
-        std::move(ddl), sync_fence_release_);
+        std::move(ddl), resource_sync_tokens_, sync_fence_release_);
   } else {
-    callback =
-        base::BindOnce(&SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
-                       base::Unretained(impl_on_gpu_.get()), std::move(ddl),
-                       std::move(overdraw_ddl), sync_fence_release_);
+    callback = base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
+        base::Unretained(impl_on_gpu_.get()), std::move(ddl),
+        std::move(overdraw_ddl), resource_sync_tokens_, sync_fence_release_);
   }
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
   current_render_pass_id_ = 0;
@@ -637,20 +659,36 @@ void SkiaOutputSurfaceImpl::RemoveContextLostObserver(
 }
 
 void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
-  base::ScopedClosureRunner scoped_runner(
-      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
+  base::Optional<base::ScopedClosureRunner> scoped_runner;
+  if (event) {
+    scoped_runner.emplace(
+        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
+  }
+
   auto did_swap_buffer_complete_callback = base::BindRepeating(
       &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
+  did_swap_buffer_complete_callback = CreateSafeCallback(
+      client_thread_task_runner_, did_swap_buffer_complete_callback);
   auto buffer_presented_callback =
       base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
+  buffer_presented_callback =
+      CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback);
   auto context_lost_callback =
       base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
-  impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-      gpu_service_, surface_handle_,
-      CreateSafeCallback(client_thread_task_runner_,
-                         did_swap_buffer_complete_callback),
-      CreateSafeCallback(client_thread_task_runner_, buffer_presented_callback),
-      CreateSafeCallback(client_thread_task_runner_, context_lost_callback));
+  context_lost_callback =
+      CreateSafeCallback(client_thread_task_runner_, context_lost_callback);
+
+  if (task_executor_) {
+    impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
+        task_executor_.get(), std::move(gl_surface_),
+        std::move(shared_context_state_), sequence_->GetSequenceId(),
+        did_swap_buffer_complete_callback, buffer_presented_callback,
+        context_lost_callback);
+  } else {
+    impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
+        gpu_service_, surface_handle_, did_swap_buffer_complete_callback,
+        buffer_presented_callback, context_lost_callback);
+  }
   capabilities_ = impl_on_gpu_->capabilities();
 }
 
@@ -734,9 +772,13 @@ void SkiaOutputSurfaceImpl::ContextLost() {
 void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     base::OnceClosure callback,
     std::vector<gpu::SyncToken> sync_tokens) {
-  auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
-  gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(callback), std::move(sync_tokens)));
+  if (gpu_service_) {
+    auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
+    gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+        sequence_id, std::move(callback), std::move(sync_tokens)));
+  } else {
+    sequence_->ScheduleTask(std::move(callback), std::move(sync_tokens));
+  }
 }
 
 }  // namespace viz
