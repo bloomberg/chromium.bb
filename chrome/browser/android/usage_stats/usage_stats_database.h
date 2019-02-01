@@ -36,6 +36,8 @@ class UsageStatsDatabase {
 
   using StatusCallback = base::OnceCallback<void(Error)>;
 
+  using UsageStatMap = std::map<std::string, UsageStat>;
+
   // Initializes the database with user |profile|.
   explicit UsageStatsDatabase(Profile* profile);
 
@@ -47,16 +49,17 @@ class UsageStatsDatabase {
 
   void GetAllEvents(EventsCallback callback);
 
-  // |start| and |end| are timestamps representing milliseconds since the
-  // beginning of the Unix Epoch.
+  // Get all events in range between |start| (inclusive) and |end| (exclusive),
+  // where |start| and |end| are represented by milliseconds since Unix epoch.
   void QueryEventsInRange(int64_t start, int64_t end, EventsCallback callback);
 
   void AddEvents(std::vector<WebsiteEvent> events, StatusCallback callback);
 
   void DeleteAllEvents(StatusCallback callback);
 
-  // |start| and |end| are timestamps representing milliseconds since the
-  // beginning of the Unix Epoch.
+  // Delete all events in range between |start| (inclusive) and |end|
+  // (exclusive), where |start| and |end| are represented by milliseconds since
+  // Unix epoch.
   void DeleteEventsInRange(int64_t start, int64_t end, StatusCallback callback);
 
   void DeleteEventsWithMatchingDomains(base::flat_set<std::string> domains,
@@ -76,21 +79,31 @@ class UsageStatsDatabase {
   void SetTokenMappings(TokenMap mappings, StatusCallback callback);
 
  private:
-  void OnUpdateEntries(StatusCallback callback, bool success);
+  void OnUpdateEntries(StatusCallback callback, bool isSuccess);
 
   void OnLoadEntriesForGetAllEvents(
       EventsCallback callback,
-      bool success,
+      bool isSuccess,
       std::unique_ptr<std::vector<UsageStat>> stats);
+
+  void OnLoadEntriesForQueryEventsInRange(
+      EventsCallback callback,
+      bool isSuccess,
+      std::unique_ptr<UsageStatMap> stat_map);
+
+  void OnLoadEntriesForDeleteEventsInRange(
+      StatusCallback callback,
+      bool isSuccess,
+      std::unique_ptr<UsageStatMap> stat_map);
 
   void OnLoadEntriesForGetAllSuspensions(
       SuspensionsCallback callback,
-      bool success,
+      bool isSuccess,
       std::unique_ptr<std::vector<UsageStat>> stats);
 
   void OnLoadEntriesForGetAllTokenMappings(
       TokenMappingsCallback callback,
-      bool success,
+      bool isSuccess,
       std::unique_ptr<std::vector<UsageStat>> stats);
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<UsageStat>> proto_db_;
