@@ -2798,24 +2798,24 @@ static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
   switch (bsize) {
     case BLOCK_4X4: break;
     case BLOCK_8X8:
-      split_weights = two_pass_split_partition_weights_8;
-      none_weights = two_pass_none_partition_weights_8;
+      split_weights = av1_2pass_split_partition_weights_8;
+      none_weights = av1_2pass_none_partition_weights_8;
       break;
     case BLOCK_16X16:
-      split_weights = two_pass_split_partition_weights_16;
-      none_weights = two_pass_none_partition_weights_16;
+      split_weights = av1_2pass_split_partition_weights_16;
+      none_weights = av1_2pass_none_partition_weights_16;
       break;
     case BLOCK_32X32:
-      split_weights = two_pass_split_partition_weights_32;
-      none_weights = two_pass_none_partition_weights_32;
+      split_weights = av1_2pass_split_partition_weights_32;
+      none_weights = av1_2pass_none_partition_weights_32;
       break;
     case BLOCK_64X64:
-      split_weights = two_pass_split_partition_weights_64;
-      none_weights = two_pass_none_partition_weights_64;
+      split_weights = av1_2pass_split_partition_weights_64;
+      none_weights = av1_2pass_none_partition_weights_64;
       break;
     case BLOCK_128X128:
-      split_weights = two_pass_split_partition_weights_128;
-      none_weights = two_pass_none_partition_weights_128;
+      split_weights = av1_2pass_split_partition_weights_128;
+      none_weights = av1_2pass_none_partition_weights_128;
       break;
     default: assert(0 && "Unexpected bsize.");
   }
@@ -3391,7 +3391,7 @@ static void ml_op_svm_early_term(const AV1_COMP *const cpi,
 #undef FEATURES
 #endif
 
-// Performs a full_pixel_motion_search with a single reference frame and extract
+// Performs a simple_motion_search with a single reference frame and extract
 // the variance of residues. Here features is assumed to be a length 6 array.
 // After this function is called, we will store the following in to features:
 // features[0] = log(1 + dc_q**2/256)
@@ -3455,32 +3455,32 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   }
 }
 
-static void full_pixel_motion_search_based_split(
+static void simple_motion_search_based_split(
     AV1_COMP *const cpi, MACROBLOCK *x, int mi_row, int mi_col,
     BLOCK_SIZE bsize, int *partition_none_allowed, int *partition_horz_allowed,
     int *partition_vert_allowed, int *do_rectangular_split) {
   const NN_CONFIG *nn_config = NULL;
   float split_only_thresh = 0.0f;
   if (bsize == BLOCK_128X128) {
-    nn_config = &full_pixel_motion_search_based_split_nn_config_128;
-    split_only_thresh = full_pixel_motion_search_based_split_thresh_128;
+    nn_config = &av1_simple_motion_search_based_split_nn_config_128;
+    split_only_thresh = av1_simple_motion_search_based_split_thresh_128;
   } else if (bsize == BLOCK_64X64) {
-    nn_config = &full_pixel_motion_search_based_split_nn_config_64;
-    split_only_thresh = full_pixel_motion_search_based_split_thresh_64;
+    nn_config = &av1_simple_motion_search_based_split_nn_config_64;
+    split_only_thresh = av1_simple_motion_search_based_split_thresh_64;
   } else if (bsize == BLOCK_32X32) {
-    nn_config = &full_pixel_motion_search_based_split_nn_config_32;
-    split_only_thresh = full_pixel_motion_search_based_split_thresh_32;
+    nn_config = &av1_simple_motion_search_based_split_nn_config_32;
+    split_only_thresh = av1_simple_motion_search_based_split_thresh_32;
   } else if (bsize == BLOCK_16X16) {
-    nn_config = &full_pixel_motion_search_based_split_nn_config_16;
-    split_only_thresh = full_pixel_motion_search_based_split_thresh_16;
+    nn_config = &av1_simple_motion_search_based_split_nn_config_16;
+    split_only_thresh = av1_simple_motion_search_based_split_thresh_16;
   } else if (bsize == BLOCK_8X8) {
     // Disable BLOCK_8X8 for now
 #if !CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8
-    nn_config = &full_pixel_motion_search_based_split_nn_config_8;
-    split_only_thresh = full_pixel_motion_search_based_split_thresh_8;
+    nn_config = &av1_simple_motion_search_based_split_nn_config_8;
+    split_only_thresh = av1_simple_motion_search_based_split_thresh_8;
 #endif
   } else {
-    assert(0 && "Unexpected block size in full_pixel_motion_based_split");
+    assert(0 && "Unexpected block size in simple_motion_based_split");
   }
   if (nn_config) {
     float features[6] = { 0 };
@@ -3669,35 +3669,35 @@ static void simple_motion_search_prune_part(
   const float *ml_mean = NULL, *ml_std = NULL;
 
   if (bsize == BLOCK_128X128) {
-    nn_config = &simple_motion_search_prune_part_nn_config_128;
-    ml_mean = simple_motion_search_prune_part_mean_128;
-    ml_std = simple_motion_search_prune_part_std_128;
-    prune_thresh = simple_motion_search_prune_part_prune_thresh_128;
-    only_thresh = simple_motion_search_prune_part_only_thresh_128;
+    nn_config = &av1_simple_motion_search_prune_part_nn_config_128;
+    ml_mean = av1_simple_motion_search_prune_part_mean_128;
+    ml_std = av1_simple_motion_search_prune_part_std_128;
+    prune_thresh = av1_simple_motion_search_prune_part_prune_thresh_128;
+    only_thresh = av1_simple_motion_search_prune_part_only_thresh_128;
   } else if (bsize == BLOCK_64X64) {
-    nn_config = &simple_motion_search_prune_part_nn_config_64;
-    ml_mean = simple_motion_search_prune_part_mean_64;
-    ml_std = simple_motion_search_prune_part_std_64;
-    prune_thresh = simple_motion_search_prune_part_prune_thresh_64;
-    only_thresh = simple_motion_search_prune_part_only_thresh_64;
+    nn_config = &av1_simple_motion_search_prune_part_nn_config_64;
+    ml_mean = av1_simple_motion_search_prune_part_mean_64;
+    ml_std = av1_simple_motion_search_prune_part_std_64;
+    prune_thresh = av1_simple_motion_search_prune_part_prune_thresh_64;
+    only_thresh = av1_simple_motion_search_prune_part_only_thresh_64;
   } else if (bsize == BLOCK_32X32) {
-    nn_config = &simple_motion_search_prune_part_nn_config_32;
-    ml_mean = simple_motion_search_prune_part_mean_32;
-    ml_std = simple_motion_search_prune_part_std_32;
-    prune_thresh = simple_motion_search_prune_part_prune_thresh_32;
-    only_thresh = simple_motion_search_prune_part_only_thresh_32;
+    nn_config = &av1_simple_motion_search_prune_part_nn_config_32;
+    ml_mean = av1_simple_motion_search_prune_part_mean_32;
+    ml_std = av1_simple_motion_search_prune_part_std_32;
+    prune_thresh = av1_simple_motion_search_prune_part_prune_thresh_32;
+    only_thresh = av1_simple_motion_search_prune_part_only_thresh_32;
   } else if (bsize == BLOCK_16X16) {
-    nn_config = &simple_motion_search_prune_part_nn_config_16;
-    ml_mean = simple_motion_search_prune_part_mean_16;
-    ml_std = simple_motion_search_prune_part_std_16;
-    prune_thresh = simple_motion_search_prune_part_prune_thresh_16;
-    only_thresh = simple_motion_search_prune_part_only_thresh_16;
+    nn_config = &av1_simple_motion_search_prune_part_nn_config_16;
+    ml_mean = av1_simple_motion_search_prune_part_mean_16;
+    ml_std = av1_simple_motion_search_prune_part_std_16;
+    prune_thresh = av1_simple_motion_search_prune_part_prune_thresh_16;
+    only_thresh = av1_simple_motion_search_prune_part_only_thresh_16;
   } else if (bsize == BLOCK_8X8) {
-    nn_config = &simple_motion_search_prune_part_nn_config_8;
-    ml_mean = simple_motion_search_prune_part_mean_8;
-    ml_std = simple_motion_search_prune_part_std_8;
-    prune_thresh = simple_motion_search_prune_part_prune_thresh_8;
-    only_thresh = simple_motion_search_prune_part_only_thresh_8;
+    nn_config = &av1_simple_motion_search_prune_part_nn_config_8;
+    ml_mean = av1_simple_motion_search_prune_part_mean_8;
+    ml_std = av1_simple_motion_search_prune_part_std_8;
+    prune_thresh = av1_simple_motion_search_prune_part_prune_thresh_8;
+    only_thresh = av1_simple_motion_search_prune_part_only_thresh_8;
   } else {
     assert(0 && "Unexpected block size in simple_motion_prune_part");
   }
@@ -4039,7 +4039,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
       !av1_superres_scaled(cm);
 
   if (try_split_only) {
-    full_pixel_motion_search_based_split(
+    simple_motion_search_based_split(
         cpi, x, mi_row, mi_col, bsize, &partition_none_allowed,
         &partition_horz_allowed, &partition_vert_allowed,
         &do_rectangular_split);
