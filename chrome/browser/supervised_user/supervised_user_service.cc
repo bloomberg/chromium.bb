@@ -21,7 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -42,12 +42,13 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -324,11 +325,9 @@ base::string16 SupervisedUserService::GetExtensionsLockedMessage() const {
 
 #if !defined(OS_ANDROID)
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->UpdateCredentials(
-      supervised_users::kSupervisedUserPseudoEmail, refresh_token,
-      signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
+  IdentityManagerFactory::GetForProfile(profile_)
+      ->GetAccountsMutator()
+      ->LegacySetRefreshTokenForSupervisedUser(refresh_token);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -378,9 +377,7 @@ void SupervisedUserService::SetActive(bool active) {
   if (!delegate_ || !delegate_->SetActive(active_)) {
     if (active_) {
 #if !defined(OS_ANDROID)
-      ProfileOAuth2TokenService* token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      token_service->LoadCredentials(
+      IdentityManagerFactory::GetForProfile(profile_)->LegacyLoadCredentials(
           supervised_users::kSupervisedUserPseudoEmail);
 #else
       NOTREACHED();
