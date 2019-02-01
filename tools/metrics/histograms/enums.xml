@@ -21496,6 +21496,7 @@ Called by update_net_error_codes.py.-->
   <int value="2773" label="PerMethodCanMakePaymentQuota"/>
   <int value="2774" label="CSSValueAppearanceButtonForNonButtonRendered"/>
   <int value="2775" label="CSSValueAppearanceButtonForOthersRendered"/>
+  <int value="2776" label="CustomCursorIntersectsViewport"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

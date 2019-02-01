@@ -33,6 +33,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
@@ -128,6 +129,10 @@ static constexpr TimeDelta kCursorUpdateInterval =
     TimeDelta::FromMilliseconds(20);
 
 static const int kMaximumCursorSize = 128;
+
+// The maximum size a cursor can be without falling back to the default cursor
+// when intersecting browser native UI.
+static const int kMaximumCursorSizeWithoutFallback = 32;
 
 // It's pretty unlikely that a scale of less than one would ever be used. But
 // all we really need to ensure here is that the scale isn't so small that
@@ -473,9 +478,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
         continue;
       float scale = style_image->ImageScaleFactor();
       bool hot_spot_specified = (*cursors)[i].HotSpotSpecified();
-      // Get hotspot and convert from logical pixels to physical pixels.
       IntPoint hot_spot = (*cursors)[i].HotSpot();
-      hot_spot.Scale(scale, scale);
       IntSize size = cached_image->GetImage()->Size();
       if (cached_image->ErrorOccurred())
         continue;
@@ -486,10 +489,27 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
           size.Height() > kMaximumCursorSize)
         continue;
 
+      // For large cursors below the max size, limit their ability to cover UI
+      // elements by removing them when they intersect with the visual viewport.
+      // TODO(csharrison): Consider sending a fallback cursor in the IPC to the
+      // browser process so we can do that calculation there instead.
+      if (size.Width() > kMaximumCursorSizeWithoutFallback ||
+          size.Height() > kMaximumCursorSizeWithoutFallback) {
+        IntRect cursor_rect(IntPoint(location.RoundedPoint() - hot_spot), size);
+        IntRect visible_rect = page->GetVisualViewport().VisibleContentRect();
+        if (!visible_rect.Contains(cursor_rect)) {
+          Deprecation::CountDeprecation(
+              frame_, WebFeature::kCustomCursorIntersectsViewport);
+        }
+      }
+
       Image* image = cached_image->GetImage();
       // Ensure no overflow possible in calculations above.
       if (scale < kMinimumCursorScale)
         continue;
+
+      // Convert from logical pixels to physical pixels.
+      hot_spot.Scale(scale, scale);
       return Cursor(image, hot_spot_specified, hot_spot, scale);
     }
   }
