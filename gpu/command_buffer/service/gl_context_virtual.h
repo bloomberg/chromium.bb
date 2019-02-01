@@ -24,9 +24,7 @@ namespace gpu {
 class GLContextVirtualDelegate;
 
 // Encapsulates a virtual OpenGL context.
-// This class is final to avoid potential issues due to virtual function calls
-// in the destructor.
-class GPU_GLES2_EXPORT GLContextVirtual final : public gl::GLContext {
+class GPU_GLES2_EXPORT GLContextVirtual : public gl::GLContext {
  public:
   GLContextVirtual(gl::GLShareGroup* share_group,
                    gl::GLContext* shared_context,
