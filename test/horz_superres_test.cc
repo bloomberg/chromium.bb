@@ -28,12 +28,7 @@ using ::testing::tuple;
 
 /* TESTING PARAMETERS */
 
-#define NUM_TEST_VIDEOS 4
-
 const int kBitrate = 40;
-
-// PSNR thresholds found by experiment
-const double kPSNRThresholds[] = { 26.0, 28.0, 20.0, 39.0 };
 
 typedef struct {
   const char *filename;
@@ -42,13 +37,15 @@ typedef struct {
   unsigned int profile;
   unsigned int limit;
   unsigned int screen_content;
+  double psnr_threshold;
 } TestVideoParam;
 
 const TestVideoParam kTestVideoVectors[] = {
-  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0 },
-  { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0 },
-  { "screendata.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 4, 1 },
-  { "niklas_1280_720_30.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 1, 0 },  // image
+  { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 26.0 },
+  { "park_joy_90p_10_444.y4m", AOM_IMG_FMT_I44416, AOM_BITS_10, 1, 5, 0, 28.0 },
+  { "screendata.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 4, 1, 20.0 },
+  // Image coding (single frame).
+  { "niklas_1280_720_30.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 1, 0, 39.0 },
 };
 
 // Modes with extra params have their own tests.
@@ -74,8 +71,8 @@ const SuperresQThresholdPair kSuperresQThresholds[] = {
 /* END (TESTING PARAMETERS) */
 
 // Test parameter list:
-//  <[needed for EncoderTest], test_video_idx_, superres_mode_>
-typedef tuple<const libaom_test::CodecFactory *, int, SUPERRES_MODE>
+//  <[needed for EncoderTest], test_video_param_, superres_mode_>
+typedef tuple<const libaom_test::CodecFactory *, TestVideoParam, SUPERRES_MODE>
     HorzSuperresTestParam;
 
 class HorzSuperresEndToEndTest
@@ -83,10 +80,8 @@ class HorzSuperresEndToEndTest
       public ::libaom_test::EncoderTest {
  protected:
   HorzSuperresEndToEndTest()
-      : EncoderTest(GET_PARAM(0)), test_video_idx_(GET_PARAM(1)),
-        superres_mode_(GET_PARAM(2)), psnr_(0.0), frame_count_(0) {
-    test_video_param_ = kTestVideoVectors[test_video_idx_];
-  }
+      : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
+        superres_mode_(GET_PARAM(2)), psnr_(0.0), frame_count_(0) {}
 
   virtual ~HorzSuperresEndToEndTest() {}
 
@@ -143,8 +138,6 @@ class HorzSuperresEndToEndTest
     return 0.0;
   }
 
-  double GetPsnrThreshold() { return kPSNRThresholds[test_video_idx_]; }
-
   void DoTest() {
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
@@ -153,14 +146,13 @@ class HorzSuperresEndToEndTest
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();
-    EXPECT_GT(psnr, GetPsnrThreshold())
+    EXPECT_GT(psnr, test_video_param_.psnr_threshold)
         << "superres_mode_ = " << superres_mode_;
 
     EXPECT_EQ(test_video_param_.limit, frame_count_)
         << "superres_mode_ = " << superres_mode_;
   }
 
-  int test_video_idx_;
   TestVideoParam test_video_param_;
   SUPERRES_MODE superres_mode_;
 
@@ -172,13 +164,14 @@ class HorzSuperresEndToEndTest
 TEST_P(HorzSuperresEndToEndTest, HorzSuperresEndToEndPSNRTest) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_CASE(HorzSuperresEndToEndTest,
-                          ::testing::Range(0, NUM_TEST_VIDEOS),
+                          ::testing::ValuesIn(kTestVideoVectors),
                           ::testing::ValuesIn(kSuperresModesWithoutParams));
 
 // Test parameter list:
-//  <[needed for EncoderTest], test_video_idx_, tuple(superres_denom_,
+//  <[needed for EncoderTest], test_video_param_, tuple(superres_denom_,
 //  superres_kf_denom_)>
-typedef tuple<const libaom_test::CodecFactory *, int, SuperresDenominatorPair>
+typedef tuple<const libaom_test::CodecFactory *, TestVideoParam,
+              SuperresDenominatorPair>
     HorzSuperresFixedTestParam;
 
 class HorzSuperresFixedEndToEndTest
@@ -186,10 +179,8 @@ class HorzSuperresFixedEndToEndTest
       public ::libaom_test::EncoderTest {
  protected:
   HorzSuperresFixedEndToEndTest()
-      : EncoderTest(GET_PARAM(0)), test_video_idx_(GET_PARAM(1)),
+      : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
         superres_mode_(SUPERRES_FIXED), psnr_(0.0), frame_count_(0) {
-    test_video_param_ = kTestVideoVectors[test_video_idx_];
-
     SuperresDenominatorPair denoms = GET_PARAM(2);
     superres_denom_ = ::testing::get<0>(denoms);
     superres_kf_denom_ = ::testing::get<1>(denoms);
@@ -252,8 +243,6 @@ class HorzSuperresFixedEndToEndTest
     return 0.0;
   }
 
-  double GetPsnrThreshold() { return kPSNRThresholds[test_video_idx_]; }
-
   void DoTest() {
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
@@ -262,7 +251,7 @@ class HorzSuperresFixedEndToEndTest
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();
-    EXPECT_GT(psnr, GetPsnrThreshold())
+    EXPECT_GT(psnr, test_video_param_.psnr_threshold)
         << "superres_mode_ = " << superres_mode_
         << ", superres_denom_ = " << superres_denom_
         << ", superres_kf_denom_ = " << superres_kf_denom_;
@@ -273,7 +262,6 @@ class HorzSuperresFixedEndToEndTest
         << ", superres_kf_denom_ = " << superres_kf_denom_;
   }
 
-  int test_video_idx_;
   TestVideoParam test_video_param_;
   SUPERRES_MODE superres_mode_;
   int superres_denom_;
@@ -287,13 +275,14 @@ class HorzSuperresFixedEndToEndTest
 TEST_P(HorzSuperresFixedEndToEndTest, HorzSuperresFixedTestParam) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_CASE(HorzSuperresFixedEndToEndTest,
-                          ::testing::Range(0, NUM_TEST_VIDEOS),
+                          ::testing::ValuesIn(kTestVideoVectors),
                           ::testing::ValuesIn(kSuperresDenominators));
 
 // Test parameter list:
-//  <[needed for EncoderTest], test_video_idx_,
+//  <[needed for EncoderTest], test_video_param_,
 //  tuple(superres_qthresh_,superres_kf_qthresh_)>
-typedef tuple<const libaom_test::CodecFactory *, int, SuperresQThresholdPair>
+typedef tuple<const libaom_test::CodecFactory *, TestVideoParam,
+              SuperresQThresholdPair>
     HorzSuperresQThreshTestParam;
 
 class HorzSuperresQThreshEndToEndTest
@@ -301,10 +290,8 @@ class HorzSuperresQThreshEndToEndTest
       public ::libaom_test::EncoderTest {
  protected:
   HorzSuperresQThreshEndToEndTest()
-      : EncoderTest(GET_PARAM(0)), test_video_idx_(GET_PARAM(1)),
+      : EncoderTest(GET_PARAM(0)), test_video_param_(GET_PARAM(1)),
         superres_mode_(SUPERRES_QTHRESH), psnr_(0.0), frame_count_(0) {
-    test_video_param_ = kTestVideoVectors[test_video_idx_];
-
     SuperresQThresholdPair qthresholds = GET_PARAM(2);
     superres_qthresh_ = ::testing::get<0>(qthresholds);
     superres_kf_qthresh_ = ::testing::get<1>(qthresholds);
@@ -367,8 +354,6 @@ class HorzSuperresQThreshEndToEndTest
     return 0.0;
   }
 
-  double GetPsnrThreshold() { return kPSNRThresholds[test_video_idx_]; }
-
   void DoTest() {
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
@@ -377,7 +362,7 @@ class HorzSuperresQThreshEndToEndTest
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();
-    EXPECT_GT(psnr, GetPsnrThreshold())
+    EXPECT_GT(psnr, test_video_param_.psnr_threshold)
         << "superres_mode_ = " << superres_mode_
         << ", superres_qthresh_ = " << superres_qthresh_
         << ", superres_kf_qthresh_ = " << superres_kf_qthresh_;
@@ -388,7 +373,6 @@ class HorzSuperresQThreshEndToEndTest
         << ", superres_kf_qthresh_ = " << superres_kf_qthresh_;
   }
 
-  int test_video_idx_;
   TestVideoParam test_video_param_;
   SUPERRES_MODE superres_mode_;
   int superres_qthresh_;
@@ -404,7 +388,7 @@ TEST_P(HorzSuperresQThreshEndToEndTest, HorzSuperresQThreshEndToEndPSNRTest) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(HorzSuperresQThreshEndToEndTest,
-                          ::testing::Range(0, NUM_TEST_VIDEOS),
+                          ::testing::ValuesIn(kTestVideoVectors),
                           ::testing::ValuesIn(kSuperresQThresholds));
 
 }  // namespace
