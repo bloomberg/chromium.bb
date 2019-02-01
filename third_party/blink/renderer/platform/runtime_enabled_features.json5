@@ -1464,7 +1464,7 @@
     },
     {
       name: "WebXR",
-      origin_trial_feature_name: "WebXRDeviceM69",
+      origin_trial_feature_name: "WebXRDeviceM73",
       status: "experimental",
     },
     // Subset of the Gamepad extensions used for early WebXR implementations
