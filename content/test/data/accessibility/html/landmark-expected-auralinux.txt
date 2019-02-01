@@ -3,7 +3,7 @@
 ++++[text] name='This is a header element.'
 ++[landmark] xml-roles:complementary
 ++++[text] name='This is an aside element.'
-++[landmark]
+++[section]
 ++++[text] name='This is an address element.'
 ++[footer] xml-roles:contentinfo
 ++++[text] name='This is a footer element.'
