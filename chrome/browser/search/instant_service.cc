@@ -473,8 +473,8 @@ void InstantService::OnSearchProviderChanged(bool is_google) {
 }
 
 void InstantService::OnDarkModeChanged(bool dark_mode) {
-  if (theme_info_)
-    theme_info_->using_dark_mode = dark_mode;
+  // Force theme information rebuild in order to update dark mode colors.
+  BuildThemeInfo();
   UpdateThemeInfo();
 }
 
