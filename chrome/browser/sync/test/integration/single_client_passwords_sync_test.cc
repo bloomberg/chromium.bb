@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -147,6 +149,51 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
       entities[0].specifics().password().encrypted().key_name();
   EXPECT_FALSE(new_encryption_key_name.empty());
   EXPECT_NE(new_encryption_key_name, prior_encryption_key_name);
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+                       PRE_PersistProgressMarkerOnRestart) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  PasswordForm form = CreateTestPasswordForm(0);
+  AddLogin(GetPasswordStore(0), form);
+  ASSERT_EQ(1, GetPasswordCount(0));
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  // Upon a local creation, the received update will be seen as reflection and
+  // get counted as incremental update.
+  EXPECT_EQ(
+      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
+                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
+                       PersistProgressMarkerOnRestart) {
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_EQ(1, GetPasswordCount(0));
+#if defined(CHROMEOS)
+  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // to get a non-empty refresh token on startup.
+  GetClient(0)->SignInPrimaryAccount();
+#endif  // defined(CHROMEOS)
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  // After restart, the last sync cycle snapshot should be empty. Once a sync
+  // request happened (e.g. by a poll), that snapshot is populated. We use the
+  // following checker to simply wait for an non-empty snapshot.
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+
+  // If that metadata hasn't been properly persisted, the password stored on the
+  // server will be received at the client as an initial update or an
+  // incremental once.
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
+                                         /*REMOTE_INITIAL_UPDATE=*/5));
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.PASSWORD",
+                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,
