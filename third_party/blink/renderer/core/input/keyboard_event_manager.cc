@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -179,8 +180,8 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
   // To be meaningful enough to indicate user intention, a keyboard event needs
   // - not to be a modifier event
   // https://crbug.com/709765
-  bool is_modifier =
-      Platform::Current()->IsDomKeyForModifier(initial_key_event.dom_key);
+  bool is_modifier = ui::KeycodeConverter::IsDomKeyForModifier(
+      static_cast<ui::DomKey>(initial_key_event.dom_key));
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (!is_modifier)

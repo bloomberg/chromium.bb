@@ -79,12 +79,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   const char* GetBrowserServiceName() const override;
   blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;
 
-  blink::WebString DomCodeStringFromEnum(int dom_code) override;
-  int DomEnumFromCodeString(const blink::WebString& codeString) override;
-  blink::WebString DomKeyStringFromEnum(int dom_key) override;
-  int DomKeyEnumFromString(const blink::WebString& key_string) override;
-  bool IsDomKeyForModifier(int dom_key) override;
-
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
       const override;
