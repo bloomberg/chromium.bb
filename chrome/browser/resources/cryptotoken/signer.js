@@ -495,11 +495,28 @@ Signer.prototype.doSignWebAuthn_ = function(encodedChallenges, challengeVal) {
     return false;
   }
 
+  const decodedChallenge = B64_decode(challengeVal);
+  if (decodedChallenge.length == 0) {
+    this.notifyError_({
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'challenge must be base64url encoded',
+    });
+    return false;
+  }
+
   const credentialList = [];
   for (let i = 0; i < encodedChallenges.length; i++) {
+    const decodedKeyHandle = B64_decode(encodedChallenges[i]['keyHandle']);
+    if (decodedKeyHandle.length == 0) {
+      this.notifyError_({
+        errorCode: ErrorCodes.BAD_REQUEST,
+        errorMessage: 'keyHandle must be base64url encoded',
+      });
+      return false;
+    }
     credentialList.push({
       type: 'public-key',
-      id: new Uint8Array(B64_decode(encodedChallenges[i].keyHandle)).buffer,
+      id: new Uint8Array(decodedKeyHandle).buffer,
     });
   }
   // App ID could be defined for each challenge or globally.
@@ -509,7 +526,7 @@ Signer.prototype.doSignWebAuthn_ = function(encodedChallenges, challengeVal) {
 
   const request = {
     publicKey: {
-      challenge: new Uint8Array(B64_decode(challengeVal)).buffer,
+      challenge: new Uint8Array(decodedChallenge).buffer,
       timeout: this.timer_.millisecondsUntilExpired(),
       rpId: this.sender_.origin,
       allowCredentials: credentialList,
