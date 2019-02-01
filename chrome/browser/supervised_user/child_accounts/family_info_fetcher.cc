@@ -17,7 +17,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -90,11 +90,7 @@ FamilyInfoFetcher::FamilyInfoFetcher(
       url_loader_factory_(std::move(url_loader_factory)),
       access_token_expired_(false) {}
 
-FamilyInfoFetcher::~FamilyInfoFetcher() {
-  // Ensures IdentityManager observation is cleared when FamilyInfoFetcher is
-  // destructed before refresh token is available.
-  identity_manager_->RemoveObserver(this);
-}
+FamilyInfoFetcher::~FamilyInfoFetcher() {}
 
 // static
 std::string FamilyInfoFetcher::RoleToString(FamilyMemberRole role) {
@@ -116,56 +112,25 @@ bool FamilyInfoFetcher::StringToRole(
 
 void FamilyInfoFetcher::StartGetFamilyProfile() {
   request_path_ = kGetFamilyProfileApiPath;
-  StartFetching();
+  StartFetchingAccessToken();
 }
 
 void FamilyInfoFetcher::StartGetFamilyMembers() {
   request_path_ = kGetFamilyMembersApiPath;
-  StartFetching();
-}
-
-void FamilyInfoFetcher::StartFetching() {
-  if (identity_manager_->HasAccountWithRefreshToken(primary_account_id_)) {
-    StartFetchingAccessToken();
-  } else {
-    // Wait until we get a refresh token.
-    identity_manager_->AddObserver(this);
-  }
-}
-
-void FamilyInfoFetcher::StartFetchingAccessToken() {
-  OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(kScope);
-  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
-      primary_account_id_, "family_info_fetcher", scopes,
-      base::BindOnce(&FamilyInfoFetcher::OnAccessTokenFetchCompleteForAccount,
-                     base::Unretained(this), primary_account_id_),
-      identity::AccessTokenFetcher::Mode::kImmediate);
-}
-
-void FamilyInfoFetcher::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info) {
-  // Wait until we get a refresh token for the requested account.
-  if (account_info.account_id != primary_account_id_)
-    return;
-
-  identity_manager_->RemoveObserver(this);
-
   StartFetchingAccessToken();
 }
 
-void FamilyInfoFetcher::OnRefreshTokensLoaded() {
-  identity_manager_->RemoveObserver(this);
-
-  // The PO2TS has loaded all tokens, but we didn't get one for the account we
-  // want. We probably won't get one any time soon, so report an error.
-  DLOG(WARNING) << "Did not get a refresh token for account "
-                << primary_account_id_;
-  consumer_->OnFailure(TOKEN_ERROR);
+void FamilyInfoFetcher::StartFetchingAccessToken() {
+  OAuth2TokenService::ScopeSet scopes{kScope};
+  access_token_fetcher_ = std::make_unique<
+      identity::PrimaryAccountAccessTokenFetcher>(
+      "family_info_fetcher", identity_manager_, scopes,
+      base::BindOnce(&FamilyInfoFetcher::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
-void FamilyInfoFetcher::OnAccessTokenFetchCompleteForAccount(
-    std::string account_id,
+void FamilyInfoFetcher::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
     identity::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
@@ -253,7 +218,7 @@ void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
     scopes.insert(kScope);
     identity_manager_->RemoveAccessTokenFromCache(primary_account_id_, scopes,
                                                   access_token_);
-    StartFetching();
+    StartFetchingAccessToken();
     return;
   }
 
