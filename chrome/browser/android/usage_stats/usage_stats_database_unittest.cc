@@ -63,7 +63,7 @@ class UsageStatsDatabaseTest : public testing::Test {
   FakeDB<UsageStat>* fake_db() { return fake_db_unowned_; }
 
   MOCK_METHOD1(OnUpdateDone, void(UsageStatsDatabase::Error));
-  MOCK_METHOD2(OnGetAllEventsDone,
+  MOCK_METHOD2(OnGetEventsDone,
                void(UsageStatsDatabase::Error, std::vector<WebsiteEvent>));
   MOCK_METHOD2(OnGetAllSuspensionsDone,
                void(UsageStatsDatabase::Error, std::vector<std::string>));
@@ -85,22 +85,21 @@ TEST_F(UsageStatsDatabaseTest, Initialization) {
 
 // Website Event Tests
 TEST_F(UsageStatsDatabaseTest, GetAllEventsSuccess) {
-  EXPECT_CALL(*this, OnGetAllEventsDone(UsageStatsDatabase::Error::kNoError,
-                                        ElementsAre()));
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre()));
 
   usage_stats_database()->GetAllEvents(base::BindOnce(
-      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
   fake_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, GetAllEventsFailure) {
-  EXPECT_CALL(*this,
-              OnGetAllEventsDone(UsageStatsDatabase::Error::kUnknownError,
-                                 ElementsAre()));
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kUnknownError,
+                                     ElementsAre()));
 
   usage_stats_database()->GetAllEvents(base::BindOnce(
-      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
   fake_db()->LoadCallback(false);
 }
@@ -118,6 +117,7 @@ TEST_F(UsageStatsDatabaseTest, AddEventsEmpty) {
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
+  // Add 1 event.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
   std::vector<WebsiteEvent> events({event1});
@@ -130,18 +130,119 @@ TEST_F(UsageStatsDatabaseTest, AddAndGetOneEvent) {
 
   fake_db()->UpdateCallback(true);
 
-  EXPECT_CALL(*this,
-              OnGetAllEventsDone(UsageStatsDatabase::Error::kNoError,
-                                 ElementsAre(EqualsWebsiteEvent(event1))));
+  // Get 1 event.
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event1))));
 
   usage_stats_database()->GetAllEvents(base::BindOnce(
-      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, AddAndQueryEventsInRange) {
+  // Add 2 events at time 5 and 10.
+  WebsiteEvent event1 =
+      CreateWebsiteEvent(kFqdn1, 5, WebsiteEvent::START_BROWSING);
+  WebsiteEvent event2 =
+      CreateWebsiteEvent(kFqdn2, 10, WebsiteEvent::STOP_BROWSING);
+  std::vector<WebsiteEvent> events({event1, event2});
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  // Get events between time 0 (inclusive) and 9 (exclusive).
+  // This test validates the correct lexicographic ordering of timestamps such
+  // that key(0) <= key(5) < key(9) <= key(10).
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event1))));
+
+  usage_stats_database()->QueryEventsInRange(
+      0, 9,
+      base::BindOnce(&UsageStatsDatabaseTest::OnGetEventsDone,
+                     base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, AddAndDeleteAllEvents) {
+  // Add 1 event.
+  WebsiteEvent event1 =
+      CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
+  std::vector<WebsiteEvent> events({event1});
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  // Delete all events.
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->DeleteAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnUpdateDone, base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  // Get all events (expecting none).
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre()));
+
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+}
+
+TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsInRange) {
+  // Add 3 events.
+  WebsiteEvent event1 =
+      CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
+  WebsiteEvent event2 =
+      CreateWebsiteEvent(kFqdn1, 2, WebsiteEvent::START_BROWSING);
+  WebsiteEvent event3 =
+      CreateWebsiteEvent(kFqdn1, 10, WebsiteEvent::START_BROWSING);
+  std::vector<WebsiteEvent> events({event1, event2, event3});
+
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->AddEvents(
+      events, base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                             base::Unretained(this)));
+
+  fake_db()->UpdateCallback(true);
+
+  // Delete events between time 1 (inclusive) and 10 (exclusive).
+  EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
+
+  usage_stats_database()->DeleteEventsInRange(
+      1, 10,
+      base::BindOnce(&UsageStatsDatabaseTest::OnUpdateDone,
+                     base::Unretained(this)));
+
+  fake_db()->LoadCallback(true);
+  fake_db()->UpdateCallback(true);
+
+  // Get 1 remaining event outside range (at time 10).
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event3))));
+
+  usage_stats_database()->GetAllEvents(base::BindOnce(
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
   fake_db()->LoadCallback(true);
 }
 
 TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
-  // Add 3 events
+  // Add 3 events.
   WebsiteEvent event1 =
       CreateWebsiteEvent(kFqdn1, 1, WebsiteEvent::START_BROWSING);
   WebsiteEvent event2 =
@@ -158,7 +259,7 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
 
   fake_db()->UpdateCallback(true);
 
-  // Delete 2 events by FQDN
+  // Delete 2 events by FQDN.
   base::flat_set<std::string> domains({kFqdn1});
   EXPECT_CALL(*this, OnUpdateDone(UsageStatsDatabase::Error::kNoError));
 
@@ -168,13 +269,12 @@ TEST_F(UsageStatsDatabaseTest, AddAndDeleteEventsMatchingDomain) {
 
   fake_db()->UpdateCallback(true);
 
-  // Get 1 remaining event with non-matching FQDN
-  EXPECT_CALL(*this,
-              OnGetAllEventsDone(UsageStatsDatabase::Error::kNoError,
-                                 ElementsAre(EqualsWebsiteEvent(event3))));
+  // Get 1 remaining event with non-matching FQDN.
+  EXPECT_CALL(*this, OnGetEventsDone(UsageStatsDatabase::Error::kNoError,
+                                     ElementsAre(EqualsWebsiteEvent(event3))));
 
   usage_stats_database()->GetAllEvents(base::BindOnce(
-      &UsageStatsDatabaseTest::OnGetAllEventsDone, base::Unretained(this)));
+      &UsageStatsDatabaseTest::OnGetEventsDone, base::Unretained(this)));
 
   fake_db()->LoadCallback(true);
 }

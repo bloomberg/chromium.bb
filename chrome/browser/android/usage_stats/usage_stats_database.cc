@@ -66,9 +66,9 @@ bool KeyContainsDomainFilter(const base::flat_set<std::string>& domains,
   return domains.contains(key.substr(kFqdnPosition));
 }
 
-UsageStatsDatabase::Error ToError(bool success) {
-  return success ? UsageStatsDatabase::Error::kNoError
-                 : UsageStatsDatabase::Error::kUnknownError;
+UsageStatsDatabase::Error ToError(bool isSuccess) {
+  return isSuccess ? UsageStatsDatabase::Error::kNoError
+                   : UsageStatsDatabase::Error::kUnknownError;
 }
 
 std::string CreateWebsiteEventKey(int64_t seconds, const std::string& fqdn) {
@@ -95,6 +95,20 @@ void UsageStatsDatabase::GetAllEvents(EventsCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void UsageStatsDatabase::QueryEventsInRange(int64_t start,
+                                            int64_t end,
+                                            EventsCallback callback) {
+  // Load all UsageStats with the website events prefix, where the timestamp is
+  // in the specified range. Function accepts a half-open range [start, end) as
+  // input, but the database operates on fully-closed ranges. Because the
+  // timestamps are represented by integers, [start, end) is equivalent to
+  // [start, end - 1].
+  proto_db_->LoadKeysAndEntriesInRange(
+      CreateWebsiteEventKey(start, ""), CreateWebsiteEventKey(end - 1, ""),
+      base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForQueryEventsInRange,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void UsageStatsDatabase::AddEvents(std::vector<WebsiteEvent> events,
                                    StatusCallback callback) {
   auto entries = std::make_unique<
@@ -116,6 +130,34 @@ void UsageStatsDatabase::AddEvents(std::vector<WebsiteEvent> events,
   proto_db_->UpdateEntries(
       std::move(entries), std::make_unique<std::vector<std::string>>(),
       base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UsageStatsDatabase::DeleteAllEvents(StatusCallback callback) {
+  // Remove all entries with the website event prefix.
+  proto_db_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<
+          leveldb_proto::ProtoDatabase<UsageStat>::KeyEntryVector>(),
+      base::BindRepeating([](const std::string& key) { return true; }),
+      kWebsiteEventPrefix,
+      base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+void UsageStatsDatabase::DeleteEventsInRange(int64_t start,
+                                             int64_t end,
+                                             StatusCallback callback) {
+  // TODO(crbug/927655): If/when leveldb_proto adds an UpdateEntriesInRange
+  // function, we should consolidate these two proto_db_ calls into a single
+  // call.
+
+  // Load all keys with the website events prefix, where the timestamp is
+  // in the specified range, passing a callback to delete those entries.
+  // Function accepts a half-open range [start, end) as input, but the database
+  // operates on fully-closed ranges. Because the timestamps are represented by
+  // integers, [start, end) is equivalent to [start, end - 1].
+  proto_db_->LoadKeysAndEntriesInRange(
+      CreateWebsiteEventKey(start, ""), CreateWebsiteEventKey(end - 1, ""),
+      base::BindOnce(&UsageStatsDatabase::OnLoadEntriesForDeleteEventsInRange,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -212,13 +254,13 @@ void UsageStatsDatabase::SetTokenMappings(TokenMap mappings,
 }
 
 void UsageStatsDatabase::OnUpdateEntries(StatusCallback callback,
-                                         bool success) {
-  std::move(callback).Run(ToError(success));
+                                         bool isSuccess) {
+  std::move(callback).Run(ToError(isSuccess));
 }
 
 void UsageStatsDatabase::OnLoadEntriesForGetAllEvents(
     EventsCallback callback,
-    bool success,
+    bool isSuccess,
     std::unique_ptr<std::vector<UsageStat>> stats) {
   std::vector<WebsiteEvent> results;
 
@@ -229,12 +271,53 @@ void UsageStatsDatabase::OnLoadEntriesForGetAllEvents(
     }
   }
 
-  std::move(callback).Run(ToError(success), std::move(results));
+  std::move(callback).Run(ToError(isSuccess), std::move(results));
+}
+
+void UsageStatsDatabase::OnLoadEntriesForQueryEventsInRange(
+    EventsCallback callback,
+    bool isSuccess,
+    std::unique_ptr<UsageStatMap> stat_map) {
+  std::vector<WebsiteEvent> results;
+
+  if (stat_map) {
+    results.reserve(stat_map->size());
+    for (const auto& key_stat : *stat_map) {
+      results.emplace_back(key_stat.second.website_event());
+    }
+  }
+
+  std::move(callback).Run(ToError(isSuccess), std::move(results));
+}
+
+void UsageStatsDatabase::OnLoadEntriesForDeleteEventsInRange(
+    StatusCallback callback,
+    bool isSuccess,
+    std::unique_ptr<UsageStatMap> stat_map) {
+  if (isSuccess && stat_map) {
+    // Collect keys found in range to be deleted.
+    auto keys_to_delete = std::make_unique<std::vector<std::string>>();
+    keys_to_delete->reserve(stat_map->size());
+
+    for (const auto& key_stat : *stat_map) {
+      keys_to_delete->emplace_back(key_stat.first);
+    }
+
+    // Remove all entries found in range.
+    proto_db_->UpdateEntries(
+        std::make_unique<
+            leveldb_proto::ProtoDatabase<UsageStat>::KeyEntryVector>(),
+        std::move(keys_to_delete),
+        base::BindOnce(&UsageStatsDatabase::OnUpdateEntries,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    std::move(callback).Run(ToError(isSuccess));
+  }
 }
 
 void UsageStatsDatabase::OnLoadEntriesForGetAllSuspensions(
     SuspensionsCallback callback,
-    bool success,
+    bool isSuccess,
     std::unique_ptr<std::vector<UsageStat>> stats) {
   std::vector<std::string> results;
 
@@ -245,12 +328,12 @@ void UsageStatsDatabase::OnLoadEntriesForGetAllSuspensions(
     }
   }
 
-  std::move(callback).Run(ToError(success), std::move(results));
+  std::move(callback).Run(ToError(isSuccess), std::move(results));
 }
 
 void UsageStatsDatabase::OnLoadEntriesForGetAllTokenMappings(
     TokenMappingsCallback callback,
-    bool success,
+    bool isSuccess,
     std::unique_ptr<std::vector<UsageStat>> stats) {
   TokenMap results;
 
@@ -261,7 +344,7 @@ void UsageStatsDatabase::OnLoadEntriesForGetAllTokenMappings(
     }
   }
 
-  std::move(callback).Run(ToError(success), std::move(results));
+  std::move(callback).Run(ToError(isSuccess), std::move(results));
 }
 
 }  // namespace usage_stats
