@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 #if defined(OS_ANDROID)
@@ -22,6 +23,8 @@ namespace {
 
 std::unique_ptr<ContactsProvider> CreateProvider(
     RenderFrameHostImpl* render_frame_host) {
+  if (render_frame_host->GetParent())
+    return nullptr;  // This API is only supported on the main frame.
 #if defined(OS_ANDROID)
   return std::make_unique<ContactsProviderAndroid>(render_frame_host);
 #else
