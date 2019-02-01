@@ -1093,10 +1093,6 @@ void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-inline void Node::SetStyleChange(StyleChangeType change_type) {
-  node_flags_ = (node_flags_ & ~kStyleChangeMask) | change_type;
-}
-
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   ContainerNode* ancestor = ParentOrShadowHostNode();
   bool parent_dirty = ancestor && ancestor->NeedsStyleRecalc();
