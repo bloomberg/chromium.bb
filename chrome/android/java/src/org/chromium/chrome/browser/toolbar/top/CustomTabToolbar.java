@@ -136,6 +136,7 @@ public class CustomTabToolbar
     private ImageButton mSecurityButton;
     private LinearLayout mCustomActionButtons;
     private ImageButton mCloseButton;
+    private ImageButton mMenuButton;
 
     // Whether dark tint should be applied to icons and text.
     private boolean mUseDarkColors = true;
@@ -183,6 +184,7 @@ public class CustomTabToolbar
         mCustomActionButtons = findViewById(R.id.action_buttons);
         mCloseButton = findViewById(R.id.close_button);
         mCloseButton.setOnLongClickListener(this);
+        mMenuButton = findViewById(R.id.menu_button);
         mAnimDelegate = new CustomTabToolbarAnimationDelegate(mSecurityButton, mTitleUrlContainer);
     }
 
@@ -783,6 +785,9 @@ public class CustomTabToolbar
     public void setAutocompleteProfile(Profile profile) {}
 
     @Override
+    void showAppMenuUpdateBadge(boolean animate) {}
+
+    @Override
     boolean isShowingAppMenuUpdateBadge() {
         return false;
     }
@@ -797,8 +802,14 @@ public class CustomTabToolbar
     }
 
     @Override
+    ImageButton getMenuButton() {
+        return mMenuButton;
+    }
+
+    @Override
     void disableMenuButton() {
         super.disableMenuButton();
+        mMenuButton = null;
         // In addition to removing the menu button, we also need to remove the margin on the custom
         // action button.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
