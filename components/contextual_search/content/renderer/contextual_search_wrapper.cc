@@ -52,7 +52,7 @@ void ContextualSearchWrapper::Install(content::RenderFrame* render_frame) {
     return;
 
   v8::Local<v8::Object> chrome =
-      content::GetOrCreateChromeObject(isolate, context->Global());
+      content::GetOrCreateChromeObject(isolate, context);
   chrome->Set(gin::StringToV8(isolate, kContextualSearchObjectName),
               wrapper.ToV8());
 }

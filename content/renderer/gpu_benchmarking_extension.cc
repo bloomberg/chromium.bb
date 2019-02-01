@@ -525,8 +525,7 @@ void GpuBenchmarking::Install(RenderFrameImpl* frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Local<v8::Object> chrome =
-      GetOrCreateChromeObject(isolate, context->Global());
+  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate, context);
   chrome->Set(gin::StringToV8(isolate, "gpuBenchmarking"), controller.ToV8());
 }
 

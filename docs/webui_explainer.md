@@ -502,8 +502,7 @@ renderer:
 
 ```c++
 // WebUIExtension::Install():
-v8::Local<v8::Object> chrome =
-    GetOrCreateChromeObject(isolate, context->Global());
+v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate, context);
 chrome->Set(gin::StringToSymbol(isolate, "send"),
             gin::CreateFunctionTemplate(
                 isolate, base::Bind(&WebUIExtension::Send))->GetFunction());

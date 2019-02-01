@@ -73,8 +73,7 @@ void WebUIExtension::Install(blink::WebLocalFrame* frame) {
 
   v8::Context::Scope context_scope(context);
 
-  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate,
-                                                          context->Global());
+  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate, context);
   chrome->Set(
       gin::StringToSymbol(isolate, "send"),
       gin::CreateFunctionTemplate(isolate, base::Bind(&WebUIExtension::Send))
