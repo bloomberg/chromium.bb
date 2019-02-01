@@ -49,15 +49,6 @@ bool g_initialized;
 void (*g_call_on_main_thread_function)(MainThreadFunction, void*);
 base::PlatformThreadId g_main_thread_identifier;
 
-#if defined(COMPONENT_BUILD) && defined(OS_WIN)
-static thread_local bool g_is_main_thread = false;
-bool IsMainThread() {
-  return g_is_main_thread;
-}
-#else
-thread_local bool g_is_main_thread = false;
-#endif
-
 namespace internal {
 
 void CallOnMainThread(MainThreadFunction* function, void* context) {
@@ -66,13 +57,16 @@ void CallOnMainThread(MainThreadFunction* function, void* context) {
 
 }  // namespace internal
 
+bool IsMainThread() {
+  return CurrentThread() == g_main_thread_identifier;
+}
+
 void Initialize(void (*call_on_main_thread_function)(MainThreadFunction,
                                                      void*)) {
   // WTF, and Blink in general, cannot handle being re-initialized.
   // Make that explicit here.
   CHECK(!g_initialized);
   g_initialized = true;
-  g_is_main_thread = true;
   g_main_thread_identifier = CurrentThread();
 
   WTFThreadData::Initialize();
