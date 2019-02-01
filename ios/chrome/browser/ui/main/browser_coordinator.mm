@@ -40,6 +40,8 @@
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
@@ -53,6 +55,7 @@
 
 @interface BrowserCoordinator () <FormInputAccessoryCoordinatorDelegate,
                                   RepostFormTabHelperDelegate,
+                                  URLLoadingServiceDelegate,
                                   WebStateListObserving>
 
 // Whether the coordinator is started.
@@ -142,6 +145,7 @@
       startDispatchingToTarget:self
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
   [self installDelegatesForAllWebStates];
+  [self installDelegatesForBrowserState];
   [self addWebStateListObserver];
   [super start];
   self.started = YES;
@@ -152,6 +156,7 @@
     return;
   [super stop];
   [self removeWebStateListObserver];
+  [self uninstallDelegatesForBrowserState];
   [self uninstallDelegatesForAllWebStates];
   [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
@@ -424,6 +429,17 @@
   self.repostFormCoordinator = nil;
 }
 
+#pragma mark - URLLoadingServiceDelegate
+
+- (void)switchToTabWithParams:
+    (const web::NavigationManager::WebLoadParams&)params {
+  [self.viewController switchToTabWithParams:params];
+}
+
+- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
+  [self.viewController webPageOrderedOpen:command];
+}
+
 // TODO(crbug.com/906525) : Move WebStateListObserving out of
 // BrowserCoordinator.
 #pragma mark - WebStateListObserving
@@ -474,6 +490,26 @@
   for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
     web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
     [self installDelegatesForWebState:webState];
+  }
+}
+
+// Installs delegates for self.browserState.
+- (void)installDelegatesForBrowserState {
+  UrlLoadingService* urlLoadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+  if (urlLoadingService) {
+    urlLoadingService->SetDelegate(self);
+    urlLoadingService->SetBrowser(self.browser);
+  }
+}
+
+// Uninstalls delegates for self.browserState.
+- (void)uninstallDelegatesForBrowserState {
+  UrlLoadingService* urlLoadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+  if (urlLoadingService) {
+    urlLoadingService->SetDelegate(nil);
+    urlLoadingService->SetBrowser(nil);
   }
 }
 
