@@ -399,6 +399,9 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   friend void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
 
+  friend void CancelAllOngoingGaiaCookieOperations(
+      IdentityManager* identity_manager);
+
   friend void SetCookieAccounts(
       IdentityManager* identity_manager,
       network::TestURLLoaderFactory* test_url_loader_factory,

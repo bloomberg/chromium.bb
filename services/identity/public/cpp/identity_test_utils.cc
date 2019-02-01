@@ -394,4 +394,8 @@ void DisableAccessTokenFetchRetries(IdentityManager* identity_manager) {
       ->set_max_authorization_token_fetch_retries_for_testing(0);
 }
 
+void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager) {
+  identity_manager->GetGaiaCookieManagerService()->CancelAll();
+}
+
 }  // namespace identity
