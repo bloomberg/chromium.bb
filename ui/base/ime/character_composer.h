@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ime/ui_base_ime_types_export.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
 namespace ui {
@@ -20,7 +20,7 @@ class KeyEvent;
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
-class UI_BASE_IME_EXPORT CharacterComposer {
+class UI_BASE_IME_TYPES_EXPORT CharacterComposer {
  public:
   using ComposeBuffer = std::vector<DomKey>;
 
