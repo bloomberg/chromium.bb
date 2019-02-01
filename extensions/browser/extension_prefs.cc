@@ -1970,10 +1970,9 @@ void ExtensionPrefs::LoadExtensionControlledPrefs(
   if (!source_dict->GetDictionary(key, &preferences))
     return;
 
-  for (base::DictionaryValue::Iterator iter(*preferences); !iter.IsAtEnd();
-       iter.Advance()) {
-    extension_pref_value_map_->SetExtensionPref(extension_id, iter.key(), scope,
-                                                iter.value().DeepCopy());
+  for (const auto& pair : preferences->DictItems()) {
+    extension_pref_value_map_->SetExtensionPref(extension_id, pair.first, scope,
+                                                pair.second.Clone());
   }
 }
 
