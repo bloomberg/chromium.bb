@@ -180,7 +180,7 @@ bool IsIconSufficientlyVisible(const SkBitmap& bitmap) {
   constexpr unsigned int kAlphaThreshold = 10;
   // The minimum "percent" of pixels that must be visible for the icon to be
   // considered OK.
-  constexpr double kMinPercentVisiblePixels = 0.05;
+  constexpr double kMinPercentVisiblePixels = 0.03;
   const int total_pixels = bitmap.height() * bitmap.width();
   // Pre-calculate the minimum number of visible pixels so we can exit early.
   // Since we expect most icons to be visible, this will perform better for
