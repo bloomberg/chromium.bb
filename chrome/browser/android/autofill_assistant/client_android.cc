@@ -21,6 +21,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -43,7 +44,7 @@ const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
 namespace {
 
 const base::FeatureParam<std::string> kAutofillAssistantServerUrl{
-    &chrome::android::kAutofillAssistant, "url",
+    &autofill_assistant::features::kAutofillAssistant, "url",
     "https://automate-pa.googleapis.com"};
 
 // Time between two attempts to destroy the controller.

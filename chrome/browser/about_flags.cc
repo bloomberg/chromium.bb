@@ -48,6 +48,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -4289,6 +4290,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kD3D11VideoDecoderDescription, kOsWin,
      FEATURE_VALUE_TYPE(media::kD3D11VideoDecoder)},
 #endif
+
+#if defined(OS_ANDROID)
+    {"autofill-assistant-chrome-entry",
+     flag_descriptions::kAutofillAssistantChromeEntryName,
+     flag_descriptions::kAutofillAssistantChromeEntryDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill_assistant::features::kAutofillAssistantChromeEntry)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

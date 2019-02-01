@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/download/public/common/download_features.h"
 #include "components/feed/feed_feature_list.h"
@@ -56,6 +57,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableCompanyName,
+    &autofill_assistant::features::kAutofillAssistant,
     &contextual_suggestions::kContextualSuggestionsButton,
     &contextual_suggestions::kContextualSuggestionsIPHReverseScroll,
     &contextual_suggestions::kContextualSuggestionsOptOut,
@@ -89,7 +91,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
     &kAndroidSiteSettingsUIRefresh,
-    &kAutofillAssistant,
     &kCastDeviceFilter,
     &kCCTBackgroundTab,
     &kCCTExternalLinkHandling,
@@ -221,9 +222,6 @@ const base::Feature kAndroidPaymentApps{"AndroidPaymentApps",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAndroidSiteSettingsUIRefresh{
     "AndroidSiteSettingsUIRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillAssistant{"AutofillAssistant",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
