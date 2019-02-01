@@ -210,10 +210,12 @@ if (is_win) {
       "//content/common/content_export.h",
     ]
 
+    # TODO(https://crbug.com/927728): Refactor target to not require this.
+    check_includes = false
+
     deps = [
       "//base",
       "//base/test:test_support",
-      "//content/public/browser:browser_sources",
       "//ui/base",
       "//url:url",
     ]
