@@ -1020,13 +1020,7 @@ TEST_F(HostResolverImplTest, AbortedAsynchronousLookup_ResolveHost) {
   EXPECT_FALSE(response0.complete());
 }
 
-#if defined(THREAD_SANITIZER)
-// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
-#define MAYBE_NumericIPv4Address DISABLED_NumericIPv4Address
-#else
-#define MAYBE_NumericIPv4Address NumericIPv4Address
-#endif
-TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address) {
+TEST_F(HostResolverImplTest, NumericIPv4Address) {
   // Stevens says dotted quads with AI_UNSPEC resolve to a single sockaddr_in.
   Request* req = CreateRequest("127.1.2.3", 5555);
   EXPECT_THAT(req->Resolve(), IsOk());
@@ -1034,14 +1028,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address) {
   EXPECT_TRUE(req->HasOneAddress("127.1.2.3", 5555));
 }
 
-#if defined(THREAD_SANITIZER)
-// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
-#define MAYBE_NumericIPv4Address_ResolveHost \
-  DISABLED_NumericIPv4Address_ResolveHost
-#else
-#define MAYBE_NumericIPv4Address_ResolveHost NumericIPv4Address_ResolveHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address_ResolveHost) {
+TEST_F(HostResolverImplTest, NumericIPv4Address_ResolveHost) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("127.1.2.3", 5555), NetLogWithSource(), base::nullopt));
 
@@ -1050,13 +1037,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address_ResolveHost) {
               testing::ElementsAre(CreateExpected("127.1.2.3", 5555)));
 }
 
-#if defined(THREAD_SANITIZER)
-// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
-#define MAYBE_NumericIPv6Address DISABLED_NumericIPv6Address
-#else
-#define MAYBE_NumericIPv6Address NumericIPv6Address
-#endif
-TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address) {
+TEST_F(HostResolverImplTest, NumericIPv6Address) {
   // Resolve a plain IPv6 address.  Don't worry about [brackets], because
   // the caller should have removed them.
   Request* req = CreateRequest("2001:db8::1", 5555);
@@ -1065,14 +1046,7 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address) {
   EXPECT_TRUE(req->HasOneAddress("2001:db8::1", 5555));
 }
 
-#if defined(THREAD_SANITIZER)
-// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
-#define MAYBE_NumericIPv6Address_ResolveHost \
-  DISABLED_NumericIPv6Address_ResolveHost
-#else
-#define MAYBE_NumericIPv6Address_ResolveHost NumericIPv6Address_ResolveHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address_ResolveHost) {
+TEST_F(HostResolverImplTest, NumericIPv6Address_ResolveHost) {
   // Resolve a plain IPv6 address.  Don't worry about [brackets], because
   // the caller should have removed them.
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -1083,24 +1057,12 @@ TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address_ResolveHost) {
               testing::ElementsAre(CreateExpected("2001:db8::1", 5555)));
 }
 
-#if defined(THREAD_SANITIZER)
-// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
-#define MAYBE_EmptyHost DISABLED_EmptyHost
-#else
-#define MAYBE_EmptyHost EmptyHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_EmptyHost) {
+TEST_F(HostResolverImplTest, EmptyHost) {
   Request* req = CreateRequest(std::string(), 5555);
   EXPECT_THAT(req->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
-#if defined(THREAD_SANITIZER)
-// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
-#define MAYBE_EmptyHost_ResolveHost DISABLED_EmptyHost_ResolveHost
-#else
-#define MAYBE_EmptyHost_ResolveHost EmptyHost_ResolveHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_EmptyHost_ResolveHost) {
+TEST_F(HostResolverImplTest, EmptyHost_ResolveHost) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair(std::string(), 5555), NetLogWithSource(), base::nullopt));
 
@@ -1108,32 +1070,14 @@ TEST_F(HostResolverImplTest, MAYBE_EmptyHost_ResolveHost) {
   EXPECT_FALSE(response.request()->GetAddressResults());
 }
 
-#if defined(THREAD_SANITIZER)
-// There's a data race in this test that may lead to use-after-free.
-// If the test starts to crash without ThreadSanitizer it needs to be disabled
-// globally. See http://crbug.com/268946 (stacks for this test in
-// crbug.com/333567).
-#define MAYBE_EmptyDotsHost DISABLED_EmptyDotsHost
-#else
-#define MAYBE_EmptyDotsHost EmptyDotsHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost) {
+TEST_F(HostResolverImplTest, EmptyDotsHost) {
   for (int i = 0; i < 16; ++i) {
     Request* req = CreateRequest(std::string(i, '.'), 5555);
     EXPECT_THAT(req->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
   }
 }
 
-#if defined(THREAD_SANITIZER)
-// There's a data race in this test that may lead to use-after-free.
-// If the test starts to crash without ThreadSanitizer it needs to be disabled
-// globally. See http://crbug.com/268946 (stacks for this test in
-// crbug.com/333567).
-#define MAYBE_EmptyDotsHost_ResolveHost DISABLED_EmptyDotsHost_ResolveHost
-#else
-#define MAYBE_EmptyDotsHost_ResolveHost EmptyDotsHost_ResolveHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost_ResolveHost) {
+TEST_F(HostResolverImplTest, EmptyDotsHost_ResolveHost) {
   for (int i = 0; i < 16; ++i) {
     ResolveHostResponseHelper response(
         resolver_->CreateRequest(HostPortPair(std::string(i, '.'), 5555),
@@ -1144,28 +1088,12 @@ TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost_ResolveHost) {
   }
 }
 
-#if defined(THREAD_SANITIZER)
-// There's a data race in this test that may lead to use-after-free.
-// If the test starts to crash without ThreadSanitizer it needs to be disabled
-// globally. See http://crbug.com/268946.
-#define MAYBE_LongHost DISABLED_LongHost
-#else
-#define MAYBE_LongHost LongHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_LongHost) {
+TEST_F(HostResolverImplTest, LongHost) {
   Request* req = CreateRequest(std::string(4097, 'a'), 5555);
   EXPECT_THAT(req->Resolve(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
-#if defined(THREAD_SANITIZER)
-// There's a data race in this test that may lead to use-after-free.
-// If the test starts to crash without ThreadSanitizer it needs to be disabled
-// globally. See http://crbug.com/268946.
-#define MAYBE_LongHost_ResolveHost DISABLED_LongHost_ResolveHost
-#else
-#define MAYBE_LongHost_ResolveHost LongHost_ResolveHost
-#endif
-TEST_F(HostResolverImplTest, MAYBE_LongHost_ResolveHost) {
+TEST_F(HostResolverImplTest, LongHost_ResolveHost) {
   ResolveHostResponseHelper response(
       resolver_->CreateRequest(HostPortPair(std::string(4097, 'a'), 5555),
                                NetLogWithSource(), base::nullopt));
