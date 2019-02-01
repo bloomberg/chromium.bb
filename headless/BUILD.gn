@@ -18,12 +18,9 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 
-config("headless_implementation") {
+# For code inside the build component "headless".
+config("inside_headless_component") {
   defines = [ "HEADLESS_IMPLEMENTATION" ]
-
-  if (headless_use_embedded_resources) {
-    defines += [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
-  }
 }
 
 group("headless_lib") {
@@ -226,7 +223,7 @@ if (headless_fontconfig_utils && !is_fuchsia) {
       "//third_party/fontconfig",
     ]
 
-    configs += [ ":headless_implementation" ]
+    configs += [ ":inside_headless_component" ]
   }
 }
 
@@ -476,6 +473,7 @@ jumbo_component("headless") {
   }
 
   if (headless_use_embedded_resources) {
+    defines = [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
     deps += [ ":embed_resources" ]
     sources += [
       "$root_gen_dir/headless/embedded_resource_pak.cc",
@@ -493,7 +491,7 @@ jumbo_component("headless") {
     deps += [ ":headless_fontconfig_utils" ]
   }
 
-  configs += [ ":headless_implementation" ]
+  configs += [ ":inside_headless_component" ]
 }
 
 # Headless renderer is a convenience library for non component builds that
@@ -527,8 +525,6 @@ if (!is_component_build) {
     if (enable_basic_printing) {
       deps += [ "//components/printing/renderer" ]
     }
-
-    configs += [ ":headless_implementation" ]
   }
 } else {
   # For component builds all dependencies are already included in the headless
@@ -777,8 +773,6 @@ if (is_win) {
     sources = [
       "app/headless_shell.cc",
       "app/headless_shell.h",
-      "app/headless_shell_switches.cc",
-      "app/headless_shell_switches.h",
       "app/headless_shell_win.cc",
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
@@ -811,8 +805,6 @@ if (is_win) {
         "//third_party/blink/public:blink_headers",
       ]
     }
-
-    configs += [ ":headless_implementation" ]
   }
 
   # Headless library with child specific dependencies (e.g., renderer). This
@@ -847,8 +839,6 @@ if (is_win) {
         "//third_party/blink/public:blink_headers",
       ]
     }
-
-    configs += [ ":headless_implementation" ]
   }
 }
 
