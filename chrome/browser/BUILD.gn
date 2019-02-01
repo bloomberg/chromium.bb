@@ -438,8 +438,6 @@ jumbo_split_static_library("browser") {
     "download/download_location_dialog_type.h",
     "download/download_offline_content_provider.cc",
     "download/download_offline_content_provider.h",
-    "download/download_path_reservation_tracker.cc",
-    "download/download_path_reservation_tracker.h",
     "download/download_permission_request.cc",
     "download/download_permission_request.h",
     "download/download_prefs.cc",

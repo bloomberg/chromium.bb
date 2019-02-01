@@ -14,10 +14,10 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_danger_prompt.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "components/download/content/public/all_download_item_notifier.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -314,8 +314,8 @@ class ExtensionDownloadsEventRouter
  public:
   typedef base::Callback<void(
       const base::FilePath& changed_filename,
-      DownloadPathReservationTracker::FilenameConflictAction)>
-    FilenameChangedCallback;
+      download::DownloadPathReservationTracker::FilenameConflictAction)>
+      FilenameChangedCallback;
 
   static void SetDetermineFilenameTimeoutSecondsForTesting(int s);
 

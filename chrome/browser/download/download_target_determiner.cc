@@ -58,6 +58,7 @@
 
 using content::BrowserThread;
 using download::DownloadItem;
+using download::DownloadPathReservationTracker;
 using safe_browsing::DownloadFileType;
 
 namespace {
@@ -368,7 +369,7 @@ DownloadTargetDeterminer::Result
 }
 
 void DownloadTargetDeterminer::ReserveVirtualPathDone(
-    PathValidationResult result,
+    download::PathValidationResult result,
     const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(20) << "Reserved path: " << path.AsUTF8Unsafe()
@@ -379,45 +380,45 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
   if (download_->IsTransient()) {
     DCHECK_EQ(DownloadConfirmationReason::NONE, confirmation_reason_)
         << "Transient download should not ask the user for confirmation.";
-    DCHECK(result != PathValidationResult::CONFLICT)
+    DCHECK(result != download::PathValidationResult::CONFLICT)
         << "Transient download"
            "should always overwrite the file.";
     switch (result) {
-      case PathValidationResult::PATH_NOT_WRITABLE:
-      case PathValidationResult::NAME_TOO_LONG:
-      case PathValidationResult::CONFLICT:
+      case download::PathValidationResult::PATH_NOT_WRITABLE:
+      case download::PathValidationResult::NAME_TOO_LONG:
+      case download::PathValidationResult::CONFLICT:
         ScheduleCallbackAndDeleteSelf(
             download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
         return;
-      case PathValidationResult::SUCCESS:
-      case PathValidationResult::SAME_AS_SOURCE:
+      case download::PathValidationResult::SUCCESS:
+      case download::PathValidationResult::SAME_AS_SOURCE:
         DCHECK_EQ(virtual_path_, path) << "Transient download path should not"
                                           "be changed.";
         break;
-      case PathValidationResult::COUNT:
+      case download::PathValidationResult::COUNT:
         NOTREACHED();
     }
   } else {
     virtual_path_ = path;
 
     switch (result) {
-      case PathValidationResult::SUCCESS:
-      case PathValidationResult::SAME_AS_SOURCE:
+      case download::PathValidationResult::SUCCESS:
+      case download::PathValidationResult::SAME_AS_SOURCE:
         break;
 
-      case PathValidationResult::PATH_NOT_WRITABLE:
+      case download::PathValidationResult::PATH_NOT_WRITABLE:
         confirmation_reason_ =
             DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE;
         break;
 
-      case PathValidationResult::NAME_TOO_LONG:
+      case download::PathValidationResult::NAME_TOO_LONG:
         confirmation_reason_ = DownloadConfirmationReason::NAME_TOO_LONG;
         break;
 
-      case PathValidationResult::CONFLICT:
+      case download::PathValidationResult::CONFLICT:
         confirmation_reason_ = DownloadConfirmationReason::TARGET_CONFLICT;
         break;
-      case PathValidationResult::COUNT:
+      case download::PathValidationResult::COUNT:
         NOTREACHED();
     }
   }

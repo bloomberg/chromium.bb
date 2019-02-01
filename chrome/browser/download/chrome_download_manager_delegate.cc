@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_location_dialog_type.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_stats.h"
@@ -48,6 +48,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -93,8 +94,10 @@
 #endif
 
 using content::BrowserThread;
-using download::DownloadItem;
 using content::DownloadManager;
+using download::DownloadItem;
+using download::DownloadPathReservationTracker;
+using download::PathValidationResult;
 using safe_browsing::DownloadFileType;
 using safe_browsing::DownloadProtectionService;
 
@@ -814,13 +817,11 @@ void ChromeDownloadManagerDelegate::ReserveVirtualPath(
     return;
   }
 #endif
+  base::FilePath document_dir;
+  base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &document_dir);
   DownloadPathReservationTracker::GetReservedPath(
-      download,
-      virtual_path,
-      download_prefs_->DownloadPath(),
-      create_directory,
-      conflict_action,
-      callback);
+      download, virtual_path, download_prefs_->DownloadPath(), document_dir,
+      create_directory, conflict_action, callback);
 }
 
 void ChromeDownloadManagerDelegate::RequestConfirmation(
@@ -882,7 +883,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
       gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
       DownloadPathReservationTracker::GetReservedPath(
-          download, suggested_path, download_dir, true,
+          download, suggested_path, download_dir,
+          base::FilePath() /* fallback_directory */, true,
           DownloadPathReservationTracker::UNIQUIFY,
           base::BindRepeating(
               &ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone,

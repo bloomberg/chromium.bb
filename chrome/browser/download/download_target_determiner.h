@@ -14,12 +14,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -73,7 +73,8 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   static void Start(
       download::DownloadItem* download,
       const base::FilePath& initial_virtual_path,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
+      download::DownloadPathReservationTracker::FilenameConflictAction
+          conflict_action,
       DownloadPrefs* download_prefs,
       DownloadTargetDeterminerDelegate* delegate,
       const CompletionCallback& callback);
@@ -138,7 +139,8 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   DownloadTargetDeterminer(
       download::DownloadItem* download,
       const base::FilePath& initial_virtual_path,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
+      download::DownloadPathReservationTracker::FilenameConflictAction
+          conflict_action,
       DownloadPrefs* download_prefs,
       DownloadTargetDeterminerDelegate* delegate,
       const CompletionCallback& callback);
@@ -170,7 +172,8 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   // |conflict_action_|.
   void NotifyExtensionsDone(
       const base::FilePath& new_path,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action);
+      download::DownloadPathReservationTracker::FilenameConflictAction
+          conflict_action);
 
   // Invokes ReserveVirtualPath() on the delegate to acquire a reservation for
   // the path. See DownloadPathReservationTracker.
@@ -179,7 +182,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   Result DoReserveVirtualPath();
 
   // Callback invoked after the delegate aquires a path reservation.
-  void ReserveVirtualPathDone(PathValidationResult result,
+  void ReserveVirtualPathDone(download::PathValidationResult result,
                               const base::FilePath& path);
 
   // Presents a file picker to the user if necessary.
@@ -315,7 +318,8 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   DownloadConfirmationReason confirmation_reason_;
   bool should_notify_extensions_;
   bool create_target_directory_;
-  DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
+  download::DownloadPathReservationTracker::FilenameConflictAction
+      conflict_action_;
   download::DownloadDangerType danger_type_;
   safe_browsing::DownloadFileType::DangerLevel danger_level_;
   base::FilePath virtual_path_;

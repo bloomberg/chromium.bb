@@ -67,6 +67,9 @@
 #include "extensions/common/extension.h"
 #endif
 
+using download::DownloadItem;
+using download::DownloadPathReservationTracker;
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Ref;
@@ -75,8 +78,6 @@ using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
 using ::testing::Truly;
 using ::testing::WithArg;
-using ::testing::_;
-using download::DownloadItem;
 using ConflictAction = DownloadPathReservationTracker::FilenameConflictAction;
 using safe_browsing::DownloadFileType;
 using safe_browsing::FileTypePolicies;
@@ -559,7 +560,7 @@ void MockDownloadTargetDeterminerDelegate::NullReserveVirtualPath(
     bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     const DownloadTargetDeterminerDelegate::ReservedPathCallback& callback) {
-  callback.Run(PathValidationResult::SUCCESS, virtual_path);
+  callback.Run(download::PathValidationResult::SUCCESS, virtual_path);
 }
 
 // static
@@ -1034,19 +1035,19 @@ TEST_F(DownloadTargetDeterminerTest, ReservationFailed_Confirmation) {
       EXPECT_CRDOWNLOAD};
 
   struct TestCase {
-    PathValidationResult result;
+    download::PathValidationResult result;
     DownloadConfirmationReason expected_confirmation_reason;
-  } kTestCases[] = {
-      {PathValidationResult::SUCCESS, DownloadConfirmationReason::NONE},
-      {PathValidationResult::CONFLICT,
-       DownloadConfirmationReason::TARGET_CONFLICT},
-      {PathValidationResult::PATH_NOT_WRITABLE,
-       DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE},
-      {PathValidationResult::NAME_TOO_LONG,
-       DownloadConfirmationReason::NAME_TOO_LONG}};
+  } kTestCases[] = {{download::PathValidationResult::SUCCESS,
+                     DownloadConfirmationReason::NONE},
+                    {download::PathValidationResult::CONFLICT,
+                     DownloadConfirmationReason::TARGET_CONFLICT},
+                    {download::PathValidationResult::PATH_NOT_WRITABLE,
+                     DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE},
+                    {download::PathValidationResult::NAME_TOO_LONG,
+                     DownloadConfirmationReason::NAME_TOO_LONG}};
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(::testing::Message() << "PathValidationResult "
+    SCOPED_TRACE(::testing::Message() << "download::PathValidationResult "
                                       << static_cast<int>(test_case.result));
     ON_CALL(*delegate(), ReserveVirtualPath(_, _, _, _, _))
         .WillByDefault(WithArg<4>(ScheduleCallback2(
@@ -1612,8 +1613,8 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsConflict) {
   EXPECT_CALL(*delegate(),
               ReserveVirtualPath(_, full_overridden_path, true,
                                  DownloadPathReservationTracker::OVERWRITE, _))
-      .WillOnce(WithArg<4>(ScheduleCallback2(PathValidationResult::SUCCESS,
-                                             full_overridden_path)));
+      .WillOnce(WithArg<4>(ScheduleCallback2(
+          download::PathValidationResult::SUCCESS, full_overridden_path)));
 
   RunTestCase(test_case, base::FilePath(), item.get());
 
@@ -1625,8 +1626,8 @@ TEST_F(DownloadTargetDeterminerTest, NotifyExtensionsConflict) {
   EXPECT_CALL(*delegate(),
               ReserveVirtualPath(_, full_overridden_path, true,
                                  DownloadPathReservationTracker::PROMPT, _))
-      .WillOnce(WithArg<4>(ScheduleCallback2(PathValidationResult::SUCCESS,
-                                             full_overridden_path)));
+      .WillOnce(WithArg<4>(ScheduleCallback2(
+          download::PathValidationResult::SUCCESS, full_overridden_path)));
   RunTestCase(test_case, base::FilePath(), item.get());
 }
 
@@ -2235,7 +2236,8 @@ TEST_F(DownloadTargetDeterminerTest, TransientDownload) {
       1);
   histogram_tester.ExpectBucketCount(
       kTransientPathValidationHistogram,
-      ToHistogramSample<PathValidationResult>(PathValidationResult::SUCCESS),
+      ToHistogramSample<download::PathValidationResult>(
+          download::PathValidationResult::SUCCESS),
       1);
   histogram_tester.ExpectTotalCount(kTransientPathGenerationHistogram, 1);
   histogram_tester.ExpectTotalCount(kTransientPathValidationHistogram, 1);
@@ -2287,7 +2289,8 @@ TEST_F(DownloadTargetDeterminerTest, TransientDownloadResumption) {
       1);
   histogram_tester.ExpectBucketCount(
       kTransientPathValidationHistogram,
-      ToHistogramSample<PathValidationResult>(PathValidationResult::SUCCESS),
+      ToHistogramSample<download::PathValidationResult>(
+          download::PathValidationResult::SUCCESS),
       1);
   histogram_tester.ExpectTotalCount(kTransientPathGenerationHistogram, 1);
   histogram_tester.ExpectTotalCount(kTransientPathValidationHistogram, 1);

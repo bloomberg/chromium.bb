@@ -19,13 +19,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -148,7 +148,8 @@ class ChromeDownloadManagerDelegate
       download::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
-      DownloadPathReservationTracker::FilenameConflictAction conflict_action,
+      download::DownloadPathReservationTracker::FilenameConflictAction
+          conflict_action,
       const ReservedPathCallback& callback) override;
   void RequestConfirmation(download::DownloadItem* download,
                            const base::FilePath& suggested_virtual_path,
@@ -243,7 +244,7 @@ class ChromeDownloadManagerDelegate
   void GenerateUniqueFileNameDone(
       gfx::NativeWindow native_window,
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
-      PathValidationResult result,
+      download::PathValidationResult result,
       const base::FilePath& target_path);
 #endif
 
