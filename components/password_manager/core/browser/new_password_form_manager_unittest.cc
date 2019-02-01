@@ -742,7 +742,7 @@ TEST_F(NewPasswordFormManagerTest, CreatePendingCredentialsUpdate) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySaveIfIsManaged(submitted_form, &driver_));
   CheckPendingCredentials(expected, form_manager_->GetPendingCredentials());
-  EXPECT_EQ(UserAction::kNone,
+  EXPECT_EQ(UserAction::kOverridePassword,
             form_manager_->GetMetricsRecorder()->GetUserAction());
 }
 

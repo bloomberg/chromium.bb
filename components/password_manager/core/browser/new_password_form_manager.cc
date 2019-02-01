@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
+#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -628,10 +629,10 @@ void NewPasswordFormManager::Fill() {
   // TODO(https://crbug.com/831123). Implement correct treating of federated
   // matches.
   std::vector<const PasswordForm*> federated_matches;
-  likely_form_filling_ = SendFillInformationToRenderer(
-      *client_, driver_.get(), IsBlacklisted(), *observed_password_form.get(),
-      best_matches_, federated_matches, preferred_match_,
-      metrics_recorder_.get());
+  SendFillInformationToRenderer(*client_, driver_.get(), IsBlacklisted(),
+                                *observed_password_form.get(), best_matches_,
+                                federated_matches, preferred_match_,
+                                metrics_recorder_.get());
 }
 
 void NewPasswordFormManager::FillForm(const FormData& observed_form) {
@@ -717,6 +718,11 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   if (!parsed_submitted_form_)
     return;
 
+  // Calculate the user's action based on existing matches and the submitted
+  // form.
+  metrics_recorder_->CalculateUserAction(best_matches_,
+                                         *parsed_submitted_form_);
+
   // This function might be called multiple times so set variables that are
   // changed in this function to initial states.
   is_new_login_ = true;
@@ -740,9 +746,6 @@ void NewPasswordFormManager::CreatePendingCredentials() {
       // from Android apps, store a copy with the current origin and signon
       // realm. This ensures that on the next visit, a precise match is found.
       is_new_login_ = true;
-      metrics_recorder_->SetUserAction(password_overridden_
-                                           ? UserAction::kOverridePassword
-                                           : UserAction::kChoosePslMatch);
 
       // Update credential to reflect that it has been used for submission.
       // If this isn't updated, then password generation uploads are off for
@@ -781,19 +784,6 @@ void NewPasswordFormManager::CreatePendingCredentials() {
       }
     } else {  // Not a PSL match but a match of an already stored credential.
       is_new_login_ = false;
-      if (password_overridden_) {
-        metrics_recorder_->SetUserAction(UserAction::kOverridePassword);
-      } else {
-        // In case |saved_form| is pointing to the same form as
-        // |preferred_match_| and the form was filled on page load, the user
-        // either did not do anything, or re-selected the default option.
-        // Otherwise, the user purposefully chose a credential.
-        metrics_recorder_->SetUserAction(
-            saved_form == preferred_match_ &&
-                    likely_form_filling_ == LikelyFormFilling::kFillOnPageLoad
-                ? UserAction::kNone
-                : UserAction::kChoose);
-      }
     }
   } else if (!best_matches_.empty() &&
              parsed_submitted_form_->type != PasswordForm::TYPE_API &&
@@ -944,8 +934,6 @@ const PasswordForm* NewPasswordFormManager::FindBestSavedMatch(
 void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
     const PasswordForm& submitted_password_form,
     const base::string16& password_element) {
-  // User typed in a new, unknown username.
-  metrics_recorder_->SetUserAction(UserAction::kOverrideUsernameAndPassword);
   // TODO(https://crbug.com/831123): Replace parsing of the observed form with
   // usage of already parsed submitted form.
   std::unique_ptr<PasswordForm> parsed_observed_form =

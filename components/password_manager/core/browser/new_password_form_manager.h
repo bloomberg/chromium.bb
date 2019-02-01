@@ -18,7 +18,6 @@
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
-#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
@@ -287,9 +286,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   const std::unique_ptr<FormSaver> form_saver_;
 
   VotesUploader votes_uploader_;
-
-  // Probable filling mechanism used in the renderer for this password form.
-  LikelyFormFilling likely_form_filling_ = LikelyFormFilling::kNoFilling;
 
   // |is_submitted_| = true means that a submission of the managed form was seen
   // and then |submitted_form_| contains the submitted form.

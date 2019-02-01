@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -307,10 +308,20 @@ class PasswordFormMetricsRecorder
   // is was overridden for the form.
   void ReportSpecPriorityForGeneratedPassword(uint32_t spec_priority);
 
-  // Stores the password manager and user actions. During destruction the last
-  // set values will be logged.
+  // Stores the password manager action. During destruction the last
+  // set value will be logged.
   void SetManagerAction(ManagerAction manager_action);
-  void SetUserAction(UserAction user_action);
+
+  // Calculates the user's action depending on the submitted form and existing
+  // matches. Also inspects |manager_action_| to correctly detect if the
+  // user chose a credential.
+  void CalculateUserAction(
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          best_matches,
+      const autofill::PasswordForm& submitted_form);
+
+  // Allow tests to explicitly set a value for |user_action_|.
+  void SetUserActionForTesting(UserAction user_action);
 
   // Gets the current value of |user_action_|.
   UserAction GetUserAction() const;
