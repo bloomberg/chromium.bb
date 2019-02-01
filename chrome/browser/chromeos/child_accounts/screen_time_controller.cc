@@ -173,8 +173,11 @@ void ScreenTimeController::ForceScreenLockByPolicy(
   // Avoid abrupt session restart that looks like a crash and happens when lock
   // screen is requested before sign in completion. It is safe, because time
   // limits will be reevaluated when session state changes to active.
-  if (session_manager::SessionManager::Get()->session_state() !=
-      session_manager::SessionState::ACTIVE)
+  // TODO(agawronska): Remove the flag when it is confirmed that this does not
+  // cause a bug (https://crbug.com/924844).
+  if (base::FeatureList::IsEnabled(features::kDMServerOAuthForChildUser) &&
+      session_manager::SessionManager::Get()->session_state() !=
+          session_manager::SessionState::ACTIVE)
     return;
 
   chromeos::DBusThreadManager::Get()
