@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
@@ -635,6 +636,78 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(tab, kScript, &message));
     EXPECT_EQ("Has gesture: true", message);
   }
+}
+
+// Tests that bindings are properly instantiated for a window navigated to an
+// extension URL after being opened with an undefined URL.
+// Regression test for https://crbug.com/925118.
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
+                       TestBindingsAvailableWithNavigatedBlankWindow) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "chrome.runtime bug checker",
+           "description": "test case for crbug.com/925118",
+           "version": "0",
+           "manifest_version": 2
+         })";
+  constexpr char kOpenerHTML[] =
+      R"(<!DOCTYPE html>
+         <html>
+           <head>
+             <script src='opener.js'></script>
+           </head>
+           <body>
+           </body>
+         </html>)";
+  // opener.js opens a blank window and then navigates it to an extension URL
+  // (where extension APIs should be available).
+  constexpr char kOpenerJS[] =
+      R"(const url = chrome.runtime.getURL('/page.html');
+         const win = window.open(undefined, '');
+         win.location = url;
+         chrome.test.notifyPass())";
+  constexpr char kPageHTML[] =
+      R"(<!DOCTYPE html>
+         <html>
+           This space intentionally left blank.
+         </html>)";
+  TestExtensionDir extension_dir;
+  extension_dir.WriteManifest(kManifest);
+  extension_dir.WriteFile(FILE_PATH_LITERAL("opener.html"), kOpenerHTML);
+  extension_dir.WriteFile(FILE_PATH_LITERAL("opener.js"), kOpenerJS);
+  extension_dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPageHTML);
+
+  const Extension* extension = LoadExtension(extension_dir.UnpackedPath());
+  const GURL target_url = extension->GetResourceURL("page.html");
+
+  ResultCatcher catcher;
+  content::TestNavigationObserver observer(target_url);
+  observer.StartWatchingNewWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("opener.html"));
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  observer.Wait();
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+
+  // Check whether bindings are available. They should be.
+  constexpr char kScript[] =
+      R"(let message;
+         if (!chrome.runtime)
+           message = 'Runtime not defined';
+         else if (!chrome.tabs)
+           message = 'Tabs not defined';
+         else
+           message = 'success';
+         domAutomationController.send(message);)";
+  std::string result;
+  // Note: Can't use EvalJs() because of CSP in extension pages.
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(web_contents, kScript, &result));
+  EXPECT_EQ("success", result);
 }
 
 // Run core bindings API tests with both native and JS-based bindings. This
