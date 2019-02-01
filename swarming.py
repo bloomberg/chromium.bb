@@ -937,8 +937,8 @@ def add_trigger_options(parser):
            'with the same parameter and return this result instead if possible')
   group.add_option(
       '--secret-bytes-path', metavar='FILE',
-      help='The optional path to a file containing the secret_bytes to use with'
-           'this task.')
+      help='The optional path to a file containing the secret_bytes to use '
+           'with this task.')
   group.add_option(
       '--hard-timeout', type='int', default=60*60, metavar='SECS',
       help='Seconds to allow the task to complete.')
