@@ -19,12 +19,9 @@ namespace content {
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
     int process_id)
-    : appcache_service_(appcache_service),
-      frontend_proxy_(process_id),
-      weak_factory_(this) {
-  if (appcache_service) {
-    backend_impl_.Initialize(appcache_service, &frontend_proxy_, process_id);
-  }
+    : frontend_proxy_(process_id) {
+  DCHECK(appcache_service);
+  backend_impl_.Initialize(appcache_service, &frontend_proxy_, process_id);
 }
 
 AppCacheDispatcherHost::~AppCacheDispatcherHost() = default;
@@ -48,72 +45,56 @@ void AppCacheDispatcherHost::Create(
 }
 
 void AppCacheDispatcherHost::RegisterHost(int32_t host_id) {
-  if (appcache_service_) {
-    // The AppCacheHost could have been precreated in which case we want to
-    // register it with the backend here.
-    std::unique_ptr<content::AppCacheHost> host =
-        AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
-    if (host.get()) {
-      backend_impl_.RegisterPrecreatedHost(std::move(host));
-      return;
-    }
+  // The AppCacheHost could have been precreated in which case we want to
+  // register it with the backend here.
+  std::unique_ptr<content::AppCacheHost> host =
+      AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
+  if (host.get()) {
+    backend_impl_.RegisterPrecreatedHost(std::move(host));
+    return;
+  }
 
-    if (!backend_impl_.RegisterHost(host_id)) {
-      mojo::ReportBadMessage("ACDH_REGISTER");
-    }
+  if (!backend_impl_.RegisterHost(host_id)) {
+    mojo::ReportBadMessage("ACDH_REGISTER");
   }
 }
 
 void AppCacheDispatcherHost::UnregisterHost(int32_t host_id) {
-  if (appcache_service_) {
-    if (!backend_impl_.UnregisterHost(host_id)) {
-      mojo::ReportBadMessage("ACDH_UNREGISTER");
-    }
+  if (!backend_impl_.UnregisterHost(host_id)) {
+    mojo::ReportBadMessage("ACDH_UNREGISTER");
   }
 }
 
 void AppCacheDispatcherHost::SetSpawningHostId(int32_t host_id,
                                                int spawning_host_id) {
-  if (appcache_service_) {
-    if (!backend_impl_.SetSpawningHostId(host_id, spawning_host_id))
-      mojo::ReportBadMessage("ACDH_SET_SPAWNING");
-  }
+  if (!backend_impl_.SetSpawningHostId(host_id, spawning_host_id))
+    mojo::ReportBadMessage("ACDH_SET_SPAWNING");
 }
 
 void AppCacheDispatcherHost::SelectCache(int32_t host_id,
                                          const GURL& document_url,
                                          int64_t cache_document_was_loaded_from,
                                          const GURL& opt_manifest_url) {
-  if (appcache_service_) {
-    if (!backend_impl_.SelectCache(host_id, document_url,
-                                   cache_document_was_loaded_from,
-                                   opt_manifest_url)) {
-      mojo::ReportBadMessage("ACDH_SELECT_CACHE");
-    }
-  } else {
-    frontend_proxy_.OnCacheSelected(host_id, blink::mojom::AppCacheInfo());
+  if (!backend_impl_.SelectCache(host_id, document_url,
+                                 cache_document_was_loaded_from,
+                                 opt_manifest_url)) {
+    mojo::ReportBadMessage("ACDH_SELECT_CACHE");
   }
 }
 
 void AppCacheDispatcherHost::SelectCacheForSharedWorker(int32_t host_id,
                                                         int64_t appcache_id) {
-  if (appcache_service_) {
-    if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
-      mojo::ReportBadMessage("ACDH_SELECT_CACHE_FOR_SHARED_WORKER");
-  } else {
-    frontend_proxy_.OnCacheSelected(host_id, blink::mojom::AppCacheInfo());
-  }
+  if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
+    mojo::ReportBadMessage("ACDH_SELECT_CACHE_FOR_SHARED_WORKER");
 }
 
 void AppCacheDispatcherHost::MarkAsForeignEntry(
     int32_t host_id,
     const GURL& document_url,
     int64_t cache_document_was_loaded_from) {
-  if (appcache_service_) {
-    if (!backend_impl_.MarkAsForeignEntry(host_id, document_url,
-                                          cache_document_was_loaded_from)) {
-      mojo::ReportBadMessage("ACDH_MARK_AS_FOREIGN_ENTRY");
-    }
+  if (!backend_impl_.MarkAsForeignEntry(host_id, document_url,
+                                        cache_document_was_loaded_from)) {
+    mojo::ReportBadMessage("ACDH_MARK_AS_FOREIGN_ENTRY");
   }
 }
 
@@ -121,26 +102,22 @@ void AppCacheDispatcherHost::GetResourceList(int32_t host_id,
                                              GetResourceListCallback callback) {
   std::vector<blink::mojom::AppCacheResourceInfo> params;
   std::vector<blink::mojom::AppCacheResourceInfoPtr> out;
-  if (appcache_service_) {
-    backend_impl_.GetResourceList(host_id, &params);
+  backend_impl_.GetResourceList(host_id, &params);
 
-    // Box up params for output.
-    out.reserve(params.size());
-    for (auto& p : params) {
-      out.emplace_back(base::in_place, std::move(p));
-    }
+  // Box up params for output.
+  out.reserve(params.size());
+  for (auto& p : params) {
+    out.emplace_back(base::in_place, std::move(p));
   }
   std::move(callback).Run(std::move(out));
 }
 
 void AppCacheDispatcherHost::GetStatus(int32_t host_id,
                                        GetStatusCallback callback) {
-  if (appcache_service_) {
-    if (backend_impl_.GetStatusWithCallback(host_id, &callback)) {
-      return;
-    } else {
-      mojo::ReportBadMessage("ACDH_GET_STATUS");
-    }
+  if (backend_impl_.GetStatusWithCallback(host_id, &callback)) {
+    return;
+  } else {
+    mojo::ReportBadMessage("ACDH_GET_STATUS");
   }
   if (callback) {
     std::move(callback).Run(
@@ -150,12 +127,10 @@ void AppCacheDispatcherHost::GetStatus(int32_t host_id,
 
 void AppCacheDispatcherHost::StartUpdate(int32_t host_id,
                                          StartUpdateCallback callback) {
-  if (appcache_service_) {
-    if (backend_impl_.StartUpdateWithCallback(host_id, &callback)) {
-      return;
-    } else {
-      mojo::ReportBadMessage("ACDH_START_UPDATE");
-    }
+  if (backend_impl_.StartUpdateWithCallback(host_id, &callback)) {
+    return;
+  } else {
+    mojo::ReportBadMessage("ACDH_START_UPDATE");
   }
   if (callback)
     std::move(callback).Run(false);
@@ -163,12 +138,10 @@ void AppCacheDispatcherHost::StartUpdate(int32_t host_id,
 
 void AppCacheDispatcherHost::SwapCache(int32_t host_id,
                                        SwapCacheCallback callback) {
-  if (appcache_service_) {
-    if (backend_impl_.SwapCacheWithCallback(host_id, &callback)) {
-      return;
-    } else {
-      mojo::ReportBadMessage("ACDH_SWAP_CACHE");
-    }
+  if (backend_impl_.SwapCacheWithCallback(host_id, &callback)) {
+    return;
+  } else {
+    mojo::ReportBadMessage("ACDH_SWAP_CACHE");
   }
   if (callback)
     std::move(callback).Run(false);
