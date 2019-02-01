@@ -112,6 +112,7 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(content::mojom::kServiceName, "navigation")
           .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
           .RequireCapability(mojom::kPrefConnectorServiceName, "pref_connector")
+          .RequireCapability(viz::mojom::kVizServiceName, "ozone")
           .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
           .RequireCapability(catalog::mojom::kServiceName, "directory")
           .RequireCapability(ws::mojom::kServiceName, "ozone")

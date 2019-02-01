@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_CONNECTOR_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_CONNECTOR_H_
 
+#include <string>
+
 #include "base/single_thread_task_runner.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/interfaces/device_cursor.mojom.h"
@@ -24,7 +26,8 @@ class HostDrmDevice;
 class DrmDeviceConnector : public GpuPlatformSupportHost {
  public:
   DrmDeviceConnector(service_manager::Connector* connector,
-                     scoped_refptr<HostDrmDevice> host_drm_device_);
+                     const std::string& service_name,
+                     scoped_refptr<HostDrmDevice> host_drm_device);
   ~DrmDeviceConnector() override;
 
   // GpuPlatformSupportHost:
@@ -59,6 +62,9 @@ class DrmDeviceConnector : public GpuPlatformSupportHost {
 
   // This will be present if the Viz host has a service manager.
   service_manager::Connector* const connector_;
+
+  // Name of the service that provides DRM mojo interfaces.
+  const std::string service_name_;
 
   // This will be used if we are operating under content/gpu without a service
   // manager.

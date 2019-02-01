@@ -23,7 +23,10 @@
         "arc_manager" : [
           "ws.mojom.ArcGpu"
         ],
-        // Interfaces provided by mus-gpu for mus-ws.
+        // TODO(crbug.com/912221): When viz is run in-process inside window
+        // service, window service should provide ozone interfaces; otherwise,
+        // viz service provides them itself. Remove this when the in-process viz
+        // codepath is removed.
         "ozone": [
           "ui.ozone.mojom.DeviceCursor",
           "ui.ozone.mojom.DrmDevice"

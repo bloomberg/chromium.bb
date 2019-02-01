@@ -51,7 +51,13 @@ void Service::OnStart() {
 void Service::OnBindInterface(const service_manager::BindSourceInfo& info,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+  if (registry_.TryBindInterface(interface_name, &interface_pipe))
+    return;
+#if defined(USE_OZONE)
+  viz_main_->BindInterface(interface_name, std::move(interface_pipe));
+#else
+  NOTREACHED();
+#endif
 }
 
 void Service::BindVizMainRequest(mojom::VizMainRequest request) {
