@@ -136,6 +136,9 @@ void FCMInvalidationService::RequestDetailedStatus(
 
 void FCMInvalidationService::OnActiveAccountLogin() {
   diagnostic_info_.active_account_login = base::Time::Now();
+  diagnostic_info_.was_already_started_on_login = IsStarted();
+  diagnostic_info_.was_ready_to_start_on_login = IsReadyToStart();
+  diagnostic_info_.active_account_id = identity_provider_->GetActiveAccountId();
   if (!IsStarted() && IsReadyToStart())
     StartInvalidator();
 }
@@ -148,6 +151,7 @@ void FCMInvalidationService::OnActiveAccountRefreshTokenUpdated() {
 
 void FCMInvalidationService::OnActiveAccountLogout() {
   diagnostic_info_.active_account_logged_out = base::Time::Now();
+  diagnostic_info_.active_account_id = std::string();
   if (IsStarted()) {
     StopInvalidator();
     if (!client_id_.empty())
@@ -278,6 +282,12 @@ base::DictionaryValue FCMInvalidationService::Diagnostics::CollectDebugData()
                    base::TimeFormatShortDateAndTime(service_was_stopped));
   status.SetString("InvalidationService.Service-started",
                    base::TimeFormatShortDateAndTime(service_was_started));
+  status.SetBoolean("InvalidationService.Started-on-active-account-login",
+                    was_already_started_on_login);
+  status.SetBoolean(
+      "InvalidationService.Ready-to-start-on-active-account-login",
+      was_ready_to_start_on_login);
+  status.SetString("InvalidationService.Active-account-id", active_account_id);
   return status;
 }
 
