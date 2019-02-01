@@ -16,6 +16,18 @@ void Attach(wl_client* client,
   GetUserDataAs<MockSurface>(resource)->Attach(buffer_resource, x, y);
 }
 
+void SetOpaqueRegion(wl_client* client,
+                     wl_resource* resource,
+                     wl_resource* region) {
+  GetUserDataAs<MockSurface>(resource)->SetOpaqueRegion(region);
+}
+
+void SetInputRegion(wl_client* client,
+                    wl_resource* resource,
+                    wl_resource* region) {
+  GetUserDataAs<MockSurface>(resource)->SetInputRegion(region);
+}
+
 void Damage(wl_client* client,
             wl_resource* resource,
             int32_t x,
@@ -32,16 +44,16 @@ void Commit(wl_client* client, wl_resource* resource) {
 }  // namespace
 
 const struct wl_surface_interface kMockSurfaceImpl = {
-    &DestroyResource,  // destroy
-    &Attach,           // attach
-    &Damage,           // damage
-    nullptr,           // frame
-    nullptr,           // set_opaque_region
-    nullptr,           // set_input_region
-    &Commit,           // commit
-    nullptr,           // set_buffer_transform
-    nullptr,           // set_buffer_scale
-    nullptr,           // damage_buffer
+    DestroyResource,  // destroy
+    Attach,           // attach
+    Damage,           // damage
+    nullptr,          // frame
+    SetOpaqueRegion,  // set_opaque_region
+    SetInputRegion,   // set_input_region
+    Commit,           // commit
+    nullptr,          // set_buffer_transform
+    nullptr,          // set_buffer_scale
+    nullptr,          // damage_buffer
 };
 
 MockSurface::MockSurface(wl_resource* resource) : ServerObject(resource) {}

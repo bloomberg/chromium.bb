@@ -27,6 +27,8 @@ class MockSurface : public ServerObject {
   static MockSurface* FromResource(wl_resource* resource);
 
   MOCK_METHOD3(Attach, void(wl_resource* buffer, int32_t x, int32_t y));
+  MOCK_METHOD1(SetOpaqueRegion, void(wl_resource* region));
+  MOCK_METHOD1(SetInputRegion, void(wl_resource* region));
   MOCK_METHOD4(Damage,
                void(int32_t x, int32_t y, int32_t width, int32_t height));
   MOCK_METHOD0(Commit, void());
