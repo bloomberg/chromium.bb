@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/id_map.h"
@@ -432,7 +432,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // TODO(crbug.com/907311): Remove after we identified the cause of crash.
   bool report_debug_log_ = true;
   base::Lock debug_log_lock_;
-  std::vector<std::string> debug_log_ GUARDED_BY(debug_log_lock_);
+  std::deque<std::string> debug_log_ GUARDED_BY(debug_log_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

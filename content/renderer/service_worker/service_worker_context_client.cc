@@ -1899,8 +1899,11 @@ void ServiceWorkerContextClient::SetTimeoutTimerForTesting(
 }
 
 void ServiceWorkerContextClient::RecordDebugLog(const char* message) {
+  const size_t kMaxDebugLogSize = 512;
   base::AutoLock lock(debug_log_lock_);
   debug_log_.emplace_back(message);
+  if (debug_log_.size() > kMaxDebugLogSize)
+    debug_log_.pop_front();
 }
 
 }  // namespace content
