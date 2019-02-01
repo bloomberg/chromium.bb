@@ -53,26 +53,17 @@ typedef string16 NativeEnvironmentString;
 typedef std::map<NativeEnvironmentString, NativeEnvironmentString>
     EnvironmentMap;
 
-// Returns a modified environment vector constructed from the given environment
-// and the list of changes given in |changes|. Each key in the environment is
-// matched against the first element of the pairs. In the event of a match, the
-// value is replaced by the second of the pair, unless the second is empty, in
-// which case the key-value is removed.
-//
-// This Windows version takes and returns a Windows-style environment block
-// which is a concatenated list of null-terminated 16-bit strings. The end is
-// marked by a double-null terminator. The size of the returned string will
-// include the terminators.
-BASE_EXPORT string16 AlterEnvironment(const wchar_t* env,
-                                      const EnvironmentMap& changes);
-
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 typedef std::string NativeEnvironmentString;
 typedef std::map<NativeEnvironmentString, NativeEnvironmentString>
     EnvironmentMap;
 
-// See general comments for the Windows version above.
+// Returns a modified environment vector constructed from the given environment
+// and the list of changes given in |changes|. Each key in the environment is
+// matched against the first element of the pairs. In the event of a match, the
+// value is replaced by the second of the pair, unless the second is empty, in
+// which case the key-value is removed.
 //
 // This Posix version takes and returns a Posix-style environment block, which
 // is a null-terminated list of pointers to null-terminated strings. The

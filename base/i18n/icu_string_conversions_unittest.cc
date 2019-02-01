@@ -33,7 +33,7 @@ namespace {
 // the C++ 0x UTF-16 literal is well-supported by compilers.
 string16 BuildString16(const wchar_t* s) {
 #if defined(WCHAR_T_IS_UTF16)
-  return string16(s);
+  return WideToUTF16(s);
 #elif defined(WCHAR_T_IS_UTF32)
   string16 u16;
   while (*s != 0) {

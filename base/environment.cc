@@ -101,6 +101,7 @@ class EnvironmentImpl : public Environment {
   }
 };
 
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Parses a null-terminated input string of an environment block. The key is
 // placed into the given string, and the total length of the line, including
 // the terminating null, is returned.
@@ -117,6 +118,7 @@ size_t ParseEnvLine(const NativeEnvironmentString::value_type* input,
     cur++;
   return cur + 1;
 }
+#endif
 
 }  // namespace
 
@@ -141,47 +143,7 @@ bool Environment::HasVar(StringPiece variable_name) {
   return GetVar(variable_name, nullptr);
 }
 
-#if defined(OS_WIN)
-
-string16 AlterEnvironment(const wchar_t* env,
-                          const EnvironmentMap& changes) {
-  string16 result;
-
-  // First copy all unmodified values to the output.
-  size_t cur_env = 0;
-  string16 key;
-  while (env[cur_env]) {
-    const wchar_t* line = &env[cur_env];
-    size_t line_length = ParseEnvLine(line, &key);
-
-    // Keep only values not specified in the change vector.
-    EnvironmentMap::const_iterator found_change = changes.find(key);
-    if (found_change == changes.end())
-      result.append(line, line_length);
-
-    cur_env += line_length;
-  }
-
-  // Now append all modified and new values.
-  for (EnvironmentMap::const_iterator i = changes.begin();
-       i != changes.end(); ++i) {
-    if (!i->second.empty()) {
-      result.append(i->first);
-      result.push_back('=');
-      result.append(i->second);
-      result.push_back(0);
-    }
-  }
-
-  // An additional null marks the end of the list. We always need a double-null
-  // in case nothing was added above.
-  if (result.empty())
-    result.push_back(0);
-  result.push_back(0);
-  return result;
-}
-
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 std::unique_ptr<char* []> AlterEnvironment(const char* const* const env,
                                            const EnvironmentMap& changes) {
@@ -232,6 +194,6 @@ std::unique_ptr<char* []> AlterEnvironment(const char* const* const env,
   return result;
 }
 
-#endif  // OS_WIN
+#endif  // OS_POSIX || OS_FUCHSIA
 
 }  // namespace base

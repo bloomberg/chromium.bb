@@ -12,6 +12,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -253,11 +254,13 @@ TEST(TimeTicks, TSCTicksPerSecond) {
     // Read the CPU frequency from the registry.
     base::win::RegKey processor_key(
         HKEY_LOCAL_MACHINE,
-        L"Hardware\\Description\\System\\CentralProcessor\\0", KEY_QUERY_VALUE);
+        STRING16_LITERAL("Hardware\\Description\\System\\CentralProcessor\\0"),
+        KEY_QUERY_VALUE);
     ASSERT_TRUE(processor_key.Valid());
     DWORD processor_mhz_from_registry;
     ASSERT_EQ(ERROR_SUCCESS,
-              processor_key.ReadValueDW(L"~MHz", &processor_mhz_from_registry));
+              processor_key.ReadValueDW(STRING16_LITERAL("~MHz"),
+                                        &processor_mhz_from_registry));
 
     // Expect the measured TSC frequency to be similar to the processor
     // frequency from the registry (0.5% error).
