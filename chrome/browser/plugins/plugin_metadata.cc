@@ -63,6 +63,12 @@ bool PluginMetadata::HasMimeType(const std::string& mime_type) const {
   return base::ContainsValue(all_mime_types_, mime_type);
 }
 
+bool PluginMetadata::IsPluginDeprecated() const {
+  // TODO(crbug/918427): this is a placeholder behavior; please replace once
+  // the metadata standard for blocking plugins has been finalized.
+  return plugin_url().is_empty();
+}
+
 bool PluginMetadata::MatchesPlugin(const content::WebPluginInfo& plugin) {
   for (size_t i = 0; i < matching_mime_types_.size(); ++i) {
     // To have a match, every one of the |matching_mime_types_|
