@@ -1449,7 +1449,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute MAX_COMBINED_VERTEX_UNIFORM_COMPONENTS
 [Worker]     attribute MAX_COMPUTE_ATOMIC_COUNTERS
 [Worker]     attribute MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS
+[Worker]     attribute MAX_COMPUTE_IMAGE_UNIFORMS
 [Worker]     attribute MAX_COMPUTE_SHADER_STORAGE_BLOCKS
+[Worker]     attribute MAX_COMPUTE_SHARED_MEMORY_SIZE
+[Worker]     attribute MAX_COMPUTE_TEXTURE_IMAGE_UNITS
+[Worker]     attribute MAX_COMPUTE_UNIFORM_BLOCKS
+[Worker]     attribute MAX_COMPUTE_UNIFORM_COMPONENTS
+[Worker]     attribute MAX_COMPUTE_WORK_GROUP_COUNT
+[Worker]     attribute MAX_COMPUTE_WORK_GROUP_INVOCATIONS
+[Worker]     attribute MAX_COMPUTE_WORK_GROUP_SIZE
 [Worker]     attribute MAX_CUBE_MAP_TEXTURE_SIZE
 [Worker]     attribute MAX_DRAW_BUFFERS
 [Worker]     attribute MAX_ELEMENTS_INDICES
