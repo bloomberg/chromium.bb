@@ -75,7 +75,7 @@ void SandboxStatusExtension::Install() {
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Object> chrome =
-      content::GetOrCreateChromeObject(isolate, context->Global());
+      content::GetOrCreateChromeObject(isolate, context);
   v8::Local<v8::Function> function;
   bool success =
       gin::CreateFunctionTemplate(

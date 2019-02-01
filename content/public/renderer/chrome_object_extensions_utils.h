@@ -9,6 +9,7 @@
 
 namespace v8 {
 template<class T> class Local;
+class Context;
 class Object;
 class Isolate;
 }  // namespace v8
@@ -17,7 +18,7 @@ namespace content {
 
 CONTENT_EXPORT v8::Local<v8::Object> GetOrCreateChromeObject(
     v8::Isolate* isolate,
-    v8::Local<v8::Object> global);
+    v8::Local<v8::Context> context);
 
 }  // namespace content
 

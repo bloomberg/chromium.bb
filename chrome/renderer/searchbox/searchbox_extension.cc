@@ -1082,7 +1082,7 @@ void SearchBoxExtension::Install(blink::WebLocalFrame* frame) {
     return;
 
   v8::Local<v8::Object> chrome =
-      content::GetOrCreateChromeObject(isolate, context->Global());
+      content::GetOrCreateChromeObject(isolate, context);
   v8::Local<v8::Object> embedded_search = v8::Object::New(isolate);
   embedded_search
       ->Set(context, gin::StringToV8(isolate, "searchBox"),
