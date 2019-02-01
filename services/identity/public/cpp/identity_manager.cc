@@ -434,6 +434,13 @@ void IdentityManager::OnAddAccountToCookieCompleted(
   }
 }
 
+void IdentityManager::OnSetAccountsInCookieCompleted(
+    const GoogleServiceAuthError& error) {
+  for (auto& observer : observer_list_) {
+    observer.OnSetAccountsInCookieCompleted(error);
+  }
+}
+
 void IdentityManager::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
