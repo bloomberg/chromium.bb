@@ -30,6 +30,9 @@ bool GLContextStub::MakeCurrent(GLSurface* surface) {
 }
 
 void GLContextStub::ReleaseCurrent(GLSurface* surface) {
+  if (!IsCurrent(surface))
+    return;
+
   SetCurrent(nullptr);
 }
 
