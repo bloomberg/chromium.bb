@@ -222,7 +222,7 @@ class FakeWeaveClientConnectionFactory
       bool should_set_low_connection_latency) override {
     EXPECT_EQ(expected_mock_adapter_, adapter);
     EXPECT_EQ(device::BluetoothUUID(kGattServerUuid), remote_service_uuid);
-    EXPECT_FALSE(should_set_low_connection_latency);
+    EXPECT_TRUE(should_set_low_connection_latency);
 
     auto instance = std::make_unique<FakeConnection>(remote_device);
     last_created_instance_ = instance.get();
