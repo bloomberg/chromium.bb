@@ -270,7 +270,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   }
 
   void Match(blink::mojom::FetchAPIRequestPtr request,
-             blink::mojom::QueryParamsPtr match_params,
+             blink::mojom::MultiQueryParamsPtr match_params,
              blink::mojom::CacheStorage::MatchCallback callback) override {
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -295,13 +295,15 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
         std::move(callback));
 
     if (!match_params->cache_name) {
-      cache_storage->MatchAllCaches(std::move(request), std::move(match_params),
+      cache_storage->MatchAllCaches(std::move(request),
+                                    std::move(match_params->query_params),
                                     std::move(on_match));
       return;
     }
     std::string cache_name = base::UTF16ToUTF8(*match_params->cache_name);
     cache_storage->MatchCache(std::move(cache_name), std::move(request),
-                              std::move(match_params), std::move(on_match));
+                              std::move(match_params->query_params),
+                              std::move(on_match));
   }
 
   void Open(const base::string16& cache_name,

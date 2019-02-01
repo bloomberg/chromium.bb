@@ -246,7 +246,6 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     EXPECT_EQ(expected_query_params->ignore_method,
               query_params->ignore_method);
     EXPECT_EQ(expected_query_params->ignore_vary, query_params->ignore_vary);
-    EXPECT_EQ(expected_query_params->cache_name, query_params->cache_name);
   }
 
   const mojom::blink::CacheStorageError error_;
@@ -448,12 +447,10 @@ TEST_F(CacheStorageTest, BasicArguments) {
   mojom::blink::QueryParamsPtr expected_query_params =
       mojom::blink::QueryParams::New();
   expected_query_params->ignore_vary = true;
-  expected_query_params->cache_name = "this is a cache name";
   test_cache()->SetExpectedQueryParams(&expected_query_params);
 
   CacheQueryOptions* options = CacheQueryOptions::Create();
   options->setIgnoreVary(1);
-  options->setCacheName(expected_query_params->cache_name);
 
   Request* request = NewRequestFromUrl(url);
   DCHECK(request);
@@ -518,11 +515,9 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
 
   mojom::blink::QueryParamsPtr expected_query_params =
       mojom::blink::QueryParams::New();
-  expected_query_params->cache_name = "this is another cache name";
   test_cache()->SetExpectedQueryParams(&expected_query_params);
 
   CacheQueryOptions* options = CacheQueryOptions::Create();
-  options->setCacheName(expected_query_params->cache_name);
 
   const String url = "http://batch.operations.test/";
   Request* request = NewRequestFromUrl(url);

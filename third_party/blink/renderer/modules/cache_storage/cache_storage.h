@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache.h"
-#include "third_party/blink/renderer/modules/cache_storage/cache_query_options.h"
+#include "third_party/blink/renderer/modules/cache_storage/multi_cache_query_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
@@ -35,7 +35,7 @@ class CacheStorage final : public ScriptWrappable {
   ScriptPromise keys(ScriptState*);
   ScriptPromise match(ScriptState*,
                       const RequestInfo&,
-                      const CacheQueryOptions*,
+                      const MultiCacheQueryOptions*,
                       ExceptionState&);
 
   void Trace(blink::Visitor*) override;
@@ -43,7 +43,7 @@ class CacheStorage final : public ScriptWrappable {
  private:
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
-                          const CacheQueryOptions*);
+                          const MultiCacheQueryOptions*);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
 

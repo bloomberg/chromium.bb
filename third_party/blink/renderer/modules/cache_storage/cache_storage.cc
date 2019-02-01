@@ -21,6 +21,32 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 
+namespace mojo {
+
+using blink::mojom::blink::MultiQueryParams;
+using blink::mojom::blink::MultiQueryParamsPtr;
+using blink::mojom::blink::QueryParams;
+using blink::mojom::blink::QueryParamsPtr;
+
+template <>
+struct TypeConverter<MultiQueryParamsPtr,
+                     const blink::MultiCacheQueryOptions*> {
+  static MultiQueryParamsPtr Convert(
+      const blink::MultiCacheQueryOptions* input) {
+    QueryParamsPtr query_params = QueryParams::New();
+    query_params->ignore_search = input->ignoreSearch();
+    query_params->ignore_method = input->ignoreMethod();
+    query_params->ignore_vary = input->ignoreVary();
+
+    MultiQueryParamsPtr output = MultiQueryParams::New();
+    output->query_params = std::move(query_params);
+    output->cache_name = input->cacheName();
+    return output;
+  }
+};
+
+}  // namespace mojo
+
 namespace blink {
 
 CacheStorage* CacheStorage::Create(ExecutionContext* context,
@@ -164,7 +190,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
 
 ScriptPromise CacheStorage::match(ScriptState* script_state,
                                   const RequestInfo& request,
-                                  const CacheQueryOptions* options,
+                                  const MultiCacheQueryOptions* options,
                                   ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
 
@@ -179,7 +205,7 @@ ScriptPromise CacheStorage::match(ScriptState* script_state,
 
 ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                       const Request* request,
-                                      const CacheQueryOptions* options) {
+                                      const MultiCacheQueryOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
@@ -192,10 +218,11 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   // pointer alive during the operation.  Otherwise GC might prevent the
   // callback from ever being executed.
   cache_storage_ptr_->Match(
-      request->CreateFetchAPIRequest(), Cache::ToQueryParams(options),
+      request->CreateFetchAPIRequest(),
+      mojom::blink::MultiQueryParams::From(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions* options, CacheStorage* _,
+             const MultiCacheQueryOptions* options, CacheStorage* _,
              mojom::blink::MatchResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
