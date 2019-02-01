@@ -12,7 +12,11 @@
 
 namespace gpu {
 
-class GpuChannelTest : public GpuChannelTestCommon {};
+class GpuChannelTest : public GpuChannelTestCommon {
+ public:
+  GpuChannelTest() : GpuChannelTestCommon(true /* use_stub_bindings */) {}
+  ~GpuChannelTest() override = default;
+};
 
 #if defined(OS_WIN)
 const SurfaceHandle kFakeSurfaceHandle = reinterpret_cast<SurfaceHandle>(1);
@@ -234,7 +238,8 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
 class GpuChannelExitForContextLostTest : public GpuChannelTestCommon {
  public:
   GpuChannelExitForContextLostTest()
-      : GpuChannelTestCommon({EXIT_ON_CONTEXT_LOST}) {}
+      : GpuChannelTestCommon({EXIT_ON_CONTEXT_LOST} /* enabled_workarounds */,
+                             true /* use_stub_bindings */) {}
 };
 
 TEST_F(GpuChannelExitForContextLostTest, CreateFailsDuringLostContextShutdown) {

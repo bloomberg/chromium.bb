@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -44,6 +45,7 @@ struct GpuCommandBufferMsg_CreateImage_Params;
 namespace gpu {
 class DecoderContext;
 struct Mailbox;
+class MemoryTracker;
 struct SyncToken;
 struct WaitForCommandState;
 class GpuChannel;
@@ -102,6 +104,14 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void OnRescheduleAfterFinished() override;
   void ScheduleGrContextCleanup() override;
 
+  using MemoryTrackerFactory =
+      base::RepeatingCallback<std::unique_ptr<MemoryTracker>(
+          const GPUCreateCommandBufferConfig&)>;
+
+  // Overrides the way CreateMemoryTracker() uses to create a MemoryTracker.
+  // This is intended for mocking the MemoryTracker in tests.
+  static void SetMemoryTrackerFactoryForTesting(MemoryTrackerFactory factory);
+
   MemoryTracker* GetMemoryTracker() const;
 
   // Whether this command buffer can currently handle IPC messages.
@@ -138,7 +148,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
                                GpuChannel* channel);
 
   std::unique_ptr<MemoryTracker> CreateMemoryTracker(
-      const GPUCreateCommandBufferConfig init_params) const;
+      const GPUCreateCommandBufferConfig& init_params) const;
 
   // Must be called during Initialize(). Takes ownership to co-ordinate
   // teardown in Destroy().
@@ -232,6 +242,16 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // Set driver bug workarounds and disabled GL extensions to the context.
   static void SetContextGpuFeatureInfo(gl::GLContext* context,
                                        const GpuFeatureInfo& gpu_feature_info);
+
+  static MemoryTrackerFactory GetMemoryTrackerFactory();
+
+  // Overrides the way CreateMemoryTracker() uses to create a MemoryTracker. If
+  // |factory| is base::NullCallback(), it returns the current
+  // MemoryTrackerFactory (initially base::NullCallback() which
+  // CreateMemoryTracker() should interpret as a signal to use the default).
+  // This is intended for mocking the MemoryTracker in tests.
+  static MemoryTrackerFactory SetOrGetMemoryTrackerFactory(
+      MemoryTrackerFactory factory);
 
   std::unique_ptr<DecoderContext> decoder_context_;
 

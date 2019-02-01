@@ -267,6 +267,7 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
       static_cast<int32_t>(GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
     if (!image_decode_accelerator_stub_->OnMessageReceived(message))
       return MessageErrorHandler(message, "Invalid image decode request");
+    return true;
   }
 
   bool handle_out_of_order =

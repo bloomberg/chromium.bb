@@ -6,6 +6,7 @@
 #define GPU_IPC_SERVICE_GPU_CHANNEL_TEST_COMMON_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -29,9 +30,10 @@ class TestGpuChannelManagerDelegate;
 
 class GpuChannelTestCommon : public testing::Test {
  public:
-  GpuChannelTestCommon();
+  explicit GpuChannelTestCommon(bool use_stub_bindings);
   // Constructor which allows a custom set of GPU driver bug workarounds.
-  explicit GpuChannelTestCommon(std::vector<int32_t> enabled_workarounds);
+  GpuChannelTestCommon(std::vector<int32_t> enabled_workarounds,
+                       bool use_stub_bindings);
   ~GpuChannelTestCommon() override;
 
  protected:

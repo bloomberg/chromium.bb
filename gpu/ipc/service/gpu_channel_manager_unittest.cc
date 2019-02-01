@@ -15,7 +15,8 @@ namespace gpu {
 
 class GpuChannelManagerTest : public GpuChannelTestCommon {
  public:
-  GpuChannelManagerTest() : GpuChannelTestCommon() {}
+  GpuChannelManagerTest()
+      : GpuChannelTestCommon(true /* use_stub_bindings */) {}
   ~GpuChannelManagerTest() override = default;
 
 #if defined(OS_ANDROID)

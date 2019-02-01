@@ -272,6 +272,7 @@ target(link_target_type, "gles2_sources") {
   include_dirs = [ "//third_party/mesa_headers" ]
 
   public_deps = [
+    "//cc/paint",
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
     "//gpu/command_buffer/common:raster_sources",
@@ -283,7 +284,6 @@ target(link_target_type, "gles2_sources") {
     ":service",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//cc/paint",
     "//components/viz/common:resource_format_utils",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common:gles2_utils",
