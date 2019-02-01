@@ -451,8 +451,9 @@ bool ExpireHistoryTest::IsStringInFile(const base::FilePath& filename,
 
 // Deletes a URL with a favicon that it is the last referencer of, so that it
 // should also get deleted.
-// Fails near end of month. http://crbug.com/43586
-TEST_F(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon) {
+// This test failed near end of month.
+// Please comment on http://crbug.com/15724 if it fails again.
+TEST_F(ExpireHistoryTest, DeleteURLAndFavicon) {
   URLID url_ids[3];
   base::Time visit_times[4];
   AddExampleData(url_ids, visit_times);
