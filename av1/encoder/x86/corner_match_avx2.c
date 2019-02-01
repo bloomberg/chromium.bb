@@ -9,10 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <stdlib.h>
-#include <memory.h>
 #include <math.h>
-#include <assert.h>
 
 #include <immintrin.h>
 #include "config/av1_rtcd.h"
