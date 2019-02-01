@@ -17,7 +17,7 @@ namespace inspector_protocol {
 // Except for calling the HandleError routine at any time, the client
 // code must call the Handle* methods in an order in which they'd occur
 // in valid JSON; otherwise we may crash (the code uses assert).
-std::unique_ptr<JsonParserHandler> NewJsonWriter(Platform* platform,
+std::unique_ptr<JSONParserHandler> NewJSONWriter(Platform* platform,
                                                  std::string* out,
                                                  Status* status);
 }  // namespace inspector_protocol

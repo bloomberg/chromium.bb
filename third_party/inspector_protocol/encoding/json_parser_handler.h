@@ -11,9 +11,9 @@
 
 namespace inspector_protocol {
 // Handler interface for JSON parser events. See also json_parser.h.
-class JsonParserHandler {
+class JSONParserHandler {
  public:
-  virtual ~JsonParserHandler() = default;
+  virtual ~JSONParserHandler() = default;
   virtual void HandleObjectBegin() = 0;
   virtual void HandleObjectEnd() = 0;
   virtual void HandleArrayBegin() = 0;

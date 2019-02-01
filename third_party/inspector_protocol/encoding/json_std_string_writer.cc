@@ -81,7 +81,7 @@ void Base64Encode(const std::vector<uint8_t>& in, std::string* out) {
 }
 
 // Implements a handler for JSON parser events to emit a JSON string.
-class Writer : public JsonParserHandler {
+class Writer : public JSONParserHandler {
  public:
   Writer(Platform* platform, std::string* out, Status* status)
       : platform_(platform), out_(out), status_(status) {
@@ -207,7 +207,7 @@ class Writer : public JsonParserHandler {
 };
 }  // namespace
 
-std::unique_ptr<JsonParserHandler> NewJsonWriter(Platform* platform,
+std::unique_ptr<JSONParserHandler> NewJSONWriter(Platform* platform,
                                                  std::string* out,
                                                  Status* status) {
   return std::make_unique<Writer>(platform, out, status);
