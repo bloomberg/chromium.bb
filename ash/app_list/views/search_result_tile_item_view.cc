@@ -283,7 +283,6 @@ void SearchResultTileItemView::OnFocus() {
   }
   SetBackgroundHighlighted(true);
   UpdateBackgroundColor();
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
 void SearchResultTileItemView::OnBlur() {

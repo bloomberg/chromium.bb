@@ -338,7 +338,6 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
 void SearchResultView::OnFocus() {
   ScrollRectToVisible(GetLocalBounds());
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   SetBackgroundHighlighted(true);
   selected_ = true;
   actions_view_->UpdateButtonsOnStateChanged();
