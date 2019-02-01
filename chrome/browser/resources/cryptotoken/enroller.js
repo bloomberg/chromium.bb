@@ -888,12 +888,29 @@ Enroller.prototype.doRegisterWebAuthnContinue_ = function(
   const randomId = new Uint8Array(new ArrayBuffer(16));
   crypto.getRandomValues(randomId);
 
+  const decodedChallenge = B64_decode(challenge);
+  if (decodedChallenge.length == 0) {
+    this.notifyError_({
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'challenge must be base64url encoded',
+    });
+    return;
+  }
+
   const excludeList = [];
   for (let index = 0; index < request['signData'].length; index++) {
     const element = request['signData'][index];
+    const decodedKeyHandle = B64_decode(element['keyHandle']);
+    if (decodedKeyHandle.length == 0) {
+      this.notifyError_({
+        errorCode: ErrorCodes.BAD_REQUEST,
+        errorMessage: 'keyHandle must be base64url encoded',
+      });
+      return;
+    }
     excludeList.push({
       type: 'public-key',
-      id: new Uint8Array(B64_decode(element['keyHandle'])).buffer,
+      id: new Uint8Array(decodedKeyHandle).buffer,
       transports: ['usb'],
     });
   }
@@ -913,7 +930,7 @@ Enroller.prototype.doRegisterWebAuthnContinue_ = function(
         displayName: this.sender_.origin,
         name: this.sender_.origin,
       },
-      challenge: new Uint8Array(B64_decode(challenge)).buffer,
+      challenge: new Uint8Array(decodedChallenge).buffer,
       pubKeyCredParams: [{
         type: 'public-key',
         alg: -7,  // ES-256
