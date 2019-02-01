@@ -34,23 +34,10 @@ class StrategySizeAlgorithm
   virtual void Trace(Visitor*) {}
 };
 
-// Base class for start algorithms, ie. those that are derived from the start()
-// method of the underlying object. These differ from other underlying
-// algorithms in that they can throw synchronously. Objects of this
-// type must always be reachable by V8's garbage collector.
-class StreamStartAlgorithm : public GarbageCollectedFinalized<StreamAlgorithm> {
- public:
-  virtual ~StreamStartAlgorithm() = default;
-
-  virtual v8::MaybeLocal<v8::Promise> Run(ScriptState*, ExceptionState&) = 0;
-
-  virtual void Trace(Visitor*) {}
-};
-
 // Base class for algorithms which take one or more arguments and return a
 // Promise. This is used as the type for all the algorithms in the standard that
-// do not use StrategySizeAlgorithm or StreamStartAlgorithm. Objects of this
-// type must always be reachable by V8's garbage collector.
+// do not use StrategySizeAlgorithm. Objects of this type must always be
+// reachable by V8's garbage collector.
 class StreamAlgorithm : public GarbageCollectedFinalized<StreamAlgorithm> {
  public:
   virtual ~StreamAlgorithm() = default;

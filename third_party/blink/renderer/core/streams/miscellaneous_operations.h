@@ -17,7 +17,6 @@ class ExceptionState;
 class ScriptState;
 class StrategySizeAlgorithm;
 class StreamAlgorithm;
-class StreamStartAlgorithm;
 
 // This is slightly different than the version in the standard
 // https://streams.spec.whatwg.org/#create-algorithm-from-underlying-method as
@@ -34,17 +33,6 @@ CORE_EXPORT StreamAlgorithm* CreateAlgorithmFromUnderlyingMethod(
     const char* method_name_for_error,
     v8::MaybeLocal<v8::Value> extra_arg,
     ExceptionState&);
-
-// Create a StreamStartAlgorithm from the "start" method on |underlying_object|.
-// Unlike other algorithms, the lookup of the method on the object is done at
-// execution time rather than algorithm creation time. |method_name_for_error|
-// is used in exception messages. It is not copied so must remain valid until
-// the algorithm is run.
-CORE_EXPORT StreamStartAlgorithm* CreateStartAlgorithm(
-    ScriptState*,
-    v8::Local<v8::Object> underlying_object,
-    const char* method_name_for_error,
-    v8::Local<v8::Value> controller);
 
 // Used in place of InvokeOrNoop in spec. Always takes 1 argument.
 // https://streams.spec.whatwg.org/#invoke-or-noop
