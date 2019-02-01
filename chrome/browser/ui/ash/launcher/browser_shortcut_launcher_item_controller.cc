@@ -255,9 +255,16 @@ void BrowserShortcutLauncherItemController::ItemSelected(
     return;
   }
 
-  ash::ShelfAction action =
-      ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
-          last_browser->window(), items.size() == 1);
+  ash::ShelfAction action;
+  if (items.size() == 1) {
+    action =
+        ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
+            last_browser->window(), true);
+  } else {
+    // Multiple targets, a menu will be shown. No need to activate or minimize
+    // the recently active browser.
+    action = ash::SHELF_ACTION_NONE;
+  }
   std::move(callback).Run(action, std::move(items));
 }
 
