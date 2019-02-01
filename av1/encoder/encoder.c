@@ -4147,8 +4147,6 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       if (!frame_is_intra_only(&cpi->common)) break;
       // Don't use for keyframes that can be used as references.
       if (cpi->rc.frames_to_key != 1) break;
-      // Don't use for any rate control mode other than constant quality.
-      if (oxcf->rc_mode != AOM_Q) break;
 
       // Now decide the use of superres based on 'q'.
       int bottom_index, top_index;
