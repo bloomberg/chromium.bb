@@ -99,7 +99,7 @@ class MarkupFormatter final {
                   SerializationType = SerializationType::kAsOwnerDocument);
   ~MarkupFormatter();
 
-  void AppendStartMarkup(StringBuilder&, const Node&, Namespaces*);
+  void AppendStartMarkup(StringBuilder&, const Node&);
   void AppendEndMarkup(StringBuilder&, const Element&);
 
   bool SerializeAsHTMLDocument(const Node&) const;

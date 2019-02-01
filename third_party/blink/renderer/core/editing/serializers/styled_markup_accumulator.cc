@@ -70,7 +70,7 @@ void StyledMarkupAccumulator::AppendEndTag(const Element& element) {
 }
 
 void StyledMarkupAccumulator::AppendStartMarkup(Node& node) {
-  formatter_.AppendStartMarkup(result_, node, nullptr);
+  formatter_.AppendStartMarkup(result_, node);
 }
 
 void StyledMarkupAccumulator::AppendEndMarkup(StringBuilder& result,
