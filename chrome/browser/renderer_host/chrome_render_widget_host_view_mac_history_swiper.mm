@@ -153,9 +153,10 @@ BOOL forceMagicMouse = NO;
 }
 
 - (void)onOverscrolled:(const ui::DidOverscrollParams&)params {
-  rendererDisabledOverscroll_ = params.overscroll_behavior.x !=
-                                cc::OverscrollBehavior::OverscrollBehaviorType::
-                                    kOverscrollBehaviorTypeAuto;
+  overscrollTriggeredByRenderer_ =
+      params.overscroll_behavior.x ==
+      cc::OverscrollBehavior::OverscrollBehaviorType::
+          kOverscrollBehaviorTypeAuto;
 }
 
 - (void)beginGestureWithEvent:(NSEvent*)event {
@@ -217,7 +218,7 @@ BOOL forceMagicMouse = NO;
   gestureStartPointValid_ = NO;
   gestureTotalY_ = 0;
   firstScrollUnconsumed_ = NO;
-  rendererDisabledOverscroll_ = NO;
+  overscrollTriggeredByRenderer_ = NO;
   waitingForFirstGestureScroll_ = NO;
   recognitionState_ = history_swiper::kPending;
 }
@@ -545,8 +546,8 @@ BOOL forceMagicMouse = NO;
   if (!firstScrollUnconsumed_)
     return NO;
 
-  // History swiping should be prevented if the renderer disables it.
-  if (rendererDisabledOverscroll_)
+  // History swiping should be prevented if the renderer hasn't triggered it.
+  if (!overscrollTriggeredByRenderer_)
     return NO;
 
   // Magic mouse and touchpad swipe events are identical except magic mouse
