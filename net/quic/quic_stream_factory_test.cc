@@ -293,13 +293,13 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         max_idle_time_before_crypto_handshake_seconds_,
         migrate_sessions_on_network_change_v2_, migrate_sessions_early_v2_,
         retry_on_alternate_network_before_handshake_,
-        race_stale_dns_on_connection_, go_away_on_path_degrading_,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
-        allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
-        client_headers_include_h2_stream_dependency_, connection_options_,
-        client_connection_options_,
+        allow_server_migration_, race_stale_dns_on_connection_,
+        go_away_on_path_degrading_, race_cert_verification_,
+        estimate_initial_rtt_, client_headers_include_h2_stream_dependency_,
+        connection_options_, client_connection_options_,
         /*enable_socket_recv_optimization*/ false));
   }
 

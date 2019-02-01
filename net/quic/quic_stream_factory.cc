@@ -995,12 +995,12 @@ QuicStreamFactory::QuicStreamFactory(
     bool migrate_sessions_on_network_change_v2,
     bool migrate_sessions_early_v2,
     bool retry_on_alternate_network_before_handshake,
-    bool race_stale_dns_on_connection,
-    bool go_away_on_path_degrading,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
     int max_migrations_to_non_default_network_on_path_degrading,
     bool allow_server_migration,
+    bool race_stale_dns_on_connection,
+    bool go_away_on_path_degrading,
     bool race_cert_verification,
     bool estimate_initial_rtt,
     bool headers_include_h2_stream_dependency,
@@ -1052,8 +1052,6 @@ QuicStreamFactory::QuicStreamFactory(
       retry_on_alternate_network_before_handshake_(
           retry_on_alternate_network_before_handshake &&
           migrate_sessions_on_network_change_v2_),
-      race_stale_dns_on_connection_(race_stale_dns_on_connection),
-      go_away_on_path_degrading_(go_away_on_path_degrading),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(
@@ -1061,6 +1059,8 @@ QuicStreamFactory::QuicStreamFactory(
       max_migrations_to_non_default_network_on_path_degrading_(
           max_migrations_to_non_default_network_on_path_degrading),
       allow_server_migration_(allow_server_migration),
+      race_stale_dns_on_connection_(race_stale_dns_on_connection),
+      go_away_on_path_degrading_(go_away_on_path_degrading),
       race_cert_verification_(race_cert_verification),
       estimate_initial_rtt(estimate_initial_rtt),
       headers_include_h2_stream_dependency_(
@@ -1804,11 +1804,10 @@ int QuicStreamFactory::CreateSession(
       clock_, transport_security_state_, ssl_config_service_,
       std::move(server_info), key.session_key(), require_confirmation,
       migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
-      go_away_on_path_degrading_, default_network_,
-      max_time_on_non_default_network_,
+      default_network_, max_time_on_non_default_network_,
       max_migrations_to_non_default_network_on_write_error_,
       max_migrations_to_non_default_network_on_path_degrading_,
-      yield_after_packets_, yield_after_duration_,
+      yield_after_packets_, yield_after_duration_, go_away_on_path_degrading_,
       headers_include_h2_stream_dependency_, cert_verify_flags, config,
       &crypto_config_, network_connection_.connection_description(),
       dns_resolution_start_time, dns_resolution_end_time, &push_promise_index_,

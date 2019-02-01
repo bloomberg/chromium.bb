@@ -125,8 +125,6 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_on_network_change_v2(false),
       quic_migrate_sessions_early_v2(false),
       quic_retry_on_alternate_network_before_handshake(false),
-      quic_race_stale_dns_on_connection(false),
-      quic_go_away_on_path_degrading(false),
       quic_max_time_on_non_default_network(
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs)),
       quic_max_migrations_to_non_default_network_on_write_error(
@@ -135,6 +133,8 @@ HttpNetworkSession::Params::Params()
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading),
       quic_allow_server_migration(false),
       quic_allow_remote_alt_svc(true),
+      quic_race_stale_dns_on_connection(false),
+      quic_go_away_on_path_degrading(false),
       quic_disable_bidirectional_streams(false),
       quic_force_hol_blocking(false),
       quic_race_cert_verification(false),
@@ -225,12 +225,12 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_migrate_sessions_on_network_change_v2,
           params.quic_migrate_sessions_early_v2,
           params.quic_retry_on_alternate_network_before_handshake,
-          params.quic_race_stale_dns_on_connection,
-          params.quic_go_away_on_path_degrading,
           params.quic_max_time_on_non_default_network,
           params.quic_max_migrations_to_non_default_network_on_write_error,
           params.quic_max_migrations_to_non_default_network_on_path_degrading,
           params.quic_allow_server_migration,
+          params.quic_race_stale_dns_on_connection,
+          params.quic_go_away_on_path_degrading,
           params.quic_race_cert_verification,
           params.quic_estimate_initial_rtt,
           params.quic_headers_include_h2_stream_dependency,
@@ -387,10 +387,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_migrate_sessions_early_v2);
   dict->SetBoolean("retry_on_alternate_network_before_handshake",
                    params_.quic_retry_on_alternate_network_before_handshake);
-  dict->SetBoolean("race_stale_dns_on_connection",
-                   params_.quic_race_stale_dns_on_connection);
-  dict->SetBoolean("go_away_on_path_degrading",
-                   params_.quic_go_away_on_path_degrading);
   dict->SetInteger("max_time_on_non_default_network_seconds",
                    params_.quic_max_time_on_non_default_network.InSeconds());
   dict->SetInteger(
@@ -401,6 +397,10 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
       params_.quic_max_migrations_to_non_default_network_on_path_degrading);
   dict->SetBoolean("allow_server_migration",
                    params_.quic_allow_server_migration);
+  dict->SetBoolean("race_stale_dns_on_connection",
+                   params_.quic_race_stale_dns_on_connection);
+  dict->SetBoolean("go_away_on_path_degrading",
+                   params_.quic_go_away_on_path_degrading);
   dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
   dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
   dict->SetBoolean("server_push_cancellation",

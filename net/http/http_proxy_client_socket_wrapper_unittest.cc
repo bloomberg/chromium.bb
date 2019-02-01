@@ -144,14 +144,13 @@ class HttpProxyClientSocketWrapperTest
         /*migrate_sessions_on_network_change_v2=*/false,
         /*migrate_sessions_early_v2=*/false,
         /*retry_on_alternate_network_before_handshake=*/false,
-        /*race_stale_dns_on_connection=*/false,
-        /*go_away_on_path_degrading=*/false,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
-        allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
-        client_headers_include_h2_stream_dependency_, connection_options_,
-        client_connection_options_,
+        allow_server_migration_, /*race_stale_dns_on_connection=*/false,
+        /*go_away_on_path_degrading=*/false, race_cert_verification_,
+        estimate_initial_rtt_, client_headers_include_h2_stream_dependency_,
+        connection_options_, client_connection_options_,
         /*enable_socket_recv_optimization=*/false));
   }
 
