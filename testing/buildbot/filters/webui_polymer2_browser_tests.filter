@@ -158,6 +158,7 @@ CrSettingsMultideviceFeatureItemTest.*
 CrSettingsMultideviceFeatureToggleTest.*
 CrSettingsMultidevicePageContainerTest.*
 CrSettingsMultidevicePageTest.*
+CrSettingsMultideviceSmartLockSubpageTest.*
 CrSettingsMultideviceSubpageTest.*
 CrSettingsNonExistentRouteTest.*
 CrSettingsOnStartupPageTest.*

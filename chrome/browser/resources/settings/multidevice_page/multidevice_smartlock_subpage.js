@@ -80,7 +80,6 @@ Polymer({
 
   listeners: {
     'auth-token-changed': 'onAuthTokenChanged_',
-    'close': 'onDialogClose_',
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */

@@ -56,7 +56,8 @@
       </div>
     </iron-collapse>
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
-      <settings-password-prompt-dialog></settings-password-prompt-dialog>
+      <settings-password-prompt-dialog on-close="onDialogClose_">
+      </settings-password-prompt-dialog>
     </template>
   </template>
   <script src="multidevice_smartlock_subpage.js"></script>
