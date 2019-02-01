@@ -318,4 +318,44 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RenderFrameProxyHostCreated) {
   EXPECT_TRUE(proxy_host->is_render_frame_proxy_live());
 }
 
+// Tests that the portal's outer delegate frame tree node and any iframes
+// inside the portal are deleted when the portal element is removed from the
+// document.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DetachPortal) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents->GetMainFrame();
+
+  Portal* portal = nullptr;
+  PortalCreatedObserver portal_created_observer(main_frame);
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(ExecJs(main_frame,
+                     JsReplace("var portal = document.createElement('portal');"
+                               "portal.src = $1;"
+                               "document.body.appendChild(portal);",
+                               a_url)));
+
+  // Wait for portal to be created.
+  portal = portal_created_observer.WaitUntilPortalCreated();
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  FrameTreeNode* portal_main_frame_node =
+      portal_contents->GetFrameTree()->root();
+
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  // Remove portal from document and wait for frames to be deleted.
+  FrameDeletedObserver fdo1(portal_main_frame_node->render_manager()
+                                ->GetOuterDelegateNode()
+                                ->current_frame_host());
+  FrameDeletedObserver fdo2(
+      portal_main_frame_node->child_at(0)->current_frame_host());
+  EXPECT_TRUE(ExecJs(main_frame, "document.body.removeChild(portal);"));
+  fdo1.Wait();
+  fdo2.Wait();
+}
 }  // namespace content

@@ -270,15 +270,20 @@ void RenderFrameProxyHost::OnDetach() {
     return;
   }
 
-  // This message should only be received for subframes.  Note that we can't
-  // restrict it to just the current SiteInstances of the ancestors of this
-  // frame, because another frame in the tree may be able to detach this frame
-  // by navigating its parent.
-  if (frame_tree_node_->IsMainFrame()) {
-    bad_message::ReceivedBadMessage(GetProcess(), bad_message::RFPH_DETACH);
+  // For a main frame with no outer delegate, no further work is needed. In this
+  // case, detach can only be triggered by closing the entire RenderViewHost.
+  // Instead, this cleanup relies on the destructors of RenderFrameHost and
+  // RenderFrameProxyHost decrementing the refcounts of their associated
+  // RenderViewHost. When the refcount hits 0, the corresponding renderer object
+  // is cleaned up. Since WebContents destruction will also destroy
+  // RenderFrameHost/RenderFrameProxyHost objects in FrameTree, this eventually
+  // results in all the associated RenderViewHosts being closed.
+  if (frame_tree_node_->IsMainFrame())
     return;
-  }
 
+  // Otherwise, a remote child frame has been removed from the frame tree.
+  // Make sure that this action is mirrored to all the other renderers, so
+  // the frame tree remains consistent.
   frame_tree_node_->current_frame_host()->DetachFromProxy();
 }
 

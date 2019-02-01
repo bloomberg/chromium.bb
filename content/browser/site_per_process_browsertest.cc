@@ -2417,68 +2417,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
   EXPECT_FALSE(RenderViewHost::FromID(subframe_process_id, subframe_rvh_id));
 }
 
-// Ensure that root frames cannot be detached.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
-  GURL main_url(embedded_test_server()->GetURL(
-      "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-
-  TestNavigationObserver observer(shell()->web_contents());
-
-  // Load cross-site pages into both iframes.
-  GURL foo_url = embedded_test_server()->GetURL("foo.com", "/title2.html");
-  NavigateFrameToURL(root->child_at(0), foo_url);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(foo_url, observer.last_navigation_url());
-  GURL bar_url = embedded_test_server()->GetURL("bar.com", "/title2.html");
-  NavigateFrameToURL(root->child_at(1), bar_url);
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(bar_url, observer.last_navigation_url());
-
-  // Ensure that we have created new processes for the subframes.
-  ASSERT_EQ(2U, root->child_count());
-  FrameTreeNode* foo_child = root->child_at(0);
-  SiteInstance* foo_site_instance =
-      foo_child->current_frame_host()->GetSiteInstance();
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), foo_site_instance);
-  FrameTreeNode* bar_child = root->child_at(1);
-  SiteInstance* bar_site_instance =
-      bar_child->current_frame_host()->GetSiteInstance();
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(), bar_site_instance);
-
-  EXPECT_EQ(
-      " Site A ------------ proxies for B C\n"
-      "   |--Site B ------- proxies for A C\n"
-      "   +--Site C ------- proxies for A B\n"
-      "Where A = http://a.com/\n"
-      "      B = http://foo.com/\n"
-      "      C = http://bar.com/",
-      DepictFrameTree(root));
-
-  // Simulate an attempt to detach the root frame from foo_site_instance.  This
-  // should kill foo_site_instance's process.
-  RenderFrameProxyHost* foo_mainframe_rfph =
-      root->render_manager()->GetRenderFrameProxyHost(foo_site_instance);
-  content::RenderProcessHostKillWaiter kill_waiter(
-      foo_mainframe_rfph->GetProcess());
-  FrameHostMsg_Detach evil_msg2(foo_mainframe_rfph->GetRoutingID());
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      foo_mainframe_rfph->GetProcess()->GetChannel(), evil_msg2);
-  EXPECT_EQ(bad_message::RFPH_DETACH, kill_waiter.Wait());
-
-  EXPECT_EQ(
-      " Site A ------------ proxies for B C\n"
-      "   |--Site B ------- proxies for A C\n"
-      "   +--Site C ------- proxies for A B\n"
-      "Where A = http://a.com/\n"
-      "      B = http://foo.com/ (no process)\n"
-      "      C = http://bar.com/",
-      DepictFrameTree(root));
-}
-
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
