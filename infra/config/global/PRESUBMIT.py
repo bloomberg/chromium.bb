@@ -9,12 +9,12 @@ for more details on the presubmit API built into depot_tools.
 """
 
 
-def _CheckLuciMiloCfg(input_api, output_api):
-  if ('infra/config/global/luci-milo.cfg' not in input_api.LocalPaths() and
-      'infra/config/global/lint-luci-milo.py' not in input_api.LocalPaths()):
-    return []
+def _CommonChecks(input_api, output_api):
+  commands = []
 
-  return input_api.RunTests([
+  if ('infra/config/global/luci-milo.cfg' in input_api.LocalPaths() or
+      'infra/config/global/lint-luci-milo.py' in input_api.LocalPaths()):
+    commands.append(
       input_api.Command(
           name='lint-luci-milo',
           cmd=[input_api.python_executable, 'lint-luci-milo.py'],
@@ -28,10 +28,34 @@ def _CheckLuciMiloCfg(input_api, output_api):
                 '..', '..', '..', 'testing', 'buildbot',
                 'generate_buildbot_json.py',),
             '--check'],
-        kwargs={}, message=output_api.PresubmitError)])
+        kwargs={}, message=output_api.PresubmitError))
+
+  if 'infra/config/global/commit-queue.cfg' in input_api.LocalPaths():
+    commands.append(
+      input_api.Command(
+        name='commit-queue.cfg presubmit', cmd=[
+            input_api.python_executable, input_api.os_path.join(
+                'cq_cfg_presubmit.py'),
+            '--check'],
+        kwargs={}, message=output_api.PresubmitError),
+    )
+
+  commands.extend(input_api.canned_checks.GetUnitTestsRecursively(
+      input_api, output_api,
+      input_api.os_path.join(input_api.PresubmitLocalPath()),
+      whitelist=[r'.+_unittest\.py$'], blacklist=[]))
+
+  results = []
+
+  results.extend(input_api.RunTests(commands))
+  results.extend(input_api.canned_checks.CheckChangedLUCIConfigs(
+      input_api, output_api))
+
+  return results
+
 
 def CheckChangeOnUpload(input_api, output_api):
-  return _CheckLuciMiloCfg(input_api, output_api)
+  return _CommonChecks(input_api, output_api)
 
 def CheckChangeOnCommit(input_api, output_api):
-  return _CheckLuciMiloCfg(input_api, output_api)
+  return _CommonChecks(input_api, output_api)

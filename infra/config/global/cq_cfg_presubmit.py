@@ -19,7 +19,7 @@ CHROMIUM_DIR = os.path.abspath(os.path.join(
 MD_HEADER = """# List of CQ builders
 
 This page is auto generated using the script
-//infra/config/branch/cq_config_presubmit.py. Do not manually edit.
+//infra/config/global/cq_config_presubmit.py. Do not manually edit.
 
 [TOC]
 
@@ -36,7 +36,7 @@ These builders must pass before a CL may land."""
 
 OPTIONAL_HEADER = """These builders optionally run, depending on the files in a
 CL. For example, a CL which touches `//gpu/BUILD.gn` would trigger the builder
-`android_optional_gpu_tests_rel`, due to the `path_regexp` values for that
+`android_optional_gpu_tests_rel`, due to the `location_regexp` values for that
 builder."""
 
 
@@ -57,18 +57,22 @@ TRYBOT_SOURCE_URL = CODE_SEARCH_BASE + 'search/?q=file:trybots.py+'
 
 
 CQ_CONFIG_LOCATION_URL = (
-    CODE_SEARCH_BASE + 'search/?q=package:%5Echromium$+file:cq.cfg+')
+    CODE_SEARCH_BASE + 'search/?q=package:%5Echromium$+file:commit-queue.cfg+')
 
 
 REGEX_SEARCH_URL = CODE_SEARCH_BASE + 'search/?q=package:%5Echromium$+'
+
+
+# Location regexps in commit-queue.cfg are expected to have this prefix.
+REGEX_PREFIX = r'.+/[+]/'
 
 
 def parse_text_proto_message(lines):
   """Parses a text proto. LOW QUALITY, MAY EASILY BREAK.
 
   If you really need to parse text protos, use the actual python library for
-  protobufs. This exists because the .proto file for cq.cfg lives in another
-  repository.
+  protobufs. This exists because the .proto file for commit-queue.cfg lives in
+  another repository.
   """
   data = {}
 
@@ -152,7 +156,7 @@ class BuilderList(object):
     required, and optional."""
     self.builders.sort(key=lambda b: '%s|%s|%s' % (
         'z' if b.get('experiment_percentage') else 'a',
-        'z' if b.get('path_regexp') else 'a',
+        'z' if b.get('location_regexp') else 'a',
         b['name']))
 
   def by_section(self):
@@ -161,7 +165,7 @@ class BuilderList(object):
     optional = []
     for b in self.builders:
       # Don't handle if something is both optional and experimental
-      if b.get('path_regexp'):
+      if b.get('location_regexp'):
         optional.append(b)
       elif b.get('experiment_percentage'):
         experimental.append(b)
@@ -173,7 +177,19 @@ class BuilderList(object):
 
 class CQConfig(object):
   def __init__(self, lines):
-    self._value = parse_text_proto_message(lines)
+    parsed_value = parse_text_proto_message(lines)
+
+    # Sanity check.
+    assert len(parsed_value['config_groups']) == 1, (
+        'Expected only one config group, found %d' % len(
+            parsed_value['config_groups']))
+    grp = parsed_value['config_groups'][0]
+    gerrit = grp['gerrit'][0]
+    name = gerrit['projects'][0]['name'][0]
+    assert name == 'chromium/src', (
+        'Expected first config group to be chromium src, got %s' % name)
+    # The config group for chromium source refs/heads.
+    self._config_group = grp
 
   @staticmethod
   def from_file(path):
@@ -182,32 +198,24 @@ class CQConfig(object):
 
     return CQConfig(lines)
 
-  def get_path_regexps(self):
+  def get_location_regexps(self):
     _, opt, _ = self.builder_list().by_section()
     for b in opt:
-      if 'path_regexp' in b:
-        for reg in b['path_regexp']:
+      if 'location_regexp' in b:
+        for reg in b['location_regexp']:
           yield reg
-      if 'path_regexp_exclude' in b:
-        for reg in b['path_regexp_exclude']:
+      if 'location_regexp_exclude' in b:
+        for reg in b['location_regexp_exclude']:
           yield reg
 
-  @property
-  def version(self):
-    return int(self._value['version'][0])
-
-  def builder_list(self, pred=None):
-    """Returns a list of builders.
-
-    pred is a predicate used to decide if a builder should be returned. It takes
-    the bucket and builder as arguments."""
+  def builder_list(self):
+    """Returns a list of builders."""
     items = []
-    for bucket in (
-        self._value['verifiers'][0]['try_job'][0]['buckets']):
-      for b in bucket['builders']:
-        if pred and not pred(bucket['name'][0], b):
-          continue
-        items.append(b)
+    for b in self._config_group['verifiers'][0]['tryjob'][0]['builders']:
+      if not b['name'][0].startswith('chromium'):
+        # Buildbot builders, just ignore.
+        continue
+      items.append(b)
     return BuilderList(items)
 
   def get_markdown_doc(self):
@@ -228,21 +236,25 @@ class CQConfig(object):
         lines.append(l)
       lines.append('')
       for b in builders:
+        buildername = b['name'][0].split('/')[-1]
         lines.append(
-            '* [%s](%s) ([`cq.cfg` entry](%s)) ([matching builders](%s))' % (
-            b['name'][0], BUILDER_VIEW_URL + b['name'][0],
+            '* [%s](%s) ([`commit-queue.cfg` entry](%s)) '
+            '([matching builders](%s))' % (
+            buildername, BUILDER_VIEW_URL + buildername,
             CQ_CONFIG_LOCATION_URL + b['name'][0],
-            TRYBOT_SOURCE_URL + b['name'][0],))
+            TRYBOT_SOURCE_URL + buildername))
         lines.append('')
         if 'comment' in b:
           for l in b['comment'].split('\n'):
             lines.append('  ' + l.strip())
           lines.append('')
-        if 'path_regexp' in b:
+        if 'location_regexp' in b:
           lines.append('  Path regular expressions:')
-          for regex in b['path_regexp']:
-            regex_title = '//' + regex.lstrip('/')
+          for regex in b['location_regexp']:
             url = None
+            if regex.startswith(REGEX_PREFIX):
+              regex = regex[len(REGEX_PREFIX):]
+            regex_title = '//' + regex.lstrip('/')
             if regex.endswith('.+'):
               regex = regex[:-len('.+')]
               if all(
@@ -264,15 +276,17 @@ class CQConfig(object):
 
     return '\n'.join(lines)
 
-def verify_path_regexps(regexps, verbose=True):
+def verify_location_regexps(regexps, verbose=True):
   # Verify that all the regexps listed in the file have files which they could
   # be triggered by. Failing this usually means they're old, and the code was
   # moved somewhere, like the webkit->blink rename.
   invalid_regexp = False
   for regexp in regexps:
     regexp = regexp.replace('\\\\', '')
+    assert regexp.startswith(REGEX_PREFIX)
+    regexp = regexp[len(REGEX_PREFIX):]
     # Split by path name, so that we don't have to run os.walk on the entire
-    # source tree. cq.cfg always uses '/' as the path separator.
+    # source tree. commit-queue.cfg always uses '/' as the path separator.
     parts = regexp.split('/')
     # Dash and equal sign are used by layout tests.
     simple_name_re = re.compile(r'^[a-zA-Z0-9_\-=]*$')
@@ -282,7 +296,8 @@ def verify_path_regexps(regexps, verbose=True):
       if not simple_name_re.match(itm):
         break
       last_normal_path += 1
-    path_to_search = os.path.join(*parts[:last_normal_path])
+    path_to_search = (
+        os.path.join(*parts[:last_normal_path]) if last_normal_path else '')
     # Simple case. Regexp is just referencing a single file. Just check if the
     # file exists.
     if path_to_search == os.path.join(*parts) and os.path.exists(
@@ -317,27 +332,25 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
     '-c', '--check', action='store_true', help=
-    'Do consistency checks of cq.cfg and generated files. Used during'
-    'presubmit. Causes the tool to not generate any files.')
+    'Do consistency checks of commit-queue.cfg and generated files. Used '
+    'during presubmit. Causes the tool to not generate any files.')
   args = parser.parse_args()
 
   exit_code = 0
 
   cfg = CQConfig.from_file(os.path.join(
-      CHROMIUM_DIR, 'infra', 'config', 'branch', 'cq.cfg'))
-  if cfg.version != 1:
-    raise ValueError("Expected version 1, got %r" % cfg.version)
+      CHROMIUM_DIR, 'infra', 'config', 'global', 'commit-queue.cfg'))
 
   # Only force sorting on luci.chromium.try builders. Others should go away soon
   # anyways...
-  bl = cfg.builder_list(lambda bucket, builder: bucket == 'luci.chromium.try')
+  bl = cfg.builder_list()
   assert len(bl.builders) > 0, (
       'Builders in \'luci.chromium.try\' bucket are missing somehow...')
   names = [b['name'][0] for b in bl.builders]
   bl.sort() # Changes the bl, so the next line is sorted.
   sorted_names = [b['name'][0] for b in bl.builders]
   if sorted_names != names:
-    print 'ERROR: cq.cfg is unsorted.',
+    print 'ERROR: commit-queue.cfg is unsorted.',
     if args.check:
       print
     else:
@@ -349,17 +362,15 @@ def main():
     exit_code = 1
 
   if args.check:
-    if not verify_path_regexps(cfg.get_path_regexps()):
+    if not verify_location_regexps(cfg.get_location_regexps()):
       exit_code = 1
 
-    # TODO(martiniss): Add a check for path_regexp, to make sure they're valid
-    # paths.
     with open(os.path.join(
         CHROMIUM_DIR, 'docs', 'infra', 'cq_builders.md')) as f:
       if cfg.get_markdown_doc() != f.read():
         print (
             'Markdown file is out of date. Please run '
-            '`//infra/config/branch/cq_cfg_presubmit.py` to regenerate the '
+            '`//infra/config/global/cq_cfg_presubmit.py` to regenerate the '
             'docs.')
         exit_code = 1
   else:
