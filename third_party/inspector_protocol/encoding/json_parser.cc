@@ -36,7 +36,7 @@ const char* const kFalseString = "false";
 template <typename Char>
 class JsonParser {
  public:
-  JsonParser(const Platform* platform, JsonParserHandler* handler)
+  JsonParser(const Platform* platform, JSONParserHandler* handler)
       : platform_(platform), handler_(handler) {}
 
   void Parse(const Char* start, size_t length) {
@@ -567,18 +567,18 @@ class JsonParser {
   const Char* start_pos_ = nullptr;
   bool error_ = false;
   const Platform* platform_;
-  JsonParserHandler* handler_;
+  JSONParserHandler* handler_;
 };
 }  // namespace
 
-void parseJSONChars(const Platform* platform, span<uint8_t> chars,
-                    JsonParserHandler* handler) {
+void ParseJSONChars(const Platform* platform, span<uint8_t> chars,
+                    JSONParserHandler* handler) {
   JsonParser<uint8_t> parser(platform, handler);
   parser.Parse(chars.data(), chars.size());
 }
 
-void parseJSONChars(const Platform* platform, span<uint16_t> chars,
-                    JsonParserHandler* handler) {
+void ParseJSONChars(const Platform* platform, span<uint16_t> chars,
+                    JSONParserHandler* handler) {
   JsonParser<uint16_t> parser(platform, handler);
   parser.Parse(chars.data(), chars.size());
 }

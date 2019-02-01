@@ -48,6 +48,19 @@ static constexpr uint8_t kEncodedNull =
 static constexpr uint8_t kInitialByteForDouble =
     EncodeInitialByte(MajorType::SIMPLE_VALUE, 27);
 
+// TAG 24 indicates that what follows is a byte string which is
+// encoded in CBOR format. We use this as a wrapper for
+// maps and arrays, allowing us to skip them, because the
+// byte string carries its size (byte length).
+// https://tools.ietf.org/html/rfc7049#section-2.4.4.1
+static constexpr uint8_t kInitialByteForEnvelope =
+    EncodeInitialByte(MajorType::TAG, 24);
+// The initial byte for a byte string with at most 2^32 bytes
+// of payload. This is used for envelope encoding, even if
+// the byte string is shorter.
+static constexpr uint8_t kInitialByteFor32BitLengthByteString =
+    EncodeInitialByte(MajorType::BYTE_STRING, 26);
+
 // See RFC 7049 Section 2.2.1, indefinite length arrays / maps have additional
 // info = 31.
 static constexpr uint8_t kInitialByteIndefiniteLengthArray =
@@ -73,7 +86,7 @@ static constexpr int kStackLimit = 1000;
 template <typename T>
 void WriteBytesMostSignificantByteFirst(T v, std::vector<uint8_t>* out) {
   for (int shift_bytes = sizeof(T) - 1; shift_bytes >= 0; --shift_bytes)
-    out->push_back(0xff & v >> (shift_bytes * 8));
+    out->push_back(0xff & (v >> (shift_bytes * 8)));
 }
 }  // namespace
 
@@ -215,6 +228,11 @@ void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out) {
 // (kInitialByteForDouble) plus the 64 bits of payload for its value.
 constexpr int kEncodedDoubleSize = 1 + sizeof(uint64_t);
 
+// An envelope is encoded with a specific initial byte
+// (kInitialByteForEnvelope), plus the start byte for a BYTE_STRING with a 32
+// bit wide length, plus a 32 bit length for that string.
+constexpr int kEncodedEnvelopeHeaderSize = 1 + 1 + sizeof(uint32_t);
+
 void EncodeDouble(double value, std::vector<uint8_t>* out) {
   // The additional_info=27 indicates 64 bits for the double follow.
   // See RFC 7049 Section 2.3, Table 1.
@@ -227,25 +245,62 @@ void EncodeDouble(double value, std::vector<uint8_t>* out) {
   WriteBytesMostSignificantByteFirst<uint64_t>(reinterpret.to_uint64, out);
 }
 
+void EnvelopeEncoder::EncodeStart(std::vector<uint8_t>* out) {
+  assert(byte_size_pos_ == 0);
+  out->push_back(kInitialByteForEnvelope);
+  out->push_back(kInitialByteFor32BitLengthByteString);
+  byte_size_pos_ = out->size();
+  out->resize(out->size() + sizeof(uint32_t));
+}
+
+bool EnvelopeEncoder::EncodeStop(std::vector<uint8_t>* out) {
+  assert(byte_size_pos_ != 0);
+  // The byte size is the size of the payload, that is, all the
+  // bytes that were written past the byte size position itself.
+  uint64_t byte_size = out->size() - (byte_size_pos_ + sizeof(uint32_t));
+  // We store exactly 4 bytes, so at most INT32MAX, with most significant
+  // byte first.
+  if (byte_size > std::numeric_limits<uint32_t>::max()) return false;
+  for (int shift_bytes = sizeof(uint32_t) - 1; shift_bytes >= 0;
+       --shift_bytes) {
+    (*out)[byte_size_pos_++] = 0xff & (byte_size >> (shift_bytes * 8));
+  }
+  return true;
+}
+
 namespace {
-class JsonToCBOREncoder : public JsonParserHandler {
+class JSONToCBOREncoder : public JSONParserHandler {
  public:
-  JsonToCBOREncoder(std::vector<uint8_t>* out, Status* status)
+  JSONToCBOREncoder(std::vector<uint8_t>* out, Status* status)
       : out_(out), status_(status) {
     *status_ = Status();
   }
 
   void HandleObjectBegin() override {
+    envelopes_.emplace_back();
+    envelopes_.back().EncodeStart(out_);
     out_->push_back(kInitialByteIndefiniteLengthMap);
   }
 
-  void HandleObjectEnd() override { out_->push_back(kStopByte); };
+  void HandleObjectEnd() override {
+    out_->push_back(kStopByte);
+    assert(!envelopes_.empty());
+    envelopes_.back().EncodeStop(out_);
+    envelopes_.pop_back();
+  };
 
   void HandleArrayBegin() override {
+    envelopes_.emplace_back();
+    envelopes_.back().EncodeStart(out_);
     out_->push_back(kInitialByteIndefiniteLengthArray);
   }
 
-  void HandleArrayEnd() override { out_->push_back(kStopByte); };
+  void HandleArrayEnd() override {
+    out_->push_back(kStopByte);
+    assert(!envelopes_.empty());
+    envelopes_.back().EncodeStop(out_);
+    envelopes_.pop_back();
+  };
 
   void HandleString16(std::vector<uint16_t> chars) override {
     for (uint16_t ch : chars) {
@@ -286,26 +341,27 @@ class JsonToCBOREncoder : public JsonParserHandler {
 
  private:
   std::vector<uint8_t>* out_;
+  std::vector<EnvelopeEncoder> envelopes_;
   Status* status_;
 };
 }  // namespace
 
-std::unique_ptr<JsonParserHandler> NewJsonToCBOREncoder(
+std::unique_ptr<JSONParserHandler> NewJSONToCBOREncoder(
     std::vector<uint8_t>* out, Status* status) {
-  return std::make_unique<JsonToCBOREncoder>(out, status);
+  return std::make_unique<JSONToCBOREncoder>(out, status);
 }
 
 namespace {
 // Below are three parsing routines for CBOR, which cover enough
 // to roundtrip JSON messages.
 bool ParseMap(int32_t stack_depth, CBORTokenizer* tokenizer,
-              JsonParserHandler* out);
+              JSONParserHandler* out);
 bool ParseArray(int32_t stack_depth, CBORTokenizer* tokenizer,
-                JsonParserHandler* out);
+                JSONParserHandler* out);
 bool ParseValue(int32_t stack_depth, CBORTokenizer* tokenizer,
-                JsonParserHandler* out);
+                JSONParserHandler* out);
 
-void ParseUTF16String(CBORTokenizer* tokenizer, JsonParserHandler* out) {
+void ParseUTF16String(CBORTokenizer* tokenizer, JSONParserHandler* out) {
   std::vector<uint16_t> value;
   span<uint8_t> rep = tokenizer->GetString16WireRep();
   for (std::ptrdiff_t ii = 0; ii < rep.size(); ii += 2)
@@ -315,7 +371,7 @@ void ParseUTF16String(CBORTokenizer* tokenizer, JsonParserHandler* out) {
 }
 
 // For now this method only covers US-ASCII. Later, we may allow UTF8.
-bool ParseASCIIString(CBORTokenizer* tokenizer, JsonParserHandler* out) {
+bool ParseASCIIString(CBORTokenizer* tokenizer, JSONParserHandler* out) {
   assert(tokenizer->TokenTag() == CBORTokenTag::STRING8);
   std::vector<uint16_t> value16;
   for (uint8_t ch : tokenizer->GetString8()) {
@@ -334,12 +390,15 @@ bool ParseASCIIString(CBORTokenizer* tokenizer, JsonParserHandler* out) {
 }
 
 bool ParseValue(int32_t stack_depth, CBORTokenizer* tokenizer,
-                JsonParserHandler* out) {
+                JSONParserHandler* out) {
   if (stack_depth > kStackLimit) {
     out->HandleError(
         Status{Error::CBOR_STACK_LIMIT_EXCEEDED, tokenizer->Status().pos});
     return false;
   }
+  // Skip past the envelope to get to what's inside.
+  if (tokenizer->TokenTag() == CBORTokenTag::ENVELOPE)
+    tokenizer->EnterEnvelope();
   switch (tokenizer->TokenTag()) {
     case CBORTokenTag::ERROR:
       out->HandleError(tokenizer->Status());
@@ -394,7 +453,7 @@ bool ParseValue(int32_t stack_depth, CBORTokenizer* tokenizer,
 // ParseArray may only be called after an indefinite length array has been
 // detected.
 bool ParseArray(int32_t stack_depth, CBORTokenizer* tokenizer,
-                JsonParserHandler* out) {
+                JSONParserHandler* out) {
   assert(tokenizer->TokenTag() == CBORTokenTag::ARRAY_START);
   tokenizer->Next();
   out->HandleArrayBegin();
@@ -420,7 +479,7 @@ bool ParseArray(int32_t stack_depth, CBORTokenizer* tokenizer,
 // ParseArray may only be called after an indefinite length array has been
 // detected.
 bool ParseMap(int32_t stack_depth, CBORTokenizer* tokenizer,
-              JsonParserHandler* out) {
+              JSONParserHandler* out) {
   assert(tokenizer->TokenTag() == CBORTokenTag::MAP_START);
   out->HandleObjectBegin();
   tokenizer->Next();
@@ -453,14 +512,27 @@ bool ParseMap(int32_t stack_depth, CBORTokenizer* tokenizer,
 }
 }  // namespace
 
-void ParseCBOR(span<uint8_t> bytes, JsonParserHandler* json_out) {
-  CBORTokenizer tokenizer(bytes);
-  if (tokenizer.TokenTag() == CBORTokenTag::DONE) {
+void ParseCBOR(span<uint8_t> bytes, JSONParserHandler* json_out) {
+  if (bytes.empty()) {
     json_out->HandleError(Status{Error::CBOR_NO_INPUT, 0});
     return;
   }
-  if (tokenizer.TokenTag() != CBORTokenTag::MAP_START) {
+  if (bytes[0] != kInitialByteForEnvelope) {
     json_out->HandleError(Status{Error::CBOR_INVALID_START_BYTE, 0});
+    return;
+  }
+  CBORTokenizer tokenizer(bytes);
+  if (tokenizer.TokenTag() == CBORTokenTag::ERROR) {
+    json_out->HandleError(tokenizer.Status());
+    return;
+  }
+  // We checked for the envelope start byte above, so the tokenizer
+  // must agree here, since it's not an error.
+  assert(tokenizer.TokenTag() == CBORTokenTag::ENVELOPE);
+  tokenizer.EnterEnvelope();
+  if (tokenizer.TokenTag() != CBORTokenTag::MAP_START) {
+    json_out->HandleError(
+        Status{Error::CBOR_MAP_START_EXPECTED, tokenizer.Status().pos});
     return;
   }
   if (!ParseMap(/*stack_depth=*/1, &tokenizer, json_out)) return;
@@ -474,7 +546,7 @@ void ParseCBOR(span<uint8_t> bytes, JsonParserHandler* json_out) {
 }
 
 CBORTokenizer::CBORTokenizer(span<uint8_t> bytes) : bytes_(bytes) {
-  ReadNextToken();
+  ReadNextToken(/*enter_envelope=*/false);
 }
 CBORTokenizer::~CBORTokenizer() {}
 
@@ -483,7 +555,12 @@ CBORTokenTag CBORTokenizer::TokenTag() const { return token_tag_; }
 void CBORTokenizer::Next() {
   if (token_tag_ == CBORTokenTag::ERROR || token_tag_ == CBORTokenTag::DONE)
     return;
-  ReadNextToken();
+  ReadNextToken(/*enter_envelope=*/false);
+}
+
+void CBORTokenizer::EnterEnvelope() {
+  assert(token_tag_ == CBORTokenTag::ENVELOPE);
+  ReadNextToken(/*enter_envelope=*/true);
 }
 
 Status CBORTokenizer::Status() const { return status_; }
@@ -528,9 +605,13 @@ span<uint8_t> CBORTokenizer::GetBinary() const {
       token_start_internal_value_);
 }
 
-void CBORTokenizer::ReadNextToken() {
-  status_.pos =
-      status_.pos == Status::npos() ? 0 : status_.pos + token_byte_length_;
+void CBORTokenizer::ReadNextToken(bool enter_envelope) {
+  if (enter_envelope) {
+    status_.pos += kEncodedEnvelopeHeaderSize;
+  } else {
+    status_.pos =
+        status_.pos == Status::npos() ? 0 : status_.pos + token_byte_length_;
+  }
   status_.error = Error::OK;
   if (status_.pos >= bytes_.size()) {
     token_tag_ = CBORTokenTag::DONE;
@@ -574,6 +655,30 @@ void CBORTokenizer::ReadNextToken() {
         return;
       }
       SetToken(CBORTokenTag::DOUBLE, kEncodedDoubleSize);
+      return;
+    }
+    case kInitialByteForEnvelope: {  // ENVELOPE
+      if (status_.pos + kEncodedEnvelopeHeaderSize > bytes_.size()) {
+        SetError(Error::CBOR_INVALID_ENVELOPE);
+        return;
+      }
+      // The envelope must be a byte string with 32 bit length.
+      if (bytes_[status_.pos + 1] != kInitialByteFor32BitLengthByteString) {
+        SetError(Error::CBOR_INVALID_ENVELOPE);
+        return;
+      }
+      // Read the length of the byte string.
+      token_start_internal_value_ = ReadBytesMostSignificantByteFirst<uint32_t>(
+          bytes_.subspan(status_.pos + 2));
+      // Make sure the payload is contained within the message.
+      if (token_start_internal_value_ + kEncodedEnvelopeHeaderSize +
+              status_.pos >
+          size_t(bytes_.size())) {
+        SetError(Error::CBOR_INVALID_ENVELOPE);
+        return;
+      }
+      SetToken(CBORTokenTag::ENVELOPE,
+               kEncodedEnvelopeHeaderSize + token_start_internal_value_);
       return;
     }
     default: {

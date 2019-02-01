@@ -13,10 +13,10 @@
 
 namespace inspector_protocol {
 // JSON parsing routines.
-void parseJSONChars(const Platform* deps, span<uint8_t> chars,
-                    JsonParserHandler* handler);
-void parseJSONChars(const Platform* deps, span<uint16_t> chars,
-                    JsonParserHandler* handler);
+void ParseJSONChars(const Platform* deps, span<uint8_t> chars,
+                    JSONParserHandler* handler);
+void ParseJSONChars(const Platform* deps, span<uint16_t> chars,
+                    JSONParserHandler* handler);
 }  // namespace inspector_protocol
 
 #endif  // INSPECTOR_PROTOCOL_ENCODING_JSON_PARSER_H_

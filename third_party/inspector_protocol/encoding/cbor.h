@@ -17,7 +17,13 @@ namespace inspector_protocol {
 // The binary encoding for the inspector protocol follows the CBOR specification
 // (RFC 7049). Additional constraints:
 // - Only indefinite length maps and arrays are supported.
-// - At the top level, a message must be an indefinite length map.
+// - Maps and arrays are wrapped with an envelope, that is, a
+//   CBOR tag with value 24 followed by a byte string specifying
+//   the byte length of the enclosed map / array. The byte string
+//   must use a 32 bit wide length.
+// - At the top level, a message must be an indefinite length map
+//   wrapped by an envelope.
+// - Maximal size for messages is 2^32 (4 GB).
 // - For scalars, we support only the int32_t range, encoded as
 //   UNSIGNED/NEGATIVE (major types 0 / 1).
 // - UTF16 strings, including with unbalanced surrogate pairs, are encoded
@@ -50,18 +56,39 @@ void EncodeBinary(span<uint8_t> in, std::vector<uint8_t>* out);
 // with additional info = 27, followed by 8 bytes in big endian.
 void EncodeDouble(double value, std::vector<uint8_t>* out);
 
+// An envelope indicates the byte length of a wrapped item.
+// We use this for maps and array, which allows the decoder
+// to skip such (nested) values whole sale.
+// It's implemented as a CBOR tag (major type 6) with additional
+// info = 24, followed by a byte string with a 32 bit length value;
+// so the maximal structure that we can wrap is 2^32 bits long.
+// See also: https://tools.ietf.org/html/rfc7049#section-2.4.4.1
+class EnvelopeEncoder {
+ public:
+  // Emits the envelope start bytes and records the position for the
+  // byte size in |byte_size_pos_|. Also emits empty bytes for the
+  // byte sisze so that encoding can continue.
+  void EncodeStart(std::vector<uint8_t>* out);
+  // This records the current size in |out| at position byte_size_pos_.
+  // Returns true iff successful.
+  bool EncodeStop(std::vector<uint8_t>* out);
+
+ private:
+  uint64_t byte_size_pos_ = 0;
+};
+
 // This can be used to convert from JSON to CBOR, by passing the
 // return value to the routines in json_parser.h.  The handler will encode into
 // |out|, and iff an error occurs it will set |status| to an error and clear
 // |out|. Otherwise, |status.ok()| will be |true|.
-std::unique_ptr<JsonParserHandler> NewJsonToCBOREncoder(
+std::unique_ptr<JSONParserHandler> NewJSONToCBOREncoder(
     std::vector<uint8_t>* out, Status* status);
 
 // Parses a CBOR encoded message from |bytes|, sending JSON events to
 // |json_out|. If an error occurs, sends |out->HandleError|, and parsing stops.
 // The client is responsible for discarding the already received information in
 // that case.
-void ParseCBOR(span<uint8_t> bytes, JsonParserHandler* json_out);
+void ParseCBOR(span<uint8_t> bytes, JSONParserHandler* json_out);
 
 // Tags for the tokens within a CBOR message that CBORStream understands.
 // Note that this is not the same terminology as the CBOR spec (RFC 7049),
@@ -93,6 +120,12 @@ enum class CBORTokenTag {
   ARRAY_START,
   // Ends a map or an array.
   STOP,
+  // An envelope indicator, wrapping a map or array.
+  // Internally this carries the byte length of the wrapped
+  // map or array. While CBORTokenizer::Next() will read / skip the entire
+  // envelope, CBORTokenizer::EnterEnvelope() reads the tokens
+  // inside of it.
+  ENVELOPE,
   // We've reached the end there is nothing else to read.
   DONE,
 };
@@ -113,6 +146,11 @@ class CBORTokenizer {
 
   // Advances to the next token.
   void Next();
+  // Can only be called if TokenTag() == CBORTokenTag::ENVELOPE.
+  // While Next() would skip past the entire envelope / what it's
+  // wrapping, EnterEnvelope positions the cursor inside of the envelope,
+  // letting the client explore the nested structure.
+  void EnterEnvelope();
 
   // If TokenTag() is CBORTokenTag::ERROR, then Status().error describes
   // the error more precisely; otherwise it'll be set to Error::OK.
@@ -139,7 +177,7 @@ class CBORTokenizer {
   span<uint8_t> GetBinary() const;
 
  private:
-  void ReadNextToken();
+  void ReadNextToken(bool enter_envelope);
   void SetToken(CBORTokenTag token, int64_t token_byte_length);
   void SetError(Error error);
 
