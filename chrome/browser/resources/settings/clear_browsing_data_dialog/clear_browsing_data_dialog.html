@@ -29,14 +29,19 @@
       }
 
       #clearBrowsingDataDialog {
+        --border-top-color: var(--paper-grey-300);
         --cr-dialog-top-container-min-height: 42px;
         --cr-dialog-title: {
           padding-bottom: 8px;
         };
         --cr-dialog-body-container: {
-          border-top: 1px solid var(--paper-grey-300);
+          border-top: 1px solid var(--border-top-color);
           height: var(--body-container-height);
         };
+      }
+
+      :host-context([dark]) #clearBrowsingDataDialog {
+        --border-top-color: var(--cr-separator-color);
       }
 
       #clearBrowsingDataDialog:not(.fully-rendered) {
@@ -51,6 +56,10 @@
         background: var(--paper-grey-50);
         border-top: none;
         padding: 0;
+      }
+
+      :host-context([dark]) #clearBrowsingDataDialog [slot=footer] {
+        background: rgb(50, 54, 57);  /* Custom color from Namrata. */
       }
 
       .row {
