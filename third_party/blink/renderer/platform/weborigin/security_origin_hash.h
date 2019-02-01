@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_ORIGIN_HASH_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -43,10 +44,23 @@ namespace blink {
 struct SecurityOriginHash {
   STATIC_ONLY(SecurityOriginHash);
   static unsigned GetHash(const SecurityOrigin* origin) {
-    unsigned hash_codes[3] = {
-        origin->Protocol().Impl() ? origin->Protocol().Impl()->GetHash() : 0,
-        origin->Host().Impl() ? origin->Host().Impl()->GetHash() : 0,
-        origin->Port()};
+    base::Optional<base::UnguessableToken> nonce =
+        origin->GetNonceForSerialization();
+    size_t nonce_hash = nonce ? base::UnguessableTokenHash()(*nonce) : 0;
+
+    unsigned hash_codes[] = {
+      origin->Protocol().Impl() ? origin->Protocol().Impl()->GetHash() : 0,
+      origin->Host().Impl() ? origin->Host().Impl()->GetHash() : 0,
+      origin->Port(),
+#if ARCH_CPU_32_BITS
+      nonce_hash,
+#elif ARCH_CPU_64_BITS
+      static_cast<unsigned>(nonce_hash),
+      static_cast<unsigned>(nonce_hash >> 32),
+#else
+#error "Unknown bits"
+#endif
+    };
     return StringHasher::HashMemory<sizeof(hash_codes)>(hash_codes);
   }
   static unsigned GetHash(const scoped_refptr<const SecurityOrigin>& origin) {
