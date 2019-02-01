@@ -100,7 +100,6 @@ class TestResponseDelegate
 
   std::unique_ptr<android_webview::InputStream> OpenInputStream(
       JNIEnv* env) override {
-    EXPECT_TRUE(!thread_checker_.CalledOnValidThread());
     return std::move(input_stream_);
   }
 
