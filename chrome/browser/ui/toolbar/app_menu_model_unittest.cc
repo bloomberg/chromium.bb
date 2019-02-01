@@ -9,7 +9,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -188,7 +187,6 @@ TEST_F(AppMenuModelTest, GlobalError) {
   // Make sure services required for tests are initialized.
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
-  ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
   const int command1 = 1234567;
   MenuError* error1 = new MenuError(command1);
   service->AddGlobalError(base::WrapUnique(error1));
