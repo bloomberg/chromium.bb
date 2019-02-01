@@ -141,6 +141,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                   action:@selector(showMenu)
         forControlEvents:UIControlEventTouchUpInside];
 
+  _field.placeholder = @"Search or type URL";
   _field.backgroundColor = [UIColor whiteColor];
   _field.tintColor = _headerBackgroundView.backgroundColor;
   [_field setContentHuggingPriority:UILayoutPriorityDefaultLow - 1
