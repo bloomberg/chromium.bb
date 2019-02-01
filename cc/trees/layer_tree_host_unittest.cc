@@ -8664,9 +8664,8 @@ class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
   }
 };
 
-// TODO(crbug.com/851231): Disabled this test due to flakiness.
-// MULTI_THREAD_TEST_F(
-//    LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
+MULTI_THREAD_TEST_F(
+    LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw);
 
 class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
  public:
