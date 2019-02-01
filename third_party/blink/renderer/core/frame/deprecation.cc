@@ -594,6 +594,14 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "more details.",
                   MilestoneString(kM75))};
 
+    case WebFeature::kCustomCursorIntersectsViewport:
+      return {
+          "CustomCursorIntersectsViewport", kM75,
+          WillBeRemoved(
+              "Custom cursors with size greater than 32x32 DIP intersecting "
+              "native UI",
+              kM75, "5825971391299584")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
