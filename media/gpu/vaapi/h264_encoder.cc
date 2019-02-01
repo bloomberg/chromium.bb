@@ -172,6 +172,8 @@ bool H264Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
   }
 
   if (pic->type == H264SliceHeader::kISlice) {
+    // We always generate SPS and PPS with I(DR) frame. This will help for Seek
+    // operation on the generated stream.
     if (!accelerator_->SubmitPackedHeaders(encode_job, packed_sps_,
                                            packed_pps_)) {
       DVLOGF(1) << "Failed submitting keyframe headers";
@@ -213,7 +215,19 @@ bool H264Encoder::UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
   curr_params_.cpb_size_bits =
       curr_params_.bitrate_bps * curr_params_.cpb_window_size_ms / 1000;
 
+  bool previous_encoding_parameters_changed = encoding_parameters_changed_;
+
   UpdateSPS();
+
+  // If SPS parameters are updated, it is required to send the SPS with IDR
+  // frame. However, as a special case, we do not generate IDR frame if only
+  // bitrate and framerate parameters are updated. This is safe because these
+  // will not make a difference on decoder processing. The updated SPS will be
+  // sent a next periodic or requested I(DR) frame. On the other hand, bitrate
+  // and framerate parameter
+  // changes must be affected for encoding. UpdateSPS()+SubmitFrameParameters()
+  // shall apply them to an encoder properly.
+  encoding_parameters_changed_ = previous_encoding_parameters_changed;
   return true;
 }
 
