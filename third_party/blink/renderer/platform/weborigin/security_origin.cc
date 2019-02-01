@@ -306,6 +306,9 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
     return true;
   }
 
+  // This is needed to ensure an origin can access to itself under nullified
+  // document.domain.
+  // TODO(tzik): Update the nulled domain handling and remove this condition.
   if (this == other) {
     detail = AccessResultDomainDetail::kDomainNotRelevant;
     return true;
@@ -313,7 +316,7 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other,
 
   if (IsOpaque() || other->IsOpaque()) {
     detail = AccessResultDomainDetail::kDomainNotRelevant;
-    return false;
+    return nonce_if_opaque_ == other->nonce_if_opaque_;
   }
 
   // document.domain handling, as per
@@ -545,14 +548,15 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
 }
 
 bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
+  // This is needed to ensure a local origin considered to have the same scheme,
+  // host, and port to itself.
+  // TODO(tzik): Make the local origin unique but not opaque, and remove this
+  // condition.
   if (this == other)
     return true;
 
-  if (IsOpaque() || other->IsOpaque()) {
-    // TODO(dcheng|nasko): Add nonce equality check here, such that opaque
-    // origins that are copy of each other can be equal.
-    return false;
-  }
+  if (IsOpaque() || other->IsOpaque())
+    return nonce_if_opaque_ == other->nonce_if_opaque_;
 
   if (host_ != other->host_)
     return false;

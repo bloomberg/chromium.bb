@@ -47,6 +47,7 @@ namespace blink {
 
 class KURL;
 class URLSecurityOriginMap;
+struct SecurityOriginHash;
 
 // An identifier which defines the source of content (e.g. a document) and
 // restricts what other objects it is permitted to access (based on their
@@ -306,6 +307,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   constexpr static const int kInvalidPort = 0;
 
   friend struct mojo::UrlOriginAdapter;
+  friend struct blink::SecurityOriginHash;
 
   // Creates a new opaque SecurityOrigin using the supplied |precursor| origin
   // and |nonce|.

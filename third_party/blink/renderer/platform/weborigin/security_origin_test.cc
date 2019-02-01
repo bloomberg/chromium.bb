@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -806,6 +807,29 @@ TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EXPECT_EQ("", origin->Host());
   EXPECT_EQ(0, origin->Port());
   url::Shutdown();
+}
+
+TEST_F(SecurityOriginTest, OpaqueIsolatedCopy) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateUniqueOpaque();
+  scoped_refptr<const SecurityOrigin> copied = origin->IsolatedCopy();
+  EXPECT_TRUE(origin->CanAccess(copied.get()));
+  EXPECT_TRUE(origin->IsSameSchemeHostPort(copied.get()));
+  EXPECT_EQ(SecurityOriginHash::GetHash(origin),
+            SecurityOriginHash::GetHash(copied));
+  EXPECT_TRUE(SecurityOriginHash::Equal(origin, copied));
+}
+
+TEST_F(SecurityOriginTest, EdgeCases) {
+  scoped_refptr<SecurityOrigin> nulled_domain =
+      SecurityOrigin::CreateFromString("http://localhost");
+  nulled_domain->SetDomainFromDOM("null");
+  EXPECT_TRUE(nulled_domain->CanAccess(nulled_domain.get()));
+
+  scoped_refptr<SecurityOrigin> local =
+      SecurityOrigin::CreateFromString("file:///foo/bar");
+  local->BlockLocalAccessFromLocalOrigin();
+  EXPECT_TRUE(local->IsSameSchemeHostPort(local.get()));
 }
 
 }  // namespace blink
