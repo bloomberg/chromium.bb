@@ -4,6 +4,7 @@
 
 #include "ui/gfx/animation/animation.h"
 
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -15,6 +16,9 @@ namespace gfx {
 // static
 Animation::RichAnimationRenderMode Animation::rich_animation_rendering_mode_ =
     RichAnimationRenderMode::PLATFORM;
+
+// static
+base::Optional<bool> Animation::prefers_reduced_motion_;
 
 Animation::Animation(base::TimeDelta timer_interval)
     : timer_interval_(timer_interval),
@@ -107,19 +111,30 @@ bool Animation::ShouldRenderRichAnimationImpl() {
 }
 #endif
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && (!defined(OS_MACOSX) || defined(OS_IOS))
 // static
 bool Animation::ScrollAnimationsEnabledBySystem() {
   // Defined in platform specific files for Windows and OSX.
   return true;
 }
 
-bool Animation::PrefersReducedMotion() {
+// static
+void Animation::UpdatePrefersReducedMotion() {
+  // prefers_reduced_motion_ should only be modified on the UI thread.
+  // TODO(crbug.com/927163): DCHECK this assertion once tests are well-behaved.
+
   // By default, we assume that animations are enabled, to avoid impacting the
   // experience for users on systems that don't have APIs for reduced motion.
-  return false;
+  prefers_reduced_motion_ = false;
 }
 #endif
+
+// static
+bool Animation::PrefersReducedMotion() {
+  if (!prefers_reduced_motion_)
+    UpdatePrefersReducedMotion();
+  return *prefers_reduced_motion_;
+}
 
 bool Animation::ShouldSendCanceledFromStop() {
   return false;

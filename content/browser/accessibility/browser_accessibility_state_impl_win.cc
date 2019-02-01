@@ -15,7 +15,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/gfx/animation/animation.h"
 
 namespace content {
 
@@ -67,11 +69,24 @@ class WindowsAccessibilityEnabler : public ui::IAccessible2UsageObserver {
   bool acc_name_called_ = false;
 };
 
+void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (message == WM_SETTINGCHANGE && wparam == SPI_SETCLIENTAREAANIMATION) {
+    gfx::Animation::UpdatePrefersReducedMotion();
+    for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
+      wc->GetRenderViewHost()->OnWebkitPreferencesChanged();
+    }
+  }
+}
+
 }  // namespace
 
 void BrowserAccessibilityStateImpl::PlatformInitialize() {
   ui::GetIAccessible2UsageObserverList().AddObserver(
       new WindowsAccessibilityEnabler());
+
+  singleton_hwnd_observer_.reset(
+      new gfx::SingletonHwndObserver(base::BindRepeating(&OnWndProc)));
 }
 
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
