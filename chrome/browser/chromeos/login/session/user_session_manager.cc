@@ -92,7 +92,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
@@ -135,7 +134,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/quirks/quirks_manager.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -149,6 +147,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "rlz/buildflags/buildflags.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -1306,13 +1305,18 @@ void UserSessionManager::InitProfilePreferences(
     // not be available when unlocking a previously opened profile, or when
     // creating a supervised users.  However, in these cases the gaia_id should
     // be already available in the account tracker.
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
     std::string gaia_id = user_context.GetGaiaID();
     if (gaia_id.empty()) {
-      AccountTrackerService* account_tracker =
-          AccountTrackerServiceFactory::GetForProfile(profile);
-      const AccountInfo info = account_tracker->FindAccountInfoByEmail(
-          user_context.GetAccountId().GetUserEmail());
-      gaia_id = info.gaia;
+      base::Optional<AccountInfo> maybe_account_info =
+          identity_manager
+              ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+                  user_context.GetAccountId().GetUserEmail());
+
+      DCHECK(maybe_account_info.has_value() || IsRunningTest());
+      if (maybe_account_info.has_value())
+        gaia_id = maybe_account_info.value().gaia;
 
       // Use a fake gaia id for tests that do not have it.
       if (IsRunningTest() && gaia_id.empty())
@@ -1328,29 +1332,27 @@ void UserSessionManager::InitProfilePreferences(
     // mainstream Identity Service API once that API exists. Note that this
     // might require supplying a valid refresh token here as opposed to an
     // empty string.
-    identity::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForProfile(profile);
     identity_manager->SetPrimaryAccountSynchronously(
         gaia_id, user_context.GetAccountId().GetUserEmail(),
         /*refresh_token=*/std::string());
     std::string account_id = identity_manager->GetPrimaryAccountId();
+    VLOG(1) << "Seed IdentityManager with the authenticated account info, "
+            << "success=" << !account_id.empty();
+
     const user_manager::User* user =
         user_manager->FindUser(user_context.GetAccountId());
     bool is_child = user->GetType() == user_manager::USER_TYPE_CHILD;
     DCHECK(is_child ==
            (user_context.GetUserType() == user_manager::USER_TYPE_CHILD));
-    AccountTrackerService* account_tracker =
-        AccountTrackerServiceFactory::GetForProfile(profile);
-    account_tracker->SetIsChildAccount(account_id, is_child);
-    VLOG(1)
-        << "Seed IdentityManager and SigninManagerBase with the "
-        << "authenticated account info, success="
-        << IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount();
 
+    base::Optional<bool> is_under_advanced_protection;
     if (IsOnlineSignin(user_context)) {
-      account_tracker->SetIsAdvancedProtectionAccount(
-          account_id, user_context.IsUnderAdvancedProtection());
+      is_under_advanced_protection = user_context.IsUnderAdvancedProtection();
     }
+
+    identity_manager->GetAccountsMutator()->UpdateAccountInfo(
+        account_id, /*is_child_account=*/is_child,
+        is_under_advanced_protection);
 
     if (is_child &&
         base::FeatureList::IsEnabled(::features::kDMServerOAuthForChildUser)) {
