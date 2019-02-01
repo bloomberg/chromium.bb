@@ -24,6 +24,10 @@
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
 
+// Switch to the tab best represented by the given |params|.
+- (void)switchToTabWithParams:
+    (const web::NavigationManager::WebLoadParams&)params;
+
 // Called before the instance is deallocated.
 - (void)shutdown;
 

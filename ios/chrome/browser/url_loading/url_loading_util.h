@@ -19,7 +19,8 @@ class ChromeBrowserState;
 namespace web {
 class WebState;
 }
-class WebStateList;
+class Browser;
+class UrlLoadingNotifier;
 
 // Possible results from calling LoadURL().
 enum class URLLoadResult {
@@ -60,12 +61,11 @@ void RestoreTab(const SessionID session_id,
                 ios::ChromeBrowserState* browser_state);
 
 // Returns the result (as defined in the enum definition above) of initiating a
-// URL load as defined in |chrome_params|, using |browser_state| and the active
-// webState in |web_state_list|. |restorer| is provied for dependencies which
-// may need to save the current session window.
+// URL load as defined in |chrome_params|.
+// TODO(crbug.com/907527): hoist into url_loading_service and remove
+// URLLoadResult.
 URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
-                      ios::ChromeBrowserState* browser_state,
-                      WebStateList* web_state_list,
-                      id<SessionWindowRestoring> restorer);
+                      Browser* browser,
+                      UrlLoadingNotifier* notifier);
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_UTIL_H_

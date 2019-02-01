@@ -9,6 +9,7 @@
 #include "components/sessions/core/tab_restore_service_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
@@ -93,20 +94,17 @@ void RestoreTab(const SessionID session_id,
   restoreService->RestoreEntryById(delegate, session_id, disposition);
 }
 
-// TODO(crbug.com/907527): make this into a url loading service in this folder.
 URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
-                      ios::ChromeBrowserState* browser_state,
-                      WebStateList* web_state_list,
-                      id<SessionWindowRestoring> restorer) {
+                      Browser* browser,
+                      UrlLoadingNotifier* notifier) {
   web::NavigationManager::WebLoadParams params = chrome_params.web_params;
   if (chrome_params.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
     return URLLoadResult::SWITCH_TO_TAB;
   }
 
-  UrlLoadingNotifier* urlLoadingNotifier =
-      ios::UrlLoadingNotifierFactory::GetForBrowserState(browser_state);
+  ios::ChromeBrowserState* browser_state = browser->GetBrowserState();
 
-  urlLoadingNotifier->TabWillOpenUrl(params.url, params.transition_type);
+  notifier->TabWillOpenUrl(params.url, params.transition_type);
 
   // NOTE: This check for the Crash Host URL is here to avoid the URL from
   // ending up in the history causing the app to crash at every subsequent
@@ -115,7 +113,7 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
     InduceBrowserCrash(params.url);
     // Under a debugger, the app can continue working even after the CHECK.
     // Adding a return avoids adding the crash url to history.
-    urlLoadingNotifier->TabFailedToOpenUrl(params.url, params.transition_type);
+    notifier->TabFailedToOpenUrl(params.url, params.transition_type);
     return URLLoadResult::INDUCED_CRASH;
   }
 
@@ -123,17 +121,20 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
   // so.
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(browser_state);
+  WebStateList* web_state_list = browser->GetWebStateList();
+  id<SessionWindowRestoring> restorer =
+      (id<SessionWindowRestoring>)browser->GetTabModel();
   if (prerenderService &&
       prerenderService->MaybeLoadPrerenderedURL(
           params.url, params.transition_type, web_state_list, restorer)) {
-    urlLoadingNotifier->TabDidPrerenderUrl(params.url, params.transition_type);
+    notifier->TabDidPrerenderUrl(params.url, params.transition_type);
     return URLLoadResult::LOADED_PRERENDER;
   }
 
   // Some URLs are not allowed while in incognito.  If we are in incognito and
   // load a disallowed URL, instead create a new tab not in the incognito state.
   if (browser_state->IsOffTheRecord() && !IsURLAllowedInIncognito(params.url)) {
-    urlLoadingNotifier->TabFailedToOpenUrl(params.url, params.transition_type);
+    notifier->TabFailedToOpenUrl(params.url, params.transition_type);
     return URLLoadResult::DISALLOWED_IN_INCOGNITO;
   }
 
@@ -156,13 +157,13 @@ URLLoadResult LoadURL(const ChromeLoadParams& chrome_params,
                                ui::PAGE_TRANSITION_RELOAD)) {
     current_web_state->GetNavigationManager()->Reload(
         web::ReloadType::NORMAL, true /* check_for_repost */);
-    urlLoadingNotifier->TabDidReloadUrl(params.url, params.transition_type);
+    notifier->TabDidReloadUrl(params.url, params.transition_type);
     return URLLoadResult::RELOADED;
   }
 
   current_web_state->GetNavigationManager()->LoadURLWithParams(params);
 
-  urlLoadingNotifier->TabDidOpenUrl(params.url, params.transition_type);
+  notifier->TabDidOpenUrl(params.url, params.transition_type);
 
   return URLLoadResult::NORMAL_LOAD;
 }

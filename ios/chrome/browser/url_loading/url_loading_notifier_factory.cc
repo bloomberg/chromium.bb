@@ -9,9 +9,6 @@
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/url_loading/url_loading_notifier.h"
-#include "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
-
-namespace ios {
 
 // static
 UrlLoadingNotifier* UrlLoadingNotifierFactory::GetForBrowserState(
@@ -29,11 +26,7 @@ UrlLoadingNotifierFactory* UrlLoadingNotifierFactory::GetInstance() {
 UrlLoadingNotifierFactory::UrlLoadingNotifierFactory()
     : BrowserStateKeyedServiceFactory(
           "UrlLoadingNotifier",
-          BrowserStateDependencyManager::GetInstance()) {
-  // TODO(crbug.com/907527): add when available:
-  // DependsOn(UrlLoadingServiceFactory::GetInstance());
-}
-
+          BrowserStateDependencyManager::GetInstance()) {}
 UrlLoadingNotifierFactory::~UrlLoadingNotifierFactory() {}
 
 std::unique_ptr<KeyedService>
@@ -46,5 +39,3 @@ web::BrowserState* UrlLoadingNotifierFactory::GetBrowserStateToUse(
     web::BrowserState* context) const {
   return GetBrowserStateOwnInstanceInIncognito(context);
 }
-
-}  // namespace ios

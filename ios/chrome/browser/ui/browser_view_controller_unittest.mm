@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -46,6 +47,8 @@
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -149,6 +152,32 @@ using web::WebStateImpl;
 }
 @end
 
+@interface URLLoadingServiceTestDelegate : NSObject <URLLoadingServiceDelegate>
+@property(nonatomic, readonly) BrowserViewController* bvc;
+@end
+
+@implementation URLLoadingServiceTestDelegate
+
+- (instancetype)initWithBrowserViewController:(BrowserViewController*)bvc {
+  if ((self = [super init])) {
+    _bvc = bvc;
+  }
+  return self;
+}
+
+#pragma mark - URLLoadingServiceDelegate
+
+- (void)switchToTabWithParams:
+    (const web::NavigationManager::WebLoadParams&)params {
+  [self.bvc switchToTabWithParams:params];
+}
+
+- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
+  [self.bvc webPageOrderedOpen:command];
+}
+
+@end
+
 #pragma mark -
 
 namespace {
@@ -246,6 +275,16 @@ class BrowserViewControllerTest : public BlockCleanupTest {
             chrome_browser_state_.get());
     template_url_service->Load();
 
+    browser_ = new TestBrowser(chrome_browser_state_.get(), tabModel);
+
+    url_loading_delegate_ = [[URLLoadingServiceTestDelegate alloc]
+        initWithBrowserViewController:bvc_];
+    UrlLoadingService* urlLoadingService =
+        UrlLoadingServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
+    urlLoadingService->SetDelegate(url_loading_delegate_);
+    urlLoadingService->SetBrowser(browser_);
+
     // Force the view to load.
     UIWindow* window = [[UIWindow alloc] initWithFrame:CGRectZero];
     [window addSubview:[bvc_ view]];
@@ -255,6 +294,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   void TearDown() override {
     [[bvc_ view] removeFromSuperview];
     [bvc_ shutdown];
+
+    // Cleanup to avoid debugger crash in non empty observer lists.
+    WebStateList* web_state_list = tabModel_.webStateList;
+    web_state_list->CloseAllWebStates(
+        WebStateList::ClosingFlags::CLOSE_NO_FLAGS);
 
     BlockCleanupTest::TearDown();
   }
@@ -284,6 +328,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   OCMockObject* dependencyFactory_;
   CommandDispatcher* command_dispatcher_;
   BrowserViewController* bvc_;
+  Browser* browser_;
+  URLLoadingServiceTestDelegate* url_loading_delegate_;
   UIWindow* window_;
 };
 

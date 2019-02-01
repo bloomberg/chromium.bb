@@ -159,6 +159,8 @@
 #import "ios/chrome/browser/url_loading/url_loading_notifier.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -1376,6 +1378,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
             _browserState);
     if (webUsageEnabler)
       webUsageEnabler->SetWebStateList(nullptr);
+
+    UrlLoadingNotifier* urlLoadingNotifier =
+        UrlLoadingNotifierFactory::GetForBrowserState(_browserState);
+    if (urlLoadingNotifier)
+      urlLoadingNotifier->RemoveObserver(_URLLoadingObserverBridge.get());
   }
 
   // Disconnect child coordinators.
@@ -1861,7 +1868,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   _URLLoadingObserverBridge = std::make_unique<UrlLoadingObserverBridge>(self);
   UrlLoadingNotifier* urlLoadingNotifier =
-      ios::UrlLoadingNotifierFactory::GetForBrowserState(_browserState);
+      UrlLoadingNotifierFactory::GetForBrowserState(_browserState);
   urlLoadingNotifier->AddObserver(_URLLoadingObserverBridge.get());
 
   NSUInteger count = self.tabModel.count;
@@ -3944,34 +3951,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - UrlLoader (Public)
 
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
-  URLLoadResult result =
-      LoadURL(chromeParams, self.browserState, self.tabModel.webStateList,
-              /* SessionWindowRestoring */ self.tabModel);
-  switch (result) {
-    case URLLoadResult::SWITCH_TO_TAB: {
-      [self switchToTabWithParams:chromeParams.web_params];
-      break;
-    }
-    case URLLoadResult::DISALLOWED_IN_INCOGNITO: {
-      OpenNewTabCommand* command =
-          [[OpenNewTabCommand alloc] initWithURL:chromeParams.web_params.url
-                                        referrer:web::Referrer()
-                                     inIncognito:NO
-                                    inBackground:NO
-                                        appendTo:kCurrentTab];
-      [self webPageOrderedOpen:command];
-      break;
-    }
-    case URLLoadResult::INDUCED_CRASH:
-    case URLLoadResult::LOADED_PRERENDER:
-    case URLLoadResult::RELOADED:
-    case URLLoadResult::NORMAL_LOAD:
-      // Page load was handled, so nothing else to do.
-      break;
-  }
+  // TODO(crbug.com/907527): call UrlLoadingService directly where we call
+  // this method.
+  UrlLoadingService* urlLoadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+  urlLoadingService->LoadUrlInCurrentTab(chromeParams);
 }
 
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command {
+  // TODO(crbug.com/907527): move to UrlLoadingService::OpenUrlInNewTab.
+
   // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
   // feature_engagement::Tracker based on |inIncognito|.
   feature_engagement::NotifyNewTabEvent(self.tabModel.browserState,
