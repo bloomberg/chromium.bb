@@ -29,6 +29,8 @@ class FindInPageManagerImpl : public FindInPageManager,
   // FindInPageManager overrides
   void Find(NSString* query, FindInPageOptions options) override;
   void StopFinding() override;
+  FindInPageManagerDelegate* GetDelegate() override;
+  void SetDelegate(FindInPageManagerDelegate* delegate) override;
 
  private:
   friend class web::WebStateUserData<FindInPageManagerImpl>;
@@ -36,6 +38,7 @@ class FindInPageManagerImpl : public FindInPageManager,
   struct FindRequest {
     FindRequest();
     ~FindRequest();
+    int GetTotalMatchCount() const;
     // Unique identifier for each find used to check that it is the most recent
     // find. This ensures that an old find doesn't decrement
     // |pending_frame_calls_count| after it has been reset by the new find.
@@ -65,6 +68,7 @@ class FindInPageManagerImpl : public FindInPageManager,
 
   // Holds the state of the most recent find in page request.
   FindRequest last_find_request_;
+  FindInPageManagerDelegate* delegate_ = nullptr;
   web::WebState* web_state_ = nullptr;
   base::WeakPtrFactory<FindInPageManagerImpl> weak_factory_;
 };
