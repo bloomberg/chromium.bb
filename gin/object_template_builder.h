@@ -38,20 +38,6 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(v8::Isolate* isolate,
 
 }  // namespace internal
 
-template <typename T>
-void SetAsFunctionHandler(v8::Isolate* isolate,
-                          v8::Local<v8::ObjectTemplate> tmpl,
-                          T callback) {
-  // We need to handle member function pointers case specially because the first
-  // parameter for callbacks to MFP should typically come from the the
-  // JavaScript "this" object the function was called on, not from the first
-  // normal parameter.
-  InvokerOptions options = {std::is_member_function_pointer<T>::value, nullptr};
-
-  CreateFunctionHandler(isolate, tmpl, base::BindRepeating(std::move(callback)),
-                        std::move(options));
-}
-
 // ObjectTemplateBuilder provides a handy interface to creating
 // v8::ObjectTemplate instances with various sorts of properties.
 class GIN_EXPORT ObjectTemplateBuilder {
