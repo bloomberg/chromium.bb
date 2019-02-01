@@ -61,6 +61,11 @@ class AccountsMutator {
                            const std::string& account_id) = 0;
 #endif
 
+  // Updates the refresh token for the supervised user.
+  // TODO(860492): Remove this once supervised user support is removed.
+  virtual void LegacySetRefreshTokenForSupervisedUser(
+      const std::string& refresh_token) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
 };

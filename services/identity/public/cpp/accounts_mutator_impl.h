@@ -5,6 +5,8 @@
 #ifndef SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_MUTATOR_IMPL_H_
 #define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNTS_MUTATOR_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
@@ -62,6 +64,11 @@ class AccountsMutatorImpl : public AccountsMutator {
   void MoveAccount(AccountsMutator* target,
                    const std::string& account_id) override;
 #endif
+
+  // Updates the refresh token for the supervised user.
+  // TODO(860492): Remove this once supervised user support is removed.
+  void LegacySetRefreshTokenForSupervisedUser(
+      const std::string& refresh_token) override;
 
  private:
   ProfileOAuth2TokenService* token_service_;

@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/accounts_mutator_impl.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -89,5 +91,12 @@ void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
   token_service_->ExtractCredentials(target_impl->token_service_, account_id);
 }
 #endif
+
+void AccountsMutatorImpl::LegacySetRefreshTokenForSupervisedUser(
+    const std::string& refresh_token) {
+  token_service_->UpdateCredentials(
+      "managed_user@localhost", refresh_token,
+      signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
+}
 
 }  // namespace identity
