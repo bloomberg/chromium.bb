@@ -468,9 +468,8 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(kSectionTag))
     return ax::mojom::Role::kRegion;
 
-  // TODO(accessibility): http://crbug.com/873118
   if (GetNode()->HasTagName(kAddressTag))
-    return ax::mojom::Role::kContentInfo;
+    return ax::mojom::Role::kGenericContainer;
 
   if (IsHTMLDialogElement(*GetNode()))
     return ax::mojom::Role::kDialog;
