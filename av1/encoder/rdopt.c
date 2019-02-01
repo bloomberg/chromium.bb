@@ -13061,12 +13061,14 @@ void gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
   }
 }
 
-static uint16_t edge_probability(const uint8_t *input, int w, int h,
+static EdgeInfo edge_probability(const uint8_t *input, int w, int h,
                                  bool high_bd, int bd) {
   // The probability of an edge in the whole image is the same as the highest
   // probability of an edge for any individual pixel. Use Sobel as the metric
   // for finding an edge.
   uint16_t highest = 0;
+  uint16_t highest_x = 0;
+  uint16_t highest_y = 0;
   // Ignore the 1 pixel border around the image for the computation.
   for (int j = 1; j < h - 1; ++j) {
     for (int i = 1; i < w - 1; ++i) {
@@ -13076,18 +13078,22 @@ static uint16_t edge_probability(const uint8_t *input, int w, int h,
       int16_t g_y = g.y >> (bd - 8);
       uint16_t magnitude = (uint16_t)sqrt(g_x * g_x + g_y * g_y);
       highest = AOMMAX(highest, magnitude);
+      highest_x = AOMMAX(highest_x, g_x);
+      highest_y = AOMMAX(highest_y, g_y);
     }
   }
-  return highest;
+  EdgeInfo ei = { .magnitude = highest, .x = highest_x, .y = highest_y };
+  return ei;
 }
 
 /* Uses most of the Canny edge detection algorithm to find if there are any
  * edges in the image.
  */
-uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
+EdgeInfo av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
                          bool high_bd, int bd) {
   if (w < 3 || h < 3) {
-    return 0;
+    EdgeInfo n = { .magnitude = 0, .x = 0, .y = 0 };
+    return n;
   }
   uint8_t *blurred;
   if (high_bd) {
@@ -13100,7 +13106,7 @@ uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
   // want a probability of an edge existing in the buffer, which is determined
   // by the strongest edge in it -- we don't need to eliminate the weaker
   // edges. Use Sobel for the edge detection.
-  uint16_t prob = edge_probability(blurred, w, h, high_bd, bd);
+  EdgeInfo prob = edge_probability(blurred, w, h, high_bd, bd);
   if (high_bd) {
     aom_free(CONVERT_TO_SHORTPTR(blurred));
   } else {

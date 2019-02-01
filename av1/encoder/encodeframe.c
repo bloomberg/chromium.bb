@@ -510,15 +510,16 @@ static int set_deltaq_rdmult(const AV1_COMP *const cpi, MACROBLOCKD *const xd) {
       cpi, cm->base_qindex + xd->delta_qindex + cm->y_dc_delta_q);
 }
 
-static uint16_t edge_strength(const struct buf_2d *ref, const BLOCK_SIZE bsize,
-                              const bool high_bd, const int bd) {
+static EdgeInfo edge_info(const struct buf_2d *ref, const BLOCK_SIZE bsize,
+                          const bool high_bd, const int bd) {
   const int width = block_size_wide[bsize];
   const int height = block_size_high[bsize];
   // Implementation requires width to be a multiple of 8. It also requires
   // height to be a multiple of 4, but this is always the case.
   assert(height % 4 == 0);
   if (width % 8 != 0) {
-    return 0;
+    EdgeInfo ei = { .magnitude = 0, .x = 0, .y = 0 };
+    return ei;
   }
   return av1_edge_exists(ref->buf, ref->stride, width, height, high_bd, bd);
 }
@@ -611,9 +612,14 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // should not be used. Use a value that will always succeed in the check.
   if (cpi->sf.disable_wedge_search_edge_thresh == 0) {
     x->edge_strength = UINT16_MAX;
+    x->edge_strength_x = UINT16_MAX;
+    x->edge_strength_y = UINT16_MAX;
   } else {
-    x->edge_strength =
-        edge_strength(&x->plane[0].src, bsize, is_cur_buf_hbd(xd), xd->bd);
+    EdgeInfo ei =
+        edge_info(&x->plane[0].src, bsize, is_cur_buf_hbd(xd), xd->bd);
+    x->edge_strength = ei.magnitude;
+    x->edge_strength_x = ei.x;
+    x->edge_strength_y = ei.y;
   }
   // Save rdmult before it might be changed, so it can be restored later.
   orig_rdmult = x->rdmult;

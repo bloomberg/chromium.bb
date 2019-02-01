@@ -416,6 +416,9 @@ struct macroblock {
   // detection). For reference, 556 is the value returned for a solid
   // vertical black/white edge.
   uint16_t edge_strength;
+  // The strongest edge strength seen along the x/y axis.
+  uint16_t edge_strength_x;
+  uint16_t edge_strength_y;
 
   // [Saved stat index]
   COMP_RD_STATS comp_rd_stats[MAX_COMP_RD_STATS];

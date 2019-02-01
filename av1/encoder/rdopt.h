@@ -128,13 +128,21 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
     struct macroblock *x, int mi_row, int mi_col, struct RD_STATS *rd_cost,
     BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
 
+// The best edge strength seen in the block, as well as the best x and y
+// components of edge strength seen.
+typedef struct {
+  uint16_t magnitude;
+  uint16_t x;
+  uint16_t y;
+} EdgeInfo;
+
 /** Returns an integer indicating the strength of the edge.
  * 0 means no edge found, 556 is the strength of a solid black/white edge,
  * and the number may range higher if the signal is even stronger (e.g., on a
  * corner). high_bd is a bool indicating the source should be treated
  * as a 16-bit array. bd is the bit depth.
  */
-uint16_t av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
+EdgeInfo av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
                          bool high_bd, int bd);
 
 /** Applies a Gaussian blur with sigma = 1.3. Used by av1_edge_exists and
