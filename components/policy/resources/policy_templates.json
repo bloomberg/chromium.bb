@@ -11688,7 +11688,6 @@
         'dynamic_refresh': False,
       },
       'example_value': [ "en-US" ],
-      'max_size': 16777216,
       'id': 364,
       'caption': '''Device sign-in screen locale''',
       'tags': [],
@@ -11709,7 +11708,6 @@
         'dynamic_refresh': True,
       },
       'example_value': [ "xkb:us::en", "xkb:ch::ger" ],
-      'max_size': 16777216,
       'id': 365,
       'caption': '''Device sign-in screen keyboard layouts''',
       'tags': [],
@@ -13063,7 +13061,6 @@
         'per_profile': True
       },
       'example_value': [ 'en-US' ],
-      'max_size': 16777216,
       'id': 444,
       'caption': '''Configure the allowed languages in a user session''',
       'tags': [],
@@ -13085,7 +13082,6 @@
         'per_profile': True
       },
       'example_value': [ 'xkb:us::eng' ],
-      'max_size': 16777216,
       'id': 456,
       'caption': '''Configure the allowed input methods in a user session''',
       'tags': [],
