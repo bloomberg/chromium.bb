@@ -215,7 +215,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
                        NavigationInitiationType initiation_type,
                        bool has_user_gesture) override;
   void FinishReload() override;
-  void FinishLoadURLWithParams() override;
+  void FinishLoadURLWithParams(
+      NavigationInitiationType initiation_type) override;
   bool IsPlaceholderUrl(const GURL& url) const override;
 
   // Restores the specified navigation session in the current web view. This

@@ -157,7 +157,7 @@ class WebStateImpl;
 - (void)stopLoading;
 
 // Loads the URL indicated by current session state.
-- (void)loadCurrentURL;
+- (void)loadCurrentURLWithRendererInitiatedNavigation:(BOOL)rendererInitiated;
 
 // Loads the URL indicated by current session state if the current page has not
 // loaded yet. This method should never be called directly. Use

@@ -205,6 +205,10 @@ class CRWWebControllerTest : public WebTestWithWebController,
                      return YES;
                    }]];
     [[result stub] setUIDelegate:OCMOCK_ANY];
+    [[result stub] frame];
+    [[result stub] setCustomUserAgent:OCMOCK_ANY];
+    [[result stub] customUserAgent];
+    [static_cast<WKWebView*>([result stub]) loadRequest:OCMOCK_ANY];
     [[result stub] setFrame:GetExpectedWebViewFrame()];
     [[result stub] addObserver:web_controller()
                     forKeyPath:OCMOCK_ANY
@@ -296,7 +300,7 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
   AddPendingItem(native_url, ui::PAGE_TRANSITION_TYPED);
 
   // Trigger a placeholder navigation.
-  [web_controller() loadCurrentURL];
+  [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
 
   // Simulate the WKNavigationDelegate callbacks for the placeholder navigation
   // arriving after another pending item has already been created.
@@ -610,6 +614,7 @@ TEST_P(CRWWebControllerResponseTest,
   // Simulate data:// url response with text/html MIME type.
   GURL url(kTestDataURL);
   AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+  [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
   SetWebViewURL(@(kTestDataURL));
   NSURLResponse* response = [[NSHTTPURLResponse alloc]
        initWithURL:[NSURL URLWithString:@(kTestDataURL)]
@@ -834,7 +839,7 @@ class CRWWebControllerNativeContentTest
         URL, Referrer(), ui::PAGE_TRANSITION_TYPED,
         NavigationInitiationType::BROWSER_INITIATED,
         NavigationManager::UserAgentOverrideOption::INHERIT);
-    [web_controller() loadCurrentURL];
+    [web_controller() loadCurrentURLWithRendererInitiatedNavigation:NO];
 
     // Native URL is loaded asynchronously with WKBasedNavigationManager. Wait
     // for navigation to finish before asserting.

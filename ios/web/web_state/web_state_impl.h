@@ -276,7 +276,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OnGoToIndexSameDocumentNavigation(NavigationInitiationType type,
                                          bool has_user_gesture) override;
   void WillChangeUserAgentType() override;
-  void LoadCurrentItem() override;
+  void LoadCurrentItem(NavigationInitiationType type) override;
   void LoadIfNecessary() override;
   void Reload() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;

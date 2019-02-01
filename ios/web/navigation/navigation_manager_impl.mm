@@ -323,7 +323,7 @@ void NavigationManagerImpl::LoadURLWithParams(
     added_item->SetShouldSkipRepostFormConfirmation(true);
   }
 
-  FinishLoadURLWithParams();
+  FinishLoadURLWithParams(initiation_type);
 }
 
 void NavigationManagerImpl::AddTransientURLRewriter(
@@ -518,8 +518,9 @@ void NavigationManagerImpl::FinishReload() {
   delegate_->Reload();
 }
 
-void NavigationManagerImpl::FinishLoadURLWithParams() {
-  delegate_->LoadCurrentItem();
+void NavigationManagerImpl::FinishLoadURLWithParams(
+    NavigationInitiationType initiation_type) {
+  delegate_->LoadCurrentItem(initiation_type);
 }
 
 bool NavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {

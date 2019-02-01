@@ -691,7 +691,8 @@ void WKBasedNavigationManagerImpl::FinishReload() {
   delegate_->Reload();
 }
 
-void WKBasedNavigationManagerImpl::FinishLoadURLWithParams() {
+void WKBasedNavigationManagerImpl::FinishLoadURLWithParams(
+    NavigationInitiationType initiation_type) {
   if (!web_view_cache_.IsAttachedToWebView()) {
     DCHECK_EQ(pending_item_index_, -1);
     if (pending_item_ && web_view_cache_.GetBackForwardListItemCount() > 0) {
@@ -711,7 +712,7 @@ void WKBasedNavigationManagerImpl::FinishLoadURLWithParams() {
     web_view_cache_.ResetToAttached();
   }
 
-  delegate_->LoadCurrentItem();
+  delegate_->LoadCurrentItem(initiation_type);
 }
 
 bool WKBasedNavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {
