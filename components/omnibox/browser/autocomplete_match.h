@@ -307,8 +307,10 @@ struct AutocompleteMatch {
   // there isn't an image URL, returns an empty GURL (test with is_empty()).
   GURL ImageUrl() const;
 
-  // Changes properties to make use of the Pedal (e.g. content, URLs...).
-  void ApplyPedal();
+  // Returns a new Pedal match suggestion instance derived from this match,
+  // which is considered to be the triggering suggestion.  The new match
+  // will be set to use the given |pedal|.
+  AutocompleteMatch DerivePedalSuggestion(OmniboxPedal* pedal) const;
 
   // Adds optional information to the |additional_info| dictionary.
   void RecordAdditionalInfo(const std::string& property,

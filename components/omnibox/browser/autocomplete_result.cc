@@ -257,25 +257,18 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
       continue;
     OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
     if (pedal) {
-      auto derive_pedal_suggestion = [&match, pedal]() {
-        AutocompleteMatch suggestion = match;
-        suggestion.relevance--;
-        suggestion.pedal = pedal;
-        suggestion.ApplyPedal();
-        return suggestion;
-      };
       const auto insertion = pedals_found.insert(
           {pedal, {pedal_suggestions, pedal_suggestions.size()}});
       if (insertion.second) {
         // This is the first use of the found pedal; add new suggestion.
-        pedal_suggestions.push_back(derive_pedal_suggestion());
+        pedal_suggestions.push_back(match.DerivePedalSuggestion(pedal));
       } else {
         // This is a subsequent use of the found pedal; update its suggestion to
         // ensure that it is derived from the most relevant matching suggestion.
         const auto& map_value_pair = insertion.first->second;
         auto& suggestion = map_value_pair.first[map_value_pair.second];
         if (suggestion.relevance < match.relevance - 1) {
-          suggestion = derive_pedal_suggestion();
+          suggestion = match.DerivePedalSuggestion(pedal);
         }
       }
     }
@@ -285,6 +278,8 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
   }
 }
 
+// TODO(orinj): This method needs to consider existing Pedal suggestions as in
+// AppendDedicatedPedalMatches above, since it can get called repeatedly.
 void AutocompleteResult::ConvertInSuggestionPedalMatches(
     AutocompleteProviderClient* client) {
   const OmniboxPedalProvider* provider = client->GetPedalProvider();
