@@ -139,9 +139,12 @@ TEST_F(ConverterTest, Vector) {
       Converter<std::vector<int>>::ToV8(instance_->isolate(), expected)
           .As<Array>();
   EXPECT_EQ(3u, js_array->Length());
+  v8::Local<v8::Context> context = instance_->isolate()->GetCurrentContext();
   for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_TRUE(Integer::New(instance_->isolate(), expected[i])
-                    ->StrictEquals(js_array->Get(static_cast<int>(i))));
+    EXPECT_TRUE(
+        Integer::New(instance_->isolate(), expected[i])
+            ->StrictEquals(
+                js_array->Get(context, static_cast<int>(i)).ToLocalChecked()));
   }
 }
 
