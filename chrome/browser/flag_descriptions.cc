@@ -427,6 +427,13 @@ const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
     "offering card upload to Google Payments, the offer-to-save dialog "
     "displays an expiration date selector.";
 
+const char kEnableAutofillImportNonFocusableCreditCardFormsName[] =
+    "Allow credit card import from forms that disappear after entry";
+const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[] =
+    "If enabled, offers credit card save for forms that are hidden from the "
+    "page after information has been entered into them, including "
+    "accordion-style checkout flows.";
+
 const char kEnableAutofillLocalCardMigrationShowFeedbackName[] =
     "Show the upload results dialog after local card migration";
 const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[] =
