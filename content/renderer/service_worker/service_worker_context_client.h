@@ -83,7 +83,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   //   |start_worker_received_time|. This instance will fill in the rest during
   //   startup.
   ServiceWorkerContextClient(
-      int embedded_worker_id,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url,
@@ -262,10 +261,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       const std::string& client_id,
       blink::WebServiceWorkerRequest* web_request);
 
-  // Get routing_id for sending message to the ServiceWorkerVersion
-  // in the browser process.
-  int GetRoutingID() const { return embedded_worker_id_; }
-
   void SendWorkerStarted(blink::mojom::ServiceWorkerStartStatus status);
 
   // Implements blink::mojom::ServiceWorker.
@@ -379,7 +374,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // TODO(crbug.com/907311): Remove after we identified the cause of crash.
   void RecordDebugLog(const char* message);
 
-  const int embedded_worker_id_;
   const int64_t service_worker_version_id_;
   const GURL service_worker_scope_;
   const GURL script_url_;

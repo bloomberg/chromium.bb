@@ -78,14 +78,6 @@ EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
   return found->second;
 }
 
-bool EmbeddedWorkerRegistry::CanHandle(int embedded_worker_id) const {
-  if (embedded_worker_id < initial_embedded_worker_id_ ||
-      next_embedded_worker_id_ <= embedded_worker_id) {
-    return false;
-  }
-  return true;
-}
-
 EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
     const base::WeakPtr<ServiceWorkerContextCore>& context,
     int initial_embedded_worker_id)

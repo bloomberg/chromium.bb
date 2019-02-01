@@ -292,7 +292,6 @@ ServiceWorkerContextClient::ThreadSpecificInstance() {
 }
 
 ServiceWorkerContextClient::ServiceWorkerContextClient(
-    int embedded_worker_id,
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url,
@@ -307,8 +306,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
-    : embedded_worker_id_(embedded_worker_id),
-      service_worker_version_id_(service_worker_version_id),
+    : service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       is_starting_installed_worker_(is_starting_installed_worker),

@@ -61,9 +61,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // Returns an embedded worker instance for given |embedded_worker_id|.
   EmbeddedWorkerInstance* GetWorker(int embedded_worker_id);
 
-  // Returns true if |embedded_worker_id| is managed by this registry.
-  bool CanHandle(int embedded_worker_id) const;
-
  private:
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
   friend class MojoEmbeddedWorkerInstanceTest;
