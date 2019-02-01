@@ -14,6 +14,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -50,9 +51,11 @@ static const char kResetHasReceivedChangedEventFlag[] =
 // virtual devices at the service and checks in JavaScript that the list of
 // enumerated devices changes correspondingly.
 class WebRtcVideoCaptureServiceEnumerationBrowserTest
-    : public ContentBrowserTest {
+    : public ContentBrowserTest,
+      public video_capture::mojom::DevicesChangedObserver {
  public:
-  WebRtcVideoCaptureServiceEnumerationBrowserTest() {
+  WebRtcVideoCaptureServiceEnumerationBrowserTest()
+      : devices_changed_observer_binding_(this) {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
   }
 
@@ -61,6 +64,11 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   void ConnectToService() {
     connector_->BindInterface(video_capture::mojom::kServiceName, &provider_);
     provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
+    video_capture::mojom::DevicesChangedObserverPtr observer;
+    devices_changed_observer_binding_.Bind(mojo::MakeRequest(&observer));
+    factory_->RegisterVirtualDevicesChangedObserver(
+        std::move(observer),
+        false /*raise_event_if_virtual_devices_already_present*/);
   }
 
   void AddVirtualDevice(const std::string& device_id) {
@@ -69,10 +77,14 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     info.descriptor.set_display_name(device_id);
     info.descriptor.capture_api = media::VideoCaptureApi::VIRTUAL_DEVICE;
 
+    base::RunLoop wait_loop;
+    closure_to_be_called_on_devices_changed_ = wait_loop.QuitClosure();
     video_capture::mojom::TextureVirtualDevicePtr virtual_device;
     factory_->AddTextureVirtualDevice(info, mojo::MakeRequest(&virtual_device));
     virtual_devices_by_id_.insert(
         std::make_pair(device_id, std::move(virtual_device)));
+    // Wait for confirmation from the service.
+    wait_loop.Run();
   }
 
   void RemoveVirtualDevice(const std::string& device_id) {
@@ -109,6 +121,13 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     ASSERT_TRUE(ExecuteScript(shell(), kResetHasReceivedChangedEventFlag));
   }
 
+  // Implementation of video_capture::mojom::DevicesChangedObserver:
+  void OnDevicesChanged() override {
+    if (closure_to_be_called_on_devices_changed_) {
+      std::move(closure_to_be_called_on_devices_changed_).Run();
+    }
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Note: We are not planning to actually use any fake device, but we want
@@ -139,9 +158,12 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
       virtual_devices_by_id_;
 
  private:
+  mojo::Binding<video_capture::mojom::DevicesChangedObserver>
+      devices_changed_observer_binding_;
   base::test::ScopedFeatureList scoped_feature_list_;
   video_capture::mojom::DeviceFactoryProviderPtr provider_;
   video_capture::mojom::DeviceFactoryPtr factory_;
+  base::OnceClosure closure_to_be_called_on_devices_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureServiceEnumerationBrowserTest);
 };
@@ -152,11 +174,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureServiceEnumerationBrowserTest,
   ConnectToService();
 
   // Exercise
-  // TODO(chfremer): It is probably not guaranteed that the Mojo IPC call to
-  // AddVirtualDevice arrives at the service before the request to enumerate
-  // devices triggered by JavaScript. To guarantee this, we would have to add
-  // a done-callback to AddVirtualDevice() and wait for that to arrive before
-  // doing the enumeration.
   AddVirtualDevice("test");
   EnumerateDevicesInRendererAndVerifyDeviceCount(1);
 
@@ -165,21 +182,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureServiceEnumerationBrowserTest,
   DisconnectFromService();
 }
 
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_RemoveVirtualDeviceAfterItHasBeenEnumerated \
-  DISABLED_RemoveVirtualDeviceAfterItHasBeenEnumerated
-#else
-#define MAYBE_RemoveVirtualDeviceAfterItHasBeenEnumerated \
-  RemoveVirtualDeviceAfterItHasBeenEnumerated
-#endif
 IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureServiceEnumerationBrowserTest,
-                       MAYBE_RemoveVirtualDeviceAfterItHasBeenEnumerated) {
-  // TODO(chfremer): Remove this when https://crbug.com/876892 is resolved.
-  if (base::FeatureList::IsEnabled(features::kMediaDevicesSystemMonitorCache)) {
-    LOG(WARNING) << "Skipping test, because feature not yet supported when "
-                    "device monitoring is enabled.";
-    return;
-  }
+                       RemoveVirtualDeviceAfterItHasBeenEnumerated) {
   Initialize();
   ConnectToService();
 
