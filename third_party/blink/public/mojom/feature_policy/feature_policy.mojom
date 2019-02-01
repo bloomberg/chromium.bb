@@ -103,6 +103,8 @@ enum FeaturePolicyFeature {
   kWakeLock = 31,
   // Controls access to font-display attribute in @font-face CSS rule
   kFontDisplay = 32,
+  // Sample Origin Trial enabled feature. This is used only for testing.
+  kFrobulate = 41,
 
   // These are the defined sandbox features implemented as policy-controlled
   // features.
