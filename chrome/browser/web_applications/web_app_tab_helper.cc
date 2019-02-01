@@ -14,9 +14,7 @@ WebAppTabHelper::~WebAppTabHelper() = default;
 // static
 WebAppTabHelper* WebAppTabHelper::CreateForWebContents(
     content::WebContents* web_contents) {
-  // Do nothing if already exists.
-  if (FromWebContents(web_contents))
-    return nullptr;
+  DCHECK(!FromWebContents(web_contents));
 
   auto tab_helper = std::make_unique<WebAppTabHelper>(web_contents);
   WebAppTabHelper* result = tab_helper.get();

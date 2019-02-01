@@ -143,15 +143,20 @@ WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
   if (!provider)
     return nullptr;
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
-    WebAppTabHelper::CreateForWebContents(web_contents);
-  else
-    extensions::BookmarkAppTabHelper::CreateForWebContents(web_contents);
-
   WebAppTabHelperBase* tab_helper =
       WebAppTabHelperBase::FromWebContents(web_contents);
-  tab_helper->SetAudioFocusIdMap(provider->audio_focus_id_map_.get());
+  // Do nothing if already exists.
+  if (tab_helper)
+    return tab_helper;
 
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    tab_helper = WebAppTabHelper::CreateForWebContents(web_contents);
+  } else {
+    tab_helper =
+        extensions::BookmarkAppTabHelper::CreateForWebContents(web_contents);
+  }
+
+  tab_helper->Init(provider->audio_focus_id_map_.get());
   return tab_helper;
 }
 
