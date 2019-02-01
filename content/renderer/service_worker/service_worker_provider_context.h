@@ -44,10 +44,10 @@ class ServiceWorkerProviderContextTest;
 class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerProviderContextDeleter;
 
-// ServiceWorkerProviderContext stores common state for service worker
-// "providers" (currently WebServiceWorkerProviderImpl and
-// ServiceWorkerNetworkProvider). Providers for the same underlying entity hold
-// strong references to a shared instance of this class.
+// ServiceWorkerProviderContext stores common state for "providers" for service
+// worker clients (currently WebServiceWorkerProviderImpl and
+// WebServiceWorkerNetworkProviderImplFor{Frame,Worker}). Providers for the same
+// underlying entity hold strong references to a shared instance of this class.
 //
 // ServiceWorkerProviderContext is also a
 // blink::mojom::ServiceWorkerWorkerClientRegistry. If it's a provider for a
@@ -64,6 +64,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       public blink::mojom::ServiceWorkerContainer,
       public blink::mojom::ServiceWorkerWorkerClientRegistry {
  public:
+  // Returns a unique id within this process.
+  static int GetNextId();
+
   // |provider_id| is used to identify this provider in IPC messages to the
   // browser process. |request| is an endpoint which is connected to
   // the content::ServiceWorkerProviderHost that notifies of changes to the

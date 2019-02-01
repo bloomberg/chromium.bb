@@ -12,7 +12,7 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -44,7 +44,7 @@ WebServiceWorkerNetworkProviderImplForWorker::Create(
     }
   } else {
     DCHECK(!info);
-    int provider_id = GetNextServiceWorkerProviderId();
+    int provider_id = ServiceWorkerProviderContext::GetNextId();
     auto host_info = blink::mojom::ServiceWorkerProviderHostInfo::New(
         provider_id, MSG_ROUTING_NONE,
         blink::mojom::ServiceWorkerProviderType::kForSharedWorker,

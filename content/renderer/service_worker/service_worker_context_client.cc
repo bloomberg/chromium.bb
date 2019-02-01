@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -30,7 +31,6 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/worker_thread.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -41,11 +41,10 @@
 #include "content/renderer/service_worker/controller_service_worker_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
+#include "content/renderer/service_worker/service_worker_network_provider_for_service_worker.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
@@ -71,7 +70,6 @@
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -80,6 +78,7 @@
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
@@ -97,79 +96,6 @@ constexpr char kServiceWorkerContextClientScope[] =
 // For now client must be a per-thread instance.
 base::LazyInstance<base::ThreadLocalPointer<ServiceWorkerContextClient>>::
     Leaky g_worker_client_tls = LAZY_INSTANCE_INITIALIZER;
-
-// Called on the main thread only and blink owns it.
-class WebServiceWorkerNetworkProviderImpl
-    : public blink::WebServiceWorkerNetworkProvider {
- public:
-  WebServiceWorkerNetworkProviderImpl(
-      int provider_id,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          script_loader_factory_info)
-      : provider_id_(provider_id),
-        script_loader_factory_(std::move(script_loader_factory_info)) {}
-
-  // This is only called for the main script request from the shadow page.
-  // TODO(https://crbug.com/538751): Remove this once the shadow page is
-  // removed.
-  void WillSendRequest(WebURLRequest& request) override {
-    ResourceType resource_type = WebURLRequestToResourceType(request);
-    DCHECK_EQ(resource_type, ResourceType::RESOURCE_TYPE_SERVICE_WORKER);
-
-    auto extra_data = std::make_unique<RequestExtraData>();
-    extra_data->set_service_worker_provider_id(provider_id_);
-    extra_data->set_originated_from_service_worker(true);
-    // Service workers are only available in secure contexts, so all requests
-    // are initiated in a secure context.
-    extra_data->set_initiated_in_secure_context(true);
-
-    // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
-    // valid in some tests.
-    RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (render_thread && render_thread->url_loader_throttle_provider()) {
-      extra_data->set_url_loader_throttles(
-          render_thread->url_loader_throttle_provider()->CreateThrottles(
-              MSG_ROUTING_NONE, request, resource_type));
-    }
-
-    request.SetExtraData(std::move(extra_data));
-  }
-
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const WebURLRequest& request,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override {
-    RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (render_thread && script_loader_factory() &&
-        blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-        IsScriptRequest(request)) {
-      // TODO(crbug.com/796425): Temporarily wrap the raw
-      // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
-      return std::make_unique<WebURLLoaderImpl>(
-          render_thread->resource_dispatcher(), std::move(task_runner_handle),
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              script_loader_factory()));
-    }
-    return nullptr;
-  }
-
-  network::mojom::URLLoaderFactory* script_loader_factory() {
-    return script_loader_factory_.get();
-  }
-
- private:
-  static bool IsScriptRequest(const WebURLRequest& request) {
-    auto request_context = request.GetRequestContext();
-    return request_context ==
-               blink::mojom::RequestContextType::SERVICE_WORKER ||
-           request_context == blink::mojom::RequestContextType::SCRIPT ||
-           request_context == blink::mojom::RequestContextType::IMPORT;
-  }
-
-  const int provider_id_;
-  // The URL loader factory for loading the service worker's scripts.
-  network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
-};
 
 class StreamHandleListener
     : public blink::WebServiceWorkerStreamHandle::Listener {
@@ -1200,7 +1126,7 @@ void ServiceWorkerContextClient::DidHandlePaymentRequestEvent(
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProvider() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  return std::make_unique<WebServiceWorkerNetworkProviderImpl>(
+  return std::make_unique<ServiceWorkerNetworkProviderForServiceWorker>(
       service_worker_provider_info_->provider_id,
       std::move(service_worker_provider_info_->script_loader_factory_ptr_info));
 }
@@ -1228,7 +1154,7 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext(
     // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
     script_loader_factory_info =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            static_cast<WebServiceWorkerNetworkProviderImpl*>(provider)
+            static_cast<ServiceWorkerNetworkProviderForServiceWorker*>(provider)
                 ->script_loader_factory())
             ->Clone();
   }

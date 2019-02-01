@@ -13,7 +13,7 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -115,7 +115,7 @@ WebServiceWorkerNetworkProviderImplForFrame::Create(
   DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
          provider_id == kInvalidServiceWorkerProviderId);
   if (provider_id == kInvalidServiceWorkerProviderId)
-    provider_id = GetNextServiceWorkerProviderId();
+    provider_id = ServiceWorkerProviderContext::GetNextId();
 
   auto provider =
       base::WrapUnique(new WebServiceWorkerNetworkProviderImplForFrame(frame));
