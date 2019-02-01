@@ -40,7 +40,7 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #elif defined(OS_MACOSX)
@@ -400,7 +400,7 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 
 #if defined(OS_WIN)
     // Don't show the update bubbles to enterprise users.
-    if (base::win::IsEnterpriseManaged())
+    if (base::IsMachineExternallyManaged())
       return false;
 #endif
   }

@@ -24,7 +24,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #endif
 
 namespace extensions {
@@ -277,7 +277,7 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
 #if defined(OS_WIN)
           // We can't use IsWebstoreUpdateUrl() here since the ExtensionClient
           // isn't set this early during startup.
-          if (!base::win::IsEnterpriseManaged() &&
+          if (!base::IsMachineExternallyManaged() &&
               !base::LowerCaseEqualsASCII(
                   update_url, extension_urls::kChromeWebstoreUpdateURL)) {
             errors->AddError(policy_name(), it.key(),

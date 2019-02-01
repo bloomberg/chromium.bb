@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/enterprise_util.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -500,7 +501,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   // be used to better identify whether crashes are from enterprise users.
   static crash_reporter::CrashKeyString<4> is_enterprise_managed(
       "is-enterprise-managed");
-  is_enterprise_managed.Set(base::win::IsEnterpriseManaged() ? "yes" : "no");
+  is_enterprise_managed.Set(base::IsMachineExternallyManaged() ? "yes" : "no");
 
   // Set crash keys containing the registry values used to determine Chrome's
   // update channel at process startup; see https://crbug.com/579504.
@@ -539,7 +540,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // What truly controls if the blocking is enabled is the presence of the
   // module blacklist cache file. This means that to disable the feature, the
   // cache must be deleted and the browser relaunched.
-  if (base::win::IsEnterpriseManaged() ||
+  if (base::IsMachineExternallyManaged() ||
       !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
       !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking))
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(

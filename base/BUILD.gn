@@ -238,6 +238,9 @@ jumbo_component("base") {
     "debug/task_annotator.h",
     "deferred_sequenced_task_runner.cc",
     "deferred_sequenced_task_runner.h",
+    "enterprise_util.h",
+    "enterprise_util_mac.mm",
+    "enterprise_util_win.cc",
     "environment.cc",
     "environment.h",
     "export_template.h",
@@ -1692,6 +1695,7 @@ jumbo_component("base") {
       "bsm",
       "CoreFoundation.framework",
       "IOKit.framework",
+      "OpenDirectory.framework",
       "Security.framework",
     ]
   }

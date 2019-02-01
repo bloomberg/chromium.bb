@@ -29,7 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif
@@ -162,7 +162,7 @@ void CertReportHelper::FinishCertCollection() {
   report.AddChromeChannel(chrome::GetChannel());
 
 #if defined(OS_WIN)
-  report.SetIsEnterpriseManaged(base::win::IsEnterpriseManaged());
+  report.SetIsEnterpriseManaged(base::IsMachineExternallyManaged());
 #elif defined(OS_CHROMEOS)
   report.SetIsEnterpriseManaged(g_browser_process->platform_part()
                                     ->browser_policy_connector_chromeos()

@@ -92,10 +92,6 @@ static_library("update_client") {
     "//third_party/libxml",
     "//url",
   ]
-  libs = []
-  if (is_mac) {
-    libs += [ "OpenDirectory.framework" ]
-  }
 }
 
 static_library("test_support") {

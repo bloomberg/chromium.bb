@@ -594,16 +594,6 @@ bool IsDeviceRegisteredWithManagement() {
   return *GetRegisteredWithManagementStateStorage();
 }
 
-bool IsEnterpriseManaged() {
-  // TODO(rogerta): this function should really be:
-  //
-  //    return IsEnrolledToDomain() || IsDeviceRegisteredWithManagement();
-  //
-  // However, for now it is decided to collect some UMA metrics about
-  // IsDeviceRegisteredWithMdm() before changing chrome's behavior.
-  return IsEnrolledToDomain();
-}
-
 bool IsUser32AndGdi32Available() {
   static auto is_user32_and_gdi32_available = []() {
     // If win32k syscalls aren't disabled, then user32 and gdi32 are available.

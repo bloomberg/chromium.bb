@@ -74,7 +74,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #endif  // BUILDFLAG(ENABLE_RLZ)
@@ -214,7 +214,7 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
 # if defined(OS_WIN)
   if (!g_disable_domain_check_for_testing) {
     static bool first_call = true;
-    static const bool is_managed = base::win::IsEnterpriseManaged();
+    static const bool is_managed = base::IsMachineExternallyManaged();
     if (first_call) {
       UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
                             is_managed);

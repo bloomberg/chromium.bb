@@ -158,11 +158,6 @@ BASE_EXPORT bool IsEnrolledToDomain();
 // Returns true if the machine is being managed by an MDM system.
 BASE_EXPORT bool IsDeviceRegisteredWithManagement();
 
-// Returns true if the current machine is considered enterprise managed in some
-// fashion.  A machine is considered managed if it is either domain enrolled
-// or registered with an MDM.
-BASE_EXPORT bool IsEnterpriseManaged();
-
 // Returns true if the current process can make USER32 or GDI32 calls such as
 // CreateWindow and CreateDC. Windows 8 and above allow the kernel component
 // of these calls to be disabled which can cause undefined behaviour such as

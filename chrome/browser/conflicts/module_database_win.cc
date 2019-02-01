@@ -14,9 +14,9 @@
 #include "content/public/browser/browser_task_traits.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
+#include "base/enterprise_util.h"
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
-#include "base/win/win_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_load_attempt_log_listener_win.h"
@@ -379,7 +379,7 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager() {
   // the command-line.
   // TODO(pmonette): Move IAttachmentExecute::Save() to a utility process and
   //                 remove this.
-  if (base::win::IsEnterpriseManaged() &&
+  if (base::IsMachineExternallyManaged() &&
       !AreThirdPartyFeaturesEnabledViaCommandLine()) {
     return;
   }

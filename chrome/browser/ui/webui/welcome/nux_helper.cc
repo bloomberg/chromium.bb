@@ -17,6 +17,10 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
+#if defined(OS_MACOSX)
+#include "base/enterprise_util.h"
+#endif  // defined(OS_MACOSX)
+
 namespace nux {
 // This feature flag is used to force the feature to be turned on for non-win
 // and non-branded builds, like with tests or development on other platforms.
@@ -56,9 +60,8 @@ bool IsNuxOnboardingEnabled(Profile* profile) {
 #if defined(GOOGLE_CHROME_BUILD)
 
 #if defined(OS_MACOSX)
-  // TODO(hcarmona): don't enable if enterprise
-  return true;
-#endif  // defined(OS_WIN)
+  return !base::IsMachineExternallyManaged();
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
   // To avoid diluting data collection, existing users should not be assigned

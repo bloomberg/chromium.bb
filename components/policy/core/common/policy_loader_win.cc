@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/enterprise_util.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -265,7 +266,7 @@ void CollectEnterpriseUMAs() {
   base::UmaHistogramBoolean("EnterpriseCheck.IsManaged",
                             base::win::IsDeviceRegisteredWithManagement());
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
-                            base::win::IsEnterpriseManaged());
+                            base::IsMachineExternallyManaged());
 
   base::string16 machine_name;
   if (GetName(base::Bind(&::GetComputerNameEx, ::ComputerNameDnsHostname),
