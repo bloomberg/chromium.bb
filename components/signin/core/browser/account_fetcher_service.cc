@@ -48,20 +48,7 @@ const char AccountFetcherService::kLastUpdatePref[] =
 const int AccountFetcherService::kAccountImageDownloadSize = 64;
 
 // AccountFetcherService implementation
-AccountFetcherService::AccountFetcherService()
-    : account_tracker_service_(nullptr),
-      token_service_(nullptr),
-      signin_client_(nullptr),
-      invalidation_service_(nullptr),
-      network_fetches_enabled_(false),
-      profile_loaded_(false),
-      refresh_tokens_loaded_(false),
-      shutdown_called_(false),
-#if defined(OS_ANDROID)
-      child_info_request_(nullptr),
-#endif
-      scheduled_refresh_enabled_(true) {
-}
+AccountFetcherService::AccountFetcherService() = default;
 
 AccountFetcherService::~AccountFetcherService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -103,7 +90,6 @@ void AccountFetcherService::Shutdown() {
   // unregistered during the lifetime of the invalidation service.
   child_info_request_.reset();
 #endif
-  invalidation_service_ = nullptr;
   shutdown_called_ = true;
 }
 
@@ -117,21 +103,18 @@ void AccountFetcherService::FetchUserInfoBeforeSignin(
   RefreshAccountInfo(account_id, false);
 }
 
-void AccountFetcherService::SetupInvalidationsOnProfileLoad(
-    invalidation::InvalidationService* invalidation_service) {
-  DCHECK(!invalidation_service_);
+void AccountFetcherService::OnProfileLoaded() {
   DCHECK(!profile_loaded_);
   DCHECK(!network_fetches_enabled_);
 #if defined(OS_ANDROID)
   DCHECK(!child_info_request_);
 #endif
-  invalidation_service_ = invalidation_service;
   profile_loaded_ = true;
   MaybeEnableNetworkFetches();
 }
 
 void AccountFetcherService::EnableNetworkFetchesForTest() {
-  SetupInvalidationsOnProfileLoad(nullptr);
+  OnProfileLoaded();
   OnRefreshTokensLoaded();
 }
 
@@ -192,8 +175,6 @@ void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
 }
 
 void AccountFetcherService::ScheduleNextRefresh() {
-  if (!scheduled_refresh_enabled_)
-    return;
   DCHECK(!timer_.IsRunning());
   DCHECK(network_fetches_enabled_);
 

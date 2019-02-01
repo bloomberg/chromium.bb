@@ -38,10 +38,6 @@ class ImageDecoder;
 class ImageFetcherImpl;
 }  // namespace image_fetcher
 
-namespace invalidation {
-class InvalidationService;
-}
-
 class AccountFetcherService : public KeyedService,
                               public OAuth2TokenService::Observer {
  public:
@@ -77,10 +73,8 @@ class AccountFetcherService : public KeyedService,
   }
 
   // It is important that network fetches are not enabled until the profile is
-  // loaded independent of when we inject the invalidation service.
-  // See http://crbug.com/441399 for more context.
-  void SetupInvalidationsOnProfileLoad(
-      invalidation::InvalidationService* invalidation_service);
+  // loaded. See http://crbug.com/441399 for more context.
+  void OnProfileLoaded();
 
   void EnableNetworkFetchesForTest();
 
@@ -139,24 +133,20 @@ class AccountFetcherService : public KeyedService,
                       const gfx::Image& image,
                       const image_fetcher::RequestMetadata& image_metadata);
 
-  AccountTrackerService* account_tracker_service_;           // Not owned.
-  OAuth2TokenService* token_service_;                        // Not owned.
-  SigninClient* signin_client_;                              // Not owned.
-  invalidation::InvalidationService* invalidation_service_;  // Not owned.
-  bool network_fetches_enabled_;
-  bool profile_loaded_;
-  bool refresh_tokens_loaded_;
+  AccountTrackerService* account_tracker_service_ = nullptr;  // Not owned.
+  OAuth2TokenService* token_service_ = nullptr;               // Not owned.
+  SigninClient* signin_client_ = nullptr;                     // Not owned.
+  bool network_fetches_enabled_ = false;
+  bool profile_loaded_ = false;
+  bool refresh_tokens_loaded_ = false;
+  bool shutdown_called_ = false;
   base::Time last_updated_;
   base::OneShotTimer timer_;
-  bool shutdown_called_;
 
 #if defined(OS_ANDROID)
   std::string child_request_account_id_;
   std::unique_ptr<ChildAccountInfoFetcherAndroid> child_info_request_;
 #endif
-
-  // Only disabled in tests.
-  bool scheduled_refresh_enabled_;
 
   // Holds references to account info fetchers keyed by account_id.
   std::unordered_map<std::string, std::unique_ptr<AccountInfoFetcher>>

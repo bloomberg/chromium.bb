@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
@@ -29,7 +28,6 @@
 #include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/invalidation/ios_chrome_deprecated_profile_invalidation_provider_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
@@ -211,14 +209,8 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
   ios::GaiaCookieManagerServiceFactory::GetForBrowserState(browser_state)
       ->InitCookieListener();
   ios::AccountConsistencyServiceFactory::GetForBrowserState(browser_state);
-  invalidation::ProfileInvalidationProvider* invalidation_provider =
-      IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
-          browser_state);
-  invalidation::InvalidationService* invalidation_service =
-      invalidation_provider ? invalidation_provider->GetInvalidationService()
-                            : nullptr;
   ios::AccountFetcherServiceFactory::GetForBrowserState(browser_state)
-      ->SetupInvalidationsOnProfileLoad(invalidation_service);
+      ->OnProfileLoaded();
   ios::AccountReconcilorFactory::GetForBrowserState(browser_state);
   // Initialization needs to happen after the browser context is available
   // because UnifiedConsentService's dependencies needs the URL context getter.
