@@ -30,6 +30,7 @@
     "OffscreenCanvas",
     "EventSource",
     "Performance",
+    "PortalHost",
     {
       name: "VisualViewport",
       ImplementedAs: "DOMVisualViewport",

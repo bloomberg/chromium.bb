@@ -81,6 +81,9 @@ struct CreateViewParams {
   // window.open or via <a target=...>) should be renderer-wide (i.e. going
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   bool renderer_wide_named_frame_lookup;
+
+  // Set this to true when creating a RenderView inside a portal.
+  bool inside_portal;
 };
 
 struct CreateFrameWidgetParams {

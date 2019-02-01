@@ -853,6 +853,14 @@ int32_t Page::AutoplayFlags() const {
   return autoplay_flags_;
 }
 
+void Page::SetInsidePortal(bool inside_portal) {
+  inside_portal_ = inside_portal;
+}
+
+bool Page::InsidePortal() const {
+  return inside_portal_;
+}
+
 Page::PageClients::PageClients() : chrome_client(nullptr) {}
 
 Page::PageClients::~PageClients() = default;

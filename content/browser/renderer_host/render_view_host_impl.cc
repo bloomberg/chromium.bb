@@ -376,6 +376,7 @@ bool RenderViewHostImpl::CreateRenderView(
   // GuestViews in the same StoragePartition need to find each other's frames.
   params->renderer_wide_named_frame_lookup =
       GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
+  params->inside_portal = delegate_->IsPortal();
 
   bool needs_ack = false;
   GetWidget()->GetVisualProperties(&params->visual_properties, &needs_ack);

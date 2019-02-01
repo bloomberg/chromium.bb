@@ -562,6 +562,11 @@ void RenderViewImpl::Initialize(
 
   nav_state_sync_timer_.SetTaskRunner(task_runner);
 
+  // We pass this state to Page, but it's only used by the main frame in the
+  // page.
+  if (params->inside_portal)
+    webview()->SetInsidePortal(true);
+
 #if defined(OS_ANDROID)
   // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
   // HandleNavigation codepath.
