@@ -38,19 +38,28 @@
 
 using base::UserMetricsAction;
 
+namespace {
+
+base::string16 GetInfoBarMessage(const PluginMetadata& metadata) {
+  return l10n_util::GetStringFUTF16(metadata.IsPluginDeprecated()
+                                        ? IDS_PLUGIN_DEPRECATED_PROMPT
+                                        : IDS_PLUGIN_OUTDATED_PROMPT,
+                                    metadata.name());
+}
+
+}  // namespace
+
 // OutdatedPluginInfoBarDelegate ----------------------------------------------
 
 void OutdatedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
     std::unique_ptr<PluginMetadata> plugin_metadata) {
-  // Copy the name out of |plugin_metadata| now, since the Pass() call below
-  // will make it impossible to get at.
-  base::string16 name(plugin_metadata->name());
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(new OutdatedPluginInfoBarDelegate(
-          installer, std::move(plugin_metadata),
-          l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name)))));
+  std::unique_ptr<ConfirmInfoBarDelegate> delegate_ptr;
+  delegate_ptr.reset(
+      new OutdatedPluginInfoBarDelegate(installer, std::move(plugin_metadata)));
+  infobar_service->AddInfoBar(
+      infobar_service->CreateConfirmInfoBar(std::move(delegate_ptr)));
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
@@ -61,7 +70,8 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
       WeakPluginInstallerObserver(installer),
       identifier_(plugin_metadata->identifier()),
       plugin_metadata_(std::move(plugin_metadata)),
-      message_(message) {
+      message_(message.empty() ? GetInfoBarMessage(*plugin_metadata_)
+                               : message) {
   base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
   std::string name = base::UTF16ToUTF8(plugin_metadata_->name());
   if (name == PluginMetadata::kJavaGroupName) {
@@ -102,6 +112,13 @@ const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
 
 base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
   return message_;
+}
+
+int OutdatedPluginInfoBarDelegate::GetButtons() const {
+  if (plugin_metadata_->IsPluginDeprecated())
+    return BUTTON_CANCEL;
+
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
@@ -162,20 +179,11 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
   // keep replacing infobar delegates infinitely).
   if ((message_ == message) || !infobar()->owner())
     return;
-  Replace(infobar(), installer(), plugin_metadata_->Clone(), message);
-}
 
-// static
-void OutdatedPluginInfoBarDelegate::Replace(
-    infobars::InfoBar* infobar,
-    PluginInstaller* installer,
-    std::unique_ptr<PluginMetadata> plugin_metadata,
-    const base::string16& message) {
-  DCHECK(infobar->owner());
-  infobar->owner()->ReplaceInfoBar(
-      infobar, infobar->owner()->CreateConfirmInfoBar(
-                   std::unique_ptr<ConfirmInfoBarDelegate>(
-                       new OutdatedPluginInfoBarDelegate(
-                           installer, std::move(plugin_metadata), message))));
+  std::unique_ptr<ConfirmInfoBarDelegate> delegate_ptr;
+  delegate_ptr.reset(new OutdatedPluginInfoBarDelegate(
+      installer(), std::move(plugin_metadata_), message));
+  infobar()->owner()->ReplaceInfoBar(
+      infobar(),
+      infobar()->owner()->CreateConfirmInfoBar(std::move(delegate_ptr)));
 }
-

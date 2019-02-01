@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -66,6 +68,9 @@ class PluginMetadata {
   const GURL& help_url() const { return help_url_; }
 
   const std::string& language() const { return language_; }
+
+  // Returns whether the plugin has been deprecated and cannot be updated.
+  bool IsPluginDeprecated() const;
 
   bool HasMimeType(const std::string& mime_type) const;
   void AddMimeType(const std::string& mime_type);
