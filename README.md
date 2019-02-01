@@ -39,10 +39,37 @@ to make code or non-technical contributions to Weston.
 Building Weston
 ===============
 
-Weston is built using autotools, with `autogen.sh` and `make`. It often depends
+Weston is built using [Meson](https://mesonbuild.com/). Weston often depends
 on the current release versions of
 [Wayland](https://gitlab.freedesktop.org/wayland/wayland) and
 [wayland-protocols](https://cgit.freedesktop.org/wayland/wayland-protocols).
+
+If necessary, the latest Meson can be installed as a user with:
+
+	$ pip3 install --user meson
+
+Weston's Meson build does not do autodetection and it defaults to all
+features enabled, which means you likely hit missing dependencies on the first
+try. If a dependency is avoidable through a build option, the error message
+should tell you what option can be used to avoid it. You may need to disable
+several features if you want to avoid certain dependencies.
+
+	$ git clone https://gitlab.freedesktop.org/wayland/weston.git
+	$ cd weston
+	$ meson build/ --prefix=...
+	$ ninja -C build/ install
+	$ cd ..
+
+The `meson` command populates the build directory. This step can
+fail due to missing dependencies. Any build options you want can be added on
+that line, e.g. `meson build/ --prefix=... -Dsimple-dmabuf-drm=intel`.
+All the build options can be found in the file
+[meson_options.txt](meson_options.txt).
+
+Once the build directory has been successfully populated, you can inspect the
+configuration with `meson configure build/`. If you need to change an
+option, you can do e.g.
+`meson configure build/ -Dsimple-dmabuf-drm=intel`.
 
 Every push to the Weston master repository and its forks is built using GitLab
 CI. [Reading the configuration](.gitlab-ci.yml) may provide a useful example of
