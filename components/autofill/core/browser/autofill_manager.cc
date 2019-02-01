@@ -51,6 +51,9 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/metrics/address_form_event_logger.h"
+#include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
+#include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -414,19 +417,13 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
 
   submitted_form->set_submission_source(source);
 
-  CreditCard credit_card =
-      client_->GetFormDataImporter()->ExtractCreditCardFromForm(
-          *submitted_form);
-  AutofillMetrics::CardNumberStatus card_number_status =
-      GetCardNumberStatus(credit_card);
-
   if (IsProfileAutofillEnabled()) {
-    address_form_event_logger_->OnFormSubmitted(
-        /*force_logging=*/false, card_number_status, sync_state_);
+    address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false,
+                                                sync_state_, *submitted_form);
   }
   if (IsCreditCardAutofillEnabled()) {
     credit_card_form_event_logger_->OnFormSubmitted(
-        enable_ablation_logging_, card_number_status, sync_state_);
+        enable_ablation_logging_, sync_state_, *submitted_form);
   }
 
   if (!submitted_form->IsAutofillable())
@@ -1228,12 +1225,11 @@ void AutofillManager::Reset() {
   form_interactions_ukm_logger_.reset(
       new AutofillMetrics::FormInteractionsUkmLogger(
           client_->GetUkmRecorder(), client_->GetUkmSourceId()));
-  address_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
-      /*is_for_credit_card=*/false, driver()->IsInMainFrame(),
-      form_interactions_ukm_logger_.get()));
-  credit_card_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
-      /*is_for_credit_card=*/true, driver()->IsInMainFrame(),
-      form_interactions_ukm_logger_.get()));
+  address_form_event_logger_.reset(new AddressFormEventLogger(
+      driver()->IsInMainFrame(), form_interactions_ukm_logger_.get()));
+  credit_card_form_event_logger_.reset(new CreditCardFormEventLogger(
+      driver()->IsInMainFrame(), form_interactions_ukm_logger_.get(),
+      personal_data_, client_));
 #if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
@@ -1270,16 +1266,15 @@ AutofillManager::AutofillManager(
           std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
               client->GetUkmRecorder(),
               client->GetUkmSourceId())),
-      address_form_event_logger_(
-          std::make_unique<AutofillMetrics::FormEventLogger>(
-              /*is_for_credit_card=*/false,
-              driver->IsInMainFrame(),
-              form_interactions_ukm_logger_.get())),
+      address_form_event_logger_(std::make_unique<AddressFormEventLogger>(
+          driver->IsInMainFrame(),
+          form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
-          std::make_unique<AutofillMetrics::FormEventLogger>(
-              /*is_for_credit_card=*/true,
+          std::make_unique<CreditCardFormEventLogger>(
               driver->IsInMainFrame(),
-              form_interactions_ukm_logger_.get())),
+              form_interactions_ukm_logger_.get(),
+              personal_data_,
+              client_)),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
@@ -2177,21 +2172,6 @@ void AutofillManager::GetAvailableSuggestions(
         POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
     suggestions->assign(1, warning_suggestion);
   }
-}
-
-AutofillMetrics::CardNumberStatus AutofillManager::GetCardNumberStatus(
-    CreditCard& credit_card) {
-  base::string16 number = credit_card.number();
-  if (number.empty())
-    return AutofillMetrics::EMPTY_CARD;
-  else if (!HasCorrectLength(number))
-    return AutofillMetrics::WRONG_SIZE_CARD;
-  else if (!PassesLuhnCheck(number))
-    return AutofillMetrics::FAIL_LUHN_CHECK_CARD;
-  else if (personal_data_->IsKnownCard(credit_card))
-    return AutofillMetrics::KNOWN_CARD;
-  else
-    return AutofillMetrics::UNKNOWN_CARD;
 }
 
 }  // namespace autofill

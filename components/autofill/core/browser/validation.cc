@@ -51,7 +51,7 @@ bool IsValidCreditCardExpirationYear(int year, const base::Time& now) {
 }
 
 bool IsValidCreditCardNumber(const base::string16& text) {
-  base::string16 number = CreditCard::StripSeparators(text);
+  const base::string16 number = CreditCard::StripSeparators(text);
 
   if (!HasCorrectLength(number))
     return false;
@@ -92,12 +92,13 @@ bool HasCorrectLength(const base::string16& number) {
   return true;
 }
 
-bool PassesLuhnCheck(base::string16& number) {
+// TODO (crbug.com/927767): Add unit tests for this function.
+bool PassesLuhnCheck(const base::string16& number) {
   // Use the Luhn formula [3] to validate the number.
   // [3] http://en.wikipedia.org/wiki/Luhn_algorithm
   int sum = 0;
   bool odd = false;
-  for (base::string16::reverse_iterator iter = number.rbegin();
+  for (base::string16::const_reverse_iterator iter = number.rbegin();
        iter != number.rend(); ++iter) {
     if (!base::IsAsciiDigit(*iter))
       return false;
