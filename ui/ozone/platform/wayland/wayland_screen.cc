@@ -166,12 +166,13 @@ display::Display WaylandScreen::GetDisplayNearestPoint(
 
 display::Display WaylandScreen::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
+  if (match_rect.IsEmpty())
+    return GetDisplayNearestPoint(match_rect.origin());
+
   const display::Display* display_matching =
       display::FindDisplayWithBiggestIntersection(display_list_.displays(),
                                                   match_rect);
-  if (!display_matching)
-    return display::Display();
-  return *display_matching;
+  return display_matching ? *display_matching : GetPrimaryDisplay();
 }
 
 void WaylandScreen::AddObserver(display::DisplayObserver* observer) {

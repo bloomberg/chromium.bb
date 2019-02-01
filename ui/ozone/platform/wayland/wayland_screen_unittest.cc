@@ -344,9 +344,10 @@ TEST_P(WaylandScreenTest, GetDisplayMatching) {
 
   Sync();
 
-  // The match rect is located outside the displays.
+  // The match rect is located outside the displays. Primary display must be
+  // returned.
   EXPECT_EQ(
-      display::kInvalidDisplayId,
+      primary_display.id(),
       platform_screen_->GetDisplayMatching(gfx::Rect(1024, 0, 10, 10)).id());
 
   // At least some of the pixels are located on the display.
@@ -358,6 +359,10 @@ TEST_P(WaylandScreenTest, GetDisplayMatching) {
   EXPECT_EQ(
       second_display.id(),
       platform_screen_->GetDisplayMatching(gfx::Rect(1023, 695, 10, 10)).id());
+
+  // Empty rect results in primary display.
+  EXPECT_EQ(primary_display.id(),
+            platform_screen_->GetDisplayMatching(gfx::Rect(0, 0, 0, 0)).id());
 
   platform_screen_->RemoveObserver(&observer);
 }
