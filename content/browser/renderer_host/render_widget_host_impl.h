@@ -510,6 +510,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // properties.
   void ResetSentVisualProperties();
 
+  // When the WebContents (which acts as the Delegate) is destroyed, this object
+  // may still outlive it while the renderer is shutting down. In that case the
+  // delegate pointer is removed (since it would be a UAF).
   void DetachDelegate();
 
   // Update the renderer's cache of the screen rect of the view and window.
