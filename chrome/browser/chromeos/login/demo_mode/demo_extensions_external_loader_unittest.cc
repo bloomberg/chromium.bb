@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"

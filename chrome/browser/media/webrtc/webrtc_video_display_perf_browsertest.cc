@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/plugin_test_utils.h"
 
+#include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test_utils.h"
 
 // static

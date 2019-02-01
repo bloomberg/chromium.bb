@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 
 #include "base/json/json_reader.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"

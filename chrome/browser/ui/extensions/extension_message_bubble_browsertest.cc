@@ -6,6 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"

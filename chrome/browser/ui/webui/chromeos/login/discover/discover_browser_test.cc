@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_browser_test.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_ui.h"

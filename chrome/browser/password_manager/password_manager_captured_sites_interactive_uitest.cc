@@ -7,6 +7,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"

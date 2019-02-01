@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

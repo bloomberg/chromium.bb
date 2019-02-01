@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
