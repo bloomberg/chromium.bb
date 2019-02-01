@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -40,6 +39,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #import "services/identity/public/cpp/identity_test_environment.h"
 
 #include "base/bind.h"
@@ -263,13 +263,12 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(
           browser_state_.get());
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          browser_state_.get());
 
   std::string user_email = base::SysNSStringToUTF8([identity_ userEmail]);
   AccountInfo account_info =
-      account_tracker->FindAccountInfoByEmail(user_email);
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(user_email)
+          .value();
   EXPECT_EQ(user_email, account_info.email);
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ gaiaID]), account_info.gaia);
   EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_info.account_id));
@@ -392,20 +391,18 @@ TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
   StoreAccountsInPrefs();
   accounts = GetAccountsInPrefs();
   ASSERT_EQ(2u, accounts.size());
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          browser_state_.get());
-  switch (account_tracker->GetMigrationState()) {
-    case AccountTrackerService::MIGRATION_NOT_STARTED:
+
+  switch (identity_manager()->GetAccountIdMigrationState()) {
+    case identity::IdentityManager::MIGRATION_NOT_STARTED:
       EXPECT_EQ("foo2@foo.com", accounts[0]);
       EXPECT_EQ("foo@foo.com", accounts[1]);
       break;
-    case AccountTrackerService::MIGRATION_IN_PROGRESS:
-    case AccountTrackerService::MIGRATION_DONE:
+    case identity::IdentityManager::MIGRATION_IN_PROGRESS:
+    case identity::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0]);
       EXPECT_EQ("fooID", accounts[1]);
       break;
-    case AccountTrackerService::NUM_MIGRATION_STATES:
+    case identity::IdentityManager::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
       break;
   }
@@ -427,20 +424,18 @@ TEST_F(AuthenticationServiceTest,
       identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          browser_state_.get());
-  switch (account_tracker->GetMigrationState()) {
-    case AccountTrackerService::MIGRATION_NOT_STARTED:
+
+  switch (identity_manager()->GetAccountIdMigrationState()) {
+    case identity::IdentityManager::MIGRATION_NOT_STARTED:
       EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
       EXPECT_EQ("foo@foo.com", accounts[1].account_id);
       break;
-    case AccountTrackerService::MIGRATION_IN_PROGRESS:
-    case AccountTrackerService::MIGRATION_DONE:
+    case identity::IdentityManager::MIGRATION_IN_PROGRESS:
+    case identity::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0].account_id);
       EXPECT_EQ("fooID", accounts[1].account_id);
       break;
-    case AccountTrackerService::NUM_MIGRATION_STATES:
+    case identity::IdentityManager::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
       break;
   }
@@ -455,19 +450,19 @@ TEST_F(AuthenticationServiceTest,
   accounts = identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
-  switch (account_tracker->GetMigrationState()) {
-    case AccountTrackerService::MIGRATION_NOT_STARTED:
+  switch (identity_manager()->GetAccountIdMigrationState()) {
+    case identity::IdentityManager::MIGRATION_NOT_STARTED:
       EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
       EXPECT_EQ("foo3@foo.com", accounts[1].account_id);
       EXPECT_EQ("foo@foo.com", accounts[2].account_id);
       break;
-    case AccountTrackerService::MIGRATION_IN_PROGRESS:
-    case AccountTrackerService::MIGRATION_DONE:
+    case identity::IdentityManager::MIGRATION_IN_PROGRESS:
+    case identity::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0].account_id);
       EXPECT_EQ("foo3ID", accounts[1].account_id);
       EXPECT_EQ("fooID", accounts[2].account_id);
       break;
-    case AccountTrackerService::NUM_MIGRATION_STATES:
+    case identity::IdentityManager::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
       break;
   }
@@ -541,11 +536,8 @@ TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {
 }
 
 TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
-  AccountTrackerService* account_tracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(
-          browser_state_.get());
-  if (account_tracker->GetMigrationState() ==
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
+  if (identity_manager()->GetAccountIdMigrationState() ==
+      identity::IdentityManager::MIGRATION_NOT_STARTED) {
     // The account tracker is not migratable. Skip the test as the accounts
     // cannot be migrated.
     return;
@@ -554,7 +546,7 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   // Force the migration state to MIGRATION_NOT_STARTED before signing in.
   browser_state_->GetPrefs()->SetInteger(
       prefs::kAccountIdMigrationState,
-      AccountTrackerService::MIGRATION_NOT_STARTED);
+      identity::IdentityManager::MIGRATION_NOT_STARTED);
   browser_state_->GetPrefs()->SetBoolean(prefs::kSigninLastAccountsMigrated,
                                          false);
 
@@ -566,11 +558,10 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   EXPECT_EQ("foo2@foo.com", accounts_in_prefs[0]);
   EXPECT_EQ("foo@foo.com", accounts_in_prefs[1]);
 
-  // Migrate the accounts (this actually requires a shutdown and re-initialize
-  // of the account tracker).
-  account_tracker->Shutdown();
-  account_tracker->Initialize(browser_state_->GetPrefs(), base::FilePath());
-  account_tracker->SetMigrationDone();
+  // Migrate the accounts.
+  browser_state_->GetPrefs()->SetInteger(
+      prefs::kAccountIdMigrationState,
+      identity::IdentityManager::MIGRATION_DONE);
 
   // Reload all credentials to find account info with the refresh token.
   // If it tries to find refresh token with gaia ID after
