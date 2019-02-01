@@ -63,6 +63,7 @@ GLContext::~GLContext() {
   share_group_->RemoveContext(this);
   if (GetCurrent() == this) {
     SetCurrent(nullptr);
+    SetCurrentGL(nullptr);
   }
   base::subtle::Atomic32 after_value =
       base::subtle::NoBarrier_AtomicIncrement(&total_gl_contexts_, -1);
@@ -191,22 +192,6 @@ void GLContext::DirtyVirtualContextState() {
   current_virtual_context_ = nullptr;
 }
 
-void GLContext::AddVirtualOwner(GLContext* owner) {
-  DCHECK(virtual_owners_.find(owner) == virtual_owners_.end());
-  virtual_owners_.insert(owner);
-}
-
-void GLContext::RemoveVirtualOwner(GLContext* owner) {
-  auto found = virtual_owners_.find(owner);
-  DCHECK(found != virtual_owners_.end());
-  virtual_owners_.erase(found);
-
-  // Also remove the owner from |current_virtual_context_|, to avoid leaving a
-  // bad pointer.
-  if (current_virtual_context_ == owner)
-    current_virtual_context_ = nullptr;
-}
-
 #if defined(OS_MACOSX)
 uint64_t GLContext::BackpressureFenceCreate() {
   return 0;
@@ -261,11 +246,6 @@ GLContext* GLContext::GetCurrent() {
 
 GLContext* GLContext::GetRealCurrent() {
   return current_real_context_.Pointer()->Get();
-}
-
-bool GLContext::IsLastVirtualOwner(GLContext* context) {
-  DCHECK(virtual_owners_.find(context) != virtual_owners_.end());
-  return virtual_owners_.size() == 1;
 }
 
 std::unique_ptr<gl::GLVersionInfo> GLContext::GenerateGLVersionInfo() {
@@ -328,7 +308,6 @@ void GLContext::InitializeDynamicBindings() {
 
 bool GLContext::MakeVirtuallyCurrent(
     GLContext* virtual_context, GLSurface* surface) {
-  DCHECK(virtual_owners_.find(virtual_context) != virtual_owners_.end());
   if (!ForceGpuSwitchIfNeeded())
     return false;
   bool switched_real_contexts = GLContext::GetRealCurrent() != this;
@@ -386,15 +365,8 @@ bool GLContext::MakeVirtuallyCurrent(
 }
 
 void GLContext::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
-  DCHECK(virtual_owners_.find(virtual_context) != virtual_owners_.end());
   if (current_virtual_context_ == virtual_context)
     current_virtual_context_ = nullptr;
-
-  if (GetCurrent() == virtual_context) {
-    // The virtual context is being released, and should no longer be current.
-    // Transfer ownership to the real context (this).
-    current_context_.Pointer()->Set(this);
-  }
 }
 
 void GLContext::BindGLApi() {
