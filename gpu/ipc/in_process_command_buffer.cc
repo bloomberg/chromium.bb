@@ -382,6 +382,13 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::InitializeOnGpuThread")
 
+  if (gpu_channel_manager_delegate_ &&
+      gpu_channel_manager_delegate_->IsExiting()) {
+    LOG(ERROR) << "ContextResult::kTransientFailure: trying to create command "
+                  "buffer during process shutdown.";
+    return gpu::ContextResult::kTransientFailure;
+  }
+
   // TODO(crbug.com/832243): This could use the TransferBufferManager owned by
   // |context_group_| instead.
   transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
@@ -751,6 +758,19 @@ void InProcessCommandBuffer::OnParseError() {
   // Update last_state_ now before notifying client side to save the
   // error and make the race benign.
   UpdateLastStateOnGpuThread();
+
+  bool was_lost_by_robustness =
+      decoder_ && decoder_->WasContextLostByRobustnessExtension();
+
+  // Work around issues with recovery by allowing a new GPU process to launch.
+  if (was_lost_by_robustness) {
+    GpuDriverBugWorkarounds workarounds(
+        GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
+    if (workarounds.exit_on_context_lost && gpu_channel_manager_delegate_)
+      gpu_channel_manager_delegate_->MaybeExitOnContextLost();
+
+    // TODO(crbug.com/924148): Check if we should force lose all contexts too.
+  }
 
   PostOrRunClientCallback(
       base::BindOnce(&InProcessCommandBuffer::OnContextLost,

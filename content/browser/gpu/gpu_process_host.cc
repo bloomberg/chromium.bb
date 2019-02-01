@@ -1006,7 +1006,9 @@ bool GpuProcessHost::GpuAccessAllowed() const {
 }
 
 void GpuProcessHost::DisableGpuCompositing() {
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  DLOG(ERROR) << "Can't disable GPU compositing";
+#else
   // TODO(crbug.com/819474): The switch from GPU to software compositing should
   // be handled here instead of by ImageTransportFactory.
   base::PostTaskWithTraits(

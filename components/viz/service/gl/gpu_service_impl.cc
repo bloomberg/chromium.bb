@@ -488,10 +488,9 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
   gpu::RecordGpuSupportedRuntimeVersionHistograms(
       &gpu_info_.dx12_vulkan_version_info);
   std::move(callback).Run(gpu_info_.dx12_vulkan_version_info);
-  if (!in_host_process()) {
-    // The unsandboxed GPU process fulfilled its duty. Bye bye.
-    ExitProcess();
-  }
+
+  // The unsandboxed GPU process fulfilled its duty. Bye bye.
+  MaybeExit(false);
 }
 
 void GpuServiceImpl::RequestCompleteGpuInfo(
@@ -511,10 +510,8 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
           [](GpuServiceImpl* gpu_service,
              RequestCompleteGpuInfoCallback callback) {
             std::move(callback).Run(gpu_service->gpu_info_.dx_diagnostics);
-            if (!gpu_service->in_host_process()) {
-              // The unsandboxed GPU process fulfilled its duty. Bye bye.
-              gpu_service->ExitProcess();
-            }
+            // The unsandboxed GPU process fulfilled its duty. Bye bye.
+            gpu_service->MaybeExit(false);
           },
           this, std::move(callback))));
 }
@@ -609,9 +606,12 @@ void GpuServiceImpl::StoreShaderToDisk(int client_id,
   (*gpu_host_)->StoreShaderToDisk(client_id, key, shader);
 }
 
-void GpuServiceImpl::ExitProcess() {
-  if (exit_callback_)
-    std::move(exit_callback_).Run();
+void GpuServiceImpl::MaybeExitOnContextLost() {
+  MaybeExit(true);
+}
+
+bool GpuServiceImpl::IsExiting() const {
+  return is_exiting_.IsSet();
 }
 
 #if defined(OS_WIN)
@@ -796,8 +796,25 @@ void GpuServiceImpl::ThrowJavaException() {
 void GpuServiceImpl::Stop(StopCallback callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&GpuServiceImpl::ExitProcess, weak_ptr_),
+      FROM_HERE, base::BindOnce(&GpuServiceImpl::MaybeExit, weak_ptr_, false),
       std::move(callback));
+}
+
+void GpuServiceImpl::MaybeExit(bool for_context_loss) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+
+  // We can't restart the GPU process when running in the host process.
+  if (in_host_process())
+    return;
+
+  if (exit_callback_) {
+    if (for_context_loss) {
+      LOG(ERROR) << "Exiting GPU process because some drivers can't recover "
+                    "from errors. GPU process will restart shortly.";
+    }
+    is_exiting_.Set();
+    std::move(exit_callback_).Run();
+  }
 }
 
 }  // namespace viz

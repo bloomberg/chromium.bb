@@ -378,7 +378,7 @@ void CommandBufferStub::Destroy() {
     // might bypass the 3D API blocking logic.
     if ((surface_handle_ == gpu::kNullSurfaceHandle) &&
         !active_url_.is_empty() &&
-        !gpu_channel_manager->is_exiting_for_lost_context()) {
+        !gpu_channel_manager->delegate()->IsExiting()) {
       gpu_channel_manager->delegate()->DidDestroyOffscreenContext(active_url_);
     }
   }
