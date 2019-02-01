@@ -123,7 +123,30 @@ IdentityManagerFactory::BuildAuthenticatedServiceInstanceForTesting(
   return identity_manager;
 }
 
+void IdentityManagerFactory::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void IdentityManagerFactory::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new IdentityManagerWrapper(Profile::FromBrowserContext(context));
+  auto identity_manager = std::make_unique<IdentityManagerWrapper>(
+      Profile::FromBrowserContext(context));
+  for (Observer& observer : observer_list_)
+    observer.IdentityManagerCreated(identity_manager.get());
+  return identity_manager.release();
+}
+
+void IdentityManagerFactory::BrowserContextShutdown(
+    content::BrowserContext* context) {
+  auto* identity_manager = static_cast<IdentityManagerWrapper*>(
+      GetServiceForBrowserContext(context, false));
+  if (identity_manager) {
+    for (Observer& observer : observer_list_)
+      observer.IdentityManagerShutdown(identity_manager);
+  }
+  BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }
