@@ -165,8 +165,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureServiceEnumerationBrowserTest,
   DisconnectFromService();
 }
 
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_RemoveVirtualDeviceAfterItHasBeenEnumerated \
+  DISABLED_RemoveVirtualDeviceAfterItHasBeenEnumerated
+#else
+#define MAYBE_RemoveVirtualDeviceAfterItHasBeenEnumerated \
+  RemoveVirtualDeviceAfterItHasBeenEnumerated
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureServiceEnumerationBrowserTest,
-                       RemoveVirtualDeviceAfterItHasBeenEnumerated) {
+                       MAYBE_RemoveVirtualDeviceAfterItHasBeenEnumerated) {
   // TODO(chfremer): Remove this when https://crbug.com/876892 is resolved.
   if (base::FeatureList::IsEnabled(features::kMediaDevicesSystemMonitorCache)) {
     LOG(WARNING) << "Skipping test, because feature not yet supported when "
