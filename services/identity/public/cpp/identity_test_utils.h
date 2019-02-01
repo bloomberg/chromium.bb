@@ -154,6 +154,9 @@ void UpdatePersistentErrorOfRefreshTokenForAccount(
 // Disables internal retries of failed access token fetches.
 void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
 
+// Cancels all ongoing operations related to the accounts in the Gaia cookie.
+void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager);
+
 }  // namespace identity
 
 #endif  // SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_UTILS_H_
