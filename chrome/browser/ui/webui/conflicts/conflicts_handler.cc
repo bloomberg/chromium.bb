@@ -22,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
+#include "base/enterprise_util.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
@@ -303,7 +304,7 @@ void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
     third_party_features_status_ = kFeatureDisabled;
   }
 
-  if (base::win::IsEnterpriseManaged())
+  if (base::IsMachineExternallyManaged())
     third_party_features_status_ = kEnterpriseManaged;
 
   // The above 3 cases are the only possible reasons why the manager wouldn't

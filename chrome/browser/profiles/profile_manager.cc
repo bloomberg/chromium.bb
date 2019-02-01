@@ -143,7 +143,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/signin_util_win.h"
@@ -1081,7 +1081,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // Enterprise users should not be included in any NUX/Navi flow.
-    if (!base::win::IsEnterpriseManaged()) {
+    if (!base::IsMachineExternallyManaged()) {
       profile->GetPrefs()->SetString(prefs::kNaviOnboardGroup,
                                      nux::GetOnboardingGroup());
     }

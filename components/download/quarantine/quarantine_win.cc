@@ -16,6 +16,7 @@
 
 #include <vector>
 
+#include "base/enterprise_util.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -247,7 +248,7 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
   // TODO(pmonette): Move the InvokeAttachmentServices() call to a utility
   //                 process and remove the feature.
   bool should_invoke_attachment_services =
-      base::win::IsEnterpriseManaged() ||
+      base::IsMachineExternallyManaged() ||
       base::FeatureList::IsEnabled(kInvokeAttachmentServices);
 
   bool attachment_services_available =
