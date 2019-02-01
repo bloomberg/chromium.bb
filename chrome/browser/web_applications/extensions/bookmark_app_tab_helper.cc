@@ -24,9 +24,7 @@ BookmarkAppTabHelper::~BookmarkAppTabHelper() = default;
 // static
 BookmarkAppTabHelper* BookmarkAppTabHelper::CreateForWebContents(
     content::WebContents* web_contents) {
-  // Do nothing if already exists.
-  if (FromWebContents(web_contents))
-    return nullptr;
+  DCHECK(!FromWebContents(web_contents));
 
   auto tab_helper = std::make_unique<BookmarkAppTabHelper>(web_contents);
   BookmarkAppTabHelper* result = tab_helper.get();

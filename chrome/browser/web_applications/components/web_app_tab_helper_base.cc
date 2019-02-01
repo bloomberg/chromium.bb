@@ -8,6 +8,7 @@
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/site_instance.h"
 
 namespace web_app {
 
@@ -18,11 +19,13 @@ WebAppTabHelperBase::WebAppTabHelperBase(content::WebContents* web_contents)
 
 WebAppTabHelperBase::~WebAppTabHelperBase() = default;
 
-void WebAppTabHelperBase::SetAudioFocusIdMap(
-    WebAppAudioFocusIdMap* audio_focus_id_map) {
+void WebAppTabHelperBase::Init(WebAppAudioFocusIdMap* audio_focus_id_map) {
   DCHECK(!audio_focus_id_map_ && audio_focus_id_map);
-
   audio_focus_id_map_ = audio_focus_id_map;
+
+  // Sync app_id with the initial url from WebContents (used in Tab Restore etc)
+  const GURL init_url = web_contents()->GetSiteInstance()->GetSiteURL();
+  SetAppId(GetAppId(init_url));
 }
 
 void WebAppTabHelperBase::SetAppId(const AppId& app_id) {

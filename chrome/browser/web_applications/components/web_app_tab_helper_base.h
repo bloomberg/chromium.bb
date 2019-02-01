@@ -27,14 +27,15 @@ class WebAppTabHelperBase
  public:
   ~WebAppTabHelperBase() override;
 
-  // This provides a weak reference to the current audio focus id map instance
-  // which is owned by WebAppProvider. This is used to ensure that all web
-  // contents associated with a web app shared the same audio focus group id.
-  void SetAudioFocusIdMap(WebAppAudioFocusIdMap* audio_focus_id_map);
+  // |audio_focus_id_map| is a weak reference to the current audio focus id map
+  // instance which is owned by WebAppProvider. This is used to ensure that all
+  // web contents associated with a web app shared the same audio focus group
+  // id.
+  void Init(WebAppAudioFocusIdMap* audio_focus_id_map);
 
   const AppId& app_id() const { return app_id_; }
 
-  // Set app_id on web app installation or tab restore.
+  // Set associated app_id.
   void SetAppId(const AppId& app_id);
   // Clear app_id on web app uninstallation.
   void ResetAppId();
