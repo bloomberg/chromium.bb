@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/device_sync/cryptauth_enrollment_scheduler_impl.h"
+#include "chromeos/services/device_sync/persistent_enrollment_scheduler.h"
 
 #include <algorithm>
 #include <string>
@@ -12,8 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
-#include "base/time/clock.h"
-#include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -107,37 +105,38 @@ cryptauthv2::ClientDirective BuildClientDirective(PrefService* pref_service) {
 }  // namespace
 
 // static
-CryptAuthEnrollmentSchedulerImpl::Factory*
-    CryptAuthEnrollmentSchedulerImpl::Factory::test_factory_ = nullptr;
+PersistentEnrollmentScheduler::Factory*
+    PersistentEnrollmentScheduler::Factory::test_factory_ = nullptr;
 
 // static
-CryptAuthEnrollmentSchedulerImpl::Factory*
-CryptAuthEnrollmentSchedulerImpl::Factory::Get() {
+PersistentEnrollmentScheduler::Factory*
+PersistentEnrollmentScheduler::Factory::Get() {
   if (test_factory_)
     return test_factory_;
 
-  static base::NoDestructor<CryptAuthEnrollmentSchedulerImpl::Factory> factory;
+  static base::NoDestructor<PersistentEnrollmentScheduler::Factory> factory;
   return factory.get();
 }
 
 // static
-void CryptAuthEnrollmentSchedulerImpl::Factory::SetFactoryForTesting(
+void PersistentEnrollmentScheduler::Factory::SetFactoryForTesting(
     Factory* test_factory) {
   test_factory_ = test_factory;
 }
 
 std::unique_ptr<CryptAuthEnrollmentScheduler>
-CryptAuthEnrollmentSchedulerImpl::Factory::BuildInstance(
+PersistentEnrollmentScheduler::Factory::BuildInstance(
     Delegate* delegate,
     PrefService* pref_service,
     base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> timer) {
-  return base::WrapUnique(new CryptAuthEnrollmentSchedulerImpl(
-      delegate, pref_service, clock, std::move(timer)));
+    std::unique_ptr<base::OneShotTimer> timer,
+    scoped_refptr<base::TaskRunner> task_runner) {
+  return base::WrapUnique(new PersistentEnrollmentScheduler(
+      delegate, pref_service, clock, std::move(timer), task_runner));
 }
 
 // static
-void CryptAuthEnrollmentSchedulerImpl::RegisterPrefs(
+void PersistentEnrollmentScheduler::RegisterPrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(
       prefs::kCryptAuthEnrollmentSchedulerClientDirective, std::string());
@@ -151,16 +150,18 @@ void CryptAuthEnrollmentSchedulerImpl::RegisterPrefs(
       prefs::kCryptAuthEnrollmentSchedulerNumConsecutiveFailures, 0);
 }
 
-CryptAuthEnrollmentSchedulerImpl::CryptAuthEnrollmentSchedulerImpl(
+PersistentEnrollmentScheduler::PersistentEnrollmentScheduler(
     Delegate* delegate,
     PrefService* pref_service,
     base::Clock* clock,
-    std::unique_ptr<base::OneShotTimer> timer)
+    std::unique_ptr<base::OneShotTimer> timer,
+    scoped_refptr<base::TaskRunner> task_runner)
     : CryptAuthEnrollmentScheduler(delegate),
       pref_service_(pref_service),
       clock_(clock),
       timer_(std::move(timer)),
-      client_directive_(BuildClientDirective(pref_service)) {
+      client_directive_(BuildClientDirective(pref_service)),
+      weak_ptr_factory_(this) {
   DCHECK(pref_service);
   DCHECK(clock);
   DCHECK(IsClientDirectiveValid(client_directive_));
@@ -173,17 +174,23 @@ CryptAuthEnrollmentSchedulerImpl::CryptAuthEnrollmentSchedulerImpl(
         prefs::kCryptAuthEnrollmentSchedulerNumConsecutiveFailures, 1);
   }
 
-  ScheduleNextEnrollment();
+  // Schedule the next enrollment as part of a new task. This ensures that the
+  // delegate can complete its initialization before handling an enrollment
+  // request.
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PersistentEnrollmentScheduler::ScheduleNextEnrollment,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-CryptAuthEnrollmentSchedulerImpl::~CryptAuthEnrollmentSchedulerImpl() = default;
+PersistentEnrollmentScheduler::~PersistentEnrollmentScheduler() = default;
 
-void CryptAuthEnrollmentSchedulerImpl::RequestEnrollmentNow() {
+void PersistentEnrollmentScheduler::RequestEnrollmentNow() {
   timer_->Stop();
   NotifyEnrollmentRequested(GetPolicyReference());
 }
 
-void CryptAuthEnrollmentSchedulerImpl::HandleEnrollmentResult(
+void PersistentEnrollmentScheduler::HandleEnrollmentResult(
     const CryptAuthEnrollmentResult& enrollment_result) {
   DCHECK(!timer_->IsRunning());
 
@@ -217,7 +224,7 @@ void CryptAuthEnrollmentSchedulerImpl::HandleEnrollmentResult(
 }
 
 base::Optional<base::Time>
-CryptAuthEnrollmentSchedulerImpl::GetLastSuccessfulEnrollmentTime() const {
+PersistentEnrollmentScheduler::GetLastSuccessfulEnrollmentTime() const {
   base::Time time = pref_service_->GetTime(
       prefs::kCryptAuthEnrollmentSchedulerLastSuccessfulEnrollmentTime);
   if (time.is_null())
@@ -226,31 +233,30 @@ CryptAuthEnrollmentSchedulerImpl::GetLastSuccessfulEnrollmentTime() const {
   return time;
 }
 
-base::TimeDelta CryptAuthEnrollmentSchedulerImpl::GetRefreshPeriod() const {
+base::TimeDelta PersistentEnrollmentScheduler::GetRefreshPeriod() const {
   return base::TimeDelta::FromMilliseconds(
       client_directive_.checkin_delay_millis());
 }
 
-base::TimeDelta
-CryptAuthEnrollmentSchedulerImpl::GetTimeToNextEnrollmentRequest() const {
+base::TimeDelta PersistentEnrollmentScheduler::GetTimeToNextEnrollmentRequest()
+    const {
   if (IsWaitingForEnrollmentResult())
     return base::TimeDelta::FromMilliseconds(0);
 
   return timer_->GetCurrentDelay();
 }
 
-bool CryptAuthEnrollmentSchedulerImpl::IsWaitingForEnrollmentResult() const {
+bool PersistentEnrollmentScheduler::IsWaitingForEnrollmentResult() const {
   return !timer_->IsRunning();
 }
 
-size_t CryptAuthEnrollmentSchedulerImpl::GetNumConsecutiveFailures() const {
+size_t PersistentEnrollmentScheduler::GetNumConsecutiveFailures() const {
   return pref_service_->GetUint64(
       prefs::kCryptAuthEnrollmentSchedulerNumConsecutiveFailures);
 }
 
 base::TimeDelta
-CryptAuthEnrollmentSchedulerImpl::CalculateTimeBetweenEnrollmentRequests()
-    const {
+PersistentEnrollmentScheduler::CalculateTimeBetweenEnrollmentRequests() const {
   size_t num_consecutive_failures = GetNumConsecutiveFailures();
   if (num_consecutive_failures == 0)
     return GetRefreshPeriod();
@@ -262,7 +268,7 @@ CryptAuthEnrollmentSchedulerImpl::CalculateTimeBetweenEnrollmentRequests()
       client_directive_.retry_period_millis());
 }
 
-void CryptAuthEnrollmentSchedulerImpl::ScheduleNextEnrollment() {
+void PersistentEnrollmentScheduler::ScheduleNextEnrollment() {
   DCHECK(!timer_->IsRunning());
 
   base::Time last_attempt_time = pref_service_->GetTime(
@@ -279,13 +285,12 @@ void CryptAuthEnrollmentSchedulerImpl::ScheduleNextEnrollment() {
 
   timer_->Start(
       FROM_HERE, time_until_next_request,
-      base::BindOnce(
-          &CryptAuthEnrollmentSchedulerImpl::NotifyEnrollmentRequested,
-          base::Unretained(this), GetPolicyReference()));
+      base::BindOnce(&PersistentEnrollmentScheduler::NotifyEnrollmentRequested,
+                     base::Unretained(this), GetPolicyReference()));
 }
 
 base::Optional<cryptauthv2::PolicyReference>
-CryptAuthEnrollmentSchedulerImpl::GetPolicyReference() const {
+PersistentEnrollmentScheduler::GetPolicyReference() const {
   if (client_directive_.has_policy_reference())
     return client_directive_.policy_reference();
 
