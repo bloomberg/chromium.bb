@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace identity {
@@ -21,6 +22,21 @@ class Profile;
 // Profiles.
 class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
+  class Observer {
+   public:
+    // Called when a IdentityManager instance is created.
+    virtual void IdentityManagerCreated(
+        identity::IdentityManager* identity_manager) {}
+
+    // Called when a IdentityManager instance is being shut down. Observers
+    // of |identity_manager| should remove themselves at this point.
+    virtual void IdentityManagerShutdown(
+        identity::IdentityManager* identity_manager) {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   static identity::IdentityManager* GetForProfile(Profile* profile);
   static identity::IdentityManager* GetForProfileIfExists(
       const Profile* profile);
@@ -37,6 +53,11 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
                                               const std::string& refresh_token,
                                               content::BrowserContext* context);
 
+  // Methods to register or remove observers of IdentityManager
+  // creation/shutdown.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   friend struct base::DefaultSingletonTraits<IdentityManagerFactory>;
 
@@ -46,6 +67,10 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
+  void BrowserContextShutdown(content::BrowserContext* profile) override;
+
+  // List of observers. Checks that list is empty on destruction.
+  mutable base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerFactory);
 };
