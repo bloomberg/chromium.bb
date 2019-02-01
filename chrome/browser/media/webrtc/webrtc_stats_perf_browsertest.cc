@@ -309,17 +309,9 @@ IN_PROC_BROWSER_TEST_F(
   RunsAudioAndVideoCallCollectingMetricsWithVideoCodec("VP9");
 }
 
-// See https://crbug.com/922198.
-#if defined(OS_MACOSX)
-#define MAYBE_MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2 \
-  DISABLED_MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2
-#else
-#define MAYBE_MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2 \
-  MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2
-#endif  // defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
-    MAYBE_MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2) {
+    MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9Profile2) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithVideoCodec(
       "VP9", true /* prefer_hw_video_codec */,
