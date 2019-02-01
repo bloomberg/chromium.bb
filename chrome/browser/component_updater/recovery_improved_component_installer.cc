@@ -16,8 +16,11 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <wrl/client.h>
-#include "chrome/elevation_service/elevation_service_idl.h"
 #include "chrome/install_static/install_util.h"
+#endif
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/elevation_service/elevation_service_idl.h"
 #endif
 
 // This component is behind a Finch experiment. To enable the registration of
