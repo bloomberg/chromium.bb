@@ -54,7 +54,7 @@ constexpr int kWhiteBarBoundsChangeDurationMs = 150;
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
-constexpr int kDividerEdgeInsetForTouch = 5;
+constexpr int kDividerEdgeInsetForTouch = 8;
 
 // The window targeter that is installed on the always on top container window
 // when the split view mode is active.
