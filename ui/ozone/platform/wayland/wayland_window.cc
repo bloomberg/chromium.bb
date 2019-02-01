@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
+#include <memory>
+
 #include <wayland-client.h>
 
 #include "base/bind.h"
@@ -16,6 +18,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v5.h"
@@ -112,7 +115,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   DCHECK(xdg_shell_objects_factory_);
 
   bounds_ = properties.bounds;
-  parent_window_ = GetParentWindow(properties.parent_widget);
 
   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   if (!surface_) {
@@ -126,6 +128,8 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   switch (ui_window_type) {
     case ui::PlatformWindowType::kMenu:
     case ui::PlatformWindowType::kPopup:
+      parent_window_ = GetParentWindow(properties.parent_widget);
+
       // TODO(msisov, jkim): Handle notification windows, which are marked
       // as popup windows as well. Those are the windows that do not have
       // parents and pop up when the browser receives a notification.
@@ -478,6 +482,12 @@ bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
 
 uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
   Event* event = static_cast<Event*>(native_event);
+
+  if (event->IsLocatedEvent()) {
+    auto copied_event = Event::Clone(*event);
+    UpdateCursorPositionFromEvent(std::move(copied_event));
+  }
+
   // If the window does not have a pointer focus, but received this event, it
   // means the window is a popup window with a child popup window. In this case,
   // the location of the event must be converted from the nested popup to the
@@ -677,6 +687,47 @@ void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
   // output only if it was stored before.
   if (entered_output_id_it != entered_outputs_ids_.end())
     entered_outputs_ids_.erase(entered_output_id_it);
+}
+
+void WaylandWindow::UpdateCursorPositionFromEvent(
+    std::unique_ptr<Event> event) {
+  DCHECK(event->IsLocatedEvent());
+  auto* window = connection_->GetCurrentFocusedWindow();
+  // This is a tricky part. Initially, Wayland sends events to surfaces the
+  // events are targeted for. But, in order to fulfill Chromium's assumptions
+  // about event targets, some of the events are rerouted and their locations
+  // are converted.
+  //
+  // The event we got here is rerouted, but it hasn't had its location fixed
+  // yet. Passing an event with fixed location won't help as well - its location
+  // is converted in a different way: if mouse is moved outside a menu window
+  // to the left, the location of such event includes negative values.
+  //
+  // In contrast, this method must translate coordinates of all events
+  // in regards to top-level windows' coordinates as it's always located at
+  // origin (0,0) from Chromium point of view (remember that Wayland doesn't
+  // provide global coordinates to its clients). And it's totally fine to use it
+  // as the target. Thus, the location of the |event| is always converted using
+  // the top-level window's bounds as the target excluding cases, when the
+  // mouse/touch is over a top-level window.
+  if (parent_window_ && parent_window_ != window) {
+    const gfx::Rect target_bounds = parent_window_->GetBounds();
+    gfx::Rect own_bounds = GetBounds();
+    // This is a bit trickier, and concerns nested menu windows. Whenever an
+    // event is sent to the nested menu window, it's rerouted to a parent menu
+    // window. Thus, in order to correctly translate its location, we must
+    // choose correct values for the |own_bounds|. In this case, it must the
+    // nested menu window, because |this| is the parent of that window.
+    if (window == child_window_)
+      own_bounds = child_window_->GetBounds();
+    ConvertEventLocationToTargetWindowLocation(
+        target_bounds.origin(), own_bounds.origin(), event->AsLocatedEvent());
+  }
+  auto* cursor_position = connection_->wayland_cursor_position();
+  if (cursor_position) {
+    cursor_position->OnCursorPositionChanged(
+        event->AsLocatedEvent()->location());
+  }
 }
 
 // static

@@ -13,6 +13,7 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/wayland_data_source.h"
@@ -86,6 +87,7 @@ class WaylandConnection : public PlatformEventSource,
   }
 
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
+  WaylandWindow* GetWindowWithLargestBounds();
   WaylandWindow* GetCurrentFocusedWindow();
   WaylandWindow* GetCurrentKeyboardFocusedWindow();
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
@@ -106,6 +108,11 @@ class WaylandConnection : public PlatformEventSource,
 
   WaylandOutputManager* wayland_output_manager() const {
     return wayland_output_manager_.get();
+  }
+
+  // Returns the cursor position, which may be null.
+  WaylandCursorPosition* wayland_cursor_position() {
+    return wayland_cursor_position_.get();
   }
 
   // Clipboard implementation.
@@ -214,6 +221,7 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
   std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandTouch> touch_;
+  std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
 
   // Objects that are using when GPU runs in own process.
   std::unique_ptr<WaylandBufferManager> buffer_manager_;

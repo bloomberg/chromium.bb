@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include <wayland-server.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/test_pointer.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/wayland_screen.h"
@@ -423,6 +426,154 @@ TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
 
   // The id of the entered display must correspond to the second output.
   ValidateTheDisplayForWidget(widget, secondary_display.id());
+}
+
+TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
+  MockPlatformWindowDelegate delegate;
+  std::unique_ptr<WaylandWindow> second_window =
+      CreateWaylandWindowWithProperties(gfx::Rect(0, 0, 1920, 1080),
+                                        PlatformWindowType::kWindow,
+                                        gfx::kNullAcceleratedWidget, &delegate);
+
+  auto* surface = server_.GetObject<wl::MockSurface>(window_->GetWidget());
+  ASSERT_TRUE(surface);
+
+  // Announce pointer capability so that WaylandPointer is created on the client
+  // side.
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+
+  Sync();
+
+  wl::TestPointer* pointer = server_.seat()->pointer();
+  ASSERT_TRUE(pointer);
+
+  uint32_t serial = 0;
+  uint32_t time = 1002;
+  wl_pointer_send_enter(pointer->resource(), ++serial, surface->resource(), 0,
+                        0);
+  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(10),
+                         wl_fixed_from_int(20));
+
+  Sync();
+
+  // WaylandScreen must return the last pointer location.
+  EXPECT_EQ(gfx::Point(10, 20), platform_screen_->GetCursorScreenPoint());
+
+  auto* second_surface =
+      server_.GetObject<wl::MockSurface>(second_window->GetWidget());
+  ASSERT_TRUE(second_surface);
+  // Now, leave the first surface and enter second one.
+  wl_pointer_send_leave(pointer->resource(), ++serial, surface->resource());
+  wl_pointer_send_enter(pointer->resource(), ++serial,
+                        second_surface->resource(), 0, 0);
+  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(20),
+                         wl_fixed_from_int(10));
+
+  Sync();
+
+  // WaylandScreen must return the last pointer location.
+  EXPECT_EQ(gfx::Point(20, 10), platform_screen_->GetCursorScreenPoint());
+
+  // Clear pointer focus.
+  wl_pointer_send_leave(pointer->resource(), ++serial,
+                        second_surface->resource());
+
+  Sync();
+
+  // WaylandScreen must return a point, which is located outside of bounds of
+  // any window. Basically, it means that it takes the largest window and adds
+  // 10 pixels to its width and height, and returns the value.
+  const gfx::Rect second_window_bounds = second_window->GetBounds();
+  // A second window has largest bounds. Thus, these bounds must be taken as a
+  // ground for the point outside any of the surfaces.
+  ASSERT_TRUE(window_->GetBounds() < second_window_bounds);
+  EXPECT_EQ(gfx::Point(second_window_bounds.width() + 10,
+                       second_window_bounds.height() + 10),
+            platform_screen_->GetCursorScreenPoint());
+
+  // Create a menu window now and ensure cursor position is always sent in
+  // regards to that window bounds.
+  std::unique_ptr<WaylandWindow> menu_window =
+      CreateWaylandWindowWithProperties(
+          gfx::Rect(second_window_bounds.width() - 10,
+                    second_window_bounds.height() - 10, 10, 20),
+          PlatformWindowType::kPopup, second_window->GetWidget(), &delegate);
+
+  Sync();
+
+  auto* menu_surface =
+      server_.GetObject<wl::MockSurface>(menu_window->GetWidget());
+  ASSERT_TRUE(menu_surface);
+
+  wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
+                        0, 0);
+  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
+                         wl_fixed_from_int(1));
+
+  Sync();
+
+  // The cursor screen point must be converted to the top-level window
+  // coordinates as long as Wayland doesn't provide global coordinates of
+  // surfaces and Chromium assumes those windows are always located at origin
+  // (0,0). For more information, check the comment in
+  // WaylandWindow::UpdateCursorPositionFromEvent.
+  EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
+
+  // Leave the menu window and enter the top level window.
+  wl_pointer_send_leave(pointer->resource(), ++serial,
+                        menu_surface->resource());
+  wl_pointer_send_enter(pointer->resource(), ++serial,
+                        second_surface->resource(), 0, 0);
+  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(1912),
+                         wl_fixed_from_int(1071));
+
+  Sync();
+
+  // WaylandWindow::UpdateCursorPositionFromEvent mustn't convert this point,
+  // because it has already been located on the top-level window.
+  EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
+
+  wl_pointer_send_leave(pointer->resource(), ++serial,
+                        second_surface->resource());
+
+  // Now, create a nested menu window and make sure that the cursor screen point
+  // still has been correct. The location of the window is on the right side of
+  // the main menu window.
+  const gfx::Rect menu_window_bounds = menu_window->GetBounds();
+  std::unique_ptr<WaylandWindow> nested_menu_window =
+      CreateWaylandWindowWithProperties(
+          gfx::Rect(menu_window_bounds.x() + menu_window_bounds.width(),
+                    menu_window_bounds.y() + 2, 10, 20),
+          PlatformWindowType::kPopup, second_window->GetWidget(), &delegate);
+
+  Sync();
+
+  auto* nested_menu_surface =
+      server_.GetObject<wl::MockSurface>(nested_menu_window->GetWidget());
+  ASSERT_TRUE(nested_menu_surface);
+
+  wl_pointer_send_enter(pointer->resource(), ++serial,
+                        nested_menu_surface->resource(), 0, 0);
+  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
+                         wl_fixed_from_int(3));
+
+  Sync();
+
+  EXPECT_EQ(gfx::Point(1922, 1075), platform_screen_->GetCursorScreenPoint());
+
+  // Leave the nested surface and enter main menu surface. The cursor screen
+  // point still must be reported correctly.
+  wl_pointer_send_leave(pointer->resource(), ++serial,
+                        nested_menu_surface->resource());
+  wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
+                        0, 0);
+  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
+                         wl_fixed_from_int(1));
+
+  Sync();
+
+  EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
