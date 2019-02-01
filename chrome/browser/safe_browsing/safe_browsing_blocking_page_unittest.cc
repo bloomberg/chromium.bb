@@ -18,10 +18,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
@@ -108,9 +105,9 @@ class TestSafeBrowsingBlockingPageFactory
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    PrefService* prefs = profile->GetPrefs();
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
     bool is_extended_reporting_opt_in_allowed =
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
@@ -183,9 +180,9 @@ class TestSafeBrowsingBlockingQuietPageFactory
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    PrefService* prefs = profile->GetPrefs();
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
     bool is_extended_reporting_opt_in_allowed =
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =

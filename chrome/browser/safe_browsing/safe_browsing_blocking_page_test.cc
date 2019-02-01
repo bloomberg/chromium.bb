@@ -331,9 +331,9 @@ class TestSafeBrowsingBlockingPageFactory
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    PrefService* prefs = profile->GetPrefs();
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
     bool is_extended_reporting_opt_in_allowed =
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =

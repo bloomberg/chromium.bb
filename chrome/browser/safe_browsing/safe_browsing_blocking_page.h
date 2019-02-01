@@ -36,7 +36,6 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_blocking_page.h"
 #include "components/safe_browsing/base_ui_manager.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 
 namespace safe_browsing {
 
