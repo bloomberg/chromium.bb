@@ -319,7 +319,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
 
   // The named transfer function.
   gfx::ColorSpace::TransferID transfer_id = gfx::ColorSpace::TransferID::BT709;
-  SkColorSpaceTransferFn custom_tr_fn = {2.2f, 1, 0, 1, 0, 0, 0};
+  skcms_TransferFunction custom_tr_fn = {2.2f, 1, 0, 1, 0, 0, 0};
   struct {
     const CFStringRef cfstr;
     gfx::ColorSpace::TransferID id;
@@ -354,7 +354,7 @@ gfx::ColorSpace GetImageBufferColorSpace(CVImageBufferRef image_buffer) {
       CGFloat gamma_float = 0;
       if (CFNumberGetValue(gamma_number, kCFNumberCGFloatType, &gamma_float)) {
         transfer_id = gfx::ColorSpace::TransferID::CUSTOM;
-        custom_tr_fn.fG = gamma_float;
+        custom_tr_fn.g = gamma_float;
       } else {
         DLOG(ERROR) << "Filed to get CVImageBufferRef gamma level as float.";
       }

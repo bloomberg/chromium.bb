@@ -98,7 +98,7 @@ ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
 
   // Extract the primary matrix and transfer function
   to_XYZD50_ = profile.toXYZD50;
-  memcpy(&transfer_fn_, &profile.trc[0].parametric, sizeof(transfer_fn_));
+  transfer_fn_ = profile.trc[0].parametric;
 
   // We assume that if we accurately approximated the profile, then the
   // single-curve version (which may have higher error) is also okay. If we
@@ -206,14 +206,14 @@ ICCProfile ICCProfile::FromParametricColorSpace(const ColorSpace& color_space) {
     return ICCProfile();
   }
 
-  SkMatrix44 to_XYZD50_matrix;
+  skcms_Matrix3x3 to_XYZD50_matrix;
   color_space.GetPrimaryMatrix(&to_XYZD50_matrix);
-  SkColorSpaceTransferFn fn;
+  skcms_TransferFunction fn;
   if (!color_space.GetTransferFunction(&fn)) {
     DLOG(ERROR) << "Failed to get ColorSpace transfer function for ICCProfile.";
     return ICCProfile();
   }
-  sk_sp<SkData> data = SkICC::WriteToICC(fn, to_XYZD50_matrix);
+  sk_sp<SkData> data = SkWriteICCProfile(fn, to_XYZD50_matrix);
   if (!data) {
     DLOG(ERROR) << "Failed to create SkICC.";
     return ICCProfile();

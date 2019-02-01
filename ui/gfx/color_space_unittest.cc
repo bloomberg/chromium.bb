@@ -108,9 +108,6 @@ TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
   }};
   skcms_TransferFunction transfer_fn = {2.1f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
 
-  SkColorSpaceTransferFn sk_transfer_fn;
-  memcpy(&sk_transfer_fn, &transfer_fn, sizeof(sk_transfer_fn));
-
   ColorSpace color_spaces[kNumTests] = {
       ColorSpace(ColorSpace::PrimaryID::BT709,
                  ColorSpace::TransferID::IEC61966_2_1),
@@ -120,7 +117,7 @@ TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
                  ColorSpace::TransferID::LINEAR),
       ColorSpace(ColorSpace::PrimaryID::BT2020,
                  ColorSpace::TransferID::IEC61966_2_1),
-      ColorSpace::CreateCustom(primary_matrix, sk_transfer_fn),
+      ColorSpace::CreateCustom(primary_matrix, transfer_fn),
   };
   sk_sp<SkColorSpace> sk_color_spaces[kNumTests] = {
       SkColorSpace::MakeSRGB(),

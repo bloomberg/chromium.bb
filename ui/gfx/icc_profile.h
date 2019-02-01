@@ -104,7 +104,7 @@ class COLOR_SPACE_EXPORT ICCProfile {
 
     // The best-fit parametric primaries and transfer function.
     skcms_Matrix3x3 to_XYZD50_;
-    SkColorSpaceTransferFn transfer_fn_;
+    skcms_TransferFunction transfer_fn_;
 
     // The set of display ids which have have caused this ICC profile to be
     // recorded in UMA histograms. Only record an ICC profile once per display

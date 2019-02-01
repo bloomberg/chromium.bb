@@ -880,7 +880,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   const gfx::Rect damage_rect(56, 123, 19, 43);
   skcms_Matrix3x3 to_XYZD50 = SkNamedGamut::kXYZ;
-  SkColorSpaceTransferFn fn = {1, 0, 1, 0, 0, 0, 1};
+  skcms_TransferFunction fn = {1, 0, 1, 0, 0, 0, 1};
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
   const bool has_transparent_background = true;
   const bool cache_render_pass = false;

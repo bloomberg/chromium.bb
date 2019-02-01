@@ -229,7 +229,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
 
   void TestColorShaders() {
     const size_t kNumTransferFns = 7;
-    SkColorSpaceTransferFn transfer_fns[kNumTransferFns] = {
+    skcms_TransferFunction transfer_fns[kNumTransferFns] = {
         // The identity.
         {1.f, 1.f, 0.f, 1.f, 0.f, 0.f, 0.f},
         // The identity, with an if statement.

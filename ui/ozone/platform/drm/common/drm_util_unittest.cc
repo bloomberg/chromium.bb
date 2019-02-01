@@ -329,7 +329,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
   const gfx::ColorSpace expected_hpz32x_color_space =
       gfx::ColorSpace::CreateCustom(
           expected_hpz32x_toXYZ50_matrix,
-          SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
+          skcms_TransferFunction({2.2, 1, 0, 0, 0, 0, 0}));
   EXPECT_EQ(expected_hpz32x_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(hpz32x_edid)).ToString());
   histogram_tester.ExpectBucketCount(
@@ -354,7 +354,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
   const gfx::ColorSpace expected_samus_color_space =
       gfx::ColorSpace::CreateCustom(
           expected_samus_toXYZ50_matrix,
-          SkColorSpaceTransferFn({2.5, 1, 0, 0, 0, 0, 0}));
+          skcms_TransferFunction({2.5, 1, 0, 0, 0, 0, 0}));
   EXPECT_EQ(expected_samus_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(samus_edid)).ToString());
   histogram_tester.ExpectBucketCount(
@@ -378,7 +378,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
   const gfx::ColorSpace expected_eve_color_space =
       gfx::ColorSpace::CreateCustom(
           expected_eve_toXYZ50_matrix,
-          SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
+          skcms_TransferFunction({2.2, 1, 0, 0, 0, 0, 0}));
   EXPECT_EQ(expected_eve_color_space.ToString(),
             GetColorSpaceFromEdid(display::EdidParser(eve_edid)).ToString());
   histogram_tester.ExpectBucketCount(

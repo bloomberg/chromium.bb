@@ -185,17 +185,16 @@ bool GLScaler::Configure(const Parameters& new_params) {
       params_.scale_from != params_.scale_to) {
     // Ensure the scaling color space is using a linear transfer function.
     constexpr auto kLinearFunction = std::make_tuple(1, 0, 1, 0, 0, 0, 1);
-    SkColorSpaceTransferFn fn;
+    skcms_TransferFunction fn;
     if (params_.source_color_space.GetTransferFunction(&fn) &&
-        std::make_tuple(fn.fA, fn.fB, fn.fC, fn.fD, fn.fE, fn.fF, fn.fG) ==
+        std::make_tuple(fn.a, fn.b, fn.c, fn.d, fn.e, fn.f, fn.g) ==
             kLinearFunction) {
       scaling_color_space_ = params_.source_color_space;
     } else {
       // Use the source color space, but with a linear transfer function.
       skcms_Matrix3x3 to_XYZD50;
       params_.source_color_space.GetPrimaryMatrix(&to_XYZD50);
-      std::tie(fn.fA, fn.fB, fn.fC, fn.fD, fn.fE, fn.fF, fn.fG) =
-          kLinearFunction;
+      std::tie(fn.a, fn.b, fn.c, fn.d, fn.e, fn.f, fn.g) = kLinearFunction;
       scaling_color_space_ = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
     }
     intermediate_texture_type = GL_HALF_FLOAT_OES;
