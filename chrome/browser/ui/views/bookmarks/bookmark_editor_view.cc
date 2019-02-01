@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_editor_view.h"
 
+#include <set>
 #include <string>
 
 #include "base/logging.h"
@@ -400,12 +401,6 @@ void BookmarkEditorView::Init() {
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
     layout->StartRow(1.0, single_column_view_set_id);
     layout->AddView(tree_view_->CreateParentIfNecessary());
-  }
-
-  if (provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(
-        views::GridLayout::kFixedSize,
-        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   }
 
   if (!show_tree_ || bb_model_->loaded())
