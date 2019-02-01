@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.widget.PulseDrawable;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -108,6 +107,10 @@ public class MenuButton extends FrameLayout implements TintObserver {
                 ApiCompatibilityUtils.getDrawable(getResources(), drawable));
     }
 
+    /**
+     * Show the update badge on the app menu button.
+     * @param animate Whether to animate the showing of the update badge.
+     */
     public void showAppMenuUpdateBadge(boolean animate) {
         if (mUpdateBadgeView == null) return;
         mShowMenuBadge = true;
@@ -116,6 +119,10 @@ public class MenuButton extends FrameLayout implements TintObserver {
         setAppMenuUpdateBadgeToVisible(animate);
     }
 
+    /**
+     * Remove the update badge on the app menu button.
+     * @param animate Whether to animate the hiding of the update badge.
+     */
     public void removeAppMenuUpdateBadge(boolean animate) {
         if (mUpdateBadgeView == null) return;
         boolean wasShowingMenuBadge = mShowMenuBadge;
@@ -264,7 +271,6 @@ public class MenuButton extends FrameLayout implements TintObserver {
             mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
-        UiUtils.removeViewFromParent(this);
     }
 
     /**

@@ -111,6 +111,12 @@ public abstract class ToolbarLayout extends FrameLayout {
         mToolbarTabController = tabController;
         if (mMenuButtonWrapper != null) {
             mMenuButtonWrapper.setAppMenuButtonHelper(appMenuButtonHelper);
+        } else {
+            final ImageButton menuButton = getMenuButton();
+            if (menuButton != null) {
+                menuButton.setOnTouchListener(appMenuButtonHelper);
+                menuButton.setAccessibilityDelegate(appMenuButtonHelper);
+            }
         }
     }
 
@@ -139,6 +145,8 @@ public abstract class ToolbarLayout extends FrameLayout {
      * instance vars.
      */
     void disableMenuButton() {
+        UiUtils.removeViewFromParent(getMenuButtonWrapper());
+
         if (mMenuButtonWrapper != null) {
             mMenuButtonWrapper.destroy();
             mMenuButtonWrapper = null;
