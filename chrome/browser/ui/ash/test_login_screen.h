@@ -82,7 +82,7 @@ class TestLoginScreen : public ash::mojom::LoginScreen {
   void SetShutdownButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   void SetShowGuestButtonInOobe(bool show) override;
-  void SetShowParentAccess(bool show) override;
+  void SetShowParentAccessButton(bool show) override;
   void FocusLoginShelf(bool reverse) override;
 
  private:

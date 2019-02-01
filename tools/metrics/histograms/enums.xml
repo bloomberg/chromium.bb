@@ -30485,6 +30485,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="IME tray"/>
   <int value="7" label="Notification tray"/>
   <int value="8" label="Lock screen note action button"/>
+  <int value="9" label="Parent access button"/>
 </enum>
 
 <enum name="LoginConsumerWhitelist">

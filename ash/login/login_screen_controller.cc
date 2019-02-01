@@ -505,11 +505,11 @@ void LoginScreenController::SetShowGuestButtonInOobe(bool show) {
       ->SetShowGuestButtonInOobe(show);
 }
 
-void LoginScreenController::SetShowParentAccess(bool show) {
+void LoginScreenController::SetShowParentAccessButton(bool show) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
-      ->SetShowParentAccess(show);
+      ->SetShowParentAccessButton(show);
 }
 
 void LoginScreenController::FocusLoginShelf(bool reverse) {

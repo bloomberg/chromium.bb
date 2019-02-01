@@ -128,7 +128,7 @@ void TestLoginScreen::SetAllowLoginAsGuest(bool allow_guest) {}
 
 void TestLoginScreen::SetShowGuestButtonInOobe(bool show) {}
 
-void TestLoginScreen::SetShowParentAccess(bool show) {}
+void TestLoginScreen::SetShowParentAccessButton(bool show) {}
 
 void TestLoginScreen::FocusLoginShelf(bool reverse) {}
 
