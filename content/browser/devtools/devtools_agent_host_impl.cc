@@ -133,6 +133,8 @@ bool DevToolsAgentHostImpl::AttachInternal(
     return false;
   renderer_channel_.AttachSession(session);
   sessions_.push_back(session);
+  DCHECK(session_by_client_.find(session->client()) ==
+         session_by_client_.end());
   session_by_client_[session->client()] = std::move(session_owned);
   if (sessions_.size() == 1)
     NotifyAttached();
@@ -169,6 +171,7 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
 void DevToolsAgentHostImpl::DetachInternal(DevToolsSession* session) {
   std::unique_ptr<DevToolsSession> session_owned =
       std::move(session_by_client_[session->client()]);
+  DCHECK_EQ(session, session_owned.get());
   // Make sure we dispose session prior to reporting it to the host.
   session->Dispose();
   sessions_.erase(std::remove(sessions_.begin(), sessions_.end(), session));

@@ -105,7 +105,13 @@ void ChromeDevToolsManagerDelegate::HandleCommand(
     std::unique_ptr<base::DictionaryValue> command_dict,
     const std::string& message,
     NotHandledCallback callback) {
-  DCHECK(sessions_.find(client) != sessions_.end());
+  if (sessions_.find(client) == sessions_.end()) {
+    std::move(callback).Run(std::move(command_dict), message);
+    // This should not happen, but happens. NOTREACHED tries to get
+    // a repro in some test.
+    NOTREACHED();
+    return;
+  }
   sessions_[client]->HandleCommand(std::move(command_dict), message,
                                    std::move(callback));
 }
