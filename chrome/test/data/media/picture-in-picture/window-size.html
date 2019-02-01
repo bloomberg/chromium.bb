@@ -138,14 +138,14 @@
     });
   }
 
-  function setMediaSessionSkipAdActionHandler() {
-    navigator.mediaSession.setActionHandler('skipad', _ => {
-      document.title = 'skipad';
+  function setMediaSessionActionHandler(name) {
+    navigator.mediaSession.setActionHandler(name, _ => {
+      document.title = name;
     });
   }
 
-  function unsetMediaSessionSkipAdActionHandler() {
-    navigator.mediaSession.setActionHandler('skipad', null);
+  function unsetMediaSessionActionHandler(name) {
+    navigator.mediaSession.setActionHandler(name, null);
   }
 </script>
 </html>
