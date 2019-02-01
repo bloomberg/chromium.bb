@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 
@@ -115,7 +116,7 @@ bool File::Init(const base::FilePath& name) {
   DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   DWORD access = GENERIC_READ | GENERIC_WRITE | DELETE;
   base_file_ =
-      base::File(CreateFile(name.value().c_str(), access, sharing, NULL,
+      base::File(CreateFile(base::wdata(name.value()), access, sharing, NULL,
                             OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL));
 
   if (!base_file_.IsValid())
@@ -125,9 +126,9 @@ bool File::Init(const base::FilePath& name) {
       base_file_.GetPlatformFile(), CompletionHandler::Get());
 
   init_ = true;
-  sync_base_file_  =
-    base::File(CreateFile(name.value().c_str(), access, sharing, NULL,
-                          OPEN_EXISTING, 0, NULL));
+  sync_base_file_ =
+      base::File(CreateFile(base::wdata(name.value()), access, sharing, NULL,
+                            OPEN_EXISTING, 0, NULL));
 
   if (!sync_base_file_.IsValid())
     return false;

@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/strings/string16.h"
 #include "net/base/net_export.h"
 #include "net/proxy_resolution/polling_proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
@@ -64,7 +65,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceWin
 
   // Creates a new key and appends it to |keys_to_watch_|. If the key fails to
   // be created, it is not appended to the list and we return false.
-  bool AddKeyToWatchList(HKEY rootkey, const wchar_t* subkey);
+  bool AddKeyToWatchList(HKEY rootkey, const base::char16* subkey);
 
   // This is called whenever one of the registry keys we are watching change.
   void OnObjectSignaled(base::win::RegKey* key);

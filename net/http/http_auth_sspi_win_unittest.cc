@@ -18,11 +18,11 @@ namespace net {
 
 namespace {
 
-void MatchDomainUserAfterSplit(const std::wstring& combined,
-                               const std::wstring& expected_domain,
-                               const std::wstring& expected_user) {
-  std::wstring actual_domain;
-  std::wstring actual_user;
+void MatchDomainUserAfterSplit(const base::string16& combined,
+                               const base::string16& expected_domain,
+                               const base::string16& expected_user) {
+  base::string16 actual_domain;
+  base::string16 actual_user;
   SplitDomainAndUser(combined, &actual_domain, &actual_user);
   EXPECT_EQ(expected_domain, actual_domain);
   EXPECT_EQ(expected_user, actual_user);
@@ -39,8 +39,10 @@ void UnexpectedCallback(int result) {
 }  // namespace
 
 TEST(HttpAuthSSPITest, SplitUserAndDomain) {
-  MatchDomainUserAfterSplit(L"foobar", L"", L"foobar");
-  MatchDomainUserAfterSplit(L"FOO\\bar", L"FOO", L"bar");
+  MatchDomainUserAfterSplit(STRING16_LITERAL("foobar"), STRING16_LITERAL(""),
+                            STRING16_LITERAL("foobar"));
+  MatchDomainUserAfterSplit(STRING16_LITERAL("FOO\\bar"),
+                            STRING16_LITERAL("FOO"), STRING16_LITERAL("bar"));
 }
 
 TEST(HttpAuthSSPITest, DetermineMaxTokenLength_Normal) {

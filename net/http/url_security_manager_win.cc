@@ -55,11 +55,9 @@ bool URLSecurityManagerWin::CanUseDefaultCredentials(
   base::string16 url16 = base::ASCIIToUTF16(auth_origin.spec());
   DWORD policy = 0;
   HRESULT hr;
-  hr = security_manager_->ProcessUrlAction(url16.c_str(),
-                                           URLACTION_CREDENTIALS_USE,
-                                           reinterpret_cast<BYTE*>(&policy),
-                                           sizeof(policy), NULL, 0,
-                                           PUAF_NOUI, 0);
+  hr = security_manager_->ProcessUrlAction(
+      base::wdata(url16), URLACTION_CREDENTIALS_USE,
+      reinterpret_cast<BYTE*>(&policy), sizeof(policy), NULL, 0, PUAF_NOUI, 0);
   if (FAILED(hr)) {
     LOG(ERROR) << "IInternetSecurityManager::ProcessUrlAction failed: " << hr;
     return false;
@@ -83,7 +81,7 @@ bool URLSecurityManagerWin::CanUseDefaultCredentials(
       // URLZONE_INTERNET      3
       // URLZONE_UNTRUSTED     4
       DWORD zone = 0;
-      hr = security_manager_->MapUrlToZone(url16.c_str(), &zone, 0);
+      hr = security_manager_->MapUrlToZone(base::wdata(url16), &zone, 0);
       if (FAILED(hr)) {
         LOG(ERROR) << "IInternetSecurityManager::MapUrlToZone failed: " << hr;
         return false;

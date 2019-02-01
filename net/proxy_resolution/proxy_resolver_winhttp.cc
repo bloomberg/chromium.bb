@@ -118,7 +118,7 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
   options.fAutoLogonIfChallenged = FALSE;
   options.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
   base::string16 pac_url16 = base::ASCIIToUTF16(pac_url_.spec());
-  options.lpszAutoConfigUrl = pac_url16.c_str();
+  options.lpszAutoConfigUrl = base::wdata(pac_url16);
 
   WINHTTP_PROXY_INFO info = {0};
   DCHECK(session_handle_);
@@ -129,14 +129,16 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
   // get good performance in the case where WinHTTP uses an out-of-process
   // resolver.  This is important for Vista and Win2k3.
   BOOL ok = WinHttpGetProxyForUrl(
-      session_handle_, base::ASCIIToUTF16(mutable_query_url.spec()).c_str(),
-      &options, &info);
+      session_handle_,
+      base::wdata(base::ASCIIToUTF16(mutable_query_url.spec())), &options,
+      &info);
   if (!ok) {
     if (ERROR_WINHTTP_LOGIN_FAILURE == GetLastError()) {
       options.fAutoLogonIfChallenged = TRUE;
       ok = WinHttpGetProxyForUrl(
-          session_handle_, base::ASCIIToUTF16(mutable_query_url.spec()).c_str(),
-          &options, &info);
+          session_handle_,
+          base::wdata(base::ASCIIToUTF16(mutable_query_url.spec())), &options,
+          &info);
     }
     if (!ok) {
       DWORD error = GetLastError();
@@ -171,7 +173,7 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
       // things like "foopy1:80;foopy2:80". It strips out the non-HTTP
       // proxy types, and stops the list when PAC encounters a "DIRECT".
       // So UseNamedProxy() should work OK.
-      results->UseNamedProxy(base::UTF16ToASCII(info.lpszProxy));
+      results->UseNamedProxy(base::WideToUTF8(info.lpszProxy));
       break;
     default:
       NOTREACHED();
