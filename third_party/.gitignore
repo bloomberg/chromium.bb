@@ -21,6 +21,7 @@
 /android_tools/
 /android_tools_internal/
 /android_webview_glue/src
+/androidx/lib/
 /angle
 /angle_dx11
 /apache-portable-runtime/src
