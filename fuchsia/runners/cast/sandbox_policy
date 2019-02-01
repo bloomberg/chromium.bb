@@ -5,6 +5,7 @@
       "fuchsia.fonts.Provider",
       "fuchsia.media.Audio",
       "fuchsia.net.LegacySocketProvider",
+      "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
       "fuchsia.ui.input.ImeService",
