@@ -1,7 +1,6 @@
 {
   "features": [ "root-ssl-certificates" ],
   "services": [
-      "fuchsia.net.LegacySocketProvider",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack"
   ]
