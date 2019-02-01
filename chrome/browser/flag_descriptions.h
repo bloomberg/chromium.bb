@@ -94,6 +94,9 @@ extern const char kAsyncImageDecodingDescription[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[];
 
+extern const char kAutofillAssistantChromeEntryName[];
+extern const char kAutofillAssistantChromeEntryDescription[];
+
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];
 

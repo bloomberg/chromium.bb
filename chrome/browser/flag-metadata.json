@@ -221,6 +221,11 @@
     "expiry_milestone": 74
   },
   {
+    "name": "autofill-assistant-chrome-entry",
+    "owners": [ "gogerald,wuandy" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "autofill-cache-query-responses",
     "owners": [ "rogerm" ],
     "expiry_milestone": 72

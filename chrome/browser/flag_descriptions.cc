@@ -103,6 +103,11 @@ extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[] =
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[] =
     "Always show server cards when in sync transport mode for wallet data";
 
+extern const char kAutofillAssistantChromeEntryName[] =
+    "AutofillAssistantChromeEntry";
+extern const char kAutofillAssistantChromeEntryDescription[] =
+    "Initiate autofill assistant from within Chrome.";
+
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =

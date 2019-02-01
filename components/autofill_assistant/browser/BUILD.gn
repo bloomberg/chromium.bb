@@ -81,6 +81,8 @@ jumbo_static_library("browser") {
     "details.h",
     "element_area.cc",
     "element_area.h",
+    "features.cc",
+    "features.h",
     "metrics.cc",
     "metrics.h",
     "payment_information.h",
