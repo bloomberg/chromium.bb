@@ -131,7 +131,6 @@ void ContextProviderImpl::Create(
   ignore_result(launch_.Run(std::move(launch_command), launch_options));
 
   ignore_result(context_handle.release());
-  ignore_result(job.release());
 }
 
 void ContextProviderImpl::Bind(

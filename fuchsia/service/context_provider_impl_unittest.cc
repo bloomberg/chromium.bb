@@ -7,6 +7,7 @@
 #include <lib/fdio/util.h>
 #include <lib/fidl/cpp/binding.h>
 #include <zircon/processargs.h>
+#include <zircon/types.h>
 
 #include <functional>
 #include <string>
@@ -22,12 +23,14 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/fuchsia/default_job.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/test_timeouts.h"
 #include "fuchsia/fidl/chromium/web/cpp/fidl_test_base.h"
 #include "fuchsia/service/common.h"
 #include "fuchsia/test/fake_context.h"
@@ -266,6 +269,50 @@ TEST_F(ContextProviderImplTest, FailsDataDirectoryIsFile) {
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
 
   CheckContextUnresponsive(&context);
+}
+
+static bool WaitUntilJobIsEmpty(zx::unowned_job job, zx::duration timeout) {
+  zx_signals_t observed = 0;
+  zx_status_t status =
+      job->wait_one(ZX_JOB_NO_JOBS, zx::deadline_after(timeout), &observed);
+  ZX_CHECK(status == ZX_OK || status == ZX_ERR_TIMED_OUT, status);
+  return observed & ZX_JOB_NO_JOBS;
+}
+
+// Regression test for https://crbug.com/927403 (Job leak per-Context).
+TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
+  // Replace the default job with one that is guaranteed to be empty.
+  zx::job job;
+  ASSERT_EQ(base::GetDefaultJob()->duplicate(ZX_RIGHT_SAME_RIGHTS, &job),
+            ZX_OK);
+  base::ScopedDefaultJobForTest empty_default_job(std::move(job));
+
+  // Bind to the ContextProvider.
+  chromium::web::ContextProviderPtr provider;
+  provider_->Bind(provider.NewRequest());
+
+  // Verify that our current default job is still empty.
+  ASSERT_TRUE(WaitUntilJobIsEmpty(base::GetDefaultJob(), zx::duration()));
+
+  // Create a Context and verify that it is functional.
+  chromium::web::ContextPtr context;
+  provider->Create(BuildCreateContextParams(), context.NewRequest());
+  CheckContextResponsive(&context);
+
+  // Verify that there is at least one job under our default job.
+  ASSERT_FALSE(WaitUntilJobIsEmpty(base::GetDefaultJob(), zx::duration()));
+
+  // Detach from the Context and ContextProvider, and spin the loop to allow
+  // those to be handled.
+  context.Unbind();
+  provider.Unbind();
+  base::RunLoop().RunUntilIdle();
+
+  // Wait until the default job signals that it no longer contains any child
+  // jobs; this should occur shortly after the Context process terminates.
+  EXPECT_TRUE(WaitUntilJobIsEmpty(
+      base::GetDefaultJob(),
+      zx::duration(TestTimeouts::action_timeout().InNanoseconds())));
 }
 
 }  // namespace webrunner
