@@ -639,32 +639,40 @@ GURL AutocompleteMatch::ImageUrl() const {
   return answer ? answer->image_url() : GURL(image_url);
 }
 
-void AutocompleteMatch::ApplyPedal() {
+AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
+    OmniboxPedal* pedal) const {
+  AutocompleteMatch copy(*this);
+  copy.pedal = pedal;
+  copy.relevance--;
+
   // TODO(orinj): It may make more sense to start from a clean slate and
   // apply only the bits of state relevant to the Pedal, rather than
   // eliminating parts of an existing match that are no longer useful.
   // But while Pedal suggestions are derived from triggering suggestions by
   // copy, it is necessary to be careful that we don't inherit fields that
   // might cause issues.
-  allowed_to_be_default_match = false;
+  copy.allowed_to_be_default_match = false;
 
-  type = Type::PEDAL;
-  destination_url = pedal->GetNavigationUrl();
+  copy.type = Type::PEDAL;
+  copy.destination_url = copy.pedal->GetNavigationUrl();
 
   // Normally this is computed by the match using a TemplateURLService
   // but Pedal URLs are not typical and unknown, and we don't want them to
   // be deduped, e.g. after stripping a query parameter that may do something
   // meaningful like indicate the viewable scope of a settings page.  So here
   // we keep the URL exactly as the Pedal specifies it.
-  stripped_destination_url = destination_url;
+  copy.stripped_destination_url = copy.destination_url;
 
   // Note: Always use empty classifications for empty text and non-empty
   // classifications for non-empty text.
-  const auto& labels = pedal->GetLabelStrings();
-  contents = labels.suggestion_contents;
-  contents_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
-  description = labels.hint;
-  description_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
+  const auto& labels = copy.pedal->GetLabelStrings();
+  copy.contents = labels.suggestion_contents;
+  copy.contents_class = {ACMatchClassification(0, ACMatchClassification::NONE)};
+  copy.description = labels.hint;
+  copy.description_class = {
+      ACMatchClassification(0, ACMatchClassification::NONE)};
+
+  return copy;
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
