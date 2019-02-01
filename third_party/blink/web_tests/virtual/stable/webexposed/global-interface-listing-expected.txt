@@ -4865,14 +4865,22 @@ interface RTCDataChannelEvent : Event
     method constructor
 interface RTCIceCandidate
     attribute @@toStringTag
+    getter address
     getter candidate
+    getter component
+    getter foundation
+    getter port
+    getter priority
+    getter protocol
+    getter relatedAddress
+    getter relatedPort
     getter sdpMLineIndex
     getter sdpMid
+    getter tcpType
+    getter type
+    getter usernameFragment
     method constructor
     method toJSON
-    setter candidate
-    setter sdpMLineIndex
-    setter sdpMid
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag

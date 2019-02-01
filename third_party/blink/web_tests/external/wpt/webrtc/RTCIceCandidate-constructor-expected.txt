@@ -13,7 +13,8 @@ FAIL new RTCIceCandidate({ candidate: '', sdpMid: 'audio' } Failed to construct 
 FAIL new RTCIceCandidate({ candidate: '', sdpMLineIndex: 0 } Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
 FAIL new RTCIceCandidate({ ... }) with valid candidate string and sdpMid assert_equals: sdpMLineIndex expected (object) null but got (number) 0
 FAIL new RTCIceCandidate({ ... }) with invalid candidate string and sdpMid assert_equals: sdpMLineIndex expected (object) null but got (number) 0
-FAIL new RTCIceCandidate({ ... }) with non default value for all fields assert_equals: usernameFragment expected (string) "test" but got (undefined) undefined
+PASS new RTCIceCandidate({ ... }) with nondefault values for all fields
+PASS new RTCIceCandidate({ ... }) with nondefault values for all fields, tcp candidate
 FAIL new RTCIceCandidate({ ... }) with invalid sdpMid Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
 FAIL new RTCIceCandidate({ ... }) with invalid sdpMLineIndex Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
 Harness: the test ran to completion.

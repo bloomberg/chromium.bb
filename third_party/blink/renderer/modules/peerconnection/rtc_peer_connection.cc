@@ -226,9 +226,9 @@ scoped_refptr<WebRTCICECandidate> ConvertToWebRTCIceCandidate(
       UseCounter::Count(context,
                         WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
     }
-    return WebRTCICECandidate::Create(ice_candidate_init->candidate(),
-                                      ice_candidate_init->sdpMid(),
-                                      sdp_m_line_index);
+    return WebRTCICECandidate::Create(
+        ice_candidate_init->candidate(), ice_candidate_init->sdpMid(),
+        sdp_m_line_index, ice_candidate_init->usernameFragment());
   }
 
   DCHECK(candidate.IsRTCIceCandidate());
