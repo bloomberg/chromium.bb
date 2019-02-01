@@ -497,6 +497,74 @@ message LxdContainerCreatedSignal {
   string failure_reason = 5;
 }
 
+// Request for deleting an LXD container.
+message DeleteLxdContainerRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container to start within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+}
+
+// Response for deleting an LXD container.
+message DeleteLxdContainerResponse {
+  enum Status {
+    // The status of deleting the container is unknown
+    UNKNOWN = 0;
+
+    // The container is being deleted.
+    DELETING = 1;
+
+    // The named container doesn't exist.
+    DOES_NOT_EXIST = 2;
+
+    // The container could not be deleted.
+    FAILED = 3;
+  }
+
+  // Container creation status.
+  Status status = 1;
+
+  // The failure_reason if the container could not be created.
+  string failure_reason = 2;
+}
+
+// Message used in the LxdContainerDeleted signal for the outcome of an
+// LxdDeleteContainer message.
+message LxdContainerDeletedSignal {
+  enum Status {
+    // Deletion status is unknown.
+    UNKNOWN = 0;
+
+    // The container has been deleted.
+    DELETED = 1;
+
+    // The container deletion was cancelled.
+    CANCELLED = 2;
+
+    // One or more steps failed and the container could not be deleted.
+    FAILED = 3;
+  }
+
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Container deletion status.
+  Status status = 4;
+
+  // The failure_reason if the container was not successfully deleted.
+  string failure_reason = 5;
+}
+
 // Request to set timezone for all containers in all VMs known to cicerone.
 message SetTimezoneRequest {
   // The timezone name to set, for example "America/Denver" or "Etc/UTC".
