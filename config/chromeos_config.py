@@ -2303,7 +2303,11 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
     if board in boards_dict['internal_boards']:
       config.apply(site_config.templates.internal)
     else:
-      config.apply(site_config.templates.external)
+      config.apply(
+          site_config.templates.external,
+          overlays=constants.PUBLIC_OVERLAYS,
+          prebuilts=constants.PUBLIC,
+      )
 
     if board in postsubmit_boards:
       master_config.AddSlave(config)
