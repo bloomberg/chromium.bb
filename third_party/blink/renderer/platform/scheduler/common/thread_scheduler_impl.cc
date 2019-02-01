@@ -47,5 +47,10 @@ void ThreadSchedulerImpl::SetUkmTaskSamplingRateForTest(double sampling_rate) {
   ukm_task_sampling_rate_ = sampling_rate;
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+ThreadSchedulerImpl::DeprecatedDefaultTaskRunner() {
+  return DefaultTaskRunner();
+}
+
 }  // namespace scheduler
 }  // namespace blink

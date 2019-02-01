@@ -87,6 +87,8 @@ class ClipboardPromise final
   String write_data_;
   Member<Blob> write_image_data_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
+
   SEQUENCE_CHECKER(async_clipboard_sequence_checker);
 };
 

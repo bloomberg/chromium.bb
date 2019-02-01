@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -74,7 +75,11 @@ void IDBRequestLoader::StartNextValue() {
   DCHECK(!file_reader_loading_);
   file_reader_loading_ = true;
 #endif  // DCHECK_IS_ON()
-  loader_ = FileReaderLoader::Create(FileReaderLoader::kReadByClient, this);
+  // TODO(hajimehoshi): Use a per-ExecutionContext task runner of
+  // TaskType::kFileReading
+  loader_ = std::make_unique<FileReaderLoader>(
+      FileReaderLoader::kReadByClient, this,
+      ThreadScheduler::Current()->IPCTaskRunner());
   loader_->Start(unwrapper.WrapperBlobHandle());
 }
 

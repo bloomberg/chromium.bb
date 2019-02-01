@@ -26,7 +26,9 @@ class ClipboardPromise;
 // merge code and reduce duplicate code.
 class ClipboardFileReader final : public FileReaderLoaderClient {
  public:
-  ClipboardFileReader(Blob*, ClipboardPromise*);
+  ClipboardFileReader(Blob*,
+                      ClipboardPromise*,
+                      scoped_refptr<base::SingleThreadTaskRunner>);
   ~ClipboardFileReader() override;
 
   // FileReaderLoaderClient.

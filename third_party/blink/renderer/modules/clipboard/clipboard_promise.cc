@@ -112,7 +112,9 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
     : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
       script_state_(script_state),
       script_promise_resolver_(ScriptPromiseResolver::Create(script_state)),
-      buffer_(mojom::ClipboardBuffer::kStandard) {}
+      buffer_(mojom::ClipboardBuffer::kStandard),
+      file_reading_task_runner_(
+          GetExecutionContext()->GetTaskRunner(TaskType::kFileReading)) {}
 
 scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
@@ -292,7 +294,8 @@ void ClipboardPromise::HandleWriteImageWithPermission(PermissionStatus status) {
     return;
   }
 
-  file_reader_ = std::make_unique<ClipboardFileReader>(write_image_data_, this);
+  file_reader_ = std::make_unique<ClipboardFileReader>(
+      write_image_data_, this, file_reading_task_runner_);
 }
 
 void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {

@@ -236,8 +236,11 @@ class XMLHttpRequest::BlobLoader final
 
   BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
       : xhr_(xhr),
-        loader_(
-            FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)) {
+        loader_(std::make_unique<FileReaderLoader>(
+            FileReaderLoader::kReadByClient,
+            this,
+            xhr->GetExecutionContext()->GetTaskRunner(
+                TaskType::kFileReading))) {
     loader_->Start(std::move(handle));
   }
 

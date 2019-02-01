@@ -110,6 +110,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
 
+  ExecutionContext* GetExecutionContext();
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -211,6 +213,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   // throttle response when DidConnect is called.
   std::unique_ptr<ConnectInfo> connect_info_;
   bool throttle_passed_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
   static const uint64_t kReceivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };

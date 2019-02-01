@@ -62,21 +62,17 @@
 
 namespace blink {
 
-// static
-std::unique_ptr<FileReaderLoader> FileReaderLoader::Create(
+FileReaderLoader::FileReaderLoader(
     ReadType read_type,
-    FileReaderLoaderClient* client) {
-  return std::make_unique<FileReaderLoader>(read_type, client);
-}
-
-FileReaderLoader::FileReaderLoader(ReadType read_type,
-                                   FileReaderLoaderClient* client)
+    FileReaderLoaderClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : read_type_(read_type),
       client_(client),
-      // TODO(hajimehoshi): Pass an appropriate task runner to SimpleWatcher
-      // constructor.
-      handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC),
+      handle_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                      task_runner),
       binding_(this),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
 FileReaderLoader::~FileReaderLoader() {
@@ -105,7 +101,7 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
   }
 
   mojom::blink::BlobReaderClientPtr client_ptr;
-  binding_.Bind(MakeRequest(&client_ptr));
+  binding_.Bind(MakeRequest(&client_ptr, task_runner_), task_runner_);
   blob_data->ReadAll(std::move(producer_handle), std::move(client_ptr));
 
   if (IsSyncLoad()) {
