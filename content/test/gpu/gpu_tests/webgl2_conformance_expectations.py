@@ -182,8 +182,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-2d-rgb9_e5-rgb-float.html',
         ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=921055)
-    self.Flaky('conformance2/vertex_arrays/vertex-array-object.html',
-        ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=920265)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
@@ -331,6 +329,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance2/state/gl-get-calls.html', ['passthrough', 'opengl'],
         bug=602688)
+    self.Flaky('conformance2/vertex_arrays/vertex-array-object.html',
+        ['passthrough', 'opengl'], bug=920265)
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
     self.Fail('conformance/textures/canvas/' +
