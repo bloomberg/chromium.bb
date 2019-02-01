@@ -51,15 +51,6 @@ RTCIceCandidate* RTCIceCandidate::Create(
     return nullptr;
   }
 
-  if (!candidate_init->hasCandidate() ||
-      !candidate_init->candidate().length()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kTypeMismatchError,
-        ExceptionMessages::IncorrectPropertyType(
-            "candidate", "is not a string, or is empty."));
-    return nullptr;
-  }
-
   String sdp_mid;
   if (candidate_init->hasSdpMid())
     sdp_mid = candidate_init->sdpMid();

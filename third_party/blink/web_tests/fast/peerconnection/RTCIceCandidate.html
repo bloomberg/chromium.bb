@@ -28,7 +28,6 @@ test(function() {
 }, 'Constructor can be initialized with output from another constructor');
 
 test(function() {
-    assert_throws('TypeMismatchError', () => new RTCIceCandidate({sdpMid: ''}));
     assert_throws({name: 'TypeError'}, () => new RTCIceCandidate({}));
     assert_throws({name: 'TypeError'}, () => new RTCIceCandidate(5));
     assert_throws({name: 'TypeError'}, () => new RTCIceCandidate('foobar'));
@@ -36,7 +35,8 @@ test(function() {
 }, 'Constructor throws on invalid input');
 
 test(function() {
-    new RTCIceCandidate({candidate: 'x', sdpMid: ''})
+    new RTCIceCandidate({candidate: 'x', sdpMid: ''});
+    new RTCIceCandidate({sdpMid: ''});
 }, 'Constructor does not throw on valid input');
 
 test(function() {

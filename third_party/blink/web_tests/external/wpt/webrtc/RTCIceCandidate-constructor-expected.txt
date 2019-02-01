@@ -6,16 +6,16 @@ PASS new RTCIceCandidate({ sdpMid: null, sdpMLineIndex: null })
 PASS new RTCIceCandidate({ candidate: '' })
 PASS new RTCIceCandidate({ candidate: null })
 PASS new RTCIceCandidate({ ... }) with valid candidate string only
-FAIL new RTCIceCandidate({ sdpMid: 'audio' }) Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
-FAIL new RTCIceCandidate({ sdpMLineIndex: 0 }) Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
-FAIL new RTCIceCandidate({ sdpMid: 'audio', sdpMLineIndex: 0 }) Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
-FAIL new RTCIceCandidate({ candidate: '', sdpMid: 'audio' } Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
-FAIL new RTCIceCandidate({ candidate: '', sdpMLineIndex: 0 } Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
+FAIL new RTCIceCandidate({ sdpMid: 'audio' }) assert_equals: sdpMLineIndex expected (object) null but got (number) 0
+PASS new RTCIceCandidate({ sdpMLineIndex: 0 })
+PASS new RTCIceCandidate({ sdpMid: 'audio', sdpMLineIndex: 0 })
+FAIL new RTCIceCandidate({ candidate: '', sdpMid: 'audio' } assert_equals: sdpMLineIndex expected (object) null but got (number) 0
+PASS new RTCIceCandidate({ candidate: '', sdpMLineIndex: 0 }
 FAIL new RTCIceCandidate({ ... }) with valid candidate string and sdpMid assert_equals: sdpMLineIndex expected (object) null but got (number) 0
 FAIL new RTCIceCandidate({ ... }) with invalid candidate string and sdpMid assert_equals: sdpMLineIndex expected (object) null but got (number) 0
 PASS new RTCIceCandidate({ ... }) with nondefault values for all fields
 PASS new RTCIceCandidate({ ... }) with nondefault values for all fields, tcp candidate
-FAIL new RTCIceCandidate({ ... }) with invalid sdpMid Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
-FAIL new RTCIceCandidate({ ... }) with invalid sdpMLineIndex Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
+FAIL new RTCIceCandidate({ ... }) with invalid sdpMid assert_equals: sdpMLineIndex expected (object) null but got (number) 0
+PASS new RTCIceCandidate({ ... }) with invalid sdpMLineIndex
 Harness: the test ran to completion.
 
