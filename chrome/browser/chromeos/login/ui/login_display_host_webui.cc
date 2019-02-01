@@ -1253,7 +1253,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
   const std::string& locale = startup_manifest->initial_locale_default();
 
   const std::string& layout = startup_manifest->keyboard_layout();
-  VLOG(1) << "Initial locale: " << locale << "keyboard layout " << layout;
+  VLOG(1) << "Initial locale: " << locale << " keyboard layout: " << layout;
 
   // Determine keyboard layout from OEM customization (if provided) or
   // initial locale and save it in preferences.
