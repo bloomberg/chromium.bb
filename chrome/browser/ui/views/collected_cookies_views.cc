@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 
+#include <map>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -59,10 +61,6 @@ namespace {
 // Dimensions of the tree views.
 const int kTreeViewWidth = 400;
 const int kTreeViewHeight = 125;
-
-// Spacing constants used with non-Harmony dialogs.
-const int kTabbedPaneTopPadding = 14;
-const int kCookieInfoBottomPadding = 4;
 
 // Adds a ColumnSet to |layout| to hold two buttons with padding between.
 // Starts a new row with the added ColumnSet.
@@ -401,10 +399,13 @@ void CollectedCookiesViews::Init() {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  if (provider->UseExtraDialogPadding()) {
-    SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kTabbedPaneTopPadding, 0, 0, 0)));
-  }
+
+  // Add margin above the content. The left, right, and bottom margins are added
+  // by the content itself.
+  set_margins(
+      gfx::Insets(provider->GetDistanceMetric(
+                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
+                  0, 0, 0));
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -424,18 +425,10 @@ void CollectedCookiesViews::Init() {
   tabbed_pane->AddTab(label_blocked, CreateBlockedPane());
   tabbed_pane->SelectTabAt(0);
   tabbed_pane->set_listener(this);
-  if (ChromeLayoutProvider::Get()->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(
-        views::GridLayout::kFixedSize,
-        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
-  }
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   cookie_info_view_ = new CookieInfoView();
   layout->AddView(cookie_info_view_);
-  if (provider->UseExtraDialogPadding())
-    layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                          kCookieInfoBottomPadding);
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   infobar_ = new InfobarView();
