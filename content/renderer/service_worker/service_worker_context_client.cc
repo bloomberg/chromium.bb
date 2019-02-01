@@ -40,13 +40,13 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
+#include "content/renderer/service_worker/navigation_preload_request.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_network_provider_for_service_worker.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
@@ -59,7 +59,6 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -285,152 +284,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
   base::ThreadChecker thread_checker;
   base::WeakPtrFactory<ServiceWorkerContextClient> weak_factory;
   base::WeakPtrFactory<blink::WebServiceWorkerContextProxy> proxy_weak_factory;
-};
-
-class ServiceWorkerContextClient::NavigationPreloadRequest final
-    : public network::mojom::URLLoaderClient {
- public:
-  NavigationPreloadRequest(
-      int fetch_event_id,
-      const GURL& url,
-      blink::mojom::FetchEventPreloadHandlePtr preload_handle)
-      : fetch_event_id_(fetch_event_id),
-        url_(url),
-        url_loader_(std::move(preload_handle->url_loader)),
-        binding_(this, std::move(preload_handle->url_loader_client_request)) {}
-
-  ~NavigationPreloadRequest() override {}
-
-  void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
-    DCHECK(!response_);
-    response_ = std::make_unique<blink::WebURLResponse>();
-    // TODO(horo): Set report_security_info to true when DevTools is attached.
-    const bool report_security_info = false;
-    WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
-                                          report_security_info,
-                                          -1 /* request_id */);
-    MaybeReportResponseToClient();
-  }
-
-  void OnReceiveRedirect(
-      const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
-    DCHECK(!response_);
-    DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
-        response_head.headers->response_code()));
-
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-    response_ = std::make_unique<blink::WebURLResponse>();
-    WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
-                                          false /* report_security_info */,
-                                          -1 /* request_id */);
-    client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
-                                        mojo::ScopedDataPipeConsumerHandle());
-    // This will delete |this|.
-    client->OnNavigationPreloadComplete(
-        fetch_event_id_, response_head.response_start,
-        response_head.encoded_data_length, 0 /* encoded_body_length */,
-        0 /* decoded_body_length */);
-  }
-
-  void OnUploadProgress(int64_t current_position,
-                        int64_t total_size,
-                        OnUploadProgressCallback ack_callback) override {
-    NOTREACHED();
-  }
-
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {}
-
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
-  }
-
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {
-    DCHECK(!body_.is_valid());
-    body_ = std::move(body);
-    MaybeReportResponseToClient();
-  }
-
-  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
-    if (status.error_code != net::OK) {
-      std::string message;
-      std::string unsanitized_message;
-      if (status.error_code == net::ERR_ABORTED) {
-        message =
-            "The service worker navigation preload request was cancelled "
-            "before 'preloadResponse' settled. If you intend to use "
-            "'preloadResponse', use waitUntil() or respondWith() to wait for "
-            "the promise to settle.";
-      } else {
-        message =
-            "The service worker navigation preload request failed with a "
-            "network error.";
-        unsanitized_message =
-            "The service worker navigation preload request failed with network "
-            "error: " +
-            net::ErrorToString(status.error_code) + ".";
-      }
-
-      // This will delete |this|.
-      ReportErrorToClient(message, unsanitized_message);
-      return;
-    }
-
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-    if (response_) {
-      // When the response body from the server is empty, OnComplete() is called
-      // without OnStartLoadingResponseBody().
-      DCHECK(!body_.is_valid());
-      client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
-                                          mojo::ScopedDataPipeConsumerHandle());
-    }
-    // This will delete |this|.
-    client->OnNavigationPreloadComplete(
-        fetch_event_id_, status.completion_time, status.encoded_data_length,
-        status.encoded_body_length, status.decoded_body_length);
-  }
-
- private:
-  void MaybeReportResponseToClient() {
-    if (!response_ || !body_.is_valid())
-      return;
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-
-    client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
-                                        std::move(body_));
-  }
-
-  void ReportErrorToClient(const std::string& message,
-                           const std::string& unsanitized_message) {
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-    // This will delete |this|.
-    client->OnNavigationPreloadError(
-        fetch_event_id_, std::make_unique<blink::WebServiceWorkerError>(
-                             blink::mojom::ServiceWorkerErrorType::kNetwork,
-                             blink::WebString::FromUTF8(message),
-                             blink::WebString::FromUTF8(unsanitized_message)));
-  }
-
-  const int fetch_event_id_;
-  const GURL url_;
-  network::mojom::URLLoaderPtr url_loader_;
-  mojo::Binding<network::mojom::URLLoaderClient> binding_;
-
-  std::unique_ptr<blink::WebURLResponse> response_;
-  mojo::ScopedDataPipeConsumerHandle body_;
 };
 
 ServiceWorkerContextClient*
@@ -1285,6 +1138,53 @@ void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
   proxy_->DispatchPaymentRequestEvent(event_id, webEventData);
 }
 
+void ServiceWorkerContextClient::OnNavigationPreloadResponse(
+    int fetch_event_id,
+    std::unique_ptr<blink::WebURLResponse> response,
+    mojo::ScopedDataPipeConsumerHandle data_pipe) {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerContextClient::OnNavigationPreloadResponse",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(fetch_event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  proxy_->OnNavigationPreloadResponse(fetch_event_id, std::move(response),
+                                      std::move(data_pipe));
+}
+
+void ServiceWorkerContextClient::OnNavigationPreloadError(
+    int fetch_event_id,
+    std::unique_ptr<blink::WebServiceWorkerError> error) {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerContextClient::OnNavigationPreloadError",
+                         TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                                             TRACE_ID_LOCAL(fetch_event_id)),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  proxy_->OnNavigationPreloadError(fetch_event_id, std::move(error));
+  context_->preload_requests.Remove(fetch_event_id);
+}
+
+void ServiceWorkerContextClient::OnNavigationPreloadComplete(
+    int fetch_event_id,
+    base::TimeTicks completion_time,
+    int64_t encoded_data_length,
+    int64_t encoded_body_length,
+    int64_t decoded_body_length) {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerContextClient::OnNavigationPreloadComplete",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(fetch_event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+  proxy_->OnNavigationPreloadComplete(fetch_event_id, completion_time,
+                                      encoded_data_length, encoded_body_length,
+                                      decoded_body_length);
+  context_->preload_requests.Remove(fetch_event_id);
+}
+
 void ServiceWorkerContextClient::ToWebServiceWorkerRequestForFetchEvent(
     blink::mojom::FetchAPIRequestPtr request,
     const std::string& client_id,
@@ -1707,53 +1607,6 @@ void ServiceWorkerContextClient::SetIdleTimerDelayToZero() {
   DCHECK(context_);
   DCHECK(context_->timeout_timer);
   context_->timeout_timer->SetIdleTimerDelayToZero();
-}
-
-void ServiceWorkerContextClient::OnNavigationPreloadResponse(
-    int fetch_event_id,
-    std::unique_ptr<blink::WebURLResponse> response,
-    mojo::ScopedDataPipeConsumerHandle data_pipe) {
-  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker",
-      "ServiceWorkerContextClient::OnNavigationPreloadResponse",
-      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
-                          TRACE_ID_LOCAL(fetch_event_id)),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  proxy_->OnNavigationPreloadResponse(fetch_event_id, std::move(response),
-                                      std::move(data_pipe));
-}
-
-void ServiceWorkerContextClient::OnNavigationPreloadError(
-    int fetch_event_id,
-    std::unique_ptr<blink::WebServiceWorkerError> error) {
-  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
-                         "ServiceWorkerContextClient::OnNavigationPreloadError",
-                         TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
-                                             TRACE_ID_LOCAL(fetch_event_id)),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  proxy_->OnNavigationPreloadError(fetch_event_id, std::move(error));
-  context_->preload_requests.Remove(fetch_event_id);
-}
-
-void ServiceWorkerContextClient::OnNavigationPreloadComplete(
-    int fetch_event_id,
-    base::TimeTicks completion_time,
-    int64_t encoded_data_length,
-    int64_t encoded_body_length,
-    int64_t decoded_body_length) {
-  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker",
-      "ServiceWorkerContextClient::OnNavigationPreloadComplete",
-      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
-                          TRACE_ID_LOCAL(fetch_event_id)),
-      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  proxy_->OnNavigationPreloadComplete(fetch_event_id, completion_time,
-                                      encoded_data_length, encoded_body_length,
-                                      decoded_body_length);
-  context_->preload_requests.Remove(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::SetupNavigationPreload(
