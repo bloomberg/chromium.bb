@@ -868,21 +868,21 @@ def ExperimentalCanvasFeaturesPages(base_name):
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasUnaccelerated2D',
       test_rect=[0, 0, 360, 200],
-      revision=8,
+      revision=9,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_worker.html',
       base_name + '_OffscreenCanvasUnaccelerated2DWorker',
       test_rect=[0, 0, 360, 200],
-      revision=8,
+      revision=9,
       browser_args=browser_args + unaccelerated_args),
 
     PixelTestPage(
       'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositing',
       test_rect=[0, 0, 360, 200],
-      revision=13,
+      revision=14,
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(

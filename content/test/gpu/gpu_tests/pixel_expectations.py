@@ -18,9 +18,11 @@ class PixelExpectations(GpuTestExpectations):
 
     # Software compositing is not supported on Android: we skip the tests that
     # disable GPU compositing (--disable-gpu-compositing).
-    self.Skip('Pixel_OffscreenCanvasUnaccelerated2D', ['android'])
-    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DWorker', ['android'])
-    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', ['android'])
+    # TODO(mtklein): restore these next three after rebaselining
+    #self.Skip('Pixel_OffscreenCanvasUnaccelerated2D', ['android'])
+    #self.Skip('Pixel_OffscreenCanvasUnaccelerated2DWorker', ['android'])
+    #self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+    #          ['android'])
     self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
               ['android'])
     self.Skip('Pixel_OffscreenCanvasWebGLSoftwareCompositing', ['android'])
@@ -145,3 +147,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=925744)
     self.Fail('Pixel_Video_VP9', ['android'], bug=925744)
     self.Fail('Pixel_Video_Context_Loss_VP9', ['android'], bug=925744)
+
+    # TODO(mtklein): need a rebaseline for crrev.com/c/1412462
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=913223)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker', bug=913223)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=913223)

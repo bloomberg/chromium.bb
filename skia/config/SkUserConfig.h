@@ -163,6 +163,12 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #define SK_LEGACY_SRGB_STAGE_CHOICE
 
+// We're turning this off indefinitely,
+// until we can figure out some fundamental problems with its approach.
+//
+// See chromium:913223, skia:6886.
+#define SK_DISABLE_DAA
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
