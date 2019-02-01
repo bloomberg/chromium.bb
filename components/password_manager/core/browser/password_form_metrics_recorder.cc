@@ -287,7 +287,67 @@ void PasswordFormMetricsRecorder::SetManagerAction(
   manager_action_ = manager_action;
 }
 
-void PasswordFormMetricsRecorder::SetUserAction(UserAction user_action) {
+void PasswordFormMetricsRecorder::CalculateUserAction(
+    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const autofill::PasswordForm& submitted_form) {
+  const base::string16& submitted_password =
+      !submitted_form.new_password_value.empty()
+          ? submitted_form.new_password_value
+          : submitted_form.password_value;
+
+  if (submitted_form.username_value.empty()) {
+    // In case the submitted form does not have a username field we do not
+    // autofill. Thus the user either explicitly chose this credential from the
+    // dropdown, or created a new password.
+    for (const auto& match : best_matches) {
+      if (match.second->password_value == submitted_password) {
+        user_action_ = UserAction::kChoose;
+        return;
+      }
+    }
+
+    user_action_ = UserAction::kOverridePassword;
+    return;
+  }
+
+  // In case the submitted form has a username value, check if there is an
+  // existing match with the same username. If not, the user created a new
+  // credential.
+  auto found = best_matches.find(submitted_form.username_value);
+  if (found == best_matches.end()) {
+    user_action_ = UserAction::kOverrideUsernameAndPassword;
+    return;
+  }
+
+  // Otherwise check if the user changed the password.
+  const autofill::PasswordForm* existing_match = found->second;
+  if (existing_match->password_value != submitted_password) {
+    user_action_ = UserAction::kOverridePassword;
+    return;
+  }
+
+  // If the existing match is a PSL match, the user purposefully chose it, since
+  // PSL credentials are not autofilled.
+  if (existing_match->is_public_suffix_match) {
+    user_action_ = UserAction::kChoosePslMatch;
+    return;
+  }
+
+  // Lastly, in case the existing match is not a preferred match, or the form
+  // was not filled on page load, the user purposefully chose a credential.
+  // Otherwise the user either did not do anything, or re-selected the default
+  // option.
+  if (!existing_match->preferred ||
+      manager_action_ != kManagerActionAutofilled) {
+    user_action_ = UserAction::kChoose;
+    return;
+  }
+
+  user_action_ = UserAction::kNone;
+}
+
+void PasswordFormMetricsRecorder::SetUserActionForTesting(
+    UserAction user_action) {
   user_action_ = user_action;
 }
 

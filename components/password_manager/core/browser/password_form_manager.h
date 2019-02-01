@@ -22,7 +22,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
-#include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
@@ -400,9 +399,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   FormFetcher* form_fetcher_;
 
   VotesUploader votes_uploader_;
-
-  // Probable filling mechanism used in the renderer for this password form.
-  LikelyFormFilling likely_form_filling_ = LikelyFormFilling::kNoFilling;
 
   // Takes care of recording metrics and events for this PasswordFormManager.
   // Make sure to call Init before using |*this|, to ensure it is not null.

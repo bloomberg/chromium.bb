@@ -269,8 +269,7 @@ TEST(PasswordFormMetricsRecorder, Actions) {
           test.is_main_frame_secure, &test_ukm_recorder);
 
       recorder->SetManagerAction(test.manager_action);
-      if (test.user_action != UserAction::kNone)
-        recorder->SetUserAction(test.user_action);
+      recorder->SetUserActionForTesting(test.user_action);
       if (test.submit_result ==
           PasswordFormMetricsRecorder::kSubmitResultFailed) {
         recorder->LogSubmitFailed();
@@ -295,30 +294,6 @@ TEST(PasswordFormMetricsRecorder, Actions) {
                         UkmEntry::kUser_ActionSimplifiedName,
                         static_cast<int64_t>(test.user_action), 1);
   }
-}
-
-// Test that in the case of a sequence of user actions, only the last one is
-// recorded in ActionsV3 but all are recorded as UMA user actions.
-TEST(PasswordFormMetricsRecorder, ActionSequence) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  base::HistogramTester histogram_tester;
-  base::UserActionTester user_action_tester;
-
-  // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
-  // on destruction.
-  {
-    auto recorder = CreatePasswordFormMetricsRecorder(
-        true /*is_main_frame_secure*/, &test_ukm_recorder);
-    recorder->SetManagerAction(
-        PasswordFormMetricsRecorder::kManagerActionAutofilled);
-    recorder->SetUserAction(UserAction::kChoosePslMatch);
-    recorder->SetUserAction(UserAction::kOverrideUsernameAndPassword);
-    recorder->LogSubmitPassed();
-  }
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("PasswordManager.ActionsTakenV3"),
-              ::testing::ElementsAre(base::Bucket(39, 1)));
 }
 
 TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
