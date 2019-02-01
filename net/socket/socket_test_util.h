@@ -41,7 +41,6 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/transport_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"

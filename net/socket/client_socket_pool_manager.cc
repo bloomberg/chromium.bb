@@ -18,7 +18,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/socks_connect_job.h"
-#include "net/socket/ssl_client_socket_pool.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_config.h"
@@ -197,7 +197,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
         ssl_tcp_params, socks_params, http_proxy_params, origin_host_port,
         ssl_config_for_origin, privacy_mode);
-    SSLClientSocketPool* ssl_pool = NULL;
+    TransportClientSocketPool* ssl_pool = nullptr;
     if (proxy_info.is_direct()) {
       ssl_pool = session->GetSSLSocketPool(socket_pool_type);
     } else {
@@ -206,14 +206,20 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     }
 
     if (num_preconnect_streams) {
-      RequestSocketsForPool(ssl_pool, connection_group, ssl_params,
-                            num_preconnect_streams, net_log);
+      RequestSocketsForPool(
+          ssl_pool, connection_group,
+          TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+              ssl_params),
+          num_preconnect_streams, net_log);
       return OK;
     }
 
-    return socket_handle->Init(connection_group, ssl_params, request_priority,
-                               socket_tag, respect_limits, std::move(callback),
-                               ssl_pool, net_log);
+    return socket_handle->Init(
+        connection_group,
+        TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+            ssl_params),
+        request_priority, socket_tag, respect_limits, std::move(callback),
+        ssl_pool, net_log);
   }
 
   // Finally, get the connection started.

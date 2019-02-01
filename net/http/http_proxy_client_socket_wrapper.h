@@ -25,7 +25,6 @@
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_client_socket_pool.h"
 #include "net/spdy/spdy_session.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -39,7 +38,7 @@ class HttpStream;
 class IOBuffer;
 class ProxyDelegate;
 class SpdySessionPool;
-class SSLClientSocketPool;
+class SSLSocketParams;
 class TransportClientSocketPool;
 class TransportSocketParams;
 
@@ -65,7 +64,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       base::TimeDelta connect_timeout_duration,
       base::TimeDelta proxy_negotiation_timeout_duration,
       TransportClientSocketPool* transport_pool,
-      SSLClientSocketPool* ssl_pool,
+      TransportClientSocketPool* ssl_pool,
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
       quic::QuicTransportVersion quic_version,
@@ -198,7 +197,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   const base::TimeDelta proxy_negotiation_timeout_duration_;
 
   TransportClientSocketPool* const transport_pool_;
-  SSLClientSocketPool* const ssl_pool_;
+  TransportClientSocketPool* const ssl_pool_;
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
 

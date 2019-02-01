@@ -685,8 +685,6 @@ typedef CaptureGroupNameSocketPool<TransportClientSocketPool>
 CaptureGroupNameTransportSocketPool;
 typedef CaptureGroupNameSocketPool<HttpProxyClientSocketPool>
 CaptureGroupNameHttpProxySocketPool;
-typedef CaptureGroupNameSocketPool<SSLClientSocketPool>
-CaptureGroupNameSSLSocketPool;
 
 template <typename ParentPool>
 CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
@@ -713,26 +711,6 @@ CaptureGroupNameHttpProxySocketPool::CaptureGroupNameSocketPool(
     HostResolver* /* host_resolver */,
     CertVerifier* /* cert_verifier */)
     : HttpProxyClientSocketPool(0, 0, NULL, NULL, NULL, NULL, NULL) {}
-
-template <>
-CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
-    HostResolver* /* host_resolver */,
-    CertVerifier* cert_verifier)
-    : SSLClientSocketPool(0,
-                          0,
-                          cert_verifier,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL,
-                          NULL) {}
 
 //-----------------------------------------------------------------------------
 
@@ -11080,8 +11058,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
     HttpNetworkSessionPeer peer(session.get());
     CaptureGroupNameTransportSocketPool* transport_conn_pool =
         new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
-    CaptureGroupNameSSLSocketPool* ssl_conn_pool =
-        new CaptureGroupNameSSLSocketPool(nullptr, nullptr);
+    CaptureGroupNameTransportSocketPool* ssl_conn_pool =
+        new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
     mock_pool_manager->SetSSLSocketPool(ssl_conn_pool);
@@ -11141,8 +11119,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
                              HostPortPair("http_proxy", 80));
     CaptureGroupNameHttpProxySocketPool* http_proxy_pool =
         new CaptureGroupNameHttpProxySocketPool(NULL, NULL);
-    CaptureGroupNameSSLSocketPool* ssl_conn_pool =
-        new CaptureGroupNameSSLSocketPool(NULL, NULL);
+    CaptureGroupNameTransportSocketPool* ssl_conn_pool =
+        new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForHTTPProxy(
         proxy_server, base::WrapUnique(http_proxy_pool));
@@ -11213,8 +11191,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     ASSERT_TRUE(proxy_server.is_valid());
     CaptureGroupNameTransportSocketPool* socks_conn_pool =
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
-    CaptureGroupNameSSLSocketPool* ssl_conn_pool =
-        new CaptureGroupNameSSLSocketPool(NULL, NULL);
+    CaptureGroupNameTransportSocketPool* ssl_conn_pool =
+        new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
     mock_pool_manager->SetSocketPoolForProxy(proxy_server,
                                              base::WrapUnique(socks_conn_pool));

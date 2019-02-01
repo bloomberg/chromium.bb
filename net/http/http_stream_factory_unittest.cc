@@ -52,6 +52,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -448,8 +449,6 @@ typedef CapturePreconnectsSocketPool<TransportClientSocketPool>
     CapturePreconnectsTransportSocketPool;
 typedef CapturePreconnectsSocketPool<HttpProxyClientSocketPool>
     CapturePreconnectsHttpProxySocketPool;
-typedef CapturePreconnectsSocketPool<SSLClientSocketPool>
-    CapturePreconnectsSSLSocketPool;
 
 template <typename ParentPool>
 CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
@@ -491,30 +490,6 @@ CapturePreconnectsHttpProxySocketPool::CapturePreconnectsSocketPool(
                                 nullptr),
       last_num_streams_(-1) {}
 
-template <>
-CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
-    HostResolver* /* host_resolver */,
-    CertVerifier* cert_verifier,
-    TransportSecurityState* transport_security_state,
-    CTVerifier* cert_transparency_verifier,
-    CTPolicyEnforcer* ct_policy_enforcer)
-    : SSLClientSocketPool(0,
-                          0,
-                          cert_verifier,
-                          nullptr,  // channel_id_store
-                          transport_security_state,
-                          cert_transparency_verifier,
-                          ct_policy_enforcer,
-                          nullptr,   // ssl_client_session_cache
-                          nullptr,   // deterministic_socket_factory
-                          nullptr,   // transport_socket_pool
-                          nullptr,   // socks_pool
-                          nullptr,   // http_proxy_pool
-                          nullptr,   // ssl_config_service
-                          nullptr,   // network_quality_estimator
-                          nullptr),  // net_log
-      last_num_streams_(-1) {}
-
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
 
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
@@ -530,8 +505,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
-    CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-        new CapturePreconnectsSSLSocketPool(
+    CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -563,8 +538,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
-    CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-        new CapturePreconnectsSSLSocketPool(
+    CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -598,8 +573,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
-    CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-        new CapturePreconnectsSSLSocketPool(
+    CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -639,8 +614,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
-    CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-        new CapturePreconnectsSSLSocketPool(
+    CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -1227,8 +1202,8 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
             session_deps.ct_policy_enforcer.get());
-    CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-        new CapturePreconnectsSSLSocketPool(
+    CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+        new CapturePreconnectsTransportSocketPool(
             session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
             session_deps.transport_security_state.get(),
             session_deps.cert_transparency_verifier.get(),
@@ -1288,8 +1263,8 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
                 session_deps.transport_security_state.get(),
                 session_deps.cert_transparency_verifier.get(),
                 session_deps.ct_policy_enforcer.get());
-        CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-            new CapturePreconnectsSSLSocketPool(
+        CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+            new CapturePreconnectsTransportSocketPool(
                 session_deps.host_resolver.get(),
                 session_deps.cert_verifier.get(),
                 session_deps.transport_security_state.get(),
@@ -1381,8 +1356,8 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
           session_deps.transport_security_state.get(),
           session_deps.cert_transparency_verifier.get(),
           session_deps.ct_policy_enforcer.get());
-  CapturePreconnectsSSLSocketPool* ssl_conn_pool =
-      new CapturePreconnectsSSLSocketPool(
+  CapturePreconnectsTransportSocketPool* ssl_conn_pool =
+      new CapturePreconnectsTransportSocketPool(
           session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
           session_deps.transport_security_state.get(),
           session_deps.cert_transparency_verifier.get(),
@@ -1548,7 +1523,7 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
 
   std::unique_ptr<HttpNetworkSession> session(
       SpdySessionDependencies::SpdyCreateSession(&session_deps));
-  SSLClientSocketPool* ssl_pool =
+  TransportClientSocketPool* ssl_pool =
       session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL);
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 0);
@@ -2212,8 +2187,11 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
                             ssl_config, PRIVACY_MODE_DISABLED));
     std::string group_name = "ssl/" + host_port_pair.ToString();
     int rv = connection->Init(
-        group_name, ssl_params, MEDIUM, SocketTag(),
-        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        group_name,
+        TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+            ssl_params),
+        MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+        callback.callback(),
         session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
         NetLogWithSource());
     rv = callback.GetResult(rv);

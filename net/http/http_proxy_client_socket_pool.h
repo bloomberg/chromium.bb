@@ -35,7 +35,6 @@ class NetLog;
 class NetworkQualityEstimator;
 class ProxyDelegate;
 class QuicStreamFactory;
-class SSLClientSocketPool;
 class SSLSocketParams;
 class SpdySessionPool;
 class TransportClientSocketPool;
@@ -119,7 +118,7 @@ class HttpProxyConnectJob : public ConnectJob {
                       const scoped_refptr<HttpProxySocketParams>& params,
                       ProxyDelegate* proxy_delegate,
                       TransportClientSocketPool* transport_pool,
-                      SSLClientSocketPool* ssl_pool,
+                      TransportClientSocketPool* ssl_pool,
                       NetworkQualityEstimator* network_quality_estimator,
                       Delegate* delegate,
                       NetLog* net_log);
@@ -172,7 +171,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
   HttpProxyClientSocketPool(int max_sockets,
                             int max_sockets_per_group,
                             TransportClientSocketPool* transport_pool,
-                            SSLClientSocketPool* ssl_pool,
+                            TransportClientSocketPool* ssl_pool,
                             ProxyDelegate* proxy_delegate,
                             NetworkQualityEstimator* network_quality_estimator,
                             NetLog* net_log);
@@ -244,7 +243,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
    public:
     HttpProxyConnectJobFactory(
         TransportClientSocketPool* transport_pool,
-        SSLClientSocketPool* ssl_pool,
+        TransportClientSocketPool* ssl_pool,
         ProxyDelegate* proxy_delegate,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log);
@@ -260,7 +259,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
                              ProxyPoolTimeoutWithConnectionProperty);
 
     TransportClientSocketPool* const transport_pool_;
-    SSLClientSocketPool* const ssl_pool_;
+    TransportClientSocketPool* const ssl_pool_;
     ProxyDelegate* const proxy_delegate_;
     NetworkQualityEstimator* const network_quality_estimator_;
 
@@ -270,7 +269,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
   };
 
   TransportClientSocketPool* const transport_pool_;
-  SSLClientSocketPool* const ssl_pool_;
+  TransportClientSocketPool* const ssl_pool_;
   PoolBase base_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyClientSocketPool);

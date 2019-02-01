@@ -27,6 +27,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -496,8 +497,11 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode());
   int rv = connection->Init(
-      key.host_port_pair().ToString(), ssl_params, MEDIUM, key.socket_tag(),
-      ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      key.host_port_pair().ToString(),
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          ssl_params),
+      MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(),
       http_session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
       net_log);
   rv = callback.GetResult(rv);

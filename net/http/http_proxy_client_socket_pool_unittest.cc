@@ -32,6 +32,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_test_util_common.h"
@@ -89,19 +90,22 @@ class HttpProxyClientSocketPoolTest
                                nullptr /* net_log */),
         ssl_socket_pool_(kMaxSockets,
                          kMaxSocketsPerGroup,
-                         session_deps_.cert_verifier.get(),
-                         NULL /* channel_id_store */,
-                         NULL /* transport_security_state */,
-                         NULL /* cert_transparency_verifier */,
-                         NULL /* ct_policy_enforcer */,
-                         NULL /* ssl_client_session_cache */,
                          &socket_factory_,
-                         &transport_socket_pool_,
-                         NULL /* socks_pool */,
-                         NULL /* http_proxy_pool */,
+                         session_deps_.host_resolver.get(),
+                         session_deps_.cert_verifier.get(),
+                         session_deps_.channel_id_service.get(),
+                         session_deps_.transport_security_state.get(),
+                         session_deps_.cert_transparency_verifier.get(),
+                         session_deps_.ct_policy_enforcer.get(),
+                         nullptr /* ssl_client_session_cache */,
+                         std::string() /* ssl_session_cache_shard */,
                          session_deps_.ssl_config_service.get(),
-                         NULL /* network_quality_estimator */,
-                         NetLogWithSource().net_log()),
+                         nullptr /* socket_performance_watcher_factory */,
+                         nullptr /* network_quality_estimator */,
+                         nullptr /* net_log */,
+                         &transport_socket_pool_,
+                         nullptr /* socks_pool */,
+                         nullptr /* http_proxy_pool */),
         field_trial_list_(nullptr),
         pool_(
             std::make_unique<HttpProxyClientSocketPool>(kMaxSockets,
@@ -247,7 +251,7 @@ class HttpProxyClientSocketPoolTest
   TransportClientSocketPool* transport_socket_pool() {
     return &transport_socket_pool_;
   }
-  SSLClientSocketPool* ssl_socket_pool() { return &ssl_socket_pool_; }
+  TransportClientSocketPool* ssl_socket_pool() { return &ssl_socket_pool_; }
 
   base::TimeDelta GetProxyConnectionTimeout() {
     // Doesn't actually matter whether or not this is for a tunnel - the
@@ -264,7 +268,7 @@ class HttpProxyClientSocketPoolTest
   TestNetworkQualityEstimator estimator_;
 
   TransportClientSocketPool transport_socket_pool_;
-  SSLClientSocketPool ssl_socket_pool_;
+  TransportClientSocketPool ssl_socket_pool_;
 
   std::unique_ptr<HttpNetworkSession> session_;
 

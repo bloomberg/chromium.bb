@@ -1047,8 +1047,6 @@ component("net") {
       "socket/socks_client_socket.h",
       "socket/socks_connect_job.cc",
       "socket/socks_connect_job.h",
-      "socket/ssl_client_socket_pool.cc",
-      "socket/ssl_client_socket_pool.h",
       "socket/ssl_server_socket.h",
       "socket/ssl_server_socket_impl.cc",
       "socket/ssl_server_socket_impl.h",

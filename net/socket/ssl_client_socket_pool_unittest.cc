@@ -32,6 +32,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
+#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/spdy/spdy_session.h"
@@ -103,15 +104,19 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   }
 
   void CreatePool(bool transport_pool, bool http_proxy_pool) {
-    pool_.reset(new SSLClientSocketPool(
-        kMaxSockets, kMaxSocketsPerGroup, cert_verifier_.get(),
+    pool_.reset(new TransportClientSocketPool(
+        kMaxSockets, kMaxSocketsPerGroup, &socket_factory_,
+        nullptr /* host_resolver */, cert_verifier_.get(),
         NULL /* channel_id_service */, transport_security_state_.get(),
         &ct_verifier_, &ct_policy_enforcer_,
-        nullptr /* ssl_client_session_cache */, &socket_factory_,
-        transport_pool ? &transport_socket_pool_ : nullptr, nullptr,
-        http_proxy_pool ? &http_proxy_socket_pool_ : nullptr,
+        nullptr /* ssl_client_session_cache */,
+        std::string() /* ssl_session_cache_shard */,
         nullptr /* ssl_config_service */,
-        nullptr /* network_quality_estimator */, nullptr /* net_log */));
+        nullptr /* socket_performance_watcher_factory */,
+        nullptr /* network_quality_estimator */, nullptr /* net_log */,
+        transport_pool ? &transport_socket_pool_ : nullptr,
+        nullptr /* socks_pool */,
+        http_proxy_pool ? &http_proxy_socket_pool_ : nullptr));
   }
 
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy) {
@@ -172,7 +177,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
   HttpProxyClientSocketPool http_proxy_socket_pool_;
 
   SSLConfig ssl_config_;
-  std::unique_ptr<SSLClientSocketPool> pool_;
+  std::unique_ptr<TransportClientSocketPool> pool_;
 };
 
 TEST_F(SSLClientSocketPoolTest, DirectCertError) {
@@ -186,9 +191,12 @@ TEST_F(SSLClientSocketPoolTest, DirectCertError) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(kGroupName, params, MEDIUM, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -221,9 +229,12 @@ TEST_F(SSLClientSocketPoolTest, NeedProxyAuth) {
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(kGroupName, params, MEDIUM, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), pool_.get(), NetLogWithSource());
+  int rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -269,13 +280,17 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
-  SSLClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
-                           cert_verifier_.get(), NULL /* channel_id_service */,
-                           transport_security_state_.get(), &ct_verifier_,
-                           &ct_policy_enforcer_,
-                           nullptr /* ssl_client_session_cache */,
-                           ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
-                           NULL, NULL, NULL, NULL, NULL);
+  TransportClientSocketPool pool(
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
+      cert_verifier_.get() /* cert_verifier */, nullptr /* channel_id_server */,
+      transport_security_state_.get(), &ct_verifier_, &ct_policy_enforcer_,
+      nullptr /* ssl_client_session_cache */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */, &tcp_pool,
+      nullptr /* socks_pool */, nullptr /* http_proxy_pool */);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
@@ -290,9 +305,12 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
 
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
-  int rv = handle.Init(kGroupName, params, LOW, tag1,
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool, NetLogWithSource());
+  int rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      LOW, tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      &pool, NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -303,9 +321,12 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   handle.Reset();
   old_traffic = GetTaggedBytes(tag_val2);
   TestCompletionCallback callback2;
-  rv = handle.Init(kGroupName, params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   callback2.callback(), &pool, NetLogWithSource());
+  rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      LOW, tag2, ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+      &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -347,13 +368,17 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
-  SSLClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
-                           cert_verifier_.get(), NULL /* channel_id_service */,
-                           transport_security_state_.get(), &ct_verifier_,
-                           &ct_policy_enforcer_,
-                           nullptr /* ssl_client_session_cache */,
-                           ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
-                           NULL, NULL, NULL, NULL, NULL);
+  TransportClientSocketPool pool(
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
+      cert_verifier_.get() /* cert_verifier */, nullptr /* channel_id_server */,
+      transport_security_state_.get(), &ct_verifier_, &ct_policy_enforcer_,
+      nullptr /* ssl_client_session_cache */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */, &tcp_pool,
+      nullptr /* socks_pool */, nullptr /* http_proxy_pool */);
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
   SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
@@ -368,16 +393,22 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
   // Test connect jobs that are orphaned and then adopted, appropriately apply
   // new tag. Request socket with |tag1|.
   TestCompletionCallback callback;
-  int rv = handle.Init(kGroupName, params, LOW, tag1,
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), &pool, NetLogWithSource());
+  int rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      LOW, tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      &pool, NetLogWithSource());
   EXPECT_TRUE(rv == OK || rv == ERR_IO_PENDING) << "Result: " << rv;
   // Abort and request socket with |tag2|.
   handle.Reset();
   TestCompletionCallback callback2;
-  rv = handle.Init(kGroupName, params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   callback2.callback(), &pool, NetLogWithSource());
+  rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      LOW, tag2, ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
+      &pool, NetLogWithSource());
   EXPECT_THAT(callback2.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -417,13 +448,17 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, nullptr /* netlog */);
   cert_verifier_->set_default_result(OK);
-  SSLClientSocketPool pool(kMaxSockets, kMaxSocketsPerGroup,
-                           cert_verifier_.get(), NULL /* channel_id_service */,
-                           transport_security_state_.get(), &ct_verifier_,
-                           &ct_policy_enforcer_,
-                           nullptr /* ssl_client_session_cache */,
-                           ClientSocketFactory::GetDefaultFactory(), &tcp_pool,
-                           NULL, NULL, NULL, NULL, NULL);
+  TransportClientSocketPool pool(
+      kMaxSockets, kMaxSocketsPerGroup,
+      ClientSocketFactory::GetDefaultFactory(), &host_resolver_,
+      cert_verifier_.get() /* cert_verifier */, nullptr /* channel_id_server */,
+      transport_security_state_.get(), &ct_verifier_, &ct_policy_enforcer_,
+      nullptr /* ssl_client_session_cache */,
+      std::string() /* ssl_session_cache_shard */,
+      nullptr /* ssl_config_service */,
+      nullptr /* socket_performance_watcher_factory */,
+      nullptr /* network_quality_estimator */, nullptr /* netlog */, &tcp_pool,
+      nullptr /* socks_pool */, nullptr /* http_proxy_pool */);
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   int32_t tag_val1 = 0x12345678;
@@ -454,12 +489,18 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   // Request two SSL sockets.
   ClientSocketHandle handle_to_be_canceled;
   rv = handle_to_be_canceled.Init(
-      kGroupName, params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(), &pool, NetLogWithSource());
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      LOW, tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = handle.Init(kGroupName, params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), &pool, NetLogWithSource());
+  rv = handle.Init(
+      kGroupName,
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      LOW, tag2, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      &pool, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Cancel first request.
   handle_to_be_canceled.Reset();

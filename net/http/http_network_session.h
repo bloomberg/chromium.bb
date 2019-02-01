@@ -76,7 +76,6 @@ class QuicCryptoClientStreamFactory;
 class ReportingService;
 #endif
 class SocketPerformanceWatcherFactory;
-class SSLClientSocketPool;
 class SSLConfigService;
 class TransportClientSocketPool;
 class TransportSecurityState;
@@ -293,7 +292,7 @@ class NET_EXPORT HttpNetworkSession {
   void RemoveResponseDrainer(HttpResponseBodyDrainer* drainer);
 
   TransportClientSocketPool* GetTransportSocketPool(SocketPoolType pool_type);
-  SSLClientSocketPool* GetSSLSocketPool(SocketPoolType pool_type);
+  TransportClientSocketPool* GetSSLSocketPool(SocketPoolType pool_type);
   // Currently only works for SOCKS proxies.
   TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
       SocketPoolType pool_type,
@@ -301,7 +300,7 @@ class NET_EXPORT HttpNetworkSession {
   HttpProxyClientSocketPool* GetSocketPoolForHTTPLikeProxy(
       SocketPoolType pool_type,
       const ProxyServer& http_proxy);
-  SSLClientSocketPool* GetSocketPoolForSSLWithProxy(
+  TransportClientSocketPool* GetSocketPoolForSSLWithProxy(
       SocketPoolType pool_type,
       const ProxyServer& proxy_server);
 
