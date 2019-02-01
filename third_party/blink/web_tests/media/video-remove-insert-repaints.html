@@ -10,8 +10,9 @@
 
             function seeked()
             {
+                // Wait for one rAF to ensure a new frame is onscreen.
                 if (window.testRunner)
-                    testRunner.notifyDone();
+                    requestAnimationFrame(_ => testRunner.notifyDone());
             }
 
             function playing()
