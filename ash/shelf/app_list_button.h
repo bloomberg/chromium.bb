@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_control_button.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -30,6 +31,7 @@ class ShelfView;
 class ASH_EXPORT AppListButton : public ShelfControlButton,
                                  public AppListControllerObserver,
                                  public SessionObserver,
+                                 public TabletModeObserver,
                                  public DefaultVoiceInteractionObserver {
  public:
   AppListButton(ShelfView* shelf_view, Shelf* shelf);
@@ -60,6 +62,9 @@ class ASH_EXPORT AppListButton : public ShelfControlButton,
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
 
   void StartVoiceInteractionAnimation();
 
