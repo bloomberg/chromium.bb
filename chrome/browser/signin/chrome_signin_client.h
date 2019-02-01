@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SIGNIN_CHROME_SIGNIN_CLIENT_H_
 
 #include <list>
+#include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -14,7 +16,7 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
@@ -32,8 +34,7 @@ class ChromeSigninClient
 #if !defined(OS_CHROMEOS)
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
 #endif
-      public gaia::GaiaOAuthClient::Delegate,
-      public OAuth2TokenService::Consumer {
+      public gaia::GaiaOAuthClient::Delegate {
  public:
   explicit ChromeSigninClient(Profile* profile);
   ~ChromeSigninClient() override;
@@ -75,13 +76,6 @@ class ChromeSigninClient
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
-  // OAuth2TokenService::Consumer implementation
-  void OnGetTokenSuccess(
-      const OAuth2TokenService::Request* request,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
-
 #if !defined(OS_CHROMEOS)
   // network::NetworkConnectionTracker::NetworkConnectionObserver
   // implementation.
@@ -108,6 +102,10 @@ class ChromeSigninClient
       const base::FilePath& profile_path);
   void OnCloseBrowsersAborted(const base::FilePath& profile_path);
 
+  // identity::PrimaryAccountAccessTokenFetcher callback
+  void OnAccessTokenAvailable(GoogleServiceAuthError error,
+                              identity::AccessTokenInfo access_token_info);
+
   Profile* profile_;
 
   // Stored callback from PreSignOut();
@@ -123,7 +121,8 @@ class ChromeSigninClient
 #endif
 
   std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+      access_token_fetcher_;
 
   scoped_refptr<network::SharedURLLoaderFactory>
       url_loader_factory_for_testing_;

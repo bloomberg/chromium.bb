@@ -24,8 +24,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/buildflags.h"
@@ -36,16 +35,17 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/access_token_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/scope_set.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -95,9 +95,7 @@ SigninClient::SignoutDecision IsSignoutAllowed(
 }  // namespace
 
 ChromeSigninClient::ChromeSigninClient(Profile* profile)
-    : OAuth2TokenService::Consumer("chrome_signin_client"),
-      profile_(profile),
-      weak_ptr_factory_(this) {
+    : profile_(profile), weak_ptr_factory_(this) {
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 #endif
@@ -234,37 +232,31 @@ void ChromeSigninClient::OnGetTokenInfoResponse(
       entry->SetPasswordChangeDetectionToken(handle);
     }
   }
-  oauth_request_.reset();
+  access_token_fetcher_.reset();
 }
 
 void ChromeSigninClient::OnOAuthError() {
   // Ignore the failure.  It's not essential and we'll try again next time.
-    oauth_request_.reset();
+  access_token_fetcher_.reset();
 }
 
 void ChromeSigninClient::OnNetworkError(int response_code) {
   // Ignore the failure.  It's not essential and we'll try again next time.
-    oauth_request_.reset();
+  access_token_fetcher_.reset();
 }
 
-void ChromeSigninClient::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+void ChromeSigninClient::OnAccessTokenAvailable(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo access_token_info) {
+  access_token_fetcher_.reset();
+
   // Exchange the access token for a handle that can be used for later
   // verification that the token is still valid (i.e. the password has not
   // been changed).
-    if (!oauth_client_) {
-      oauth_client_.reset(new gaia::GaiaOAuthClient(GetURLLoaderFactory()));
-    }
-    oauth_client_->GetTokenInfo(token_response.access_token, 3 /* retries */,
-                                this);
-}
-
-void ChromeSigninClient::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  // Ignore the failure.  It's not essential and we'll try again next time.
-  oauth_request_.reset();
+  if (!oauth_client_) {
+    oauth_client_.reset(new gaia::GaiaOAuthClient(GetURLLoaderFactory()));
+  }
+  oauth_client_->GetTokenInfo(access_token_info.token, 3 /* retries */, this);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -329,15 +321,17 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
     ProfileAttributesEntry* entry;
     // If we don't have a token for detecting a password change, create one.
     if (storage.GetProfileAttributesWithPath(profile_->GetPath(), &entry) &&
-        entry->GetPasswordChangeDetectionToken().empty() && !oauth_request_) {
-      std::string account_id = SigninManagerFactory::GetForProfile(profile_)
-          ->GetAuthenticatedAccountId();
-      if (!account_id.empty()) {
-        ProfileOAuth2TokenService* token_service =
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-        OAuth2TokenService::ScopeSet scopes;
-        scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-        oauth_request_ = token_service->StartRequest(account_id, scopes, this);
+        entry->GetPasswordChangeDetectionToken().empty() &&
+        !access_token_fetcher_) {
+      auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+      if (identity_manager->HasPrimaryAccount()) {
+        const identity::ScopeSet scopes{GaiaConstants::kGoogleUserInfoEmail};
+        access_token_fetcher_ =
+            std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+                "chrome_signin_client", identity_manager, scopes,
+                base::BindOnce(&ChromeSigninClient::OnAccessTokenAvailable,
+                               base::Unretained(this)),
+                identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
       }
     }
   }
