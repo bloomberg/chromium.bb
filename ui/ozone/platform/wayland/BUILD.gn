@@ -192,6 +192,8 @@ source_set("test_support") {
     "test/test_pointer.h",
     "test/test_positioner.cc",
     "test/test_positioner.h",
+    "test/test_region.cc",
+    "test/test_region.h",
     "test/test_seat.cc",
     "test/test_seat.h",
     "test/test_touch.cc",
@@ -202,6 +204,7 @@ source_set("test_support") {
 
   deps = [
     "//base:base",
+    "//skia",
     "//testing/gmock",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
