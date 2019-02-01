@@ -1005,10 +1005,9 @@ void LaunchURL(
   }
 
   bool is_whitelisted = false;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PolicyBlacklistService* service =
-      PolicyBlacklistFactory::GetForBrowserContext(profile);
+      PolicyBlacklistFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
   if (service) {
     const policy::URLBlacklist::URLBlacklistState url_state =
         service->GetURLBlacklistState(url);
