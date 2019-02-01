@@ -230,14 +230,6 @@ class PLATFORM_EXPORT GraphicsContext {
                       const FloatPoint& phase,
                       const FloatSize& repeat_spacing,
                       SkBlendMode = SkBlendMode::kSrcOver);
-  // Used for border image
-  void DrawTiledImage(Image*,
-                      const FloatRect& dest_rect,
-                      const FloatRect& src_rect,
-                      const FloatSize& tile_scale_factor,
-                      Image::TileRule h_rule = Image::kStretchTile,
-                      Image::TileRule v_rule = Image::kStretchTile,
-                      SkBlendMode = SkBlendMode::kSrcOver);
 
   // These methods write to the canvas.
   // Also drawLine(const IntPoint& point1, const IntPoint& point2) and

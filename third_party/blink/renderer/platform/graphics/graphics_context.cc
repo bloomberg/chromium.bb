@@ -1009,29 +1009,6 @@ void GraphicsContext::DrawImageTiled(Image* image,
   paint_controller_.SetImagePainted();
 }
 
-void GraphicsContext::DrawTiledImage(Image* image,
-                                     const FloatRect& dest,
-                                     const FloatRect& src_rect,
-                                     const FloatSize& tile_scale_factor,
-                                     Image::TileRule h_rule,
-                                     Image::TileRule v_rule,
-                                     SkBlendMode op) {
-  if (ContextDisabled() || !image)
-    return;
-
-  if (h_rule == Image::kStretchTile && v_rule == Image::kStretchTile) {
-    // Just do a scale.
-    // Since there is no way for the developer to specify decode behavior, use
-    // kSync by default.
-    DrawImage(image, Image::kSyncDecode, dest, &src_rect, op);
-    return;
-  }
-
-  image->DrawTiledBorder(*this, dest, src_rect, tile_scale_factor, h_rule,
-                         v_rule, op);
-  paint_controller_.SetImagePainted();
-}
-
 void GraphicsContext::DrawOval(const SkRect& oval, const PaintFlags& flags) {
   if (ContextDisabled())
     return;

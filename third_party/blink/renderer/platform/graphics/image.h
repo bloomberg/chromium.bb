@@ -165,8 +165,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     image_observer_disabled_ = disabled;
   }
 
-  enum TileRule { kStretchTile, kRoundTile, kSpaceTile, kRepeatTile };
-
   virtual scoped_refptr<Image> ImageForDefaultFrame();
 
   enum ImageDecodingMode {
@@ -250,14 +248,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
  protected:
   Image(ImageObserver* = nullptr, bool is_multipart = false);
-
-  void DrawTiledBorder(GraphicsContext&,
-                       const FloatRect& dst_rect,
-                       const FloatRect& src_rect,
-                       const FloatSize& tile_scale_factor,
-                       TileRule h_rule,
-                       TileRule v_rule,
-                       SkBlendMode);
 
   virtual void DrawPattern(GraphicsContext&,
                            const FloatRect&,
