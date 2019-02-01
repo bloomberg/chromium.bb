@@ -531,6 +531,24 @@ bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
   return entity->IsUnsynced();
 }
 
+base::Time ClientTagBasedModelTypeProcessor::GetEntityCreationTime(
+    const std::string& storage_key) const {
+  const ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  if (entity == nullptr) {
+    return base::Time();
+  }
+  return ProtoTimeToTime(entity->metadata().creation_time());
+}
+
+base::Time ClientTagBasedModelTypeProcessor::GetEntityModificationTime(
+    const std::string& storage_key) const {
+  const ProcessorEntityTracker* entity = GetEntityForStorageKey(storage_key);
+  if (entity == nullptr) {
+    return base::Time();
+  }
+  return ProtoTimeToTime(entity->metadata().modification_time());
+}
+
 void ClientTagBasedModelTypeProcessor::NudgeForCommitIfNeeded() {
   // Don't bother sending anything if there's no one to send to.
   if (!IsConnected())
@@ -1221,8 +1239,24 @@ ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
              : GetEntityForTagHash(iter->second);
 }
 
+const ProcessorEntityTracker*
+ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
+    const std::string& storage_key) const {
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  return iter == storage_key_to_tag_hash_.end()
+             ? nullptr
+             : GetEntityForTagHash(iter->second);
+}
+
 ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
     const std::string& tag_hash) {
+  auto it = entities_.find(tag_hash);
+  return it != entities_.end() ? it->second.get() : nullptr;
+}
+
+const ProcessorEntityTracker*
+ClientTagBasedModelTypeProcessor::GetEntityForTagHash(
+    const std::string& tag_hash) const {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
 }

@@ -178,6 +178,7 @@ class ModelTypeSyncBridge {
   // Put(). The changing metadata should be stored to persistent storage
   // before or atomically with the model changes.
   ModelTypeChangeProcessor* change_processor();
+  const ModelTypeChangeProcessor* change_processor() const;
 
   // Similar to ApplySyncChanges(), but notifies the bridge that the processor
   // is about to recommit all data due to encryption changes.

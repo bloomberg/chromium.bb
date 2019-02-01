@@ -53,6 +53,16 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     return other_->IsEntityUnsynced(storage_key);
   }
 
+  base::Time GetEntityCreationTime(
+      const std::string& storage_key) const override {
+    return other_->GetEntityCreationTime(storage_key);
+  }
+
+  base::Time GetEntityModificationTime(
+      const std::string& storage_key) const override {
+    return other_->GetEntityModificationTime(storage_key);
+  }
+
   void OnModelStarting(ModelTypeSyncBridge* bridge) override {
     other_->OnModelStarting(bridge);
   }
