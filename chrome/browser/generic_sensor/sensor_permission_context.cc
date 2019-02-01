@@ -39,29 +39,6 @@ void SensorPermissionContext::UpdateTabContext(const PermissionRequestID& id,
     content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
 }
 
-ContentSetting SensorPermissionContext::GetPermissionStatusInternal(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) const {
-  // TODO(juncai): We may need to add cross-origin iframes check here when we
-  // can grant permission for certain sensor types. Currently this function
-  // doesn't have any information of which sensor type requests permission.
-  // The Generic Sensor API is not allowed in cross-origin iframes and
-  // this is enforced by the renderer.
-  // https://crbug.com/787019
-
-  // This is to allow DeviceMotion and DeviceOrientation Event to be
-  // able to access sensors (which are provided by generic sensor) in
-  // cross-origin iframes. The Generic Sensor API is not allowed in
-  // cross-origin iframes and this is enforced by the renderer.
-
-  // Sensors are allowed by default in content_settings_registry.cc.
-  // If cross-origin access check is required, comparison between requesting
-  // and embedding origin must be performed.
-  return PermissionContextBase::GetPermissionStatusInternal(
-      render_frame_host, requesting_origin, embedding_origin);
-}
-
 bool SensorPermissionContext::IsRestrictedToSecureOrigins() const {
   // This is to allow non-secure origins that use DeviceMotion and
   // DeviceOrientation Event to be able to access sensors that are provided
