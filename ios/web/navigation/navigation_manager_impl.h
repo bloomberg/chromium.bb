@@ -264,7 +264,8 @@ class NavigationManagerImpl : public NavigationManager {
                                NavigationInitiationType type,
                                bool has_user_gesture) = 0;
   virtual void FinishReload();
-  virtual void FinishLoadURLWithParams();
+  virtual void FinishLoadURLWithParams(
+      NavigationInitiationType initiation_type);
 
   // Returns true if the subclass uses placeholder URLs and this is such a URL.
   virtual bool IsPlaceholderUrl(const GURL& url) const;

@@ -835,8 +835,9 @@ void WebStateImpl::WillChangeUserAgentType() {
   [web_controller_ requirePageReconstruction];
 }
 
-void WebStateImpl::LoadCurrentItem() {
-  [web_controller_ loadCurrentURL];
+void WebStateImpl::LoadCurrentItem(NavigationInitiationType type) {
+  [web_controller_ loadCurrentURLWithRendererInitiatedNavigation:
+                       type == NavigationInitiationType::RENDERER_INITIATED];
 }
 
 void WebStateImpl::LoadIfNecessary() {

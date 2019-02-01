@@ -184,18 +184,6 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
 
-  // SetIsRendererInitiated
-  context->SetIsRendererInitiated(true);
-  EXPECT_EQ(new_url, context->GetUrl());
-  EXPECT_TRUE(context->IsSameDocument());
-  EXPECT_TRUE(context->HasCommitted());
-  EXPECT_TRUE(context->IsDownload());
-  ASSERT_TRUE(context->IsPost());
-  EXPECT_EQ(error, context->GetError());
-  EXPECT_TRUE(context->IsRendererInitiated());
-  EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
-  EXPECT_EQ(WKNavigationTypeOther, context->GetWKNavigationType());
-
   // SetWKNavigationType
   context->SetWKNavigationType(WKNavigationTypeBackForward);
   EXPECT_EQ(new_url, context->GetUrl());
@@ -204,7 +192,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_TRUE(context->IsDownload());
   ASSERT_TRUE(context->IsPost());
   EXPECT_EQ(error, context->GetError());
-  EXPECT_TRUE(context->IsRendererInitiated());
+  EXPECT_FALSE(context->IsRendererInitiated());
   EXPECT_EQ(response_headers_.get(), context->GetResponseHeaders());
   EXPECT_EQ(WKNavigationTypeBackForward, context->GetWKNavigationType());
 }

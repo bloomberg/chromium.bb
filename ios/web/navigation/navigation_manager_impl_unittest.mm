@@ -84,7 +84,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   MOCK_METHOD2(OnGoToIndexSameDocumentNavigation,
                void(NavigationInitiationType type, bool has_user_gesture));
   MOCK_METHOD0(WillChangeUserAgentType, void());
-  MOCK_METHOD0(LoadCurrentItem, void());
+  MOCK_METHOD1(LoadCurrentItem, void(NavigationInitiationType type));
   MOCK_METHOD0(LoadIfNecessary, void());
   MOCK_METHOD0(Reload, void());
   MOCK_METHOD1(OnNavigationItemsPruned, void(size_t));
@@ -1767,7 +1767,8 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
-  EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem());
+  EXPECT_CALL(navigation_manager_delegate(),
+              LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED));
 
   navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
 
@@ -2239,7 +2240,9 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsWithExtraHeadersAndPostData) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent()).Times(1);
-  EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem()).Times(1);
+  EXPECT_CALL(navigation_manager_delegate(),
+              LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED))
+      .Times(1);
 
   navigation_manager()->LoadURLWithParams(params);
 
@@ -2270,7 +2273,9 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsSavesStateOnCurrentItem) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent()).Times(1);
-  EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem()).Times(1);
+  EXPECT_CALL(navigation_manager_delegate(),
+              LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED))
+      .Times(1);
 
   navigation_manager()->LoadURLWithParams(params);
 
@@ -2353,7 +2358,8 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentDocument) {
                     NavigationInitiationType::BROWSER_INITIATED,
                     /*has_user_gesture=*/true))
         .Times(0);
-    EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem());
+    EXPECT_CALL(navigation_manager_delegate(),
+                LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED));
   }
 
   navigation_manager()->GoToIndex(0);
@@ -2427,7 +2433,8 @@ TEST_P(NavigationManagerTest,
                   NavigationInitiationType::BROWSER_INITIATED,
                   /*has_user_gesture=*/true))
       .Times(0);
-  EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem());
+  EXPECT_CALL(navigation_manager_delegate(),
+              LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED));
 
   navigation_manager()->GoToIndex(0);
   EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
@@ -2473,7 +2480,8 @@ TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
                 OnGoToIndexSameDocumentNavigation(
                     NavigationInitiationType::BROWSER_INITIATED,
                     /*has_user_gesture=*/true));
-    EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem()).Times(0);
+    EXPECT_CALL(navigation_manager_delegate(), LoadCurrentItem(testing::_))
+        .Times(0);
   }
 
   navigation_manager()->GoToIndex(0);

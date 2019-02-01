@@ -318,7 +318,7 @@ void LegacyNavigationManagerImpl::FinishGoToIndex(int index,
   } else {
     [session_controller_ discardNonCommittedItems];
     [session_controller_ setPendingItemIndex:index];
-    delegate_->LoadCurrentItem();
+    delegate_->LoadCurrentItem(type);
   }
 }
 

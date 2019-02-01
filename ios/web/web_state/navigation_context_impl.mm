@@ -129,10 +129,6 @@ void NavigationContextImpl::SetResponseHeaders(
   response_headers_ = response_headers;
 }
 
-void NavigationContextImpl::SetIsRendererInitiated(bool is_renderer_initiated) {
-  is_renderer_initiated_ = is_renderer_initiated;
-}
-
 int NavigationContextImpl::GetNavigationItemUniqueID() const {
   return navigation_item_unique_id_;
 }

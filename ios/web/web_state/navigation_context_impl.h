@@ -58,7 +58,6 @@ class NavigationContextImpl : public NavigationContext {
   void SetError(NSError* error);
   void SetResponseHeaders(
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
-  void SetIsRendererInitiated(bool is_renderer_initiated);
 
   // Optional unique id of the navigation item associated with this navigaiton.
   int GetNavigationItemUniqueID() const;
