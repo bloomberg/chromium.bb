@@ -637,6 +637,46 @@ DirectoryItem.prototype.activate = function() {
   }
 };
 
+/**
+ * Set up eject button if needed.
+ * @param {HTMLElement} rowElement The parent element for eject button.
+ * @private
+ */
+DirectoryItem.prototype.setupEjectButton_ = function(rowElement) {
+  const ejectButton = cr.doc.createElement('button');
+  // Block other mouse handlers.
+  ejectButton.addEventListener('mouseup', (event) => {
+    event.stopPropagation();
+  });
+  ejectButton.addEventListener('up', (event) => {
+    event.stopPropagation();
+  });
+  ejectButton.addEventListener('mousedown', (event) => {
+    event.stopPropagation();
+  });
+  ejectButton.addEventListener('down', (event) => {
+    event.stopPropagation();
+  });
+  ejectButton.className = 'root-eject';
+  ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
+  ejectButton.setAttribute('tabindex', '0');
+  ejectButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const unmountCommand = cr.doc.querySelector('command#unmount');
+    // Let's make sure 'canExecute' state of the command is properly set for
+    // the root before executing it.
+    unmountCommand.canExecuteChange(this);
+    unmountCommand.execute(this);
+  });
+  rowElement.appendChild(ejectButton);
+
+  // Add paper-ripple effect on the eject button.
+  const ripple = cr.doc.createElement('paper-ripple');
+  ripple.setAttribute('fit', '');
+  ripple.className = 'circle recenteringTouch';
+  ejectButton.appendChild(ripple);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // SubDirectoryItem
 
@@ -1032,46 +1072,6 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
   } else {
     icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
   }
-};
-
-/**
- * Set up eject button if needed.
- * @param {HTMLElement} rowElement The parent element for eject button.
- * @private
- */
-VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
-  const ejectButton = cr.doc.createElement('button');
-  // Block other mouse handlers.
-  ejectButton.addEventListener('mouseup', (event) => {
-    event.stopPropagation();
-  });
-  ejectButton.addEventListener('up', (event) => {
-    event.stopPropagation();
-  });
-  ejectButton.addEventListener('mousedown', (event) => {
-    event.stopPropagation();
-  });
-  ejectButton.addEventListener('down', (event) => {
-    event.stopPropagation();
-  });
-  ejectButton.className = 'root-eject';
-  ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
-  ejectButton.setAttribute('tabindex', '0');
-  ejectButton.addEventListener('click', (event) => {
-    event.stopPropagation();
-    const unmountCommand = cr.doc.querySelector('command#unmount');
-    // Let's make sure 'canExecute' state of the command is properly set for
-    // the root before executing it.
-    unmountCommand.canExecuteChange(this);
-    unmountCommand.execute(this);
-  });
-  rowElement.appendChild(ejectButton);
-
-  // Add paper-ripple effect on the eject button.
-  const ripple = cr.doc.createElement('paper-ripple');
-  ripple.setAttribute('fit', '');
-  ripple.className = 'circle recenteringTouch';
-  ejectButton.appendChild(ripple);
 };
 
 /**
