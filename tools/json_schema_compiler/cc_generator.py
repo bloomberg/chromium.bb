@@ -670,7 +670,7 @@ class _Generator(object):
           ' || %(var)s.GetSize() > %(total)d) {')
     (c.Concat(self._GenerateError(
         '"expected %%(total)d arguments, got " '
-        '+ base::IntToString(%%(var)s.GetSize())'))
+        '+ base::NumberToString(%%(var)s.GetSize())'))
       .Append('return nullptr;')
       .Eblock('}')
       .Substitute({
