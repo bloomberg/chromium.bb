@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"

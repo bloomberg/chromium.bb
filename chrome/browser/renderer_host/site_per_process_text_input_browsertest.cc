@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"

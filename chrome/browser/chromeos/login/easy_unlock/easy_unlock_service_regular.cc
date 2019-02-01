@@ -16,6 +16,7 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"

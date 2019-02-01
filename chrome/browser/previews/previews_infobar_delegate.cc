@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"

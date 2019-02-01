@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"

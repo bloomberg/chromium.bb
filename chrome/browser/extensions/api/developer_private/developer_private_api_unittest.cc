@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"

@@ -11,6 +11,7 @@
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"

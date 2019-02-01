@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"

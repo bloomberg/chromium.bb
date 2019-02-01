@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/printing/print_view_manager_common.h"

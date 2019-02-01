@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"

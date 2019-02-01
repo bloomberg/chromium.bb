@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"

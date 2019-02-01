@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/metrics/histogram_tester.h"

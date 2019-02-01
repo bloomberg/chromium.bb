@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"

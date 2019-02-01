@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"

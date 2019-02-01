@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/channel.h"

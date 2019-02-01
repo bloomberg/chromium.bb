@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"

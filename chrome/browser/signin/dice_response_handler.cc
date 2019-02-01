@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"

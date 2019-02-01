@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/password_manager_interactive_test_base.h"
 
+#include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/events/keycodes/dom_us_layout_data.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"

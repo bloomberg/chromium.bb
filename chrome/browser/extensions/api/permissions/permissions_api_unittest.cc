@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"

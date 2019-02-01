@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/browser_process.h"
