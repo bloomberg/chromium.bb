@@ -75,13 +75,11 @@ def test_status_summary(summary_plist):
   return status_summary
 
 
-def collect_test_results(cmd_list, plist_path, return_code, output):
+def collect_test_results(plist_path, output):
   """Gets test result data from Info.plist and from test output.
 
   Args:
-    cmd_list: (list(str)) A running command.
     plist_path: (str) A path to plist-file.
-    return_code: (int) A return code of cmd_list command.
     output: (str) An output of command.
   Returns:
     Test result as a map:
@@ -97,16 +95,14 @@ def collect_test_results(cmd_list, plist_path, return_code, output):
   """
   test_results = {
       'passed': {},
-      'failed': {},
-      'errors': []
+      'failed': {}
   }
   root = plistlib.readPlist(plist_path)
 
   for action in root['Actions']:
     action_result = action['ActionResult']
-    if ((action_result['TestsCount'] == 0 and
-         action_result['TestsFailedCount'] == 0 and
-         action_result['ErrorCount'] != 0)
+    if ((root['TestsCount'] == 0 and
+         root['TestsFailedCount'] == 0)
         or 'TestSummaryPath' not in action_result):
       test_results['failed']['TESTS_DID_NOT_START'] = []
     else:
@@ -115,15 +111,6 @@ def collect_test_results(cmd_list, plist_path, return_code, output):
       summary = test_status_summary(summary_plist)
       test_results['failed'] = summary['failed']
       test_results['passed'] = summary['passed']
-
-    for error_summary in action_result['ErrorSummaries']:
-      test_results['errors'].append(error_summary['Message'])
-  # If xcodebuild finished with non-zero status and no failure/error
-  # in the Info.plist log.
-  if return_code and (
-      not test_results['failed'] and not test_results['errors']):
-    test_results['errors'].append(
-        'Return code of "%s" is not 0!' % cmd_list)
   test_results['output'] = output
   return test_results
 
@@ -328,11 +315,11 @@ class LaunchCommand(object):
     """Calculates test summary - how many passed, failed and error tests.
 
     Returns:
-      Dictionary with number of errors, passed and failed tests.
+      Dictionary with number of passed and failed tests.
       Failed tests will be calculated from the last test attempt.
-      Passed tests and errors calculated for each test attempt.
+      Passed tests calculated for each test attempt.
     """
-    test_statuses = ['errors', 'passed', 'failed']
+    test_statuses = ['passed', 'failed']
     for status in test_statuses:
       self.logs[status] = 0
 
@@ -341,9 +328,6 @@ class LaunchCommand(object):
         if test_status not in test_attempt_results:
           continue
         results = test_attempt_results[test_status]
-        if test_status == 'errors':
-          self.logs['errors'] += len(results)
-          continue
         for _, destinations_egtests in results.iteritems():
           if test_status == 'passed' or (
               # Number of failed tests is taken only from last run.
@@ -351,11 +335,12 @@ class LaunchCommand(object):
                   self.test_results['attempts']) - 1):
             self.logs[test_status] += len(destinations_egtests)
 
-  def launch_attempt(self, cmd):
+  def launch_attempt(self, cmd, out_dir):
     """Launch a process and do logging simultaneously.
 
     Args:
       cmd: (list[str]) A command to run.
+      out_dir: (str) Output directory given to the command. Used in tests only.
 
     Returns:
       A tuple (cmd, returncode, output) where:
@@ -392,33 +377,32 @@ class LaunchCommand(object):
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
-      if attempt == 0:
+      # Create a command for the 1st run or if tests did not start,
+      # re-run the same command but with different output folder.
+      # (http://crbug.com/916620) If tests did not start, repeat the command.
+      if (not self.test_results['attempts'] or 'TESTS_DID_NOT_START'
+          in self.test_results['attempts'][-1]['failed']):
         cmd_list = self.command(self.egtests_app,
                                 outdir_attempt,
                                 self.destination,
                                 self.shards)
-        initial_command = list(cmd_list)
-      # (http://crbug.com/916620) If tests has not started, repeat the command
-      # otherwise re-init based on list of failed tests.
-      elif 'TESTS_DID_NOT_START' not in self.test_results[
-          'attempts'][-1]['failed']:
+        if attempt == 0:
+          initial_command = list(cmd_list)
+      # Re-init the command based on list of failed tests.
+      else:
         cmd_list = self._make_cmd_list_for_failed_tests(
             self.test_results['attempts'][-1]['failed'],
             outdir_attempt,
             test_args=self.egtests_app.test_args,
             env_vars=self.egtests_app.env_vars)
-      else:
-        # If tests did not start, re-run the same command
-        # but with different output folder.
-        cmd_list = cmd_list[:-2] + ['-resultBundlePath', outdir_attempt]
+
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       print 'Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list))
-      return_code, output = self.launch_attempt(cmd_list)
+      _, output = self.launch_attempt(cmd_list, outdir_attempt)
       self.test_results['attempts'].append(
-          collect_test_results(cmd_list, os.path.join(outdir_attempt,
-                                                      'Info.plist'),
-                               return_code, output))
+          collect_test_results(os.path.join(outdir_attempt, 'Info.plist'),
+                               output))
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
@@ -616,10 +600,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
           {'cmd': ' '.join(result['cmd']), 'logs': result['logs']})
 
     self.test_results['end_run'] = int(time.time())
-    # Test is failed if any error occurs during test run
-    # or there are failures for last run.
-    return not self.test_results['commands'][-1]['logs']['failed'] and all(
-        [not r['logs']['errors'] for r in self.test_results['commands']])
+    # Test is failed if there are failures for the last run.
+    return not self.test_results['commands'][-1]['logs']['failed']
 
   def erase_all_simulators(self):
     """Erases all simulator devices.
