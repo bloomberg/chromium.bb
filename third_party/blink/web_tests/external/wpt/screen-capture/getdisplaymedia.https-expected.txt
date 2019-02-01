@@ -13,8 +13,9 @@ PASS getDisplayMedia({"video":{"height":{"min":240}}}) must fail with TypeError
 PASS getDisplayMedia({"video":{"height":{"exact":240}}}) must fail with TypeError
 PASS getDisplayMedia({"video":{"frameRate":{"min":4}}}) must fail with TypeError
 PASS getDisplayMedia({"video":{"frameRate":{"exact":4}}}) must fail with TypeError
-FAIL getDisplayMedia({"video":true,"audio":true}) must succeed with video maybe audio promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getDisplayMedia' on 'MediaDevices': Audio capture is not supported"
-FAIL getDisplayMedia({"audio":true}) must succeed with video maybe audio promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getDisplayMedia' on 'MediaDevices': Audio capture is not supported"
+PASS getDisplayMedia({"audio":true}) must fail with TypeError
+PASS getDisplayMedia({"video":false,"audio":true}) must fail with TypeError
+PASS getDisplayMedia({"video":true,"audio":true}) must succeed with video maybe audio
 PASS getDisplayMedia({"video":{"width":{"max":360}}}) must be constrained
 PASS getDisplayMedia({"video":{"height":{"max":240}}}) must be constrained
 PASS getDisplayMedia({"video":{"width":{"max":360},"height":{"max":240}}}) must be constrained

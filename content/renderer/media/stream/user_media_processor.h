@@ -275,7 +275,7 @@ class CONTENT_EXPORT UserMediaProcessor
   void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
       const VideoCaptureSettings& settings);
-  void SelectVideoContentSettings(bool allow_device_id_constraint);
+  void SelectVideoContentSettings();
 
   void GenerateStreamForCurrentRequestInfo();
 

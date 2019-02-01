@@ -211,17 +211,10 @@ MediaStreamType AdjustAudioStreamTypeBasedOnCommandLineSwitches(
 // initializers if |kUseFakeDeviceForMediaStream| is set. Returns a
 // MediaStreamDevice with default DesktopMediaID otherwise.
 MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
-  // TODO(emircan): When getDisplayMedia() accepts constraints, pick
-  // the corresponding type.
-  DesktopMediaID media_id(DesktopMediaID::TYPE_SCREEN, DesktopMediaID::kNullId);
-
-  MediaStreamDevice device(blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
-                           media_id.ToString(), media_id.ToString());
+  DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_SCREEN;
+  DesktopMediaID::Id desktop_media_id_id = DesktopMediaID::kNullId;
   media::mojom::DisplayCaptureSurfaceType display_surface =
       media::mojom::DisplayCaptureSurfaceType::MONITOR;
-  device.display_media_info = media::mojom::DisplayMediaInformation::New(
-      display_surface, true, media::mojom::CursorCaptureType::NEVER);
-
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line &&
@@ -232,29 +225,29 @@ MediaStreamDevice MediaStreamDeviceFromFakeDeviceConfig() {
             command_line->GetSwitchValueASCII(
                 switches::kUseFakeDeviceForMediaStream),
             &config);
-    if (config.empty())
-      return device;
-
-    DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_NONE;
-    switch (config[0].display_media_type) {
-      case media::FakeVideoCaptureDevice::DisplayMediaType::ANY:
-      case media::FakeVideoCaptureDevice::DisplayMediaType::MONITOR:
-        desktop_media_type = DesktopMediaID::TYPE_SCREEN;
-        display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
-        break;
-      case media::FakeVideoCaptureDevice::DisplayMediaType::WINDOW:
-        desktop_media_type = DesktopMediaID::TYPE_WINDOW;
-        display_surface = media::mojom::DisplayCaptureSurfaceType::WINDOW;
-        break;
-      case media::FakeVideoCaptureDevice::DisplayMediaType::BROWSER:
-        desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
-        display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
-        break;
+    if (!config.empty()) {
+      desktop_media_type = DesktopMediaID::TYPE_NONE;
+      desktop_media_id_id = DesktopMediaID::kFakeId;
+      switch (config[0].display_media_type) {
+        case media::FakeVideoCaptureDevice::DisplayMediaType::ANY:
+        case media::FakeVideoCaptureDevice::DisplayMediaType::MONITOR:
+          desktop_media_type = DesktopMediaID::TYPE_SCREEN;
+          display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
+          break;
+        case media::FakeVideoCaptureDevice::DisplayMediaType::WINDOW:
+          desktop_media_type = DesktopMediaID::TYPE_WINDOW;
+          display_surface = media::mojom::DisplayCaptureSurfaceType::WINDOW;
+          break;
+        case media::FakeVideoCaptureDevice::DisplayMediaType::BROWSER:
+          desktop_media_type = DesktopMediaID::TYPE_WEB_CONTENTS;
+          display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
+          break;
+      }
     }
-    media_id = DesktopMediaID(desktop_media_type, DesktopMediaID::kFakeId);
   }
-  device = MediaStreamDevice(blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
-                             media_id.ToString(), media_id.ToString());
+  DesktopMediaID media_id(desktop_media_type, desktop_media_id_id);
+  MediaStreamDevice device(blink::MEDIA_DISPLAY_VIDEO_CAPTURE,
+                           media_id.ToString(), media_id.ToString());
   device.display_media_info = media::mojom::DisplayMediaInformation::New(
       display_surface, true, media::mojom::CursorCaptureType::NEVER);
   return device;
@@ -1156,6 +1149,13 @@ void MediaStreamManager::PostRequestToUI(
     MediaStreamDevices devices;
     if (request->video_type() == blink::MEDIA_DISPLAY_VIDEO_CAPTURE) {
       devices.push_back(MediaStreamDeviceFromFakeDeviceConfig());
+      if (request->audio_type() == blink::MEDIA_DISPLAY_AUDIO_CAPTURE) {
+        DesktopMediaID media_id(DesktopMediaID::TYPE_SCREEN,
+                                DesktopMediaID::kNullId);
+        devices.emplace_back(
+            MediaStreamDevice(blink::MEDIA_DISPLAY_AUDIO_CAPTURE,
+                              media_id.ToString(), media_id.ToString()));
+      }
     } else if (request->video_type() ==
                blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
       // Cache the |label| in the device name field, for unit test purpose only.
@@ -1255,7 +1255,8 @@ bool MediaStreamManager::SetUpDisplayCaptureRequest(DeviceRequest* request) {
   // selection of a source, see
   // https://w3c.github.io/mediacapture-screen-share/#constraints.
   if (!request->controls.video.requested ||
-      !request->controls.video.device_id.empty()) {
+      !request->controls.video.device_id.empty() ||
+      !request->controls.audio.device_id.empty()) {
     LOG(ERROR) << "Invalid display media request.";
     return false;
   }
