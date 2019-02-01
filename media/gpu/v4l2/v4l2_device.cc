@@ -391,7 +391,7 @@ void V4L2WritableBufferRef::SetPlaneBytesUsed(const size_t plane,
     return;
   }
 
-  if (bytes_used >= GetPlaneSize(plane)) {
+  if (bytes_used > GetPlaneSize(plane)) {
     VLOGF(1) << "Set bytes used " << bytes_used << " larger than plane size "
              << GetPlaneSize(plane) << ".";
     return;
