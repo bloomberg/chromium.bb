@@ -2311,13 +2311,6 @@
         {
           "board_name": "octopus",
           "name": "sparky360",
-          "test_suites": [
-            "sanity",
-            "bvt-inline",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
