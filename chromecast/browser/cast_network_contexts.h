@@ -70,6 +70,9 @@ class CastNetworkContexts {
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
+  // Called when the locale has changed.
+  void OnLocaleUpdate();
+
  private:
   class SystemNetworkContextOwner;
   class URLLoaderFactoryForSystem;

@@ -10,9 +10,15 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "chromecast/browser/cast_browser_context.h"
+#include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/url_request_context_factory.h"
+#include "chromecast/common/cast_content_client.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
@@ -209,10 +215,29 @@ void CastNetworkContexts::OnNetworkServiceCreated(
                                         CreateSystemNetworkContextParams());
 }
 
+void CastNetworkContexts::OnLocaleUpdate() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  auto accept_language = CastHttpUserAgentSettings::AcceptLanguage();
+
+  GetSystemContext()->SetAcceptLanguage(accept_language);
+
+  auto* browser_context = CastBrowserProcess::GetInstance()->browser_context();
+  content::BrowserContext::GetDefaultStoragePartition(browser_context)
+      ->GetNetworkContext()
+      ->SetAcceptLanguage(accept_language);
+}
+
 network::mojom::NetworkContextParamsPtr
 CastNetworkContexts::CreateDefaultNetworkContextParams() {
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
+
+  network_context_params->user_agent = GetUserAgent();
+  network_context_params->accept_language =
+      CastHttpUserAgentSettings::AcceptLanguage();
 
   return network_context_params;
 }
