@@ -53,13 +53,17 @@ public abstract class PackagePaths {
             }
 
             List<String> libPaths = new ArrayList<>(10);
-            libPaths.add(pi.applicationInfo.nativeLibraryDir);
+            File parent = new File(pi.applicationInfo.nativeLibraryDir).getParentFile();
+            if (parent != null) {
+                libPaths.add(new File(parent, arch).getPath());
+            }
             for (String zip : zipPaths) {
                 if (zip.endsWith(".apk")) {
                     libPaths.add(zip + "!/lib/" + arch);
                 }
             }
             libPaths.add(System.getProperty("java.library.path"));
+            libPaths.add(pi.applicationInfo.nativeLibraryDir);
 
             return new String[] {TextUtils.join(File.pathSeparator, zipPaths),
                     TextUtils.join(File.pathSeparator, libPaths)};
