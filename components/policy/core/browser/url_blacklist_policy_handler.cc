@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/values.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -53,7 +54,7 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (disabled_schemes_policy)
     disabled_schemes_policy->GetAsList(&disabled_schemes);
 
-  std::unique_ptr<base::ListValue> merged_url_blacklist(new base::ListValue());
+  std::vector<base::Value> merged_url_blacklist;
 
   // We start with the DisabledSchemes because we have size limit when
   // handling URLBlacklists.
@@ -62,7 +63,7 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       std::string entry_value;
       if (entry.GetAsString(&entry_value)) {
         entry_value.append("://*");
-        merged_url_blacklist->AppendString(entry_value);
+        merged_url_blacklist.emplace_back(std::move(entry_value));
       }
     }
   }
@@ -70,13 +71,13 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (url_blacklist) {
     for (const auto& entry : *url_blacklist) {
       if (entry.is_string())
-        merged_url_blacklist->Append(entry.CreateDeepCopy());
+        merged_url_blacklist.push_back(entry.Clone());
     }
   }
 
   if (disabled_schemes || url_blacklist) {
     prefs->SetValue(policy_prefs::kUrlBlacklist,
-                    std::move(merged_url_blacklist));
+                    base::Value(std::move(merged_url_blacklist)));
   }
 }
 

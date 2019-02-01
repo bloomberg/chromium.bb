@@ -228,8 +228,8 @@ void StringMappingListPolicyHandler::ApplyPolicySettings(
   if (!pref_path_)
     return;
   const base::Value* value = policies.GetValue(policy_name());
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
-  if (value && Convert(value, list.get(), nullptr))
+  base::ListValue list;
+  if (value && Convert(value, &list, nullptr))
     prefs->SetValue(pref_path_, std::move(list));
 }
 
@@ -350,7 +350,7 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 
@@ -456,7 +456,7 @@ void SimpleSchemaValidatingPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 // SimpleJsonStringSchemaValidatingPolicyHandler implementation ----------------
@@ -614,7 +614,7 @@ void SimpleJsonStringSchemaValidatingPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name_);
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 void SimpleJsonStringSchemaValidatingPolicyHandler::RecordJsonError() {
