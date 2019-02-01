@@ -3395,8 +3395,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   WebStateList* webStateList = self.tabModel.webStateList;
   web::WebState* current_web_state = webStateList->GetActiveWebState();
-  DCHECK(current_web_state);
-  if (transitionType & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
+  if (current_web_state &&
+      (transitionType & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
     bool isExpectingVoiceSearch =
         VoiceSearchNavigationTabHelper::FromWebState(current_web_state)
             ->IsExpectingVoiceSearch();
