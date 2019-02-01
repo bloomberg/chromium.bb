@@ -66,11 +66,12 @@ class ServerRef(object):
     self._namespace = namespace
     self._hash_algo = hashlib.sha1
     self._hash_algo_name = 'sha-1'
-    for name, algo in isolated_format.SUPPORTED_ALGOS.iteritems():
-      if self.namespace.startswith(name + '-'):
-        self._hash_algo_name = name
-        self._hash_algo = algo
-        break
+    if self.namespace.startswith('sha256-'):
+      self._hash_algo = hashlib.sha256
+      self._hash_algo_name = 'sha-256'
+    if self.namespace.startswith('sha512-'):
+      self._hash_algo = hashlib.sha512
+      self._hash_algo_name = 'sha-512'
     self._is_with_compression = self.namespace.endswith(
         ('-gzip', '-deflate', '-flate'))
 
