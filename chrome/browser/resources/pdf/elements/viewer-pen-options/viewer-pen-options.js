@@ -94,15 +94,30 @@ Polymer({
     this.selectedColor = e.target.value;
   },
 
+  /** @private */
   toggleExpanded_: function() {
     this.expanded_ = !this.expanded_;
     this.updateExpandedState_();
   },
 
-  attached() {
+  /** @private */
+  updateExpandedStateAndFinishAnimations_: function() {
     this.updateExpandedState_();
     for (const animation of this.expandAnimations_) {
       animation.finish();
+    }
+  },
+
+  /** @override */
+  attached: function() {
+    // TODO (rbpotter): Remove this conditional when the migration to Polymer 2
+    // is completed.
+    if (Polymer.DomIf) {
+      Polymer.RenderStatus.beforeNextRender(this, () => {
+        this.updateExpandedStateAndFinishAnimations_();
+      });
+    } else {
+      this.updateExpandedStateAndFinishAnimations_();
     }
   },
 
@@ -169,6 +184,6 @@ Polymer({
    * @return {string}
    */
   lookup_: function(strings, name) {
-    return strings[name];
+    return strings ? strings[name] : '';
   }
 });

@@ -84,17 +84,18 @@ chrome.test.runTests([
       inkHost.ink_.setAnnotationTool = value => tool = value;
 
       // Pen defaults.
-      document.querySelector('* /deep/ #pen').click();
+      const viewerPdfToolbar = document.querySelector('viewer-pdf-toolbar');
+      const pen = viewerPdfToolbar.$$('#pen');
+      pen.click();
       chrome.test.assertEq('pen', tool.tool);
       chrome.test.assertEq(0.1429, tool.size);
       chrome.test.assertEq('#000000', tool.color);
 
 
       // Selected size and color.
-      document.querySelector(
-          '* /deep/ #pen /deep/ #sizes [value="1"]').click();
-      document.querySelector(
-          '* /deep/ #pen /deep/ #colors [value="#00b0ff"]').click();
+      const penOptions = viewerPdfToolbar.$$('#pen viewer-pen-options');
+      penOptions.$$('#sizes [value="1"]').click();
+      penOptions.$$('#colors [value="#00b0ff"]').click();
       await animationFrame();
       chrome.test.assertEq('pen', tool.tool);
       chrome.test.assertEq(1, tool.size);
@@ -102,38 +103,36 @@ chrome.test.runTests([
 
 
       // Eraser defaults.
-      document.querySelector('* /deep/ #eraser').click();
+      viewerPdfToolbar.$$('#eraser').click();
       chrome.test.assertEq('eraser', tool.tool);
       chrome.test.assertEq(1, tool.size);
       chrome.test.assertEq(null, tool.color);
 
 
       // Pen keeps previous settings.
-      document.querySelector('* /deep/ #pen').click();
+      pen.click();
       chrome.test.assertEq('pen', tool.tool);
       chrome.test.assertEq(1, tool.size);
       chrome.test.assertEq('#00b0ff', tool.color);
 
 
       // Highlighter defaults.
-      document.querySelector('* /deep/ #highlighter').click();
+      viewerPdfToolbar.$$('#highlighter').click();
       chrome.test.assertEq('highlighter', tool.tool);
       chrome.test.assertEq(0.7143, tool.size);
       chrome.test.assertEq('#ffbc00', tool.color);
 
 
       // Need to expand to use this color.
-      document.querySelector(
-          '* /deep/ #highlighter /deep/ #colors [value="#d1c4e9"]').click();
+      const highlighterOptions =
+          viewerPdfToolbar.$$('#highlighter viewer-pen-options');
+      highlighterOptions.$$('#colors [value="#d1c4e9"]').click();
       chrome.test.assertEq('#ffbc00', tool.color);
 
       // Selected size and expanded color.
-      document.querySelector(
-        '* /deep/ #highlighter /deep/ #sizes [value="1"]').click();
-      document.querySelector(
-        '* /deep/ #highlighter /deep/ #colors #expand').click();
-      document.querySelector(
-        '* /deep/ #highlighter /deep/ #colors [value="#d1c4e9"]').click();
+      highlighterOptions.$$('#sizes [value="1"]').click();
+      highlighterOptions.$$('#colors #expand').click();
+      highlighterOptions.$$('#colors [value="#d1c4e9"]').click();
       chrome.test.assertEq('highlighter', tool.tool);
       chrome.test.assertEq(1, tool.size);
       chrome.test.assertEq('#d1c4e9', tool.color);

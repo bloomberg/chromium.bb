@@ -254,6 +254,15 @@ NTP4WebUITest.*
 OnboardingWelcomeEmailChooserTest.*
 OnboardingWelcomeWelcomeAppTest.*
 OpenAudioFiles/*
+PDFAnnotationsTest.*
+PDFExtensionClipboardTest.*
+PDFExtensionHitTestTest.*
+PDFExtensionInternalLinkClickTest.*
+PDFExtensionLinkClickTest.*
+PDFExtensionLoadTest.*
+PDFExtensionTest.*
+PDFIsolatedExtensionTest.*
+PDFPluginDisabledTest.*
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
 PrintPreviewBaseSettingsSectionTest.*
