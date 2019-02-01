@@ -224,6 +224,21 @@ class AutofillProfile : public AutofillDataModel {
   // use and updates |previous_use_date_| to the last value of |use_date_|.
   void RecordAndLogUse();
 
+  // Returns true if the current profile has greated frescocency than the
+  // |other|. Frescocency is a combination of validation score and frecency to
+  // determine the relevance of the profile. Please see
+  // AutofillDataModel::CompareFrecency.
+  bool HasGreaterFrescocencyThan(const AutofillProfile* other,
+                                 base::Time comparison_time,
+                                 bool use_client_validation,
+                                 bool use_server_validation) const;
+  // Returns false if the profile has any invalid field, according to the client
+  // source of validation.
+  bool IsValidByClient() const;
+  // Returns false if the profile has any invalid field, according to the server
+  // source of validation.
+  bool IsValidByServer() const;
+
   const base::Time& previous_use_date() const { return previous_use_date_; }
   void set_previous_use_date(const base::Time& time) {
     previous_use_date_ = time;
