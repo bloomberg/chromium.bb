@@ -62,6 +62,11 @@
 #include "components/infobars/core/infobar_manager.h"
 #endif
 
+using download::DownloadItem;
+using download::DownloadPathReservationTracker;
+using download::PathValidationResult;
+using safe_browsing::DownloadFileType;
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
 using ::testing::DoAll;
@@ -74,9 +79,6 @@ using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
 using ::testing::WithArg;
-using ::testing::_;
-using download::DownloadItem;
-using safe_browsing::DownloadFileType;
 
 namespace {
 

@@ -49,14 +49,14 @@ void RecordDownloadPathGeneration(DownloadPathGenerationEvent event,
   }
 }
 
-void RecordDownloadPathValidation(PathValidationResult result,
+void RecordDownloadPathValidation(download::PathValidationResult result,
                                   bool is_transient) {
   if (is_transient) {
     UMA_HISTOGRAM_ENUMERATION("Download.PathValidationResult.Transient", result,
-                              PathValidationResult::COUNT);
+                              download::PathValidationResult::COUNT);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Download.PathValidationResult.UserDownload",
-                              result, PathValidationResult::COUNT);
+                              result, download::PathValidationResult::COUNT);
   }
 }
 

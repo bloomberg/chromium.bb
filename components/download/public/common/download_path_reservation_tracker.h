@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
-#define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "components/download/public/common/download_export.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace download {
 class DownloadItem;
-}
 
 // Used in UMA, do not remove, change or reuse existing entries.
 // Update histograms.xml and enums.xml when adding entries.
@@ -34,7 +34,7 @@ enum class PathValidationResult {
 // Therefore only considering files that exist on the filesystem is
 // insufficient. This class tracks files that are assigned to active downloads
 // so that uniquification can take those into account as well.
-class DownloadPathReservationTracker {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadPathReservationTracker {
  public:
   // Callback used with |GetReservedPath|. |target_path| specifies the target
   // path for the download. If |result| is SUCCESS then:
@@ -71,8 +71,8 @@ class DownloadPathReservationTracker {
   //   and either |create_directory| or |requested_target_path.DirName() ==
   //   default_download_path|.
   //
-  // - Verifying that |requested_target_path| is writeable. If not, the user's
-  //   documents folder is used instead.
+  // - Verifying that |requested_target_path| is writeable. If not,
+  //   |fallback_directory| is used instead.
   //
   // - Uniquifying |requested_target_path| by suffixing the filename with a
   //   uniquifier (e.g. "foo.txt" -> "foo (1).txt") in order to avoid conflicts
@@ -97,9 +97,10 @@ class DownloadPathReservationTracker {
   // The current implementation doesn't look at symlinks/mount points. E.g.: It
   // considers 'foo/bar/x.pdf' and 'foo/baz/x.pdf' to be two different paths,
   // even though 'bar' might be a symlink to 'baz'.
-  static void GetReservedPath(download::DownloadItem* download_item,
+  static void GetReservedPath(DownloadItem* download_item,
                               const base::FilePath& requested_target_path,
                               const base::FilePath& default_download_path,
+                              const base::FilePath& fallback_directory,
                               bool create_directory,
                               FilenameConflictAction conflict_action,
                               const ReservedPathCallback& callback);
@@ -113,4 +114,6 @@ class DownloadPathReservationTracker {
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
+}  // namespace download
+
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_PATH_RESERVATION_TRACKER_H_

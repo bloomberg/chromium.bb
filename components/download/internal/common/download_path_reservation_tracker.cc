@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/download_path_reservation_tracker.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 
 #include <stddef.h>
 
@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -27,16 +26,12 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/download/public/common/download_item.h"
 #include "components/filename_generation/filename_generation.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
-using download::DownloadItem;
+namespace download {
 
 namespace {
 
@@ -183,6 +178,8 @@ struct CreateReservationInfo {
   base::FilePath suggested_path;
   base::FilePath default_download_path;
   base::FilePath temporary_path;
+  base::FilePath fallback_directory;  // directory to use when target path
+                                      // cannot be used.
   bool create_target_directory;
   base::Time start_time;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action;
@@ -212,9 +209,7 @@ PathValidationResult ValidatePathAndResolveConflicts(
   // prompted.
   if (!IsPathWritable(info, *target_path)) {
     DVLOG(1) << "Unable to write to path \"" << target_path->value() << "\"";
-    base::FilePath target_dir;
-    base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
-    *target_path = target_dir.Append(target_path->BaseName());
+    *target_path = info.fallback_directory.Append(target_path->BaseName());
     return PathValidationResult::PATH_NOT_WRITABLE;
   }
 
@@ -344,14 +339,12 @@ void RunGetReservedPathCallback(
     const DownloadPathReservationTracker::ReservedPathCallback& callback,
     const base::FilePath* reserved_path,
     PathValidationResult result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(result, *reserved_path);
 }
 
 DownloadItemObserver::DownloadItemObserver(DownloadItem* download_item)
     : download_item_(download_item),
       last_target_path_(download_item->GetTargetFilePath()) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   download_item_->AddObserver(this);
   download_item_->SetUserData(&kUserDataKey, base::WrapUnique(this));
 }
@@ -417,10 +410,10 @@ void DownloadPathReservationTracker::GetReservedPath(
     DownloadItem* download_item,
     const base::FilePath& target_path,
     const base::FilePath& default_path,
+    const base::FilePath& fallback_directory,
     bool create_directory,
     FilenameConflictAction conflict_action,
     const ReservedPathCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Attach an observer to the download item so that we know when the target
   // path changes and/or the download is no longer active.
   new DownloadItemObserver(download_item);
@@ -435,6 +428,7 @@ void DownloadPathReservationTracker::GetReservedPath(
                                 target_path,
                                 default_path,
                                 download_item->GetTemporaryFilePath(),
+                                fallback_directory,
                                 create_directory,
                                 download_item->GetStartTime(),
                                 conflict_action,
@@ -458,3 +452,5 @@ scoped_refptr<base::SequencedTaskRunner>
 DownloadPathReservationTracker::GetTaskRunner() {
   return g_sequenced_task_runner.Get();
 }
+
+}  // namespace download
