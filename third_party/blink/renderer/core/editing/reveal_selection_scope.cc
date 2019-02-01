@@ -43,10 +43,12 @@ RevealSelectionScope::RevealSelectionScope(LocalFrame& frame) : frame_(&frame) {
 RevealSelectionScope::~RevealSelectionScope() {
   DCHECK(GetEditor().PreventRevealSelection());
   GetEditor().DecreasePreventRevealSelection();
-  if (!GetEditor().PreventRevealSelection()) {
-    frame_->Selection().RevealSelection(ScrollAlignment::kAlignToEdgeIfNeeded,
-                                        kRevealExtent);
-  }
+  if (GetEditor().PreventRevealSelection())
+    return;
+  if (!frame_->Selection().IsAvailable())
+    return;
+  frame_->Selection().RevealSelection(ScrollAlignment::kAlignToEdgeIfNeeded,
+                                      kRevealExtent);
 }
 
 Editor& RevealSelectionScope::GetEditor() {

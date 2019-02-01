@@ -82,7 +82,8 @@ bool WebInputMethodControllerImpl::SetComposition(
       String(text), ImeTextSpanVectorBuilder::Build(ime_text_spans),
       selection_start, selection_end);
 
-  return text.IsEmpty() || GetInputMethodController().HasComposition();
+  return text.IsEmpty() ||
+         (GetFrame() && GetInputMethodController().HasComposition());
 }
 
 bool WebInputMethodControllerImpl::FinishComposingText(
@@ -202,6 +203,7 @@ LocalFrame* WebInputMethodControllerImpl::GetFrame() const {
 
 InputMethodController& WebInputMethodControllerImpl::GetInputMethodController()
     const {
+  DCHECK(GetFrame());
   return GetFrame()->GetInputMethodController();
 }
 
