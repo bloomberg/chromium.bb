@@ -15,9 +15,11 @@ namespace learning {
 
 LearningTaskControllerImpl::LearningTaskControllerImpl(
     const LearningTask& task,
-    std::unique_ptr<DistributionReporter> reporter)
+    std::unique_ptr<DistributionReporter> reporter,
+    SequenceBoundFeatureProvider feature_provider)
     : task_(task),
       training_data_(std::make_unique<TrainingData>()),
+      feature_provider_(std::move(feature_provider)),
       reporter_(std::move(reporter)) {
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
@@ -32,6 +34,18 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
 void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
+  if (!feature_provider_.is_null()) {
+    // TODO(liberato): BindToCurrentSequence
+    feature_provider_.Post(
+        FROM_HERE, &FeatureProvider::AddFeatures, example,
+        base::BindOnce(&LearningTaskControllerImpl::OnExampleReady,
+                       AsWeakPtr()));
+  } else {
+    OnExampleReady(example);
+  }
+}
+
+void LearningTaskControllerImpl::OnExampleReady(LabelledExample example) {
   if (training_data_->size() >= task_.max_data_set_size) {
     // Replace a random example.  We don't necessarily want to replace the
     // oldest, since we don't necessarily want to enforce an ad-hoc recency

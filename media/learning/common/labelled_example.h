@@ -65,6 +65,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
   TrainingData(const TrainingData& rhs);
   TrainingData(TrainingData&& rhs);
 
+  TrainingData& operator=(const TrainingData& rhs);
   TrainingData& operator=(TrainingData&& rhs);
 
   ~TrainingData();

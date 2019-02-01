@@ -13,6 +13,7 @@ using learning::FeatureValue;
 using learning::LabelledExample;
 using learning::LearningSessionImpl;
 using learning::LearningTask;
+using learning::SequenceBoundFeatureProvider;
 using learning::TargetValue;
 
 const char* const kDroppedFrameRatioTreeTaskName = "DroppedFrameRatioTreeTask";
@@ -49,7 +50,7 @@ LearningHelper::LearningHelper() {
   dropped_frame_task.uma_hacky_confusion_matrix =
       "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTree";
   learning_session_.Post(FROM_HERE, &LearningSessionImpl::RegisterTask,
-                         dropped_frame_task);
+                         dropped_frame_task, SequenceBoundFeatureProvider());
 
   // Modify the task to use a table-based learner.
   dropped_frame_task.name = kDroppedFrameRatioTableTaskName;
@@ -57,7 +58,7 @@ LearningHelper::LearningHelper() {
   dropped_frame_task.uma_hacky_confusion_matrix =
       "Media.Learning.MediaCapabilities.DroppedFrameRatioTask.BaseTable";
   learning_session_.Post(FROM_HERE, &LearningSessionImpl::RegisterTask,
-                         dropped_frame_task);
+                         dropped_frame_task, SequenceBoundFeatureProvider());
 }
 
 LearningHelper::~LearningHelper() = default;
