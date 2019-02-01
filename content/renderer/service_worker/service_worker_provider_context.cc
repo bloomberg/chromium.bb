@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -54,6 +55,12 @@ void CreateSubresourceLoaderFactoryForProviderContext(
 }
 
 }  // namespace
+
+// static
+int ServiceWorkerProviderContext::GetNextId() {
+  static base::AtomicSequenceNumber sequence;
+  return sequence.GetNext();  // We start at zero.
+}
 
 // For service worker clients.
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(

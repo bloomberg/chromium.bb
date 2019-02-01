@@ -24,7 +24,6 @@
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/shared_worker/web_service_worker_network_provider_impl_for_worker.h"
 #include "ipc/ipc_message_macros.h"
