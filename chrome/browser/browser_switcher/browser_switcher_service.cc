@@ -4,8 +4,10 @@
 
 #include "chrome/browser/browser_switcher/browser_switcher_service.h"
 
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "build/build_config.h"
@@ -22,7 +24,14 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 
 #if defined(OS_WIN)
+#include "base/files/file.h"
+#include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/win/registry.h"
 #endif
 
@@ -76,6 +85,74 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
             "This feature  still in development, and is disabled by default. "
             "It needs to be enabled through policies."
         })");
+
+#if defined(OS_WIN)
+const int kCurrentFileVersion = 1;
+
+base::FilePath GetCacheDir() {
+  base::FilePath path;
+  if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
+    return path;
+  path = path.AppendASCII("Google");
+  path = path.AppendASCII("BrowserSwitcher");
+  return path;
+}
+
+// Serialize prefs to a string for writing to cache.dat.
+std::string SerializeCacheFile(const BrowserSwitcherPrefs& prefs) {
+  std::ostringstream buffer;
+
+  buffer << kCurrentFileVersion << std::endl;
+
+  buffer << prefs.GetAlternativeBrowserPath() << std::endl;
+  buffer << base::JoinString(prefs.GetAlternativeBrowserParameters(), " ")
+         << std::endl;
+
+  // TODO(nicolaso): Use GetChromePath() and GetChromeParameters once the
+  // policies are implemented. For now, those are just ${chrome} with no
+  // arguments, to ensure the BHO works correctly.
+  buffer << "${chrome}" << std::endl;
+  buffer << base::JoinString(std::vector<std::string>(), " ") << std::endl;
+
+  const auto& rules = prefs.GetRules();
+  buffer << rules.sitelist.size() << std::endl;
+  if (!rules.sitelist.empty())
+    buffer << base::JoinString(rules.sitelist, "\n") << std::endl;
+
+  buffer << rules.greylist.size() << std::endl;
+  if (!rules.greylist.empty())
+    buffer << base::JoinString(rules.greylist, "\n") << std::endl;
+
+  return buffer.str();
+}
+
+void SavePrefsToFile(std::string data) {
+  // Ensure the directory exists
+  base::FilePath dir = GetCacheDir();
+
+  bool success = base::CreateDirectory(dir);
+  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkDirSuccess", success);
+  if (!success) {
+    LOG(ERROR) << "Could not create directory: " << dir.LossyDisplayName();
+    return;
+  }
+
+  base::FilePath tmp_path;
+  success = base::CreateTemporaryFileInDir(dir, &tmp_path);
+  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MkTempSuccess", success);
+  if (!success) {
+    LOG(ERROR) << "Could not open file for writing: "
+               << tmp_path.LossyDisplayName();
+    return;
+  }
+
+  base::WriteFile(tmp_path, data.c_str(), data.size());
+
+  base::FilePath dest_path = dir.AppendASCII("cache.dat");
+  success = base::Move(tmp_path, dest_path);
+  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.CacheFile.MoveSuccess", success);
+}
+#endif
 
 }  // namespace
 
@@ -173,6 +250,18 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
           base::BindOnce(&BrowserSwitcherService::OnIeemSitelistParsed,
                          weak_ptr_factory_.GetWeakPtr()));
     }
+  }
+
+  if (prefs_.IsEnabled()) {
+    // TODO(nicolaso): also write cache.dat when policies change (e.g. after
+    // loading cloud policies or after enabling LBS while Chrome is running).
+    //
+    // Write the cache.dat file.
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+        base::BindOnce(&SavePrefsToFile, SerializeCacheFile(prefs_)));
   }
 #endif
 }
