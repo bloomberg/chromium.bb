@@ -7,6 +7,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/web/find_in_page/find_in_page_constants.h"
+#import "ios/web/public/find_in_page/find_in_page_manager_delegate.h"
 #import "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_frames_manager.h"
@@ -51,9 +52,24 @@ FindInPageManagerImpl::~FindInPageManagerImpl() {
   }
 }
 
+FindInPageManagerDelegate* FindInPageManagerImpl::GetDelegate() {
+  return delegate_;
+}
+void FindInPageManagerImpl::SetDelegate(FindInPageManagerDelegate* delegate) {
+  delegate_ = delegate;
+}
+
 FindInPageManagerImpl::FindRequest::FindRequest() {}
 
 FindInPageManagerImpl::FindRequest::~FindRequest() {}
+
+int FindInPageManagerImpl::FindRequest::GetTotalMatchCount() const {
+  int matches = 0;
+  for (auto pair : frame_match_count) {
+    matches += pair.second;
+  }
+  return matches;
+}
 
 void FindInPageManagerImpl::WebFrameDidBecomeAvailable(WebState* web_state,
                                                        WebFrame* web_frame) {
@@ -118,35 +134,45 @@ void FindInPageManagerImpl::ProcessFindInPageResult(const std::string& query,
     // New find was started.
     return;
   }
+  if (!web_state_) {
+    // WebState was destroyed before find finished.
+    return;
+  }
 
   last_find_request_.pending_frame_call_count--;
   WebFrame* frame = GetWebFrameWithId(web_state_, frame_id);
-  // The frame no longer exists. If frame is removed during find, result will
-  // be null.
   if (!result || !frame) {
-    return;
-  }
+    // The frame no longer exists or the function call timed out. In both cases,
+    // result will be null.
+    // Zero out count to ensure every frame is updated for every find.
+    last_find_request_.frame_match_count[frame_id] = 0;
+  } else {
+    int match_count = 0;
+    if (result->is_double()) {
+      // Valid match number returned. If not, match count will be 0 in order to
+      // zero-out count from previous find.
+      match_count = static_cast<int>(result->GetDouble());
+    }
+    // If response is equal to kFindInPagePending, find did not finish in the
+    // JavaScript. Call pumpSearch to continue find.
+    if (match_count == kFindInPagePending) {
+      std::vector<base::Value> params;
+      params.push_back(base::Value(kFindInPageFindTimeout));
+      frame->CallJavaScriptFunction(
+          kFindInPagePump, params,
+          base::BindOnce(&FindInPageManagerImpl::ProcessFindInPageResult,
+                         weak_factory_.GetWeakPtr(), query, frame_id,
+                         unique_id),
+          base::TimeDelta::FromSeconds(kJavaScriptFunctionCallTimeout));
+      return;
+    }
 
-  int matches_count = 0;
-  if (result->is_double()) {
-    // Valid match number returned. If not, match count will be 0 in order to
-    // zero-out count from previous find.
-    matches_count = static_cast<int>(result->GetDouble());
+    last_find_request_.frame_match_count[frame_id] = match_count;
   }
-  // If response is equal to kFindInPagePending, find did not finish in the
-  // JavaScript. Call pumpSearch to continue find.
-  if (matches_count == kFindInPagePending) {
-    std::vector<base::Value> params;
-    params.push_back(base::Value(kFindInPageFindTimeout));
-    frame->CallJavaScriptFunction(
-        kFindInPagePump, params,
-        base::BindOnce(&FindInPageManagerImpl::ProcessFindInPageResult,
-                       weak_factory_.GetWeakPtr(), query, frame_id, unique_id),
-        base::TimeDelta::FromSeconds(kJavaScriptFunctionCallTimeout));
-    return;
+  if (last_find_request_.pending_frame_call_count == 0) {
+    int total_match_count = last_find_request_.GetTotalMatchCount();
+    delegate_->DidCountMatches(web_state_, total_match_count, query);
   }
-
-  last_find_request_.frame_match_count[frame_id] = matches_count;
 }
 
 }  // namespace web

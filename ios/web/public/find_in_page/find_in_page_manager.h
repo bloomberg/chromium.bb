@@ -12,6 +12,8 @@
 
 namespace web {
 
+class FindInPageManagerDelegate;
+
 // Indicates what action the FindinPageManager should take.
 enum class FindInPageOptions {
   // Search for a string. Highlight and scroll to the first result if
@@ -35,11 +37,20 @@ class FindInPageManager : public web::WebStateUserData<FindInPageManager> {
   // on |options|. |query| must not be null if |options| is |FindInPageSearch|.
   // |query| is ignored if |options| is not |FindInPageSearch|. If new search is
   // started before previous search finishes, old request will be discarded.
+  //
+  // FindInPageManagerDelegate::DidCountMatches() will be called to return the
+  // total matches found if FindInPageSearch is passed, assuming it hasn't been
+  // discarded. FindInPageManagerDelegate::DidHighlightMatch() will also be
+  // called if matches were found to inform client of the new match that was
+  // highlighted for all FindInPageOptions.
   virtual void Find(NSString* query, FindInPageOptions options) = 0;
 
   // Removes any highlighting. Does nothing if Find() with
   // FindInPageOptions::FindInPageSearch is never called.
   virtual void StopFinding() = 0;
+
+  virtual FindInPageManagerDelegate* GetDelegate() = 0;
+  virtual void SetDelegate(FindInPageManagerDelegate* delegate) = 0;
 
   ~FindInPageManager() override {}
 
