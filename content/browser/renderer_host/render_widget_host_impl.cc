@@ -850,40 +850,39 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
 bool RenderWidgetHostImpl::GetVisualProperties(
     VisualProperties* visual_properties,
     bool* needs_ack) {
+  // This is only called while the RenderWidgetHost is attached to a delegate
+  // still.
+  DCHECK(delegate_);
+
   *visual_properties = VisualProperties();
 
   GetScreenInfo(&visual_properties->screen_info);
 
-  if (!delegate_) {
-    visual_properties->display_mode = blink::kWebDisplayModeBrowser;
-  } else {
-    visual_properties->is_fullscreen_granted =
-        delegate_->IsFullscreenForCurrentTab();
-    visual_properties->display_mode = delegate_->GetDisplayMode(this);
-    visual_properties->zoom_level = delegate_->GetPendingPageZoomLevel();
+  visual_properties->is_fullscreen_granted =
+      delegate_->IsFullscreenForCurrentTab();
+  visual_properties->display_mode = delegate_->GetDisplayMode(this);
+  visual_properties->zoom_level = delegate_->GetPendingPageZoomLevel();
 
-    RenderViewHostDelegateView* rvh_delegate_view =
-        delegate_->GetDelegateView();
-    DCHECK(rvh_delegate_view);
+  RenderViewHostDelegateView* rvh_delegate_view = delegate_->GetDelegateView();
+  DCHECK(rvh_delegate_view);
 
-    visual_properties->browser_controls_shrink_blink_size =
-        rvh_delegate_view->DoBrowserControlsShrinkRendererSize();
+  visual_properties->browser_controls_shrink_blink_size =
+      rvh_delegate_view->DoBrowserControlsShrinkRendererSize();
 
-    float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
-    float bottom_controls_height = rvh_delegate_view->GetBottomControlsHeight();
-    float browser_controls_dsf_multiplier = 1.f;
-    // The top and bottom control sizes are physical pixels but the IPC wants
-    // DIPs *when not using page zoom for DSF* because blink layout is working
-    // in DIPs then.
-    if (!IsUseZoomForDSFEnabled()) {
-      browser_controls_dsf_multiplier =
-          visual_properties->screen_info.device_scale_factor;
-    }
-    visual_properties->top_controls_height =
-        top_controls_height / browser_controls_dsf_multiplier;
-    visual_properties->bottom_controls_height =
-        bottom_controls_height / browser_controls_dsf_multiplier;
+  float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
+  float bottom_controls_height = rvh_delegate_view->GetBottomControlsHeight();
+  float browser_controls_dsf_multiplier = 1.f;
+  // The top and bottom control sizes are physical pixels but the IPC wants
+  // DIPs *when not using page zoom for DSF* because blink layout is working
+  // in DIPs then.
+  if (!IsUseZoomForDSFEnabled()) {
+    browser_controls_dsf_multiplier =
+        visual_properties->screen_info.device_scale_factor;
   }
+  visual_properties->top_controls_height =
+      top_controls_height / browser_controls_dsf_multiplier;
+  visual_properties->bottom_controls_height =
+      bottom_controls_height / browser_controls_dsf_multiplier;
 
   visual_properties->auto_resize_enabled = auto_resize_enabled_;
   visual_properties->min_size_for_auto_resize = min_size_for_auto_resize_;
@@ -2168,6 +2167,8 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
   g_routing_id_widget_map.Get().erase(
       RenderWidgetHostID(process_->GetID(), routing_id_));
 
+  // The |delegate_| may have been destroyed (or is in the process of being
+  // destroyed) and detached first.
   if (delegate_)
     delegate_->RenderWidgetDeleted(this);
 
