@@ -4,26 +4,16 @@
 <head>
   <meta charset="utf-8">
   <title>$i18n{title}</title>
+  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <style>
     html {
-      --toolbar-height: 56px;
-      background: rgb(248, 249, 250);
+      background: var(--md-background-color);
       /* Remove 300ms delay for 'click' event, when using touch interface. */
       touch-action: manipulation;
     }
 
-    html[dark] {
-      background: rgb(32, 33, 36);  /* --google-grey-900 */
-    }
-
-    html[dark].loading {
-      border-top: 1px solid rgb(95, 99, 104);  /* --google-grey-refresh-700 */
-      margin-top: var(--toolbar-height);
-    }
-
-    html:not([dark]).loading {
-      /* --google-blue-700 disguised. Replaced when downloads-toolbar loads. */
-      border-top: var(--toolbar-height) solid rgb(51, 103, 214);
+    html.loading {
+      border-top: 56px solid var(--md-toolbar-color);
     }
 
     html:not(.loading),
@@ -47,7 +37,6 @@
   <command id="clear-all-command" shortcut="Alt|c">
   <command id="undo-command" shortcut="Ctrl|z">
 </if>
-  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/polymer.html">

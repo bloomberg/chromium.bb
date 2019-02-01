@@ -7,51 +7,41 @@
 <if expr="not optimize_webui">
   <base href="chrome://extensions">
 </if>
+  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <style>
     html {
-      /* All colors are inlined as the equivalent variables live in stylesheets,
-       * which can slow down the shell by being pasted or loaded externally. */
-      --dev-mode-toolbar-height: 52px;
-      --toolbar-light-color: rgb(51, 103, 214); /* --google-blue-700 */
-      --toolbar-height: 56px;
-
-      /* --md-background-color in disguise. */
-      background-color: rgb(248, 249, 250);
-
+      background: var(--md-background-color);
       /* Remove 300ms delay for 'click' event, when using touch interface. */
       touch-action: manipulation;
     }
 
-    html[dark] {
-      background-color: rgb(32, 33, 36);  /* --google-grey-900 */
-    }
-
-    html:not([dark]).loading {
-      /* Replaced when manager.html loads. */
-      border-top: var(--toolbar-height) solid var(--toolbar-light-color);
-    }
-
-    html[dark].loading {
-      border-top: 1px solid rgb(95, 99, 104);  /* --google-grey-refresh-700 */
-      margin-top: var(--toolbar-height);
-    }
-
-    /* Mimics the developer mode toolbar until the real one loads. */
-    html[dark].loading.in-dev-mode::before {
-      background-color: rgb(60, 64, 67);  /* --google-grey-800 */
+    html.loading::before,
+    html.loading body::before {
+      box-sizing: border-box;
       content: '';
       display: block;
-      height: var(--dev-mode-toolbar-height);
     }
 
-    /* Note: .in-dev-mode is applied by i18n{loadTimeClasses}. */
-    html:not([dark]).loading.in-dev-mode {
-      border-image: linear-gradient(to bottom,
-          var(--toolbar-light-color) var(--toolbar-height),
-          #fff var(--toolbar-height),
-          #fff 107px, #e0e0e0 /* --google-grey-300 */ 107px) 108;
-      border-top: calc(var(--toolbar-height) + var(--dev-mode-toolbar-height))
-          solid;
+    html.loading::before {
+      background: var(--md-toolbar-color);
+      height: 56px;
+    }
+
+    /* Mimics the developer mode toolbar until the real one loads. Note:
+     * .in-dev-mode is applied by i18n{loadTimeClasses}. */
+    html.loading.in-dev-mode body::before {
+      background-color: #fff;
+      border-bottom: 1px solid #e0e0e0;  /* --google-grey-300 */
+      height: 52px;
+    }
+
+    html[dark].loading.in-dev-mode body::before {
+      background: none;
+    }
+
+    html[dark].loading.in-dev-mode::before,
+    html[dark].loading.in-dev-mode body::before {
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
     }
 
     html,
@@ -66,7 +56,6 @@
 </head>
 <body>
   <extensions-manager></extensions-manager>
-  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <link rel="import" href="chrome://extensions/manager.html">
   <link rel="import" href="chrome://resources/html/dark_mode.html">

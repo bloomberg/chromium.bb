@@ -7,8 +7,6 @@
   <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <style>
     html {
-      /* Reconcile with cr_toolbar.html and shared_vars_css.html */
-      --toolbar-height: 56px;
       /* Remove 300ms delay for 'click' event, when using touch interface. */
       touch-action: manipulation;
     }
@@ -21,13 +19,8 @@
       overflow: hidden;
     }
 
-    html:not([dark]).loading {
-      border-top: var(--toolbar-height) solid var(--md-toolbar-color);
-    }
-
-    html[dark].loading {
-      border-top: 1px solid var(--md-toolbar-border-color);
-      margin-top: var(--toolbar-height);
+    html.loading {
+      border-top: 56px solid var(--md-toolbar-color);
     }
   </style>
 </head>
