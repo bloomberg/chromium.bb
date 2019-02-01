@@ -172,7 +172,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
   }
 
   DCHECK(buffer->AreFdsValid());
-  DCHECK_EQ(buffer->GetFdCount(), 1U);
+  DCHECK_EQ(buffer->GetNumPlanes(), 1U);
 
   base::ScopedFD vk_image_fd(dup(buffer->GetPlaneFd(0)));
   DCHECK(vk_image_fd.is_valid());

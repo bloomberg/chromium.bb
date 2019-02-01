@@ -80,10 +80,6 @@ bool GbmPixmapWayland::AreDmaBufFdsValid() const {
   return gbm_bo_->AreFdsValid();
 }
 
-size_t GbmPixmapWayland::GetDmaBufFdCount() const {
-  return gbm_bo_->GetFdCount();
-}
-
 int GbmPixmapWayland::GetDmaBufFd(size_t plane) const {
   return gbm_bo_->GetPlaneFd(plane);
 }
@@ -134,17 +130,19 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
 
   // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use are
   // supported by gbm.
-  for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
-    // Some formats (e.g: YVU_420) might have less than one fd per plane.
-    if (i < GetDmaBufFdCount()) {
-      base::ScopedFD scoped_fd(HANDLE_EINTR(dup(GetDmaBufFd(i))));
-      if (!scoped_fd.is_valid()) {
-        PLOG(ERROR) << "dup";
-        return gfx::NativePixmapHandle();
-      }
-      handle.fds.emplace_back(
-          base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
+  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  std::vector<base::ScopedFD> scoped_fds(num_planes);
+  for (size_t i = 0; i < num_planes; ++i) {
+    scoped_fds[i] = base::ScopedFD(HANDLE_EINTR(dup(GetDmaBufFd(i))));
+    if (!scoped_fds[i].is_valid()) {
+      PLOG(ERROR) << "dup";
+      return gfx::NativePixmapHandle();
     }
+  }
+
+  for (size_t i = 0; i < num_planes; ++i) {
+    handle.fds.emplace_back(
+        base::FileDescriptor(scoped_fds[i].release(), true /* auto_close */));
     handle.planes.emplace_back(GetDmaBufPitch(i), GetDmaBufOffset(i),
                                gbm_bo_->GetPlaneSize(i), GetDmaBufModifier(i));
   }

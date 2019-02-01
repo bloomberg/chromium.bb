@@ -1010,32 +1010,23 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attrib_extbuf.width = size.width();
   va_attrib_extbuf.height = size.height();
 
-  size_t num_fds = pixmap->GetDmaBufFdCount();
   size_t num_planes =
       gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
-  if (num_fds == 0 || num_fds > num_planes) {
-    LOG(ERROR) << "Invalid number of dmabuf fds: " << num_fds
-               << " , planes: " << num_planes;
-    return nullptr;
-  }
-
+  std::vector<uintptr_t> fds(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
     va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);
-    DVLOG(4) << "plane " << i << ": pitch: " << va_attrib_extbuf.pitches[i]
-             << " offset: " << va_attrib_extbuf.offsets[i];
-  }
-  va_attrib_extbuf.num_planes = num_planes;
-
-  std::vector<unsigned long> fds(num_fds);
-  for (size_t i = 0; i < num_fds; ++i) {
     int dmabuf_fd = pixmap->GetDmaBufFd(i);
     if (dmabuf_fd < 0) {
       LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
       return nullptr;
     }
-    fds[i] = dmabuf_fd;
+    fds[i] = base::checked_cast<uintptr_t>(dmabuf_fd);
+    DVLOG(4) << "plane " << i << ": pitch: " << va_attrib_extbuf.pitches[i]
+             << " offset: " << va_attrib_extbuf.offsets[i];
   }
+
+  va_attrib_extbuf.num_planes = num_planes;
   va_attrib_extbuf.buffers = fds.data();
   va_attrib_extbuf.num_buffers = fds.size();
 

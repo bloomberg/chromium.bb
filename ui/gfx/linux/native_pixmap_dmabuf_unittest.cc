@@ -5,15 +5,19 @@
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace gfx {
 
-class NativePixmapDmabufTest : public testing::Test {
+class NativePixmapDmaBufTest
+    : public ::testing::TestWithParam<gfx::BufferFormat> {
  protected:
-  gfx::NativePixmapHandle CreateMockNativePixmapHandle(gfx::Size image_size) {
+  gfx::NativePixmapHandle CreateMockNativePixmapHandle(
+      gfx::Size image_size,
+      const gfx::BufferFormat format) {
     gfx::NativePixmapHandle handle;
-
-    for (int i = 0; i < 4; ++i) {
+    const int num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+    for (int i = 0; i < num_planes; ++i) {
       // These values are arbitrarily chosen to be different from each other.
       const int stride = (i + 1) * image_size.width();
       const int offset = i * image_size.width() * image_size.height();
@@ -30,13 +34,18 @@ class NativePixmapDmabufTest : public testing::Test {
   }
 };
 
+INSTANTIATE_TEST_CASE_P(ConvertTest,
+                        NativePixmapDmaBufTest,
+                        ::testing::Values(gfx::BufferFormat::RGBX_8888,
+                                          gfx::BufferFormat::YVU_420));
+
 // Verifies NativePixmapDmaBuf conversion from and to NativePixmapHandle.
-TEST_F(NativePixmapDmabufTest, Convert) {
+TEST_P(NativePixmapDmaBufTest, Convert) {
+  const gfx::BufferFormat format = GetParam();
   const gfx::Size image_size(128, 64);
-  const gfx::BufferFormat format = gfx::BufferFormat::RGBX_8888;
 
   gfx::NativePixmapHandle origin_handle =
-      CreateMockNativePixmapHandle(image_size);
+      CreateMockNativePixmapHandle(image_size, format);
 
   // NativePixmapHandle to NativePixmapDmabuf
   scoped_refptr<gfx::NativePixmap> native_pixmap_dmabuf(
@@ -45,7 +54,9 @@ TEST_F(NativePixmapDmabufTest, Convert) {
 
   // NativePixmap to NativePixmapHandle.
   gfx::NativePixmapHandle handle;
-  for (size_t i = 0; i < native_pixmap_dmabuf->GetDmaBufFdCount(); ++i) {
+  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(
+      native_pixmap_dmabuf->GetBufferFormat());
+  for (size_t i = 0; i < num_planes; ++i) {
     handle.fds.emplace_back(base::FileDescriptor(
         native_pixmap_dmabuf->GetDmaBufFd(i), true /* auto_close */));
 
