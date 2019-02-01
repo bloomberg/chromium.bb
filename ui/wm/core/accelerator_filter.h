@@ -28,6 +28,9 @@ class WM_CORE_EXPORT AcceleratorFilter : public ui::EventHandler {
                     ui::AcceleratorHistory* accelerator_history);
   ~AcceleratorFilter() override;
 
+  // If the return value is true, |event| should be filtered out.
+  static bool ShouldFilter(ui::KeyEvent* event);
+
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;

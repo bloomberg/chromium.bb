@@ -940,7 +940,7 @@ TEST_F(AcceleratorControllerTest, PreferredReservedAccelerators) {
 
 namespace {
 
-// Tests the four combinations of the TOGGLE_CAPS_LOCK accelerator.
+// Tests the TOGGLE_CAPS_LOCK accelerator.
 TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   ImeController* controller = Shell::Get()->ime_controller();
 
@@ -1038,6 +1038,20 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
     EXPECT_TRUE(controller->IsCapsLockEnabled());
     controller->UpdateCapsLockState(false);
   }
+
+  // 7. Toggle CapsLock shortcut should still work after fake events generated.
+  // (https://crbug.com/918317).
+  generator->PressKey(ui::VKEY_PROCESSKEY, ui::EF_IME_FABRICATED_KEY);
+  generator->ReleaseKey(ui::VKEY_UNKNOWN, ui::EF_IME_FABRICATED_KEY);
+
+  // Press Search, Press Alt, Release Search, Release Alt. CapsLock should be
+  // triggered.
+  EXPECT_FALSE(ProcessInController(press_search_then_alt));
+  EXPECT_TRUE(ProcessInController(release_search_before_alt));
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(6, client.set_caps_lock_count_);
+  EXPECT_TRUE(controller->IsCapsLockEnabled());
+  controller->UpdateCapsLockState(false);
 }
 
 class PreferredReservedAcceleratorsTest : public AshTestBase {
