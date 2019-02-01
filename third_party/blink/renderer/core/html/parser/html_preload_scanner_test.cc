@@ -1051,7 +1051,12 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload) {
       {"http://example.test",
        "<link rel=preload href=bla as=font type='font/bla'>", nullptr,
        "http://example.test/", ResourceType::kFont, 0},
-      {"http://example.test", "<link rel=preload href=bla as=video>", "bla",
+      // Until the preload cache is defined in terms of range requests and media
+      // fetches we can't reliably preload audio/video content and expect it to
+      // be served from the cache correctly. Until
+      // https://github.com/w3c/preload/issues/97 is resolved and implemented we
+      // need to disable these preloads.
+      {"http://example.test", "<link rel=preload href=bla as=video>", nullptr,
        "http://example.test/", ResourceType::kVideo, 0},
       {"http://example.test", "<link rel=preload href=bla as=track>", "bla",
        "http://example.test/", ResourceType::kTextTrack, 0},
