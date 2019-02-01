@@ -73,9 +73,9 @@ class CORE_EXPORT FindBuffer {
     unsigned CountForTesting();
 
    private:
-    bool empty_result_ = false;
     String search_text_;
     TextSearcherICU text_searcher_;
+    bool empty_result_ = false;
   };
 
   // Finds all the match for |search_text| in |buffer_|.

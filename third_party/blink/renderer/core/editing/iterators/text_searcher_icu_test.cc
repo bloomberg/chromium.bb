@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -23,7 +24,7 @@ String MakeUTF16(const char* str) {
 TEST(TextSearcherICUTest, FindSubstring) {
   TextSearcherICU searcher;
   const String& pattern = MakeUTF16("substring");
-  searcher.SetPattern(pattern, true);
+  searcher.SetPattern(pattern, 0);
 
   const String& text = MakeUTF16("Long text with substring content.");
   searcher.SetText(text.Characters16(), text.length());
@@ -44,7 +45,7 @@ TEST(TextSearcherICUTest, FindSubstring) {
 TEST(TextSearcherICUTest, FindIgnoreCaseSubstring) {
   TextSearcherICU searcher;
   const String& pattern = MakeUTF16("substring");
-  searcher.SetPattern(pattern, false);
+  searcher.SetPattern(pattern, kCaseInsensitive);
 
   const String& text = MakeUTF16("Long text with SubStrinG content.");
   searcher.SetText(text.Characters16(), text.length());
@@ -57,7 +58,7 @@ TEST(TextSearcherICUTest, FindIgnoreCaseSubstring) {
   EXPECT_EQ(pattern,
             text.Substring(result.start, result.length).DeprecatedLower());
 
-  searcher.SetPattern(pattern, true);
+  searcher.SetPattern(pattern, 0);
   searcher.SetOffset(0u);
   EXPECT_FALSE(searcher.NextMatchResult(result));
   EXPECT_EQ(0u, result.start);
@@ -67,7 +68,7 @@ TEST(TextSearcherICUTest, FindIgnoreCaseSubstring) {
 TEST(TextSearcherICUTest, FindSubstringWithOffset) {
   TextSearcherICU searcher;
   const String& pattern = MakeUTF16("substring");
-  searcher.SetPattern(pattern, true);
+  searcher.SetPattern(pattern, 0);
 
   const String& text =
       MakeUTF16("Long text with substring content. Second substring");

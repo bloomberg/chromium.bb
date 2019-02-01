@@ -38,7 +38,7 @@ FindBuffer::Results::Results(const Vector<UChar>& buffer,
   // We need to own the |search_text| because |text_searcher_| only has a
   // StringView (doesn't own the search text).
   search_text_ = search_text;
-  text_searcher_.SetPattern(search_text_, !(options & kCaseInsensitive));
+  text_searcher_.SetPattern(search_text_, options);
   text_searcher_.SetText(buffer.data(), buffer.size());
   text_searcher_.SetOffset(0);
 }
