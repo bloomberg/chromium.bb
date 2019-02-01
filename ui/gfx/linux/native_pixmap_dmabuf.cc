@@ -12,6 +12,7 @@ NativePixmapDmaBuf::NativePixmapDmaBuf(const gfx::Size& size,
                                        gfx::BufferFormat format,
                                        const gfx::NativePixmapHandle& handle)
     : size_(size), format_(format), planes_(handle.planes) {
+  DCHECK_EQ(handle.planes.size(), handle.fds.size());
   for (auto& fd : handle.fds) {
     fds_.emplace_back(fd.fd);
   }
@@ -28,10 +29,6 @@ bool NativePixmapDmaBuf::AreDmaBufFdsValid() const {
       return false;
   }
   return true;
-}
-
-size_t NativePixmapDmaBuf::GetDmaBufFdCount() const {
-  return fds_.size();
 }
 
 int NativePixmapDmaBuf::GetDmaBufFd(size_t plane) const {

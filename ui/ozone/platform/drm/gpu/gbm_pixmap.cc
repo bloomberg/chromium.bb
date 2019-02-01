@@ -30,10 +30,6 @@ bool GbmPixmap::AreDmaBufFdsValid() const {
   return buffer_->AreFdsValid();
 }
 
-size_t GbmPixmap::GetDmaBufFdCount() const {
-  return buffer_->GetFdCount();
-}
-
 int GbmPixmap::GetDmaBufFd(size_t plane) const {
   return buffer_->GetPlaneFd(plane);
 }

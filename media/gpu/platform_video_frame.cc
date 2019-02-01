@@ -39,34 +39,23 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
 
   const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<size_t> buffer_sizes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = pixmap->GetDmaBufPitch(i);
     planes[i].offset = pixmap->GetDmaBufOffset(i);
     planes[i].modifier = pixmap->GetDmaBufModifier(i);
+    buffer_sizes[i] = planes[i].offset +
+                      planes[i].stride * VideoFrame::Rows(i, pixel_format,
+                                                          coded_size.height());
   }
 
-  const size_t num_fds = pixmap->GetDmaBufFdCount();
-  std::vector<size_t> buffer_sizes(num_fds, 0u);
-  // If the number of buffer sizes is less than number of planes, the buffer for
-  // plane #i (i > the number of fds) is the last buffer.
-  for (size_t i = 0; i < num_planes; ++i) {
-    size_t buffer_size =
-        planes[i].offset +
-        planes[i].stride *
-            VideoFrame::Rows(i, pixel_format, coded_size.height());
-    if (i < num_fds) {
-      buffer_sizes[i] = buffer_size;
-    } else {
-      buffer_sizes.back() = std::max(buffer_sizes.back(), buffer_size);
-    }
-  }
   auto layout = VideoFrameLayout::CreateWithPlanes(
       pixel_format, coded_size, std::move(planes), std::move(buffer_sizes));
   if (!layout)
     return nullptr;
 
   std::vector<base::ScopedFD> dmabuf_fds;
-  for (size_t i = 0; i < num_fds; ++i) {
+  for (size_t i = 0; i < num_planes; ++i) {
     int duped_fd = HANDLE_EINTR(dup(pixmap->GetDmaBufFd(i)));
     if (duped_fd == -1) {
       DLOG(ERROR) << "Failed duplicating dmabuf fd";

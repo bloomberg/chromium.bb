@@ -29,7 +29,6 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
 
   // NativePixmap:
   bool AreDmaBufFdsValid() const override;
-  size_t GetDmaBufFdCount() const override;
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;

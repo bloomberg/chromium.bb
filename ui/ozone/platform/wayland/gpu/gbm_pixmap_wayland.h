@@ -31,7 +31,6 @@ class GbmPixmapWayland : public gfx::NativePixmap {
 
   // gfx::NativePixmap overrides:
   bool AreDmaBufFdsValid() const override;
-  size_t GetDmaBufFdCount() const override;
   int GetDmaBufFd(size_t plane) const override;
   int GetDmaBufPitch(size_t plane) const override;
   int GetDmaBufOffset(size_t plane) const override;

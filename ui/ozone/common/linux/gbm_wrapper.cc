@@ -50,7 +50,6 @@ class Buffer final : public ui::GbmBuffer {
   uint32_t GetFormat() const override { return format_; }
   uint64_t GetFormatModifier() const override { return format_modifier_; }
   uint32_t GetFlags() const override { return flags_; }
-  size_t GetFdCount() const override { return fds_.size(); }
   // TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
   // as the size would be queried directly from the underlying bo.
   gfx::Size GetSize() const override { return size_; }

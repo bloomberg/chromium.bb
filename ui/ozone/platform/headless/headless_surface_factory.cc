@@ -80,7 +80,6 @@ class TestPixmap : public gfx::NativePixmap {
   explicit TestPixmap(gfx::BufferFormat format) : format_(format) {}
 
   bool AreDmaBufFdsValid() const override { return false; }
-  size_t GetDmaBufFdCount() const override { return 0; }
   int GetDmaBufFd(size_t plane) const override { return -1; }
   int GetDmaBufPitch(size_t plane) const override { return 0; }
   int GetDmaBufOffset(size_t plane) const override { return 0; }
