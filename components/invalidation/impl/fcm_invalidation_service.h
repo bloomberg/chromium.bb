@@ -95,6 +95,9 @@ class FCMInvalidationService : public InvalidationService,
     base::Time instance_id_received;
     base::Time service_was_stopped;
     base::Time service_was_started;
+    bool was_already_started_on_login = false;
+    bool was_ready_to_start_on_login = false;
+    std::string active_account_id;
   };
 
   bool IsReadyToStart();
