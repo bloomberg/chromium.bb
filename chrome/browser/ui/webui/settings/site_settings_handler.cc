@@ -1337,15 +1337,14 @@ void SiteSettingsHandler::ObserveSources() {
   if (!profile_->HasOffTheRecordProfile())
     return;
 
+  // At the moment, off the record chooser permissions are not included in the
+  // chooser permissions.
+  // TODO(https://crbug.com/927372): When chooser permissions are included,
+  // attach SiteSettingsHandler as an observer to the chooser contexts.
   auto* map = HostContentSettingsMapFactory::GetForProfile(
       profile_->GetOffTheRecordProfile());
   if (!observer_.IsObserving(map))
     observer_.Add(map);
-
-  auto* usb_context = UsbChooserContextFactory::GetForProfile(
-      profile_->GetOffTheRecordProfile());
-  if (!chooser_observer_.IsObserving(usb_context))
-    chooser_observer_.Add(usb_context);
 }
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
