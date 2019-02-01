@@ -191,9 +191,6 @@ class WebUILoginView : public views::View,
   // WebView for rendering a webpage as a webui login.
   std::unique_ptr<views::WebView> webui_login_;
 
-  // True if the current webview instance (ie, GetWebUI()) has been reused.
-  bool is_reusing_webview_ = false;
-
   // Converts keyboard events on the WebContents to accelerators.
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

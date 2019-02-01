@@ -101,6 +101,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  int ui_update_count() const { return ui_update_count_; }
+
  protected:
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
@@ -149,6 +151,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
       login_screen_controller_observer_;
 
   KioskAppsButton* kiosk_apps_button_ = nullptr;  // Owned by view hierarchy
+
+  // This is used in tests to wait until UI is updated.
+  int ui_update_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfView);
 };

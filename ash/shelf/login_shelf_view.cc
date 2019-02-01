@@ -567,6 +567,7 @@ void LoginShelfView::UpdateUi() {
       child_at(i)->SetVisible(false);
     return;
   }
+  ++ui_update_count_;
   bool show_reboot = Shell::Get()->shutdown_controller()->reboot_on_shutdown();
   mojom::TrayActionState tray_action_state =
       Shell::Get()->tray_action()->GetLockScreenNoteState();

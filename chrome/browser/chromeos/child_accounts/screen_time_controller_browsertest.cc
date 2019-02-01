@@ -110,9 +110,7 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, LockOverride) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
   MockClockForActiveUser();
-  std::unique_ptr<chromeos::ScreenLockerTester> tester =
-      chromeos::ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester().Lock();
 
   // Verify user is able to log in.
   EXPECT_TRUE(IsAuthEnabled());
@@ -142,9 +140,7 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultBedtime) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
   MockClockForActiveUser();
-  std::unique_ptr<chromeos::ScreenLockerTester> tester =
-      chromeos::ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester().Lock();
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
       base::UTF8ToUTF16("GMT"));
@@ -210,9 +206,7 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultDailyLimit) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
   MockClockForActiveUser();
-  std::unique_ptr<chromeos::ScreenLockerTester> tester =
-      chromeos::ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester().Lock();
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
       base::UTF8ToUTF16("GMT"));

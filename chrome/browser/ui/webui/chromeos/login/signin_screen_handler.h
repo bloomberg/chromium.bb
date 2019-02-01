@@ -348,7 +348,6 @@ class SigninScreenHandler
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
   void HandleAccountPickerReady();
-  void HandleWallpaperReady();
   void HandleSignOutUser();
   void HandleOpenInternetDetailDialog();
   void HandleLoginVisible(const std::string& source);

@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
@@ -279,8 +278,6 @@ void ChromeSessionManager::SessionStarted() {
       content::Source<session_manager::SessionManager>(this),
       content::Details<const user_manager::User>(
           user_manager->GetActiveUser()));
-
-  chromeos::WebUIScreenLocker::RequestPreload();
 }
 
 void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,

@@ -17,10 +17,6 @@
         <structure name="IDR_GUEST_TAB_HTML" file="resources\ntp4\guest_tab.html" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="chromeos">
-        <structure name="IDR_LOCK_HTML" file="resources\chromeos\login\lock.html" flattenhtml="true" type="chrome_html" variables="OOBE=lock" expand_variables="true"/>
-        <structure name="IDR_LOCK_JS" file="resources\chromeos\login\lock.js" flattenhtml="true" type="chrome_html" variables="OOBE=lock" expand_variables="true" />
-        <structure name="IDR_MD_LOCK_HTML" file="resources\chromeos\login\md_lock.html" flattenhtml="true" type="chrome_html" variables="OOBE=md_lock" expand_variables="true"/>
-        <structure name="IDR_MD_LOCK_JS" file="resources\chromeos\login\md_lock.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_LOGIN_HTML" file="resources\chromeos\login\login.html" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true"/>
         <structure name="IDR_LOGIN_JS" file="resources\chromeos\login\login.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_MD_LOGIN_HTML" file="resources\chromeos\login\md_login.html" flattenhtml="true" type="chrome_html" variables="OOBE=md_login" expand_variables="true"/>
@@ -43,8 +39,6 @@
         <structure name="IDR_CHROMEOS_DISCOVER_MANIFEST" file="resources\chromeos\login\discover\manifest.json" flattenhtml="true" type="chrome_html"/>
         <structure name="IDR_CUSTOM_ELEMENTS_OOBE_HTML" file="resources\chromeos\login\custom_elements_oobe.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_OOBE_JS" file="resources\chromeos\login\custom_elements_oobe.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_LOCK_HTML" file="resources\chromeos\login\custom_elements_lock.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_LOCK_JS" file="resources\chromeos\login\custom_elements_lock.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_USER_POD_HTML" file="resources\chromeos\login\custom_elements_user_pod.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_HTML" file="resources\chromeos\login\custom_elements_login.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\custom_elements_login.js" flattenhtml="true" type="chrome_html" />

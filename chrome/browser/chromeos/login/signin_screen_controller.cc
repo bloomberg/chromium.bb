@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -55,8 +54,6 @@ void SignInScreenController::Init(const user_manager::UserList& users) {
 void SignInScreenController::OnSigninScreenReady() {
   gaia_screen_->MaybePreloadAuthExtension();
   user_selection_screen_->InitEasyUnlock();
-  if (ScreenLocker::default_screen_locker())
-    ScreenLocker::default_screen_locker()->delegate()->OnLockWebUIReady();
 }
 
 void SignInScreenController::RemoveUser(const AccountId& account_id) {

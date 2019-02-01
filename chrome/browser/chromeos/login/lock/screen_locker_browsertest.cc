@@ -117,19 +117,19 @@ class ScreenLockerTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBadThenGoodPassword) {
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester tester;
+  tester.Lock();
 
-  tester->SetUnlockPassword(user_manager::StubAccountId(), "pass");
+  tester.SetUnlockPassword(user_manager::StubAccountId(), "pass");
 
   // Submit a bad password.
-  tester->UnlockWithPassword(user_manager::StubAccountId(), "fail");
-  EXPECT_TRUE(tester->IsLocked());
+  tester.UnlockWithPassword(user_manager::StubAccountId(), "fail");
+  EXPECT_TRUE(tester.IsLocked());
 
   // Submit the correct password. Successful authentication clears the lock
   // screen and tells the SessionManager to announce this over DBus.
-  tester->UnlockWithPassword(user_manager::StubAccountId(), "pass");
-  EXPECT_FALSE(tester->IsLocked());
+  tester.UnlockWithPassword(user_manager::StubAccountId(), "pass");
+  EXPECT_FALSE(tester.IsLocked());
   EXPECT_EQ(1, session_manager_client()->notify_lock_screen_shown_call_count());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   // does not have all the pixels (e.g. the shelf is auto hidden instead of
   // hidden), locking the screen should not exit fullscreen. The shelf is
   // auto hidden when in immersive fullscreen.
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
+  ScreenLockerTester tester;
   BrowserWindow* browser_window = browser()->window();
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(browser_window->GetNativeWindow());
@@ -169,19 +169,19 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     fullscreen_waiter.WaitForState(true);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
-    EXPECT_FALSE(tester->IsLocked());
+    EXPECT_FALSE(tester.IsLocked());
   }
   {
     FullscreenWaiter fullscreen_waiter(browser());
-    tester->Lock();
+    tester.Lock();
     fullscreen_waiter.WaitForState(true);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_FALSE(window_state->GetHideShelfWhenFullscreen());
-    EXPECT_TRUE(tester->IsLocked());
+    EXPECT_TRUE(tester.IsLocked());
   }
-  tester->SetUnlockPassword(user_manager::StubAccountId(), "pass");
-  tester->UnlockWithPassword(user_manager::StubAccountId(), "pass");
-  EXPECT_FALSE(tester->IsLocked());
+  tester.SetUnlockPassword(user_manager::StubAccountId(), "pass");
+  tester.UnlockWithPassword(user_manager::StubAccountId(), "pass");
+  EXPECT_FALSE(tester.IsLocked());
   {
     FullscreenWaiter fullscreen_waiter(browser());
     browser()
@@ -210,19 +210,19 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
     fullscreen_waiter.WaitForState(true);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_TRUE(window_state->GetHideShelfWhenFullscreen());
-    EXPECT_FALSE(tester->IsLocked());
+    EXPECT_FALSE(tester.IsLocked());
   }
   {
     FullscreenWaiter fullscreen_waiter(browser());
-    tester->Lock();
+    tester.Lock();
     fullscreen_waiter.WaitForState(false);
     EXPECT_FALSE(browser_window->IsFullscreen());
-    EXPECT_TRUE(tester->IsLocked());
+    EXPECT_TRUE(tester.IsLocked());
   }
 
-  tester->SetUnlockPassword(user_manager::StubAccountId(), "pass");
-  tester->UnlockWithPassword(user_manager::StubAccountId(), "pass");
-  EXPECT_FALSE(tester->IsLocked());
+  tester.SetUnlockPassword(user_manager::StubAccountId(), "pass");
+  tester.UnlockWithPassword(user_manager::StubAccountId(), "pass");
+  EXPECT_FALSE(tester.IsLocked());
 
   EXPECT_EQ(2, session_manager_client()->notify_lock_screen_shown_call_count());
   EXPECT_EQ(
@@ -230,31 +230,31 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester tester;
+  tester.Lock();
 
   // Calling Show again simply send LockCompleted signal.
   ScreenLocker::Show();
-  EXPECT_TRUE(tester->IsLocked());
+  EXPECT_TRUE(tester.IsLocked());
   EXPECT_EQ(2, session_manager_client()->notify_lock_screen_shown_call_count());
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(tester->IsLocked());
+  EXPECT_FALSE(tester.IsLocked());
   EXPECT_EQ(
       1, session_manager_client()->notify_lock_screen_dismissed_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
   // Show lock screen and wait until it is shown.
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester tester;
+  tester.Lock();
 
   // Inject fake authentication credentials.
   const std::string kPassword = "pass";
-  tester->SetUnlockPassword(user_manager::StubAccountId(), kPassword);
-  EXPECT_TRUE(tester->IsLocked());
+  tester.SetUnlockPassword(user_manager::StubAccountId(), kPassword);
+  EXPECT_TRUE(tester.IsLocked());
 
   // Disable authentication for user.
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
@@ -262,18 +262,18 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
       base::Time::Now() + base::TimeDelta::FromHours(1));
 
   // Try to authenticate with password.
-  tester->UnlockWithPassword(user_manager::StubAccountId(), kPassword);
+  tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(tester->IsLocked());
+  EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
       user_manager::StubAccountId(), true /*is_enabled*/, base::nullopt);
 
   // Try to authenticate with password.
-  tester->UnlockWithPassword(user_manager::StubAccountId(), kPassword);
+  tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(tester->IsLocked());
+  EXPECT_FALSE(tester.IsLocked());
   EXPECT_EQ(1, session_manager_client()->notify_lock_screen_shown_call_count());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
@@ -285,12 +285,12 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
   EnrollFingerprint();
 
   // Show lock screen and wait until it is shown.
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  tester->Lock();
+  ScreenLockerTester tester;
+  tester.Lock();
 
   const std::string kPassword = "pass";
-  tester->SetUnlockPassword(user_manager::StubAccountId(), kPassword);
-  EXPECT_TRUE(tester->IsLocked());
+  tester.SetUnlockPassword(user_manager::StubAccountId(), kPassword);
+  EXPECT_TRUE(tester.IsLocked());
 
   // Disable authentication for user.
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();
-  EXPECT_TRUE(tester->IsLocked());
+  EXPECT_TRUE(tester.IsLocked());
 
   // Re-enable authentication for user.
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();
-  EXPECT_FALSE(tester->IsLocked());
+  EXPECT_FALSE(tester.IsLocked());
   EXPECT_EQ(1, session_manager_client()->notify_lock_screen_shown_call_count());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());

@@ -23,9 +23,12 @@ class LoginScreenTestApi : public mojom::LoginScreenTestApi {
   // mojom::LoginScreen:
   void IsLockShown(IsLockShownCallback callback) override;
   void IsLoginShelfShown(IsLoginShelfShownCallback callback) override;
+  void IsRestartButtonShown(IsRestartButtonShownCallback callback) override;
+  void IsShutdownButtonShown(IsShutdownButtonShownCallback callback) override;
   void SubmitPassword(const AccountId& account_id,
                       const std::string& password,
                       SubmitPasswordCallback callback) override;
+  void GetUiUpdateCount(GetUiUpdateCountCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginScreenTestApi);

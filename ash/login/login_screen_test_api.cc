@@ -21,6 +21,29 @@
 
 namespace ash {
 
+namespace {
+
+LoginShelfView* GetLoginShelfView() {
+  if (!Shell::HasInstance())
+    return nullptr;
+
+  return Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view();
+}
+
+bool IsLoginShelfViewButtonShown(int button_view_id) {
+  LoginShelfView* shelf_view = GetLoginShelfView();
+  if (!shelf_view)
+    return false;
+
+  views::View* button_view = shelf_view->GetViewByID(button_view_id);
+
+  return button_view && button_view->visible();
+}
+
+}  // anonymous namespace
+
 // static
 void LoginScreenTestApi::BindRequest(mojom::LoginScreenTestApiRequest request) {
   mojo::MakeStrongBinding(std::make_unique<LoginScreenTestApi>(),
@@ -38,11 +61,20 @@ void LoginScreenTestApi::IsLockShown(IsLockShownCallback callback) {
 }
 
 void LoginScreenTestApi::IsLoginShelfShown(IsLoginShelfShownCallback callback) {
-  std::move(callback).Run(Shell::HasInstance() &&
-                          Shelf::ForWindow(Shell::GetPrimaryRootWindow())
-                              ->shelf_widget()
-                              ->login_shelf_view()
-                              ->visible());
+  LoginShelfView* view = GetLoginShelfView();
+  std::move(callback).Run(view && view->visible());
+}
+
+void LoginScreenTestApi::IsRestartButtonShown(
+    IsRestartButtonShownCallback callback) {
+  std::move(callback).Run(
+      IsLoginShelfViewButtonShown(LoginShelfView::kRestart));
+}
+
+void LoginScreenTestApi::IsShutdownButtonShown(
+    IsShutdownButtonShownCallback callback) {
+  std::move(callback).Run(
+      IsLoginShelfViewButtonShown(LoginShelfView::kShutdown));
 }
 
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
@@ -68,6 +100,12 @@ void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
   password_test.SubmitPassword(password);
 
   std::move(callback).Run();
+}
+
+void LoginScreenTestApi::GetUiUpdateCount(GetUiUpdateCountCallback callback) {
+  LoginShelfView* view = GetLoginShelfView();
+
+  std::move(callback).Run(view ? view->ui_update_count() : 0);
 }
 
 }  // namespace ash

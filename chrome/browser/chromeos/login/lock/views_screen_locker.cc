@@ -136,10 +136,6 @@ void ViewsScreenLocker::OnLockScreenReady() {
   OnAllowedInputMethodsChanged();
 }
 
-void ViewsScreenLocker::SetPasswordInputEnabled(bool enabled) {
-  NOTIMPLEMENTED();
-}
-
 void ViewsScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {
@@ -151,18 +147,6 @@ void ViewsScreenLocker::ShowErrorMessage(
 
 void ViewsScreenLocker::ClearErrors() {
   LoginScreenClient::Get()->login_screen()->ClearErrors();
-}
-
-void ViewsScreenLocker::OnLockWebUIReady() {
-  NOTIMPLEMENTED();
-}
-
-void ViewsScreenLocker::OnLockBackgroundDisplayed() {
-  NOTIMPLEMENTED();
-}
-
-void ViewsScreenLocker::OnHeaderBarVisible() {
-  NOTIMPLEMENTED();
 }
 
 void ViewsScreenLocker::OnAshLockAnimationFinished() {
@@ -180,10 +164,6 @@ void ViewsScreenLocker::NotifyFingerprintAuthResult(const AccountId& account_id,
                                                     bool success) {
   LoginScreenClient::Get()->login_screen()->NotifyFingerprintAuthResult(
       account_id, success);
-}
-
-content::WebContents* ViewsScreenLocker::GetWebContents() {
-  return nullptr;
 }
 
 void ViewsScreenLocker::HandleAuthenticateUserWithPasswordOrPin(
