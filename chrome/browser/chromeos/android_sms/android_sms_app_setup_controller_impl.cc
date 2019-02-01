@@ -32,6 +32,7 @@ namespace android_sms {
 namespace {
 
 const char kDefaultToPersistCookieName[] = "default_to_persist";
+const char kMigrationCookieName[] = "cros_migrated_to";
 const char kDefaultToPersistCookieValue[] = "true";
 
 }  // namespace
@@ -88,7 +89,8 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
               false /* http_only */, net::CookieSameSite::STRICT_MODE,
               net::COOKIE_PRIORITY_DEFAULT),
           true /* secure_source */, false /* modify_http_only */,
-          base::BindOnce(&AndroidSmsAppSetupControllerImpl::OnSetCookieResult,
+          base::BindOnce(&AndroidSmsAppSetupControllerImpl::
+                             OnSetRememberDeviceByDefaultCookieResult,
                          weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
                          std::move(callback)));
 }
@@ -111,14 +113,17 @@ void AndroidSmsAppSetupControllerImpl::DeleteRememberDeviceByDefaultCookie(
   pwa_delegate_->GetCookieManager(app_url, profile_)
       ->DeleteCookies(
           std::move(filter),
-          base::BindOnce(
-              &AndroidSmsAppSetupControllerImpl::OnDeleteCookiesResult,
-              weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));
+          base::BindOnce(&AndroidSmsAppSetupControllerImpl::
+                             OnDeleteRememberDeviceByDefaultCookieResult,
+                         weak_ptr_factory_.GetWeakPtr(), app_url,
+                         std::move(callback)));
 }
 
-void AndroidSmsAppSetupControllerImpl::RemoveApp(const GURL& app_url,
-                                                 const GURL& install_url,
-                                                 SuccessCallback callback) {
+void AndroidSmsAppSetupControllerImpl::RemoveApp(
+    const GURL& app_url,
+    const GURL& install_url,
+    const GURL& migrated_to_app_url,
+    SuccessCallback callback) {
   // If there is no app installed at |url|, there is nothing more to do.
   if (!pwa_delegate_->GetPwaForUrl(install_url, profile_)) {
     PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::RemoveApp(): No app "
@@ -142,24 +147,45 @@ void AndroidSmsAppSetupControllerImpl::RemoveApp(const GURL& app_url,
       std::vector<GURL>{install_url},
       base::BindRepeating(
           &AndroidSmsAppSetupControllerImpl::OnAppUninstallResult,
-          weak_ptr_factory_.GetWeakPtr(), id, app_url));
+          weak_ptr_factory_.GetWeakPtr(), id, app_url, migrated_to_app_url));
 }
 
-void AndroidSmsAppSetupControllerImpl::OnSetCookieResult(
+void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
     const GURL& app_url,
     const GURL& install_url,
     SuccessCallback callback,
     bool succeeded) {
   if (!succeeded) {
-    PA_LOG(WARNING) << "AndroidSmsAppSetupControllerImpl::"
-                    << "OnSetCookieResult(): Failed to set "
-                    << "DefaultToPersist cookie at " << app_url
-                    << ". Proceeding with installation request.";
+    PA_LOG(WARNING)
+        << "AndroidSmsAppSetupControllerImpl::"
+        << "OnSetRememberDeviceByDefaultCookieResult(): Failed to set "
+        << "DefaultToPersist cookie at " << app_url << ". Proceeding "
+        << "to remove migration cookie.";
   }
 
+  // Delete migration cookie in case it was set by a previous RemoveApp call.
+  network::mojom::CookieDeletionFilterPtr filter(
+      network::mojom::CookieDeletionFilter::New());
+  filter->url = app_url;
+  filter->cookie_name = kMigrationCookieName;
+  pwa_delegate_->GetCookieManager(app_url, profile_)
+      ->DeleteCookies(
+          std::move(filter),
+          base::BindOnce(
+              &AndroidSmsAppSetupControllerImpl::OnDeleteMigrationCookieResult,
+              weak_ptr_factory_.GetWeakPtr(), app_url, install_url,
+              std::move(callback)));
+}
+
+void AndroidSmsAppSetupControllerImpl::OnDeleteMigrationCookieResult(
+    const GURL& app_url,
+    const GURL& install_url,
+    SuccessCallback callback,
+    uint32_t num_deleted) {
   // If the app is already installed at |url|, there is nothing more to do.
   if (pwa_delegate_->GetPwaForUrl(install_url, profile_)) {
-    PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::OnSetCookieResult(): "
+    PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::"
+                    << "OnDeleteMigrationCookieResult():"
                     << "App is already installed at " << install_url
                     << "; skipping setup process.";
     std::move(callback).Run(true /* success */);
@@ -216,6 +242,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
 void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
     const base::UnguessableToken& id,
     const GURL& app_url,
+    const GURL& migrated_to_app_url,
     const GURL& install_url,
     bool succeeded) {
   UMA_HISTOGRAM_BOOLEAN("AndroidSms.PWAUninstallationResult", succeeded);
@@ -234,18 +261,49 @@ void AndroidSmsAppSetupControllerImpl::OnAppUninstallResult(
     return;
   }
 
+  // Set migration cookie on the client for which the PWA was just uninstalled.
+  // The client checks for this cookie to redirect users to the new domain. This
+  // prevents unwanted connection stealing between old and new clients should
+  // the user try to open old client.
+  pwa_delegate_->GetCookieManager(app_url, profile_)
+      ->SetCanonicalCookie(
+          *net::CanonicalCookie::CreateSanitizedCookie(
+              app_url, kMigrationCookieName, migrated_to_app_url.GetContent(),
+              std::string() /* domain */, std::string() /* path */,
+              base::Time::Now() /* creation_time */,
+              base::Time() /* expiration_time */,
+              base::Time::Now() /* last_access_time */, true /* secure */,
+              false /* http_only */, net::CookieSameSite::STRICT_MODE,
+              net::COOKIE_PRIORITY_DEFAULT),
+          true /* secure_source */, false /* modify_http_only */,
+          base::BindOnce(
+              &AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult,
+              weak_ptr_factory_.GetWeakPtr(), app_url, std::move(callback)));
+}
+
+void AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(
+    const GURL& app_url,
+    SuccessCallback callback,
+    bool succeeded) {
+  if (!succeeded) {
+    PA_LOG(ERROR)
+        << "AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(): "
+        << "Failed to set migration cookie for " << app_url << ". Proceeding "
+        << "to remove DefaultToPersist cookie.";
+  }
+
   DeleteRememberDeviceByDefaultCookie(app_url, std::move(callback));
 }
 
-void AndroidSmsAppSetupControllerImpl::OnDeleteCookiesResult(
-    const GURL& app_url,
-    SuccessCallback callback,
-    uint32_t num_deleted) {
+void AndroidSmsAppSetupControllerImpl::
+    OnDeleteRememberDeviceByDefaultCookieResult(const GURL& app_url,
+                                                SuccessCallback callback,
+                                                uint32_t num_deleted) {
   if (num_deleted != 1u) {
     PA_LOG(WARNING) << "AndroidSmsAppSetupControllerImpl::"
-                    << "OnDeleteCookiesResult(): Tried to delete a single "
-                    << "cookie at " << app_url << ", but " << num_deleted << " "
-                    << "cookies were deleted.";
+                    << "OnDeleteRememberDeviceByDefaultCookieResult(): "
+                    << "Tried to delete a single cookie at " << app_url
+                    << ", but " << num_deleted << " cookies were deleted.";
   }
 
   // Even if an unexpected number of cookies was deleted, consider this a

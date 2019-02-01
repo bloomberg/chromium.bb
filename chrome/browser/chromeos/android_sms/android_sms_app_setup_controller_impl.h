@@ -62,23 +62,33 @@ class AndroidSmsAppSetupControllerImpl : public AndroidSmsAppSetupController {
                                            SuccessCallback callback) override;
   void RemoveApp(const GURL& app_url,
                  const GURL& install_url,
+                 const GURL& migrated_to_app_url,
                  SuccessCallback callback) override;
 
-  void OnSetCookieResult(const GURL& app_url,
-                         const GURL& install_url,
-                         SuccessCallback callback,
-                         bool succeeded);
+  void OnSetRememberDeviceByDefaultCookieResult(const GURL& app_url,
+                                                const GURL& install_url,
+                                                SuccessCallback callback,
+                                                bool succeeded);
+  void OnSetMigrationCookieResult(const GURL& app_url,
+                                  SuccessCallback callback,
+                                  bool succeeded);
+
   void OnAppInstallResult(SuccessCallback callback,
                           const GURL& app_url,
                           const GURL& install_url,
                           web_app::InstallResultCode code);
   void OnAppUninstallResult(const base::UnguessableToken& id,
                             const GURL& app_url,
+                            const GURL& migrated_to_app_url,
                             const GURL& install_url,
                             bool succeeded);
-  void OnDeleteCookiesResult(const GURL& app_url,
-                             SuccessCallback callback,
-                             uint32_t num_deleted);
+  void OnDeleteRememberDeviceByDefaultCookieResult(const GURL& app_url,
+                                                   SuccessCallback callback,
+                                                   uint32_t num_deleted);
+  void OnDeleteMigrationCookieResult(const GURL& app_url,
+                                     const GURL& install_url,
+                                     SuccessCallback callback,
+                                     uint32_t num_deleted);
 
   void SetPwaDelegateForTesting(std::unique_ptr<PwaDelegate> test_pwa_delegate);
 
