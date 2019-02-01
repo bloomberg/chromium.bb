@@ -29,6 +29,8 @@ source_set("wayland") {
     "wayland_connection_connector.h",
     "wayland_cursor.cc",
     "wayland_cursor.h",
+    "wayland_cursor_position.cc",
+    "wayland_cursor_position.h",
     "wayland_data_device.cc",
     "wayland_data_device.h",
     "wayland_data_device_manager.cc",

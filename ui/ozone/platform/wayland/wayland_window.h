@@ -170,6 +170,8 @@ class WaylandWindow : public PlatformWindow,
   void AddEnteredOutputId(struct wl_output* output);
   void RemoveEnteredOutputId(struct wl_output* output);
 
+  void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
+
   // wl_surface_listener
   static void Enter(void* data,
                     struct wl_surface* wl_surface,

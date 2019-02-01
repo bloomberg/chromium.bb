@@ -125,6 +125,20 @@ WaylandWindow* WaylandConnection::GetWindow(gfx::AcceleratedWidget widget) {
   return it == window_map_.end() ? nullptr : it->second;
 }
 
+WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() {
+  WaylandWindow* window_with_largest_bounds = nullptr;
+  for (auto entry : window_map_) {
+    if (!window_with_largest_bounds) {
+      window_with_largest_bounds = entry.second;
+      continue;
+    }
+    WaylandWindow* window = entry.second;
+    if (window_with_largest_bounds->GetBounds() < window->GetBounds())
+      window_with_largest_bounds = window;
+  }
+  return window_with_largest_bounds;
+}
+
 WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() {
   for (auto entry : window_map_) {
     WaylandWindow* window = entry.second;
@@ -507,9 +521,13 @@ void WaylandConnection::Capabilities(void* data,
           pointer, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
                                        base::Unretained(connection)));
       connection->pointer_->set_connection(connection);
+
+      connection->wayland_cursor_position_ =
+          std::make_unique<WaylandCursorPosition>();
     }
   } else if (connection->pointer_) {
     connection->pointer_.reset();
+    connection->wayland_cursor_position_.reset();
   }
   if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
     if (!connection->keyboard_) {
