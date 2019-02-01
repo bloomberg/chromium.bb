@@ -189,7 +189,6 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
   void OnFocus() override {
     ScrollRectToVisible(GetLocalBounds());
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
     SetBackgroundHighlighted(true);
   }
 
