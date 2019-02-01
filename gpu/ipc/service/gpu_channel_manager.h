@@ -144,8 +144,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   void OnApplicationBackgrounded();
 
-  bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
-
   MailboxManager* mailbox_manager() { return mailbox_manager_.get(); }
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
@@ -183,7 +181,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   void LoseAllContexts();
-  void MaybeExitOnContextLost();
 
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU
@@ -224,9 +221,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 #endif
 
   ImageDecodeAcceleratorWorker* image_decode_accelerator_worker_ = nullptr;
-
-  // Set during intentional GPU process shutdown.
-  bool exiting_for_lost_context_;
 
   // Flags which indicate GPU process activity. Read by the browser process
   // on GPU process crash.

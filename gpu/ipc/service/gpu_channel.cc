@@ -597,7 +597,7 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
-  if (gpu_channel_manager_->is_exiting_for_lost_context()) {
+  if (gpu_channel_manager_->delegate()->IsExiting()) {
     LOG(ERROR) << "ContextResult::kTransientFailure: trying to create command "
                   "buffer during process shutdown.";
     *result = gpu::ContextResult::kTransientFailure;

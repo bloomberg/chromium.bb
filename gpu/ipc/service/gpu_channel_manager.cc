@@ -82,7 +82,6 @@ GpuChannelManager::GpuChannelManager(
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
       image_decode_accelerator_worker_(image_decode_accelerator_worker),
-      exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
       memory_pressure_listener_(
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
@@ -206,18 +205,6 @@ void GpuChannelManager::LoseAllContexts() {
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&GpuChannelManager::DestroyAllChannels,
                                         weak_factory_.GetWeakPtr()));
-}
-
-void GpuChannelManager::MaybeExitOnContextLost() {
-  if (gpu_preferences().single_process || gpu_preferences().in_process_gpu)
-    return;
-
-  if (!exiting_for_lost_context_) {
-    LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
-               << " from problems.";
-    exiting_for_lost_context_ = true;
-    delegate_->ExitProcess();
-  }
 }
 
 void GpuChannelManager::DestroyAllChannels() {
@@ -455,16 +442,19 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 }
 
 void GpuChannelManager::OnContextLost(bool synthetic_loss) {
+  if (synthetic_loss)
+    return;
+
   // Work around issues with recovery by allowing a new GPU process to launch.
-  if (!synthetic_loss && gpu_driver_bug_workarounds_.exit_on_context_lost)
-    MaybeExitOnContextLost();
+  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
+    delegate_->MaybeExitOnContextLost();
 
   // Lose all other contexts.
-  if (!synthetic_loss &&
-      (gl::GLContext::LosesAllContextsOnContextLost() ||
-       (shared_context_state_ &&
-        shared_context_state_->use_virtualized_gl_contexts())))
+  if (gl::GLContext::LosesAllContextsOnContextLost() ||
+      (shared_context_state_ &&
+       shared_context_state_->use_virtualized_gl_contexts())) {
     LoseAllContexts();
+  }
 }
 
 void GpuChannelManager::ScheduleGrContextCleanup() {

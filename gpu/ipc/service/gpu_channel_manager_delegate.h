@@ -12,6 +12,8 @@ class GURL;
 
 namespace gpu {
 
+// TODO(kylechar): Rename this class. It's used to provide GpuServiceImpl
+// functionality to multiple classes in src/gpu/ so delegate is inaccurate.
 class GpuChannelManagerDelegate {
  public:
   // Called on any successful context creation.
@@ -40,8 +42,14 @@ class GpuChannelManagerDelegate {
                                  const std::string& key,
                                  const std::string& shader) = 0;
 
-  // Cleanly exits the GPU process in response to an unrecoverable error.
-  virtual void ExitProcess() = 0;
+  // Cleanly exits the GPU process in response to an error. This will not exit
+  // with in-process GPU as that would also exit the browser. This can only be
+  // called from the GPU thread.
+  virtual void MaybeExitOnContextLost() = 0;
+
+  // Returns true if the GPU process is exiting. This can be called from any
+  // thread.
+  virtual bool IsExiting() const = 0;
 
 #if defined(OS_WIN)
   // Tells the delegate that |child_window| was created in the GPU process and

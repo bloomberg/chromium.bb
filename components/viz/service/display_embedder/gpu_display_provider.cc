@@ -143,6 +143,15 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     // Retry creating and binding |context_provider| on transient failures.
     gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
     while (context_result != gpu::ContextResult::kSuccess) {
+      // We are about to exit the GPU process so don't try to create a context.
+      // It will be recreated after the GPU process restarts. The same check
+      // also happens on the GPU thread before the context gets initialized
+      // there. If GPU process starts to exit after this check but before
+      // context initialization we'll encounter a transient error, loop and hit
+      // this check again.
+      if (gpu_channel_manager_delegate_->IsExiting())
+        return nullptr;
+
       context_provider = base::MakeRefCounted<VizProcessContextProvider>(
           task_executor_, surface_handle, gpu_memory_buffer_manager_.get(),
           image_factory_, gpu_channel_manager_delegate_, renderer_settings);
@@ -150,16 +159,15 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
       if (IsFatalOrSurfaceFailure(context_result)) {
 #if defined(OS_ANDROID)
-        // Ignore context creation failures if exiting for lost context. We are
-        // about to lose the GPU process and Viz will re-create the context at
-        // that point.
-        if (!gpu_service_impl_->gpu_channel_manager()
-                 ->is_exiting_for_lost_context()) {
-          display_client->OnFatalOrSurfaceContextCreationFailure(
-              context_result);
-        }
-#endif
+        display_client->OnFatalOrSurfaceContextCreationFailure(context_result);
+#elif defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+        // TODO(kylechar): Chrome OS can't disable GPU compositing. This needs
+        // to be handled similar to Android.
+        CHECK(false);
+#else
         gpu_service_impl_->DisableGpuCompositing();
+#endif
+
         return nullptr;
       }
     }
