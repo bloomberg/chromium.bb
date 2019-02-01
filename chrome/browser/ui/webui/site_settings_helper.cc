@@ -644,6 +644,8 @@ std::unique_ptr<base::ListValue> GetChooserExceptionListFromProfile(
     const ChooserTypeNameEntry& chooser_type) {
   auto exceptions = std::make_unique<base::ListValue>();
 
+  // TODO(https://crbug.com/927372): Combine the off the record permissions with
+  // the main profile permissions so that the UI is able to display them.
   if (incognito) {
     if (!profile->HasOffTheRecordProfile())
       return exceptions;
