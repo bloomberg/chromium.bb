@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
@@ -209,6 +210,11 @@ void CastNetworkContexts::OnNetworkServiceCreated(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
 
+  // Disable QUIC if instructed by DCS. This remains constant for the lifetime
+  // of the process.
+  if (!chromecast::IsFeatureEnabled(kEnableQuic))
+    network_service->DisableQuic();
+
   // The system NetworkContext must be created first, since it sets
   // |primary_network_context| to true.
   network_service->CreateNetworkContext(MakeRequest(&system_network_context_),
@@ -238,6 +244,15 @@ CastNetworkContexts::CreateDefaultNetworkContextParams() {
   network_context_params->user_agent = GetUserAgent();
   network_context_params->accept_language =
       CastHttpUserAgentSettings::AcceptLanguage();
+
+  // Disable idle sockets close on memory pressure, if instructed by DCS. On
+  // memory constrained devices:
+  // 1. if idle sockets are closed when memory pressure happens, cast_shell will
+  // close and re-open lots of connections to server.
+  // 2. if idle sockets are kept alive when memory pressure happens, this may
+  // cause JS engine gc frequently, leading to JS suspending.
+  network_context_params->disable_idle_sockets_close_on_memory_pressure =
+      IsFeatureEnabled(kDisableIdleSocketsCloseOnMemoryPressure);
 
   return network_context_params;
 }
