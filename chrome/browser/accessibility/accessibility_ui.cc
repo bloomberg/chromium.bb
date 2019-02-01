@@ -326,6 +326,7 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
     base::ListValue request_args;
     request_args.Append(std::make_unique<base::Value>(process_id_str));
     request_args.Append(std::make_unique<base::Value>(route_id_str));
+    request_args.Append(std::make_unique<base::Value>("showTree"));
     RequestWebContentsTree(&request_args);
   } else {
     // Call accessibility.showTree without a 'tree' field so the row's
