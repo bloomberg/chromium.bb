@@ -20,9 +20,6 @@ class ChromeUnifiedConsentServiceClient
   ServiceState GetServiceState(Service service) override;
   void SetServiceEnabled(Service service, bool enabled) override;
 
- private:
-  PrefService* pref_service_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeUnifiedConsentServiceClient);
 };
 
