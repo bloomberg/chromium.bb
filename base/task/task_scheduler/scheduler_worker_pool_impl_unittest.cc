@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <unordered_set>
 #include <vector>
@@ -1061,9 +1062,8 @@ class TaskSchedulerWorkerPoolBlockingTest
   // Returns how long we can expect a change to |max_tasks_| to occur
   // after a task has become blocked.
   TimeDelta GetMaxTasksChangeSleepTime() {
-    return std::max(TimeDelta::FromMicroseconds(
-                        kBlockedWorkersPollMicrosecondsParam.Get()),
-                    worker_pool_->MayBlockThreshold()) +
+    return std::max(worker_pool_->blocked_workers_poll_period_for_testing(),
+                    worker_pool_->may_block_threshold_for_testing()) +
            TestTimeouts::tiny_timeout();
   }
 
@@ -1266,8 +1266,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockUnblockPremature) {
   SaturateWithBlockingTasks(NestedBlockingType(BlockingType::MAY_BLOCK,
                                                OptionalBlockingType::NO_BLOCK,
                                                BlockingType::MAY_BLOCK));
-  PlatformThread::Sleep(2 * TimeDelta::FromMicroseconds(
-                                kBlockedWorkersPollMicrosecondsParam.Get()));
+  PlatformThread::Sleep(
+      2 * worker_pool_->blocked_workers_poll_period_for_testing());
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), kMaxTasks);
   EXPECT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
 
