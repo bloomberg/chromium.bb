@@ -31386,6 +31386,8 @@ from previous Chrome versions.
   <int value="-741806604" label="DownloadsUi:disabled"/>
   <int value="-738957187" label="OmniboxUIExperimentSwapTitleAndUrl:disabled"/>
   <int value="-735084806" label="NewTabLoadingAnimation:enabled"/>
+  <int value="-734301625"
+      label="AutofillImportNonFocusableCreditCardForms:disabled"/>
   <int value="-731133967" label="AutofillSettingsCardTypeSplit:disabled"/>
   <int value="-727860269" label="WebAuthenticationBle:disabled"/>
   <int value="-726892130" label="AndroidMessagesIntegration:disabled"/>
@@ -31948,6 +31950,8 @@ from previous Chrome versions.
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="307543404" label="disable-team-drives"/>
+  <int value="310143091"
+      label="AutofillImportNonFocusableCreditCardForms:enabled"/>
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
   <int value="313303258" label="WebPaymentsModifiers:disabled"/>
   <int value="316182183" label="MediaDocumentDownloadButton:disabled"/>

@@ -129,6 +129,12 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
 const base::Feature kAutofillGetPaymentsIdentityFromSync{
     "AutofillGetPaymentsIdentityFromSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, a credit card form that is hidden after receiving input can
+// import the card.
+const base::Feature kAutofillImportNonFocusableCreditCardForms{
+    "AutofillImportNonFocusableCreditCardForms",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
 const base::Feature kAutofillKeyboardAccessory{

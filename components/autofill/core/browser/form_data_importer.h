@@ -153,6 +153,15 @@ class FormDataImporter {
                            AllowDuplicateMaskedServerCardIfFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateFullServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateMaskedServerCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_AddressesDisabledOneCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_AddressCreditCardDisabled);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_HiddenCreditCardFormAfterEntered);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_HiddenCreditCardFormAfterEnteredWithExpOff);
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       ImportFormData_ImportCreditCardRecordType_FullServerCard);
@@ -179,10 +188,6 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       ImportFormData_SecondImportResetsCreditCardRecordType);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_AddressesDisabledOneCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_AddressCreditCardDisabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_TwoAddressesOneCreditCard);
   FRIEND_TEST_ALL_PREFIXES(

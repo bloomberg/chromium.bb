@@ -2838,6 +2838,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
+    {"enable-autofill-import-non-focusable-credit-card-forms",
+     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
+     flag_descriptions::
+         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
     {"enable-autofill-local-card-migration-show-feedback",
      flag_descriptions::kEnableAutofillLocalCardMigrationShowFeedbackName,
      flag_descriptions::
