@@ -1282,6 +1282,9 @@
       status: "experimental",
     },
     {
+      name: "StreamsNative",
+    },
+    {
       name: "TextUnderlinePositionLeftRight",
       status: "stable",
     },
