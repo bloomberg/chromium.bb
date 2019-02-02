@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class CORE_EXPORT DOMException final : public ScriptWrappable {
+class CORE_EXPORT DOMException : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

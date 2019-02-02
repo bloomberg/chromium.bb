@@ -5618,6 +5618,15 @@ interface RTCDtlsTransport : EventTarget
     method getRemoteCertificates
     setter onerror
     setter onstatechange
+interface RTCError : DOMException
+    attribute @@toStringTag
+    getter errorDetail
+    getter httpRequestStatusCode
+    getter receivedAlert
+    getter sctpCauseCode
+    getter sdpLineNumber
+    getter sentAlert
+    method constructor
 interface RTCIceCandidate
     attribute @@toStringTag
     getter address
