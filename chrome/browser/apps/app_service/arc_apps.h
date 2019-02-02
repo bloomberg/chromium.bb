@@ -86,7 +86,6 @@ class ArcApps : public KeyedService,
   apps::mojom::AppPtr Convert(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info);
   apps::mojom::IconKeyPtr NewIconKey(const std::string& app_id);
-  static apps::mojom::Readiness NewReadiness(bool ready);
   void Publish(apps::mojom::AppPtr app);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
