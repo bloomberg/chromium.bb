@@ -961,6 +961,9 @@ void Layer::ScheduleDraw() {
 }
 
 void Layer::SendDamagedRects() {
+  if (layer_mask_)
+    layer_mask_->SendDamagedRects();
+
   if (damaged_region_.IsEmpty())
     return;
   if (!delegate_ && transfer_resource_.mailbox_holder.mailbox.IsZero())
@@ -970,8 +973,6 @@ void Layer::SendDamagedRects() {
 
   for (gfx::Rect damaged_rect : damaged_region_)
     cc_layer_->SetNeedsDisplayRect(damaged_rect);
-  if (layer_mask_)
-    layer_mask_->SendDamagedRects();
 
   if (content_layer_)
     paint_region_.Union(damaged_region_);
