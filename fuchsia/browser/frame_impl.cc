@@ -185,8 +185,6 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                      ContextImpl* context,
                      fidl::InterfaceRequest<chromium::web::Frame> frame_request)
     : web_contents_(std::move(web_contents)),
-      focus_controller_(
-          std::make_unique<wm::FocusController>(new FrameFocusRules)),
       context_(context),
       binding_(this, std::move(frame_request)) {
   web_contents_->SetDelegate(this);
@@ -202,19 +200,7 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
 }
 
 FrameImpl::~FrameImpl() {
-  if (window_tree_host_) {
-    aura::client::SetFocusClient(root_window(), nullptr);
-    wm::SetActivationClient(root_window(), nullptr);
-    root_window()->RemovePreTargetHandler(focus_controller_.get());
-    web_contents_->ClosePage();
-    window_tree_host_->Hide();
-    window_tree_host_->compositor()->SetVisible(false);
-
-    // Allows posted focus events to process before the FocusController
-    // is torn down.
-    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
-                                       focus_controller_.release());
-  }
+  TearDownView();
 }
 
 zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
@@ -256,12 +242,18 @@ void FrameImpl::CreateView2(
     zx::eventpair view_token,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
+  // If a View to this Frame is already active then disconnect it.
+  TearDownView();
+
   ui::PlatformWindowInitProperties properties;
   properties.view_token = std::move(view_token);
 
   window_tree_host_ =
       std::make_unique<ScenicWindowTreeHost>(std::move(properties));
   window_tree_host_->InitHost();
+
+  focus_controller_ =
+      std::make_unique<wm::FocusController>(new FrameFocusRules);
 
   aura::client::SetFocusClient(root_window(), focus_controller_.get());
   wm::SetActivationClient(root_window(), focus_controller_.get());
@@ -286,76 +278,6 @@ void FrameImpl::GetNavigationController(
 
 void FrameImpl::SetJavaScriptLogLevel(chromium::web::LogLevel level) {
   log_level_ = level;
-}
-
-void FrameImpl::LoadUrl(std::string url,
-                        std::unique_ptr<chromium::web::LoadUrlParams> params) {
-  GURL validated_url(url);
-  if (!validated_url.is_valid()) {
-    DLOG(WARNING) << "Invalid URL: " << url;
-    return;
-  }
-
-  content::NavigationController::LoadURLParams params_converted(validated_url);
-
-  if (params && !params->headers.empty()) {
-    std::vector<base::StringPiece> extra_headers;
-    extra_headers.reserve(params->headers.size());
-    for (const auto& header : params->headers) {
-      extra_headers.push_back(base::StringPiece(
-          reinterpret_cast<const char*>(header.data()), header.size()));
-    }
-    params_converted.extra_headers = base::JoinString(extra_headers, "\n");
-  }
-
-  if (validated_url.scheme() == url::kDataScheme)
-    params_converted.load_type = content::NavigationController::LOAD_TYPE_DATA;
-
-  params_converted.transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  params_converted.was_activated = (params && params->user_activated)
-                                       ? content::WasActivatedOption::kYes
-                                       : content::WasActivatedOption::kNo;
-  web_contents_->GetController().LoadURLWithParams(params_converted);
-}
-
-void FrameImpl::GoBack() {
-  if (web_contents_->GetController().CanGoBack())
-    web_contents_->GetController().GoBack();
-}
-
-void FrameImpl::GoForward() {
-  if (web_contents_->GetController().CanGoForward())
-    web_contents_->GetController().GoForward();
-}
-
-void FrameImpl::Stop() {
-  web_contents_->Stop();
-}
-
-void FrameImpl::Reload(chromium::web::ReloadType type) {
-  content::ReloadType internal_reload_type;
-  switch (type) {
-    case chromium::web::ReloadType::PARTIAL_CACHE:
-      internal_reload_type = content::ReloadType::NORMAL;
-      break;
-    case chromium::web::ReloadType::NO_CACHE:
-      internal_reload_type = content::ReloadType::BYPASSING_CACHE;
-      break;
-  }
-  web_contents_->GetController().Reload(internal_reload_type, false);
-}
-
-void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetVisibleEntry();
-  if (!entry) {
-    callback(nullptr);
-    return;
-  }
-
-  chromium::web::NavigationEntry output = ConvertContentNavigationEntry(entry);
-  callback(std::make_unique<chromium::web::NavigationEntry>(std::move(output)));
 }
 
 void FrameImpl::SetNavigationEventObserver(
@@ -434,21 +356,73 @@ void FrameImpl::ExecuteJavaScript(std::vector<std::string> origins,
   callback(true);
 }
 
-void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                              const GURL& validated_url) {
-  if (web_contents_->GetMainFrame() != render_frame_host) {
+void FrameImpl::PostMessage(chromium::web::WebMessage message,
+                            std::string target_origin,
+                            PostMessageCallback callback) {
+  constexpr char kWildcardOrigin[] = "*";
+
+  if (target_origin.empty()) {
+    callback(false);
     return;
   }
 
-  chromium::web::NavigationEntry current_navigation_state =
-      ConvertContentNavigationEntry(
-          web_contents_->GetController().GetVisibleEntry());
-  pending_navigation_event_is_dirty_ |=
-      ComputeNavigationEvent(cached_navigation_state_, current_navigation_state,
-                             &pending_navigation_event_);
-  cached_navigation_state_ = std::move(current_navigation_state);
+  base::Optional<base::string16> target_origin_utf16;
+  if (target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
 
-  MaybeSendNavigationEvent();
+  base::string16 data_utf16;
+  if (!ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
+    DLOG(WARNING) << "PostMessage() rejected non-UTF8 |message.data|.";
+    callback(false);
+    return;
+  }
+
+  // Include outgoing MessagePorts in the message.
+  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+  if (message.outgoing_transfer) {
+    if (!message.outgoing_transfer->is_message_port()) {
+      DLOG(WARNING) << "|outgoing_transfer| is not a MessagePort.";
+      callback(false);
+      return;
+    }
+
+    mojo::ScopedMessagePipeHandle port = MessagePortImpl::FromFidl(
+        std::move(message.outgoing_transfer->message_port()));
+    if (!port) {
+      callback(false);
+      return;
+    }
+    message_ports.push_back(std::move(port));
+  }
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents_.get(), base::string16(), target_origin_utf16,
+      std::move(data_utf16), std::move(message_ports));
+  callback(true);
+}
+
+FrameImpl::OriginScopedScript::OriginScopedScript(
+    std::vector<std::string> origins,
+    base::ReadOnlySharedMemoryRegion script)
+    : origins(std::move(origins)), script(std::move(script)) {}
+
+FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
+
+void FrameImpl::TearDownView() {
+  if (window_tree_host_) {
+    aura::client::SetFocusClient(root_window(), nullptr);
+    wm::SetActivationClient(root_window(), nullptr);
+    root_window()->RemovePreTargetHandler(focus_controller_.get());
+    web_contents_->GetNativeView()->Hide();
+    window_tree_host_->Hide();
+    window_tree_host_->compositor()->SetVisible(false);
+    window_tree_host_ = nullptr;
+
+    // Allows posted focus events to process before the FocusController is torn
+    // down.
+    content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE,
+                                       std::move(focus_controller_));
+  }
 }
 
 void FrameImpl::MaybeSendNavigationEvent() {
@@ -470,6 +444,93 @@ void FrameImpl::MaybeSendNavigationEvent() {
         waiting_for_navigation_event_ack_ = false;
         MaybeSendNavigationEvent();
       });
+}
+
+void FrameImpl::LoadUrl(std::string url,
+                        std::unique_ptr<chromium::web::LoadUrlParams> params) {
+  GURL validated_url(url);
+  if (!validated_url.is_valid()) {
+    DLOG(WARNING) << "Invalid URL: " << url;
+    return;
+  }
+
+  content::NavigationController::LoadURLParams params_converted(validated_url);
+
+  if (params && !params->headers.empty()) {
+    std::vector<base::StringPiece> extra_headers;
+    extra_headers.reserve(params->headers.size());
+    for (const auto& header : params->headers) {
+      extra_headers.push_back(base::StringPiece(
+          reinterpret_cast<const char*>(header.data()), header.size()));
+    }
+    params_converted.extra_headers = base::JoinString(extra_headers, "\n");
+  }
+
+  if (validated_url.scheme() == url::kDataScheme)
+    params_converted.load_type = content::NavigationController::LOAD_TYPE_DATA;
+
+  params_converted.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  params_converted.was_activated = (params && params->user_activated)
+                                       ? content::WasActivatedOption::kYes
+                                       : content::WasActivatedOption::kNo;
+  web_contents_->GetController().LoadURLWithParams(params_converted);
+}
+
+void FrameImpl::GoBack() {
+  if (web_contents_->GetController().CanGoBack())
+    web_contents_->GetController().GoBack();
+}
+
+void FrameImpl::GoForward() {
+  if (web_contents_->GetController().CanGoForward())
+    web_contents_->GetController().GoForward();
+}
+
+void FrameImpl::Stop() {
+  web_contents_->Stop();
+}
+
+void FrameImpl::Reload(chromium::web::ReloadType type) {
+  content::ReloadType internal_reload_type;
+  switch (type) {
+    case chromium::web::ReloadType::PARTIAL_CACHE:
+      internal_reload_type = content::ReloadType::NORMAL;
+      break;
+    case chromium::web::ReloadType::NO_CACHE:
+      internal_reload_type = content::ReloadType::BYPASSING_CACHE;
+      break;
+  }
+  web_contents_->GetController().Reload(internal_reload_type, false);
+}
+
+void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (!entry) {
+    callback(nullptr);
+    return;
+  }
+
+  chromium::web::NavigationEntry output = ConvertContentNavigationEntry(entry);
+  callback(std::make_unique<chromium::web::NavigationEntry>(std::move(output)));
+}
+
+void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                              const GURL& validated_url) {
+  if (web_contents_->GetMainFrame() != render_frame_host) {
+    return;
+  }
+
+  chromium::web::NavigationEntry current_navigation_state =
+      ConvertContentNavigationEntry(
+          web_contents_->GetController().GetVisibleEntry());
+  pending_navigation_event_is_dirty_ |=
+      ComputeNavigationEvent(cached_navigation_state_, current_navigation_state,
+                             &pending_navigation_event_);
+  cached_navigation_state_ = std::move(current_navigation_state);
+
+  MaybeSendNavigationEvent();
 }
 
 void FrameImpl::ReadyToCommitNavigation(
@@ -536,58 +597,6 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
   }
 
   return true;
-}
-
-FrameImpl::OriginScopedScript::OriginScopedScript(
-    std::vector<std::string> origins,
-    base::ReadOnlySharedMemoryRegion script)
-    : origins(std::move(origins)), script(std::move(script)) {}
-
-FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
-
-void FrameImpl::PostMessage(chromium::web::WebMessage message,
-                            std::string target_origin,
-                            PostMessageCallback callback) {
-  constexpr char kWildcardOrigin[] = "*";
-
-  if (target_origin.empty()) {
-    callback(false);
-    return;
-  }
-
-  base::Optional<base::string16> target_origin_utf16;
-  if (target_origin != kWildcardOrigin)
-    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
-
-  base::string16 data_utf16;
-  if (!ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
-    DLOG(WARNING) << "PostMessage() rejected non-UTF8 |message.data|.";
-    callback(false);
-    return;
-  }
-
-  // Include outgoing MessagePorts in the message.
-  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
-  if (message.outgoing_transfer) {
-    if (!message.outgoing_transfer->is_message_port()) {
-      DLOG(WARNING) << "|outgoing_transfer| is not a MessagePort.";
-      callback(false);
-      return;
-    }
-
-    mojo::ScopedMessagePipeHandle port = MessagePortImpl::FromFidl(
-        std::move(message.outgoing_transfer->message_port()));
-    if (!port) {
-      callback(false);
-      return;
-    }
-    message_ports.push_back(std::move(port));
-  }
-
-  content::MessagePortProvider::PostMessageToFrame(
-      web_contents_.get(), base::string16(), target_origin_utf16,
-      std::move(data_utf16), std::move(message_ports));
-  callback(true);
 }
 
 }  // namespace webrunner

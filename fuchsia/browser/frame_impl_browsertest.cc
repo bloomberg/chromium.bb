@@ -978,6 +978,46 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   EXPECT_FALSE(unused_message_read.has_value());
 }
 
+IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Process the Frame creation request, and verify we can get the FrameImpl.
+  base::RunLoop().RunUntilIdle();
+  FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame);
+  ASSERT_TRUE(frame_impl);
+  EXPECT_FALSE(frame_impl->has_view_for_test());
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // Verify that the Frame can navigate, prior to the View being created.
+  const GURL page1_url(embedded_test_server()->GetURL(kPage1Path));
+  CheckLoadUrl(page1_url.spec(), kPage1Title, nullptr, controller.get());
+
+  // Request a View from the Frame, and pump the loop to process the request.
+  zx::eventpair owner_token, frame_token;
+  ASSERT_EQ(zx::eventpair::create(0, &owner_token, &frame_token), ZX_OK);
+  frame->CreateView2(std::move(frame_token), nullptr, nullptr);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(frame_impl->has_view_for_test());
+
+  // Verify that the Frame still works, by navigating to Page #2.
+  const GURL page2_url(embedded_test_server()->GetURL(kPage2Path));
+  CheckLoadUrl(page2_url.spec(), kPage2Title, nullptr, controller.get());
+
+  // Create new View tokens and request a new view.
+  zx::eventpair owner_token2, frame_token2;
+  ASSERT_EQ(zx::eventpair::create(0, &owner_token2, &frame_token2), ZX_OK);
+  frame->CreateView2(std::move(frame_token), nullptr, nullptr);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(frame_impl->has_view_for_test());
+
+  // Verify that the Frame still works, by navigating back to Page #1.
+  CheckLoadUrl(page1_url.spec(), kPage1Title, nullptr, controller.get());
+}
+
 class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
  public:
   RequestMonitoringFrameImplBrowserTest() = default;
