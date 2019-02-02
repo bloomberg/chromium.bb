@@ -222,14 +222,6 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // !constraint_space.IsIntermediateLayout() block below.
       UpdateShapeOutsideInfoIfNeeded(
           *layout_result, constraint_space.PercentageResolutionInlineSize());
-      // We may need paint invalidation even if we can reuse layout, as our
-      // paint offset/visual rect may have changed due to relative
-      // positioning changes. Otherwise we fail fast/css/
-      // fast/css/relative-positioned-block-with-inline-ancestor-and-parent
-      // -dynamic.html
-      // TODO(layoutng): See if we can optimize this. When we natively
-      // support relative positioning in NG we can probably remove this,
-      box_->SetSubtreeShouldCheckForPaintInvalidation();
 
       // We have to re-set the cached result here, because it is used for
       // LayoutNGMixin::CurrentFragment and therefore has to be up-to-date.
@@ -348,6 +340,13 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
       block_flow->SetPaintFragment(ToNGBlockBreakToken(break_token), nullptr);
     }
   }
+
+  // If we have an overflow clip present, we need to check for paint
+  // invalidation for the subtree in case that the overflow clip changes.
+  // TODO(crbug.com/927903): Probably PrePaintTreeWalk is the better place to
+  // do this by invalidating descendant PaintLayers only.
+  if (box_->HasOverflowClip())
+    box_->SetSubtreeShouldCheckForPaintInvalidation();
 
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
 }

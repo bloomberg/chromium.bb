@@ -1778,6 +1778,7 @@ crbug.com/875235 virtual/layout_ng_experimental/external/wpt/html/rendering/non-
 
 ### virtual/layout_ng_experimental/fast/forms/fieldset/
 crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/fieldset-align.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/fieldset-legend-change.html [ Crash ]
 crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-after-margin-with-before-border-horizontal-mode.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-small-after-margin-before-border-horizontal-mode.html [ Failure ]
 

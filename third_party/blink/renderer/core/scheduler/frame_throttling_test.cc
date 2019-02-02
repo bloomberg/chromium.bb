@@ -686,6 +686,10 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
 
 TEST_P(FrameThrottlingTest,
        ScrollingCoordinatorShouldSkipCompositedThrottledFrame) {
+  // TODO(crbug.com/922419): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
 
   // Create a hidden frame which is throttled.

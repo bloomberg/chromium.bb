@@ -316,7 +316,6 @@ crbug.com/591099 media/autoplay/webaudio-audio-context-resume.html [ Failure Pas
 crbug.com/591099 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
 crbug.com/591099 paint/invalidation/overflow/opacity-change-on-overflow-float.html [ Failure ]
-crbug.com/591099 paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/svg-background-partial-redraw.html [ Failure ]
 crbug.com/591099 paint/invalidation/svg/text-selection-update.svg [ Failure ]
 crbug.com/591099 paint/invalidation/svg/transform-focus-ring-repaint.html [ Failure ]
