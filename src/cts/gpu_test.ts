@@ -1,9 +1,9 @@
 import { getGPU } from "../framework/gpu/implementation.js";
 import {
   GPU,
-  WebGPUBuffer,
-  WebGPUDevice,
-  WebGPUQueue,
+  GPUBuffer,
+  GPUDevice,
+  GPUQueue,
 } from "../framework/gpu/interface.js";
 import { CaseRecorder, Fixture, IParamsAny } from "../framework/index.js";
 
@@ -17,8 +17,8 @@ export class GPUTest extends Fixture {
     const gpu = await getGPU();
     return new GPUTest(log, params, gpu);
   }
-  public device: WebGPUDevice;
-  public queue: WebGPUQueue;
+  public device: GPUDevice;
+  public queue: GPUQueue;
 
   protected constructor(log: CaseRecorder, params: IParamsAny, gpu: GPU) {
     super(log, params);
@@ -26,7 +26,7 @@ export class GPUTest extends Fixture {
     this.queue = this.device.getQueue();
   }
 
-  public async expectContents(src: WebGPUBuffer, expected: Uint8Array) {
+  public async expectContents(src: GPUBuffer, expected: Uint8Array) {
     const size = expected.length;
     const dst = this.device.createBuffer({
       size: expected.length,

@@ -2,30 +2,22 @@
 
 import * as w from "./interface.js";
 
-const kNoExtensions: w.WebGPUExtensions = {
+const kNoExtensions: w.GPUExtensions = {
   anisotropicFiltering: false,
 };
-const kDefaultLimits: w.WebGPULimits = {
+const kDefaultLimits: w.GPULimits = {
   maxBindGroups: 4,
 };
 
-type StatusableObject = Buffer | Texture;
-
-class BindGroup implements w.WebGPUBindGroup {
+class BindGroup implements w.GPUBindGroup {
 }
-class BindGroupLayout implements w.WebGPUBindGroupLayout {
+class BindGroupLayout implements w.GPUBindGroupLayout {
 }
-class Buffer implements w.WebGPUBuffer {
+class Buffer implements w.GPUBuffer {
   public readonly mapping: ArrayBuffer | null = null;
-  private status: w.WebGPUObjectStatus = "valid";
   constructor() {}
-  public destroy() {
-    this.status = "invalid";
-  }
+  public destroy() {}
   public unmap() {}
-  public _getStatus() {
-    return this.status;
-  }
 
   // TODO: TBD
   public mapReadAsync(offset: number, size: number, callback: (ab: ArrayBuffer) => void): void {
@@ -33,26 +25,26 @@ class Buffer implements w.WebGPUBuffer {
   }
   public setSubData(offset: number, ab: ArrayBuffer): void {}
 }
-class CommandBuffer implements w.WebGPUCommandBuffer {
+class CommandBuffer implements w.GPUCommandBuffer {
   public label: string | undefined;
-  public beginComputePass(): w.WebGPUComputePassEncoder {
+  public beginComputePass(): w.GPUComputePassEncoder {
     return new ComputePassEncoder(this);
   }
-  public beginRenderPass(descriptor: w.WebGPURenderPassDescriptor): w.WebGPURenderPassEncoder {
+  public beginRenderPass(descriptor: w.GPURenderPassDescriptor): w.GPURenderPassEncoder {
     return new RenderPassEncoder(this);
   }
   public blit(): void {}
-  public copyBufferToBuffer(src: w.WebGPUBuffer, srcOffset: number, dst: w.WebGPUBuffer, dstOffset: number, size: number): void {}
-  public copyBufferToTexture(source: w.WebGPUBufferCopyView, destination: w.WebGPUTextureCopyView, copySize: w.WebGPUExtent3D): void {}
-  public copyTextureToBuffer(source: w.WebGPUTextureCopyView, destination: w.WebGPUBufferCopyView, copySize: w.WebGPUExtent3D): void {}
-  public copyTextureToTexture(source: w.WebGPUTextureCopyView, destination: w.WebGPUTextureCopyView, copySize: w.WebGPUExtent3D): void {}
+  public copyBufferToBuffer(src: w.GPUBuffer, srcOffset: number, dst: w.GPUBuffer, dstOffset: number, size: number): void {}
+  public copyBufferToTexture(source: w.GPUBufferCopyView, destination: w.GPUTextureCopyView, copySize: w.GPUExtent3D): void {}
+  public copyTextureToBuffer(source: w.GPUTextureCopyView, destination: w.GPUBufferCopyView, copySize: w.GPUExtent3D): void {}
+  public copyTextureToTexture(source: w.GPUTextureCopyView, destination: w.GPUTextureCopyView, copySize: w.GPUExtent3D): void {}
 }
 class ProgrammablePassEncoder {
   private commandBuffer: CommandBuffer;
   constructor(commandBuffer: CommandBuffer) {
     this.commandBuffer = commandBuffer;
   }
-  public endPass(): w.WebGPUCommandBuffer {
+  public endPass(): w.GPUCommandBuffer {
     return this.commandBuffer;
   }
   public insertDebugMarker(markerLabel: string): void {}
@@ -61,14 +53,14 @@ class ProgrammablePassEncoder {
   public setBindGroup(index: number, bindGroup: BindGroup): void {}
   public setPipeline(pipeline: ComputePipeline | RenderPipeline): void {}
 }
-class ComputePassEncoder extends ProgrammablePassEncoder implements w.WebGPUComputePassEncoder {
+class ComputePassEncoder extends ProgrammablePassEncoder implements w.GPUComputePassEncoder {
   public label: string | undefined;
   constructor(commandBuffer: CommandBuffer) {
     super(commandBuffer);
   }
   public dispatch(x: number, y: number, z: number): void {}
 }
-class RenderPassEncoder extends ProgrammablePassEncoder implements w.WebGPURenderPassEncoder {
+class RenderPassEncoder extends ProgrammablePassEncoder implements w.GPURenderPassEncoder {
   public label: string | undefined;
   public draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void {}
   public drawIndexed(indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number): void {}
@@ -79,10 +71,10 @@ class RenderPassEncoder extends ProgrammablePassEncoder implements w.WebGPURende
   public setVertexBuffers(startSlot: number, buffers: Buffer[], offsets: number[]): void {}
   public setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void {}
 }
-class ComputePipeline implements w.WebGPUComputePipeline {
+class ComputePipeline implements w.GPUComputePipeline {
   public label: string | undefined;
 }
-class Fence implements w.WebGPUFence {
+class Fence implements w.GPUFence {
   public label: string | undefined;
   public getCompletedValue(): w.u64 {
     return 0;
@@ -91,87 +83,93 @@ class Fence implements w.WebGPUFence {
     return Promise.resolve();
   }
 }
-class PipelineLayout implements w.WebGPUPipelineLayout {
+class PipelineLayout implements w.GPUPipelineLayout {
 }
-class RenderPipeline implements w.WebGPURenderPipeline {
+class RenderPipeline implements w.GPURenderPipeline {
   public label: string | undefined;
 }
-class Sampler implements w.WebGPUSampler {
+class Sampler implements w.GPUSampler {
 }
-class ShaderModule implements w.WebGPUShaderModule {
+class ShaderModule implements w.GPUShaderModule {
   public label: string | undefined;
 }
-class Texture implements w.WebGPUTexture {
-  private status: w.WebGPUObjectStatus = "valid";
+class Texture implements w.GPUTexture {
   constructor() {}
   public createDefaultTextureView(): TextureView {
     return new TextureView();
   }
-  public createTextureView(desc: w.WebGPUTextureViewDescriptor): TextureView {
+  public createTextureView(desc: w.GPUTextureViewDescriptor): TextureView {
     return new TextureView();
   }
-  public destroy() {
-    this.status = "invalid";
-  }
-  public _getStatus() {
-    return this.status;
-  }
+  public destroy() {}
 }
 class TextureView {
   constructor() {}
 }
-class Queue implements w.WebGPUQueue {
+class Queue implements w.GPUQueue {
   public label: string | undefined;
   public signal(fence: Fence, signalValue: w.u64): void {}
   public submit(buffers: CommandBuffer[]): void {}
   public wait(fence: Fence, valueToWait: w.u64): void {}
 }
-class Device implements w.WebGPUDevice {
+class Device extends EventTarget implements w.GPUDevice {
   public readonly adapter: Adapter;
-  public readonly extensions: w.WebGPUExtensions;
+  public readonly extensions: w.GPUExtensions;
   public readonly limits = kDefaultLimits;
-  public onLog: w.WebGPULogCallback | undefined;
   private queue: Queue = new Queue();
-  constructor(adapter: Adapter, descriptor: w.WebGPUDeviceDescriptor) {
+  constructor(adapter: Adapter, descriptor: w.GPUDeviceDescriptor) {
+    super();
     this.adapter = adapter;
     this.extensions = descriptor.extensions || kNoExtensions;
   }
-  public createBindGroup(descriptor: w.WebGPUBindGroupDescriptor): BindGroup {
+  public createBindGroup(descriptor: w.GPUBindGroupDescriptor): BindGroup {
     return new BindGroup();
   }
-  public createBindGroupLayout(descriptor: w.WebGPUBindGroupLayoutDescriptor): BindGroupLayout {
+  public createBindGroupLayout(descriptor: w.GPUBindGroupLayoutDescriptor): BindGroupLayout {
     return new BindGroupLayout();
   }
-  public createBuffer(descriptor: w.WebGPUBufferDescriptor): Buffer {
-    return new Buffer();
-  }
-  public createCommandBuffer(descriptor: w.WebGPUCommandBufferDescriptor): CommandBuffer {
+  public createCommandBuffer(descriptor: w.GPUCommandBufferDescriptor): CommandBuffer {
     return new CommandBuffer();
   }
-  public createComputePipeline(descriptor: w.WebGPUComputePipelineDescriptor): ComputePipeline {
-    return new ComputePipeline();
-  }
-  public createFence(descriptor: w.WebGPUFenceDescriptor): Fence {
+  public createFence(descriptor: w.GPUFenceDescriptor): Fence {
     return new Fence();
   }
-  public createPipelineLayout(descriptor: w.WebGPUPipelineLayoutDescriptor): PipelineLayout {
+  public createPipelineLayout(descriptor: w.GPUPipelineLayoutDescriptor): PipelineLayout {
     return new PipelineLayout();
   }
-  public createRenderPipeline(descriptor: w.WebGPURenderPipelineDescriptor): RenderPipeline {
-    return new RenderPipeline();
-  }
-  public createSampler(descriptor: w.WebGPUSamplerDescriptor): Sampler {
+  public createSampler(descriptor: w.GPUSamplerDescriptor): Sampler {
     return new Sampler();
   }
-  public createShaderModule(descriptor: w.WebGPUShaderModuleDescriptor): ShaderModule {
+  public createShaderModule(descriptor: w.GPUShaderModuleDescriptor): ShaderModule {
     return new ShaderModule();
   }
-  public createTexture(descriptor: w.WebGPUTextureDescriptor): Texture {
+
+  public createBuffer(descriptor: w.GPUBufferDescriptor): Buffer {
+    return new Buffer();
+  }
+  public createTexture(descriptor: w.GPUTextureDescriptor): Texture {
     return new Texture();
   }
-  public getObjectStatus(statusableObject: StatusableObject): w.WebGPUObjectStatusQuery {
-    return Promise.resolve(statusableObject._getStatus());
+  public async tryCreateBuffer(descriptor: w.GPUBufferDescriptor): Promise<Buffer> {
+    return new Buffer();
   }
+  public async tryCreateTexture(descriptor: w.GPUTextureDescriptor): Promise<Texture> {
+    return new Texture();
+  }
+
+  public createComputePipeline(descriptor: w.GPUComputePipelineDescriptor): ComputePipeline {
+    return new ComputePipeline();
+  }
+  public createRenderPipeline(descriptor: w.GPURenderPipelineDescriptor): RenderPipeline {
+    return new RenderPipeline();
+  }
+  public async createReadyComputePipeline(descriptor: w.GPUComputePipelineDescriptor): Promise<ComputePipeline> {
+    return new ComputePipeline();
+  }
+  public async createReadyRenderPipeline(descriptor: w.GPURenderPipelineDescriptor): Promise<RenderPipeline> {
+    return new RenderPipeline();
+  }
+
   public getQueue(): Queue {
     return this.queue;
   }
@@ -180,18 +178,18 @@ class Device implements w.WebGPUDevice {
   public flush(): void {}
 }
 
-class Adapter implements w.WebGPUAdapter {
+class Adapter implements w.GPUAdapter {
   public extensions = kNoExtensions;
   public name = "dummy";
-  public createDevice(descriptor: w.WebGPUDeviceDescriptor): Device {
+  public async requestDevice(descriptor: w.GPUDeviceDescriptor, onDeviceLost: w.GPUDeviceLostCallback): Promise<Device> {
     return new Device(this, descriptor);
   }
 }
 
 import { GPU } from "./interface";
 const gpu: GPU = {
-  requestAdapter(options?: w.WebGPURequestAdapterOptions): Promise<w.WebGPUAdapter> {
-    return Promise.resolve(new Adapter());
+  async requestAdapter(options?: w.GPURequestAdapterOptions): Promise<w.GPUAdapter> {
+    return new Adapter();
   },
 
   // TODO: temporary

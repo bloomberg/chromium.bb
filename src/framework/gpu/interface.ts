@@ -3,21 +3,19 @@
 
 export type u64 = number;
 
-export type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
-export type WebGPUStatusableObject = WebGPUBuffer | WebGPUTexture;
-export type WebGPUBindingResource = WebGPUSampler | WebGPUTextureView | WebGPUBufferBinding;
+export type GPUBindingResource = GPUSampler | GPUTextureView | GPUBufferBinding;
 
-export type WebGPUAddressMode =
+export type GPUAddressMode =
   | "clampToEdge"
   | "repeat"
   | "mirrorRepeat"
   | "clampToBorderColor";
-export type WebGPUBindingType =
+export type GPUBindingType =
   | "uniformBuffer"
   | "sampler"
   | "sampledTexture"
   | "storageBuffer";
-export type WebGPUBlendFactor =
+export type GPUBlendFactor =
   | "zero"
   | "one"
   | "srcColor"
@@ -31,17 +29,17 @@ export type WebGPUBlendFactor =
   | "srcAlphaSaturated"
   | "blendColor"
   | "oneMinusBlendColor";
-export type WebGPUBlendOperation =
+export type GPUBlendOperation =
   | "add"
   | "subtract"
   | "reverseSubtract"
   | "min"
   | "max";
-export type WebGPUBorderColor =
+export type GPUBorderColor =
   | "transparentBlack"
   | "opaqueBlack"
   | "opaqueWhite";
-export type WebGPUCompareFunction =
+export type GPUCompareFunction =
   | "never"
   | "less"
   | "equal"
@@ -50,40 +48,32 @@ export type WebGPUCompareFunction =
   | "notEqual"
   | "greaterEqual"
   | "always";
-export type WebGPUCullMode =
+export type GPUCullMode =
   | "none"
   | "front"
   | "back";
-export type WebGPUFilterMode =
+export type GPUFilterMode =
   | "nearest"
   | "linear";
-export type WebGPUFrontFace =
+export type GPUFrontFace =
   | "ccw"
   | "cw";
-export type WebGPUIndexFormat =
+export type GPUIndexFormat =
   | "uint16"
   | "uint32";
-export type WebGPUInputStepMode =
+export type GPUInputStepMode =
   | "vertex"
   | "instance";
-export type WebGPULoadOp =
+export type GPULoadOp =
   | "clear"
   | "load";
-export type WebGPULogEntryType =
-  | "device-lost"
-  | "validation-error"
-  | "recoverable-out-of-memory";
-export type WebGPUObjectStatus =
-  | "valid"
-  | "out-of-memory"
-  | "invalid";
-export type WebGPUPrimitiveTopology =
+export type GPUPrimitiveTopology =
   | "pointList"
   | "lineList"
   | "lineStrip"
   | "trangleList"
   | "triangleStrip";
-export type WebGPUStencilOperation =
+export type GPUStencilOperation =
   | "keep"
   | "zero"
   | "replace"
@@ -92,32 +82,32 @@ export type WebGPUStencilOperation =
   | "decrementClamp"
   | "incrementWrap"
   | "decrementWrap";
-export type WebGPUStoreOp =
+export type GPUStoreOp =
   | "store";
-export type WebGPUTextureDimension =
+export type GPUTextureDimension =
   | "1d"
   | "2d"
   | "3d";
-export type WebGPUTextureFormat =
+export type GPUTextureFormat =
   | "R8G8B8A8Unorm"
   | "R8G8B8A8Uint"
   | "B8G8R8A8Unorm"
   | "D32FloatS8Uint";
-export type WebGPUTextureViewDimension =
+export type GPUTextureViewDimension =
   | "1d"
   | "2d"
   | "2darray"
   | "cube"
   | "cubearray"
   | "3d";
-export type WebGPUVertexFormat =
+export type GPUVertexFormat =
   | "floatR32G32B32A32"
   | "floatR32G32B32"
   | "floatR32G32"
   | "floatR32";
 
-export type WebGPUBufferUsageFlags = number;
-export const enum WebGPUBufferUsage {
+export type GPUBufferUsageFlags = number;
+export const enum GPUBufferUsage {
   NONE = 0,
   MAP_READ = 1,
   MAP_WRITE = 2,
@@ -129,8 +119,8 @@ export const enum WebGPUBufferUsage {
   STORAGE = 128,
 }
 
-export type WebGPUColorWriteFlags = number;
-export const enum WebGPUColorWriteBits {
+export type GPUColorWriteFlags = number;
+export const enum GPUColorWriteBits {
   NONE = 0,
   RED = 1,
   GREEN = 2,
@@ -139,23 +129,23 @@ export const enum WebGPUColorWriteBits {
   ALL = 15,
 }
 
-export type WebGPUShaderStageFlags = number;
-export const enum WebGPUShaderStageBit {
+export type GPUShaderStageFlags = number;
+export const enum GPUShaderStageBit {
   NONE = 0,
   VERTEX = 1,
   FRAGMENT = 2,
   COMPUTE = 4,
 }
 
-export type WebGPUTextureAspectFlags = number;
-export const enum WebGPUTextureAspect {
+export type GPUTextureAspectFlags = number;
+export const enum GPUTextureAspect {
   COLOR = 1,
   DEPTH = 2,
   STENCIL = 4,
 }
 
-export type WebGPUTextureUsageFlags = number;
-export const enum WebGPUTextureUsage {
+export type GPUTextureUsageFlags = number;
+export const enum GPUTextureUsage {
   NONE = 0,
   TRANSFER_SRC = 1,
   TRANSFER_DST = 2,
@@ -165,270 +155,277 @@ export const enum WebGPUTextureUsage {
   PRESENT = 32,
 }
 
-export interface WebGPUAttachmentDescriptor {
-  format?: WebGPUTextureFormat;
+export interface GPUAttachmentDescriptor {
+  format?: GPUTextureFormat;
 }
 
-export interface WebGPUAttachmentsStateDescriptor {
-  colorAttachments?: WebGPUAttachmentDescriptor[];
-  depthStencilAttachment?: WebGPUAttachmentDescriptor | null;
+export interface GPUAttachmentsStateDescriptor {
+  colorAttachments?: GPUAttachmentDescriptor[];
+  depthStencilAttachment?: GPUAttachmentDescriptor | null;
 }
 
-export interface WebGPUBindGroupBinding {
+export interface GPUBindGroupBinding {
   binding?: number;
-  resource?: WebGPUBindingResource;
+  resource?: GPUBindingResource;
 }
 
-export interface WebGPUBindGroupDescriptor {
-  bindings?: WebGPUBindGroupBinding[];
-  layout?: WebGPUBindGroupLayout;
+export interface GPUBindGroupDescriptor {
+  bindings?: GPUBindGroupBinding[];
+  layout?: GPUBindGroupLayout;
 }
 
-export interface WebGPUBindGroupLayoutBinding {
+export interface GPUBindGroupLayoutBinding {
   binding?: number;
-  type?: WebGPUBindingType;
-  visibility?: WebGPUShaderStageFlags;
+  type?: GPUBindingType;
+  visibility?: GPUShaderStageFlags;
 }
 
-export interface WebGPUBindGroupLayoutDescriptor {
-  bindings?: WebGPUBindGroupLayoutBinding[];
+export interface GPUBindGroupLayoutDescriptor {
+  bindings?: GPUBindGroupLayoutBinding[];
 }
 
-export interface WebGPUBlendDescriptor {
-  dstFactor?: WebGPUBlendFactor;
-  operation?: WebGPUBlendOperation;
-  srcFactor?: WebGPUBlendFactor;
+export interface GPUBlendDescriptor {
+  dstFactor?: GPUBlendFactor;
+  operation?: GPUBlendOperation;
+  srcFactor?: GPUBlendFactor;
 }
 
-export interface WebGPUBlendStateDescriptor {
-  alpha?: WebGPUBlendDescriptor;
+export interface GPUBlendStateDescriptor {
+  alpha?: GPUBlendDescriptor;
   blendEnabled?: boolean;
-  color?: WebGPUBlendDescriptor;
-  writeMask?: WebGPUColorWriteFlags;
+  color?: GPUBlendDescriptor;
+  writeMask?: GPUColorWriteFlags;
 }
 
-export interface WebGPUBufferBinding {
-  buffer?: WebGPUBuffer;
+export interface GPUBufferBinding {
+  buffer?: GPUBuffer;
   offset?: number;
   size?: number;
 }
 
-export interface WebGPUBufferCopyView {
-  buffer?: WebGPUBuffer;
+export interface GPUBufferCopyView {
+  buffer?: GPUBuffer;
   imageHeight?: number;
   offset?: number;
   rowPitch?: number;
 }
 
-export interface WebGPUBufferDescriptor {
+export interface GPUBufferDescriptor {
   size?: number;
-  usage?: WebGPUBufferUsageFlags;
+  usage?: GPUBufferUsageFlags;
 }
 
-export interface WebGPUColor {
+export interface GPUColor {
   a?: number;
   b?: number;
   g?: number;
   r?: number;
 }
 
-export interface WebGPUCommandBufferDescriptor {
+export interface GPUCommandBufferDescriptor {
   label?: string;
 }
 
-export interface WebGPUComputePipelineDescriptor extends WebGPUPipelineDescriptorBase {
-  computeStage?: WebGPUPipelineStageDescriptor;
+export interface GPUComputePipelineDescriptor extends GPUPipelineDescriptorBase {
+  computeStage?: GPUPipelineStageDescriptor;
 }
 
-export interface WebGPUDepthStencilStateDescriptor {
-  back?: WebGPUStencilStateFaceDescriptor;
-  depthCompare?: WebGPUCompareFunction;
+export interface GPUDepthStencilStateDescriptor {
+  back?: GPUStencilStateFaceDescriptor;
+  depthCompare?: GPUCompareFunction;
   depthWriteEnabled?: boolean;
-  front?: WebGPUStencilStateFaceDescriptor;
+  front?: GPUStencilStateFaceDescriptor;
   stencilReadMask?: number;
   stencilWriteMask?: number;
 }
 
-export interface WebGPUDeviceDescriptor {
-  extensions?: WebGPUExtensions;
+export interface GPUDeviceDescriptor {
+  extensions?: GPUExtensions;
 }
 
-export interface WebGPUExtensions {
+export interface GPUExtensions {
   anisotropicFiltering?: boolean;
 }
 
-export interface WebGPUExtent3D {
+export interface GPUExtent3D {
   depth?: number;
   height?: number;
   width?: number;
 }
 
-export interface WebGPUFenceDescriptor {
+export interface GPUFenceDescriptor {
   initialValue?: u64;
   label?: string;
-  signalQueue?: WebGPUQueue;
+  signalQueue?: GPUQueue;
 }
 
-export interface WebGPUInputStateDescriptor {
-  attributes?: WebGPUVertexAttributeDescriptor[];
-  indexFormat?: WebGPUIndexFormat;
-  inputs?: WebGPUVertexInputDescriptor[];
+export interface GPUInputStateDescriptor {
+  attributes?: GPUVertexAttributeDescriptor[];
+  indexFormat?: GPUIndexFormat;
+  inputs?: GPUVertexInputDescriptor[];
 }
 
-export interface WebGPULimits {
+export interface GPULimits {
   maxBindGroups?: number;
 }
 
-export interface WebGPUOrigin3D {
+export interface GPUOrigin3D {
   x?: number;
   y?: number;
   z?: number;
 }
 
-export interface WebGPUPipelineDescriptorBase {
+export interface GPUPipelineDescriptorBase {
   label?: string;
-  layout?: WebGPUPipelineLayout;
+  layout?: GPUPipelineLayout;
 }
 
-export interface WebGPUPipelineLayoutDescriptor {
-  bindGroupLayouts?: WebGPUBindGroupLayout[];
+export interface GPUPipelineLayoutDescriptor {
+  bindGroupLayouts?: GPUBindGroupLayout[];
 }
 
-export interface WebGPUPipelineStageDescriptor {
+export interface GPUPipelineStageDescriptor {
   entryPoint?: string;
-  module?: WebGPUShaderModule;
+  module?: GPUShaderModule;
 }
 
-export interface WebGPURasterizationStateDescriptor {
-  cullMode?: WebGPUCullMode;
+export interface GPURasterizationStateDescriptor {
+  cullMode?: GPUCullMode;
   depthBias?: number;
   depthBiasClamp?: number;
   depthBiasSlopeScale?: number;
-  frontFace?: WebGPUFrontFace;
+  frontFace?: GPUFrontFace;
 }
 
-export interface WebGPURenderPassColorAttachmentDescriptor {
-  attachment?: WebGPUTextureView;
-  clearColor?: WebGPUColor;
-  loadOp?: WebGPULoadOp;
-  resolveTarget?: WebGPUTextureView | null;
-  storeOp?: WebGPUStoreOp;
+export interface GPURenderPassColorAttachmentDescriptor {
+  attachment?: GPUTextureView;
+  clearColor?: GPUColor;
+  loadOp?: GPULoadOp;
+  resolveTarget?: GPUTextureView | null;
+  storeOp?: GPUStoreOp;
 }
 
-export interface WebGPURenderPassDepthStencilAttachmentDescriptor {
-  attachment?: WebGPUTextureView;
+export interface GPURenderPassDepthStencilAttachmentDescriptor {
+  attachment?: GPUTextureView;
   clearDepth?: number;
   clearStencil?: number;
-  depthLoadOp?: WebGPULoadOp;
-  depthStoreOp?: WebGPUStoreOp;
-  stencilLoadOp?: WebGPULoadOp;
-  stencilStoreOp?: WebGPUStoreOp;
+  depthLoadOp?: GPULoadOp;
+  depthStoreOp?: GPUStoreOp;
+  stencilLoadOp?: GPULoadOp;
+  stencilStoreOp?: GPUStoreOp;
 }
 
-export interface WebGPURenderPassDescriptor {
-  colorAttachments?: WebGPURenderPassColorAttachmentDescriptor[];
-  depthStencilAttachment?: WebGPURenderPassDepthStencilAttachmentDescriptor;
+export interface GPURenderPassDescriptor {
+  colorAttachments?: GPURenderPassColorAttachmentDescriptor[];
+  depthStencilAttachment?: GPURenderPassDepthStencilAttachmentDescriptor;
 }
 
-export interface WebGPURenderPipelineDescriptor extends WebGPUPipelineDescriptorBase {
-  attachmentsState?: WebGPUAttachmentsStateDescriptor;
-  blendStates?: WebGPUBlendStateDescriptor[];
-  depthStencilState?: WebGPUDepthStencilStateDescriptor;
-  fragmentStage?: WebGPUPipelineStageDescriptor;
-  inputState?: WebGPUInputStateDescriptor;
-  primitiveTopology?: WebGPUPrimitiveTopology;
-  rasterizationState?: WebGPURasterizationStateDescriptor;
+export interface GPURenderPipelineDescriptor extends GPUPipelineDescriptorBase {
+  attachmentsState?: GPUAttachmentsStateDescriptor;
+  blendStates?: GPUBlendStateDescriptor[];
+  depthStencilState?: GPUDepthStencilStateDescriptor;
+  fragmentStage?: GPUPipelineStageDescriptor;
+  inputState?: GPUInputStateDescriptor;
+  primitiveTopology?: GPUPrimitiveTopology;
+  rasterizationState?: GPURasterizationStateDescriptor;
   sampleCount?: number;
-  vertexStage?: WebGPUPipelineStageDescriptor;
+  vertexStage?: GPUPipelineStageDescriptor;
 }
 
-export interface WebGPUSamplerDescriptor {
-  borderColor?: WebGPUBorderColor;
-  compareFunction?: WebGPUCompareFunction;
+export interface GPUSamplerDescriptor {
+  borderColor?: GPUBorderColor;
+  compareFunction?: GPUCompareFunction;
   lodMaxClamp?: number;
   lodMinClamp?: number;
-  magFilter?: WebGPUFilterMode;
+  magFilter?: GPUFilterMode;
   maxAnisotropy?: number;
-  minFilter?: WebGPUFilterMode;
-  mipmapFilter?: WebGPUFilterMode;
-  rAddressMode?: WebGPUAddressMode;
-  sAddressMode?: WebGPUAddressMode;
-  tAddressMode?: WebGPUAddressMode;
+  minFilter?: GPUFilterMode;
+  mipmapFilter?: GPUFilterMode;
+  rAddressMode?: GPUAddressMode;
+  sAddressMode?: GPUAddressMode;
+  tAddressMode?: GPUAddressMode;
 }
 
-export interface WebGPUShaderModuleDescriptor {
+export interface GPUShaderModuleDescriptor {
   code: ArrayBuffer | string;
   label?: string;
 }
 
-export interface WebGPUStencilStateFaceDescriptor {
-  compare?: WebGPUCompareFunction;
-  depthFailOp?: WebGPUStencilOperation;
-  passOp?: WebGPUStencilOperation;
-  stencilFailOp?: WebGPUStencilOperation;
+export interface GPUStencilStateFaceDescriptor {
+  compare?: GPUCompareFunction;
+  depthFailOp?: GPUStencilOperation;
+  passOp?: GPUStencilOperation;
+  stencilFailOp?: GPUStencilOperation;
 }
 
-export interface WebGPUSwapChainDescriptor {
-  device?: WebGPUDevice | null;
-  format?: WebGPUTextureFormat;
+export interface GPUSwapChainDescriptor {
+  device?: GPUDevice | null;
+  format?: GPUTextureFormat;
   height?: number;
-  usage?: WebGPUTextureUsageFlags;
+  usage?: GPUTextureUsageFlags;
   width?: number;
 }
 
-export interface WebGPUTextureCopyView {
+export interface GPUTextureCopyView {
   level?: number;
-  origin?: WebGPUOrigin3D;
+  origin?: GPUOrigin3D;
   slice?: number;
-  texture?: WebGPUTexture;
+  texture?: GPUTexture;
 }
 
-export interface WebGPUTextureDescriptor {
+export interface GPUTextureDescriptor {
   arraySize?: number;
-  dimension?: WebGPUTextureDimension;
-  format?: WebGPUTextureFormat;
+  dimension?: GPUTextureDimension;
+  format?: GPUTextureFormat;
   levelCount?: number;
   sampleCount?: number;
-  size?: WebGPUExtent3D;
-  usage?: WebGPUTextureUsageFlags;
+  size?: GPUExtent3D;
+  usage?: GPUTextureUsageFlags;
 }
 
-export interface WebGPUTextureViewDescriptor {
-  aspect?: WebGPUTextureAspectFlags;
+export interface GPUTextureViewDescriptor {
+  aspect?: GPUTextureAspectFlags;
   baseArrayLayer?: number;
   baseMipLevel?: number;
-  dimension?: WebGPUTextureViewDimension;
-  format?: WebGPUTextureFormat;
+  dimension?: GPUTextureViewDimension;
+  format?: GPUTextureFormat;
   layerCount?: number;
   levelCount?: number;
 }
 
-export interface WebGPUVertexAttributeDescriptor {
-  format?: WebGPUVertexFormat;
+export interface GPUVertexAttributeDescriptor {
+  format?: GPUVertexFormat;
   inputSlot?: number;
   offset?: number;
   shaderLocation?: number;
 }
 
-export interface WebGPUVertexInputDescriptor {
+export interface GPUVertexInputDescriptor {
   inputSlot?: number;
-  stepMode?: WebGPUInputStepMode;
+  stepMode?: GPUInputStepMode;
   stride?: number;
 }
 
-export interface WebGPUAdapter {
-  readonly extensions: WebGPUExtensions;
+export interface GPUAdapter {
+  readonly extensions: GPUExtensions;
   readonly name: string;
-  createDevice(descriptor: WebGPUDeviceDescriptor): WebGPUDevice;
+  requestDevice(descriptor: GPUDeviceDescriptor, onDeviceLost: GPUDeviceLostCallback): Promise<GPUDevice>;
 }
 
-export interface WebGPUBindGroup {
+export type GPUDeviceLostCallback = (info: GPUDeviceLostInfo) => void;
+
+export interface GPUDeviceLostInfo {
+  readonly device: GPUDevice;
+  readonly reason: string;
 }
 
-export interface WebGPUBindGroupLayout {
+export interface GPUBindGroup {
 }
 
-export interface WebGPUBuffer {
+export interface GPUBindGroupLayout {
+}
+
+export interface GPUBuffer {
   readonly mapping: ArrayBuffer | null;
   destroy(): void;
   unmap(): void;
@@ -438,127 +435,132 @@ export interface WebGPUBuffer {
   setSubData(offset: number, ab: ArrayBuffer): void;
 }
 
-export interface WebGPUCommandBuffer extends WebGPUDebugLabel {
-  beginComputePass(): WebGPUComputePassEncoder;
-  beginRenderPass(descriptor: WebGPURenderPassDescriptor): WebGPURenderPassEncoder;
+export interface GPUCommandBuffer extends GPUDebugLabel {
+  beginComputePass(): GPUComputePassEncoder;
+  beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder;
   blit(): void;
-  copyBufferToBuffer(src: WebGPUBuffer, srcOffset: number, dst: WebGPUBuffer, dstOffset: number, size: number): void;
-  copyBufferToTexture(source: WebGPUBufferCopyView, destination: WebGPUTextureCopyView, copySize: WebGPUExtent3D): void;
-  copyTextureToBuffer(source: WebGPUTextureCopyView, destination: WebGPUBufferCopyView, copySize: WebGPUExtent3D): void;
-  copyTextureToTexture(source: WebGPUTextureCopyView, destination: WebGPUTextureCopyView, copySize: WebGPUExtent3D): void;
+  copyBufferToBuffer(src: GPUBuffer, srcOffset: number, dst: GPUBuffer, dstOffset: number, size: number): void;
+  copyBufferToTexture(source: GPUBufferCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
+  copyTextureToBuffer(source: GPUTextureCopyView, destination: GPUBufferCopyView, copySize: GPUExtent3D): void;
+  copyTextureToTexture(source: GPUTextureCopyView, destination: GPUTextureCopyView, copySize: GPUExtent3D): void;
 }
 
-export interface WebGPUComputePassEncoder extends WebGPUProgrammablePassEncoder {
+export interface GPUComputePassEncoder extends GPUProgrammablePassEncoder {
   dispatch(x: number, y: number, z: number): void;
 }
 
-export interface WebGPUComputePipeline extends WebGPUDebugLabel {
+export interface GPUComputePipeline extends GPUDebugLabel {
 }
 
-export interface WebGPUDebugLabel {
+export interface GPUDebugLabel {
   label: string | undefined;
 }
 
-export interface WebGPUDevice {
-  readonly adapter: WebGPUAdapter;
-  readonly extensions: WebGPUExtensions;
-  readonly limits: WebGPULimits;
-  onLog?: WebGPULogCallback;
-  createBindGroup(descriptor: WebGPUBindGroupDescriptor): WebGPUBindGroup;
-  createBindGroupLayout(descriptor: WebGPUBindGroupLayoutDescriptor): WebGPUBindGroupLayout;
-  createBuffer(descriptor: WebGPUBufferDescriptor): WebGPUBuffer;
-  createCommandBuffer(descriptor: WebGPUCommandBufferDescriptor): WebGPUCommandBuffer;
-  createComputePipeline(descriptor: WebGPUComputePipelineDescriptor): WebGPUComputePipeline;
-  createFence(descriptor: WebGPUFenceDescriptor): WebGPUFence;
-  createPipelineLayout(descriptor: WebGPUPipelineLayoutDescriptor): WebGPUPipelineLayout;
-  createRenderPipeline(descriptor: WebGPURenderPipelineDescriptor): WebGPURenderPipeline;
-  createSampler(descriptor: WebGPUSamplerDescriptor): WebGPUSampler;
-  createShaderModule(descriptor: WebGPUShaderModuleDescriptor): WebGPUShaderModule;
-  createTexture(descriptor: WebGPUTextureDescriptor): WebGPUTexture;
-  getObjectStatus(statusableObject: WebGPUStatusableObject): WebGPUObjectStatusQuery;
-  getQueue(): WebGPUQueue;
+export interface GPUDevice extends EventTarget {
+  readonly adapter: GPUAdapter;
+  readonly extensions: GPUExtensions;
+  readonly limits: GPULimits;
+
+  createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup;
+  createBindGroupLayout(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayout;
+  createCommandBuffer(descriptor: GPUCommandBufferDescriptor): GPUCommandBuffer;
+  createFence(descriptor: GPUFenceDescriptor): GPUFence;
+  createPipelineLayout(descriptor: GPUPipelineLayoutDescriptor): GPUPipelineLayout;
+  createSampler(descriptor: GPUSamplerDescriptor): GPUSampler;
+  createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule;
+
+  createBuffer(descriptor: GPUBufferDescriptor): GPUBuffer;
+  createTexture(descriptor: GPUTextureDescriptor): GPUTexture;
+  tryCreateBuffer(descriptor: GPUBufferDescriptor): Promise<GPUBuffer>;
+  tryCreateTexture(descriptor: GPUTextureDescriptor): Promise<GPUTexture>;
+
+  createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
+  createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
+  createReadyComputePipeline(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+  createReadyRenderPipeline(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
+
+  getQueue(): GPUQueue;
 
   // TODO: temporary
   flush(): void;
 }
 
-export interface WebGPUFence extends WebGPUDebugLabel {
+export interface GPUFence extends GPUDebugLabel {
   getCompletedValue(): u64;
   onCompletion(completionValue: u64): Promise<void>;
 }
 
-export interface WebGPULogEntry {
-  readonly reason: string | null;
-  readonly sourceObject: any;
-  readonly type: WebGPULogEntryType;
+export interface GPULogEntryEvent extends Event {
+  readonly object: any;
+  readonly reason: string;
 }
 
-export interface WebGPUPipelineLayout {
+export interface GPUPipelineLayout {
 }
 
-export interface WebGPUProgrammablePassEncoder extends WebGPUDebugLabel {
-  endPass(): WebGPUCommandBuffer;
+export interface GPUProgrammablePassEncoder extends GPUDebugLabel {
+  endPass(): GPUCommandBuffer;
   insertDebugMarker(markerLabel: string): void;
   popDebugGroup(groupLabel: string): void;
   pushDebugGroup(groupLabel: string): void;
-  setBindGroup(index: number, bindGroup: WebGPUBindGroup): void;
-  setPipeline(pipeline: WebGPUComputePipeline | WebGPURenderPipeline): void;
+  setBindGroup(index: number, bindGroup: GPUBindGroup): void;
+  setPipeline(pipeline: GPUComputePipeline | GPURenderPipeline): void;
 }
 
-export interface WebGPUQueue extends WebGPUDebugLabel {
-  signal(fence: WebGPUFence, signalValue: u64): void;
-  submit(buffers: WebGPUCommandBuffer[]): void;
-  wait(fence: WebGPUFence, valueToWait: u64): void;
+export interface GPUQueue extends GPUDebugLabel {
+  signal(fence: GPUFence, signalValue: u64): void;
+  submit(buffers: GPUCommandBuffer[]): void;
+  wait(fence: GPUFence, valueToWait: u64): void;
 }
 
-export interface WebGPURenderPassEncoder extends WebGPUProgrammablePassEncoder {
+export interface GPURenderPassEncoder extends GPUProgrammablePassEncoder {
   draw(vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number): void;
   drawIndexed(indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number): void;
   setBlendColor(r: number, g: number, b: number, a: number): void;
-  setIndexBuffer(buffer: WebGPUBuffer, offset: number): void;
+  setIndexBuffer(buffer: GPUBuffer, offset: number): void;
   setScissorRect(x: number, y: number, width: number, height: number): void;
   setStencilReference(reference: number): void;
-  setVertexBuffers(startSlot: number, buffers: WebGPUBuffer[], offsets: number[]): void;
+  setVertexBuffers(startSlot: number, buffers: GPUBuffer[], offsets: number[]): void;
   setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
 }
 
-export interface WebGPURenderPipeline extends WebGPUDebugLabel {
+export interface GPURenderPipeline extends GPUDebugLabel {
 }
 
-export interface WebGPURenderingContext extends WebGPUSwapChain {
+export interface GPURenderingContext extends GPUSwapChain {
 }
 
-export interface WebGPUSampler {
+export interface GPUSampler {
 }
 
-export interface WebGPUShaderModule extends WebGPUDebugLabel {
+export interface GPUShaderModule extends GPUDebugLabel {
 }
 
-export interface WebGPUSwapChain {
-  configure(descriptor: WebGPUSwapChainDescriptor): void;
-  getNextTexture(): WebGPUTexture;
+export interface GPUSwapChain {
+  configure(descriptor: GPUSwapChainDescriptor): void;
+  getNextTexture(): GPUTexture;
   present(): void;
 }
 
-export interface WebGPUTexture {
-  createDefaultTextureView(): WebGPUTextureView;
-  createTextureView(desc: WebGPUTextureViewDescriptor): WebGPUTextureView;
+export interface GPUTexture {
+  createDefaultTextureView(): GPUTextureView;
+  createTextureView(desc: GPUTextureViewDescriptor): GPUTextureView;
   destroy(): void;
 }
 
-export interface WebGPUTextureView {
+export interface GPUTextureView {
 }
 
-export type WebGPULogCallback = (error: WebGPULogEntry) => void;
-
-export type WebGPUPowerPreference =
+export type GPUPowerPreference =
   | "low-power"
   | "high-performance";
-export interface WebGPURequestAdapterOptions {
-  powerPreference: WebGPUPowerPreference;
+export interface GPURequestAdapterOptions {
+  powerPreference?: GPUPowerPreference;
 }
 
 export interface GPU {
-  requestAdapter(options?: WebGPURequestAdapterOptions): Promise<WebGPUAdapter>;
-  getDevice(): WebGPUDevice;
+  requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter>;
+
+  // TODO: temporary
+  getDevice(): GPUDevice;
 }
