@@ -4,13 +4,17 @@
 
 #include "fuchsia/test/fake_context.h"
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 
 namespace webrunner {
 
 FakeFrame::FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request)
     : binding_(this, std::move(request)) {
-  binding_.set_error_handler([this](zx_status_t status) { delete this; });
+  binding_.set_error_handler([this](zx_status_t status) {
+    ZX_CHECK(status == ZX_ERR_PEER_CLOSED, status);
+    delete this;
+  });
 }
 
 FakeFrame::~FakeFrame() = default;

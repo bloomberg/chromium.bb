@@ -122,7 +122,11 @@ URLLoaderImpl::URLLoaderImpl(std::unique_ptr<net::URLRequestContext> context,
       context_(std::move(context)),
       buffer_(new net::GrowableIOBuffer()),
       write_watch_(FROM_HERE) {
-  binding_.set_error_handler([this](zx_status_t status) { delete this; });
+  binding_.set_error_handler([this](zx_status_t status) {
+    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+        << " URLLoader disconnected.";
+    delete this;
+  });
   g_active_requests++;
 }
 

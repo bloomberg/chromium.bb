@@ -152,7 +152,10 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrame) {
   EXPECT_TRUE(frame);
 
   base::RunLoop run_loop;
-  frame.set_error_handler([&run_loop](zx_status_t status) { run_loop.Quit(); });
+  frame.set_error_handler([&run_loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+    run_loop.Quit();
+  });
   context().Unbind();
   run_loop.Run();
   EXPECT_FALSE(frame);

@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/fuchsia/fuchsia_logging.h"
+#include "base/logging.h"
 #include "content/public/browser/render_frame_host.h"
 #include "fuchsia/browser/context_impl.h"
 #include "fuchsia/browser/webrunner_browser_context.h"
@@ -52,7 +54,8 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
 
   // Quit the browser main loop when the Context connection is dropped.
   context_binding_->set_error_handler([this](zx_status_t status) {
-    DLOG(WARNING) << "Client connection to Context service dropped.";
+    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+        << " Context disconnected.";
     context_service_.reset();
     std::move(quit_closure_).Run();
   });

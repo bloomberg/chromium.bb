@@ -111,7 +111,8 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
   // Ensure that the MessagePort is dropped when navigating away.
   {
     base::RunLoop run_loop;
-    (*message_port).set_error_handler([&run_loop](zx_status_t) {
+    (*message_port).set_error_handler([&run_loop](zx_status_t status) {
+      EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
       run_loop.Quit();
     });
     controller->LoadUrl("about:blank", nullptr);
