@@ -281,23 +281,19 @@ void ArcApps::OnConnectionReady() {
 
 void ArcApps::OnAppRegistered(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info) {
-  OnAppStatesChanged(app_id, app_info);
+  Publish(Convert(app_id, app_info));
 }
 
 void ArcApps::OnAppStatesChanged(const std::string& app_id,
                                  const ArcAppListPrefs::AppInfo& app_info) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kArc;
-  app->app_id = app_id;
-  app->readiness = NewReadiness(app_info.ready);
-  Publish(std::move(app));
+  Publish(Convert(app_id, app_info));
 }
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->readiness = NewReadiness(false);
+  app->readiness = apps::mojom::Readiness::kUninstalledByUser;
   Publish(std::move(app));
 }
 
@@ -386,7 +382,9 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
 
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->readiness = NewReadiness(app_info.ready);
+  // TODO(crbug.com/826982): examine app_info.suspended, and possibly have a
+  // corresponding 'suspended' apps::mojom::Readiness enum value??
+  app->readiness = apps::mojom::Readiness::kReady;
   app->name = app_info.name;
 
   app->icon_key = NewIconKey(app_id);
@@ -415,15 +413,6 @@ apps::mojom::IconKeyPtr ArcApps::NewIconKey(const std::string& app_id) {
   icon_key->s_key = app_id;
   icon_key->u_key = next_u_key_++;
   return icon_key;
-}
-
-// static
-apps::mojom::Readiness ArcApps::NewReadiness(bool ready) {
-  // TODO(crbug.com/826982): examine ArcAppListPrefs::AppInfo::suspended, and
-  // possibly have a corresponding 'suspended' apps::mojom::Readiness enum
-  // value.
-  return ready ? apps::mojom::Readiness::kReady
-               : apps::mojom::Readiness::kUninstalledByUser;
 }
 
 void ArcApps::Publish(apps::mojom::AppPtr app) {
