@@ -94,8 +94,7 @@ class MODULES_EXPORT PaymentRequest final
   ScriptPromise Retry(ScriptState*, const PaymentValidationErrors*) override;
 
   // PaymentUpdater:
-  void OnUpdatePaymentDetails(const AtomicString& event_type,
-                              const ScriptValue& details_script_value) override;
+  void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
   void OnUpdatePaymentDetailsFailure(const String& error) override;
 
   void Trace(blink::Visitor*) override;
