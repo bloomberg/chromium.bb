@@ -22,7 +22,6 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/appcache/appcache_frontend.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -244,7 +243,7 @@ inline bool operator==(const AppCacheNamespace& lhs,
          lhs.target_url == rhs.target_url;
 }
 
-class MockFrontend : public AppCacheFrontend {
+class MockFrontend : public blink::mojom::AppCacheFrontend {
  public:
   MockFrontend()
       : ignore_progress_events_(false),
@@ -255,14 +254,14 @@ class MockFrontend : public AppCacheFrontend {
             blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT),
         update_(nullptr) {}
 
-  void OnCacheSelected(int host_id,
-                       const blink::mojom::AppCacheInfo& info) override {}
+  void CacheSelected(int32_t host_id,
+                     blink::mojom::AppCacheInfoPtr info) override {}
 
-  void OnStatusChanged(const std::vector<int>& host_ids,
-                       blink::mojom::AppCacheStatus status) override {}
+  void StatusChanged(const std::vector<int32_t>& host_ids,
+                     blink::mojom::AppCacheStatus status) override {}
 
-  void OnEventRaised(const std::vector<int>& host_ids,
-                     blink::mojom::AppCacheEventID event_id) override {
+  void EventRaised(const std::vector<int32_t>& host_ids,
+                   blink::mojom::AppCacheEventID event_id) override {
     raised_events_.push_back(RaisedEvent(host_ids, event_id));
 
     // Trigger additional updates if requested.
@@ -275,21 +274,20 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  void OnErrorEventRaised(
-      const std::vector<int>& host_ids,
-      const blink::mojom::AppCacheErrorDetails& details) override {
-    error_message_ = details.message;
-    OnEventRaised(host_ids,
-                  blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+  void ErrorEventRaised(
+      const std::vector<int32_t>& host_ids,
+      blink::mojom::AppCacheErrorDetailsPtr details) override {
+    error_message_ = details->message;
+    EventRaised(host_ids, blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
   }
 
-  void OnProgressEventRaised(const std::vector<int>& host_ids,
-                             const GURL& url,
-                             int num_total,
-                             int num_complete) override {
+  void ProgressEventRaised(const std::vector<int32_t>& host_ids,
+                           const GURL& url,
+                           int32_t num_total,
+                           int32_t num_complete) override {
     if (!ignore_progress_events_)
-      OnEventRaised(host_ids,
-                    blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+      EventRaised(host_ids,
+                  blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
 
     if (verify_progress_events_) {
       EXPECT_GE(num_total, num_complete);
@@ -315,17 +313,17 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  void OnLogMessage(int host_id,
-                    blink::mojom::ConsoleMessageLevel log_level,
-                    const std::string& message) override {}
+  void LogMessage(int32_t host_id,
+                  blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override {}
 
-  void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
+  void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
 
-  void OnSetSubresourceFactory(
-      int host_id,
+  void SetSubresourceFactory(
+      int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  void AddExpectedEvent(const std::vector<int>& host_ids,
+  void AddExpectedEvent(const std::vector<int32_t>& host_ids,
                         blink::mojom::AppCacheEventID event_id) {
     DCHECK(!ignore_progress_events_ ||
            event_id != blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
@@ -356,7 +354,7 @@ class MockFrontend : public AppCacheFrontend {
     update_hosts_.push_back(host);
   }
 
-  using HostIds = std::vector<int>;
+  using HostIds = std::vector<int32_t>;
   using RaisedEvent = std::pair<HostIds, blink::mojom::AppCacheEventID>;
   using RaisedEvents = std::vector<RaisedEvent>;
   RaisedEvents raised_events_;
@@ -3591,7 +3589,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     return cache;
   }
 
-  AppCacheHost* MakeHost(int host_id, AppCacheFrontend* frontend) {
+  AppCacheHost* MakeHost(int host_id,
+                         blink::mojom::AppCacheFrontend* frontend) {
     constexpr int kProcessIdForTests = 123;
     hosts_.push_back(std::make_unique<AppCacheHost>(host_id, kProcessIdForTests,
                                                     frontend, service_.get()));

@@ -87,27 +87,27 @@ void AppCacheNavigationHandleCore::SetProcessId(int process_id) {
   precreated_host_->SetProcessId(process_id);
 }
 
-void AppCacheNavigationHandleCore::OnCacheSelected(
+void AppCacheNavigationHandleCore::CacheSelected(
     int host_id,
-    const blink::mojom::AppCacheInfo& info) {
+    blink::mojom::AppCacheInfoPtr info) {
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnStatusChanged(
+void AppCacheNavigationHandleCore::StatusChanged(
     const std::vector<int>& host_ids,
     blink::mojom::AppCacheStatus status) {
   // Should never be called.
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnEventRaised(
+void AppCacheNavigationHandleCore::EventRaised(
     const std::vector<int>& host_ids,
     blink::mojom::AppCacheEventID event_id) {
   // Should never be called.
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnProgressEventRaised(
+void AppCacheNavigationHandleCore::ProgressEventRaised(
     const std::vector<int>& host_ids,
     const GURL& url,
     int num_total,
@@ -116,14 +116,14 @@ void AppCacheNavigationHandleCore::OnProgressEventRaised(
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnErrorEventRaised(
+void AppCacheNavigationHandleCore::ErrorEventRaised(
     const std::vector<int>& host_ids,
-    const blink::mojom::AppCacheErrorDetails& details) {
+    blink::mojom::AppCacheErrorDetailsPtr details) {
   // Should never be called.
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnLogMessage(
+void AppCacheNavigationHandleCore::LogMessage(
     int host_id,
     blink::mojom::ConsoleMessageLevel log_level,
     const std::string& message) {
@@ -131,13 +131,13 @@ void AppCacheNavigationHandleCore::OnLogMessage(
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnContentBlocked(int host_id,
-                                                    const GURL& manifest_url) {
+void AppCacheNavigationHandleCore::ContentBlocked(int host_id,
+                                                  const GURL& manifest_url) {
   // Should never be called.
   DCHECK(false);
 }
 
-void AppCacheNavigationHandleCore::OnSetSubresourceFactory(
+void AppCacheNavigationHandleCore::SetSubresourceFactory(
     int host_id,
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {
   // Should never be called.

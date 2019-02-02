@@ -21,7 +21,7 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   ~AppCacheBackendImpl();
 
   void Initialize(AppCacheServiceImpl* service,
-                  AppCacheFrontend* frontend,
+                  blink::mojom::AppCacheFrontend* frontend,
                   int process_id);
 
   int process_id() const { return process_id_; }
@@ -70,7 +70,7 @@ class CONTENT_EXPORT AppCacheBackendImpl {
 
  private:
   AppCacheServiceImpl* service_;
-  AppCacheFrontend* frontend_;
+  blink::mojom::AppCacheFrontend* frontend_;
   int process_id_;
   HostMap hosts_;
 

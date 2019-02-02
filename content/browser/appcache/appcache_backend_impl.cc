@@ -22,7 +22,7 @@ AppCacheBackendImpl::~AppCacheBackendImpl() {
 }
 
 void AppCacheBackendImpl::Initialize(AppCacheServiceImpl* service,
-                                     AppCacheFrontend* frontend,
+                                     blink::mojom::AppCacheFrontend* frontend,
                                      int process_id) {
   DCHECK(!service_ && !frontend_ && frontend && service);
   service_ = service;

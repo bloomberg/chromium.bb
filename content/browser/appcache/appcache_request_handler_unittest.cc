@@ -27,7 +27,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
-#include "content/browser/appcache/appcache_frontend.h"
 #include "content/browser/appcache/appcache_job.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
@@ -72,34 +71,34 @@ enum RequestHandlerType {
 class AppCacheRequestHandlerTest
     : public testing::TestWithParam<RequestHandlerType> {
  public:
-  class MockFrontend : public AppCacheFrontend {
+  class MockFrontend : public blink::mojom::AppCacheFrontend {
    public:
-    void OnCacheSelected(int host_id,
-                         const blink::mojom::AppCacheInfo& info) override {}
+    void CacheSelected(int32_t host_id,
+                       blink::mojom::AppCacheInfoPtr info) override {}
 
-    void OnStatusChanged(const std::vector<int>& host_ids,
-                         blink::mojom::AppCacheStatus status) override {}
+    void StatusChanged(const std::vector<int32_t>& host_ids,
+                       blink::mojom::AppCacheStatus status) override {}
 
-    void OnEventRaised(const std::vector<int>& host_ids,
-                       blink::mojom::AppCacheEventID event_id) override {}
+    void EventRaised(const std::vector<int32_t>& host_ids,
+                     blink::mojom::AppCacheEventID event_id) override {}
 
-    void OnErrorEventRaised(
-        const std::vector<int>& host_ids,
-        const blink::mojom::AppCacheErrorDetails& details) override {}
+    void ErrorEventRaised(
+        const std::vector<int32_t>& host_ids,
+        blink::mojom::AppCacheErrorDetailsPtr details) override {}
 
-    void OnProgressEventRaised(const std::vector<int>& host_ids,
-                               const GURL& url,
-                               int num_total,
-                               int num_complete) override {}
+    void ProgressEventRaised(const std::vector<int32_t>& host_ids,
+                             const GURL& url,
+                             int32_t num_total,
+                             int32_t num_complete) override {}
 
-    void OnLogMessage(int host_id,
-                      blink::mojom::ConsoleMessageLevel log_level,
-                      const std::string& message) override {}
+    void LogMessage(int32_t host_id,
+                    blink::mojom::ConsoleMessageLevel log_level,
+                    const std::string& message) override {}
 
-    void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
+    void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
 
-    void OnSetSubresourceFactory(
-        int host_id,
+    void SetSubresourceFactory(
+        int32_t host_id,
         network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
   };
 

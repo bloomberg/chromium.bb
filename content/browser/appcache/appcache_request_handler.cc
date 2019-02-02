@@ -400,7 +400,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
       host_->NotifyMainResourceBlocked(manifest_url);
     } else {
       DCHECK_EQ(resource_type_, RESOURCE_TYPE_SHARED_WORKER);
-      host_->frontend()->OnContentBlocked(host_->host_id(), manifest_url);
+      host_->frontend()->ContentBlocked(host_->host_id(), manifest_url);
     }
     DeliverNetworkResponse();
     return;

@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_host.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -12,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
-#include "content/browser/appcache/appcache_frontend.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -30,28 +30,28 @@ namespace content {
 
 namespace {
 
-blink::mojom::AppCacheInfo CreateCacheInfo(
+blink::mojom::AppCacheInfoPtr CreateCacheInfo(
     const AppCache* cache,
     const GURL& manifest_url,
     blink::mojom::AppCacheStatus status) {
-  blink::mojom::AppCacheInfo info;
-  info.manifest_url = manifest_url;
-  info.status = status;
+  auto info = blink::mojom::AppCacheInfo::New();
+  info->manifest_url = manifest_url;
+  info->status = status;
 
   if (!cache)
     return info;
 
-  info.cache_id = cache->cache_id();
+  info->cache_id = cache->cache_id();
 
   if (!cache->is_complete())
     return info;
 
   DCHECK(cache->owning_group());
-  info.is_complete = true;
-  info.group_id = cache->owning_group()->group_id();
-  info.last_update_time = cache->update_time();
-  info.creation_time = cache->owning_group()->creation_time();
-  info.size = cache->cache_size();
+  info->is_complete = true;
+  info->group_id = cache->owning_group()->group_id();
+  info->last_update_time = cache->update_time();
+  info->creation_time = cache->owning_group()->creation_time();
+  info->size = cache->cache_size();
   return info;
 }
 
@@ -59,7 +59,7 @@ blink::mojom::AppCacheInfo CreateCacheInfo(
 
 AppCacheHost::AppCacheHost(int host_id,
                            int process_id,
-                           AppCacheFrontend* frontend,
+                           blink::mojom::AppCacheFrontend* frontend,
                            AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
@@ -135,8 +135,7 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
     service()->quota_manager_proxy()->NotifyOriginInUse(origin_in_use_);
 
   if (main_resource_blocked_)
-    frontend_->OnContentBlocked(host_id_,
-                                blocked_manifest_url_);
+    frontend_->ContentBlocked(host_id_, blocked_manifest_url_);
 
   // 6.9.6 The application cache selection algorithm.
   // The algorithm is started here and continues in FinishCacheSelection,
@@ -167,15 +166,15 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
         !policy->CanCreateAppCache(manifest_url, first_party_url_)) {
       FinishCacheSelection(nullptr, nullptr);
       std::vector<int> host_ids(1, host_id_);
-      frontend_->OnEventRaised(
+      frontend_->EventRaised(
           host_ids, blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-      frontend_->OnErrorEventRaised(
+      frontend_->ErrorEventRaised(
           host_ids,
-          blink::mojom::AppCacheErrorDetails(
+          blink::mojom::AppCacheErrorDetails::New(
               "Cache creation was blocked by the content policy",
               blink::mojom::AppCacheErrorReason::APPCACHE_POLICY_ERROR, GURL(),
               0, false /*is_cross_origin*/));
-      frontend_->OnContentBlocked(host_id_, manifest_url);
+      frontend_->ContentBlocked(host_id_, manifest_url);
       return true;
     }
     // Note: The client detects if the document was not loaded using HTTP GET
@@ -435,7 +434,7 @@ void AppCacheHost::FinishCacheSelection(
     AppCacheGroup* owning_group = cache->owning_group();
     const char* kFormatString =
         "Document was loaded from Application Cache with manifest %s";
-    frontend_->OnLogMessage(
+    frontend_->LogMessage(
         host_id_, blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(kFormatString,
                            owning_group->manifest_url().spec().c_str()));
@@ -456,7 +455,7 @@ void AppCacheHost::FinishCacheSelection(
     const char* kFormatString = group->HasCache() ?
         "Adding master entry to Application Cache with manifest %s" :
         "Creating Application Cache with manifest %s";
-    frontend_->OnLogMessage(
+    frontend_->LogMessage(
         host_id_, blink::mojom::ConsoleMessageLevel::kInfo,
         base::StringPrintf(kFormatString,
                            group->manifest_url().spec().c_str()));
@@ -509,14 +508,14 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
 
   if (associated_cache_info_pending_ && associated_cache_.get() &&
       associated_cache_->is_complete()) {
-    blink::mojom::AppCacheInfo info = CreateCacheInfo(
+    blink::mojom::AppCacheInfoPtr info = CreateCacheInfo(
         associated_cache_.get(), preferred_manifest_url_, GetStatus());
     associated_cache_info_pending_ = false;
     // In the network service world, we need to pass the URLLoaderFactory
     // instance to the renderer which it can use to request subresources.
     // This ensures that they can be served out of the AppCache.
     MaybePassSubresourceFactory();
-    frontend_->OnCacheSelected(host_id_, info);
+    frontend_->CacheSelected(host_id_, std::move(info));
   }
 }
 
@@ -578,7 +577,7 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
                                                         &factory_ptr);
 
-  frontend_->OnSetSubresourceFactory(host_id(), std::move(factory_ptr));
+  frontend_->SetSubresourceFactory(host_id(), std::move(factory_ptr));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(
@@ -615,7 +614,7 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
   if (cache)
     cache->AssociateHost(this);
 
-  blink::mojom::AppCacheInfo info =
+  blink::mojom::AppCacheInfoPtr info =
       CreateCacheInfo(cache, manifest_url, GetStatus());
   // In the network service world, we need to pass the URLLoaderFactory
   // instance to the renderer which it can use to request subresources.
@@ -623,7 +622,7 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
   if (cache && cache->is_complete())
     MaybePassSubresourceFactory();
 
-  frontend_->OnCacheSelected(host_id_, info);
+  frontend_->CacheSelected(host_id_, std::move(info));
 }
 
 }  // namespace content
