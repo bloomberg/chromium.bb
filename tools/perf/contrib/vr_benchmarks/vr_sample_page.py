@@ -14,8 +14,8 @@ WEBVR_SAMPLE_DIR = os.path.join(
 
 
 WEBXR_SAMPLE_DIR = os.path.join(
-    os.path.dirname(__file__), '..', '..', '..', '..', 'chrome', 'test',
-    'data', 'xr', 'webxr_samples')
+    os.path.dirname(__file__), '..', '..', '..', '..', 'third_party',
+        'webxr_test_pages', 'webxr-samples')
 
 
 class _VrXrSamplePage(page.Page):

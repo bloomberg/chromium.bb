@@ -17,6 +17,9 @@ class WebXrSamplePage(XrSamplePage):
         extra_browser_args=extra_browser_args)
 
   def RunPageInteractions(self, action_runner):
+    # The user-visible text differs per-page (e.g. "Enter VR"), but the
+    # element's "title" attribute is currently always "Enter XR".
+    action_runner.WaitForElement(selector='button[title="Enter XR"]')
     action_runner.TapElement(selector='button[title="Enter XR"]')
     action_runner.MeasureMemory(True)
     # We don't want to be in VR or on a page with a WebGL canvas at the end of
