@@ -185,7 +185,7 @@ gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
   return gl::ScopedJavaSurface::AcquireExternalSurface(j_surface);
 }
 
-void ImageReaderGLOwner::UpdateTexImage() {
+void ImageReaderGLOwner::UpdateTexImage(bool bind_egl_image) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If we've lost the texture, then do nothing.
@@ -251,9 +251,12 @@ void ImageReaderGLOwner::UpdateTexImage() {
   current_image_fence_ = std::move(scoped_acquire_fence_fd);
   current_image_bound_ = false;
 
-  // TODO(khushalsagar): This should be on the public API so that we only bind
-  // the texture if we were going to render it without an overlay.
-  EnsureTexImageBound();
+  // Skip generating and binding egl image if bind_egl_image is false.
+  if (bind_egl_image) {
+    // TODO(khushalsagar): This should be on the public API so that we only bind
+    // the texture if we were going to render it without an overlay.
+    EnsureTexImageBound();
+  }
 }
 
 void ImageReaderGLOwner::EnsureTexImageBound() {

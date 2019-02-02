@@ -156,7 +156,7 @@ TEST_F(CodecImageTest, CopyTexImageTriggersFrontBufferRendering) {
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
   EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*texture_owner_, UpdateTexImage(true));
   i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
@@ -166,7 +166,7 @@ TEST_F(CodecImageTest, GetTextureMatrixTriggersFrontBufferRendering) {
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
   EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*texture_owner_, UpdateTexImage(true));
   EXPECT_CALL(*texture_owner_, GetTransformMatrix(_));
   float matrix[16];
   i->GetTextureMatrix(matrix);
@@ -245,7 +245,7 @@ TEST_F(CodecImageTest, RenderToFrontBufferRestoresTextureBindings) {
   glGenTextures(1, &pre_bound_texture);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, pre_bound_texture);
   auto i = NewImage(kTextureOwner);
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*texture_owner_, UpdateTexImage(true));
   i->RenderToFrontBuffer();
   GLint post_bound_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &post_bound_texture);
@@ -264,7 +264,7 @@ TEST_F(CodecImageTest, RenderToFrontBufferRestoresGLContext) {
 
   auto i = NewImage(kTextureOwner);
   // Our context should not be current when UpdateTexImage() is called.
-  EXPECT_CALL(*texture_owner_, UpdateTexImage()).WillOnce(Invoke([&]() {
+  EXPECT_CALL(*texture_owner_, UpdateTexImage(true)).WillOnce(Invoke([&](bool) {
     ASSERT_FALSE(context->IsCurrent(surface.get()));
   }));
   i->RenderToFrontBuffer();
@@ -299,7 +299,7 @@ TEST_F(CodecImageTest, GetAHardwareBuffer) {
   EXPECT_EQ(texture_owner_->get_a_hardware_buffer_count, 0);
   EXPECT_FALSE(i->was_rendered_to_front_buffer());
 
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*texture_owner_, UpdateTexImage(true));
   i->GetAHardwareBuffer();
   EXPECT_EQ(texture_owner_->get_a_hardware_buffer_count, 1);
   EXPECT_TRUE(i->was_rendered_to_front_buffer());

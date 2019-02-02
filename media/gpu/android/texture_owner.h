@@ -69,7 +69,9 @@ class MEDIA_GPU_EXPORT TextureOwner
   virtual gl::ScopedJavaSurface CreateJavaSurface() const = 0;
 
   // Update the texture image using the latest available image data.
-  virtual void UpdateTexImage() = 0;
+  // |bind_egl_image| hints the underlying implementation whether an egl image
+  // should be bound to the texture target or not.
+  virtual void UpdateTexImage(bool bind_egl_image = true) = 0;
 
   // Transformation matrix if any associated with the texture image.
   virtual void GetTransformMatrix(float mtx[16]) = 0;
