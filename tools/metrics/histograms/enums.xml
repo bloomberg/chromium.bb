@@ -10962,6 +10962,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Star"/>
   <int value="7" label="New Tab"/>
   <int value="8" label="Credit Card Autofill"/>
+  <int value="9" label="Text Suggestion"/>
 </enum>
 
 <enum name="DefaultWebClientState">
