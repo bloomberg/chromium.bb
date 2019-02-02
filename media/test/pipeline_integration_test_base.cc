@@ -30,10 +30,6 @@
 #include "media/filters/aom_video_decoder.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-#include "media/filters/dav1d_video_decoder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -73,12 +69,7 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
   video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif
 
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-  if (base::FeatureList::IsEnabled(kDav1dVideoDecoder))
-    video_decoders.push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
-  else
-    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
-#elif BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_AV1_DECODER)
   video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 
