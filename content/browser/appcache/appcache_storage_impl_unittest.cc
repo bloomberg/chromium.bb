@@ -1681,8 +1681,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void Continue_Reinitialize(ReinitTestCase test_case) {
     const int kMockProcessId = 1;
-    backend_.reset(new AppCacheBackendImpl);
-    backend_->Initialize(service_.get(), &frontend_, kMockProcessId);
+    backend_ =
+        std::make_unique<AppCacheBackendImpl>(service_.get(), kMockProcessId);
+    backend_->set_frontend_for_testing(&frontend_);
 
     if (test_case == CORRUPT_SQL_ON_INSTALL) {
       // Break the db file

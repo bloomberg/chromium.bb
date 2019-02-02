@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "content/browser/appcache/appcache_frontend_proxy.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -17,12 +18,8 @@ class AppCacheServiceImpl;
 
 class CONTENT_EXPORT AppCacheBackendImpl {
  public:
-  AppCacheBackendImpl();
+  AppCacheBackendImpl(AppCacheServiceImpl* service, int process_id);
   ~AppCacheBackendImpl();
-
-  void Initialize(AppCacheServiceImpl* service,
-                  blink::mojom::AppCacheFrontend* frontend,
-                  int process_id);
 
   int process_id() const { return process_id_; }
 
@@ -68,8 +65,13 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   // this function and ignore registrations for this host id from the renderer.
   void RegisterPrecreatedHost(std::unique_ptr<AppCacheHost> host);
 
+  void set_frontend_for_testing(blink::mojom::AppCacheFrontend* frontend) {
+    frontend_ = frontend;
+  }
+
  private:
   AppCacheServiceImpl* service_;
+  AppCacheFrontendProxy frontend_proxy_;
   blink::mojom::AppCacheFrontend* frontend_;
   int process_id_;
   HostMap hosts_;

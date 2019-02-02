@@ -19,10 +19,7 @@ namespace content {
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
     int process_id)
-    : frontend_proxy_(process_id) {
-  DCHECK(appcache_service);
-  backend_impl_.Initialize(appcache_service, &frontend_proxy_, process_id);
-}
+    : backend_impl_(appcache_service, process_id) {}
 
 AppCacheDispatcherHost::~AppCacheDispatcherHost() = default;
 
