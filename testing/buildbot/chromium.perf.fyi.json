@@ -118,8 +118,7 @@
           "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
-          "shards": 25,
-          "upload_test_results": true
+          "shards": 25
         },
         "trigger_script": {
           "args": [
@@ -209,8 +208,7 @@
           "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
-          "shards": 7,
-          "upload_test_results": true
+          "shards": 7
         },
         "trigger_script": {
           "args": [
@@ -255,8 +253,7 @@
           "hard_timeout": 36000,
           "ignore_task_failure": false,
           "io_timeout": 1800,
-          "shards": 7,
-          "upload_test_results": true
+          "shards": 7
         },
         "trigger_script": {
           "args": [

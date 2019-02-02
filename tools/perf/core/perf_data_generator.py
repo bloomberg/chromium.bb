@@ -980,7 +980,6 @@ def generate_performance_test(tester_config, test):
     'dimension_sets': [
       tester_config['dimension']
     ],
-    'upload_test_results': True,
     'shards': shards,
   }
   return result
