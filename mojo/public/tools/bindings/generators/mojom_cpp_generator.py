@@ -376,8 +376,16 @@ class Generator(generator.Generator):
   def _GenerateModuleHeader(self):
     return self._GetJinjaExports()
 
+  @UseJinja("module-forward.h.tmpl")
+  def _GenerateModuleForwardHeader(self):
+    return self._GetJinjaExports()
+
   @UseJinja("module.cc.tmpl")
   def _GenerateModuleSource(self):
+    return self._GetJinjaExports()
+
+  @UseJinja("module-import-headers.h.tmpl")
+  def _GenerateModuleImportHeadersHeader(self):
     return self._GetJinjaExports()
 
   @UseJinja("module-shared.h.tmpl")
@@ -428,8 +436,12 @@ class Generator(generator.Generator):
       suffix = "-%s" % self.variant if self.variant else ""
       self.Write(self._GenerateModuleHeader(),
                  "%s%s.h" % (self.module.path, suffix))
+      self.Write(self._GenerateModuleForwardHeader(),
+                 "%s%s-forward.h" % (self.module.path, suffix))
       self.Write(self._GenerateModuleSource(),
                  "%s%s.cc" % (self.module.path, suffix))
+      self.Write(self._GenerateModuleImportHeadersHeader(),
+                 "%s%s-import-headers.h" % (self.module.path, suffix))
       self.Write(self._GenerateModuleTestUtilsHeader(),
                  "%s%s-test-utils.h" % (self.module.path, suffix))
       self.Write(self._GenerateModuleTestUtilsSource(),

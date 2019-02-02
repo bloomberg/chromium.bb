@@ -52,6 +52,14 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/lib/wtf_serialization.h"
 {%- endif %}
 
+{%- for import in imports %}
+{%-   if variant %}
+#include "{{"%s-%s.h"|format(import.path, variant)}}"
+{%-   else %}
+#include "{{import.path}}.h"
+{%-   endif %}
+{%- endfor %}
+
 {# This is include guard for jumbo build. #}
 #ifndef {{header_guard_for_jumbo}}
 #define {{header_guard_for_jumbo}}

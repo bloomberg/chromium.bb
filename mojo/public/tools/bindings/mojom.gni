@@ -754,10 +754,12 @@ template("mojom") {
         variant_dash_suffix = "-${variant}"
       }
       generator_cpp_outputs += [
-        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}.cc",
-        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}.h",
+        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}-forward.h",
+        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}-import-headers.h",
         "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}-test-utils.cc",
         "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}-test-utils.h",
+        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}.cc",
+        "{{source_gen_dir}}/{{source_file_part}}${variant_dash_suffix}.h",
       ]
       enabled_sources = []
       if (defined(bindings_configuration.blacklist)) {
@@ -830,10 +832,12 @@ template("mojom") {
         foreach(source, invoker.sources) {
           filelist += [ rebase_path("$source", root_build_dir) ]
           outputs += [
-            "$target_gen_dir/${source}${variant_dash_suffix}.cc",
-            "$target_gen_dir/${source}${variant_dash_suffix}.h",
+            "$target_gen_dir/${source}${variant_dash_suffix}-forward.h",
+            "$target_gen_dir/${source}${variant_dash_suffix}-import-headers.h",
             "$target_gen_dir/${source}${variant_dash_suffix}-test-utils.cc",
             "$target_gen_dir/${source}${variant_dash_suffix}-test-utils.h",
+            "$target_gen_dir/${source}${variant_dash_suffix}.cc",
+            "$target_gen_dir/${source}${variant_dash_suffix}.h",
           ]
         }
 
