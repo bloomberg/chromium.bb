@@ -137,9 +137,7 @@ class RenderFrameProxyHost
   void BubbleLogicalScroll(blink::WebScrollDirection direction,
                            blink::WebScrollGranularity granularity);
 
-  void set_render_frame_proxy_created(bool created) {
-    render_frame_proxy_created_ = created;
-  }
+  void SetRenderFrameProxyCreated(bool created);
 
   // Returns if the RenderFrameProxy for this host is alive.
   bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
