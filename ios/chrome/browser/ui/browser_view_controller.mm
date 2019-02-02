@@ -2608,6 +2608,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   web::WebState* webState = tab.webState;
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
+    // The following line calls LoadIfNecessary() even though this may be
+    // before a new URL is loaded. This is to fix crbug/923252 where a
+    // requested URL is never loaded when Chrome cold starts and the frontmost
+    // tab is a NTP.
+    webState->GetNavigationManager()->LoadIfNecessary();
     return _ntpCoordinatorsForWebStates[webState].viewController.view;
   }
   DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
