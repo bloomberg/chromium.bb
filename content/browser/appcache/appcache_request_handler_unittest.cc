@@ -254,9 +254,9 @@ class AppCacheRequestHandlerTest
     mock_policy_.reset(new MockAppCachePolicy);
     mock_service_->set_appcache_policy(mock_policy_.get());
     mock_frontend_.reset(new MockFrontend);
-    backend_impl_.reset(new AppCacheBackendImpl);
-    backend_impl_->Initialize(mock_service_.get(), mock_frontend_.get(),
-                              kMockProcessId);
+    backend_impl_ = std::make_unique<AppCacheBackendImpl>(mock_service_.get(),
+                                                          kMockProcessId);
+    backend_impl_->set_frontend_for_testing(mock_frontend_.get());
     const int kHostId = 1;
     backend_impl_->RegisterHost(kHostId);
     host_ = backend_impl_->GetHost(kHostId);

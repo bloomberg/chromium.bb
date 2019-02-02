@@ -55,7 +55,6 @@ class AppCacheDispatcherHost : public blink::mojom::AppCacheBackend {
   void GetResourceList(int32_t host_id,
                        GetResourceListCallback callback) override;
 
-  AppCacheFrontendProxy frontend_proxy_;
   AppCacheBackendImpl backend_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);

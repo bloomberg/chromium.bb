@@ -12,23 +12,19 @@
 
 namespace content {
 
-AppCacheBackendImpl::AppCacheBackendImpl()
-    : service_(nullptr), frontend_(nullptr), process_id_(0) {}
+AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
+                                         int process_id)
+    : service_(service),
+      frontend_proxy_(process_id),
+      frontend_(&frontend_proxy_),
+      process_id_(process_id) {
+  DCHECK(service);
+  service_->RegisterBackend(this);
+}
 
 AppCacheBackendImpl::~AppCacheBackendImpl() {
   hosts_.clear();
-  if (service_)
-    service_->UnregisterBackend(this);
-}
-
-void AppCacheBackendImpl::Initialize(AppCacheServiceImpl* service,
-                                     blink::mojom::AppCacheFrontend* frontend,
-                                     int process_id) {
-  DCHECK(!service_ && !frontend_ && frontend && service);
-  service_ = service;
-  frontend_ = frontend;
-  process_id_ = process_id;
-  service_->RegisterBackend(this);
+  service_->UnregisterBackend(this);
 }
 
 bool AppCacheBackendImpl::RegisterHost(int id) {
