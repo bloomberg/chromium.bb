@@ -7,9 +7,6 @@
 
 class AppMenuObserver {
  public:
-  // Invoked when the AppMenu is about to be destroyed (from its destructor).
-  virtual void AppMenuDestroyed() {}
-
   virtual void AppMenuClosed() {}
 
   // Called after AppMenu::RunMenu().

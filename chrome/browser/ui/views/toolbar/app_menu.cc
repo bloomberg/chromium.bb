@@ -295,20 +295,12 @@ class InMenuButton : public LabelButton {
 };
 
 // AppMenuView is a view that can contain label buttons.
-class AppMenuView : public views::View,
-                    public views::ButtonListener,
-                    public AppMenuObserver {
+class AppMenuView : public views::View, public views::ButtonListener {
  public:
   AppMenuView(AppMenu* menu, ButtonMenuItemModel* menu_model)
-      : menu_(menu),
-        menu_model_(menu_model) {
-    menu_->AddObserver(this);
-  }
+      : menu_(menu->AsWeakPtr()), menu_model_(menu_model) {}
 
-  ~AppMenuView() override {
-    if (menu_)
-      menu_->RemoveObserver(this);
-  }
+  ~AppMenuView() override = default;
 
   // Overridden from views::View.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -356,25 +348,21 @@ class AppMenuView : public views::View,
     return button;
   }
 
-  // Overridden from AppMenuObserver:
-  void AppMenuDestroyed() override {
-    menu_->RemoveObserver(this);
-    menu_ = nullptr;
-    menu_model_ = nullptr;
-  }
-
  protected:
-  AppMenu* menu() { return menu_; }
-  const AppMenu* menu() const { return menu_; }
-  ButtonMenuItemModel* menu_model() { return menu_model_; }
+  base::WeakPtr<AppMenu> menu() { return menu_; }
+  base::WeakPtr<const AppMenu> menu() const { return menu_; }
+  ButtonMenuItemModel* menu_model() {
+    // The menu and the items in the menu model have similar lifetimes; it's
+    // only safe to access model items if the menu is still alive.
+    DCHECK(menu_);
+    return menu_model_;
+  }
 
  private:
   // Hosting AppMenu.
-  // WARNING: this may be nullptr during shutdown.
-  AppMenu* menu_;
+  base::WeakPtr<AppMenu> menu_;
 
   // The menu model containing the increment/decrement/reset items.
-  // WARNING: this may be nullptr during shutdown.
   ButtonMenuItemModel* menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuView);
@@ -800,8 +788,6 @@ AppMenu::~AppMenu() {
     if (model)
       model->RemoveObserver(this);
   }
-  for (AppMenuObserver& observer : observer_list_)
-    observer.AppMenuDestroyed();
 }
 
 void AppMenu::Init(ui::MenuModel* model) {

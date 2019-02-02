@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -33,7 +34,8 @@ class MenuRunner;
 // AppMenu adapts the AppMenuModel to view's menu related classes.
 class AppMenu : public views::MenuDelegate,
                 public bookmarks::BaseBookmarkModelObserver,
-                public content::NotificationObserver {
+                public content::NotificationObserver,
+                public base::SupportsWeakPtr<AppMenu> {
  public:
   enum RunFlags {
     NO_FLAGS = 0,
