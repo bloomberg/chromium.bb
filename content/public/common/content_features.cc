@@ -674,14 +674,8 @@ const char kWebXrRenderPathParamValueSharedBuffer[] = "SharedBuffer";
 // Makes all WebUI that uses Polymer use 2.x version.
 // TODO(dpapad): Remove this once Polymer 2 migration is done,
 // https://crbug.com/738611.
-const base::Feature kWebUIPolymer2 {
-  "WebUIPolymer2",
-#if !defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // !defined(OS_CHROMEOS)
-};
+const base::Feature kWebUIPolymer2{"WebUIPolymer2",
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
