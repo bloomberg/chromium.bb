@@ -759,6 +759,8 @@ jumbo_split_static_library("browser") {
     "memory_details_win.cc",
     "metrics/antivirus_metrics_provider_win.cc",
     "metrics/antivirus_metrics_provider_win.h",
+    "metrics/bluetooth_available_utility.cc",
+    "metrics/bluetooth_available_utility.h",
     "metrics/browser_window_histogram_helper.cc",
     "metrics/browser_window_histogram_helper.h",
     "metrics/chrome_browser_main_extra_parts_metrics.cc",

@@ -21,7 +21,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/mac/bluetooth_utility.h"
+#include "chrome/browser/metrics/bluetooth_available_utility.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -201,13 +201,7 @@ void RecordStartupMetrics() {
                         base::TimeTicks::IsHighResolution());
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
-  bluetooth_utility::BluetoothAvailability availability =
-      bluetooth_utility::GetBluetoothAvailability();
-  UMA_HISTOGRAM_ENUMERATION("OSX.BluetoothAvailability",
-                            availability,
-                            bluetooth_utility::BLUETOOTH_AVAILABILITY_COUNT);
-#endif  // defined(OS_MACOSX)
+  bluetooth_utility::ReportBluetoothAvailability();
 
   // Record whether Chrome is the default browser or not.
   shell_integration::DefaultWebClientState default_state =
