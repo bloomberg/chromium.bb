@@ -68,8 +68,11 @@ gl::ScopedJavaSurface SurfaceTextureGLOwner::CreateJavaSurface() const {
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
-void SurfaceTextureGLOwner::UpdateTexImage() {
+// bind_egl_image is a no-op for surface texture since it always binds the egl
+// image under the hood.
+void SurfaceTextureGLOwner::UpdateTexImage(bool bind_egl_image) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(bind_egl_image);
   if (surface_texture_)
     surface_texture_->UpdateTexImage();
 }
