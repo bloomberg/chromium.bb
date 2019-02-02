@@ -1277,6 +1277,25 @@ TEST_F(LayerWithNullDelegateTest, UpdateDamageInDeferredPaint) {
   EXPECT_EQ(bound_union, LastInvalidation());
 }
 
+// Tests that Layer::SendDamagedRects() always recurses into its mask layer, if
+// present, even if it shouldn't send its damaged regions itself.
+TEST_F(LayerWithNullDelegateTest, AlwaysSendsMaskDamagedRects) {
+  gfx::Rect bound(gfx::Rect(2, 2));
+  std::unique_ptr<Layer> mask(CreateTextureLayer(bound));
+  std::unique_ptr<Layer> root(CreateTextureRootLayer(bound));
+  root->SetMaskLayer(mask.get());
+
+  WaitForCommit();
+  EXPECT_EQ(root->damaged_region_for_testing().bounds(), gfx::Rect());
+  EXPECT_EQ(mask->damaged_region_for_testing().bounds(), gfx::Rect());
+
+  const gfx::Rect invalid_rect(gfx::Size(1, 1));
+  mask->SchedulePaint(invalid_rect);
+  EXPECT_EQ(mask->damaged_region_for_testing().bounds(), invalid_rect);
+  root->SendDamagedRects();
+  EXPECT_EQ(mask->damaged_region_for_testing().bounds(), gfx::Rect());
+}
+
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
   EXPECT_EQ(expected_color, actual_color)
       << "Pixel error at x=" << x << " y=" << y << "; "
