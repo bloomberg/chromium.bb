@@ -113,8 +113,8 @@ MessagePortImpl::MessagePortImpl(mojo::ScopedMessagePipeHandle mojo_port)
   connector_->set_connection_error_handler(
       base::BindOnce(&MessagePortImpl::OnDisconnected, base::Unretained(this)));
   binding_.set_error_handler([this](zx_status_t status) {
-    if (status != ZX_OK && status != ZX_ERR_PEER_CLOSED)
-      ZX_DLOG(INFO, status) << "Disconnected";
+    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+        << " MessagePort disconnected.";
 
     OnDisconnected();
   });

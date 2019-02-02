@@ -9,6 +9,7 @@
 #include <lib/fit/function.h>
 #include <utility>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/logging.h"
@@ -57,7 +58,10 @@ WebComponent::WebComponent(
   if (controller_request.is_valid()) {
     controller_binding_.Bind(std::move(controller_request));
     controller_binding_.set_error_handler([this](zx_status_t status) {
-      // Signal graceful process termination.
+      ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+          << " ComponentController disconnected.";
+      // Teardown the component with dummy values, since ComponentController
+      // channel isn't there to receive them.
       DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
     });
   }

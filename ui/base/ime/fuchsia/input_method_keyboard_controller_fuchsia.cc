@@ -20,13 +20,8 @@ InputMethodKeyboardControllerFuchsia::InputMethodKeyboardControllerFuchsia(
               ->ConnectToService<fuchsia::ui::input::ImeVisibilityService>()) {
   DCHECK(ime_service_);
 
-  ime_visibility_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG(WARNING, status) << "ImeVisibilityService connection lost.";
-
-    // We can't observe visibility events anymore, so dismiss the keyboard and
-    // assume that it's closed for good.
-    DismissVirtualKeyboard();
-    keyboard_visible_ = false;
+  ime_visibility_.set_error_handler([](zx_status_t status) {
+    ZX_LOG(FATAL, status) << " ImeVisibilityService lost.";
   });
 
   ime_visibility_.events().OnKeyboardVisibilityChanged = [this](bool visible) {

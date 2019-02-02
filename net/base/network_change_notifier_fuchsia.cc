@@ -52,7 +52,7 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
   DCHECK(netstack_);
 
   netstack_.set_error_handler([](zx_status_t status) {
-    ZX_LOG(ERROR, status) << "Lost connection to netstack.";
+    ZX_LOG(FATAL, status) << "Lost connection to netstack.";
   });
   netstack_.events().OnInterfacesChanged =
       [this](std::vector<fuchsia::netstack::NetInterface> interfaces) {

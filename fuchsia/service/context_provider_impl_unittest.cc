@@ -82,8 +82,10 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
 
   // Quit the process when the context is destroyed.
   base::RunLoop run_loop;
-  context_binding.set_error_handler(
-      [&run_loop](zx_status_t status) { run_loop.Quit(); });
+  context_binding.set_error_handler([&run_loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+    run_loop.Quit();
+  });
   run_loop.Run();
 
   return 0;
@@ -111,12 +113,14 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     // Call a Context method and wait for it to invoke an observer call.
     base::RunLoop run_loop;
     context->set_error_handler([&run_loop](zx_status_t status) {
+      ZX_LOG(ERROR, status) << " Context lost.";
       ADD_FAILURE();
       run_loop.Quit();
     });
 
     chromium::web::FramePtr frame_ptr;
     frame_ptr.set_error_handler([&run_loop](zx_status_t status) {
+      ZX_LOG(ERROR, status) << " Frame lost.";
       ADD_FAILURE();
       run_loop.Quit();
     });
@@ -151,8 +155,10 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   void CheckContextUnresponsive(
       fidl::InterfacePtr<chromium::web::Context>* context) {
     base::RunLoop run_loop;
-    context->set_error_handler(
-        [&run_loop](zx_status_t status) { run_loop.Quit(); });
+    context->set_error_handler([&run_loop](zx_status_t status) {
+      EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+      run_loop.Quit();
+    });
 
     chromium::web::FramePtr frame;
     (*context)->CreateFrame(frame.NewRequest());
