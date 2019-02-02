@@ -186,6 +186,10 @@ function mediaControlsElement(first, id)
     return null;
 }
 
+function getFocusedElement(video) {
+  return internals.shadowRoot(video).activeElement;
+}
+
 function mediaControlsButton(element, id)
 {
     var controlID = "-webkit-media-controls-" + id;

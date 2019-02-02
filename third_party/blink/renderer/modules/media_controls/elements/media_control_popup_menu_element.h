@@ -50,6 +50,7 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
 
   void HideIfNotFocused();
 
+  bool FocusListItemIfDisplayed(Node* node);
   void SelectFirstItem();
 
   // Actions called by the EventListener object when specific evenst are
@@ -59,6 +60,7 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
   void CloseFromKeyboard();
 
   Member<EventListener> event_listener_;
+  Member<Element> last_focused_element_;
 };
 
 }  // namespace blink
