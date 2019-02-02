@@ -4,8 +4,11 @@
 
 #include "components/services/heap_profiling/heap_profiling_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -18,7 +21,32 @@ HeapProfilingService::HeapProfilingService(
     service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)) {}
 
-HeapProfilingService::~HeapProfilingService() {}
+HeapProfilingService::~HeapProfilingService() = default;
+
+// static
+base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>
+HeapProfilingService::GetServiceFactory() {
+  return base::BindRepeating(
+      [](service_manager::mojom::ServiceRequest request) {
+        // base::WithBaseSyncPrimitives() and thus DEDICATED are needed
+        // because the thread owned by ConnectionManager::Connection is doing
+        // blocking Join during dectruction.
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {base::TaskPriority::BEST_EFFORT,
+                 base::WithBaseSyncPrimitives()},
+                base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                [](service_manager::mojom::ServiceRequest request) {
+                  service_manager::Service::RunAsyncUntilTermination(
+                      std::make_unique<heap_profiling::HeapProfilingService>(
+                          std::move(request)));
+                },
+                std::move(request)));
+      });
+}
 
 void HeapProfilingService::OnStart() {
   registry_.AddInterface(

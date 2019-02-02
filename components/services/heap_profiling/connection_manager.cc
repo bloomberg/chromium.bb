@@ -151,15 +151,14 @@ void ConnectionManager::OnNewConnection(base::ProcessId pid,
   // when the user is attempting to manually start profiling for processes, so
   // we ignore this edge case.
 
-  scoped_refptr<ReceiverPipe> new_pipe = new ReceiverPipe(
+  scoped_refptr<ReceiverPipe> new_pipe = base::MakeRefCounted<ReceiverPipe>(
       mojo::UnwrapPlatformHandle(std::move(receiver_pipe_end)));
 
   // The allocation tracker will call this on a background thread, so thunk
   // back to the current thread with weak pointers.
-  AllocationTracker::CompleteCallback complete_cb =
-      base::BindOnce(&ConnectionManager::OnConnectionCompleteThunk,
-                     base::MessageLoopCurrent::Get()->task_runner(),
-                     weak_factory_.GetWeakPtr(), pid);
+  AllocationTracker::CompleteCallback complete_cb = base::BindOnce(
+      &ConnectionManager::OnConnectionCompleteThunk,
+      base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(), pid);
 
   auto connection = std::make_unique<Connection>(
       std::move(complete_cb), &backtrace_storage_, pid, std::move(client),
@@ -170,7 +169,7 @@ void ConnectionManager::OnNewConnection(base::ProcessId pid,
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   connection->thread.StartWithOptions(options);
 
-  connection->parser = new StreamParser(&connection->tracker);
+  connection->parser = base::MakeRefCounted<StreamParser>(&connection->tracker);
   new_pipe->SetReceiver(connection->thread.task_runner(), connection->parser);
 
   connection->thread.task_runner()->PostTask(
@@ -187,9 +186,8 @@ std::vector<base::ProcessId> ConnectionManager::GetConnectionPids() {
   base::AutoLock lock(connections_lock_);
   std::vector<base::ProcessId> results;
   results.reserve(connections_.size());
-  for (const auto& pair : connections_) {
+  for (const auto& pair : connections_)
     results.push_back(pair.first);
-  }
   return results;
 }
 
@@ -253,9 +251,6 @@ void ConnectionManager::DumpProcessesForTracing(
   tracking->vm_regions = std::move(vm_regions);
   tracking->results.reserve(connections_.size());
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::MessageLoopCurrent::Get()->task_runner();
-
   for (auto& it : connections_) {
     base::ProcessId pid = it.first;
     Connection* connection = it.second.get();
@@ -272,7 +267,7 @@ void ConnectionManager::DumpProcessesForTracing(
     // signal. The callback will be issued on the allocation tracker thread so
     // need to thunk back to the I/O thread.
     connection->tracker.SnapshotOnBarrier(
-        barrier_id, task_runner,
+        barrier_id, base::ThreadTaskRunnerHandle::Get(),
         base::BindOnce(&ConnectionManager::DoDumpOneProcessForTracing,
                        weak_factory_.GetWeakPtr(), tracking, pid,
                        connection->process_type, keep_small_allocations,
@@ -432,9 +427,8 @@ void ConnectionManager::DoDumpOneProcessForTracing(
                        task_runner->PostTask(FROM_HERE,
                                              base::BindOnce(std::move(callback),
                                                             std::move(buffer)));
-
                      },
-                     reply_size, base::MessageLoopCurrent::Get()->task_runner(),
+                     reply_size, base::ThreadTaskRunnerHandle::Get(),
                      std::move(finished_callback)));
 }
 

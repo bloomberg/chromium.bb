@@ -55,6 +55,9 @@ class MemlogBrowserTest : public InProcessBrowserTest,
         NOTREACHED();
       }
 
+      if (!GetParam().stream_samples)
+        command_line->AppendSwitch(heap_profiling::kMemlogInProcess);
+
       if (!GetParam().should_sample) {
         command_line->AppendSwitchASCII(heap_profiling::kMemlogSamplingRate,
                                         "1");

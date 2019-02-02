@@ -34,6 +34,9 @@ class HeapProfilingService
   explicit HeapProfilingService(service_manager::mojom::ServiceRequest request);
   ~HeapProfilingService() override;
 
+  static base::RepeatingCallback<void(service_manager::mojom::ServiceRequest)>
+  GetServiceFactory();
+
   // Lifescycle events that occur after the service has started to spinup.
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
