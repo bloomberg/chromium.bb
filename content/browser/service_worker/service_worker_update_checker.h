@@ -64,8 +64,8 @@ class ServiceWorkerUpdateChecker {
   std::map<GURL, ComparedScriptInfo> TakeComparedResults();
 
   void OnOneUpdateCheckFinished(
-      const GURL& script_url,
       int64_t old_resource_id,
+      const GURL& script_url,
       ServiceWorkerSingleScriptUpdateChecker::Result result,
       std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
           paused_state);

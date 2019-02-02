@@ -50,6 +50,7 @@ extern const char kServiceWorkerBadMIMEError[];
 extern const char kServiceWorkerNoMIMEError[];
 extern const char kServiceWorkerRedirectError[];
 extern const char kServiceWorkerAllowed[];
+extern const char kServiceWorkerCopyScriptError[];
 
 // Constants for invalid identifiers.
 static const int kInvalidEmbeddedWorkerThreadId = -1;

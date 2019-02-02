@@ -5,6 +5,10 @@
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+
+#include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_installed_script_loader.h"
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
@@ -23,7 +27,8 @@ ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : context_(context),
       provider_host_(provider_host),
-      loader_factory_(std::move(loader_factory)) {
+      loader_factory_(std::move(loader_factory)),
+      weak_factory_(this) {
   DCHECK(provider_host_->IsProviderForServiceWorker());
   DCHECK(loader_factory_);
 }
@@ -55,10 +60,22 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   //    error. This happens when the script is newly imported after
   //    installation, which is disallowed by the spec.
   // C) service worker is not installed, script is installed: serve from
-  //    storage (use ServceWorkerInstalledScriptLoader)
-  // D) service worker is not installed, script is not installed: serve from
-  //    network with installing the script (use ServceWorkerNewScriptLoader)
-  //    This is the common case: load the script and install it.
+  //    storage (use ServiceWorkerInstalledScriptLoader)
+  // D) service worker is not installed, script is not installed:
+  //    When ServiceWorkerImportedScriptsUpdateCheck is enabled, there are
+  //    three sub cases:
+  //    1) If compared script info exists and specifies that the script is
+  //       installed in an old service worker and content is not changed, then
+  //       copy the old script into the new service worker and load it using
+  //       ServiceWorkerInstalledScriptLoader.
+  //    2) If compared script info exists and specifies that the script is
+  //       installed in an old service worker but content has changed, then
+  //       resume the paused state in the compared script info to load the
+  //       script.
+  //    3) For other cases or if ServiceWorkerImportedScriptsUpdateCheck is not
+  //       enabled, serve from network with installing the script
+  //       (use ServiceWorkerNewScriptLoader).
+  //       This is the common case: load the script and install it.
 
   // Case A and C:
   scoped_refptr<ServiceWorkerVersion> version =
@@ -82,6 +99,44 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   }
 
   // Case D:
+  // Compared script info is used to decide which sub case should be used.
+  // If there is no compared script info, goto D.3 directly.
+  const auto& compared_script_info_map = version->compared_script_info_map();
+  if (!compared_script_info_map.empty()) {
+    // ServiceWorkerImportedScriptsUpdateCheck must be enabled if there is
+    // compared script info.
+    DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+    auto it = compared_script_info_map.find(resource_request.url);
+    if (it != compared_script_info_map.end()) {
+      switch (it->second.result) {
+        case ServiceWorkerSingleScriptUpdateChecker::Result::kFailed:
+          // Network failure is treated as D.1
+        case ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical:
+          // Case D.1:
+          CopyScript(
+              it->first, it->second.old_resource_id,
+              base::BindOnce(
+                  &ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished,
+                  weak_factory_.GetWeakPtr(), std::move(request), options,
+                  resource_request, std::move(client)));
+          return;
+        case ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent:
+          // Case D.2:
+          // TODO(https://crbug.com/648295): Currently, this case is treated
+          // the same as case D.3. In future, the paused state in compared
+          // script info should be resumed instead of a fresh download.
+          NOTIMPLEMENTED();
+          break;
+        case ServiceWorkerSingleScriptUpdateChecker::Result::kNotCompared:
+          // This is invalid, as scripts in compared script info must have been
+          // compared.
+          NOTREACHED();
+          return;
+      }
+    }
+  }
+
+  // Case D.3:
   mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerNewScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
@@ -128,4 +183,62 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
   return true;
 }
 
+void ServiceWorkerScriptLoaderFactory::CopyScript(
+    const GURL& url,
+    int64_t resource_id,
+    base::OnceCallback<void(int64_t, net::Error)> callback) {
+  ServiceWorkerStorage* storage = context_->storage();
+  int64_t new_resource_id = storage->NewResourceId();
+
+  cache_writer_ = ServiceWorkerCacheWriter::CreateForCopy(
+      storage->CreateResponseReader(resource_id),
+      storage->CreateResponseWriter(new_resource_id));
+
+  scoped_refptr<ServiceWorkerVersion> version =
+      provider_host_->running_hosted_version();
+  version->script_cache_map()->NotifyStartedCaching(url, new_resource_id);
+
+  net::Error error = cache_writer_->StartCopy(
+      base::BindOnce(std::move(callback), new_resource_id));
+
+  // Run the callback directly if the operation completed or failed
+  // synchronously.
+  if (net::ERR_IO_PENDING != error) {
+    std::move(callback).Run(new_resource_id, error);
+  }
+}
+
+void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
+    network::mojom::URLLoaderRequest request,
+    uint32_t options,
+    const network::ResourceRequest& resource_request,
+    network::mojom::URLLoaderClientPtr client,
+    int64_t new_resource_id,
+    net::Error error) {
+  int64_t resource_size = cache_writer_->bytes_written();
+  cache_writer_.reset();
+  scoped_refptr<ServiceWorkerVersion> version =
+      provider_host_->running_hosted_version();
+
+  if (error != net::OK) {
+    version->script_cache_map()->NotifyFinishedCaching(
+        resource_request.url, resource_size, error,
+        kServiceWorkerCopyScriptError);
+
+    client->OnComplete(network::URLLoaderCompletionStatus(error));
+    return;
+  }
+
+  // The copy operation is successful, add the newly copied resource record to
+  // the script cache map to identify that the script is installed.
+  version->script_cache_map()->NotifyFinishedCaching(
+      resource_request.url, resource_size, net::OK, std::string());
+
+  // Use ServiceWorkerInstalledScriptLoader to load the new copy.
+  mojo::MakeStrongBinding(
+      std::make_unique<ServiceWorkerInstalledScriptLoader>(
+          options, std::move(client),
+          context_->storage()->CreateResponseReader(new_resource_id)),
+      std::move(request));
+}
 }  // namespace content

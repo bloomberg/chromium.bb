@@ -31,5 +31,6 @@ const char kServiceWorkerNoMIMEError[] =
 const char kServiceWorkerRedirectError[] =
     "The script resource is behind a redirect, which is disallowed.";
 const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
-
+const char kServiceWorkerCopyScriptError[] =
+    "An unknown error occurred when copying the script.";
 }  // namespace content

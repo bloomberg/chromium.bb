@@ -61,14 +61,13 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   // is transferred to the callback in the PausedState only when the result is
   // Result::kDifferent. Otherwise it's set to nullptr.
   using ResultCallback = base::OnceCallback<
-      void(const GURL&, int64_t, Result, std::unique_ptr<PausedState>)>;
+      void(const GURL&, Result, std::unique_ptr<PausedState>)>;
 
   // Both |compare_reader| and |copy_reader| should be created from the same
   // resource ID, and this ID should locate where the script specified with
   // |url| is stored. |writer| should be created with a new resource ID.
   ServiceWorkerSingleScriptUpdateChecker(
       const GURL& url,
-      int64_t resource_id,
       bool is_main_script,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
@@ -120,7 +119,6 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   void Finish(Result result);
 
   const GURL script_url_;
-  const int64_t resource_id_;
 
   network::mojom::URLLoaderPtr network_loader_;
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;

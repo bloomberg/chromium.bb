@@ -118,19 +118,17 @@ void ServiceWorkerWriteToCacheJob::StartAsync() {
     return;
   }
 
-  // Create response readers only when we have to do the byte-for-byte check.
-  std::unique_ptr<ServiceWorkerResponseReader> compare_reader;
-  std::unique_ptr<ServiceWorkerResponseReader> copy_reader;
   if (ShouldByteForByteCheck()) {
-    compare_reader =
-        context_->storage()->CreateResponseReader(incumbent_resource_id_);
-    copy_reader =
-        context_->storage()->CreateResponseReader(incumbent_resource_id_);
+    // Create response readers only when we have to do the byte-for-byte check.
+    cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
+        context_->storage()->CreateResponseReader(incumbent_resource_id_),
+        context_->storage()->CreateResponseReader(incumbent_resource_id_),
+        context_->storage()->CreateResponseWriter(resource_id_),
+        false /* pause_when_not_identical */);
+  } else {
+    cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
+        context_->storage()->CreateResponseWriter(resource_id_));
   }
-  cache_writer_ = std::make_unique<ServiceWorkerCacheWriter>(
-      std::move(compare_reader), std::move(copy_reader),
-      context_->storage()->CreateResponseWriter(resource_id_),
-      false /* pause_when_not_identical */);
 
   version_->script_cache_map()->NotifyStartedCaching(url_, resource_id_);
   did_notify_started_ = true;

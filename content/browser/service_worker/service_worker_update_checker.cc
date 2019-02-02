@@ -33,8 +33,8 @@ void ServiceWorkerUpdateChecker::Start(UpdateStatusCallback callback) {
 }
 
 void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
-    const GURL& script_url,
     int64_t old_resource_id,
+    const GURL& script_url,
     ServiceWorkerSingleScriptUpdateChecker::Result result,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
         paused_state) {
@@ -96,10 +96,10 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
 
   auto writer = storage->CreateResponseWriter(storage->NewResourceId());
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-      url, resource_id, is_main_script, loader_factory_,
-      std::move(compare_reader), std::move(copy_reader), std::move(writer),
+      url, is_main_script, loader_factory_, std::move(compare_reader),
+      std::move(copy_reader), std::move(writer),
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), resource_id));
 }
 
 ServiceWorkerUpdateChecker::ComparedScriptInfo::ComparedScriptInfo() = default;
