@@ -31,10 +31,6 @@
 #include "media/filters/aom_video_decoder.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-#include "media/filters/dav1d_video_decoder.h"
-#endif
-
 #if BUILDFLAG(ENABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
 #endif
@@ -62,7 +58,7 @@ void DefaultDecoderFactory::CreateAudioDecoders(
 #if !defined(OS_ANDROID)
   // DecryptingAudioDecoder is only needed in External Clear Key testing to
   // cover the audio decrypt-and-decode path.
-  if (base::FeatureList::IsEnabled(kExternalClearKeyForTesting)) {
+  if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
     audio_decoders->push_back(
         std::make_unique<DecryptingAudioDecoder>(task_runner, media_log));
   }
@@ -103,7 +99,7 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 
     // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
     if (external_decoder_factory_ &&
-        base::FeatureList::IsEnabled(kMojoVideoDecoder)) {
+        base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
       external_decoder_factory_->CreateVideoDecoders(
           task_runner, gpu_factories, media_log, request_overlay_info_cb,
           target_color_space, video_decoders);
@@ -122,12 +118,7 @@ void DefaultDecoderFactory::CreateVideoDecoders(
   video_decoders->push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif
 
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-  if (base::FeatureList::IsEnabled(kDav1dVideoDecoder))
-    video_decoders->push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
-  else
-    video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
-#elif BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_AV1_DECODER)
   video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 
