@@ -26,6 +26,11 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTaskRunner
   // the Perfetto implementation itself.
   void PostTask(std::function<void()> task) override;
   void PostDelayedTask(std::function<void()> task, uint32_t delay_ms) override;
+  // This in Chrome would more correctly be called "RunsTasksInCurrentSequence".
+  // Perfetto calls this to determine wheather CommitData requests should be
+  // flushed synchronously. RunsTasksInCurrentSequence is sufficient for that
+  // use case.
+  bool RunsTasksOnCurrentThread() const override;
 
   // Not used in Chrome.
   void AddFileDescriptorWatch(int fd, std::function<void()>) override;

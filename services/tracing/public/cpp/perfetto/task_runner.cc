@@ -32,6 +32,10 @@ void PerfettoTaskRunner::PostDelayedTask(std::function<void()> task,
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
+bool PerfettoTaskRunner::RunsTasksOnCurrentThread() const {
+  return task_runner_->RunsTasksInCurrentSequence();
+}
+
 void PerfettoTaskRunner::AddFileDescriptorWatch(int fd, std::function<void()>) {
   NOTREACHED();
 }
