@@ -26,7 +26,14 @@ APP_LIST_EXPORT bool IsUnhandledUpDownKeyEvent(const ui::KeyEvent& event);
 // (unmodified by ctrl, shift, or alt)
 APP_LIST_EXPORT bool IsUnhandledArrowKeyEvent(const ui::KeyEvent& event);
 
-// Processes left/right key traversal for the given Textfield. Returns true
+// Returns true if the arrow key event should move focus away from the
+// |textfield|. This is usually when the insertion point would move away from
+// text.
+APP_LIST_EXPORT bool LeftRightKeyEventShouldExitText(
+    views::Textfield* textfield,
+    const ui::KeyEvent& key_event);
+
+// Processes left/right key traversal for the given |textfield|. Returns true
 // if focus is moved.
 APP_LIST_EXPORT bool ProcessLeftRightKeyTraversalForTextfield(
     views::Textfield* textfield,

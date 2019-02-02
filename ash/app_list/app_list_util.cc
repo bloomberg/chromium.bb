@@ -43,17 +43,12 @@ bool IsUnhandledArrowKeyEvent(const ui::KeyEvent& event) {
          event.key_code() == ui::VKEY_LEFT || event.key_code() == ui::VKEY_UP;
 }
 
-bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
-                                              const ui::KeyEvent& key_event) {
+bool LeftRightKeyEventShouldExitText(views::Textfield* textfield,
+                                     const ui::KeyEvent& key_event) {
   DCHECK(IsUnhandledLeftRightKeyEvent(key_event));
 
-  const bool move_focus_reverse = base::i18n::IsRTL()
-                                      ? key_event.key_code() == ui::VKEY_RIGHT
-                                      : key_event.key_code() == ui::VKEY_LEFT;
-  if (textfield->text().empty()) {
-    textfield->GetFocusManager()->AdvanceFocus(move_focus_reverse);
+  if (textfield->text().empty())
     return true;
-  }
 
   if (textfield->HasSelection())
     return false;
@@ -78,6 +73,20 @@ bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
     // will move inward.
     return false;
   }
+
+  return true;
+}
+
+bool ProcessLeftRightKeyTraversalForTextfield(views::Textfield* textfield,
+                                              const ui::KeyEvent& key_event) {
+  DCHECK(IsUnhandledLeftRightKeyEvent(key_event));
+
+  if (!LeftRightKeyEventShouldExitText(textfield, key_event))
+    return false;
+
+  const bool move_focus_reverse = base::i18n::IsRTL()
+                                      ? key_event.key_code() == ui::VKEY_RIGHT
+                                      : key_event.key_code() == ui::VKEY_LEFT;
 
   // Move focus outside the textfield.
   textfield->GetFocusManager()->AdvanceFocus(move_focus_reverse);

@@ -203,6 +203,19 @@ void SearchResultPageView::AddSearchResultContainerView(
   result_container->set_delegate(this);
 }
 
+bool SearchResultPageView::IsFirstResultTile() const {
+  // |kRecommendation| result type refers to tiles in Zero State.
+  return first_result_view_->result()->display_type() ==
+             ash::SearchResultDisplayType::kTile ||
+         first_result_view_->result()->display_type() ==
+             ash::SearchResultDisplayType::kRecommendation;
+}
+
+bool SearchResultPageView::IsFirstResultHighlighted() const {
+  DCHECK(first_result_view_);
+  return first_result_view_->background_highlighted();
+}
+
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.
   if (!IsUnhandledUpDownKeyEvent(event))
