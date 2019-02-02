@@ -71,7 +71,7 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
                                               const ui::Event* event) {
   Browser* browser = browser_view_->browser();
   InitMenu(std::make_unique<HostedAppMenuModel>(browser_view_, browser),
-           browser, AppMenu::NO_FLAGS);
+           browser, AppMenu::NO_FLAGS, false);
 
   menu()->RunMenu(this);
 

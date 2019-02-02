@@ -317,21 +317,6 @@ TEST_F(MenuRunnerTest, NestingDuringDrag) {
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
 }
 
-TEST_F(MenuRunnerTest, AlertsShown) {
-  InitMenuRunner(0);
-  MenuRunner* runner = menu_runner();
-
-  base::flat_set<int> alerted_commands{2};
-  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                    ui::MENU_SOURCE_NONE, alerted_commands);
-  EXPECT_TRUE(runner->IsRunning());
-
-  MenuItemView* normal_item = menu_item_view()->GetMenuItemByID(1);
-  MenuItemView* alerted_item = menu_item_view()->GetMenuItemByID(2);
-  EXPECT_FALSE(normal_item->Alerted());
-  EXPECT_TRUE(alerted_item->Alerted());
-}
-
 namespace {
 
 // An EventHandler that launches a menu in response to a mouse press.

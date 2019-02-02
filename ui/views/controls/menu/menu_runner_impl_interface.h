@@ -35,13 +35,11 @@ class MenuRunnerImplInterface {
   virtual void Release() = 0;
 
   // Runs the menu. See MenuRunner::RunMenuAt for more details.
-  virtual void RunMenuAt(
-      Widget* parent,
-      MenuButton* button,
-      const gfx::Rect& bounds,
-      MenuAnchorPosition anchor,
-      int32_t run_types,
-      base::flat_set<int> alerted_commands = base::flat_set<int>()) = 0;
+  virtual void RunMenuAt(Widget* parent,
+                         MenuButton* button,
+                         const gfx::Rect& bounds,
+                         MenuAnchorPosition anchor,
+                         int32_t run_types) = 0;
 
   // Hides and cancels the menu.
   virtual void Cancel() = 0;

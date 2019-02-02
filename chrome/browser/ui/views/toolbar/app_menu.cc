@@ -785,8 +785,10 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // AppMenu ------------------------------------------------------------------
 
-AppMenu::AppMenu(Browser* browser, int run_flags)
-    : browser_(browser), run_flags_(run_flags) {
+AppMenu::AppMenu(Browser* browser, int run_flags, bool alert_reopen_tab_items)
+    : browser_(browser),
+      run_flags_(run_flags),
+      alert_reopen_tab_items_(alert_reopen_tab_items) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
 }
@@ -822,17 +824,9 @@ void AppMenu::Init(ui::MenuModel* model) {
 void AppMenu::RunMenu(views::MenuButton* host) {
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
 
-  // If we are displaying reopen tab in-product help, tell the menu runner to
-  // show alerts for the recent tabs submenu and the last closed tab menu item.
-  base::flat_set<int> alerted_commands;
-  if (showing_reopen_tab_promo_) {
-    alerted_commands.insert(IDC_RECENT_TABS_MENU);
-    alerted_commands.insert(AppMenuModel::kMinRecentTabsCommandId);
-  }
-
-  menu_runner_->RunMenuAt(
-      host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
-      views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE, alerted_commands);
+  menu_runner_->RunMenuAt(host->GetWidget(), host,
+                          host->GetAnchorBoundsInScreen(),
+                          views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
 
   for (AppMenuObserver& observer : observer_list_)
     observer.AppMenuShown();
@@ -845,10 +839,6 @@ void AppMenu::CloseMenu() {
 
 bool AppMenu::IsShowing() const {
   return menu_runner_.get() && menu_runner_->IsRunning();
-}
-
-void AppMenu::ShowReopenTabPromo() {
-  showing_reopen_tab_promo_ = true;
 }
 
 void AppMenu::AddObserver(AppMenuObserver* observer) {
@@ -1233,6 +1223,14 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
       if (model->GetIconAt(model_index, &icon))
         menu_item->SetIcon(*icon.ToImageSkia());
     }
+
+    // If we want to show items relating to reopening the last-closed tab as
+    // alerted, we specifically need to show alerts on the recent tabs submenu
+    // and the last closed tab menu item.
+    if (alert_reopen_tab_items_ &&
+        ((command_id == IDC_RECENT_TABS_MENU) ||
+         (command_id == AppMenuModel::kMinRecentTabsCommandId)))
+      menu_item->SetAlerted(true);
   }
 
   return menu_item;

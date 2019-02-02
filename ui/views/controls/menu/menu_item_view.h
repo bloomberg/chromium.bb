@@ -367,10 +367,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // border radius, if they are both the same value.
   void SetCornerRadius(int radius);
 
-  // Show an alert on this menu item. An alerted menu item is rendered
+  // Shows an alert on this menu item. An alerted menu item is rendered
   // differently to draw attention to it.
   void SetAlerted(bool alerted);
-  bool Alerted() const { return alerted_; }
 
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.

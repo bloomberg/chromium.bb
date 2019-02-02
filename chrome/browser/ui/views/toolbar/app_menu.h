@@ -41,7 +41,7 @@ class AppMenu : public views::MenuDelegate,
     FOR_DROP = 1 << 0,
   };
 
-  AppMenu(Browser* browser, int run_flags);
+  AppMenu(Browser* browser, int run_flags, bool alert_reopen_tab_items);
   ~AppMenu() override;
 
   void Init(ui::MenuModel* model);
@@ -58,9 +58,6 @@ class AppMenu : public views::MenuDelegate,
   bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
 
   views::MenuItemView* root_menu_item() { return root_; }
-
-  // Highlight menu items for reopen tab in-product help.
-  void ShowReopenTabPromo();
 
   void AddObserver(AppMenuObserver* observer);
   void RemoveObserver(AppMenuObserver* observer);
@@ -197,14 +194,13 @@ class AppMenu : public views::MenuDelegate,
   // The bit mask of RunFlags.
   const int run_flags_;
 
+  // Whether to show items relating to reopening the last-closed tab as alerted.
+  const bool alert_reopen_tab_items_;
+
   base::ObserverList<AppMenuObserver>::Unchecked observer_list_;
 
   // Records the time from when menu opens to when the user selects a menu item.
   base::ElapsedTimer menu_opened_timer_;
-
-  // Whether we are showing reopen tab in-product help. If true, the MenuRunner
-  // is told to highlight the appropriate menu items.
-  bool showing_reopen_tab_promo_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenu);
 };
