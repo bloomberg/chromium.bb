@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow P",
-          "rect": [8, 74, 418, 526],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'a ridge or furrow in the way wherever she wanted to send the'",
           "rect": [14, 240, 407, 139],
           "reason": "geometry"
@@ -210,11 +205,6 @@
         {
           "object": "LayoutNGBlockFlow (floating) SPAN id='greenFloat'",
           "rect": [372, 403, 48, 81],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
-          "rect": [14, 363, 48, 65],
           "reason": "geometry"
         },
         {
