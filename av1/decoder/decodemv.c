@@ -1421,9 +1421,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         const int comp_index_ctx = get_comp_index_context(cm, xd);
         mbmi->compound_idx = aom_read_symbol(
             r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
+        mbmi->interinter_comp.type =
+            mbmi->compound_idx ? COMPOUND_AVERAGE : COMPOUND_DISTWTD;
       } else {
         // Distance-weighted compound is disabled, so always use average
         mbmi->compound_idx = 1;
+        mbmi->interinter_comp.type = COMPOUND_AVERAGE;
       }
     } else {
       assert(cm->current_frame.reference_mode != SINGLE_REFERENCE &&
@@ -1434,8 +1437,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       // compound_diffwtd, wedge
       if (is_interinter_compound_used(COMPOUND_WEDGE, bsize))
         mbmi->interinter_comp.type =
-            1 + aom_read_symbol(r, ec_ctx->compound_type_cdf[bsize],
-                                COMPOUND_TYPES - 1, ACCT_STR);
+            COMPOUND_WEDGE + aom_read_symbol(r,
+                                             ec_ctx->compound_type_cdf[bsize],
+                                             MASKED_COMPOUND_TYPES, ACCT_STR);
       else
         mbmi->interinter_comp.type = COMPOUND_DIFFWTD;
 

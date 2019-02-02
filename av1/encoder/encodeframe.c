@@ -1290,11 +1290,13 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             assert(masked_compound_used);
             if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
 #if CONFIG_ENTROPY_STATS
-              ++counts->compound_type[bsize][mbmi->interinter_comp.type - 1];
+              ++counts->compound_type[bsize][mbmi->interinter_comp.type -
+                                             COMPOUND_WEDGE];
 #endif
               if (allow_update_cdf) {
                 update_cdf(fc->compound_type_cdf[bsize],
-                           mbmi->interinter_comp.type - 1, COMPOUND_TYPES - 1);
+                           mbmi->interinter_comp.type - COMPOUND_WEDGE,
+                           MASKED_COMPOUND_TYPES);
               }
             }
           }
@@ -5431,7 +5433,7 @@ static void avg_cdf_symbols(FRAME_CONTEXT *ctx_left, FRAME_CONTEXT *ctx_tr,
   AVERAGE_CDF(ctx_left->inter_compound_mode_cdf,
               ctx_tr->inter_compound_mode_cdf, INTER_COMPOUND_MODES);
   AVERAGE_CDF(ctx_left->compound_type_cdf, ctx_tr->compound_type_cdf,
-              COMPOUND_TYPES - 1);
+              MASKED_COMPOUND_TYPES);
   AVERAGE_CDF(ctx_left->wedge_idx_cdf, ctx_tr->wedge_idx_cdf, 16);
   AVERAGE_CDF(ctx_left->interintra_cdf, ctx_tr->interintra_cdf, 2);
   AVERAGE_CDF(ctx_left->wedge_interintra_cdf, ctx_tr->wedge_interintra_cdf, 2);

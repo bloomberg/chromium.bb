@@ -8433,16 +8433,20 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
   }
 
   // Store the stats for compound average
-  comp_rate[0] = st->rate[0];
-  comp_dist[0] = st->dist[0];
+  comp_rate[COMPOUND_AVERAGE] = st->rate[COMPOUND_AVERAGE];
+  comp_dist[COMPOUND_AVERAGE] = st->dist[COMPOUND_AVERAGE];
+  comp_rate[COMPOUND_DISTWTD] = st->rate[COMPOUND_DISTWTD];
+  comp_dist[COMPOUND_DISTWTD] = st->dist[COMPOUND_DISTWTD];
 
   // For compound wedge/segment, reuse data only if NEWMV is not present in
   // either of the directions
   if ((!have_newmv_in_inter_mode(mi->mode) &&
        !have_newmv_in_inter_mode(st->mode)) ||
       (cpi->sf.disable_interinter_wedge_newmv_search)) {
-    memcpy(&comp_rate[1], &st->rate[1], sizeof(comp_rate[1]) * 2);
-    memcpy(&comp_dist[1], &st->dist[1], sizeof(comp_dist[1]) * 2);
+    memcpy(&comp_rate[COMPOUND_WEDGE], &st->rate[COMPOUND_WEDGE],
+           sizeof(comp_rate[COMPOUND_WEDGE]) * 2);
+    memcpy(&comp_dist[COMPOUND_WEDGE], &st->dist[COMPOUND_WEDGE],
+           sizeof(comp_dist[COMPOUND_WEDGE]) * 2);
   }
   return 1;
 }
@@ -9720,14 +9724,12 @@ typedef struct {
   uint8_t *tmp_best_mask_buf;  // backup of the best segmentation mask
 } CompoundTypeRdBuffers;
 
-static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
-                            BLOCK_SIZE bsize, int mi_col, int mi_row,
-                            int_mv *cur_mv, int masked_compound_used,
-                            const BUFFER_SET *orig_dst,
-                            const BUFFER_SET *tmp_dst,
-                            CompoundTypeRdBuffers *buffers, int *rate_mv,
-                            int64_t *rd, RD_STATS *rd_stats,
-                            int64_t ref_best_rd, int *is_luma_interp_done) {
+static int compound_type_rd(
+    const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_col,
+    int mi_row, int_mv *cur_mv, int do_comp_distwtd, int masked_compound_used,
+    const BUFFER_SET *orig_dst, const BUFFER_SET *tmp_dst,
+    CompoundTypeRdBuffers *buffers, int *rate_mv, int64_t *rd,
+    RD_STATS *rd_stats, int64_t ref_best_rd, int *is_luma_interp_done) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
@@ -9747,16 +9749,24 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
   COMPOUND_TYPE cur_type;
   int best_compmode_interinter_cost = 0;
   int calc_pred_masked_compound = 1;
-  int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX };
-  int32_t comp_rate[COMPOUND_TYPES] = { INT_MAX, INT_MAX, INT_MAX };
+  int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX,
+                                        INT64_MAX };
+  int32_t comp_rate[COMPOUND_TYPES] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
+  // TODO(debargha): Remove the code related to comp_rd_stats since it is
+  // not used.
   const int match_found =
       find_comp_rd_in_stats(cpi, x, mbmi, comp_rate, comp_dist);
   best_mv[0].as_int = cur_mv[0].as_int;
   best_mv[1].as_int = cur_mv[1].as_int;
   *rd = INT64_MAX;
   for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {
-    if (cur_type != COMPOUND_AVERAGE && !masked_compound_used) break;
+    if (cur_type >= COMPOUND_WEDGE && !masked_compound_used) break;
     if (!is_interinter_compound_used(cur_type, bsize)) continue;
+    if (cur_type == COMPOUND_DISTWTD &&
+        (!do_comp_distwtd ||
+         !cm->seq_params.order_hint_info.enable_dist_wtd_comp ||
+         cpi->sf.use_dist_wtd_comp_flag == DIST_WTD_COMP_DISABLED))
+      continue;
     tmp_rate_mv = *rate_mv;
     int64_t best_rd_cur = INT64_MAX;
     mbmi->interinter_comp.type = cur_type;
@@ -9764,48 +9774,52 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
     const int comp_index_ctx = get_comp_index_context(cm, xd);
-    mbmi->compound_idx = 1;
-    if (cur_type == COMPOUND_AVERAGE) {
+    if (cur_type == COMPOUND_AVERAGE || cur_type == COMPOUND_DISTWTD) {
       mbmi->comp_group_idx = 0;
+      mbmi->compound_idx = (cur_type == COMPOUND_AVERAGE);
       if (masked_compound_used) {
-        masked_type_cost += x->comp_group_idx_cost[comp_group_idx_ctx][0];
+        masked_type_cost +=
+            x->comp_group_idx_cost[comp_group_idx_ctx][mbmi->comp_group_idx];
       }
-      masked_type_cost += x->comp_idx_cost[comp_index_ctx][1];
+      masked_type_cost += x->comp_idx_cost[comp_index_ctx][mbmi->compound_idx];
       rs2 = masked_type_cost;
       const int64_t mode_rd = RDCOST(x->rdmult, rs2 + rd_stats->rate, 0);
       if (mode_rd < ref_best_rd) {
         // Reuse data if matching record is found
-        if (comp_rate[0] == INT_MAX) {
+        if (comp_rate[cur_type] == INT_MAX) {
           av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                         AOM_PLANE_Y, AOM_PLANE_Y);
-          *is_luma_interp_done = 1;
+          if (cur_type == COMPOUND_AVERAGE) *is_luma_interp_done = 1;
           RD_STATS est_rd_stats;
           const int64_t est_rd =
               estimate_yrd_for_sb(cpi, bsize, x, INT64_MAX, &est_rd_stats);
-          if (comp_rate[0] != INT_MAX) {
-            assert(comp_rate[0] == est_rd_stats.rate);
-            assert(comp_dist[0] == est_rd_stats.dist);
+          if (comp_rate[cur_type] != INT_MAX) {
+            assert(comp_rate[cur_type] == est_rd_stats.rate);
+            assert(comp_dist[cur_type] == est_rd_stats.dist);
           }
           if (est_rd != INT64_MAX) {
             best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + est_rd_stats.rate,
                                  est_rd_stats.dist);
             // Backup rate and distortion for future reuse
-            comp_rate[0] = est_rd_stats.rate;
-            comp_dist[0] = est_rd_stats.dist;
+            comp_rate[cur_type] = est_rd_stats.rate;
+            comp_dist[cur_type] = est_rd_stats.dist;
           }
         } else {
           // Calculate RD cost based on stored stats
-          assert(comp_dist[0] != INT64_MAX);
-          best_rd_cur =
-              RDCOST(x->rdmult, rs2 + *rate_mv + comp_rate[0], comp_dist[0]);
+          assert(comp_dist[cur_type] != INT64_MAX);
+          best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + comp_rate[cur_type],
+                               comp_dist[cur_type]);
         }
       }
       // use spare buffer for following compound type try
       restore_dst_buf(xd, *tmp_dst, 1);
     } else {
       mbmi->comp_group_idx = 1;
-      masked_type_cost += x->comp_group_idx_cost[comp_group_idx_ctx][1];
-      masked_type_cost += x->compound_type_cost[bsize][cur_type - 1];
+      mbmi->compound_idx = 1;
+      masked_type_cost +=
+          x->comp_group_idx_cost[comp_group_idx_ctx][mbmi->comp_group_idx];
+      masked_type_cost +=
+          x->compound_type_cost[bsize][cur_type - COMPOUND_WEDGE];
       rs2 = masked_type_cost;
 
       if (((*rd / cpi->max_comp_type_rd_threshold_div) *
@@ -9846,8 +9860,8 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->mv[1].as_int = cur_mv[1].as_int;
   }
   if (mbmi->interinter_comp.type != best_compound_data.type) {
-    mbmi->comp_group_idx =
-        (best_compound_data.type == COMPOUND_AVERAGE) ? 0 : 1;
+    mbmi->comp_group_idx = (best_compound_data.type < COMPOUND_WEDGE) ? 0 : 1;
+    mbmi->compound_idx = !(best_compound_data.type == COMPOUND_DISTWTD);
     mbmi->interinter_comp = best_compound_data;
     memcpy(xd->seg_mask, buffers->tmp_best_mask_buf, mask_len);
   }
@@ -9902,6 +9916,8 @@ typedef struct {
   int_mv mv;
 } inter_mode_info;
 
+#define SEPARATE_COMP_DISTWTD_RD 1
+
 static int64_t handle_inter_mode(
     const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *x,
     BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
@@ -9955,10 +9971,14 @@ static int64_t handle_inter_mode(
   inter_mode_info mode_info[MAX_REF_MV_SERCH];
 
   int comp_idx;
+#if SEPARATE_COMP_DISTWTD_RD
   const int search_dist_wtd_comp =
       is_comp_pred & cm->seq_params.order_hint_info.enable_dist_wtd_comp &
       (mbmi->mode != GLOBAL_GLOBALMV) &
       (cpi->sf.use_dist_wtd_comp_flag != DIST_WTD_COMP_DISABLED);
+#else
+  const int search_dist_wtd_comp = 0;
+#endif  // SEPARATE_COMP_DISTWTD_RD
 
   // TODO(jingning): This should be deprecated shortly.
   const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
@@ -10022,13 +10042,14 @@ static int64_t handle_inter_mode(
       mbmi->compound_idx = comp_idx;
       if (is_comp_pred && comp_idx == 0) {
         *rd_stats = backup_rd_stats;
-        mbmi->interinter_comp.type = COMPOUND_AVERAGE;
+        mbmi->interinter_comp.type = COMPOUND_DISTWTD;
         mbmi->num_proj_ref = 0;
         mbmi->motion_mode = SIMPLE_TRANSLATION;
         mbmi->comp_group_idx = 0;
 
         const int comp_index_ctx = get_comp_index_context(cm, xd);
-        compmode_interinter_cost += x->comp_idx_cost[comp_index_ctx][0];
+        compmode_interinter_cost +=
+            x->comp_idx_cost[comp_index_ctx][mbmi->compound_idx];
       }
 
       int_mv cur_mv[2];
@@ -10171,10 +10192,11 @@ static int64_t handle_inter_mode(
         }
 
         int64_t best_rd_compound;
+        const int do_comp_distwtd = !SEPARATE_COMP_DISTWTD_RD;
         compmode_interinter_cost = compound_type_rd(
-            cpi, x, bsize, mi_col, mi_row, cur_mv, masked_compound_used,
-            &orig_dst, &tmp_dst, rd_buffers, &rate_mv, &best_rd_compound,
-            rd_stats, ref_best_rd, &is_luma_interp_done);
+            cpi, x, bsize, mi_col, mi_row, cur_mv, do_comp_distwtd,
+            masked_compound_used, &orig_dst, &tmp_dst, rd_buffers, &rate_mv,
+            &best_rd_compound, rd_stats, ref_best_rd, &is_luma_interp_done);
         if (ref_best_rd < INT64_MAX &&
             (best_rd_compound >> 4) * 13 > ref_best_rd) {
           restore_dst_buf(xd, orig_dst, num_planes);
@@ -10184,6 +10206,7 @@ static int64_t handle_inter_mode(
         // COMPOUND_AVERAGE is selected because it is the first
         // candidate in compound_type_rd, and the following
         // compound types searching uses tmp_dst buffer
+
         if (mbmi->interinter_comp.type == COMPOUND_AVERAGE &&
             is_luma_interp_done) {
           if (num_planes > 1) {
