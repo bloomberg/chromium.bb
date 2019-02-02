@@ -247,21 +247,25 @@ void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
   if (!IsUnhandledUpDownKeyEvent(*event))
     return;
 
-  // If focus is in search box view, up key moves focus to the last element of
-  // contents view if new style launcher is not enabled while it moves focus to
-  // expand arrow if the feature is enabled. Down key moves focus to the first
-  // element of contents view.
+  // Handles arrow key events from the search box while the search box is
+  // inactive. This covers both folder traversal and apps grid traversal. Search
+  // result traversal is handled in |HandleKeyEvent|
   AppListPage* page =
       contents_view_->GetPageView(contents_view_->GetActivePageIndex());
   views::View* arrow_view = contents_view_->expand_arrow_view();
-  views::View* v = event->key_code() == ui::VKEY_UP
-                       ? (arrow_view && arrow_view->IsFocusable()
-                              ? arrow_view
-                              : page->GetLastFocusableView())
-                       : page->GetFirstFocusableView();
+  views::View* next_view = nullptr;
 
-  if (v)
-    v->RequestFocus();
+  if (event->key_code() == ui::VKEY_UP) {
+    if (arrow_view && arrow_view->IsFocusable())
+      next_view = arrow_view;
+    else
+      next_view = page->GetLastFocusableView();
+  } else {
+    next_view = page->GetFirstFocusableView();
+  }
+
+  if (next_view)
+    next_view->RequestFocus();
   event->SetHandled();
 }
 
@@ -518,26 +522,6 @@ void SearchBoxView::UpdateQuery(const base::string16& new_query) {
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
-  if (search_box()->HasFocus() && is_search_box_active() &&
-      !search_box()->text().empty() && ShouldProcessAutocomplete()) {
-    // If the search box has no text in it currently, autocomplete should not
-    // work.
-    last_key_pressed_ = key_event.key_code();
-    if (key_event.type() == ui::ET_KEY_PRESSED &&
-        key_event.key_code() != ui::VKEY_BACK) {
-      if (key_event.key_code() == ui::VKEY_TAB && HasAutocompleteText()) {
-        AcceptAutocompleteText();
-        return true;
-      } else if ((key_event.key_code() == ui::VKEY_UP ||
-                  key_event.key_code() == ui::VKEY_DOWN ||
-                  key_event.key_code() == ui::VKEY_LEFT ||
-                  key_event.key_code() == ui::VKEY_RIGHT) &&
-                 HasAutocompleteText()) {
-        ClearAutocompleteText();
-        return true;
-      }
-    }
-  }
   if (key_event.type() == ui::ET_KEY_PRESSED &&
       key_event.key_code() == ui::VKEY_RETURN) {
     if (!IsSearchBoxTrimmedQueryEmpty()) {
@@ -557,9 +541,85 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     return false;
   }
 
-  if (IsUnhandledLeftRightKeyEvent(key_event))
+  // Events occurring over an inactive search box are handled elsewhere.
+  if (!is_search_box_active())
+    return false;
+
+  // Handles autocomplete text confirmation/deletion
+  // TODO(ginko) fix logic for arrow keys in autocomplete
+  if (search_box()->HasFocus() && !search_box()->text().empty() &&
+      ShouldProcessAutocomplete()) {
+    // If the search box has no text in it currently, autocomplete should not
+    // work.
+    last_key_pressed_ = key_event.key_code();
+    if (key_event.type() == ui::ET_KEY_PRESSED &&
+        key_event.key_code() != ui::VKEY_BACK) {
+      if (key_event.key_code() == ui::VKEY_TAB && HasAutocompleteText()) {
+        AcceptAutocompleteText();
+        return true;
+      } else if ((key_event.key_code() == ui::VKEY_UP ||
+                  key_event.key_code() == ui::VKEY_DOWN ||
+                  key_event.key_code() == ui::VKEY_LEFT ||
+                  key_event.key_code() == ui::VKEY_RIGHT) &&
+                 HasAutocompleteText()) {
+        ClearAutocompleteText();
+        return true;
+      }
+    }
+  }
+
+  // Only arrow key events intended for traversal within search results should
+  // be handled from here.
+  if (!IsUnhandledArrowKeyEvent(key_event))
+    return false;
+
+  SearchResultPageView* search_page =
+      contents_view_->search_results_page_view();
+
+  // Left/Right arrow keys are handled elsewhere, unless the first result is a
+  // tile, in which case right will be handled below.
+  if (key_event.key_code() == ui::VKEY_LEFT ||
+      (key_event.key_code() == ui::VKEY_RIGHT &&
+       !search_page->IsFirstResultTile())) {
     return ProcessLeftRightKeyTraversalForTextfield(search_box(), key_event);
-  return false;
+  }
+
+  // Right arrow key should not be handled if the cursor is within text.
+  if (key_event.key_code() == ui::VKEY_RIGHT &&
+      !LeftRightKeyEventShouldExitText(search_box(), key_event)) {
+    return false;
+  }
+
+  views::View* result_view = nullptr;
+
+  // The up arrow will loop focus to the last result.
+  // The down and right arrows will be treated the same, moving focus along to
+  // the 'next' result. If a result is highlighted, we treat that result as
+  // though it already had focus.
+  if (key_event.key_code() == ui::VKEY_UP) {
+    result_view = search_page->GetLastFocusableView();
+  } else if (search_page->IsFirstResultHighlighted()) {
+    result_view = search_page->GetFirstFocusableView();
+
+    // Give the parent container a chance to handle the event. This lets the
+    // down arrow escape the tile result container.
+    if (!result_view->parent()->OnKeyPressed(key_event)) {
+      // If the parent container doesn't handle |key_event|, get the next
+      // focusable view.
+      result_view = result_view->GetFocusManager()->GetNextFocusableView(
+          result_view, result_view->GetWidget(), false, false);
+    } else {
+      // Return early if the parent container handled the event.
+      return true;
+    }
+  } else {
+    result_view = search_page->GetFirstFocusableView();
+  }
+
+  if (result_view)
+    result_view->RequestFocus();
+
+  return true;
 }
 
 bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,

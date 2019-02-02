@@ -801,7 +801,10 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
       contents_view()
           ->search_result_tile_item_list_view_for_test()
           ->tile_views_for_test();
-  forward_view_list.push_back(tile_views[0]);
+  // We skip the first view when coming from the search box. This is because
+  // the first view is initially highlighted, and would already be activated
+  // upon pressing enter. Hence, we skip adding the tile view to the expected
+  // view list.
   forward_view_list.push_back(contents_view()
                                   ->search_result_answer_card_view_for_test()
                                   ->GetAnswerCardResultViewForTest());
