@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -47,6 +48,9 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/ui/in_product_help/in_product_help.h"
+
 namespace {
 
 // Button background and icon color for in-product help promos.
@@ -55,6 +59,7 @@ namespace {
 constexpr SkColor kFeaturePromoHighlightColor = gfx::kGoogleBlue600;
 
 }  // namespace
+#endif
 
 // static
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
@@ -94,21 +99,23 @@ void BrowserAppMenuButton::SetTypeAndSeverity(
   UpdateIcon();
 }
 
-void BrowserAppMenuButton::SetPromoIsShowing(bool promo_is_showing) {
-  if (promo_is_showing_ == promo_is_showing)
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+void BrowserAppMenuButton::SetPromoFeature(
+    base::Optional<InProductHelpFeature> promo_feature) {
+  if (promo_feature_ == promo_feature)
     return;
 
-  promo_is_showing_ = promo_is_showing;
-  // We override GetInkDropBaseColor below in the |promo_is_showing_| case. This
-  // sets the ink drop into the activated state, which will highlight it in the
-  // desired color.
-  GetInkDrop()->AnimateToState(promo_is_showing_
-                                   ? views::InkDropState::ACTIVATED
-                                   : views::InkDropState::HIDDEN);
+  promo_feature_ = promo_feature;
+  // We override GetInkDropBaseColor below when |promo_feature_| is non-null.
+  // This sets the ink drop into the activated state, which will highlight it in
+  // the desired color.
+  GetInkDrop()->AnimateToState(promo_feature_ ? views::InkDropState::ACTIVATED
+                                              : views::InkDropState::HIDDEN);
 
   UpdateIcon();
   SchedulePaint();
 }
+#endif
 
 void BrowserAppMenuButton::ShowMenu(bool for_drop) {
   if (IsMenuShowing())
@@ -121,11 +128,15 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
 #endif
 
   Browser* browser = toolbar_view_->browser();
-
+  bool alert_reopen_tab_items = false;
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  alert_reopen_tab_items = promo_feature_ == InProductHelpFeature::kReopenTab;
+#endif
   InitMenu(
       std::make_unique<AppMenuModel>(toolbar_view_, browser,
                                      toolbar_view_->app_menu_icon_controller()),
-      browser, for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS);
+      browser, for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS,
+      alert_reopen_tab_items);
 
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
   menu()->RunMenu(this);
@@ -149,10 +160,12 @@ void BrowserAppMenuButton::UpdateIcon() {
   const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (type_and_severity_.severity) {
     case AppMenuIconController::Severity::NONE:
-      severity_color = promo_is_showing_
-                           ? kFeaturePromoHighlightColor
-                           : GetThemeProvider()->GetColor(
-                                 ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      severity_color = GetThemeProvider()->GetColor(
+          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+      if (promo_feature_)
+        severity_color = kFeaturePromoHighlightColor;
+#endif
       break;
     case AppMenuIconController::Severity::LOW:
       severity_color = native_theme->GetSystemColor(
@@ -283,6 +296,9 @@ BrowserAppMenuButton::CreateInkDropHighlight() const {
 }
 
 SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
-  return promo_is_showing_ ? kFeaturePromoHighlightColor
-                           : AppMenuButton::GetInkDropBaseColor();
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  if (promo_feature_)
+    return kFeaturePromoHighlightColor;
+#endif
+  return AppMenuButton::GetInkDropBaseColor();
 }

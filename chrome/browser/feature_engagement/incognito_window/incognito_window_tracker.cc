@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -100,7 +101,7 @@ void IncognitoWindowTracker::ShowPromo() {
       FeaturePromoBubbleView::ActivationAction::ACTIVATE);
   views::Widget* widget = incognito_promo_->GetWidget();
   incognito_promo_observer_.Add(widget);
-  app_menu_button->SetPromoIsShowing(true);
+  app_menu_button->SetPromoFeature(InProductHelpFeature::kIncognitoWindow);
 }
 
 void IncognitoWindowTracker::OnWidgetDestroying(views::Widget* widget) {
@@ -110,7 +111,7 @@ void IncognitoWindowTracker::OnWidgetDestroying(views::Widget* widget) {
     incognito_promo_observer_.Remove(widget);
     BrowserAppMenuButton* app_menu_button = GetAppMenuButton();
     if (app_menu_button)
-      app_menu_button->SetPromoIsShowing(false);
+      app_menu_button->SetPromoFeature(base::nullopt);
   }
 }
 

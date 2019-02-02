@@ -3030,14 +3030,12 @@ void BrowserView::ShowEmojiPanel() {
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {
-  switch (iph_feature) {
-    case InProductHelpFeature::kReopenTab:
-      if (!reopen_tab_promo_controller_) {
-        reopen_tab_promo_controller_ =
-            std::make_unique<ReopenTabPromoController>(this);
-      }
-      reopen_tab_promo_controller_->ShowPromo();
-      break;
+  if (iph_feature == InProductHelpFeature::kReopenTab) {
+    if (!reopen_tab_promo_controller_) {
+      reopen_tab_promo_controller_ =
+          std::make_unique<ReopenTabPromoController>(this);
+    }
+    reopen_tab_promo_controller_->ShowPromo();
   }
 }
 #endif

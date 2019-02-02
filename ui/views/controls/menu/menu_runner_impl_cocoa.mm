@@ -167,8 +167,7 @@ void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
                                     MenuButton* button,
                                     const gfx::Rect& bounds,
                                     MenuAnchorPosition anchor,
-                                    int32_t run_types,
-                                    base::flat_set<int> alerted_commands) {
+                                    int32_t run_types) {
   DCHECK(!IsRunning());
   DCHECK(parent);
   closing_event_time_ = base::TimeTicks();

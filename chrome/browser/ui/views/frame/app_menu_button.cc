@@ -40,13 +40,14 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 
 void AppMenuButton::InitMenu(std::unique_ptr<AppMenuModel> menu_model,
                              Browser* browser,
-                             int run_flags) {
+                             int run_flags,
+                             bool alert_reopen_tab_items) {
   // |menu_| must be reset before |menu_model_| is destroyed, as per the comment
   // in the class declaration.
   menu_.reset();
   menu_model_ = std::move(menu_model);
   menu_model_->Init();
-  menu_ = std::make_unique<AppMenu>(browser, run_flags);
+  menu_ = std::make_unique<AppMenu>(browser, run_flags, alert_reopen_tab_items);
   menu_->Init(menu_model_.get());
 
   for (views::MenuListener& observer : menu_listeners_)

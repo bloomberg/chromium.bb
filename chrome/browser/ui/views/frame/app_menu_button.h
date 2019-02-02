@@ -47,10 +47,11 @@ class AppMenuButton : public views::MenuButton {
 
  protected:
   // Create (but don't show) the menu. |menu_model| should be a newly created
-  // AppMenuModel.
+  // AppMenuModel.  The other params are forwarded to the created AppMenu.
   void InitMenu(std::unique_ptr<AppMenuModel> menu_model,
                 Browser* browser,
-                int run_flags);
+                int run_flags,
+                bool alert_reopen_tab_items);
 
   AppMenu* menu() { return menu_.get(); }
   const AppMenu* menu() const { return menu_.get(); }

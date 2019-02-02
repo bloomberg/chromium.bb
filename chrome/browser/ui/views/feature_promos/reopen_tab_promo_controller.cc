@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
 namespace {
@@ -63,7 +65,7 @@ void ReopenTabPromoController::ShowPromo() {
   BrowserAppMenuButton* app_menu_button =
       browser_view_->toolbar()->app_menu_button();
   app_menu_button->AddMenuListener(this);
-  app_menu_button->SetPromoIsShowing(true);
+  app_menu_button->SetPromoFeature(InProductHelpFeature::kReopenTab);
 
   promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
       app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
@@ -84,7 +86,6 @@ void ReopenTabPromoController::OnMenuOpened() {
 
   AppMenu* app_menu = app_menu_button->app_menu();
   app_menu->AddObserver(this);
-  app_menu->ShowReopenTabPromo();
 }
 
 void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
@@ -100,7 +101,7 @@ void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
     BrowserAppMenuButton* app_menu_button =
         browser_view_->toolbar()->app_menu_button();
     app_menu_button->RemoveMenuListener(this);
-    app_menu_button->SetPromoIsShowing(false);
+    app_menu_button->SetPromoFeature(base::nullopt);
     iph_service_->HelpDismissed();
   }
 }
@@ -116,7 +117,7 @@ void ReopenTabPromoController::AppMenuClosed() {
 
   iph_service_->HelpDismissed();
 
-  browser_view_->toolbar()->app_menu_button()->SetPromoIsShowing(false);
+  browser_view_->toolbar()->app_menu_button()->SetPromoFeature(base::nullopt);
 
   AppMenu* app_menu = browser_view_->toolbar()->app_menu_button()->app_menu();
   app_menu->RemoveObserver(this);

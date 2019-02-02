@@ -416,8 +416,7 @@ void MenuController::Run(Widget* parent,
                          const gfx::Rect& bounds,
                          MenuAnchorPosition position,
                          bool context_menu,
-                         bool is_nested_drag,
-                         base::flat_set<int> alerted_commands) {
+                         bool is_nested_drag) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
   drag_in_progress_ = false;
@@ -456,7 +455,6 @@ void MenuController::Run(Widget* parent,
     DCHECK_EQ(owner_, parent);
   } else {
     showing_ = true;
-    alerted_commands_ = alerted_commands;
 
     if (owner_)
       owner_->RemoveObserver(this);
@@ -1944,17 +1942,6 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   bool do_capture = (!did_capture_ && !for_drop_);
   showing_submenu_ = true;
   if (show) {
-    // Menus are the only place using kGroupingPropertyKey, so any value (other
-    // than 0) is fine.
-    const int kGroupingId = 1001;
-
-    // Show alerts on the requested MenuItemViews.
-    for (int i = 0; i < item->GetSubmenu()->GetMenuItemCount(); ++i) {
-      MenuItemView* subitem = item->GetSubmenu()->GetMenuItemAt(i);
-      if (alerted_commands_.contains(subitem->GetCommand()))
-        subitem->SetAlerted(true);
-    }
-
     item->GetSubmenu()->ShowAt(owner_, bounds, do_capture);
 
     // Figure out if the mouse is under the menu; if so, remember the mouse
@@ -1971,6 +1958,9 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
         menu_open_mouse_loc_ = mouse_pos;
     }
 
+    // Menus are the only place using kGroupingPropertyKey, so any value (other
+    // than 0) is fine.
+    constexpr int kGroupingId = 1001;
     item->GetSubmenu()->GetWidget()->SetNativeWindowProperty(
         TooltipManager::kGroupingPropertyKey,
         reinterpret_cast<void*>(kGroupingId));
