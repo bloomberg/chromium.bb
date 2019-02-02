@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/appcache/appcache_frontend.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
@@ -101,6 +100,7 @@ void EmptyCompletionCallback(int result) {}
 // so that only one notification is sent for all hosts using the same frontend.
 class HostNotifier {
  public:
+  using AppCacheFrontend = blink::mojom::AppCacheFrontend;
   using HostIds = std::vector<int>;
   using NotifyHostMap = std::map<AppCacheFrontend*, HostIds>;
 
@@ -119,7 +119,7 @@ class HostNotifier {
   void SendNotifications(blink::mojom::AppCacheEventID event_id) {
     for (auto& pair : hosts_to_notify_) {
       AppCacheFrontend* frontend = pair.first;
-      frontend->OnEventRaised(pair.second, event_id);
+      frontend->EventRaised(pair.second, event_id);
     }
   }
 
@@ -128,8 +128,7 @@ class HostNotifier {
                                  int num_complete) {
     for (const auto& pair : hosts_to_notify_) {
       AppCacheFrontend* frontend = pair.first;
-      frontend->OnProgressEventRaised(pair.second, url, num_total,
-                                      num_complete);
+      frontend->ProgressEventRaised(pair.second, url, num_total, num_complete);
     }
   }
 
@@ -138,7 +137,7 @@ class HostNotifier {
     DCHECK(!details.message.empty());
     for (const auto& pair : hosts_to_notify_) {
       AppCacheFrontend* frontend = pair.first;
-      frontend->OnErrorEventRaised(pair.second, details);
+      frontend->ErrorEventRaised(pair.second, details.Clone());
     }
   }
 
@@ -146,8 +145,8 @@ class HostNotifier {
     for (const auto& pair : hosts_to_notify_) {
       AppCacheFrontend* frontend = pair.first;
       for (const auto& id : pair.second)
-        frontend->OnLogMessage(id, blink::mojom::ConsoleMessageLevel::kWarning,
-                               message);
+        frontend->LogMessage(id, blink::mojom::ConsoleMessageLevel::kWarning,
+                             message);
     }
   }
 
@@ -830,7 +829,7 @@ void AppCacheUpdateJob::NotifySingleHost(
     AppCacheHost* host,
     blink::mojom::AppCacheEventID event_id) {
   std::vector<int> ids(1, host->host_id());
-  host->frontend()->OnEventRaised(ids, event_id);
+  host->frontend()->EventRaised(ids, event_id);
 }
 
 void AppCacheUpdateJob::NotifyAllAssociatedHosts(

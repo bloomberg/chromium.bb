@@ -8,7 +8,6 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
-#include "content/browser/appcache/appcache_frontend.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_update_job.h"
@@ -20,46 +19,46 @@
 
 namespace {
 
-class TestAppCacheFrontend : public content::AppCacheFrontend {
+class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
  public:
   TestAppCacheFrontend()
       : last_host_id_(-1),
         last_cache_id_(-1),
         last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE) {}
 
-  void OnCacheSelected(int host_id,
-                       const blink::mojom::AppCacheInfo& info) override {
+  void CacheSelected(int32_t host_id,
+                     blink::mojom::AppCacheInfoPtr info) override {
     last_host_id_ = host_id;
-    last_cache_id_ = info.cache_id;
-    last_status_ = info.status;
+    last_cache_id_ = info->cache_id;
+    last_status_ = info->status;
   }
 
-  void OnStatusChanged(const std::vector<int>& host_ids,
-                       blink::mojom::AppCacheStatus status) override {}
+  void StatusChanged(const std::vector<int32_t>& host_ids,
+                     blink::mojom::AppCacheStatus status) override {}
 
-  void OnEventRaised(const std::vector<int>& host_ids,
-                     blink::mojom::AppCacheEventID event_id) override {}
+  void EventRaised(const std::vector<int32_t>& host_ids,
+                   blink::mojom::AppCacheEventID event_id) override {}
 
-  void OnErrorEventRaised(
-      const std::vector<int>& host_ids,
-      const blink::mojom::AppCacheErrorDetails& details) override {}
+  void ErrorEventRaised(
+      const std::vector<int32_t>& host_ids,
+      blink::mojom::AppCacheErrorDetailsPtr details) override {}
 
-  void OnProgressEventRaised(const std::vector<int>& host_ids,
-                             const GURL& url,
-                             int num_total,
-                             int num_complete) override {}
+  void ProgressEventRaised(const std::vector<int32_t>& host_ids,
+                           const GURL& url,
+                           int32_t num_total,
+                           int32_t num_complete) override {}
 
-  void OnLogMessage(int host_id,
-                    blink::mojom::ConsoleMessageLevel log_level,
-                    const std::string& message) override {}
+  void LogMessage(int32_t host_id,
+                  blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override {}
 
-  void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
+  void ContentBlocked(int32_t host_id, const GURL& manifest_url) override {}
 
-  void OnSetSubresourceFactory(
-      int host_id,
+  void SetSubresourceFactory(
+      int32_t host_id,
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  int last_host_id_;
+  int32_t last_host_id_;
   int64_t last_cache_id_;
   blink::mojom::AppCacheStatus last_status_;
 };
@@ -88,7 +87,7 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
 class TestAppCacheHost : public AppCacheHost {
  public:
   TestAppCacheHost(int host_id,
-                   AppCacheFrontend* frontend,
+                   blink::mojom::AppCacheFrontend* frontend,
                    AppCacheServiceImpl* service)
       : AppCacheHost(host_id, /* process_id = */ 456, frontend, service),
         update_completed_(false) {}

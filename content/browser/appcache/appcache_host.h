@@ -28,6 +28,12 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace blink {
+namespace mojom {
+class AppCacheFrontend;
+}  // namespace mojom
+}  // namespace blink
+
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -40,7 +46,6 @@ FORWARD_DECLARE_TEST(AppCacheHostTest, FailedGroupLoad);
 FORWARD_DECLARE_TEST(AppCacheHostTest, SetSwappableCache);
 FORWARD_DECLARE_TEST(AppCacheTest, CleanupUnusedCache);
 class AppCache;
-class AppCacheFrontend;
 class AppCacheGroupTest;
 class AppCacheRequest;
 class AppCacheRequestHandler;
@@ -77,7 +82,7 @@ class CONTENT_EXPORT AppCacheHost
 
   AppCacheHost(int host_id,
                int process_id,
-               AppCacheFrontend* frontend,
+               blink::mojom::AppCacheFrontend* frontend,
                AppCacheServiceImpl* service);
   ~AppCacheHost() override;
 
@@ -182,13 +187,15 @@ class CONTENT_EXPORT AppCacheHost
 
   AppCacheServiceImpl* service() const { return service_; }
   AppCacheStorage* storage() const { return storage_; }
-  AppCacheFrontend* frontend() const { return frontend_; }
+  blink::mojom::AppCacheFrontend* frontend() const { return frontend_; }
 
   // PlzNavigate:
   // The AppCacheHost instance is created with a dummy AppCacheFrontend
   // pointer when the navigation starts. We need to switch it to the
   // actual frontend when the navigation commits.
-  void set_frontend(AppCacheFrontend* frontend) { frontend_ = frontend; }
+  void set_frontend(blink::mojom::AppCacheFrontend* frontend) {
+    frontend_ = frontend;
+  }
 
   AppCache* associated_cache() const { return associated_cache_.get(); }
 
@@ -323,7 +330,7 @@ class CONTENT_EXPORT AppCacheHost
   GURL new_master_entry_url_;
 
   // The frontend proxy to deliver notifications to the child process.
-  AppCacheFrontend* frontend_;
+  blink::mojom::AppCacheFrontend* frontend_;
 
   // Our central service object.
   AppCacheServiceImpl* service_;
