@@ -16,7 +16,6 @@ class ScriptValue;
 class MODULES_EXPORT PaymentUpdater : public GarbageCollectedMixin {
  public:
   virtual void OnUpdatePaymentDetails(
-      const AtomicString& event_type,
       const ScriptValue& details_script_value) = 0;
   virtual void OnUpdatePaymentDetailsFailure(const String& error) = 0;
 

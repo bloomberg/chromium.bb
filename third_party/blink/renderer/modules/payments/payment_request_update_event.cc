@@ -45,7 +45,7 @@ class UpdatePaymentDetailsFunction : public ScriptFunction {
 
  private:
   ScriptValue Call(ScriptValue value) override {
-    update_event_->OnUpdatePaymentDetails(update_event_->type(), value);
+    update_event_->OnUpdatePaymentDetails(value);
     return ScriptValue();
   }
 
@@ -134,12 +134,11 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* script_state,
 }
 
 void PaymentRequestUpdateEvent::OnUpdatePaymentDetails(
-    const AtomicString& event_type,
     const ScriptValue& details_script_value) {
   if (!updater_)
     return;
   abort_timer_.Stop();
-  updater_->OnUpdatePaymentDetails(event_type, details_script_value);
+  updater_->OnUpdatePaymentDetails(details_script_value);
   updater_ = nullptr;
 }
 
