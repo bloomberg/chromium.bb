@@ -89,7 +89,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'expiration': 7200,
           'io_timeout': 1800,
           'hard_timeout': 36000,
-          'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 1
         },
@@ -140,7 +139,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'expiration': 7200,
           'io_timeout': 1800,
           'hard_timeout': 36000,
-          'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 26
         },
@@ -189,7 +187,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'expiration': 7200,
           'io_timeout': 1800,
           'hard_timeout': 36000,
-          'upload_test_results': True,
           'dimension_sets': [[{'os': 'SkyNet', 'pool': 'T-RIP'}]],
           'shards': 26
         },
