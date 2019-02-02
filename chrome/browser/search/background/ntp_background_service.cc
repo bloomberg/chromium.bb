@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/search/background/ntp_background.pb.h"
+#include "chrome/browser/search/background/onboarding_ntp_backgrounds.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -514,6 +515,12 @@ void NtpBackgroundService::RemoveObserver(
 }
 
 bool NtpBackgroundService::IsValidBackdropUrl(const GURL& url) const {
+  for (auto& onboarding_background : GetOnboardingNtpBackgrounds()) {
+    if (onboarding_background == url) {
+      return true;
+    }
+  }
+
   for (auto& image : collection_images_) {
     if (image.image_url == url)
       return true;
