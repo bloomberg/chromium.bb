@@ -83,17 +83,18 @@ document.addEventListener('DOMContentLoaded', function(event) {
 });
 </script>
 
-[TOC]
+# ECMAScript Features in Chromium
 
-> **TBD:** Do we need to differentiate per-project?
-
-> **TBD:** Cross-platform build support? As in: transpilers?
+This doc extends the [style guide](web.md#JavaScript) by specifying which new
+features of ES2015 and beyond are allowed in Chromium.
 
 You can propose changing the status of a feature by sending an email to
 chromium-dev@chromium.org. Include a short blurb on what the feature is and why
 you think it should or should not be allowed, along with links to any relevant
 previous discussion. If the list arrives at some consensus, send a codereview
 to change this file accordingly, linking to your discussion thread.
+
+[TOC]
 
 # ES2015 Support In Chromium
 
