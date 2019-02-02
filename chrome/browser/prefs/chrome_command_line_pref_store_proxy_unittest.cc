@@ -193,6 +193,6 @@ TEST_P(ChromeCommandLinePrefStoreProxyTest, CommandLine) {
       GetParam().proxy_rules.Matches(proxy_config()->value().proxy_rules()));
 }
 
-INSTANTIATE_TEST_CASE_P(ChromeCommandLinePrefStoreProxyTestInstance,
-                        ChromeCommandLinePrefStoreProxyTest,
-                        testing::ValuesIn(kCommandLineTestParams));
+INSTANTIATE_TEST_SUITE_P(ChromeCommandLinePrefStoreProxyTestInstance,
+                         ChromeCommandLinePrefStoreProxyTest,
+                         testing::ValuesIn(kCommandLineTestParams));
