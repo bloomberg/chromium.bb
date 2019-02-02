@@ -106,18 +106,19 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     resource_request.load_flags |= net::LOAD_BYPASS_CACHE;
   }
 
-  // Create response readers only when we have to do the byte-for-byte check.
-  std::unique_ptr<ServiceWorkerResponseReader> compare_reader;
-  std::unique_ptr<ServiceWorkerResponseReader> copy_reader;
   ServiceWorkerStorage* storage = version_->context()->storage();
   if (incumbent_cache_resource_id != kInvalidServiceWorkerResourceId) {
-    compare_reader = storage->CreateResponseReader(incumbent_cache_resource_id);
-    copy_reader = storage->CreateResponseReader(incumbent_cache_resource_id);
+    // Create response readers only when we have to do the byte-for-byte check.
+    cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
+        storage->CreateResponseReader(incumbent_cache_resource_id),
+        storage->CreateResponseReader(incumbent_cache_resource_id),
+        storage->CreateResponseWriter(cache_resource_id),
+        false /* pause_when_not_identical */);
+  } else {
+    // The script is new, create a cache writer for write back.
+    cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
+        storage->CreateResponseWriter(cache_resource_id));
   }
-  cache_writer_ = std::make_unique<ServiceWorkerCacheWriter>(
-      std::move(compare_reader), std::move(copy_reader),
-      storage->CreateResponseWriter(cache_resource_id),
-      false /* pause_when_not_identical */);
 
   version_->script_cache_map()->NotifyStartedCaching(request_url_,
                                                      cache_resource_id);

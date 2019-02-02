@@ -2134,4 +2134,5 @@ std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
 ServiceWorkerVersion::TakePausedStateOfChangedScript(const GURL& script_url) {
   return std::move(compared_script_info_map_[script_url].paused_state);
 }
+
 }  // namespace content

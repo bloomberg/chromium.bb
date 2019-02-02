@@ -8,6 +8,7 @@
 
 #include <list>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -22,33 +23,49 @@ namespace {
 
 class ServiceWorkerCacheWriterTest : public ::testing::Test {
  public:
+  // Cache writer is created differently depending on diffrerent usage.
+  enum class CacheWriterUsage {
+    kForCopy,
+    kForWriteBack,
+    kForComparison,
+  };
+
   ServiceWorkerCacheWriterTest() {}
   ~ServiceWorkerCacheWriterTest() override {}
 
   MockServiceWorkerResponseReader* ExpectReader() {
-    std::unique_ptr<MockServiceWorkerResponseReader> reader(
-        new MockServiceWorkerResponseReader);
+    auto reader = std::make_unique<MockServiceWorkerResponseReader>();
     MockServiceWorkerResponseReader* borrowed_reader = reader.get();
     readers_.push_back(std::move(reader));
     return borrowed_reader;
   }
 
   MockServiceWorkerResponseWriter* ExpectWriter() {
-    std::unique_ptr<MockServiceWorkerResponseWriter> writer(
-        new MockServiceWorkerResponseWriter);
+    auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
     MockServiceWorkerResponseWriter* borrowed_writer = writer.get();
     writers_.push_back(std::move(writer));
     return borrowed_writer;
   }
 
   // This should be called after ExpectReader() and ExpectWriter().
-  void Initialize(bool pause_when_not_identical) {
-    std::unique_ptr<ServiceWorkerResponseReader> compare_reader(CreateReader());
-    std::unique_ptr<ServiceWorkerResponseReader> copy_reader(CreateReader());
-    std::unique_ptr<ServiceWorkerResponseWriter> writer(CreateWriter());
-    cache_writer_.reset(new ServiceWorkerCacheWriter(
-        std::move(compare_reader), std::move(copy_reader), std::move(writer),
-        pause_when_not_identical));
+  void Initialize(CacheWriterUsage type, bool pause_when_not_identical) {
+    switch (type) {
+      case CacheWriterUsage::kForCopy:
+        cache_writer_ = ServiceWorkerCacheWriter::CreateForCopy(CreateReader(),
+                                                                CreateWriter());
+        break;
+      case CacheWriterUsage::kForWriteBack:
+        cache_writer_ =
+            ServiceWorkerCacheWriter::CreateForWriteBack(CreateWriter());
+        break;
+      case CacheWriterUsage::kForComparison:
+        auto compare_reader = CreateReader();
+        auto copy_reader = CreateReader();
+        cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
+            std::move(compare_reader), std::move(copy_reader), CreateWriter(),
+            pause_when_not_identical);
+        break;
+    };
   }
 
  protected:
@@ -113,7 +130,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersSync) {
   const size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfoOk(kHeaderSize, false);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::OK, error);
@@ -126,7 +144,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersAsync) {
   size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfoOk(kHeaderSize, true);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
@@ -147,7 +166,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataSync) {
   writer->ExpectWriteInfoOk(response_size, false);
   writer->ExpectWriteDataOk(data1.size(), false);
   writer->ExpectWriteDataOk(data2.size(), false);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::OK, error);
@@ -169,7 +189,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataAsync) {
   writer->ExpectWriteInfoOk(response_size, false);
   writer->ExpectWriteDataOk(data1.size(), true);
   writer->ExpectWriteDataOk(data2.size(), true);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::OK, error);
@@ -192,7 +213,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersFailSync) {
   const size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfo(kHeaderSize, false, net::ERR_FAILED);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_FAILED, error);
@@ -205,7 +227,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughHeadersFailAsync) {
   size_t kHeaderSize = 16;
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfo(kHeaderSize, true, net::ERR_FAILED);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
@@ -223,7 +246,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataFailSync) {
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfoOk(data.size(), false);
   writer->ExpectWriteData(data.size(), false, net::ERR_FAILED);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   EXPECT_EQ(net::OK, WriteHeaders(data.size()));
   EXPECT_EQ(net::ERR_FAILED, WriteData(data));
@@ -236,7 +260,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PassthroughDataFailAsync) {
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   writer->ExpectWriteInfoOk(data.size(), false);
   writer->ExpectWriteData(data.size(), true, net::ERR_FAILED);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForWriteBack,
+             false /* pause_when_not_identical */);
 
   EXPECT_EQ(net::OK, WriteHeaders(data.size()));
 
@@ -257,8 +282,13 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareHeadersSync) {
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
+  // Create a copy reader as it's needed to create cache writer for comparison
+  // though not used in this test.
+  ExpectReader();
+
   reader->ExpectReadInfoOk(response_size, false);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::OK, error);
@@ -273,9 +303,14 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkSync) {
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
+  // Create a copy reader as it's needed to create cache writer for comparison
+  // though not used in this test.
+  ExpectReader();
+
   reader->ExpectReadInfoOk(response_size, false);
   reader->ExpectReadDataOk(data1, false);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::OK, error);
@@ -293,8 +328,13 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareHeadersFailSync) {
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
+  // Create a copy reader as it's needed to create cache writer for comparison
+  // though not used in this test.
+  ExpectReader();
+
   reader->ExpectReadInfo(response_size, false, net::ERR_FAILED);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   EXPECT_EQ(net::ERR_FAILED, WriteHeaders(response_size));
   EXPECT_TRUE(writer->AllExpectedWritesDone());
@@ -308,9 +348,14 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataFailSync) {
   MockServiceWorkerResponseWriter* writer = ExpectWriter();
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
+  // Create a copy reader as it's needed to create cache writer for comparison
+  // though not used in this test.
+  ExpectReader();
+
   reader->ExpectReadInfoOk(response_size, false);
   reader->ExpectReadData(data1.c_str(), data1.length(), false, net::ERR_FAILED);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::OK, error);
@@ -338,7 +383,14 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareShortCacheReads) {
   reader->ExpectReadDataOk(cache_data3, false);
   reader->ExpectReadDataOk(cache_data4, false);
   reader->ExpectReadDataOk(data5, false);
-  Initialize(false /* pause_when_not_identical */);
+
+  // Create a copy reader and writer as they're needed to create cache writer
+  // for comparison though not used in this test.
+  ExpectReader();
+  ExpectWriter();
+
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(kHeaderSize);
   EXPECT_EQ(net::OK, error);
@@ -358,9 +410,15 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkAsync) {
 
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
+  // Create a copy reader and writer as they're needed to create cache writer
+  // for comparison though not used in this test.
+  ExpectReader();
+  ExpectWriter();
+
   reader->ExpectReadInfoOk(response_size, true);
   reader->ExpectReadDataOk(data1, true);
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
@@ -384,11 +442,17 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataManyOkAsync) {
 
   MockServiceWorkerResponseReader* reader = ExpectReader();
 
+  // Create a copy reader and writer as they're needed to create cache writer
+  // for comparison though not used in this test.
+  ExpectReader();
+  ExpectWriter();
+
   reader->ExpectReadInfoOk(response_size, true);
   for (size_t i = 0; i < base::size(expected_data); ++i) {
     reader->ExpectReadDataOk(expected_data[i], true);
   }
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(response_size);
   EXPECT_EQ(net::ERR_IO_PENDING, error);
@@ -433,7 +497,8 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopySync) {
   writer->ExpectWriteDataOk(net_data2.size(), false);
   writer->ExpectWriteDataOk(data3.size(), false);
 
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(net_response_size);
   EXPECT_EQ(net::OK, error);
@@ -475,7 +540,8 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopyShort) {
   writer->ExpectWriteDataOk(net_data2.size(), false);
   writer->ExpectWriteDataOk(data3.size(), false);
 
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(net_response_size);
   EXPECT_EQ(net::OK, error);
@@ -519,7 +585,8 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareFailedCopyLong) {
   writer->ExpectWriteDataOk(data1.size(), false);
   writer->ExpectWriteDataOk(net_data2.size(), false);
 
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(net_size);
   EXPECT_EQ(net::OK, error);
@@ -582,7 +649,8 @@ TEST_F(ServiceWorkerCacheWriterTest, MultipleComparisonInSingleWrite) {
   for (const auto& data : data_expected)
     writer->ExpectWriteDataOk(data.size(), false);
 
-  Initialize(false /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             false /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(bytes_from_net);
   EXPECT_EQ(net::OK, error);
@@ -639,7 +707,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_SyncWriteData) {
   for (const auto& data : data_expected)
     writer->ExpectWriteDataOk(data.size(), false);
 
-  Initialize(true /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             true /* pause_when_not_identical */);
 
   net::Error error = WriteHeaders(bytes_from_net);
   EXPECT_EQ(net::OK, error);
@@ -709,7 +778,8 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_AsyncWriteData) {
   for (const auto& data : data_expected)
     writer->ExpectWriteDataOk(data.size(), true);
 
-  Initialize(true /* pause_when_not_identical */);
+  Initialize(CacheWriterUsage::kForComparison,
+             true /* pause_when_not_identical */);
 
   write_complete_ = false;
   net::Error error = WriteHeaders(bytes_from_net);
@@ -764,6 +834,230 @@ TEST_F(ServiceWorkerCacheWriterTest, PauseWhenNotIdentical_AsyncWriteData) {
 
   EXPECT_TRUE(writer->AllExpectedWritesDone());
   EXPECT_TRUE(compare_reader->AllExpectedReadsDone());
+}
+
+// Tests behavior of a cache writer used to copy script which finishes
+// asynchronously.
+TEST_F(ServiceWorkerCacheWriterTest, CopyScript_Async) {
+  // Data from |copy_reader|.
+  const std::vector<std::string> data_from_cache{"abcd"};
+
+  // The written data should be the same as |data_from_cache|.
+  const std::vector<std::string> data_expected{"abcd"};
+
+  size_t bytes_cached = 0;
+  size_t bytes_expected = 0;
+
+  for (const auto& data : data_from_cache)
+    bytes_cached += data.size();
+
+  for (const auto& data : data_expected)
+    bytes_expected += data.size();
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* copy_reader = ExpectReader();
+
+  copy_reader->ExpectReadInfoOk(bytes_cached, true);
+  for (const auto& data : data_from_cache)
+    copy_reader->ExpectReadDataOk(data, true);
+
+  writer->ExpectWriteInfoOk(bytes_expected, true);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), true);
+
+  Initialize(CacheWriterUsage::kForCopy, false /* pause_when_not_identical */);
+
+  write_complete_ = false;
+  net::Error error = cache_writer_->StartCopy(CreateWriteCallback());
+  EXPECT_EQ(net::ERR_IO_PENDING, error);
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of the header. This doesn't finish all the
+  // read to the storage, so the callback isn't called yet.
+  copy_reader->CompletePendingRead();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous write of the header. This doesn't finish all the
+  // write to the storage, so the callback isn't called yet.
+  writer->CompletePendingWrite();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of the data. This finishes all the
+  // read to the storage. But the write has not ben performed, so the
+  // callback isn't called yet.
+  copy_reader->CompletePendingRead();
+  EXPECT_FALSE(write_complete_);
+  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
+
+  // Complete the asynchronous write of the data. This finishes all the
+  // write to the storage, so the callback is called.
+  writer->CompletePendingWrite();
+  EXPECT_TRUE(write_complete_);
+  EXPECT_EQ(net::OK, last_error_);
+  EXPECT_EQ(bytes_expected, cache_writer_->bytes_written());
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+}
+
+// Tests behavior of a cache writer used to copy script that read multiple
+// times and finishes asynchronously.
+TEST_F(ServiceWorkerCacheWriterTest, CopyScript_AsyncMultipleRead) {
+  // Data from |copy_reader|.
+  const std::vector<std::string> data_from_cache{"a", "bc", "d"};
+
+  // The written data should be the same as |data_from_cache|.
+  const std::vector<std::string> data_expected{"a", "bc", "d"};
+
+  size_t bytes_cached = 0;
+  size_t bytes_expected = 0;
+
+  for (const auto& data : data_from_cache)
+    bytes_cached += data.size();
+
+  for (const auto& data : data_expected)
+    bytes_expected += data.size();
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* copy_reader = ExpectReader();
+
+  copy_reader->ExpectReadInfoOk(bytes_cached, true);
+  for (const auto& data : data_from_cache)
+    copy_reader->ExpectReadDataOk(data, true);
+
+  writer->ExpectWriteInfoOk(bytes_expected, true);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), true);
+
+  Initialize(CacheWriterUsage::kForCopy, false /* pause_when_not_identical */);
+
+  write_complete_ = false;
+  net::Error error = cache_writer_->StartCopy(CreateWriteCallback());
+  EXPECT_EQ(net::ERR_IO_PENDING, error);
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of the header. This doesn't finish all the
+  // read to the storage, so the callback isn't called yet.
+  copy_reader->CompletePendingRead();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous write of the header. This doesn't finish all the
+  // write to the storage, so the callback isn't called yet.
+  writer->CompletePendingWrite();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of data block "a". This doesn't finish all
+  // the read to the storage, so the callback isn't called yet.
+  copy_reader->CompletePendingRead();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous write of data block "a". This doesn't finish all
+  // the write to the storage, so the callback isn't called yet.
+  writer->CompletePendingWrite();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of data block "bc". This doesn't finish all
+  // the read to the storage, so the callback isn't called yet.
+  copy_reader->CompletePendingRead();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous write of the data block "bc". This doesn't finish
+  // all the write to the storage, so the callback isn't called yet.
+  writer->CompletePendingWrite();
+  EXPECT_FALSE(write_complete_);
+
+  // Complete the asynchronous read of data block "d". This finishes all the
+  // read to the storage. But the write has not ben performed, so the
+  // callback isn't called yet.
+  copy_reader->CompletePendingRead();
+  EXPECT_FALSE(write_complete_);
+  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
+
+  // Complete the asynchronous write of data block "d". This finishes all the
+  // write to the storage, so the callback is called.
+  writer->CompletePendingWrite();
+  EXPECT_TRUE(write_complete_);
+  EXPECT_EQ(net::OK, last_error_);
+  EXPECT_EQ(bytes_expected, cache_writer_->bytes_written());
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+}
+
+// Tests behavior of a cache writer used to copy script which finishes
+// synchronously.
+TEST_F(ServiceWorkerCacheWriterTest, CopyScript_Sync) {
+  // Data from |copy_reader|.
+  const std::vector<std::string> data_from_cache{"abcd"};
+
+  // The written data should be the same as |data_from_cache|.
+  const std::vector<std::string> data_expected{"abcd"};
+
+  size_t bytes_cached = 0;
+  size_t bytes_expected = 0;
+
+  for (const auto& data : data_from_cache)
+    bytes_cached += data.size();
+
+  for (const auto& data : data_expected)
+    bytes_expected += data.size();
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* copy_reader = ExpectReader();
+
+  copy_reader->ExpectReadInfoOk(bytes_cached, false);
+  for (const auto& data : data_from_cache)
+    copy_reader->ExpectReadDataOk(data, false);
+
+  writer->ExpectWriteInfoOk(bytes_expected, false);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), false);
+
+  Initialize(CacheWriterUsage::kForCopy, false /* pause_when_not_identical */);
+
+  net::Error error = cache_writer_->StartCopy(CreateWriteCallback());
+
+  // In synchronous read and write, everything finishes synchronously.
+  EXPECT_EQ(net::OK, error);
+  EXPECT_EQ(bytes_expected, cache_writer_->bytes_written());
+  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
+}
+
+// Tests behavior of a cache writer used to copy script that read multiple
+// times and finishes synchronously.
+TEST_F(ServiceWorkerCacheWriterTest, CopyScript_SyncMultiRead) {
+  // Data from |copy_reader|.
+  const std::vector<std::string> data_from_cache{"a", "bc", "d"};
+
+  // The written data should be the same as |data_from_cache|.
+  const std::vector<std::string> data_expected{"a", "bc", "d"};
+
+  size_t bytes_cached = 0;
+  size_t bytes_expected = 0;
+
+  for (const auto& data : data_from_cache)
+    bytes_cached += data.size();
+
+  for (const auto& data : data_expected)
+    bytes_expected += data.size();
+
+  MockServiceWorkerResponseWriter* writer = ExpectWriter();
+  MockServiceWorkerResponseReader* copy_reader = ExpectReader();
+
+  copy_reader->ExpectReadInfoOk(bytes_cached, false);
+  for (const auto& data : data_from_cache)
+    copy_reader->ExpectReadDataOk(data, false);
+
+  writer->ExpectWriteInfoOk(bytes_expected, false);
+  for (const auto& data : data_expected)
+    writer->ExpectWriteDataOk(data.size(), false);
+
+  Initialize(CacheWriterUsage::kForCopy, false /* pause_when_not_identical */);
+
+  net::Error error = cache_writer_->StartCopy(CreateWriteCallback());
+
+  // In synchronous read and write, everything finishes synchronously.
+  EXPECT_EQ(net::OK, error);
+  EXPECT_EQ(bytes_expected, cache_writer_->bytes_written());
+  EXPECT_TRUE(copy_reader->AllExpectedReadsDone());
+  EXPECT_TRUE(writer->AllExpectedWritesDone());
 }
 
 }  // namespace

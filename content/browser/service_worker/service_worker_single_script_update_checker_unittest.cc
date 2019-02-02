@@ -29,12 +29,10 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   struct CheckResult {
     CheckResult(
         const GURL& script_url,
-        int64_t id,
         ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
         std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
             paused_state)
         : url(script_url),
-          resource_id(id),
           result(compare_result),
           paused_state(std::move(paused_state)) {}
 
@@ -45,7 +43,6 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     ~CheckResult() = default;
 
     GURL url;
-    int64_t resource_id;
     ServiceWorkerSingleScriptUpdateChecker::Result result;
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
         paused_state;
@@ -81,18 +78,18 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       base::Optional<CheckResult>* out_check_result) {
     helper_->SetNetworkFactory(loader_factory);
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-        GURL(url), 0 /* resource_id */, true /* is_main_script */,
+        GURL(url), true /* is_main_script */,
         helper_->url_loader_factory_getter()->GetNetworkFactory(),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,
-               const GURL& script_url, int64_t resource_id,
+               const GURL& script_url,
                ServiceWorkerSingleScriptUpdateChecker::Result result,
                std::unique_ptr<
                    ServiceWorkerSingleScriptUpdateChecker::PausedState>
                    paused_state) {
-              *out_check_result_param = CheckResult(
-                  script_url, resource_id, result, std::move(paused_state));
+              *out_check_result_param =
+                  CheckResult(script_url, result, std::move(paused_state));
             },
             out_check_result));
   }
@@ -148,7 +145,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_SingleSyncRead) {
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical);
   EXPECT_EQ(check_result.value().url, kScriptURL);
-  EXPECT_EQ(check_result.value().resource_id, 0);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -181,7 +177,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Different_SingleSyncRead) {
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
   EXPECT_EQ(check_result.value().url, kScriptURL);
-  EXPECT_EQ(check_result.value().resource_id, 0);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -215,7 +210,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Different_MultipleSyncRead) {
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
   EXPECT_EQ(check_result.value().url, kScriptURL);
-  EXPECT_EQ(check_result.value().resource_id, 0);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -247,7 +241,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkDataLong_SyncRead) {
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
   EXPECT_EQ(check_result.value().url, kScriptURL);
-  EXPECT_EQ(check_result.value().resource_id, 0);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -283,7 +276,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkDataShort_SyncRead) {
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
   EXPECT_EQ(check_result.value().url, kScriptURL);
-  EXPECT_EQ(check_result.value().resource_id, 0);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -330,7 +322,6 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_SingleAsyncRead) {
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical);
   EXPECT_EQ(check_result.value().url, kScriptURL);
-  EXPECT_EQ(check_result.value().resource_id, 0);
   EXPECT_FALSE(check_result.value().paused_state);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
