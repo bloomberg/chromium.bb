@@ -20,13 +20,13 @@ ReceiverPipe::ReceiverPipe(mojo::PlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
       read_buffer_(new char[SenderPipe::kPipeSize]) {
   ZeroOverlapped();
-  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
-      handle_.GetHandle().Get(), this);
 }
 
-ReceiverPipe::~ReceiverPipe() {}
+ReceiverPipe::~ReceiverPipe() = default;
 
 void ReceiverPipe::StartReadingOnIOThread() {
+  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
+      handle_.GetHandle().Get(), this);
   ReadUntilBlocking();
 }
 

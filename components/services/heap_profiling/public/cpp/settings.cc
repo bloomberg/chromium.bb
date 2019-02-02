@@ -23,9 +23,11 @@ namespace {
 const char kOOPHeapProfilingFeatureStackMode[] = "stack-mode";
 const char kOOPHeapProfilingFeatureSampling[] = "sampling";
 const char kOOPHeapProfilingFeatureSamplingRate[] = "sampling-rate";
+const char kOOPHeapProfilingFeatureInProcess[] = "in-process";
 
 const uint32_t kDefaultSamplingRate = 100000;
 const bool kDefaultShouldSample = true;
+const bool kDefaultInProcessMode = false;
 
 bool RecordAllAllocationsForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
@@ -34,7 +36,7 @@ bool RecordAllAllocationsForStartup() {
 
   return !base::GetFieldTrialParamByFeatureAsBool(
       kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSampling,
-      /*default_value=*/kDefaultShouldSample);
+      kDefaultShouldSample);
 }
 
 }  // namespace
@@ -146,7 +148,14 @@ uint32_t GetSamplingRateForStartup() {
 
   return base::GetFieldTrialParamByFeatureAsInt(
       kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSamplingRate,
-      /*default_value=*/kDefaultSamplingRate);
+      kDefaultSamplingRate);
+}
+
+bool IsInProcessModeEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kMemlogInProcess) ||
+         base::GetFieldTrialParamByFeatureAsBool(
+             kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureInProcess,
+             kDefaultInProcessMode);
 }
 
 bool IsBackgroundHeapProfilingEnabled() {

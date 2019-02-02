@@ -60,10 +60,9 @@ void Supervisor::SetClientConnectionManagerConstructor(
 
 void Supervisor::Start(content::ServiceManagerConnection* connection,
                        base::OnceClosure closure) {
-  // TODO(alph): Obtain stream_samples from the command line / Finch.
+  bool stream_samples = !IsInProcessModeEnabled();
   Start(connection, GetModeForStartup(), GetStackModeForStartup(),
-        true /* stream_samples */, GetSamplingRateForStartup(),
-        std::move(closure));
+        stream_samples, GetSamplingRateForStartup(), std::move(closure));
 }
 
 void Supervisor::Start(content::ServiceManagerConnection* connection,

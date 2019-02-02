@@ -240,6 +240,8 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
+#include "components/services/heap_profiling/heap_profiling_service.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -3761,6 +3763,12 @@ void ChromeContentBrowserClient::RegisterIOThreadServiceHandlers(
   connection->AddServiceRequestHandler(
       "download_manager", base::BindRepeating(&StartDownloadManager));
 #endif
+
+  if (heap_profiling::IsInProcessModeEnabled()) {
+    connection->AddServiceRequestHandler(
+        heap_profiling::mojom::kServiceName,
+        heap_profiling::HeapProfilingService::GetServiceFactory());
+  }
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
@@ -3788,8 +3796,10 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
                           IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME);
 #endif
 
-  (*services)[heap_profiling::mojom::kServiceName] = base::BindRepeating(
-      &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME);
+  if (!heap_profiling::IsInProcessModeEnabled()) {
+    (*services)[heap_profiling::mojom::kServiceName] = base::BindRepeating(
+        &l10n_util::GetStringUTF16, IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME);
+  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   (*services)[chrome::mojom::kMediaGalleryUtilServiceName] =

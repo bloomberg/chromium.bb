@@ -7,6 +7,7 @@
 namespace heap_profiling {
 
 const char kMemlog[] = "memlog";
+const char kMemlogInProcess[] = "memlog-in-process";
 const char kMemlogKeepSmallAllocations[] = "memlog-keep-small-allocations";
 const char kMemlogModeAll[] = "all";
 const char kMemlogModeAllRenderers[] = "all-renderers";
