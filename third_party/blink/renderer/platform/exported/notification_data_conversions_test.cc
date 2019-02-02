@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/notifications/notification_data_conversions.h"
+#include "third_party/blink/public/platform/notification_data_conversions.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/stl_util.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 
-namespace content {
+namespace blink {
 
 const char kNotificationTitle[] = "My Notification";
 const char kNotificationLang[] = "nl";
@@ -45,10 +46,9 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   std::vector<char> developer_data(
       kNotificationData, kNotificationData + base::size(kNotificationData));
 
-  blink::PlatformNotificationData platform_data;
+  PlatformNotificationData platform_data;
   platform_data.title = base::ASCIIToUTF16(kNotificationTitle);
-  platform_data.direction =
-      blink::PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
+  platform_data.direction = PlatformNotificationData::DIRECTION_LEFT_TO_RIGHT;
   platform_data.lang = kNotificationLang;
   platform_data.body = base::ASCIIToUTF16(kNotificationBody);
   platform_data.tag = kNotificationTag;
@@ -62,20 +62,19 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.require_interaction = true;
   platform_data.data = developer_data;
   platform_data.actions.resize(2);
-  platform_data.actions[0].type =
-      blink::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+  platform_data.actions[0].type = PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
   platform_data.actions[0].action = kAction1Name;
   platform_data.actions[0].title = base::ASCIIToUTF16(kAction1Title);
   platform_data.actions[0].icon = GURL(kAction1IconUrl);
   platform_data.actions[0].placeholder =
       base::NullableString16(base::ASCIIToUTF16(kAction1Placeholder), false);
-  platform_data.actions[1].type = blink::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
+  platform_data.actions[1].type = PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
   platform_data.actions[1].action = kAction2Name;
   platform_data.actions[1].title = base::ASCIIToUTF16(kAction2Title);
   platform_data.actions[1].icon = GURL(kAction2IconUrl);
   platform_data.actions[1].placeholder = base::NullableString16();
 
-  blink::WebNotificationData web_data = ToWebNotificationData(platform_data);
+  WebNotificationData web_data = ToWebNotificationData(platform_data);
   EXPECT_EQ(kNotificationTitle, web_data.title);
   EXPECT_EQ(blink::mojom::NotificationDirection::LEFT_TO_RIGHT,
             web_data.direction);
@@ -100,16 +99,16 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
     EXPECT_EQ(developer_data[i], web_data.data[i]);
 
   ASSERT_EQ(platform_data.actions.size(), web_data.actions.size());
-  EXPECT_EQ(blink::WebNotificationAction::kButton, web_data.actions[0].type);
+  EXPECT_EQ(WebNotificationAction::kButton, web_data.actions[0].type);
   EXPECT_EQ(kAction1Name, web_data.actions[0].action);
   EXPECT_EQ(kAction1Title, web_data.actions[0].title);
   EXPECT_EQ(kAction1IconUrl, web_data.actions[0].icon.GetString());
   EXPECT_EQ(kAction1Placeholder, web_data.actions[0].placeholder);
-  EXPECT_EQ(blink::WebNotificationAction::kText, web_data.actions[1].type);
+  EXPECT_EQ(WebNotificationAction::kText, web_data.actions[1].type);
   EXPECT_EQ(kAction2Name, web_data.actions[1].action);
   EXPECT_EQ(kAction2Title, web_data.actions[1].title);
   EXPECT_EQ(kAction2IconUrl, web_data.actions[1].icon.GetString());
   EXPECT_TRUE(web_data.actions[1].placeholder.IsNull());
 }
 
-}  // namespace content
+}  // namespace blink
