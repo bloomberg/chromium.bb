@@ -54,13 +54,35 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 #include "{{module.path}}-shared.h"
+#include "{{variant_path}}-forward.h"
+
+{#- Imported struct and union types must be fully defined if used in this
+    mojom. #}
+{%- set import_definition_header = namespace(need=false) %}
+{%- for struct in structs %}
+{%-   for field in struct.fields %}
+{%-     if field.kind|is_object_kind or field.kind|is_union_kind %}
+{%-       set import_definition_header.need = true %}
+{%-     endif %}
+{%-   endfor %}
+{%- endfor %}
+
 {%- for import in imports %}
-{%-   if variant %}
+{%-   if import_definition_header.need %}
+{%-     if variant %}
 #include "{{"%s-%s.h"|format(import.path, variant)}}"
-{%-   else %}
+{%-     else %}
 #include "{{import.path}}.h"
+{%-     endif %}
+{%-   else %}
+{%-     if variant %}
+#include "{{"%s-%s-forward.h"|format(import.path, variant)}}"
+{%-     else %}
+#include "{{import.path}}-forward.h"
+{%-     endif %}
 {%-   endif %}
 {%- endfor %}
+
 {%- if not for_blink %}
 #include <string>
 #include <vector>
@@ -112,64 +134,6 @@ namespace {{variant}} {
 {%- endif %}
 
 {{namespace_begin()}}
-
-{#--- Enums #}
-{%- if variant %}
-{%-   for enum in enums %}
-using {{enum.name}} = {{enum.name}};  // Alias for definition in the parent namespace.
-{%-   endfor %}
-{%- endif %}
-
-{#--- Constants #}
-{%- for constant in module.constants %}
-{{constant|format_constant_declaration}};
-{%- endfor %}
-
-{#--- Interface Forward Declarations -#}
-{%  for interface in interfaces %}
-class {{interface.name}};
-using {{interface.name}}Ptr = mojo::InterfacePtr<{{interface.name}}>;
-{%-   if for_blink %}
-using Revocable{{interface.name}}Ptr = ::blink::RevocableInterfacePtr<{{interface.name}}>;
-{%-   endif %}
-using {{interface.name}}PtrInfo = mojo::InterfacePtrInfo<{{interface.name}}>;
-using ThreadSafe{{interface.name}}Ptr =
-    mojo::ThreadSafeInterfacePtr<{{interface.name}}>;
-using {{interface.name}}Request = mojo::InterfaceRequest<{{interface.name}}>;
-using {{interface.name}}AssociatedPtr =
-    mojo::AssociatedInterfacePtr<{{interface.name}}>;
-using ThreadSafe{{interface.name}}AssociatedPtr =
-    mojo::ThreadSafeAssociatedInterfacePtr<{{interface.name}}>;
-using {{interface.name}}AssociatedPtrInfo =
-    mojo::AssociatedInterfacePtrInfo<{{interface.name}}>;
-using {{interface.name}}AssociatedRequest =
-    mojo::AssociatedInterfaceRequest<{{interface.name}}>;
-{%  endfor %}
-
-{#--- Struct Forward Declarations -#}
-{%  for struct in structs %}
-{%-   if struct|is_native_only_kind %}
-using {{struct.name}} = mojo::native::NativeStruct;
-using {{struct.name}}Ptr = mojo::native::NativeStructPtr;
-{%-   else %}
-class {{struct.name}};
-{%-     if struct|should_inline %}
-using {{struct.name}}Ptr = mojo::InlinedStructPtr<{{struct.name}}>;
-{%-     else %}
-using {{struct.name}}Ptr = mojo::StructPtr<{{struct.name}}>;
-{%-     endif %}
-{%-   endif %}
-{%  endfor %}
-
-{#--- Union Forward Declarations -#}
-{%  for union in unions %}
-class {{union.name}};
-{%    if union|should_inline_union %}
-typedef mojo::InlinedStructPtr<{{union.name}}> {{union.name}}Ptr;
-{%    else %}
-typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
-{%    endif %}
-{%- endfor %}
 
 {#--- Interfaces -#}
 {%  for interface in interfaces %}

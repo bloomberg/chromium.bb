@@ -2,8 +2,14 @@
   Macro for enum definition, and the declaration of associated functions.
 ---#}
 
+{%- macro enum_forward(enum) %}
+{%-   set enum_name = enum|get_name_for_kind(flatten_nested_kind=True) %}
+enum class {{enum_name}} : int32_t;
+{%- endmacro %}
+
 {%- macro enum_decl(enum, export_attribute) %}
 {%-   set enum_name = enum|get_name_for_kind(flatten_nested_kind=True) %}
+
 enum class {{enum_name}} : int32_t {
 {%-   for field in enum.fields %}
 {%-     if field.value %}
