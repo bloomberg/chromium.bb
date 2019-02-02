@@ -21,3 +21,6 @@ class TraceTestExpectations(GpuTestExpectations):
     # context loss which results in hardware decoder loss.
     self.Skip('*_Video_Context_Loss_MP4', ['android'], bug=580386)
 
+    # Skip on platforms where DirectComposition isn't supported
+    self.Skip('VideoTraceTest_*',
+        ['mac', 'linux', 'android', 'chromeos', 'win7'], bug=867136)

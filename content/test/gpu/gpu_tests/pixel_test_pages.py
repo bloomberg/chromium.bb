@@ -10,7 +10,8 @@ class PixelTestPage(object):
   """
   def __init__(self, url, name, test_rect, revision,
                tolerance=2, browser_args=None, expected_colors=None,
-               gpu_process_disabled=False, optional_action=None):
+               gpu_process_disabled=False, optional_action=None,
+               other_args=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -35,6 +36,8 @@ class PixelTestPage(object):
     # action here is "CrashGpuProcess" then it would be defined in a
     # "_CrashGpuProcess" method in PixelIntegrationTest.
     self.optional_action = optional_action
+    # Whatever other settings a test need to specify.
+    self.other_args = other_args
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -1269,8 +1272,8 @@ def DirectCompositionPages(base_name):
           'size': [55, 110],
           'color': [12, 12, 255],
           'tolerance': tolerance_dc
-        }
-      ]),
+        }],
+      other_args={'video_is_rotated': True}),
 
     PixelTestPage(
       'pixel_video_mp4_four_colors_rot_180.html',
@@ -1306,8 +1309,8 @@ def DirectCompositionPages(base_name):
           'size': [110, 57],
           'color': [255, 255, 15],
           'tolerance': tolerance_dc
-        }
-      ]),
+        }],
+      other_args={'video_is_rotated': True}),
 
     PixelTestPage(
       'pixel_video_mp4_four_colors_rot_270.html',
@@ -1357,8 +1360,8 @@ def DirectCompositionPages(base_name):
           'size': [55, 110],
           'color': [255, 17, 24],
           'tolerance': tolerance_dc
-        }
-      ]),
+        }],
+      other_args={'video_is_rotated': True}),
 
     PixelTestPage(
       'pixel_video_vp9.html',
@@ -1526,6 +1529,6 @@ def DirectCompositionPages(base_name):
           'size': [65, 30],
           'color': [44, 255, 16],
           'tolerance': tolerance_dc
-        }
-      ]),
+        }],
+      other_args={'video_is_rotated': True}),
     ]

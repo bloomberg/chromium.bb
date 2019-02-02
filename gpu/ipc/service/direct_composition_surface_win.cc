@@ -1238,9 +1238,10 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     return false;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "GPU.DirectComposition.SwapChainFormat2",
-      is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA);
+  OverlayFormat swap_chain_format =
+      is_yuv_swapchain_ ? g_overlay_format_used : OverlayFormat::kBGRA;
+  UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.SwapChainFormat2",
+                            swap_chain_format);
 
   frames_since_color_space_change_++;
 
@@ -1248,10 +1249,25 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (SUCCEEDED(swap_chain_.CopyTo(swap_chain_media.GetAddressOf()))) {
     DCHECK(swap_chain_media);
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
-    if (SUCCEEDED(swap_chain_media->GetFrameStatisticsMedia(&stats))) {
+    // GetFrameStatisticsMedia fails with DXGI_ERROR_FRAME_STATISTICS_DISJOINT
+    // sometimes, which means an event (such as power cycle) interrupted the
+    // gathering of presentation statistics. In this situation, calling the
+    // function again succeeds but returns with CompositionMode = NONE.
+    // Waiting for the DXGI adapter to finish presenting before calling the
+    // function doesn't get rid of the failure.
+    HRESULT hr = swap_chain_media->GetFrameStatisticsMedia(&stats);
+    if (SUCCEEDED(hr)) {
       base::UmaHistogramSparse("GPU.DirectComposition.CompositionMode",
                                stats.CompositionMode);
       presentation_history_.AddSample(stats.CompositionMode);
+      TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
+                           "SwapChainFrameInfo", TRACE_EVENT_SCOPE_THREAD,
+                           "SwapChain.PresentationMode", stats.CompositionMode,
+                           "SwapChain.PixelFormat", swap_chain_format);
+    } else {
+      TRACE_EVENT_INSTANT1(
+          TRACE_DISABLED_BY_DEFAULT("gpu.service"), "SwapChainFrameInfoInvalid",
+          TRACE_EVENT_SCOPE_THREAD, "ErrorCode", static_cast<uint32_t>(hr));
     }
   }
   return true;

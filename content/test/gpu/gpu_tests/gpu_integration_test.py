@@ -13,6 +13,13 @@ from gpu_tests import gpu_test_expectations
 
 _START_BROWSER_RETRIES = 3
 
+# Please expand the following lists when we expand to new bot configs.
+_SUPPORTED_WIN_VERSIONS = ['win7', 'win10']
+_SUPPORTED_WIN_VERSIONS_WITH_DIRECT_COMPOSITION = ['win10']
+_SUPPORTED_WIN_GPU_VENDORS = [0x8086, 0x10de, 0x1002]
+_SUPPORTED_WIN_INTEL_GPUS = [0x5912]
+_SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS = [0x5912]
+_SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912]
 
 class GpuIntegrationTest(
     serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
@@ -253,6 +260,50 @@ class GpuIntegrationTest(
     be resolved via UrlOfStaticFilePath.
     """
     raise NotImplementedError
+
+  def GetOverlayBotConfig(self):
+    """Returns expected bot config for DirectComposition and overlay support.
+
+    This is only meaningful on Windows platform.
+
+    The rules to determine bot config are:
+      1) Only win10 or newer supports DirectComposition
+      2) Only Intel supports hardware overlays with DirectComposition
+      3) Currently the Win/Intel GPU bot supports YUY2 and NV12 overlays
+    """
+    if self.browser is None:
+      raise Exception("Browser doesn't exist")
+    system_info = self.browser.GetSystemInfo()
+    if system_info is None:
+      raise Exception("Browser doesn't support GetSystemInfo")
+    gpu = system_info.gpu.devices[0]
+    if gpu is None:
+      raise Exception("System Info doesn't have a gpu")
+    gpu_vendor_id = gpu.vendor_id
+    gpu_device_id = gpu.device_id
+    os_version = self.browser.platform.GetOSVersionName()
+    if os_version is None:
+      raise Exception("browser.platform.GetOSVersionName() returns None")
+    os_version = os_version.lower()
+
+    config = {
+      'direct_composition': False,
+      'supports_overlays': False,
+      'overlay_cap_yuy2': 'NONE',
+      'overlay_cap_nv12': 'NONE',
+    }
+    assert os_version in _SUPPORTED_WIN_VERSIONS
+    assert gpu_vendor_id in _SUPPORTED_WIN_GPU_VENDORS
+    if os_version in _SUPPORTED_WIN_VERSIONS_WITH_DIRECT_COMPOSITION:
+      config['direct_composition'] = True
+      if gpu_vendor_id == 0x8086:
+        config['supports_overlays'] = True
+        assert gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS
+        if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS:
+          config['overlay_cap_yuy2'] = 'SCALING'
+        if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS:
+          config['overlay_cap_nv12'] = 'SCALING'
+    return config
 
   @classmethod
   def GetExpectations(cls):
