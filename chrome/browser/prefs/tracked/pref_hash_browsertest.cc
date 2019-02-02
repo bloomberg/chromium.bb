@@ -157,22 +157,17 @@ bool SupportsRegistryValidation() {
 #endif
 }
 
-#define PREF_HASH_BROWSER_TEST(fixture, test_name)                          \
-  IN_PROC_BROWSER_TEST_P(fixture, PRE_##test_name) {                        \
-    SetupPreferences();                                                     \
-  }                                                                         \
-  IN_PROC_BROWSER_TEST_P(fixture, test_name) {                              \
-    VerifyReactionToPrefAttack();                                           \
-  }                                                                         \
-  INSTANTIATE_TEST_CASE_P(                                                  \
-      fixture##Instance,                                                    \
-      fixture,                                                              \
-      testing::Values(                                                      \
-          chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,  \
-          chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,  \
-          chrome_prefs::internals::                                         \
-              kSettingsEnforcementGroupEnforceAlwaysWithDSE,                \
-          chrome_prefs::internals::                                         \
+#define PREF_HASH_BROWSER_TEST(fixture, test_name)                             \
+  IN_PROC_BROWSER_TEST_P(fixture, PRE_##test_name) { SetupPreferences(); }     \
+  IN_PROC_BROWSER_TEST_P(fixture, test_name) { VerifyReactionToPrefAttack(); } \
+  INSTANTIATE_TEST_SUITE_P(                                                    \
+      fixture##Instance, fixture,                                              \
+      testing::Values(                                                         \
+          chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,     \
+          chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,     \
+          chrome_prefs::internals::                                            \
+              kSettingsEnforcementGroupEnforceAlwaysWithDSE,                   \
+          chrome_prefs::internals::                                            \
               kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
 
 // A base fixture designed such that implementations do two things:
