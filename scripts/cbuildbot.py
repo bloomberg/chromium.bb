@@ -127,18 +127,11 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
   else:
     options.managed_chrome = build_config['sync_chrome']
 
+  chrome_root_mgr = None
   if options.managed_chrome:
-    # Tell Chrome to fetch the source locally.
-    internal = constants.USE_CHROME_INTERNAL in build_config['useflags']
-    chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
-    target_name = 'target'
-    if options.branch:
-      # Tie the cache per branch
-      target_name = 'target-%s' % options.branch
-    options.chrome_root = os.path.join(options.cache_dir, 'distfiles',
-                                       target_name, chrome_src)
-    # Create directory if in need
-    osutils.SafeMakedirsNonRoot(options.chrome_root)
+    # Create a temp directory for syncing Chrome source.
+    chrome_root_mgr = osutils.TempDir(prefix='chrome_root_')
+    options.chrome_root = chrome_root_mgr.tempdir
 
   # We are done munging options values, so freeze options object now to avoid
   # further abuse of it.
@@ -173,8 +166,12 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
     else:
       builder = builders.Builder(builder_run, buildstore)
 
-    if not builder.Run():
-      sys.exit(1)
+    try:
+      if not builder.Run():
+        sys.exit(1)
+    finally:
+      if chrome_root_mgr:
+        chrome_root_mgr.Cleanup()
 
 
 def _CheckChromeVersionOption(_option, _opt_str, value, parser):

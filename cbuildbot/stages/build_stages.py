@@ -145,14 +145,8 @@ class CleanUpStage(generic_stages.BuilderStage):
     if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
       cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
 
-    logging.info('Remove Chrome checkout.')
-    osutils.RmDir(
-        os.path.join(workspace, '.cache', 'distfiles'),
-        ignore_missing=True,
-        sudo=True)
-
-    logging.info('Remove all workspace files except .repo and .cache.')
-    repository.ClearBuildRoot(workspace, ['.repo', '.cache'])
+    logging.info('Remove all workspace files except .repo.')
+    repository.ClearBuildRoot(workspace, ['.repo'])
 
   def _GetPreviousBuildStatus(self):
     """Extract the status of the previous build from command-line arguments.
