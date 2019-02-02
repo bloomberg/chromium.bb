@@ -4965,7 +4965,24 @@ GURL URLEscapedForHistory(const GURL& url) {
   // |context| will be nil if this navigation has been already committed and
   // finished.
   if (context) {
-    context->SetHasCommitted(true);
+    web::NavigationManager* navigationManager =
+        _webStateImpl->GetNavigationManager();
+    if ((navigationManager->GetPendingItem()) ||
+        (context->IsLoadingHtmlString()) ||
+        (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+         ui::PageTransitionCoreTypeIs(context->GetPageTransition(),
+                                      ui::PAGE_TRANSITION_RELOAD) &&
+         navigationManager->GetLastCommittedItem())) {
+      // Commit navigation if at least one of these is true:
+      //  - Navigation has pending item (this should always be true, but
+      //    pending item may not exist due to crbug.com/925304).
+      //  - Navigation is loadHTMLString:baseURL: navigation, which does not
+      //    create a pending item, but modifies committed item instead.
+      //  - Transition type is reload with Legacy Navigation Manager (Legacy
+      //    Navigation Manager does not create pending item for reload due to
+      //    crbug.com/676129)
+      context->SetHasCommitted(true);
+    }
     context->SetResponseHeaders(_webStateImpl->GetHttpResponseHeaders());
   }
 
