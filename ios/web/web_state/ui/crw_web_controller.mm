@@ -40,6 +40,7 @@
 #include "base/values.h"
 #include "crypto/symmetric_key.h"
 #import "ios/net/http_response_headers_util.h"
+#import "ios/web/find_in_page/find_in_page_manager_impl.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
@@ -958,6 +959,7 @@ GURL URLEscapedForHistory(const GURL& url) {
         std::make_unique<CertVerificationErrorsCacheType>(kMaxCertErrorsCount);
     _navigationStates = [[CRWWKNavigationStates alloc] init];
     web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
+    web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(orientationDidChange)
