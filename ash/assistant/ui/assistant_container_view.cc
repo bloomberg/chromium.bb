@@ -29,7 +29,6 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -49,22 +48,22 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kOnlyAllowMouseClickEvents, false);
 // paint to a higher level in the layer tree than do direct children of
 // AssistantContainerView. This allows AssistantMainView, for example, to
 // pseudo-parent overlays that draw over top of Assistant cards.
-class AssistantContainerClientView : public views::DialogClientView,
+class AssistantContainerClientView : public views::ClientView,
                                      public views::ViewObserver {
  public:
   AssistantContainerClientView(views::Widget* widget,
                                views::View* contents_view)
-      : views::DialogClientView(widget, contents_view) {}
+      : views::ClientView(widget, contents_view) {}
 
   ~AssistantContainerClientView() override = default;
 
-  // views::DialogClientView:
+  // views::ClientView:
   const char* GetClassName() const override {
     return "AssistantContainerClientView";
   }
 
   void Layout() override {
-    views::DialogClientView::Layout();
+    views::ClientView::Layout();
     for (AssistantOverlay* overlay : overlays_) {
       AssistantOverlay::LayoutParams layout_params = overlay->GetLayoutParams();
       gfx::Size preferred_size = overlay->GetPreferredSize();
