@@ -302,7 +302,8 @@ For properties that don't have an RTL-friendly alternatives, use
 ### Style
 
 See the [Google JavaScript Style
-Guide](https://google.github.io/styleguide/jsguide.html).
+Guide](https://google.github.io/styleguide/jsguide.html) as well as
+[ECMAScript Features in Chromium](es.md).
 
 * Use `$('element-id')` instead of `document.getElementById`
 
