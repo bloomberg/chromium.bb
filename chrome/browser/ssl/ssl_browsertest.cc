@@ -100,6 +100,7 @@
 #include "components/ssl_errors/error_classification.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "components/variations/variations_switches.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -1252,6 +1253,16 @@ class SSLUITestWithExtendedReporting : public SSLUITest {
     // Certificate reports are only sent from official builds, unless this has
     // been called.
     CertReportHelper::SetFakeOfficialBuildForTesting();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SSLUITest::SetUpCommandLine(command_line);
+
+    // CertReportHelper::ShouldReportCertificateError checks the value of this
+    // variation. Ensure reporting is enabled.
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}}, command_line);
   }
 };
 
@@ -2769,18 +2780,10 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestDisplaysInsecureForm) {
                      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
 }
 
-// TODO(crbug.com/795820): Fails in Windows, Linux and Mac official builds.
-#if defined(OFFICIAL_BUILD)
-#define MAYBE_TestBrokenHTTPSReportingCloseTab \
-  DISABLED_TestBrokenHTTPSReportingCloseTab
-#else
-#define MAYBE_TestBrokenHTTPSReportingCloseTab TestBrokenHTTPSReportingCloseTab
-#endif
-
 // Test that a report is sent if the user closes the tab on an interstitial
 // before making a decision to proceed or go back.
 IN_PROC_BROWSER_TEST_P(SSLUITestWithExtendedReporting,
-                       MAYBE_TestBrokenHTTPSReportingCloseTab) {
+                       TestBrokenHTTPSReportingCloseTab) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   base::RunLoop run_loop;
