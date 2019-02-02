@@ -42,6 +42,16 @@ void PagePlaceholderTabHelper::CancelPlaceholderForNextNavigation() {
   }
 }
 
+void PagePlaceholderTabHelper::WasShown(web::WebState* web_state) {
+  if (add_placeholder_for_next_navigation_) {
+    AddPlaceholder();
+  }
+}
+
+void PagePlaceholderTabHelper::WasHidden(web::WebState* web_state) {
+  RemovePlaceholder();
+}
+
 void PagePlaceholderTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
@@ -84,18 +94,22 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
   __weak UIImageView* weak_placeholder_view = placeholder_view_;
   __weak UIView* weak_web_state_view = web_state_->GetView();
   __weak id<CRWWebViewProxy> web_view_proxy = web_state_->GetWebViewProxy();
-  SnapshotTabHelper::FromWebState(web_state_)
-      ->RetrieveGreySnapshot(^(UIImage* snapshot) {
-        CGRect frame = weak_web_state_view.frame;
-        UIEdgeInsets inset = web_view_proxy.contentInset;
-        frame.origin.x += inset.left;
-        frame.origin.y += inset.top;
-        frame.size.width -= (inset.right + inset.left);
-        frame.size.height -= (inset.bottom + inset.top);
-        weak_placeholder_view.frame = frame;
-        weak_placeholder_view.image = snapshot;
-        [weak_web_state_view addSubview:weak_placeholder_view];
-      });
+
+  SnapshotTabHelper* snapshotTabHelper =
+      SnapshotTabHelper::FromWebState(web_state_);
+  if (snapshotTabHelper) {
+    snapshotTabHelper->RetrieveGreySnapshot(^(UIImage* snapshot) {
+      CGRect frame = weak_web_state_view.frame;
+      UIEdgeInsets inset = web_view_proxy.contentInset;
+      frame.origin.x += inset.left;
+      frame.origin.y += inset.top;
+      frame.size.width -= (inset.right + inset.left);
+      frame.size.height -= (inset.bottom + inset.top);
+      weak_placeholder_view.frame = frame;
+      weak_placeholder_view.image = snapshot;
+      [weak_web_state_view addSubview:weak_placeholder_view];
+    });
+  }
 
   // Remove placeholder if it takes too long to load the page.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -119,5 +133,6 @@ void PagePlaceholderTabHelper::RemovePlaceholder() {
       }
       completion:^(BOOL finished) {
         [weak_placeholder_view removeFromSuperview];
+        weak_placeholder_view.alpha = 1.0f;
       }];
 }
