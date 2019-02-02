@@ -50,6 +50,7 @@ class FrameImpl : public chromium::web::Frame,
   zx::unowned_channel GetBindingChannelForTest() const;
 
   content::WebContents* web_contents_for_test() { return web_contents_.get(); }
+  bool has_view_for_test() { return window_tree_host_ != nullptr; }
 
   // chromium::web::Frame implementation.
   void CreateView(
@@ -96,6 +97,15 @@ class FrameImpl : public chromium::web::Frame,
     DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
   };
 
+  aura::Window* root_window() const { return window_tree_host_->window(); }
+
+  // Release the resources associated with the View, if one is active.
+  void TearDownView();
+
+  // Sends |pending_navigation_event_| to the observer if there are any changes
+  // to be reported.
+  void MaybeSendNavigationEvent();
+
   // chromium::web::NavigationController implementation.
   void LoadUrl(std::string url,
                std::unique_ptr<chromium::web::LoadUrlParams> params) override;
@@ -104,12 +114,6 @@ class FrameImpl : public chromium::web::Frame,
   void Stop() override;
   void Reload(chromium::web::ReloadType type) override;
   void GetVisibleEntry(GetVisibleEntryCallback callback) override;
-
-  aura::Window* root_window() const { return window_tree_host_->window(); }
-
-  // Sends |pending_navigation_event_| to the observer if there are any changes
-  // to be reported.
-  void MaybeSendNavigationEvent();
 
   // content::WebContentsDelegate implementation.
   bool ShouldCreateWebContents(
