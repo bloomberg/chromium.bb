@@ -52973,6 +52973,20 @@ Full version information for the fingerprint enum values:
   <int value="6" label="All services were enabled during opt-in"/>
 </enum>
 
+<enum name="UnifiedConsentSyncDataTypesOffAfterAdvancedOptIn">
+  <int value="0" label="None"/>
+  <int value="1" label="Apps"/>
+  <int value="2" label="Bookmarks"/>
+  <int value="3" label="Extensions"/>
+  <int value="4" label="History"/>
+  <int value="5" label="Settings"/>
+  <int value="6" label="Themes"/>
+  <int value="7" label="Tabs"/>
+  <int value="8" label="Passwords"/>
+  <int value="9" label="Autofill"/>
+  <int value="10" label="Payments"/>
+</enum>
+
 <enum name="UniformityTrialGroupNotActive">
   <int value="0" label="Invalid"/>
   <int value="1" label="Group not reported"/>

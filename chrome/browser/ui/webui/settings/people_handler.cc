@@ -1078,6 +1078,9 @@ void PeopleHandler::MarkFirstSetupComplete() {
   if (!service || service->GetUserSettings()->IsFirstSetupComplete())
     return;
 
+  unified_consent::metrics::RecordSyncSetupDataTypesHistrogam(
+      service->GetUserSettings(), profile_->GetPrefs());
+
   // We're done configuring, so notify SyncService that it is OK to start
   // syncing.
   sync_blocker_.reset();
