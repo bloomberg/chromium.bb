@@ -253,4 +253,8 @@ struct AssistantFeedback {
 
   // Whether user consent to send debug info.
   bool assistant_debug_info_allowed;
+
+  // Screenshot if allowed by user.
+  // Raw data (non-encoded binary octets)
+  string screenshot_png;
 };

@@ -85,7 +85,8 @@ class ASH_EXPORT AssistantController
   void OpenAssistantSettings() override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
-                             const std::string& feedback_description) override;
+                             const std::string& feedback_description,
+                             const std::string& screenshot_png) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(

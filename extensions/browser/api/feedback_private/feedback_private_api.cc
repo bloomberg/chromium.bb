@@ -30,10 +30,7 @@
 #include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
-#include "services/service_manager/public/cpp/connector.h"
 #endif  // defined(OS_CHROMEOS)
 
 using extensions::api::feedback_private::SystemInformation;
@@ -323,16 +320,11 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   }
 
 #if defined(OS_CHROMEOS)
-  // Send feedback to Assistant server if triggered from Google Assistant.
-  if (feedback_info.from_assistant && *feedback_info.from_assistant) {
-    ash::mojom::AssistantControllerPtr assistant_controller;
-    content::BrowserContext::GetConnectorFor(browser_context())
-        ->BindInterface(ash::mojom::kServiceName, &assistant_controller);
-    assistant_controller->SendAssistantFeedback(
-        feedback_info.assistant_debug_info_allowed &&
-            *feedback_info.assistant_debug_info_allowed,
-        feedback_data->description());
-  }
+  feedback_data->set_from_assistant(feedback_info.from_assistant &&
+                                    *feedback_info.from_assistant);
+  feedback_data->set_assistant_debug_info_allowed(
+      feedback_info.assistant_debug_info_allowed &&
+      *feedback_info.assistant_debug_info_allowed);
 
   delegate->FetchAndMergeIwlwifiDumpLogsIfPresent(
       std::move(sys_logs), browser_context(),
