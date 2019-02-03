@@ -68,7 +68,7 @@ bool IsPinchToZoomEnabled() {
   return !command_line.HasSwitch(switches::kDisablePinch);
 }
 
-V8CacheOptions GetV8CacheOptions() {
+blink::mojom::V8CacheOptions GetV8CacheOptions() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string v8_cache_options =
@@ -76,11 +76,11 @@ V8CacheOptions GetV8CacheOptions() {
   if (v8_cache_options.empty())
     v8_cache_options = base::FieldTrialList::FindFullName("V8CacheOptions");
   if (v8_cache_options == "none") {
-    return V8_CACHE_OPTIONS_NONE;
+    return blink::mojom::V8CacheOptions::kNone;
   } else if (v8_cache_options == "code") {
-    return V8_CACHE_OPTIONS_CODE;
+    return blink::mojom::V8CacheOptions::kCode;
   } else {
-    return V8_CACHE_OPTIONS_DEFAULT;
+    return blink::mojom::V8CacheOptions::kDefault;
   }
 }
 

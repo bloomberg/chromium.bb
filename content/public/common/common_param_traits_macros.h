@@ -63,8 +63,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::EditingBehavior,
                           content::EDITING_BEHAVIOR_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
                           WindowOpenDisposition::MAX_VALUE)
-IPC_ENUM_TRAITS_MAX_VALUE(content::V8CacheOptions,
-                          content::V8_CACHE_OPTIONS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::V8CacheOptions,
+                          blink::mojom::V8CacheOptions::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::PointerType,
                               ui::POINTER_TYPE_FIRST,
                               ui::POINTER_TYPE_LAST)

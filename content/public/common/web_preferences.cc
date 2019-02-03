@@ -26,15 +26,15 @@ STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehavior::kUnix);
 STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
                    WebSettings::EditingBehavior::kAndroid);
 
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kDefault,
                    WebSettings::V8CacheOptions::kDefault);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::V8CacheOptions::kNone);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::V8CacheOptions::kCode);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE_WITHOUT_HEAT_CHECK,
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kNone,
+                   WebSettings::V8CacheOptions::kNone);
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kCode,
+                   WebSettings::V8CacheOptions::kCode);
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kCodeWithoutHeatCheck,
                    WebSettings::V8CacheOptions::kCodeWithoutHeatCheck);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
-                   WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST,
+STATIC_ASSERT_ENUM(blink::mojom::V8CacheOptions::kFullCodeWithoutHeatCheck,
                    WebSettings::V8CacheOptions::kFullCodeWithoutHeatCheck);
 
 STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ALLOWED,
@@ -168,7 +168,7 @@ WebPreferences::WebPreferences()
       spatial_navigation_enabled(false),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
-      v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
+      v8_cache_options(blink::mojom::V8CacheOptions::kDefault),
       record_whole_document(false),
       cookie_enabled(true),
       accelerated_video_decode_enabled(false),

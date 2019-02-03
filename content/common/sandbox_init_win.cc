@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_process_information.h"
-#include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
