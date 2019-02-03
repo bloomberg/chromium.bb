@@ -83,6 +83,7 @@ mojom("mojom_platform") {
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
     "use_counter/css_property_id.mojom",
+    "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
     "webaudio/audio_context_manager.mojom",
     "worker/dedicated_worker_factory.mojom",

@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
 
@@ -33,16 +34,6 @@ enum EditingBehavior {
   EDITING_BEHAVIOR_UNIX,
   EDITING_BEHAVIOR_ANDROID,
   EDITING_BEHAVIOR_LAST = EDITING_BEHAVIOR_ANDROID
-};
-
-// Cache options for V8. See V8CacheOptions.h for information on the options.
-enum V8CacheOptions {
-  V8_CACHE_OPTIONS_DEFAULT,
-  V8_CACHE_OPTIONS_NONE,
-  V8_CACHE_OPTIONS_CODE,
-  V8_CACHE_OPTIONS_CODE_WITHOUT_HEAT_CHECK,
-  V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
-  V8_CACHE_OPTIONS_LAST = V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK
 };
 
 // ImageAnimationPolicy is used for controlling image animation
@@ -192,7 +183,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool spatial_navigation_enabled;
   bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
-  V8CacheOptions v8_cache_options;
+  blink::mojom::V8CacheOptions v8_cache_options;
   bool record_whole_document;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
