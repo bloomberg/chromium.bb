@@ -29,6 +29,7 @@
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_client_metrics.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
+#include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
