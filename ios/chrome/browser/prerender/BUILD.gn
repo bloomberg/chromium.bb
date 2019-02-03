@@ -30,7 +30,6 @@ source_set("prerender") {
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/ntp:util",

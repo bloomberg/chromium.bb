@@ -7,7 +7,6 @@
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/prerender/preload_controller.h"
 #import "ios/chrome/browser/sessions/session_window_restoring.h"
-#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -89,12 +88,6 @@ bool PrerenderService::MaybeLoadPrerenderedURL(
     // new_web_state is now null after the std::move, so grab a new pointer to
     // it for further updates.
     web::WebState* active_web_state = web_state_list->GetActiveWebState();
-    if (!active_web_state->IsLoading()) {
-      // If the page has finished loading, take a snapshot.  If the page is
-      // still loading, do nothing, as the tab helper will automatically take
-      // a snapshot once the load completes.
-      SnapshotTabHelper::FromWebState(active_web_state)->UpdateSnapshot();
-    }
 
     bool typed_or_generated_transition =
         PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
