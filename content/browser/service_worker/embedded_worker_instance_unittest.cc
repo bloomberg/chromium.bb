@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -31,6 +30,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -134,8 +134,9 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   // Calls worker->Start() and runs until the start IPC is sent.
   //
   // Expects success. For failure cases, call Start() manually.
-  void StartWorkerUntilStartSent(EmbeddedWorkerInstance* worker,
-                                 mojom::EmbeddedWorkerStartParamsPtr params) {
+  void StartWorkerUntilStartSent(
+      EmbeddedWorkerInstance* worker,
+      blink::mojom::EmbeddedWorkerStartParamsPtr params) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop loop;
     worker->Start(std::move(params),
@@ -149,16 +150,16 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   //
   // Expects success. For failure cases, call Start() manually.
   void StartWorker(EmbeddedWorkerInstance* worker,
-                   mojom::EmbeddedWorkerStartParamsPtr params) {
+                   blink::mojom::EmbeddedWorkerStartParamsPtr params) {
     StartWorkerUntilStartSent(worker, std::move(params));
     // TODO(falken): Listen for OnStarted() instead of this.
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
   }
 
-  mojom::EmbeddedWorkerStartParamsPtr CreateStartParams(
+  blink::mojom::EmbeddedWorkerStartParamsPtr CreateStartParams(
       scoped_refptr<ServiceWorkerVersion> version) {
-    auto params = mojom::EmbeddedWorkerStartParams::New();
+    auto params = blink::mojom::EmbeddedWorkerStartParams::New();
     params->service_worker_version_id = version->version_id();
     params->scope = version->scope();
     params->script_url = version->script_url();
@@ -252,7 +253,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
@@ -285,9 +286,9 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
  private:
   bool force_stall_in_start_ = true;
 
-  std::map<
-      int /* embedded_worker_id */,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
+  std::map<int /* embedded_worker_id */,
+           blink::mojom::
+               EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       instance_host_ptr_map_;
 };
 
@@ -453,7 +454,8 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
 
   // Run the start worker sequence and detach during process allocation.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+  blink::mojom::EmbeddedWorkerStartParamsPtr params =
+      CreateStartParams(pair.second);
   worker->Start(std::move(params), ReceiveStatus(&status, base::DoNothing()));
   worker->Detach();
   base::RunLoop().RunUntilIdle();
@@ -572,7 +574,8 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   worker->AddObserver(this);
 
   // Run the start worker sequence until pause after download.
-  mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+  blink::mojom::EmbeddedWorkerStartParamsPtr params =
+      CreateStartParams(pair.second);
   params->pause_after_download = true;
   base::Optional<blink::ServiceWorkerStatusCode> status;
   worker->Start(std::move(params), ReceiveStatus(&status, base::DoNothing()));
@@ -700,7 +703,7 @@ class FailEmbeddedWorkerInstanceClientImpl
       : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
 
  private:
-  void StartWorker(mojom::EmbeddedWorkerStartParamsPtr) override {
+  void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr) override {
     helper_->mock_instance_clients()->clear();
   }
 };
@@ -820,7 +823,7 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
@@ -867,7 +870,8 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   // Second, test a worker with pause after download.
   {
     // Start the worker until paused.
-    mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+    blink::mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(pair.second);
     params->pause_after_download = true;
     worker->Start(std::move(params), base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -907,7 +911,8 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
   // First, test a worker without pause after download.
   {
     // Start the worker.
-    mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+    blink::mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(pair.second);
     StartWorker(worker.get(), std::move(params));
 
     // Cache storage should not have been sent.
@@ -921,7 +926,8 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
   // Second, test a worker with pause after download.
   {
     // Start the worker until paused.
-    mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+    blink::mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(pair.second);
     params->pause_after_download = true;
     worker->Start(std::move(params), base::DoNothing());
     base::RunLoop().RunUntilIdle();

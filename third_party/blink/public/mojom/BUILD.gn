@@ -191,6 +191,7 @@ mojom("mojom_core") {
     # so we put these service worker mojom files here rather than mojom_platform
     # target.
     "service_worker/controller_service_worker.mojom",
+    "service_worker/embedded_worker.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_container.mojom",
     "service_worker/service_worker_object.mojom",

@@ -250,7 +250,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
@@ -297,9 +297,9 @@ class MessageReceiverDisallowStart : public MessageReceiver {
   uint32_t current_mock_instance_index_ = 0;
   StartMode mode_ = StartMode::STALL;
 
-  std::map<
-      int /* embedded_worker_id */,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
+  std::map<int /* embedded_worker_id */,
+           blink::mojom::
+               EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       instance_host_ptr_map_;
   std::map<int /* embedded_worker_id */, blink::mojom::ServiceWorkerRequest>
       service_worker_request_map_;

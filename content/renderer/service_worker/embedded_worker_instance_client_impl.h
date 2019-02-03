@@ -9,9 +9,9 @@
 
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 
@@ -33,7 +33,7 @@ class ServiceWorkerContextClient;
 //
 // All methods are called on the main thread.
 class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
-    : public mojom::EmbeddedWorkerInstanceClient {
+    : public blink::mojom::EmbeddedWorkerInstanceClient {
  public:
   // Enum for UMA to record when StartWorker is received.
   enum class StartWorkerHistogramEnum {
@@ -47,25 +47,25 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // documentation.
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
-  static void Create(mojom::EmbeddedWorkerInstanceClientRequest request);
+  static void Create(blink::mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 
   // Destroys |this|. Called from ServiceWorkerContextClient.
   void WorkerContextDestroyed();
 
-  // mojom::EmbeddedWorkerInstanceClient implementation (partially exposed to
-  // public)
+  // blink::mojom::EmbeddedWorkerInstanceClient implementation (partially
+  // exposed to public)
   void StopWorker() override;
 
  private:
   friend class ServiceWorkerContextClientTest;
 
   explicit EmbeddedWorkerInstanceClientImpl(
-      mojom::EmbeddedWorkerInstanceClientRequest request);
+      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
 
-  // mojom::EmbeddedWorkerInstanceClient implementation
-  void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override;
+  // blink::mojom::EmbeddedWorkerInstanceClient implementation
+  void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
@@ -77,13 +77,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   void OnError();
 
   std::unique_ptr<blink::WebEmbeddedWorker> StartWorkerContext(
-      mojom::EmbeddedWorkerStartParamsPtr params,
+      blink::mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerContextClient> context_client,
       blink::mojom::CacheStoragePtrInfo cache_storage,
       service_manager::mojom::InterfaceProviderPtrInfo interface_provider,
       blink::PrivacyPreferences privacy_preferences);
 
-  mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
+  mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
 
   // nullptr means the worker is not running.
   std::unique_ptr<blink::WebEmbeddedWorker> worker_;

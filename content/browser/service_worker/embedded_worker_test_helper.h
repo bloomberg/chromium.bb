@@ -18,12 +18,12 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
@@ -63,18 +63,19 @@ class EmbeddedWorkerTestHelper {
   enum class Event { Install, Activate };
 
   class MockEmbeddedWorkerInstanceClient
-      : public mojom::EmbeddedWorkerInstanceClient {
+      : public blink::mojom::EmbeddedWorkerInstanceClient {
    public:
     explicit MockEmbeddedWorkerInstanceClient(
         base::WeakPtr<EmbeddedWorkerTestHelper> helper);
     ~MockEmbeddedWorkerInstanceClient() override;
 
     static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     mojom::EmbeddedWorkerInstanceClientRequest request);
+                     blink::mojom::EmbeddedWorkerInstanceClientRequest request);
 
    protected:
-    // mojom::EmbeddedWorkerInstanceClient implementation.
-    void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override;
+    // blink::mojom::EmbeddedWorkerInstanceClient implementation.
+    void StartWorker(
+        blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
     void StopWorker() override;
     void ResumeAfterDownload() override;
     void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
@@ -84,7 +85,7 @@ class EmbeddedWorkerTestHelper {
         blink::mojom::DevToolsAgentAssociatedRequest) override {}
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
-    mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
+    mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
 
     base::Optional<int> embedded_worker_id_;
 
@@ -158,7 +159,7 @@ class EmbeddedWorkerTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
           installed_scripts_info);
@@ -251,7 +252,7 @@ class EmbeddedWorkerTestHelper {
     return embedded_worker_id_host_map_[embedded_worker_id].get();
   }
 
-  mojom::EmbeddedWorkerInstanceHostProxy* GetEmbeddedWorkerInstanceHost(
+  blink::mojom::EmbeddedWorkerInstanceHostProxy* GetEmbeddedWorkerInstanceHost(
       int embedded_worker_id) {
     return embedded_worker_id_instance_host_ptr_map_[embedded_worker_id].get();
   }
@@ -268,7 +269,7 @@ class EmbeddedWorkerTestHelper {
       int embedded_worker_id,
       blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info);
-  void OnStartWorkerStub(mojom::EmbeddedWorkerStartParamsPtr params);
+  void OnStartWorkerStub(blink::mojom::EmbeddedWorkerStartParamsPtr params);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnActivateEventStub(
@@ -351,9 +352,9 @@ class EmbeddedWorkerTestHelper {
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
 
-  std::map<
-      int /* embedded_worker_id */,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
+  std::map<int /* embedded_worker_id */,
+           blink::mojom::
+               EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
       embedded_worker_id_instance_host_ptr_map_;
   std::map<int /* embedded_worker_id */, ServiceWorkerRemoteProviderEndpoint>
       embedded_worker_id_remote_provider_map_;

@@ -15,7 +15,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
@@ -53,7 +53,7 @@ namespace {
 // Pipes connected to the context client.
 struct ContextClientPipes {
   // From the browser to EmbeddedWorkerInstanceClientImpl.
-  mojom::EmbeddedWorkerInstanceClientPtr embedded_worker_instance_client;
+  blink::mojom::EmbeddedWorkerInstanceClientPtr embedded_worker_instance_client;
 
   // From the browser to ServiceWorkerContextClient.
   blink::mojom::ServiceWorkerPtr service_worker;
@@ -62,7 +62,7 @@ struct ContextClientPipes {
 
   // From ServiceWorkerContextClient to the browser.
   blink::mojom::ServiceWorkerHostAssociatedRequest service_worker_host_request;
-  mojom::EmbeddedWorkerInstanceHostAssociatedRequest
+  blink::mojom::EmbeddedWorkerInstanceHostAssociatedRequest
       embedded_worker_host_request;
   blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
       registration_host_request;
@@ -306,7 +306,8 @@ class ServiceWorkerContextClientTest : public testing::Test {
 
     auto service_worker_request = mojo::MakeRequest(&out_pipes->service_worker);
     auto controller_request = mojo::MakeRequest(&out_pipes->controller);
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtr embedded_worker_host_ptr;
+    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr
+        embedded_worker_host_ptr;
     out_pipes->embedded_worker_host_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&embedded_worker_host_ptr);
     const GURL kScope("https://example.com");
@@ -318,7 +319,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
         std::move(service_worker_request), std::move(controller_request),
         embedded_worker_host_ptr.PassInterface(), CreateProviderInfo(),
         embedded_worker_instance_client,
-        mojom::EmbeddedWorkerStartTiming::New(),
+        blink::mojom::EmbeddedWorkerStartTiming::New(),
         nullptr /* preference_watcher_request */,
         nullptr /* subresource_loaders */,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());

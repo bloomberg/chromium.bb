@@ -192,7 +192,7 @@ class RecordableEmbeddedWorkerInstanceClient
   const std::vector<Message>& events() const { return events_; }
 
  protected:
-  void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override {
+  void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
     events_.push_back(Message::StartWorker);
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
         std::move(params));

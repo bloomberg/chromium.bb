@@ -6,13 +6,13 @@ module content.mojom;
 
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/native_types.mojom";
-import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
 import "services/service_manager/public/mojom/service.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
+import "third_party/blink/public/mojom/service_worker/embedded_worker.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 struct CreateViewParams {
@@ -194,7 +194,7 @@ interface Renderer {
   // TODO(shimazu): Send all params for starting service worker to reduce the
   // number of IPCs.
   SetUpEmbeddedWorkerChannelForServiceWorker(
-      EmbeddedWorkerInstanceClient& client_request);
+      blink.mojom.EmbeddedWorkerInstanceClient& client_request);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.

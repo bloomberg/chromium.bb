@@ -2162,7 +2162,7 @@ void RenderThreadImpl::CreateFrameProxy(
 }
 
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
-    mojom::EmbeddedWorkerInstanceClientRequest client_request) {
+    blink::mojom::EmbeddedWorkerInstanceClientRequest client_request) {
   EmbeddedWorkerInstanceClientImpl::Create(std::move(client_request));
 }
 
