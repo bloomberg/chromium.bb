@@ -7,6 +7,10 @@
 
 #include "components/unified_consent/unified_consent_service_client.h"
 
+namespace syncer {
+class SyncUserSettings;
+}
+
 namespace unified_consent {
 
 namespace metrics {
@@ -26,29 +30,34 @@ enum class SettingsHistogramValue {
   kMaxValue = kAllServicesWereEnabled
 };
 
-// Records settings entries in the kSyncAndGoogleServicesSettingsHistogram.
+// Sync data types that can be customized in settings.
+// Used in histograms. Do not change existing values, append new values at the
+// end.
+enum class SyncDataType {
+  kNone = 0,
+  kApps = 1,
+  kBookmarks = 2,
+  kExtensions = 3,
+  kHistory = 4,
+  kSettings = 5,
+  kThemes = 6,
+  kTabs = 7,
+  kPasswords = 8,
+  kAutofill = 9,
+  kPayments = 10,
+
+  kMaxValue = kPayments
+};
+
+// Records settings entries in the SyncAndGoogleServicesSettings.
 // kNone is recorded when none of the settings is enabled.
 void RecordSettingsHistogram(UnifiedConsentServiceClient* service_client,
                              PrefService* pref_service);
 
-// Records a sample in the kSyncAndGoogleServicesSettingsHistogram. Wrapped in a
-// function to avoid code size issues caused by histogram macros.
-void RecordSettingsHistogramSample(SettingsHistogramValue value);
-
-// Checks if a pref is enabled and if so, records a sample in the
-// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromPref(const char* pref_name,
-                                     PrefService* pref_service,
-                                     SettingsHistogramValue value);
-
-// Checks if a service is enabled and if so, records a sample in the
-// kSyncAndGoogleServicesSettingsHistogram. Returns true if a sample was
-// recorded.
-bool RecordSettingsHistogramFromService(
-    UnifiedConsentServiceClient* client,
-    UnifiedConsentServiceClient::Service service,
-    SettingsHistogramValue value);
+// Records the sync data types that were turned off during the advanced sync
+// opt-in flow. When none of the data types were turned off, kNone is recorded.
+void RecordSyncSetupDataTypesHistrogam(syncer::SyncUserSettings* sync_settings,
+                                       PrefService* pref_service);
 
 }  // namespace metrics
 
