@@ -32,7 +32,8 @@
 #include "av1/encoder/tpl_model.h"
 
 // Define the reference buffers that will be updated post encode.
-void av1_configure_buffer_updates(AV1_COMP *cpi, const FRAME_UPDATE_TYPE type) {
+void av1_configure_buffer_updates(AV1_COMP *const cpi,
+                                  const FRAME_UPDATE_TYPE type) {
   // NOTE(weitinglin): Should we define another function to take care of
   // cpi->rc.is_$Source_Type to make this function as it is in the comment?
 
