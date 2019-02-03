@@ -32,7 +32,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -1609,7 +1609,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
       context(), base::WrapRefCounted(this), &provider_info);
 
-  auto params = mojom::EmbeddedWorkerStartParams::New();
+  auto params = blink::mojom::EmbeddedWorkerStartParams::New();
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;

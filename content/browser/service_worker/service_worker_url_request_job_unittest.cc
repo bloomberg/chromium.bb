@@ -505,7 +505,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
@@ -541,7 +541,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   bool pause_after_download_;
   blink::mojom::ServiceWorkerRequest start_worker_request_;
   blink::mojom::ControllerServiceWorkerRequest controller_request_;
-  mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
+  blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
   blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
   blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;

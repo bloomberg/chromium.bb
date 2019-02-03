@@ -28,7 +28,7 @@ namespace content {
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    mojom::EmbeddedWorkerInstanceClientRequest request) {
+    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
   // We can't use MakeStrongBinding because must give the worker thread
@@ -45,12 +45,12 @@ void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
 }
 
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
-    mojom::EmbeddedWorkerStartParamsPtr params) {
+    blink::mojom::EmbeddedWorkerStartParamsPtr params) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!worker_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
-  auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
+  auto start_timing = blink::mojom::EmbeddedWorkerStartTiming::New();
   start_timing->start_worker_received_time = base::TimeTicks::Now();
   DCHECK(!params->provider_info->cache_storage ||
          base::FeatureList::IsEnabled(
@@ -117,7 +117,7 @@ void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
-    mojom::EmbeddedWorkerInstanceClientRequest request)
+    blink::mojom::EmbeddedWorkerInstanceClientRequest request)
     : binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(base::BindOnce(
       &EmbeddedWorkerInstanceClientImpl::OnError, base::Unretained(this)));
@@ -140,7 +140,7 @@ void EmbeddedWorkerInstanceClientImpl::OnError() {
 
 std::unique_ptr<blink::WebEmbeddedWorker>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
-    mojom::EmbeddedWorkerStartParamsPtr params,
+    blink::mojom::EmbeddedWorkerStartParamsPtr params,
     std::unique_ptr<ServiceWorkerContextClient> context_client,
     blink::mojom::CacheStoragePtrInfo cache_storage,
     service_manager::mojom::InterfaceProviderPtrInfo interface_provider,

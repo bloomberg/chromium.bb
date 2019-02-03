@@ -80,11 +80,11 @@ class FailToStartWorkerTestHelper : public ExtendableMessageEventTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
+    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
     instance_host_ptr.Bind(std::move(instance_host));
     instance_host_ptr->OnStopped();
     base::RunLoop().RunUntilIdle();

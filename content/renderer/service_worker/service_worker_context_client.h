@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -29,6 +28,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -90,10 +90,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       blink::mojom::RendererPreferencesPtr renderer_preferences,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       EmbeddedWorkerInstanceClientImpl* owner,
-      mojom::EmbeddedWorkerStartTimingPtr start_timing,
+      blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
@@ -396,7 +396,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::mojom::ControllerServiceWorkerRequest pending_controller_request_;
 
   // This is bound on the main thread.
-  scoped_refptr<mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
+  scoped_refptr<blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
       instance_host_;
 
   // This holds blink.mojom.ServiceWorkerContainer(Host) connections to the
@@ -418,7 +418,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // Accessed on the worker thread. Passed to the browser process after worker
   // startup completes.
-  mojom::EmbeddedWorkerStartTimingPtr start_timing_;
+  blink::mojom::EmbeddedWorkerStartTimingPtr start_timing_;
 
   // S13nServiceWorker:
   // A URLLoaderFactory instance used for subresource loading.

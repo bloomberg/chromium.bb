@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
@@ -43,7 +42,7 @@ struct EmbeddedWorkerStartParams {
   url.mojom.Url script_url;
   // This service worker's script type:
   // https://w3c.github.io/ServiceWorker/#dfn-type
-  blink.mojom.ScriptType script_type;
+  ScriptType script_type;
   // The string used for "user-agent" HTTP header.
   string user_agent;
   // The id to talk with the DevTools agent for the worker.
@@ -58,29 +57,29 @@ struct EmbeddedWorkerStartParams {
   // True if this service worker has been installed.
   bool is_installed;
   // Determines how eagerly V8 creates the code cache.
-  blink.mojom.V8CacheOptions v8_cache_options;
+  V8CacheOptions v8_cache_options;
   // Used to set up fetch requests.
-  blink.mojom.RendererPreferences renderer_preferences;
+  RendererPreferences renderer_preferences;
 
   // Used to talk to the service worker from the browser process.
-  blink.mojom.ServiceWorker& service_worker_request;
+  ServiceWorker& service_worker_request;
   // S13nServiceWorker: cloned and passed to each controllee to directly
   // dispatch events from the controllees.
-  blink.mojom.ControllerServiceWorker& controller_request;
+  ControllerServiceWorker& controller_request;
   // Information to transfer installed scripts from the browser to the renderer.
-  blink.mojom.ServiceWorkerInstalledScriptsInfo? installed_scripts_info;
+  ServiceWorkerInstalledScriptsInfo? installed_scripts_info;
   // Interface for the renderer to send the status updates to the browser.
   associated EmbeddedWorkerInstanceHost instance_host;
   // Information for creating ServiceWorkerProviderContext on the renderer.
-  blink.mojom.ServiceWorkerProviderInfoForStartWorker provider_info;
+  ServiceWorkerProviderInfoForStartWorker provider_info;
   // Interface for the renderer to query the content settings in the browser.
-  blink.mojom.WorkerContentSettingsProxy content_settings_proxy;
+  WorkerContentSettingsProxy content_settings_proxy;
   // Interface for keeping track of the renderer preferences.
-  blink.mojom.RendererPreferenceWatcher& preference_watcher_request;
+  RendererPreferenceWatcher& preference_watcher_request;
   // S13nServiceWorker: Used to load subresources in the service worker.
   // This allows the service worker to load chrome-extension:// URLs which
   // the renderer's default loader factory can't load.
-  blink.mojom.URLLoaderFactoryBundle? subresource_loader_factories;
+  URLLoaderFactoryBundle? subresource_loader_factories;
 };
 
 // Holds timing information about the start worker sequence for UMA.
@@ -111,11 +110,11 @@ interface EmbeddedWorkerInstanceClient {
   // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
   StopWorker();
   ResumeAfterDownload();
-  AddMessageToConsole(blink.mojom.ConsoleMessageLevel level, string message);
+  AddMessageToConsole(ConsoleMessageLevel level, string message);
   // Returns a DevToolsAgent interface for this embedded worker, used for
   // remote debugging. See DevToolsAgent for details.
-  BindDevToolsAgent(associated blink.mojom.DevToolsAgentHost agent_host,
-                    associated blink.mojom.DevToolsAgent& agent);
+  BindDevToolsAgent(associated DevToolsAgentHost agent_host,
+                    associated DevToolsAgent& agent);
 };
 
 // EmbeddedWorkerInstanceHost is the browser-side ("Host") of
@@ -146,7 +145,7 @@ interface EmbeddedWorkerInstanceHost {
   // that, we put it here rather than interface ServiceWorkerHost, so that we
   // can still keep interface ServiceWorkerHost being used solely on the worker
   // thread in the renderer process.
-  CountFeature(blink.mojom.WebFeature feature);
+  CountFeature(WebFeature feature);
 
   // The following are called during startup:
   //
@@ -165,7 +164,7 @@ interface EmbeddedWorkerInstanceHost {
   OnScriptEvaluationStart();
   // Indicates that the worker has started. |thread_id| is the platform
   // thread id the worker runs on.
-  OnStarted(blink.mojom.ServiceWorkerStartStatus status,
+  OnStarted(ServiceWorkerStartStatus status,
             int32 thread_id,
             EmbeddedWorkerStartTiming start_timing);
 

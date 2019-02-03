@@ -504,11 +504,11 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
+    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
     instance_host_ptr.Bind(std::move(instance_host));
     instance_host_ptr->OnStopped();
     base::RunLoop().RunUntilIdle();
@@ -1012,7 +1012,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
@@ -1054,7 +1054,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
         version->SetMainScriptHttpResponseInfo(
             EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
 
-        mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
+        blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtr instance_host_ptr;
         instance_host_ptr.Bind(std::move(instance_host));
         instance_host_ptr->OnScriptLoaded();
         base::RunLoop().RunUntilIdle();
@@ -1155,7 +1155,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       bool pause_after_download,
       blink::mojom::ServiceWorkerRequest service_worker_request,
       blink::mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+      blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
@@ -1928,7 +1928,7 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
   }
 
  protected:
-  void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override {
+  void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override {
     ASSERT_TRUE(next_pause_after_download_.has_value());
     EXPECT_EQ(next_pause_after_download_.value(), params->pause_after_download);
     num_of_startworker_++;

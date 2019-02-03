@@ -158,7 +158,7 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
 
 using SetupProcessCallback = base::OnceCallback<void(
     blink::ServiceWorkerStatusCode,
-    mojom::EmbeddedWorkerStartParamsPtr,
+    blink::mojom::EmbeddedWorkerStartParamsPtr,
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
     std::unique_ptr<
@@ -178,8 +178,8 @@ using SetupProcessCallback = base::OnceCallback<void(
 // chrome-extension:// as needed.
 void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
                      bool can_use_existing_process,
-                     mojom::EmbeddedWorkerStartParamsPtr params,
-                     mojom::EmbeddedWorkerInstanceClientRequest request,
+                     blink::mojom::EmbeddedWorkerStartParamsPtr params,
+                     blink::mojom::EmbeddedWorkerInstanceClientRequest request,
                      ServiceWorkerContextCore* context,
                      base::WeakPtr<ServiceWorkerContextCore> weak_context,
                      SetupProcessCallback callback) {
@@ -430,7 +430,7 @@ class EmbeddedWorkerInstance::StartTask {
 
   StartTask(EmbeddedWorkerInstance* instance,
             const GURL& script_url,
-            mojom::EmbeddedWorkerInstanceClientRequest request,
+            blink::mojom::EmbeddedWorkerInstanceClientRequest request,
             base::TimeTicks start_time)
       : instance_(instance),
         request_(std::move(request)),
@@ -503,7 +503,7 @@ class EmbeddedWorkerInstance::StartTask {
     return skip_recording_startup_time_;
   }
 
-  void Start(mojom::EmbeddedWorkerStartParamsPtr params,
+  void Start(blink::mojom::EmbeddedWorkerStartParamsPtr params,
              StatusCallback sent_start_callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(instance_->context_);
@@ -541,7 +541,7 @@ class EmbeddedWorkerInstance::StartTask {
   void OnSetupCompleted(
       base::WeakPtr<ServiceWorkerProcessManager> process_manager,
       blink::ServiceWorkerStatusCode status,
-      mojom::EmbeddedWorkerStartParamsPtr params,
+      blink::mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
@@ -625,7 +625,7 @@ class EmbeddedWorkerInstance::StartTask {
   EmbeddedWorkerInstance* instance_;
 
   // Ownership is transferred by a PostTask() call after process allocation.
-  mojom::EmbeddedWorkerInstanceClientRequest request_;
+  blink::mojom::EmbeddedWorkerInstanceClientRequest request_;
 
   StatusCallback sent_start_callback_;
   bool did_send_start_ = false;
@@ -654,8 +654,9 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   process_handle_.reset();
 }
 
-void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
-                                   StatusCallback callback) {
+void EmbeddedWorkerInstance::Start(
+    blink::mojom::EmbeddedWorkerStartParamsPtr params,
+    StatusCallback callback) {
   DCHECK(context_);
   restart_count_++;
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, status_);
@@ -677,7 +678,7 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
   params->wait_for_debugger = false;
   params->v8_cache_options = GetV8CacheOptions();
 
-  mojom::EmbeddedWorkerInstanceClientRequest request =
+  blink::mojom::EmbeddedWorkerInstanceClientRequest request =
       mojo::MakeRequest(&client_);
   client_.set_connection_error_handler(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
@@ -780,7 +781,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 }
 
 void EmbeddedWorkerInstance::SendStartWorker(
-    mojom::EmbeddedWorkerStartParamsPtr params,
+    blink::mojom::EmbeddedWorkerStartParamsPtr params,
     scoped_refptr<network::SharedURLLoaderFactory> factory,
     blink::mojom::CacheStoragePtrInfo cache_storage) {
   DCHECK(context_);
@@ -891,7 +892,7 @@ void EmbeddedWorkerInstance::OnScriptEvaluationStart() {
 void EmbeddedWorkerInstance::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
     int thread_id,
-    mojom::EmbeddedWorkerStartTimingPtr start_timing) {
+    blink::mojom::EmbeddedWorkerStartTimingPtr start_timing) {
   if (!(start_timing->start_worker_received_time <=
             start_timing->script_evaluation_start_time &&
         start_timing->script_evaluation_start_time <=

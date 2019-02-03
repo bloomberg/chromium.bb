@@ -111,7 +111,7 @@ EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     ~MockEmbeddedWorkerInstanceClient() {}
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-    mojom::EmbeddedWorkerStartParamsPtr params) {
+    blink::mojom::EmbeddedWorkerStartParamsPtr params) {
   if (!helper_)
     return;
 
@@ -153,7 +153,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 // static
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
     const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-    mojom::EmbeddedWorkerInstanceClientRequest request) {
+    blink::mojom::EmbeddedWorkerInstanceClientRequest request) {
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>* clients =
       helper->mock_instance_clients();
   size_t next_client_index = helper->mock_instance_clients_next_index_;
@@ -387,7 +387,8 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
   void CreateView(mojom::CreateViewParamsPtr) override { NOTREACHED(); }
   void CreateFrame(mojom::CreateFrameParamsPtr) override { NOTREACHED(); }
   void SetUpEmbeddedWorkerChannelForServiceWorker(
-      mojom::EmbeddedWorkerInstanceClientRequest client_request) override {
+      blink::mojom::EmbeddedWorkerInstanceClientRequest client_request)
+      override {
     MockEmbeddedWorkerInstanceClient::Bind(helper_, std::move(client_request));
   }
   void CreateFrameProxy(
@@ -537,7 +538,7 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
     bool pause_after_download,
     blink::mojom::ServiceWorkerRequest service_worker_request,
     blink::mojom::ControllerServiceWorkerRequest controller_request,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
@@ -772,7 +773,7 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStarted(
   ASSERT_TRUE(worker);
   ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
   embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]->OnStarted(
-      status, thread_id, mojom::EmbeddedWorkerStartTiming::New());
+      status, thread_id, blink::mojom::EmbeddedWorkerStartTiming::New());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -823,7 +824,7 @@ void EmbeddedWorkerTestHelper::OnInitializeGlobalScope(
 }
 
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
-    mojom::EmbeddedWorkerStartParamsPtr params) {
+    blink::mojom::EmbeddedWorkerStartParamsPtr params) {
   EmbeddedWorkerInstance* worker =
       registry()->GetWorker(params->embedded_worker_id);
   ASSERT_TRUE(worker);

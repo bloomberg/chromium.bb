@@ -299,10 +299,10 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::RendererPreferencesPtr renderer_preferences,
     blink::mojom::ServiceWorkerRequest service_worker_request,
     blink::mojom::ControllerServiceWorkerRequest controller_request,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
+    blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     EmbeddedWorkerInstanceClientImpl* owner,
-    mojom::EmbeddedWorkerStartTimingPtr start_timing,
+    blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
@@ -321,7 +321,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(owner_);
   instance_host_ =
-      mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
+      blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
           std::move(instance_host), main_thread_task_runner_);
 
   if (subresource_loaders) {
