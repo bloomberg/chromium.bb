@@ -32,7 +32,9 @@ interface AssistantController {
   // true then the user gives permission to attach Assistant debug info.
   // |feedback_description| is user's feedback input.
   SendAssistantFeedback(
-    bool pii_allowed, string feedback_description);
+    bool pii_allowed,
+    string feedback_description,
+    string screenshot_png);
 };
 
 // Interface to the AssistantAlarmTimerController which is owned by the

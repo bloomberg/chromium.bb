@@ -16,6 +16,13 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "net/base/network_change_notifier.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
+#endif  // defined(OS_CHROMEOS)
+
 using content::BrowserThread;
 using feedback::FeedbackData;
 
@@ -95,6 +102,20 @@ void FeedbackService::CompleteSendFeedback(
 
   if (screenshot_completed && attached_file_completed) {
     VLOG(1) << "Attachments are ready.";
+#if defined(OS_CHROMEOS)
+    // Send feedback to Assistant server if triggered from Google Assistant.
+    if (feedback_data->from_assistant()) {
+      ash::mojom::AssistantControllerPtr assistant_controller;
+      content::BrowserContext::GetConnectorFor(browser_context_)
+          ->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+      assistant_controller->SendAssistantFeedback(
+          feedback_data->assistant_debug_info_allowed(),
+          feedback_data->description(),
+          (feedback_data->image() != nullptr) ? *(feedback_data->image())
+                                              : std::string());
+    }
+#endif
+
     // Signal the feedback object that the data from the feedback page has been
     // filled - the object will manage sending of the actual report.
     feedback_data->OnFeedbackPageDataComplete();

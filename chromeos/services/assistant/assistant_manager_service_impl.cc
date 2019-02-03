@@ -1188,7 +1188,7 @@ void AssistantManagerServiceImpl::SendAssistantFeedback(
     mojom::AssistantFeedbackPtr assistant_feedback) {
   const std::string interaction = CreateSendFeedbackInteraction(
       assistant_feedback->assistant_debug_info_allowed,
-      assistant_feedback->description);
+      assistant_feedback->description, assistant_feedback->screenshot_png);
   assistant_client::VoicelessOptions voiceless_options;
 
   voiceless_options.is_user_initiated = false;

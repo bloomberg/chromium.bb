@@ -277,12 +277,14 @@ void AssistantController::OnVoiceInteractionStatusChanged(
 
 void AssistantController::SendAssistantFeedback(
     bool assistant_debug_info_allowed,
-    const std::string& feedback_description) {
+    const std::string& feedback_description,
+    const std::string& screenshot_png) {
   chromeos::assistant::mojom::AssistantFeedbackPtr assistant_feedback =
       chromeos::assistant::mojom::AssistantFeedback::New();
   assistant_feedback->assistant_debug_info_allowed =
       assistant_debug_info_allowed;
   assistant_feedback->description = feedback_description;
+  assistant_feedback->screenshot_png = screenshot_png;
   assistant_->SendAssistantFeedback(std::move(assistant_feedback));
 }
 

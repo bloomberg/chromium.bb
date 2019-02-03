@@ -34,7 +34,9 @@ FeedbackData::FeedbackData(feedback::FeedbackUploader* uploader)
       context_(nullptr),
       trace_id_(0),
       pending_op_count_(1),
-      report_sent_(false) {
+      report_sent_(false),
+      from_assistant_(false),
+      assistant_debug_info_allowed_(false) {
   CHECK(uploader_);
 }
 
