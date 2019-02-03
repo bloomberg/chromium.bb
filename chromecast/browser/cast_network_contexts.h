@@ -9,7 +9,13 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/proxy_config.mojom.h"
+
+class PrefProxyConfigTracker;
 
 namespace base {
 class FilePath;
@@ -38,12 +44,13 @@ class URLRequestContextFactory;
 // Otherwise it will create and configure its own NetworkContext for the system,
 // and create the BrowserContext's main StoragePartition's NetworkContext.
 // It lives on the UI thread.
-class CastNetworkContexts {
+class CastNetworkContexts : public net::ProxyConfigService::Observer,
+                            public network::mojom::ProxyConfigPollerClient {
  public:
   // |url_request_context_factory| needs to outlive this object.
   explicit CastNetworkContexts(
       URLRequestContextFactory* url_request_context_factory);
-  ~CastNetworkContexts();
+  ~CastNetworkContexts() override;
 
   // Returns the System NetworkContext. Does any initialization of the
   // NetworkService that may be needed when first called.
@@ -84,6 +91,21 @@ class CastNetworkContexts {
   // since it initializes some class members.
   network::mojom::NetworkContextParamsPtr CreateSystemNetworkContextParams();
 
+  // Populates proxy-related fields of |network_context_params|. Updated
+  // ProxyConfigs will be sent to a NetworkContext created with those params
+  // whenever the configuration changes. Can be called more than once to inform
+  // multiple NetworkContexts of proxy changes.
+  void AddProxyToNetworkContextParams(
+      network::mojom::NetworkContextParams* network_context_params);
+
+  // net::ProxyConfigService::Observer implementation:
+  void OnProxyConfigChanged(
+      const net::ProxyConfigWithAnnotation& config,
+      net::ProxyConfigService::ConfigAvailability availability) override;
+
+  // network::mojom::ProxyConfigPollerClient implementation:
+  void OnLazyProxyConfigPoll() override;
+
   // The following members are used when the network service is disabled.
   URLRequestContextFactory* url_request_context_factory_;
 
@@ -103,6 +125,14 @@ class CastNetworkContexts {
   // factory.
   scoped_refptr<URLLoaderFactoryForSystem> system_shared_url_loader_factory_;
   network::mojom::URLLoaderFactoryPtr system_url_loader_factory_;
+
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  // Monitors prefs related to proxy configuration.
+  std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_impl_;
+
+  mojo::BindingSet<network::mojom::ProxyConfigPollerClient> poller_binding_set_;
+  mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
+      proxy_config_client_set_;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetworkContexts);
 };

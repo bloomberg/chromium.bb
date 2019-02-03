@@ -16,6 +16,7 @@
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_content_client.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
@@ -254,6 +255,8 @@ CastNetworkContexts::CreateDefaultNetworkContextParams() {
   network_context_params->disable_idle_sockets_close_on_memory_pressure =
       IsFeatureEnabled(kDisableIdleSocketsCloseOnMemoryPressure);
 
+  AddProxyToNetworkContextParams(network_context_params.get());
+
   return network_context_params;
 }
 
@@ -267,6 +270,61 @@ CastNetworkContexts::CreateSystemNetworkContextParams() {
   network_context_params->primary_network_context = true;
 
   return network_context_params;
+}
+
+void CastNetworkContexts::AddProxyToNetworkContextParams(
+    network::mojom::NetworkContextParams* network_context_params) {
+  if (!proxy_config_service_) {
+    pref_proxy_config_tracker_impl_ =
+        std::make_unique<PrefProxyConfigTrackerImpl>(
+            CastBrowserProcess::GetInstance()->pref_service(), nullptr);
+    proxy_config_service_ =
+        pref_proxy_config_tracker_impl_->CreateTrackingProxyConfigService(
+            nullptr);
+    proxy_config_service_->AddObserver(this);
+  }
+
+  network::mojom::ProxyConfigClientPtr proxy_config_client;
+  network_context_params->proxy_config_client_request =
+      mojo::MakeRequest(&proxy_config_client);
+  proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
+
+  poller_binding_set_.AddBinding(
+      this,
+      mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
+
+  net::ProxyConfigWithAnnotation proxy_config;
+  net::ProxyConfigService::ConfigAvailability availability =
+      proxy_config_service_->GetLatestProxyConfig(&proxy_config);
+  if (availability != net::ProxyConfigService::CONFIG_PENDING)
+    network_context_params->initial_proxy_config = proxy_config;
+}
+
+void CastNetworkContexts::OnProxyConfigChanged(
+    const net::ProxyConfigWithAnnotation& config,
+    net::ProxyConfigService::ConfigAvailability availability) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  proxy_config_client_set_.ForAllPtrs(
+      [config,
+       availability](network::mojom::ProxyConfigClient* proxy_config_client) {
+        switch (availability) {
+          case net::ProxyConfigService::CONFIG_VALID:
+            proxy_config_client->OnProxyConfigUpdated(config);
+            break;
+          case net::ProxyConfigService::CONFIG_UNSET:
+            proxy_config_client->OnProxyConfigUpdated(
+                net::ProxyConfigWithAnnotation::CreateDirect());
+            break;
+          case net::ProxyConfigService::CONFIG_PENDING:
+            NOTREACHED();
+            break;
+        }
+      });
+}
+
+void CastNetworkContexts::OnLazyProxyConfigPoll() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  proxy_config_service_->OnLazyPoll();
 }
 
 }  // namespace shell
