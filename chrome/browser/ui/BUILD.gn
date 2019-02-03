@@ -3069,8 +3069,6 @@ jumbo_split_static_library("ui") {
       "views/apps/shaped_app_window_targeter.h",
       "views/color_chooser_aura.cc",
       "views/color_chooser_aura.h",
-      "views/crypto_module_password_dialog_view.cc",
-      "views/crypto_module_password_dialog_view.h",
       "views/desktop_capture/desktop_media_list_view.cc",
       "views/desktop_capture/desktop_media_list_view.h",
       "views/desktop_capture/desktop_media_picker_views.cc",
@@ -3605,6 +3603,13 @@ jumbo_split_static_library("ui") {
       "webui/certificates_handler.cc",
       "webui/certificates_handler.h",
     ]
+
+    if (use_aura) {
+      sources += [
+        "views/crypto_module_password_dialog_view.cc",
+        "views/crypto_module_password_dialog_view.h",
+      ]
+    }
   }
 
   if (use_udev) {
