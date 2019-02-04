@@ -32,6 +32,7 @@ generated_protocols = [
 	[ 'weston-debug', 'internal' ],
 	[ 'weston-desktop-shell', 'internal' ],
 	[ 'weston-screenshooter', 'internal' ],
+	[ 'weston-content-protection', 'internal' ],
 	[ 'weston-test', 'internal' ],
 	[ 'weston-touch-calibration', 'internal' ],
 	[ 'xdg-output', 'v1' ],
