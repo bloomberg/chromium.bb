@@ -142,11 +142,6 @@ class CORE_EXPORT DisplayLockContext final
   void WillStartLifecycleUpdate() override;
   void DidFinishLifecycleUpdate() override;
 
-  // Called when the element associated with this lock is destroyed. Note that
-  // because the lifetime of this lock is independent of the element, this can
-  // happen.
-  void ElementWasDestroyed(Document&);
-
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
