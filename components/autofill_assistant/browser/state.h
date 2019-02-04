@@ -31,6 +31,12 @@ enum class AutofillAssistantState {
   // the data for a payment request.
   PROMPT,
 
+  // Autofill assistant is waiting for the user to make the first choice.
+  //
+  // When autostartable scripts are expected, this is only triggered as a
+  // fallback if there are non-autostartable scripts to choose from instead.
+  AUTOSTART_FALLBACK_PROMPT,
+
   // Autofill assistant is expecting a modal dialog, such as the one asking for
   // CVC.
   MODAL_DIALOG,

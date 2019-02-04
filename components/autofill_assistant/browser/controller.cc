@@ -276,10 +276,6 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
   if (result.touchable_element_area) {
     touchable_element_area()->SetFromProto(*result.touchable_element_area);
-  } else {
-    // For backward-compatibility, if no touchable elements are defined, the
-    // whole screen is available instead of nothing being available.
-    touchable_element_area()->CoverViewport();
   }
 
   switch (result.at_end) {
@@ -541,13 +537,15 @@ void Controller::OnRunnableScriptsChanged(
     }
   }
 
-  if (state_ == AutofillAssistantState::STARTING) {
-    // If there's no script to autostart, allow access to the whole screen
-    // during the first prompt. In normal operations, touchable_element_area_ is
-    // set at the end of a successful script.
-    touchable_element_area()->CoverViewport();
+  if (allow_autostart_) {
+    // Autostart was expected, but only non-autostartable scripts were found.
+    //
+    // TODO(crbug.com/806868): Consider the case where no non-autostartable
+    // scripts were found.
+    EnterState(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT);
+  } else {
+    EnterState(AutofillAssistantState::PROMPT);
   }
-  EnterState(AutofillAssistantState::PROMPT);
   GetUiController()->SetChips(std::move(chips));
 }
 

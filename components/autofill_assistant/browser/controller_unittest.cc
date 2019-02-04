@@ -165,7 +165,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   }
 
   void ExecuteScript(const std::string& script_path) {
-    controller_->ExecuteScript(script_path);
+    controller_->OnScriptSelected(script_path);
   }
 
   UiDelegate* GetUiDelegate() { return controller_.get(); }
@@ -495,7 +495,8 @@ TEST_F(ControllerTest, StateChanges) {
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
 
-  EXPECT_EQ(AutofillAssistantState::PROMPT, GetUiDelegate()->GetState());
+  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
+            GetUiDelegate()->GetState());
 
   // Run script1: State should become RUNNING, as there's another script, then
   // go back to prompt to propose that script.
@@ -516,4 +517,5 @@ TEST_F(ControllerTest, StateChanges) {
                                    AutofillAssistantState::PROMPT,
                                    AutofillAssistantState::STOPPED));
 }
+
 }  // namespace autofill_assistant
