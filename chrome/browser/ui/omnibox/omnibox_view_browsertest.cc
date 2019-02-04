@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
 
   base::string16 old_text = omnibox_view->GetText();
 
-  // Make sure inline autocomplete is triggerred.
+  // Make sure inline autocomplete is triggered.
   EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
 
   size_t old_selected_line = popup_model->selected_line();
@@ -722,6 +722,45 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
 
   // Escape shall revert back to the default match item.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
+  EXPECT_EQ(old_text, omnibox_view->GetText());
+  EXPECT_EQ(old_selected_line, popup_model->selected_line());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       RevertDefaultRevertInlineTextWhenSelectingDefaultMatch) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
+  ASSERT_TRUE(popup_model);
+
+  // Input something to trigger inline autocomplete.
+  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kInlineAutocompleteTextKeys));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_TRUE(popup_model->IsOpen());
+
+  base::string16 old_text = omnibox_view->GetText();
+
+  // Make sure inline autocomplete is triggered.
+  EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
+
+  size_t old_selected_line = popup_model->selected_line();
+  EXPECT_EQ(0U, old_selected_line);
+
+  // Move to another line with different text.
+  size_t size = popup_model->result().size();
+  while (popup_model->selected_line() < size - 1) {
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DOWN, 0));
+    ASSERT_NE(old_selected_line, popup_model->selected_line());
+    if (old_text != omnibox_view->GetText())
+      break;
+  }
+
+  EXPECT_NE(old_text, omnibox_view->GetText());
+
+  // Move back to the first line
+  while (popup_model->selected_line() > 0)
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_UP, 0));
+
   EXPECT_EQ(old_text, omnibox_view->GetText());
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
 }
@@ -1048,12 +1087,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_EQ(ASCIIToUTF16("foobar.com"), omnibox_view->GetText());
   omnibox_view->model()->OnUpOrDownKeyPressed(1);
   omnibox_view->model()->OnUpOrDownKeyPressed(-1);
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
@@ -1420,7 +1453,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 
   base::string16 old_text = omnibox_view->GetText();
 
-  // Make sure inline autocomplete is triggerred.
+  // Make sure inline autocomplete is triggered.
   EXPECT_GT(old_text.length(), base::size(kInlineAutocompleteText) - 1);
 
   // Press ctrl key.

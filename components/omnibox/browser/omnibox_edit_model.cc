@@ -1135,7 +1135,19 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
   if (PopupIsOpen()) {
     // The popup is open, so the user should be able to interact with it
     // normally.
-    popup_model()->Move(count);
+
+    // If, as a result of the key press, we would select the first result, then
+    // we should revert the temporary text same as what pressing escape would
+    // have done. In the future, if the selection behavior becomes more involved
+    // (e.g. wrap around), then we should consider creating a helper method
+    // GetNewSelectionLine(int cont) to be compared with 0 here and to be reused
+    // in OmniboxPopupModel::Move.
+    if (has_temporary_text_ && count < 0 &&
+        (unsigned)-count >= popup_model()->selected_line()) {
+      RevertTemporaryText(true);
+    } else {
+      popup_model()->Move(count);
+    }
     return;
   }
 
