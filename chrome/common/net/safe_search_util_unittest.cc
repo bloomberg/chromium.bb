@@ -4,7 +4,6 @@
 
 #include "chrome/common/net/safe_search_util.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/url_constants.h"
 #include "net/http/http_request_headers.h"
@@ -12,29 +11,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-class SafeSearchUtilTest : public ::testing::Test {
- protected:
-  SafeSearchUtilTest() {}
-  ~SafeSearchUtilTest() override {}
+namespace {
+// Does a request using the |url_string| URL and verifies that the expected
+// string is equal to the query part (between ? and #) of the final url of
+// that request.
+void CheckAddedParameters(const std::string& url_string,
+                          const std::string& expected_query_parameters) {
+  // Show the URL in the trace so we know where we failed.
+  SCOPED_TRACE(url_string);
 
-  // Does a request using the |url_string| URL and verifies that the expected
-  // string is equal to the query part (between ? and #) of the final url of
-  // that request.
-  void CheckAddedParameters(const std::string& url_string,
-                            const std::string& expected_query_parameters) {
-    // Show the URL in the trace so we know where we failed.
-    SCOPED_TRACE(url_string);
+  GURL result(url_string);
+  safe_search_util::ForceGoogleSafeSearch(GURL(url_string), &result);
 
-    GURL result(url_string);
-    safe_search_util::ForceGoogleSafeSearch(GURL(url_string), &result);
+  EXPECT_EQ(expected_query_parameters, result.query());
+}
 
-    EXPECT_EQ(expected_query_parameters, result.query());
-  }
-
-  base::MessageLoop message_loop_;
-};
-
-TEST_F(SafeSearchUtilTest, AddGoogleSafeSearchParams) {
+TEST(SafeSearchUtilTest, AddGoogleSafeSearchParams) {
   const std::string kSafeParameter = safe_search_util::kSafeSearchSafeParameter;
   const std::string kSsuiParameter = safe_search_util::kSafeSearchSsuiParameter;
   const std::string kBothParameters = kSafeParameter + "&" + kSsuiParameter;
@@ -128,7 +120,7 @@ TEST_F(SafeSearchUtilTest, AddGoogleSafeSearchParams) {
                        "q=%26%26%26&param=%26%26%26&" + kBothParameters);
 }
 
-TEST_F(SafeSearchUtilTest, SetYoutubeHeader) {
+TEST(SafeSearchUtilTest, SetYoutubeHeader) {
   net::HttpRequestHeaders headers;
   safe_search_util::ForceYouTubeRestrict(
       GURL("http://www.youtube.com"), &headers,
@@ -138,7 +130,7 @@ TEST_F(SafeSearchUtilTest, SetYoutubeHeader) {
   EXPECT_EQ("Moderate", value);
 }
 
-TEST_F(SafeSearchUtilTest, OverrideYoutubeHeader) {
+TEST(SafeSearchUtilTest, OverrideYoutubeHeader) {
   net::HttpRequestHeaders headers;
   headers.SetHeader("Youtube-Restrict", "Off");
   safe_search_util::ForceYouTubeRestrict(
@@ -149,7 +141,7 @@ TEST_F(SafeSearchUtilTest, OverrideYoutubeHeader) {
   EXPECT_EQ("Moderate", value);
 }
 
-TEST_F(SafeSearchUtilTest, DoesntTouchNonYoutubeURL) {
+TEST(SafeSearchUtilTest, DoesntTouchNonYoutubeURL) {
   net::HttpRequestHeaders headers;
   headers.SetHeader("Youtube-Restrict", "Off");
   safe_search_util::ForceYouTubeRestrict(
@@ -159,3 +151,5 @@ TEST_F(SafeSearchUtilTest, DoesntTouchNonYoutubeURL) {
   EXPECT_TRUE(headers.GetHeader("Youtube-Restrict", &value));
   EXPECT_EQ("Off", value);
 }
+
+}  // namespace
