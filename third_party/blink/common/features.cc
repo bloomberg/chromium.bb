@@ -114,7 +114,7 @@ const base::Feature kRTCOfferExtmapAllowMixed{
 // WebURLLoaderClient::DidStartLoadingResponseBody() instead of
 // WebURLLoaderClient::DidReceiveData().
 const base::Feature kResourceLoadViaDataPipe{"ResourceLoadViaDataPipe",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck",
