@@ -306,8 +306,9 @@ public class WebApkValidator {
             buf.load();
 
             WebApkVerifySignature v = new WebApkVerifySignature(buf);
+            @WebApkVerifySignature.Error
             int result = v.read();
-            if (result != WebApkVerifySignature.ERROR_OK) {
+            if (result != WebApkVerifySignature.Error.OK) {
                 Log.e(TAG, String.format("Failure reading %s: %s", packageFilename, result));
                 return false;
             }
@@ -317,7 +318,7 @@ public class WebApkValidator {
             if (DEBUG) {
                 Log.d(TAG, "File " + packageFilename + ": " + result);
             }
-            return result == WebApkVerifySignature.ERROR_OK;
+            return result == WebApkVerifySignature.Error.OK;
         } catch (Exception e) {
             Log.e(TAG, "WebApk file error for file " + packageFilename, e);
             return false;
