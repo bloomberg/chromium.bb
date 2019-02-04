@@ -88,7 +88,11 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   }
 
   void RemoveVirtualDevice(const std::string& device_id) {
+    base::RunLoop wait_loop;
+    closure_to_be_called_on_devices_changed_ = wait_loop.QuitClosure();
     virtual_devices_by_id_.erase(device_id);
+    // Wait for confirmation from the service.
+    wait_loop.Run();
   }
 
   void DisconnectFromService() {
