@@ -939,14 +939,25 @@ class BoardSpecificBuilderStage(BuilderStage):
 
   def GetListOfPackagesToBuild(self):
     """Returns a list of packages to build."""
+
+    # If we have defined explicit packages to build for ChromeOS Findit
+    # integration, add those to the list of _run.config.packages to build.
+    packages = []
+    if self._run.options.cbb_build_packages:
+      logging.info('Adding list of packages to build for ChromeOS Findit: %s',
+                   self._run.options.cbb_build_packages)
+      packages += self._run.options.cbb_build_packages
     if self._run.config.packages:
-      # If the list of packages is set in the config, use it.
-      return self._run.config.packages
+      packages += self._run.config.packages
+
+    # Short circuit if there are any Findit or explicit builds specified.
+    if packages:
+      return packages
 
     # TODO: the logic below is duplicated from the build_packages
     # script. Once we switch to `cros build`, we should consolidate
     # the logic in a shared location.
-    packages = [constants.TARGET_OS_PKG]
+    packages += [constants.TARGET_OS_PKG]
     # Build Dev packages by default.
     packages += [constants.TARGET_OS_DEV_PKG]
     # Build test packages by default.

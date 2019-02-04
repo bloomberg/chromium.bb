@@ -751,6 +751,31 @@ class BoardSpecificBuilderStageTest(AbstractStageTestCase):
   #         self.fail(('cbuildbot_stages.%s.config_name "%s" is missing from '
   #                    'cbuildbot_config._settings') % (attr, obj.config_name))
 
+  def testListOfPackagesToBuild(self):
+    """Test the default list of packages to build."""
+    stage = self.ConstructStage()
+    packages = stage.GetListOfPackagesToBuild()
+    expected = ['virtual/target-os', 'virtual/target-os-dev',
+                'virtual/target-os-test', 'virtual/target-os-factory',
+                'virtual/target-os-factory-shim', 'chromeos-base/autotest-all']
+    self.assertEquals(expected, packages)
+
+    # Test if an explicit list of packages is configured, only that list is set.
+    self._run.config.packages = ['pkgA', 'pkgB']
+    packages = stage.GetListOfPackagesToBuild()
+    self.assertEquals(['pkgA', 'pkgB'], packages)
+
+    # Test if a list of packages is set for ChromeOS Findit builds, they are
+    # added to an explicit list.
+    self._run.options.cbb_build_packages = ['pkgC', 'pkgD']
+    packages = stage.GetListOfPackagesToBuild()
+    self.assertEquals(['pkgC', 'pkgD', 'pkgA', 'pkgB'], packages)
+
+    # Only check packages setup for ChromeOS Findit.
+    self._run.config.packages = []
+    packages = stage.GetListOfPackagesToBuild()
+    self.assertEquals(['pkgC', 'pkgD'], packages)
+
 
 class RunCommandAbstractStageTestCase(
     AbstractStageTestCase, cros_test_lib.RunCommandTestCase):
