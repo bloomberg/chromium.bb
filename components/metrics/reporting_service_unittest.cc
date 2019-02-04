@@ -77,8 +77,8 @@ class TestReportingService : public ReportingService {
  private:
   // ReportingService:
   LogStore* log_store() override { return &log_store_; }
-  std::string GetUploadUrl() const override { return kTestUploadUrl; }
-  std::string GetInsecureUploadUrl() const override { return kTestUploadUrl; }
+  GURL GetUploadUrl() const override { return GURL(kTestUploadUrl); }
+  GURL GetInsecureUploadUrl() const override { return GURL(kTestUploadUrl); }
   base::StringPiece upload_mime_type() const override { return kTestMimeType; }
   MetricsLogUploader::MetricServiceType service_type() const override {
     return MetricsLogUploader::MetricServiceType::UMA;

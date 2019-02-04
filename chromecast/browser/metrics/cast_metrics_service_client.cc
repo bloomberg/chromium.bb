@@ -227,21 +227,21 @@ void CastMetricsServiceClient::CollectFinalMetricsForLog(
       base::TimeDelta::FromSeconds(kMetricsFetchTimeoutSeconds));
 }
 
-std::string CastMetricsServiceClient::GetMetricsServerUrl() {
+GURL CastMetricsServiceClient::GetMetricsServerUrl() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kOverrideMetricsUploadUrl)) {
-    return command_line->GetSwitchValueASCII(
-        switches::kOverrideMetricsUploadUrl);
+    return GURL(
+        command_line->GetSwitchValueASCII(switches::kOverrideMetricsUploadUrl));
   }
   // Note: This uses the old metrics service URL because some server-side
   // provisioning is needed to support the extra Cast traffic on the new URL.
-  return ::metrics::kOldMetricsServerUrl;
+  return GURL(::metrics::kOldMetricsServerUrl);
 }
 
 std::unique_ptr<::metrics::MetricsLogUploader>
 CastMetricsServiceClient::CreateUploader(
-    base::StringPiece server_url,
-    base::StringPiece insecure_server_url,
+    const GURL& server_url,
+    const GURL& insecure_server_url,
     base::StringPiece mime_type,
     ::metrics::MetricsLogUploader::MetricServiceType service_type,
     const ::metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {

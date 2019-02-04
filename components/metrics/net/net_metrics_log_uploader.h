@@ -30,7 +30,7 @@ class NetMetricsLogUploader : public MetricsLogUploader {
   // be called with the HTTP response code of the upload or with -1 on an error.
   NetMetricsLogUploader(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      base::StringPiece server_url,
+      const GURL& server_url,
       base::StringPiece mime_type,
       MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete);
@@ -40,8 +40,8 @@ class NetMetricsLogUploader : public MetricsLogUploader {
   // to |server_url| fails, requests are encrypted when sent to an HTTP URL.
   NetMetricsLogUploader(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      base::StringPiece server_url,
-      base::StringPiece insecure_server_url,
+      const GURL& server_url,
+      const GURL& insecure_server_url,
       base::StringPiece mime_type,
       MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete);
