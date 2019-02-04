@@ -187,6 +187,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     private boolean mInitialized;
 
+    // Remember the stack for clearing native the native stack for debugging use after destroy.
+    private Throwable mNativeDestroyThrowable;
+
     private static class WebContentsInternalsImpl implements WebContentsInternals {
         public UserDataHost userDataHost;
         public ViewAndroidDelegate viewAndroidDelegate;
@@ -194,6 +197,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
+        assert nativeWebContentsAndroid != 0;
         mNativeWebContentsAndroid = nativeWebContentsAndroid;
         mNavigationController = navigationController;
     }
@@ -246,6 +250,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @CalledByNative
     private void clearNativePtr() {
+        mNativeDestroyThrowable = new RuntimeException("clearNativePtr");
         mNativeWebContentsAndroid = 0;
         mNavigationController = null;
         if (mObserverProxy != null) {
@@ -936,7 +941,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     private void checkNotDestroyed() {
         if (mNativeWebContentsAndroid != 0) return;
-        throw new IllegalStateException("Native WebContents already destroyed");
+        throw new IllegalStateException(
+                "Native WebContents already destroyed", mNativeDestroyThrowable);
     }
 
     // This is static to avoid exposing a public destroy method on the native side of this class.
