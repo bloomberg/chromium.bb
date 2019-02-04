@@ -104,6 +104,8 @@ class ManualFillingMediator extends EmptyTabObserver
         ActionProviderCacheAdapter mActionsProvider;
         @Nullable
         PasswordAccessorySheetCoordinator mPasswordAccessorySheet;
+        @Nullable
+        CreditCardAccessorySheetCoordinator mCreditCardAccessorySheet;
     }
 
     // TODO(fhorschig): Do we need a MapObservable type? (This would be only observer though).
@@ -225,6 +227,11 @@ class ManualFillingMediator extends EmptyTabObserver
         PasswordAccessorySheetCoordinator accessorySheet = getPasswordAccessorySheet();
         if (accessorySheet == null) return; // Not available or initialized yet.
         accessorySheet.registerDataProvider(dataProvider);
+    }
+
+    void registerCreditCardProvider() {
+        CreditCardAccessorySheetCoordinator accessorySheet = getCreditCardAccessorySheet();
+        if (accessorySheet == null) return;
     }
 
     void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action[]> actionProvider) {
@@ -431,6 +438,9 @@ class ManualFillingMediator extends EmptyTabObserver
         if (state.mPasswordAccessorySheet != null) {
             addTab(state.mPasswordAccessorySheet.getTab());
         }
+        if (state.mCreditCardAccessorySheet != null) {
+            addTab(state.mCreditCardAccessorySheet.getTab());
+        }
         if (state.mActionsProvider != null) state.mActionsProvider.notifyAboutCachedItems();
     }
 
@@ -479,6 +489,27 @@ class ManualFillingMediator extends EmptyTabObserver
             addTab(state.mPasswordAccessorySheet.getTab());
         }
         return state.mPasswordAccessorySheet;
+    }
+
+    @VisibleForTesting
+    @Nullable
+    CreditCardAccessorySheetCoordinator getCreditCardAccessorySheet() {
+        if (!isInitialized()) return null;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID)) {
+            return null;
+        }
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI)
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
+            return null;
+        }
+        if (mActiveBrowserTab == null) return null; // No need for a sheet if there is no tab.
+        AccessoryState state = getOrCreateAccessoryState(mActiveBrowserTab);
+        if (state.mCreditCardAccessorySheet == null) {
+            state.mCreditCardAccessorySheet = new CreditCardAccessorySheetCoordinator(
+                    mActivity, mAccessorySheet.getScrollListener());
+            addTab(state.mCreditCardAccessorySheet.getTab());
+        }
+        return state.mCreditCardAccessorySheet;
     }
 
     @VisibleForTesting
