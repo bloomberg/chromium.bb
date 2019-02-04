@@ -852,7 +852,7 @@ DeviceStatusCollector::ActivityStorage::GetFilteredActivityPeriods(
 std::string DeviceStatusCollector::ActivityStorage::MakeActivityPeriodPrefKey(
     int64_t start,
     const std::string& user_email) {
-  const std::string day_key = base::Int64ToString(start);
+  const std::string day_key = base::NumberToString(start);
   if (user_email.empty())
     return day_key;
 

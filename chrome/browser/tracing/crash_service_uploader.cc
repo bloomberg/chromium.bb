@@ -98,8 +98,8 @@ void TraceCrashServiceUploader::OnSimpleURLLoaderComplete(
       response_code =
           simple_url_loader_->ResponseInfo()->headers->response_code();
     }
-    feedback =
-        "Uploading failed, response code: " + base::IntToString(response_code);
+    feedback = "Uploading failed, response code: " +
+               base::NumberToString(response_code);
   }
 
   base::PostTaskWithTraits(

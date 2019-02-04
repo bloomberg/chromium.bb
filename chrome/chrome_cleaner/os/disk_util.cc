@@ -477,7 +477,7 @@ base::string16 FileInformationToString(
   AppendFileInformationField(
       L"digest", base::UTF8ToUTF16(file_information.sha256), &content);
   AppendFileInformationField(
-      L"size", base::Int64ToString16(file_information.size), &content);
+      L"size", base::NumberToString16(file_information.size), &content);
   AppendFileInformationField(L"company_name", file_information.company_name,
                              &content);
   AppendFileInformationField(L"company_short_name",

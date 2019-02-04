@@ -41,8 +41,8 @@ void CheckParse(const ConstCommandsTestData& data,
                 bool platform_specific_only,
                 std::vector<std::string>& platforms) {
   SCOPED_TRACE(std::string("Command name: |") + data.command_name + "| key: |" +
-               data.key + "| description: |" + data.description + "| index: " +
-               base::IntToString(i));
+               data.key + "| description: |" + data.description +
+               "| index: " + base::NumberToString(i));
 
   extensions::Command command;
   std::unique_ptr<base::DictionaryValue> input(new base::DictionaryValue);

@@ -79,11 +79,11 @@ CookiesTreeModelUtil::~CookiesTreeModelUtil() {
 std::string CookiesTreeModelUtil::GetTreeNodeId(const CookieTreeNode* node) {
   CookieTreeNodeMap::const_iterator iter = node_map_.find(node);
   if (iter != node_map_.end())
-    return base::IntToString(iter->second);
+    return base::NumberToString(iter->second);
 
   int32_t new_id = id_map_.Add(node);
   node_map_[node] = new_id;
-  return base::IntToString(new_id);
+  return base::NumberToString(new_id);
 }
 
 bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(

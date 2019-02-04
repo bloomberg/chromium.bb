@@ -431,7 +431,7 @@ void ChromePasswordProtectionService::OnModalWarningShownForSignInPassword(
     update->SetKey(
         Origin::Create(web_contents->GetLastCommittedURL()).Serialize(),
         base::Value(
-            base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
+            base::NumberToString(GetLastCommittedNavigationID(web_contents))));
   }
 
   UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,

@@ -215,7 +215,8 @@ static void JNI_UmaSessionStats_RegisterExternalExperiment(
   variations::ActiveGroupId active_group;
   active_group.name = variations::HashName(trial_name_utf8);
   for (int experiment_id : experiment_ids) {
-    active_group.group = variations::HashName(base::IntToString(experiment_id));
+    active_group.group =
+        variations::HashName(base::NumberToString(experiment_id));
     // Since external experiments are not based on Chrome's low entropy source,
     // they are only sent to Google web properties for signed in users to make
     // sure that this couldn't be used to identify a user that's not signed in.

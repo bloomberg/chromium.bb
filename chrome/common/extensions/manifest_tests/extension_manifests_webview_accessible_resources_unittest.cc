@@ -68,16 +68,18 @@ TEST_F(WebviewAccessibleResourcesManifestTest, InvalidManifest) {
                       errors::kInvalidWebviewPartitionsList);
   LoadAndExpectError("webview_accessible_resources_invalid3.json",
                       errors::kInvalidWebviewPartitionsList);
-  LoadAndExpectError("webview_accessible_resources_invalid4.json",
-      ErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebviewPartition, base::IntToString(0)));
+  LoadAndExpectError(
+      "webview_accessible_resources_invalid4.json",
+      ErrorUtils::FormatErrorMessage(errors::kInvalidWebviewPartition,
+                                     base::NumberToString(0)));
   LoadAndExpectError("webview_accessible_resources_invalid5.json",
                      errors::kInvalidWebviewPartitionName);
   LoadAndExpectError("webview_accessible_resources_invalid6.json",
                      errors::kInvalidWebviewAccessibleResourcesList);
   LoadAndExpectError("webview_accessible_resources_invalid7.json",
                      errors::kInvalidWebviewAccessibleResourcesList);
-  LoadAndExpectError("webview_accessible_resources_invalid8.json",
-      ErrorUtils::FormatErrorMessage(
-          errors::kInvalidWebviewAccessibleResource, base::IntToString(0)));
+  LoadAndExpectError(
+      "webview_accessible_resources_invalid8.json",
+      ErrorUtils::FormatErrorMessage(errors::kInvalidWebviewAccessibleResource,
+                                     base::NumberToString(0)));
 }

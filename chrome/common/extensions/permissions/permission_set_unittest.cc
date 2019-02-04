@@ -83,7 +83,7 @@ PermissionIDSet MakePermissionIDSet(const APIPermissionSet& permissions) {
 std::string PermissionIDsToString(const PermissionIDSet& ids) {
   std::vector<std::string> strs;
   for (const PermissionID& id : ids)
-    strs.push_back(base::IntToString(id.id()));
+    strs.push_back(base::NumberToString(id.id()));
   return base::StringPrintf("[ %s ]", base::JoinString(strs, ", ").c_str());
 }
 

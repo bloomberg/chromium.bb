@@ -372,7 +372,8 @@ class PrefHashBrowserTestBase
 
       num_tracked_prefs_ += num_split_tracked_prefs;
 
-      std::string num_tracked_prefs_str = base::IntToString(num_tracked_prefs_);
+      std::string num_tracked_prefs_str =
+          base::NumberToString(num_tracked_prefs_);
       EXPECT_EQ(static_cast<int>(num_tracked_prefs_str.size()),
                 base::WriteFile(num_tracked_prefs_file,
                                 num_tracked_prefs_str.c_str(),

@@ -64,7 +64,7 @@ void OnGetPagesByURLDone(
     base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback,
     const MultipleOfflinePageItemResult& pages) {
   std::vector<OfflinePageItem> selected_pages;
-  std::string tab_id_str = base::IntToString(tab_id);
+  std::string tab_id_str = base::NumberToString(tab_id);
 
   // Exclude pages whose tab id does not match.
   // Note: For this restriction to work offline pages saved to tab-bound

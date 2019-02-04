@@ -30,7 +30,7 @@ class BookmarkManagerPrivateApiUnitTest : public ExtensionServiceTestBase {
         model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Goog"),
                        GURL("https://www.google.com"));
     // Store node->id() as we will delete |node| in RunOnDeletedNode().
-    node_id_ = base::Int64ToString(node->id());
+    node_id_ = base::NumberToString(node->id());
   }
 
   std::string node_id() const { return node_id_; }

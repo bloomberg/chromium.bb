@@ -137,7 +137,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
                         "Database locked by another process");
         } else {
           std::string str("Pragma failed. Error: ");
-          str += base::IntToString(error);
+          str += base::NumberToString(error);
           RecordFailure(DIAG_SQLITE_PRAGMA_FAILED, str);
         }
         return false;
@@ -158,7 +158,7 @@ class SqliteIntegrityTest : public DiagnosticsTest {
     // All done. Report to the user.
     if (errors != 0) {
       std::string str("Database corruption detected: ");
-      str += base::IntToString(errors) + " errors";
+      str += base::NumberToString(errors) + " errors";
       RecordFailure(DIAG_SQLITE_DB_CORRUPTED, str);
       return true;
     }

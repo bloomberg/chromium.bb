@@ -45,7 +45,7 @@ class GCAPIReactivationTest : public ::testing::Test {
   }
 
   bool SetLastRunTime(HKEY hive, int64_t last_run_time) {
-    return SetLastRunTimeString(hive, base::Int64ToString16(last_run_time));
+    return SetLastRunTimeString(hive, base::NumberToString16(last_run_time));
   }
 
   bool SetLastRunTimeString(HKEY hive,

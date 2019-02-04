@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   // is spread across multiple rows.
   for (int i = 0; i < 15; ++i) {
     scoped_refptr<const extensions::Extension> extension =
-        extensions::ExtensionBuilder(base::IntToString(i))
+        extensions::ExtensionBuilder(base::NumberToString(i))
             .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
             .SetLocation(extensions::Manifest::INTERNAL)
             .Build();

@@ -43,11 +43,11 @@ bool SortTabTimesByRecency(const TitleTimestampPair& t1,
 }
 
 std::string ToSessionTag(SessionID session_id) {
-  return std::string(kBaseSessionTag + base::IntToString(session_id.id()));
+  return std::string(kBaseSessionTag + base::NumberToString(session_id.id()));
 }
 
 std::string ToSessionName(SessionID session_id) {
-  return std::string(kBaseSessionName + base::IntToString(session_id.id()));
+  return std::string(kBaseSessionName + base::NumberToString(session_id.id()));
 }
 
 std::string ToTabTitle(SessionID session_id,

@@ -419,7 +419,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
       if (i > 0)
         actual += " ";
 
-      actual += base::IntToString(GetID(model.GetWebContentsAt(i)));
+      actual += base::NumberToString(GetID(model.GetWebContentsAt(i)));
 
       if (model.IsTabPinned(i))
         actual += "p";
@@ -1336,7 +1336,7 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
         for (size_t i = 0; i < indices.size(); ++i) {
           if (i != 0)
             result += " ";
-          result += base::IntToString(indices[i]);
+          result += base::NumberToString(indices[i]);
         }
         return result;
       };

@@ -80,7 +80,7 @@ void DemoModeDetectorTest::StartDemoModeDetection() {
 void DemoModeDetectorTest::SetTimeOnOobePref(base::TimeDelta time_on_oobe) {
   local_state_.SetUserPref(prefs::kTimeOnOobe,
                            std::make_unique<base::Value>(
-                               base::Int64ToString(time_on_oobe.InSeconds())));
+                               base::NumberToString(time_on_oobe.InSeconds())));
 }
 
 base::TimeDelta DemoModeDetectorTest::GetTimeOnOobePref() {

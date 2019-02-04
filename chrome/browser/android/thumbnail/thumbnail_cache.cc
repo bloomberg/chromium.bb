@@ -261,7 +261,7 @@ base::FilePath ThumbnailCache::GetCacheDirectory() {
 
 base::FilePath ThumbnailCache::GetFilePath(TabId tab_id) {
   base::FilePath path = GetCacheDirectory();
-  return path.Append(base::IntToString(tab_id));
+  return path.Append(base::NumberToString(tab_id));
 }
 
 bool ThumbnailCache::CheckAndUpdateThumbnailMetaData(TabId tab_id,

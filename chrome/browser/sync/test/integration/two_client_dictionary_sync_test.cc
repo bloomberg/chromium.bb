@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest,
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
 
   for (int i = 0; i < num_clients(); ++i)
-    dictionary_helper::AddWord(i, "foo" + base::IntToString(i));
+    dictionary_helper::AddWord(i, "foo" + base::NumberToString(i));
 
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
   ASSERT_EQ(num_clients(),

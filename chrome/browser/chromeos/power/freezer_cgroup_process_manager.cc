@@ -77,9 +77,9 @@ class FreezerCgroupProcessManager::FileWorker {
   void SetShouldFreezeRenderer(base::ProcessHandle handle, bool frozen) {
     DCHECK(file_thread_->RunsTasksInCurrentSequence());
 
-    WriteCommandToFile(base::IntToString(handle),
-                       frozen ? to_be_frozen_control_path_
-                              : default_control_path_);
+    WriteCommandToFile(
+        base::NumberToString(handle),
+        frozen ? to_be_frozen_control_path_ : default_control_path_);
   }
 
   void FreezeRenderers() {

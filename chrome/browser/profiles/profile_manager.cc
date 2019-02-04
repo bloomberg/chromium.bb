@@ -793,7 +793,7 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   // Create the next profile in the next available directory slot.
   int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
   std::string profile_name = chrome::kMultiProfileDirPrefix;
-  profile_name.append(base::IntToString(next_directory));
+  profile_name.append(base::NumberToString(next_directory));
   base::FilePath new_path = user_data_dir_;
 #if defined(OS_WIN)
   new_path = new_path.Append(base::ASCIIToUTF16(profile_name));

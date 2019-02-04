@@ -2029,14 +2029,14 @@ class ExtensionUpdaterTest : public testing::Test {
     if (rollcall_ping_days != 0) {
       ASSERT_TRUE(base::ContainsKey(url1_params, "r"));
       ASSERT_EQ(1u, url1_params["r"].size());
-      EXPECT_EQ(base::IntToString(rollcall_ping_days),
+      EXPECT_EQ(base::NumberToString(rollcall_ping_days),
                 *url1_params["r"].begin());
       did_rollcall = true;
     }
     if (active_bit && active_ping_days != 0 && did_rollcall) {
       ASSERT_TRUE(base::ContainsKey(url1_params, "a"));
       ASSERT_EQ(1u, url1_params["a"].size());
-      EXPECT_EQ(base::IntToString(active_ping_days),
+      EXPECT_EQ(base::NumberToString(active_ping_days),
                 *url1_params["a"].begin());
     }
 

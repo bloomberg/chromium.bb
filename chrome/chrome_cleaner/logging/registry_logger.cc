@@ -158,7 +158,7 @@ void RegistryLogger::WriteScanTime(UwSId pup_id,
     return;
 
   int64_t scan_time_serialized = scan_time.InMicroseconds();
-  scan_times_key_.WriteValue(base::UintToString16(pup_id).c_str(),
+  scan_times_key_.WriteValue(base::NumberToString16(pup_id).c_str(),
                              &scan_time_serialized,
                              sizeof(scan_time_serialized), REG_QWORD);
 }
@@ -316,7 +316,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
 bool RegistryLogger::RecordFoundPUPs(const std::vector<UwSId>& pups_to_store) {
   base::string16 multi_sz_value;
   for (UwSId pup_to_store : pups_to_store) {
-    multi_sz_value += base::UintToString16(pup_to_store);
+    multi_sz_value += base::NumberToString16(pup_to_store);
     multi_sz_value += kMultiSzSeparator;
   }
   multi_sz_value += kMultiSzSeparator;

@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
             "var image = document.createElement('img'); "
             "document.body.appendChild(image); image.src = '")
             .append(kImagePrefix)
-            .append(base::IntToString(i))
+            .append(base::NumberToString(i))
             .append(".png';");
     EXPECT_TRUE(content::ExecuteScript(contents(), create_image_script));
   }
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
               "var image = document.createElement('img'); "
               "document.body.appendChild(image); image.src = '")
               .append(GetURL(std::string(kImagePrefix)
-                                 .append(base::IntToString(++j))
+                                 .append(base::NumberToString(++j))
                                  .append(".png';"))
                           .spec());
 

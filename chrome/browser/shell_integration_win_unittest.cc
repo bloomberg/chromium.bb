@@ -84,7 +84,7 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
       base::win::ShortcutProperties* shortcut_properties) {
     ShortcutTestObject shortcut_test_object;
     base::FilePath shortcut_path = temp_dir_.GetPath().Append(
-        L"Shortcut " + base::IntToString16(shortcuts_.size()) +
+        L"Shortcut " + base::NumberToString16(shortcuts_.size()) +
         installer::kLnkExt);
     shortcut_test_object.path = shortcut_path;
     shortcut_test_object.properties = *shortcut_properties;

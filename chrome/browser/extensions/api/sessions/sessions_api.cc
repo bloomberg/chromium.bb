@@ -146,7 +146,7 @@ api::tabs::Tab SessionsGetRecentlyClosedFunction::CreateTabModel(
     const sessions::TabRestoreService::Tab& tab,
     bool active) {
   return CreateTabModelHelper(tab.navigations[tab.current_navigation_index],
-                              base::IntToString(tab.id.id()),
+                              base::NumberToString(tab.id.id()),
                               tab.tabstrip_index, tab.pinned, active,
                               extension());
 }
@@ -162,7 +162,7 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
         CreateTabModel(*tab, tab->tabstrip_index == window.selected_tab_index));
 
   return CreateWindowModelHelper(
-      std::move(tabs), base::IntToString(window.id.id()),
+      std::move(tabs), base::NumberToString(window.id.id()),
       api::windows::WINDOW_TYPE_NORMAL, api::windows::WINDOW_STATE_NORMAL);
 }
 

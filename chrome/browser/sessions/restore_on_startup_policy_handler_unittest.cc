@@ -82,7 +82,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_UnknownValue) {
   ASSERT_EQ(1U, errors().size());
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_OUT_OF_RANGE_ERROR,
-                base::ASCIIToUTF16(base::IntToString(impossible_value))),
+                base::ASCIIToUTF16(base::NumberToString(impossible_value))),
             errors().begin()->second);
 }
 

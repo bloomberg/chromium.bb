@@ -265,7 +265,7 @@ TEST_F(FeatureTrackerParamsTest, TestSessionTimeWithInvalidFieldTrialValue) {
 TEST_F(FeatureTrackerParamsTest, TestIsNewUser_DefaultTime) {
   // Setting the experiment timestamp equal to the first run sentinel timestamp.
   std::map<std::string, std::string> new_tab_params;
-  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+  new_tab_params["x_date_released_in_seconds"] = base::NumberToString(
       first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
@@ -282,7 +282,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_DefaultTime) {
   // Setting the experiment timestamp equal to one second older than what is
   // considered a new user.
   std::map<std::string, std::string> new_tab_params;
-  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+  new_tab_params["x_date_released_in_seconds"] = base::NumberToString(
       first_run::GetFirstRunSentinelCreationTime().ToDoubleT() +
       base::TimeDelta::FromHours(24).InSeconds() + 1);
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
@@ -303,7 +303,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNewUser_CustomTime) {
 
   // Setting the experiment timestamp equal to the limit of what is considered a
   // new user.
-  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+  new_tab_params["x_date_released_in_seconds"] = base::NumberToString(
       first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
@@ -323,7 +323,7 @@ TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_CustomTime) {
 
   // Setting the experiment timestamp equal to one second older than what is
   // considered a new user.
-  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+  new_tab_params["x_date_released_in_seconds"] = base::NumberToString(
       first_run::GetFirstRunSentinelCreationTime().ToDoubleT() +
       base::TimeDelta::FromHours(28).InSeconds() + 1);
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);

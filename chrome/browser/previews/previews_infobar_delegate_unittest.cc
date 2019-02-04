@@ -585,7 +585,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   TestStalePreviews(
       staleness_in_minutes, false /* is_reload */,
       l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-                                 base::IntToString16(staleness_in_minutes)),
+                                 base::NumberToString16(staleness_in_minutes)),
       PreviewsUITabHelper::PreviewsStalePreviewTimestamp::kTimestampShown);
 }
 
@@ -612,7 +612,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   TestStalePreviews(
       staleness_in_hours * 60, false /* is_reload */,
       l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS,
-                                 base::IntToString16(staleness_in_hours)),
+                                 base::NumberToString16(staleness_in_hours)),
       PreviewsUITabHelper::PreviewsStalePreviewTimestamp::kTimestampShown);
 }
 
@@ -626,7 +626,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   TestStalePreviews(
       2, false /* is_reload */,
       l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-                                 base::IntToString16(2)),
+                                 base::NumberToString16(2)),
       PreviewsUITabHelper::PreviewsStalePreviewTimestamp::kTimestampShown);
 
   TestStalePreviews(6, false /* is_reload */, base::string16(),
@@ -661,7 +661,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest,
   TestStalePreviews(
       staleness_in_minutes, false /* is_reload */,
       l10n_util::GetStringFUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_MINUTES,
-                                 base::IntToString16(staleness_in_minutes)),
+                                 base::NumberToString16(staleness_in_minutes)),
       PreviewsUITabHelper::PreviewsStalePreviewTimestamp::kTimestampShown);
 
   staleness_in_minutes = 1;

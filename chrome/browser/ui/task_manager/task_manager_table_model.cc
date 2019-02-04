@@ -187,13 +187,13 @@ class TaskManagerValuesStringifier {
     if (nacl_port == nacl::kGdbDebugStubPortUnknown)
       return unknown_string_;
 
-    return base::IntToString16(nacl_port);
+    return base::NumberToString16(nacl_port);
   }
 
   base::string16 GetWindowsHandlesText(int64_t current, int64_t peak) {
     return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
-                                      base::Int64ToString16(current),
-                                      base::Int64ToString16(peak));
+                                      base::NumberToString16(current),
+                                      base::NumberToString16(peak));
   }
 
   base::string16 GetNetworkUsageText(int64_t network_usage) {
@@ -209,7 +209,7 @@ class TaskManagerValuesStringifier {
   }
 
   base::string16 GetProcessIdText(base::ProcessId proc_id) {
-    return base::IntToString16(proc_id);
+    return base::NumberToString16(proc_id);
   }
 
   base::string16 FormatAllocatedAndUsedMemory(int64_t allocated, int64_t used) {
@@ -227,7 +227,7 @@ class TaskManagerValuesStringifier {
   base::string16 GetKeepaliveCountText(int keepalive_count) const {
     if (keepalive_count < 0)
       return n_a_string();
-    return base::IntToString16(keepalive_count);
+    return base::NumberToString16(keepalive_count);
   }
 
   const base::string16& n_a_string() const { return n_a_string_; }

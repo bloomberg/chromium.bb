@@ -302,7 +302,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {
-    builder->Add("pinKeyboard" + base::IntToString(j),
+    builder->Add("pinKeyboard" + base::NumberToString(j),
                  base::FormatNumber(int64_t{j}));
   }
 
@@ -1497,7 +1497,7 @@ void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
   const std::string description = base::StringPrintf(
       "Auto generated feedback for http://crbug.com/547857.\n"
       "(uniquifier:%s)",
-      base::Int64ToString(base::Time::Now().ToInternalValue()).c_str());
+      base::NumberToString(base::Time::Now().ToInternalValue()).c_str());
 
   login_feedback_ =
       std::make_unique<LoginFeedback>(Profile::FromWebUI(web_ui()));

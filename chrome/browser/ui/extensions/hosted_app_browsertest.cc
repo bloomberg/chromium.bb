@@ -151,7 +151,7 @@ void NavigateToURLAndWait(Browser* browser,
           web_contents->GetInterstitialPage();
       ASSERT_TRUE(interstitial);
       interstitial->GetDelegateForTesting()->CommandReceived(
-          base::IntToString(security_interstitials::CMD_PROCEED));
+          base::NumberToString(security_interstitials::CMD_PROCEED));
     }
     observer.Wait();
   }

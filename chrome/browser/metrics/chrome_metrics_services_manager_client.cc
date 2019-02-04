@@ -81,7 +81,7 @@ void AppendSamplingTrialGroup(const std::string& group_name,
                               int rate,
                               base::FieldTrial* trial) {
   std::map<std::string, std::string> params = {
-      {kRateParamName, base::IntToString(rate)}};
+      {kRateParamName, base::NumberToString(rate)}};
   variations::AssociateVariationParams(trial->trial_name(), group_name, params);
   trial->AppendGroup(group_name, rate);
 }

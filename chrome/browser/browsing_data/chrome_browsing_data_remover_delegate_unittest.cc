@@ -2633,8 +2633,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   // Add a bookmark with a visited timestamp before the deletion interval.
   bookmarks::BookmarkNode::MetaInfoMap meta_info = {
       {"last_visited",
-       base::Int64ToString((delete_begin - base::TimeDelta::FromSeconds(1))
-                               .ToInternalValue())}};
+       base::NumberToString((delete_begin - base::TimeDelta::FromSeconds(1))
+                                .ToInternalValue())}};
   bookmark_model->AddURLWithCreationTimeAndMetaInfo(
       bookmark_model->mobile_node(), 0, base::ASCIIToUTF16("my title"),
       GURL("http://foo-2.org/"), delete_begin - base::TimeDelta::FromDays(1),

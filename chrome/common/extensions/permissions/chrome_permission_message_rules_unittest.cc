@@ -21,7 +21,7 @@ namespace {
 std::string PermissionIDsToString(const std::set<APIPermission::ID>& ids) {
   std::vector<std::string> strs;
   for (auto id : ids)
-    strs.push_back(base::IntToString(id));
+    strs.push_back(base::NumberToString(id));
   return base::JoinString(strs, " ");
 }
 

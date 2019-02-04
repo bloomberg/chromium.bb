@@ -115,11 +115,11 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     std::map<std::string, std::string> params;
     if (preconnect_origin_score_threshold.has_value()) {
       params["preconnect_origin_score_threshold"] =
-          base::IntToString(preconnect_origin_score_threshold.value());
+          base::NumberToString(preconnect_origin_score_threshold.value());
     }
     if (prefetch_url_score_threshold.has_value()) {
       params["prefetch_url_score_threshold"] =
-          base::IntToString(prefetch_url_score_threshold.value());
+          base::NumberToString(prefetch_url_score_threshold.value());
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         blink::features::kNavigationPredictor, params);

@@ -311,7 +311,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
 
   void ConvertPageCoordToScreenCoord(WebContents* contents, gfx::Point* point) {
     ASSERT_TRUE(contents);
-    ASSERT_TRUE(content::ExecuteScript(contents,
+    ASSERT_TRUE(content::ExecuteScript(
+        contents,
         "var visiblePage = viewer.viewport.getMostVisiblePage();"
         "var visiblePageDimensions ="
         "    viewer.viewport.getPageScreenRect(visiblePage);"
@@ -319,10 +320,14 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         "var screenOffsetX = visiblePageDimensions.x - viewportPosition.x;"
         "var screenOffsetY = visiblePageDimensions.y - viewportPosition.y;"
         "var linkScreenPositionX ="
-        "    Math.floor(" + base::IntToString(point->x()) + " + screenOffsetX);"
-        "var linkScreenPositionY ="
-        "    Math.floor(" + base::IntToString(point->y()) + " +"
-        "    screenOffsetY);"));
+        "    Math.floor(" +
+            base::NumberToString(point->x()) +
+            " + screenOffsetX);"
+            "var linkScreenPositionY ="
+            "    Math.floor(" +
+            base::NumberToString(point->y()) +
+            " +"
+            "    screenOffsetY);"));
 
     int x;
     ASSERT_TRUE(content::ExecuteScriptAndExtractInt(

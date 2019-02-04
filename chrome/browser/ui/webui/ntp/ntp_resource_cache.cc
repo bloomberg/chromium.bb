@@ -113,10 +113,10 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider& theme_provider,
     int offset = GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
 
     if (alignment & ThemeProperties::ALIGN_LEFT)
-      return "left " + base::IntToString(-offset) + "px";
+      return "left " + base::NumberToString(-offset) + "px";
     else if (alignment & ThemeProperties::ALIGN_RIGHT)
-      return "right " + base::IntToString(-offset) + "px";
-    return "center " + base::IntToString(-offset) + "px";
+      return "right " + base::NumberToString(-offset) + "px";
+    return "center " + base::NumberToString(-offset) + "px";
   }
 
   return ThemeProperties::AlignmentToString(alignment);

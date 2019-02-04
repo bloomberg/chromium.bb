@@ -14,7 +14,7 @@ void FakeNotificationImageRetainer::CleanupFilesFromPrevSessions() {}
 base::FilePath FakeNotificationImageRetainer::RegisterTemporaryImage(
     const gfx::Image& image) {
   base::string16 file = base::string16(L"c:\\temp\\img") +
-                        base::IntToString16(counter_++) +
+                        base::NumberToString16(counter_++) +
                         base::string16(L".tmp");
   return base::FilePath(file);
 }

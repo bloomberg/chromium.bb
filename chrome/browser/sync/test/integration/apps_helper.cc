@@ -23,7 +23,7 @@ using sync_datatype_helper::test;
 namespace {
 
 std::string CreateFakeAppName(int index) {
-  return "fakeapp" + base::IntToString(index);
+  return "fakeapp" + base::NumberToString(index);
 }
 
 }  // namespace

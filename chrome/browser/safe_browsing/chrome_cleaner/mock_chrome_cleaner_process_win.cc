@@ -202,20 +202,21 @@ void MockChromeCleanerProcess::Options::AddSwitchesToCommandLine(
 
   if (crash_point() != CrashPoint::kNone) {
     command_line->AppendSwitchASCII(
-        kCrashPointSwitch, base::IntToString(static_cast<int>(crash_point())));
+        kCrashPointSwitch,
+        base::NumberToString(static_cast<int>(crash_point())));
   }
 
   command_line->AppendSwitchASCII(
       kRegistryKeysReportingSwitch,
-      base::IntToString(static_cast<int>(registry_keys_reporting())));
+      base::NumberToString(static_cast<int>(registry_keys_reporting())));
   command_line->AppendSwitchASCII(
       kExtensionsReportingSwitch,
-      base::IntToString(static_cast<int>(extensions_reporting())));
+      base::NumberToString(static_cast<int>(extensions_reporting())));
 
   if (expected_user_response() != PromptAcceptance::UNSPECIFIED) {
     command_line->AppendSwitchASCII(
         kExpectedUserResponseSwitch,
-        base::IntToString(static_cast<int>(expected_user_response())));
+        base::NumberToString(static_cast<int>(expected_user_response())));
   }
 }
 

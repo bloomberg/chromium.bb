@@ -2150,14 +2150,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   std::vector<AutofillProfile> profiles;
   for (int i = 0; i < kNumProfiles; i++) {
     AutofillProfile profile;
-    base::string16 name(base::IntToString16(i));
+    base::string16 name(base::NumberToString16(i));
     base::string16 email(name + ASCIIToUTF16("@example.com"));
-    base::string16 street = ASCIIToUTF16(
-        base::IntToString(base::RandInt(0, 10000)) + " " +
-        streets[base::RandInt(0, streets.size() - 1)]);
+    base::string16 street =
+        ASCIIToUTF16(base::NumberToString(base::RandInt(0, 10000)) + " " +
+                     streets[base::RandInt(0, streets.size() - 1)]);
     base::string16 city =
         ASCIIToUTF16(cities[base::RandInt(0, cities.size() - 1)]);
-    base::string16 zip(base::IntToString16(base::RandInt(0, 10000)));
+    base::string16 zip(base::NumberToString16(base::RandInt(0, 10000)));
     profile.SetRawInfo(NAME_FIRST, name);
     profile.SetRawInfo(EMAIL_ADDRESS, email);
     profile.SetRawInfo(ADDRESS_HOME_LINE1, street);

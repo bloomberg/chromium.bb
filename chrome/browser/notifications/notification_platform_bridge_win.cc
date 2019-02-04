@@ -679,7 +679,7 @@ class NotificationPlatformBridgeWinImpl
                         bool incognito) {
     std::string payload = base::StringPrintf(
         "%s|%s|%d", notification_id.c_str(), profile_id.c_str(), incognito);
-    return base::UintToString16(base::Hash(payload));
+    return base::NumberToString16(base::Hash(payload));
   }
 
   HRESULT OnDismissed(

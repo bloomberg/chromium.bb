@@ -98,7 +98,7 @@ class ContentCapabilitiesTest : public extensions::ExtensionApiTest {
   }
 
   GURL GetTestURLFor(const std::string& host) {
-    std::string port = base::UintToString(embedded_test_server()->port());
+    std::string port = base::NumberToString(embedded_test_server()->port());
     GURL::Replacements replacements;
     replacements.SetHostStr(host);
     replacements.SetPortStr(port);

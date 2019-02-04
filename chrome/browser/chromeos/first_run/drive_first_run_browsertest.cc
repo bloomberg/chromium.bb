@@ -111,7 +111,7 @@ void DriveFirstRunTest::InitTestServer(const std::string& directory) {
   // Configure the endpoint to use the test server's port.
   const GURL url(kTestEndpointUrl);
   GURL::Replacements replacements;
-  std::string port(base::IntToString(embedded_test_server()->port()));
+  std::string port(base::NumberToString(embedded_test_server()->port()));
   replacements.SetPortStr(port);
   endpoint_url_ = url.ReplaceComponents(replacements).spec();
   controller_->SetAppInfoForTest(kTestAppId, endpoint_url_);

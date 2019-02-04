@@ -317,8 +317,7 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
                               const std::string& hostname,
                               int pid) {
   base::string16 error = l10n_util::GetStringFUTF16(
-      IDS_PROFILE_IN_USE_POSIX,
-      base::IntToString16(pid),
+      IDS_PROFILE_IN_USE_POSIX, base::NumberToString16(pid),
       base::ASCIIToUTF16(hostname));
   LOG(ERROR) << error;
 

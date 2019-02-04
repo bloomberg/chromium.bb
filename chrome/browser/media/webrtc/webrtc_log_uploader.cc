@@ -671,10 +671,11 @@ void WebRtcLogUploader::NotifyUploadDoneAndLogStats(
         base::UmaHistogramSparse("WebRtcTextLogging.UploadFailureNetErrorCode",
                                  network_error_code);
       }
-      error_message = base::StrCat(
-          {"Uploading failed, response code: ",
-           response_code.has_value() ? base::IntToString(response_code.value())
-                                     : "<no value>"});
+      error_message =
+          base::StrCat({"Uploading failed, response code: ",
+                        response_code.has_value()
+                            ? base::NumberToString(response_code.value())
+                            : "<no value>"});
     }
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(upload_done_data.callback, success,

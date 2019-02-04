@@ -44,7 +44,7 @@ base::Process LongRunningProcess(base::CommandLine* cmd) {
           base::WaitableEvent::InitialState::NOT_SIGNALED);
   command_line.AppendSwitchNative(
       chrome_cleaner::kInitDoneNotifierSwitch,
-      base::UintToString16(
+      base::NumberToString16(
           base::win::HandleToUint32(init_done_event->handle())));
 
   if (cmd)

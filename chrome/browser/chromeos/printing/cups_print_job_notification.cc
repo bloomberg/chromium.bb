@@ -223,7 +223,7 @@ void CupsPrintJobNotification::UpdateNotificationBodyMessage() {
   if (print_job_->total_page_number() > 1) {
     message = l10n_util::GetStringFUTF16(
         IDS_PRINT_JOB_NOTIFICATION_MESSAGE,
-        base::IntToString16(print_job_->total_page_number()),
+        base::NumberToString16(print_job_->total_page_number()),
         base::UTF8ToUTF16(print_job_->printer().display_name()));
   } else {
     message = l10n_util::GetStringFUTF16(

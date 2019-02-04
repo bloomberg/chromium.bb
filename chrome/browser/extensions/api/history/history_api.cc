@@ -64,7 +64,7 @@ double MilliSecondsFromTime(const base::Time& time) {
 HistoryItem GetHistoryItem(const history::URLRow& row) {
   HistoryItem history_item;
 
-  history_item.id = base::Int64ToString(row.id());
+  history_item.id = base::NumberToString(row.id());
   history_item.url.reset(new std::string(row.url().spec()));
   history_item.title.reset(new std::string(base::UTF16ToUTF8(row.title())));
   history_item.last_visit_time.reset(
@@ -78,10 +78,10 @@ HistoryItem GetHistoryItem(const history::URLRow& row) {
 VisitItem GetVisitItem(const history::VisitRow& row) {
   VisitItem visit_item;
 
-  visit_item.id = base::Int64ToString(row.url_id);
-  visit_item.visit_id = base::Int64ToString(row.visit_id);
+  visit_item.id = base::NumberToString(row.url_id);
+  visit_item.visit_id = base::NumberToString(row.visit_id);
   visit_item.visit_time.reset(new double(MilliSecondsFromTime(row.visit_time)));
-  visit_item.referring_visit_id = base::Int64ToString(row.referring_visit);
+  visit_item.referring_visit_id = base::NumberToString(row.referring_visit);
 
   api::history::TransitionType transition = api::history::TRANSITION_TYPE_LINK;
   switch (row.transition & ui::PAGE_TRANSITION_CORE_MASK) {

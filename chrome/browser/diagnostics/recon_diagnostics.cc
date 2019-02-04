@@ -65,7 +65,7 @@ class DiskSpaceTest : public DiagnosticsTest {
       RecordFailure(DIAG_RECON_UNABLE_TO_QUERY, "Unable to query free space");
       return true;
     }
-    std::string printable_size = base::Int64ToString(disk_space);
+    std::string printable_size = base::NumberToString(disk_space);
     if (disk_space < 80 * kOneMegabyte) {
       RecordFailure(DIAG_RECON_LOW_DISK_SPACE,
                     "Low disk space: " + printable_size);
@@ -161,7 +161,7 @@ class JSONTest : public DiagnosticsTest {
         json.Deserialize(&error_code, &error_message));
     if (base::JSONReader::JSON_NO_ERROR != error_code) {
       if (error_message.empty()) {
-        error_message = "Parse error " + base::IntToString(error_code);
+        error_message = "Parse error " + base::NumberToString(error_code);
       }
       RecordFailure(DIAG_RECON_PARSE_ERROR, error_message);
       return true;
@@ -253,7 +253,7 @@ class PathTest : public DiagnosticsTest {
                         base::UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
-    std::string printable_size = base::Int64ToString(dir_or_file_size);
+    std::string printable_size = base::NumberToString(dir_or_file_size);
 
     if (path_info_.max_size > 0) {
       if (dir_or_file_size > path_info_.max_size) {

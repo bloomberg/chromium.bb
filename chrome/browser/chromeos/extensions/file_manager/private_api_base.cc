@@ -33,11 +33,11 @@ void LoggedAsyncExtensionFunction::OnResponded() {
     if (log_on_completion_) {
       logger->Log(logging::LOG_INFO, "%s[%d] %s. (elapsed time: %sms)", name(),
                   request_id(), success ? "succeeded" : "failed",
-                  base::Int64ToString(elapsed).c_str());
+                  base::NumberToString(elapsed).c_str());
     } else if (elapsed >= kSlowOperationThresholdMs) {
       logger->Log(logging::LOG_WARNING,
                   "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %sms)",
-                  name(), request_id(), base::Int64ToString(elapsed).c_str());
+                  name(), request_id(), base::NumberToString(elapsed).c_str());
     }
   }
   ChromeAsyncExtensionFunction::OnResponded();

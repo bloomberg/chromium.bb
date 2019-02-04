@@ -78,7 +78,7 @@ namespace GetLogsDirectory = api::webrtc_logging_private::GetLogsDirectory;
 namespace {
 std::string HashIdWithOrigin(const std::string& security_origin,
                              const std::string& log_id) {
-  return base::UintToString(base::Hash(security_origin + log_id));
+  return base::NumberToString(base::Hash(security_origin + log_id));
 }
 }  // namespace
 
@@ -154,7 +154,7 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
                                     nullptr, &contents, nullptr)) {
     SetError(extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
-        base::IntToString(tab_id)));
+        base::NumberToString(tab_id)));
     return nullptr;
   }
   if (!contents) {

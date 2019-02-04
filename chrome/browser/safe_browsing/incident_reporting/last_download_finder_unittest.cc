@@ -166,7 +166,7 @@ class LastDownloadFinderTest : public testing::Test {
 
   TestingProfile* CreateProfile(SafeBrowsingDisposition safe_browsing_opt_in) {
     std::string profile_name("profile");
-    profile_name.append(base::IntToString(++profile_number_));
+    profile_name.append(base::NumberToString(++profile_number_));
 
     // Set up keyed service factories.
     TestingProfile::TestingFactories factories;

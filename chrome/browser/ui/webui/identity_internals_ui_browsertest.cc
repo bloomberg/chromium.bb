@@ -23,7 +23,7 @@ IdentityInternalsUIBrowserTest::~IdentityInternalsUIBrowserTest() {}
 
 void IdentityInternalsUIBrowserTest::SetupTokenCache(int number_of_tokens) {
   for (int number = 0; number < number_of_tokens; ++number) {
-    const std::string token_number = base::IntToString(number);
+    const std::string token_number = base::NumberToString(number);
     std::string token_id("token");
     token_id += token_number;
     std::string extension_id("extension");

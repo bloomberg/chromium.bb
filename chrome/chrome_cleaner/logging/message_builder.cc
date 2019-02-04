@@ -18,7 +18,7 @@ MessageBuilder::MessageItem::MessageItem(base::StringPiece value)
     : value_(base::UTF8ToUTF16(value.as_string())) {}
 
 MessageBuilder::MessageItem::MessageItem(int value)
-    : value_(base::IntToString16(value)) {}
+    : value_(base::NumberToString16(value)) {}
 
 MessageBuilder::ScopedIndent::ScopedIndent(MessageBuilder* builder)
     : builder_(builder) {

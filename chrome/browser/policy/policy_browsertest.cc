@@ -1203,11 +1203,11 @@ class SSLPolicyTestCommittedInterstitials
           security_interstitials::SecurityInterstitialTabHelper::
               FromWebContents(tab);
       helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
-          ->CommandReceived(base::IntToString(command));
+          ->CommandReceived(base::NumberToString(command));
       return;
     }
     tab->GetInterstitialPage()->GetDelegateForTesting()->CommandReceived(
-        base::IntToString(command));
+        base::NumberToString(command));
   }
 
  private:

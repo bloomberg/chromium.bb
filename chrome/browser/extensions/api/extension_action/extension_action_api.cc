@@ -344,7 +344,7 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
                                  include_incognito_information(), nullptr,
                                  nullptr, &contents_, nullptr);
     if (!contents_)
-      return RespondNow(Error(kNoTabError, base::IntToString(tab_id_)));
+      return RespondNow(Error(kNoTabError, base::NumberToString(tab_id_)));
   } else {
     // Only browser actions and system indicators have a default tabId.
     ActionInfo::Type action_type = extension_action_->action_type();

@@ -81,7 +81,7 @@ Browser* GetBrowserInProfileWithId(Profile* profile,
 
   if (error_message)
     *error_message = ErrorUtils::FormatErrorMessage(
-        tabs_constants::kWindowNotFoundError, base::IntToString(window_id));
+        tabs_constants::kWindowNotFoundError, base::NumberToString(window_id));
 
   return nullptr;
 }
@@ -172,7 +172,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
             &opener_browser, nullptr, &opener, nullptr)) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessage(
-            tabs_constants::kTabNotFoundError, base::IntToString(opener_id));
+            tabs_constants::kTabNotFoundError, base::NumberToString(opener_id));
       }
       return nullptr;
     }

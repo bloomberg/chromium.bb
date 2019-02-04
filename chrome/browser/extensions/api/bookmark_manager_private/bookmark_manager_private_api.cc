@@ -112,9 +112,9 @@ CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
   bookmark_manager_private::BookmarkNodeDataElement element;
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
-  element.id.reset(new std::string(base::Int64ToString(node.id())));
+  element.id.reset(new std::string(base::NumberToString(node.id())));
   element.parent_id.reset(
-      new std::string(base::Int64ToString(node.parent()->id())));
+      new std::string(base::NumberToString(node.parent()->id())));
 
   if (node.is_url())
     element.url.reset(new std::string(node.url().spec()));
@@ -244,7 +244,7 @@ void BookmarkManagerPrivateEventRouter::BookmarkMetaInfoChanged(
   DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_META_INFO_CHANGED,
                 bookmark_manager_private::OnMetaInfoChanged::kEventName,
                 bookmark_manager_private::OnMetaInfoChanged::Create(
-                    base::Int64ToString(node->id()), changes));
+                    base::NumberToString(node->id()), changes));
 }
 
 BookmarkManagerPrivateAPI::BookmarkManagerPrivateAPI(

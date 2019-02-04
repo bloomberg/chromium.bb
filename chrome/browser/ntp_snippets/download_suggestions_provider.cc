@@ -89,13 +89,13 @@ bool CompareOfflinePagesMostRecentlyPublishedFirst(
 std::string GetOfflinePagePerCategoryID(int64_t raw_offline_page_id) {
   // Raw ID is prefixed in order to avoid conflicts with asset downloads.
   return std::string(1, kOfflinePageDownloadsPrefix) +
-         base::IntToString(raw_offline_page_id);
+         base::NumberToString(raw_offline_page_id);
 }
 
 std::string GetAssetDownloadPerCategoryID(uint32_t raw_download_id) {
   // Raw ID is prefixed in order to avoid conflicts with offline page downloads.
   return std::string(1, kAssetDownloadsPrefix) +
-         base::UintToString(raw_download_id);
+         base::NumberToString(raw_download_id);
 }
 
 // Determines whether |suggestion_id| corresponds to offline page suggestion or

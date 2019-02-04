@@ -93,7 +93,7 @@ void UsbChooserDialogAndroid::OnOptionAdded(size_t index) {
 
   DCHECK_LE(index, item_id_map_.size());
   int item_id = next_item_id_++;
-  std::string item_id_str = base::IntToString(item_id);
+  std::string item_id_str = base::NumberToString(item_id);
   item_id_map_.insert(item_id_map_.begin() + index, item_id_str);
 
   base::string16 device_name = controller_->GetOption(index);

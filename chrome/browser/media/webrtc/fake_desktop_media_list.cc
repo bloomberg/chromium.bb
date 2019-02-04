@@ -23,7 +23,7 @@ void FakeDesktopMediaList::AddSourceByFullMediaID(
     content::DesktopMediaID media_id) {
   Source source;
   source.id = media_id;
-  source.name = base::Int64ToString16(media_id.id);
+  source.name = base::NumberToString16(media_id.id);
 
   sources_.push_back(source);
   observer_->OnSourceAdded(this, sources_.size() - 1);

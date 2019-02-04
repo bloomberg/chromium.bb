@@ -176,7 +176,7 @@ void InstallSignature::ToValue(base::DictionaryValue* value) const {
   value->SetString(kSaltKey, salt_base64);
   value->SetString(kSignatureKey, signature_base64);
   value->SetString(kTimestampKey,
-                   base::Int64ToString(timestamp.ToInternalValue()));
+                   base::NumberToString(timestamp.ToInternalValue()));
 }
 
 // static

@@ -75,7 +75,7 @@ std::string CreateShortcutIcon(const gfx::ImageFamily& icon_images,
     argv.push_back("user");
 
     argv.push_back("--size");
-    argv.push_back(base::IntToString(width));
+    argv.push_back(base::NumberToString(width));
 
     argv.push_back(temp_file_path.value());
     argv.push_back(icon_name);

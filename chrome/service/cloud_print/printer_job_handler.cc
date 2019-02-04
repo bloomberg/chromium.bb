@@ -732,9 +732,9 @@ void PrinterJobHandler::OnReceivePrinterCaps(
       std::string(), &post_data);
   }
   if (printer_info.printer_status != printer_info_.printer_status) {
-    net::AddMultipartValueForUpload(kPrinterStatusValue,
-        base::IntToString(printer_info.printer_status), mime_boundary,
-        std::string(), &post_data);
+    net::AddMultipartValueForUpload(
+        kPrinterStatusValue, base::NumberToString(printer_info.printer_status),
+        mime_boundary, std::string(), &post_data);
   }
 
   // Add local_settings with a current XMPP ping interval.

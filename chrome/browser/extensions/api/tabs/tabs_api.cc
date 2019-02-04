@@ -187,7 +187,7 @@ bool GetTabById(int tab_id,
 
   if (error_message) {
     *error_message = ErrorUtils::FormatErrorMessage(
-        tabs_constants::kTabNotFoundError, base::IntToString(tab_id));
+        tabs_constants::kTabNotFoundError, base::NumberToString(tab_id));
   }
 
   return false;
@@ -1242,7 +1242,7 @@ bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,
   // Make sure the index is in range.
   if (!tabstrip->ContainsIndex(index)) {
     *error = ErrorUtils::FormatErrorMessage(
-        tabs_constants::kTabIndexNotFoundError, base::IntToString(index));
+        tabs_constants::kTabIndexNotFoundError, base::NumberToString(index));
     return false;
   }
 
@@ -1341,7 +1341,8 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
       !chrome::SetTabAudioMuted(contents, *params->update_properties.muted,
                                 TabMutedReason::EXTENSION, extension()->id())) {
     return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-        tabs_constants::kCannotUpdateMuteCaptured, base::IntToString(tab_id))));
+        tabs_constants::kCannotUpdateMuteCaptured,
+        base::NumberToString(tab_id))));
   }
 
   if (params->update_properties.opener_tab_id.get()) {
@@ -1353,7 +1354,7 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
                                       include_incognito_information(), nullptr,
                                       nullptr, &opener_contents, nullptr)) {
       return RespondNow(Error(ErrorUtils::FormatErrorMessage(
-          tabs_constants::kTabNotFoundError, base::IntToString(opener_id))));
+          tabs_constants::kTabNotFoundError, base::NumberToString(opener_id))));
     }
 
     if (tab_strip->GetIndexOfWebContents(opener_contents) ==
@@ -1541,7 +1542,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
           source_tab_strip->DetachWebContentsAt(tab_index);
       if (!web_contents) {
         *error = ErrorUtils::FormatErrorMessage(
-            tabs_constants::kTabNotFoundError, base::IntToString(tab_id));
+            tabs_constants::kTabNotFoundError, base::NumberToString(tab_id));
         return false;
       }
 
@@ -1945,9 +1946,9 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
   content::RenderFrameHost* rfh =
       ExtensionApiFrameIdMap::GetRenderFrameHostById(contents, frame_id);
   if (!rfh) {
-    *error = ErrorUtils::FormatErrorMessage(tabs_constants::kFrameNotFoundError,
-                                            base::IntToString(frame_id),
-                                            base::IntToString(execute_tab_id_));
+    *error = ErrorUtils::FormatErrorMessage(
+        tabs_constants::kFrameNotFoundError, base::NumberToString(frame_id),
+        base::NumberToString(execute_tab_id_));
     return false;
   }
 
@@ -2173,11 +2174,11 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
   }
 
   // Return appropriate error message otherwise.
-  return RespondNow(Error(
-      params->tab_id
-          ? ErrorUtils::FormatErrorMessage(tabs_constants::kCannotDiscardTab,
-                                           base::IntToString(*params->tab_id))
-          : tabs_constants::kCannotFindTabToDiscard));
+  return RespondNow(Error(params->tab_id
+                              ? ErrorUtils::FormatErrorMessage(
+                                    tabs_constants::kCannotDiscardTab,
+                                    base::NumberToString(*params->tab_id))
+                              : tabs_constants::kCannotFindTabToDiscard));
 }
 
 TabsDiscardFunction::TabsDiscardFunction() {}

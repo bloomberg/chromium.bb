@@ -1427,7 +1427,7 @@ static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   // permission can't apply to sync.
   std::unique_ptr<base::Value> kilobyte = util::CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
-    sync_storage->Set(ValueStore::DEFAULTS, base::IntToString(i), *kilobyte);
+    sync_storage->Set(ValueStore::DEFAULTS, base::NumberToString(i), *kilobyte);
   }
 
   EXPECT_FALSE(sync_storage->Set(ValueStore::DEFAULTS, "WillError", *kilobyte)
@@ -1439,7 +1439,8 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   // Local storage should never run out.
   std::unique_ptr<base::Value> megabyte = util::CreateMegabyte();
   for (int i = 0; i < 7; ++i) {
-    local_storage->Set(ValueStore::DEFAULTS, base::IntToString(i), *megabyte);
+    local_storage->Set(ValueStore::DEFAULTS, base::NumberToString(i),
+                       *megabyte);
   }
 
   EXPECT_TRUE(local_storage->Set(ValueStore::DEFAULTS, "WontError", *megabyte)

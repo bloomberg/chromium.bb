@@ -392,8 +392,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->AddURL(f1, 2, ASCIIToUTF16("f1b"), GURL(test_base + "f1b"));
     if (big_menu) {
       for (int i = 1; i <= 100; ++i) {
-        model_->AddURL(f1, i + 1, ASCIIToUTF16("f") + base::IntToString16(i),
-                       GURL(test_base + "f" + base::IntToString(i)));
+        model_->AddURL(f1, i + 1, ASCIIToUTF16("f") + base::NumberToString16(i),
+                       GURL(test_base + "f" + base::NumberToString(i)));
       }
     }
     model_->AddURL(bb_node, 1, ASCIIToUTF16("a"), GURL(test_base + "a"));

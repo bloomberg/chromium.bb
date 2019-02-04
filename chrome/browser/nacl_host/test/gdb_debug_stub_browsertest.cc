@@ -45,7 +45,7 @@ void NaClGdbDebugStubTest::StartTestScript(base::Process* test_process,
   base::PathService::Get(chrome::DIR_TEST_DATA, &script);
   script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
   cmd.AppendArgPath(script);
-  cmd.AppendArg(base::IntToString(debug_stub_port));
+  cmd.AppendArg(base::NumberToString(debug_stub_port));
   cmd.AppendArg(test_name);
   LOG(INFO) << cmd.GetCommandLineString();
   *test_process = base::LaunchProcess(cmd, base::LaunchOptions());

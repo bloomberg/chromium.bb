@@ -126,7 +126,7 @@ void AvatarToolbarButton::UpdateText() {
     const int incognito_window_count =
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
     if (incognito_window_count > 1) {
-      text = base::IntToString16(incognito_window_count);
+      text = base::NumberToString16(incognito_window_count);
       if (GetThemeProvider()) {
         color = GetThemeProvider()->GetColor(
             ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);

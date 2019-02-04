@@ -45,7 +45,7 @@
 namespace {
 
 std::string GetErrorCodePermissionDenied() {
-  return base::IntToString(static_cast<int>(
+  return base::NumberToString(static_cast<int>(
       device::mojom::Geoposition::ErrorCode::PERMISSION_DENIED));
 }
 

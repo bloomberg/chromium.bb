@@ -23,7 +23,7 @@ namespace {
 
 // Make a name to pass to an extension helper.
 std::string MakeName(int index) {
-  return "faketheme" + base::IntToString(index);
+  return "faketheme" + base::NumberToString(index);
 }
 
 ThemeService* GetThemeService(Profile* profile) {

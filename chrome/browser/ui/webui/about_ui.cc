@@ -508,7 +508,7 @@ void AppendHeader(std::string* output, int refresh,
   output->append("<meta charset='utf-8'>\n");
   if (refresh > 0) {
     output->append("<meta http-equiv='refresh' content='");
-    output->append(base::IntToString(refresh));
+    output->append(base::NumberToString(refresh));
     output->append("'/>\n");
   }
 }

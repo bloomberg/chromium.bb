@@ -259,8 +259,8 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptDataSavings) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   std::map<std::string, std::string> parameters = {
-      {"NoScriptInflationPercent", base::IntToString(inflation)},
-      {"NoScriptInflationBytes", base::IntToString(constant_savings)}};
+      {"NoScriptInflationPercent", base::NumberToString(inflation)},
+      {"NoScriptInflationBytes", base::NumberToString(constant_savings)}};
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       previews::features::kNoScriptPreviews, parameters);
 
@@ -297,9 +297,9 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsDataSavings) {
   base::test::ScopedFeatureList scoped_feature_list;
 
   std::map<std::string, std::string> parameters = {
-      {"ResourceLoadingHintsInflationPercent", base::IntToString(inflation)},
+      {"ResourceLoadingHintsInflationPercent", base::NumberToString(inflation)},
       {"ResourceLoadingHintsInflationBytes",
-       base::IntToString(constant_savings)}};
+       base::NumberToString(constant_savings)}};
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       previews::features::kResourceLoadingHints, parameters);
 

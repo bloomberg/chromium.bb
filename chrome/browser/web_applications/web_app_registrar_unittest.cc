@@ -22,7 +22,7 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
   Registry registry;
 
   for (int i = 0; i < num_apps; ++i) {
-    const auto url = base_url + base::IntToString(i);
+    const auto url = base_url + base::NumberToString(i);
     const AppId app_id = GenerateAppIdFromURL(GURL(url));
     auto web_app = std::make_unique<WebApp>(app_id);
     registry.emplace(app_id, std::move(web_app));

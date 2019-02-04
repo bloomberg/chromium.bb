@@ -98,7 +98,7 @@ void OobeDisplayChooser::MoveToTouchDisplay() {
       auto config_properties = ash::mojom::DisplayConfigProperties::New();
       config_properties->set_primary = true;
       cros_display_config_ptr_->SetDisplayProperties(
-          base::Int64ToString(device.target_display_id),
+          base::NumberToString(device.target_display_id),
           std::move(config_properties), base::DoNothing());
       break;
     }

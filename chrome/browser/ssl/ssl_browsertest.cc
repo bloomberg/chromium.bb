@@ -642,7 +642,7 @@ class SSLUITestBase : public InProcessBrowserTest,
       WebContents* tab,
       security_interstitials::SecurityInterstitialCommand command) {
     tab->GetInterstitialPage()->GetDelegateForTesting()->CommandReceived(
-        base::IntToString(command));
+        base::NumberToString(command));
   }
 
   network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
@@ -3948,7 +3948,7 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
             tab);
     helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
         ->CommandReceived(
-            base::IntToString(security_interstitials::CMD_PROCEED));
+            base::NumberToString(security_interstitials::CMD_PROCEED));
     nav_observer.Wait();
   } else {
     ProceedThroughInterstitial(tab);

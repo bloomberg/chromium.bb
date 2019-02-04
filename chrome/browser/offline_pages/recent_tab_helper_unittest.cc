@@ -288,7 +288,7 @@ void RecentTabHelperTest::NavigateAndCommitPost(const GURL& url) {
 ClientId RecentTabHelperTest::NewDownloadClientId() {
   static int counter = 0;
   return ClientId(kDownloadNamespace,
-                  std::string("id") + base::IntToString(++counter));
+                  std::string("id") + base::NumberToString(++counter));
 }
 
 // Checks the test setup.

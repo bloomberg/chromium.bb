@@ -389,7 +389,7 @@ TEST(LoggingServiceUtilTest, GetCleanerStartupFromCommandLine) {
        flag_value <= ChromeCleanerReport::CleanerStartup_MAX; ++flag_value) {
     command_line.InitFromArgv(command_line.argv());
     command_line.AppendSwitchASCII(kChromePromptSwitch,
-                                   base::IntToString(flag_value));
+                                   base::NumberToString(flag_value));
     if (flag_value == ChromeCleanerReport::CLEANER_STARTUP_UNSPECIFIED ||
         flag_value == ChromeCleanerReport::CLEANER_STARTUP_NOT_PROMPTED) {
       EXPECT_EQ(ChromeCleanerReport::CLEANER_STARTUP_UNKNOWN,

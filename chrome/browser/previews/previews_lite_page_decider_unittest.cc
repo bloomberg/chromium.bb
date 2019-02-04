@@ -64,7 +64,7 @@ TEST_F(PreviewsLitePageDeciderTest, TestHostBypassBlacklist) {
   manager->BlacklistBypassedHost(kHost, kOneDay);
   EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
   for (int i = 1; i <= kBlacklistDurationDays; i++) {
-    manager->BlacklistBypassedHost(kHost + base::IntToString(i),
+    manager->BlacklistBypassedHost(kHost + base::NumberToString(i),
                                    kOneDay + base::TimeDelta::FromSeconds(i));
   }
   EXPECT_FALSE(manager->HostBlacklistedFromBypass(kHost));
@@ -74,7 +74,7 @@ TEST_F(PreviewsLitePageDeciderTest, TestHostBypassBlacklist) {
   manager->BlacklistBypassedHost(kHost, kOneDay);
   EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
   for (int i = 1; i <= kBlacklistDurationDays - 1; i++) {
-    manager->BlacklistBypassedHost(kHost + base::IntToString(i),
+    manager->BlacklistBypassedHost(kHost + base::NumberToString(i),
                                    kOneDay + base::TimeDelta::FromSeconds(i));
   }
   manager->BlacklistBypassedHost(kOtherHost, kYesterday);

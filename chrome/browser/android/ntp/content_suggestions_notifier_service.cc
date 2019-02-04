@@ -153,7 +153,7 @@ class ContentSuggestionsNotifierService::NotifyingObserver
           service_->GetSuggestionsForCategory(category).size() - 1;
       text = l10n_util::GetStringFUTF16(
           IDS_NTP_NOTIFICATIONS_READ_THIS_STORY_AND_MORE,
-          suggestion->publisher_name(), base::IntToString16(extra_count));
+          suggestion->publisher_name(), base::NumberToString16(extra_count));
     } else {
       text = suggestion->publisher_name();
     }

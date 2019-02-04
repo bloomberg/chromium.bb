@@ -163,7 +163,7 @@ void CreateSmartBubbleFieldTrial() {
   using password_bubble_experiment::kSmartBubbleThresholdParam;
   std::map<std::string, std::string> params;
   params[kSmartBubbleThresholdParam] =
-      base::IntToString(kGreatDissmisalCount / 2);
+      base::NumberToString(kGreatDissmisalCount / 2);
   variations::AssociateVariationParams(kSmartBubbleExperimentName, "A", params);
   ASSERT_TRUE(
       base::FieldTrialList::CreateFieldTrial(kSmartBubbleExperimentName, "A"));

@@ -29,7 +29,7 @@ class BookmarksApiUnittest : public ExtensionServiceTestBase {
 
     const bookmarks::BookmarkNode* node = model_->AddFolder(
         model_->other_node(), 0, base::ASCIIToUTF16("Empty folder"));
-    node_id_ = base::Int64ToString(node->id());
+    node_id_ = base::NumberToString(node->id());
   }
 
   std::string node_id() const { return node_id_; }

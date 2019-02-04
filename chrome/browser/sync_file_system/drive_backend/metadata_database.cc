@@ -1659,7 +1659,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     base::FilePath path = BuildDisplayPathForTracker(tracker);
-    dict->SetString("tracker_id", base::Int64ToString(tracker_id));
+    dict->SetString("tracker_id", base::NumberToString(tracker_id));
     dict->SetString("path", path.AsUTF8Unsafe());
     dict->SetString("file_id", tracker.file_id());
     TrackerKind tracker_kind = tracker.tracker_kind();
@@ -1684,7 +1684,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
       dict->SetString("md5", details.md5());
       dict->SetString("etag", details.etag());
       dict->SetString("missing", details.missing() ? "true" : "false");
-      dict->SetString("change_id", base::Int64ToString(details.change_id()));
+      dict->SetString("change_id", base::NumberToString(details.change_id()));
     }
     trackers->Append(std::move(dict));
   }
@@ -1728,7 +1728,7 @@ std::unique_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
       dict->SetString("md5", details.md5());
       dict->SetString("etag", details.etag());
       dict->SetString("missing", details.missing() ? "true" : "false");
-      dict->SetString("change_id", base::Int64ToString(details.change_id()));
+      dict->SetString("change_id", base::NumberToString(details.change_id()));
 
       std::vector<base::StringPiece> parents;
       for (int i = 0; i < details.parent_folder_ids_size(); ++i)

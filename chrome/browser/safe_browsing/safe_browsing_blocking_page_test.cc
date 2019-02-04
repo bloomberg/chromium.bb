@@ -492,7 +492,7 @@ class SafeBrowsingBlockingPageBrowserTest
     }
     EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
               ssl_blocking_page->GetTypeForTesting());
-    ssl_blocking_page->CommandReceived(base::IntToString(
+    ssl_blocking_page->CommandReceived(base::NumberToString(
         security_interstitials::SecurityInterstitialCommand::CMD_PROCEED));
     if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
       EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
@@ -558,7 +558,7 @@ class SafeBrowsingBlockingPageBrowserTest
     ASSERT_TRUE(interstitial_page);
     ASSERT_EQ(SafeBrowsingBlockingPage::kTypeForTesting,
               interstitial_page->GetTypeForTesting());
-    interstitial_page->CommandReceived(base::IntToString(command));
+    interstitial_page->CommandReceived(base::NumberToString(command));
   }
 
   void AssertNoInterstitial(bool wait_for_delete) {

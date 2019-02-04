@@ -53,7 +53,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    std::string b = base::Int64ToString(base::Time::Now().ToInternalValue());
+    std::string b = base::NumberToString(base::Time::Now().ToInternalValue());
     TestingProfile* profile = profile_manager()->CreateTestingProfile(b);
     SessionService* session_service = new SessionService(profile);
     path_ = profile->GetPath();
@@ -619,7 +619,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
@@ -643,11 +643,11 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   ASSERT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(3U, tab->navigations.size());
-  EXPECT_TRUE(GURL(base_url + base::IntToString(2)) ==
+  EXPECT_TRUE(GURL(base_url + base::NumberToString(2)) ==
               tab->navigations[0].virtual_url());
-  EXPECT_TRUE(GURL(base_url + base::IntToString(3)) ==
+  EXPECT_TRUE(GURL(base_url + base::NumberToString(3)) ==
               tab->navigations[1].virtual_url());
-  EXPECT_TRUE(GURL(base_url + base::IntToString(4)) ==
+  EXPECT_TRUE(GURL(base_url + base::NumberToString(4)) ==
               tab->navigations[2].virtual_url());
 }
 
@@ -662,7 +662,7 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
@@ -859,7 +859,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i / 2);
     UpdateNavigation(window_id, tab_id, nav, true);
   }
@@ -872,11 +872,11 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(1U, windows[0]->tabs.size());
   EXPECT_EQ(3U, windows[0]->tabs[0]->navigations.size());
-  EXPECT_EQ(GURL(base_url + base::IntToString(1)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(1)),
             windows[0]->tabs[0]->navigations[0].virtual_url());
-  EXPECT_EQ(GURL(base_url + base::IntToString(3)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(3)),
             windows[0]->tabs[0]->navigations[1].virtual_url());
-  EXPECT_EQ(GURL(base_url + base::IntToString(4)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(4)),
             windows[0]->tabs[0]->navigations[2].virtual_url());
 }
 
@@ -889,7 +889,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   for (int i = 0; i < 5; ++i) {
     SerializedNavigationEntry nav =
         SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::IntToString(i), "a");
+            base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, true);
   }
@@ -900,7 +900,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   // Add another navigation to replace the last one.
   SerializedNavigationEntry nav =
       SerializedNavigationEntryTestHelper::CreateNavigation(
-        base_url + base::IntToString(5), "a");
+          base_url + base::NumberToString(5), "a");
   nav.set_index(4);
   UpdateNavigation(window_id, tab_id, nav, true);
 
@@ -913,7 +913,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(1U, windows[0]->tabs.size());
   ASSERT_EQ(1U, windows[0]->tabs[0]->navigations.size());
-  EXPECT_EQ(GURL(base_url + base::IntToString(5)),
+  EXPECT_EQ(GURL(base_url + base::NumberToString(5)),
             windows[0]->tabs[0]->navigations[0].virtual_url());
 }
 

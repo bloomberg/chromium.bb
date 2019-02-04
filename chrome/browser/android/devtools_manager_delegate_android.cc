@@ -181,7 +181,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHostForTab(TabAndroid* tab) {
   if (result)
     return result;
 
-  result = DevToolsAgentHost::Forward(base::IntToString(tab->GetAndroidId()),
+  result = DevToolsAgentHost::Forward(base::NumberToString(tab->GetAndroidId()),
                                       std::make_unique<TabProxyDelegate>(tab));
   tab->SetDevToolsAgentHost(result);
   return result;

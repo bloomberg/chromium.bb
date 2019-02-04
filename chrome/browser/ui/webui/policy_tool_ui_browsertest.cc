@@ -281,9 +281,9 @@ void PolicyToolUITest::CreateMultipleSessionFiles(int count) {
   base::Time initial_time = base::Time::Now();
   for (int i = 0; i < count; ++i) {
     contents.SetPath({"chromePolicies", "SessionId", "value"},
-                     base::Value(base::IntToString(i)));
+                     base::Value(base::NumberToString(i)));
     base::FilePath::StringType session_name =
-        base::FilePath::FromUTF8Unsafe(base::IntToString(i)).value();
+        base::FilePath::FromUTF8Unsafe(base::NumberToString(i)).value();
     std::string stringified_contents;
     base::JSONWriter::Write(contents, &stringified_contents);
     base::WriteFile(GetSessionPath(session_name), stringified_contents.c_str(),
@@ -642,7 +642,7 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SessionsList) {
   std::unique_ptr<base::ListValue> sessions = ExtractSessionsList();
   base::ListValue expected;
   for (int i = 4; i >= 0; --i) {
-    expected.GetList().push_back(base::Value(base::IntToString(i)));
+    expected.GetList().push_back(base::Value(base::NumberToString(i)));
   }
   EXPECT_EQ(expected, *sessions);
 }

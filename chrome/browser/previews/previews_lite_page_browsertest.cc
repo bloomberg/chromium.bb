@@ -205,7 +205,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         {"blacklisted_path_suffixes", ".mp4,.jpg"},
         {"trigger_on_localhost", "true"},
         {"navigation_timeout_milliseconds",
-         use_timeout ? base::IntToString(kTimeoutMs) : "0"},
+         use_timeout ? base::NumberToString(kTimeoutMs) : "0"},
         {"control_group", is_control ? "true" : "false"}};
 
     scoped_parameterized_feature_list_.InitAndEnableFeatureWithParameters(
@@ -420,9 +420,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpLitePageURL(PreviewsServerAction action,
                        std::string* headers = nullptr,
                        int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(action);
+    std::string query = "resp=" + base::NumberToString(action);
     if (delay_ms != 0)
-      query += "&delay_ms=" + base::IntToString(delay_ms);
+      query += "&delay_ms=" + base::NumberToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
@@ -437,9 +437,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpsLitePageURL(PreviewsServerAction action,
                         std::string* headers = nullptr,
                         int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(action);
+    std::string query = "resp=" + base::NumberToString(action);
     if (delay_ms != 0)
-      query += "&delay_ms=" + base::IntToString(delay_ms);
+      query += "&delay_ms=" + base::NumberToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
@@ -580,7 +580,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
     GURL subresource_url(
         "https://foo.litepages.googlezip.net:" +
-        base::IntToString(previews_server().EffectiveIntPort()) +
+        base::NumberToString(previews_server().EffectiveIntPort()) +
         "/subresource.png");
     std::string subresource_body = "<html><body><img src=\"" +
                                    subresource_url.spec() +

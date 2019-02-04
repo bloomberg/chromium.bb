@@ -91,7 +91,7 @@ base::string16 UpdateActiveSetupVersionWorkItem::GetUpdatedActiveSetupVersion(
       previous_value = 0;
     }
     version_components[SELECTIVE_TRIGGER] =
-        base::UintToString16(previous_value + 1);
+        base::NumberToString16(previous_value + 1);
   }
 
   return base::JoinString(version_components, L",");

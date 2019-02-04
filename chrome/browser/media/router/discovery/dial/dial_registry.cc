@@ -292,7 +292,7 @@ void DialRegistry::SendEvent() {
 
 std::string DialRegistry::NextLabel() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return base::IntToString(++label_count_);
+  return base::NumberToString(++label_count_);
 }
 
 void DialRegistry::OnDiscoveryRequest(DialService* service) {

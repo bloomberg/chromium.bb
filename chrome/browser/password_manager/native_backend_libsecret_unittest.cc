@@ -415,7 +415,7 @@ class NativeBackendLibsecretTest : public testing::Test {
     CheckUint32Attribute(item, "scheme", form.scheme);
     CheckStringAttribute(
         item, "date_synced",
-        base::Int64ToString(form.date_synced.ToInternalValue()));
+        base::NumberToString(form.date_synced.ToInternalValue()));
     CheckStringAttribute(item, "display_name", UTF16ToUTF8(form.display_name));
     CheckStringAttribute(item, "avatar_url", form.icon_url.spec());
     // We serialize unique origins as "", in order to make other systems that

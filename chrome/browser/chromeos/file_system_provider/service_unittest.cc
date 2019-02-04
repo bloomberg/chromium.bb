@@ -215,7 +215,7 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem_StressTest) {
   const size_t kMaxFileSystems = 16;
   for (size_t i = 0; i < kMaxFileSystems; ++i) {
     const std::string file_system_id =
-        std::string("test-") + base::IntToString(i);
+        std::string("test-") + base::NumberToString(i);
     EXPECT_EQ(base::File::FILE_OK,
               service_->MountFileSystem(
                   kProviderId, MountOptions(file_system_id, kDisplayName)));

@@ -303,7 +303,7 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     base::PathService::Get(chrome::DIR_TEST_DATA, &script);
     script = script.AppendASCII("nacl/debug_stub_browser_tests.py");
     cmd.AppendArgPath(script);
-    cmd.AppendArg(base::IntToString(debug_stub_port));
+    cmd.AppendArg(base::NumberToString(debug_stub_port));
     cmd.AppendArg("continue");
     LOG(INFO) << cmd.GetCommandLineString();
     *test_process = base::LaunchProcess(cmd, base::LaunchOptions());

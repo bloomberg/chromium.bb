@@ -207,7 +207,7 @@ ResultCode SpawnSandbox(SandboxSetupHooks* setup_hooks, SandboxType type) {
                                           GetCrashReporterIPCPipeName());
 
   sandbox_command_line.AppendSwitchASCII(
-      kSandboxedProcessIdSwitch, base::IntToString(static_cast<int>(type)));
+      kSandboxedProcessIdSwitch, base::NumberToString(static_cast<int>(type)));
 
   return StartSandboxTarget(sandbox_command_line, setup_hooks, type);
 }
@@ -256,7 +256,7 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
           base::WaitableEvent::InitialState::NOT_SIGNALED);
   command_line.AppendSwitchNative(
       chrome_cleaner::kInitDoneNotifierSwitch,
-      base::UintToString16(
+      base::NumberToString16(
           base::win::HandleToUint32(init_done_event->handle())));
   policy->AddHandleToShare(init_done_event->handle());
 

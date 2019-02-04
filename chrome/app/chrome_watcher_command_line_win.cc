@@ -28,7 +28,7 @@ void AppendHandleSwitch(const std::string& switch_name,
                         HANDLE handle,
                         base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
-      switch_name, base::UintToString(base::win::HandleToUint32(handle)));
+      switch_name, base::NumberToString(base::win::HandleToUint32(handle)));
 }
 
 uint32_t ReadUintSwitch(const base::CommandLine& command_line,
@@ -151,7 +151,7 @@ base::CommandLine GenerateChromeWatcherCommandLine(
   command_line.AppendSwitchASCII(switches::kProcessType,
                                  switches::kWatcherProcess);
   command_line.AppendSwitchASCII(kMainThreadIdSwitch,
-                                 base::UintToString(main_thread_id));
+                                 base::NumberToString(main_thread_id));
   AppendHandleSwitch(kOnIninitializedEventHandleSwitch, on_initialized_event,
                      &command_line);
   AppendHandleSwitch(kParentHandleSwitch, parent_process, &command_line);

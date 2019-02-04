@@ -285,7 +285,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
     EXPECT_GT(change_count, 0);
     perf_test::PrintResult(name, modifier, "resolution_changes",
-                           base::IntToString(change_count), "count", true);
+                           base::NumberToString(change_count), "count", true);
   }
 
  private:

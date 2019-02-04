@@ -147,7 +147,7 @@ TEST_F(ClientHintsTest, RttRandomized) {
   // test failing to (1/20)^20.
   for (size_t i = 0; i < 20; ++i) {
     int value = client_hints::internal::RoundRtt(
-        base::IntToString(i), base::TimeDelta::FromMilliseconds(1023));
+        base::NumberToString(i), base::TimeDelta::FromMilliseconds(1023));
     // If |value| is different than |initial_value|, it implies that RTT is
     // randomized by host. This verifies the behavior, and test can be ended.
     if (value != initial_value)
@@ -172,7 +172,7 @@ TEST_F(ClientHintsTest, DownlinkRandomized) {
   // test failing to (1/20)^20.
   for (size_t i = 0; i < 20; ++i) {
     int value =
-        client_hints::internal::RoundKbpsToMbps(base::IntToString(i), 1023);
+        client_hints::internal::RoundKbpsToMbps(base::NumberToString(i), 1023);
     // If |value| is different than |initial_value|, it implies that downlink is
     // randomized by host. This verifies the behavior, and test can be ended.
     if (value != initial_value)

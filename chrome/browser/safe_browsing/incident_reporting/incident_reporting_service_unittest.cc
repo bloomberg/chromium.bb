@@ -1299,10 +1299,10 @@ TEST_F(IncidentReportingServiceTest, UploadsWithBothDownloadTypes) {
 // Test that a profile's prune state is properly cleaned upon load.
 TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   CreateIncidentReportingService();
-  const std::string blacklist_load_type(base::IntToString(static_cast<int32_t>(
-      safe_browsing::IncidentType::OBSOLETE_BLACKLIST_LOAD)));
-  const std::string preference_type(base::IntToString(
-      static_cast<int32_t>(safe_browsing::IncidentType::TRACKED_PREFERENCE)));
+  const std::string blacklist_load_type(base::NumberToString(
+      static_cast<int>(safe_browsing::IncidentType::OBSOLETE_BLACKLIST_LOAD)));
+  const std::string preference_type(base::NumberToString(
+      static_cast<int>(safe_browsing::IncidentType::TRACKED_PREFERENCE)));
 
   // Set up a prune state dict with data to be cleared (and not).
   std::unique_ptr<base::DictionaryValue> incidents_sent(
