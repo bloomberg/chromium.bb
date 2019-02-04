@@ -131,6 +131,8 @@ jumbo_component("browser") {
     "fileapi/native_file_util.h",
     "fileapi/obfuscated_file_util.cc",
     "fileapi/obfuscated_file_util.h",
+    "fileapi/obfuscated_file_util_disk_delegate.cc",
+    "fileapi/obfuscated_file_util_disk_delegate.h",
     "fileapi/open_file_system_mode.h",
     "fileapi/plugin_private_file_system_backend.cc",
     "fileapi/plugin_private_file_system_backend.h",

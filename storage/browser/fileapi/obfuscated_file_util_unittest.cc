@@ -1579,7 +1579,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       EXPECT_TRUE(created);
     }
   }
-  enumerator.reset(ofu()->CreateOriginEnumerator());
+  enumerator = ofu()->CreateOriginEnumerator();
   EXPECT_TRUE(enumerator.get());
   std::set<GURL> origins_found;
   GURL origin_url;
