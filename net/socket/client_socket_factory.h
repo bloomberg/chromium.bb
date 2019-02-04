@@ -53,8 +53,17 @@ class NET_EXPORT ClientSocketFactory {
   // It is allowed to pass in a |transport_socket| that is not obtained from a
   // socket pool. The caller could create a ClientSocketHandle directly and call
   // set_socket() on it to set a valid StreamSocket instance.
+  //
+  // TODO(mmenke): Remove this method in favor of the one below.
   virtual std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
       std::unique_ptr<ClientSocketHandle> transport_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) = 0;
+  // Newer version of above function that does not sit on top of another socket
+  // pool.
+  virtual std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> nested_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) = 0;

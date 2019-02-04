@@ -27,6 +27,7 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_bio_adapter.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config.h"
@@ -51,9 +52,18 @@ class SSLClientSocketImpl : public SSLClientSocket,
  public:
   // Takes ownership of the transport_socket, which may already be connected.
   // The given hostname will be compared with the name(s) in the server's
-  // certificate during the SSL handshake.  ssl_config specifies the SSL
+  // certificate during the SSL handshake.  |ssl_config| specifies the SSL
   // settings.
+  // TODO(mmenke): Remove this constructor in favor of the next one.
   SSLClientSocketImpl(std::unique_ptr<ClientSocketHandle> transport_socket,
+                      const HostPortPair& host_and_port,
+                      const SSLConfig& ssl_config,
+                      const SSLClientSocketContext& context);
+  // Takes ownership of |nested_socket|, which may already be connected.
+  // The given hostname will be compared with the name(s) in the server's
+  // certificate during the SSL handshake.  |ssl_config| specifies the SSL
+  // settings.
+  SSLClientSocketImpl(std::unique_ptr<StreamSocket> nested_socket,
                       const HostPortPair& host_and_port,
                       const SSLConfig& ssl_config,
                       const SSLClientSocketContext& context);
@@ -261,7 +271,11 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // OpenSSL stuff
   bssl::UniquePtr<SSL> ssl_;
 
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
+  std::unique_ptr<StreamSocket> nested_socket_;
+  // Either |nested_socket_| or the socket owned by |client_socket_handle_|,
+  // depending on constructor used.
+  StreamSocket* stream_socket_;
   std::unique_ptr<SocketBIOAdapter> transport_adapter_;
   const HostPortPair host_and_port_;
   SSLConfig ssl_config_;

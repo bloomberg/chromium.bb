@@ -240,6 +240,16 @@ class MockClientSocketFactory : public ClientSocketFactory {
     NOTIMPLEMENTED();
     return std::unique_ptr<SSLClientSocket>();
   }
+
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> nested_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override {
+    NOTIMPLEMENTED();
+    return std::unique_ptr<SSLClientSocket>();
+  }
+
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<ClientSocketHandle> transport_socket,
       const std::string& user_agent,

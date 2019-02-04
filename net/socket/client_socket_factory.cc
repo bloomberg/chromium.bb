@@ -53,6 +53,15 @@ class DefaultClientSocketFactory : public ClientSocketFactory {
         std::move(transport_socket), host_and_port, ssl_config, context));
   }
 
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> nested_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override {
+    return std::make_unique<SSLClientSocketImpl>(
+        std::move(nested_socket), host_and_port, ssl_config, context);
+  }
+
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<ClientSocketHandle> transport_socket,
       const std::string& user_agent,

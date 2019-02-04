@@ -452,6 +452,16 @@ MockTransportClientSocketFactory::CreateSSLClientSocket(
   return std::unique_ptr<SSLClientSocket>();
 }
 
+std::unique_ptr<SSLClientSocket>
+MockTransportClientSocketFactory::CreateSSLClientSocket(
+    std::unique_ptr<StreamSocket> nested_socket,
+    const HostPortPair& host_and_port,
+    const SSLConfig& ssl_config,
+    const SSLClientSocketContext& context) {
+  NOTIMPLEMENTED();
+  return std::unique_ptr<SSLClientSocket>();
+}
+
 std::unique_ptr<ProxyClientSocket>
 MockTransportClientSocketFactory::CreateProxyClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,

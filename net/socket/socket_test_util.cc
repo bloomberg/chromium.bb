@@ -38,6 +38,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/socket/socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -791,6 +792,26 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
       std::move(transport_socket), host_and_port, ssl_config, next_ssl_data));
 }
 
+std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
+    std::unique_ptr<StreamSocket> nested_socket,
+    const HostPortPair& host_and_port,
+    const SSLConfig& ssl_config,
+    const SSLClientSocketContext& context) {
+  SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
+  if (next_ssl_data->next_protos_expected_in_ssl_config.has_value()) {
+    EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.value().size(),
+              ssl_config.alpn_protos.size());
+    EXPECT_TRUE(std::equal(
+        next_ssl_data->next_protos_expected_in_ssl_config.value().begin(),
+        next_ssl_data->next_protos_expected_in_ssl_config.value().end(),
+        ssl_config.alpn_protos.begin()));
+  }
+  EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
+  EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
+  return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
+      std::move(nested_socket), host_and_port, ssl_config, next_ssl_data));
+}
+
 std::unique_ptr<ProxyClientSocket>
 MockClientSocketFactory::CreateProxyClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
@@ -1434,7 +1455,22 @@ MockSSLClientSocket::MockSSLClientSocket(
     const SSLConfig& ssl_config,
     SSLSocketDataProvider* data)
     : net_log_(transport_socket->socket()->NetLog()),
-      transport_(std::move(transport_socket)),
+      client_socket_handle_(std::move(transport_socket)),
+      stream_socket_(client_socket_handle_->socket()),
+      data_(data),
+      weak_factory_(this) {
+  DCHECK(data_);
+  peer_addr_ = data->connect.peer_addr;
+}
+
+MockSSLClientSocket::MockSSLClientSocket(
+    std::unique_ptr<StreamSocket> nested_socket,
+    const HostPortPair& host_and_port,
+    const SSLConfig& ssl_config,
+    SSLSocketDataProvider* data)
+    : net_log_(nested_socket->NetLog()),
+      nested_socket_(std::move(nested_socket)),
+      stream_socket_(nested_socket_.get()),
       data_(data),
       weak_factory_(this) {
   DCHECK(data_);
@@ -1448,13 +1484,13 @@ MockSSLClientSocket::~MockSSLClientSocket() {
 int MockSSLClientSocket::Read(IOBuffer* buf,
                               int buf_len,
                               CompletionOnceCallback callback) {
-  return transport_->socket()->Read(buf, buf_len, std::move(callback));
+  return stream_socket_->Read(buf, buf_len, std::move(callback));
 }
 
 int MockSSLClientSocket::ReadIfReady(IOBuffer* buf,
                                      int buf_len,
                                      CompletionOnceCallback callback) {
-  return transport_->socket()->ReadIfReady(buf, buf_len, std::move(callback));
+  return stream_socket_->ReadIfReady(buf, buf_len, std::move(callback));
 }
 
 int MockSSLClientSocket::Write(
@@ -1462,16 +1498,16 @@ int MockSSLClientSocket::Write(
     int buf_len,
     CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
-  return transport_->socket()->Write(buf, buf_len, std::move(callback),
-                                     traffic_annotation);
+  return stream_socket_->Write(buf, buf_len, std::move(callback),
+                               traffic_annotation);
 }
 
 int MockSSLClientSocket::CancelReadIfReady() {
-  return transport_->socket()->CancelReadIfReady();
+  return stream_socket_->CancelReadIfReady();
 }
 
 int MockSSLClientSocket::Connect(CompletionOnceCallback callback) {
-  DCHECK(transport_->socket()->IsConnected());
+  DCHECK(stream_socket_->IsConnected());
   data_->is_connect_data_consumed = true;
   if (data_->connect.result == OK)
     connected_ = true;
@@ -1483,20 +1519,20 @@ int MockSSLClientSocket::Connect(CompletionOnceCallback callback) {
 }
 
 void MockSSLClientSocket::Disconnect() {
-  if (transport_->socket() != NULL)
-    transport_->socket()->Disconnect();
+  if (stream_socket_ != NULL)
+    stream_socket_->Disconnect();
 }
 
 bool MockSSLClientSocket::IsConnected() const {
-  return transport_->socket()->IsConnected();
+  return stream_socket_->IsConnected();
 }
 
 bool MockSSLClientSocket::IsConnectedAndIdle() const {
-  return transport_->socket()->IsConnectedAndIdle();
+  return stream_socket_->IsConnectedAndIdle();
 }
 
 bool MockSSLClientSocket::WasEverUsed() const {
-  return transport_->socket()->WasEverUsed();
+  return stream_socket_->WasEverUsed();
 }
 
 int MockSSLClientSocket::GetLocalAddress(IPEndPoint* address) const {
@@ -1505,7 +1541,7 @@ int MockSSLClientSocket::GetLocalAddress(IPEndPoint* address) const {
 }
 
 int MockSSLClientSocket::GetPeerAddress(IPEndPoint* address) const {
-  return transport_->socket()->GetPeerAddress(address);
+  return stream_socket_->GetPeerAddress(address);
 }
 
 bool MockSSLClientSocket::WasAlpnNegotiated() const {
@@ -1523,7 +1559,7 @@ bool MockSSLClientSocket::GetSSLInfo(SSLInfo* requested_ssl_info) {
 }
 
 void MockSSLClientSocket::ApplySocketTag(const SocketTag& tag) {
-  return transport_->socket()->ApplySocketTag(tag);
+  return stream_socket_->ApplySocketTag(tag);
 }
 
 const NetLogWithSource& MockSSLClientSocket::NetLog() const {
@@ -2083,7 +2119,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
           nullptr /* cert_transparency_verifier */,
           nullptr /* ct_policy_enforcer */,
           nullptr /* ssl_client_session_cache */,
-          std::string() /* ssl_session_cache_shard */,
+          std::string() /* ssl_client_session_cache */,
           nullptr /* ssl_config_service */,
           nullptr /* socket_performance_watcher_factory */,
           nullptr /* network_quality_estimator */,

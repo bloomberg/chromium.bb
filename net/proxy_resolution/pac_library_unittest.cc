@@ -261,6 +261,14 @@ class MockSocketFactory : public ClientSocketFactory {
     ADD_FAILURE() << "Called CreateSSLClientSocket()";
     return nullptr;
   }
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> nested_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override {
+    ADD_FAILURE() << "Called CreateSSLClientSocket()";
+    return nullptr;
+  }
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<ClientSocketHandle> transport_socket,
       const std::string& user_agent,

@@ -626,6 +626,11 @@ class MockClientSocketFactory : public ClientSocketFactory {
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) override;
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket> nested_socket,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      const SSLClientSocketContext& context) override;
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<ClientSocketHandle> transport_socket,
       const std::string& user_agent,
@@ -878,7 +883,12 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
 
 class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
  public:
+  // TODO(mmenke): Remove this constructor.
   MockSSLClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
+                      const HostPortPair& host_and_port,
+                      const SSLConfig& ssl_config,
+                      SSLSocketDataProvider* socket);
+  MockSSLClientSocket(std::unique_ptr<StreamSocket> nested_socket,
                       const HostPortPair& host_and_port,
                       const SSLConfig& ssl_config,
                       SSLSocketDataProvider* socket);
@@ -947,7 +957,11 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
 
   bool connected_ = false;
   NetLogWithSource net_log_;
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
+  std::unique_ptr<StreamSocket> nested_socket_;
+  // Owned by either |nested_socket_| or |client_socket_handle_|, depending on
+  // the constructor that was used.
+  StreamSocket* stream_socket_;
   SSLSocketDataProvider* data_;
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;
