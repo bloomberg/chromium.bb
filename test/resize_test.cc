@@ -374,6 +374,7 @@ class ResizeRealtimeTest
     if (video->frame() == 0) {
       encoder->Control(AV1E_SET_AQ_MODE, 3);
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
+      encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
     }
 
     if (change_bitrate_ && video->frame() == 120) {

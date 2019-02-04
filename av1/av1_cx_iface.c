@@ -167,7 +167,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // max number of tile groups
   0,                            // mtu_size
   AOM_TIMING_UNSPECIFIED,       // No picture timing signaling in bitstream
-  1,                            // frame_parallel_decoding_mode
+  0,                            // frame_parallel_decoding_mode
   1,                            // enable dual filter
   NO_AQ,                        // aq_mode
   NO_DELTA_Q,                   // deltaq_mode
