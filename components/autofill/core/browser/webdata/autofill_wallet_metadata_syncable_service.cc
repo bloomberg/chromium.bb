@@ -511,8 +511,6 @@ syncer::SyncError AutofillWalletMetadataSyncableService::ProcessSyncChanges(
     // get rid of this hack.
     DCHECK(!ignore_multiple_changed_notification_);
     ignore_multiple_changed_notification_ = true;
-    // TODO(crbug.com/915229): Remove once the investigation is over.
-    DLOG(WARNING) << this << " ProcessSyncChanges notify the PDM";
     web_data_backend_->NotifyOfMultipleAutofillChanges();
     ignore_multiple_changed_notification_ = false;
   }
@@ -541,13 +539,9 @@ void AutofillWalletMetadataSyncableService::AutofillProfileChanged(
         it->GetSpecifics().wallet_metadata();
     const AutofillProfile& local = *change.data_model();
 
-    // TODO(crbug.com/915229): Remove once the investigation is over.
-    DLOG(WARNING) << this << " AutofillProfileChanged " << local;
 
     if (!AreLocalUseStatsUpdated(remote, local) &&
         !IsLocalHasConvertedStatusUpdated(remote, local)) {
-      // TODO(crbug.com/915229): Remove once the investigation is over.
-      DLOG(WARNING) << this << " Nothing has changed, not syncing up.";
       return;
     }
 
@@ -662,8 +656,6 @@ bool AutofillWalletMetadataSyncableService::GetLocalData(
 
 bool AutofillWalletMetadataSyncableService::UpdateAddressStats(
     const AutofillProfile& profile) {
-  // TODO(crbug.com/915229): Remove once the investigation is over.
-  DLOG(WARNING) << this << " Applying change from sync " << profile;
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase())
       ->UpdateServerAddressMetadata(profile);
 }
@@ -763,8 +755,6 @@ syncer::SyncMergeResult AutofillWalletMetadataSyncableService::MergeData(
     // get rid of this hack.
     DCHECK(!ignore_multiple_changed_notification_);
     ignore_multiple_changed_notification_ = true;
-    // TODO(crbug.com/915229): Remove once the investigation is over.
-    DLOG(WARNING) << this << " MergeData notify the PDM";
     web_data_backend_->NotifyOfMultipleAutofillChanges();
     ignore_multiple_changed_notification_ = false;
   }

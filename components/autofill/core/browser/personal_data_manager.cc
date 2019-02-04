@@ -484,16 +484,12 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     }
 
     is_data_loaded_ = true;
-    // TODO(crbug.com/915229): Remove once the investigation is over.
-    DLOG(WARNING) << this << " refresh is done, notifying PersonalDataChanged";
     NotifyPersonalDataChanged();
   }
 }
 
 void PersonalDataManager::AutofillMultipleChanged() {
   has_synced_new_data_ = true;
-  // TODO(crbug.com/915229): Remove once the investigation is over.
-  DLOG(WARNING) << this << " has synced new data, refreshing";
   Refresh();
 }
 
@@ -2338,9 +2334,6 @@ void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
     UpdateCardsBillingAddressReference(guids_merge_map);
 
     // Force a reload of the profiles and cards.
-    // TODO(crbug.com/915229): Remove once the investigation is over.
-    if (has_converted_addresses)
-      DLOG(WARNING) << this << " conversion of addresses done";
   }
 }
 
@@ -2351,11 +2344,6 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
   // If the full Sync feature isn't enabled, then do NOT convert any Wallet
   // addresses to local ones.
   if (!IsSyncFeatureEnabled()) {
-    // TODO(crbug.com/915229): Remove once the investigation is over.
-    DLOG(WARNING) << this
-                  << " not converting as sync feature is not enabled, probably "
-                     "due to sync_service_ being "
-                  << sync_service_;
     return false;
   }
 
@@ -2382,8 +2370,6 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
 
       // Update the wallet addresses metadata to record the conversion.
       wallet_address->set_has_converted(true);
-      // TODO(crbug.com/915229): Remove once the investigation is over.
-      DLOG(WARNING) << this << " converting address " << *wallet_address;
       database_helper_->GetServerDatabase()->UpdateServerAddressMetadata(
           *wallet_address);
 
