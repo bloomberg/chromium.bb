@@ -222,7 +222,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   gfx::Size size_;
   gfx::ColorSpace color_space_;
   scoped_refptr<gl::GLSurface> gl_surface_;
-  unsigned int backing_framebuffer_object_ = 0;
   sk_sp<SkSurface> sk_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
   const gl::GLVersionInfo* gl_version_info_ = nullptr;
