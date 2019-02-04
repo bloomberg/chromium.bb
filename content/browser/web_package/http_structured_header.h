@@ -27,11 +27,14 @@ struct CONTENT_EXPORT ParameterisedIdentifier {
   ~ParameterisedIdentifier();
 };
 
-typedef std::vector<ParameterisedIdentifier> ParameterisedList;
+using ParameterisedList = std::vector<ParameterisedIdentifier>;
+using ListOfLists = std::vector<std::vector<std::string>>;
 
 CONTENT_EXPORT base::Optional<std::string> ParseItem(
     const base::StringPiece& str);
 CONTENT_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
+    const base::StringPiece& str);
+CONTENT_EXPORT base::Optional<ListOfLists> ParseListOfLists(
     const base::StringPiece& str);
 
 }  // namespace http_structured_header

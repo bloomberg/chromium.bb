@@ -9,6 +9,8 @@ namespace http_structured_header {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::StringPiece input(reinterpret_cast<const char*>(data), size);
+  ParseItem(input);
+  ParseListOfLists(input);
   ParseParameterisedList(input);
   return 0;
 }

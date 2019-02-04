@@ -77,6 +77,41 @@ TEST(StructuredHeaderTest, ParseItem) {
   }
 }
 
+TEST(StructuredHeaderTest, ParseListOfLists) {
+  struct TestCase {
+    const char* name;
+    const char* raw;
+    ListOfLists expected;  // empty if parse error is expected
+  } cases[] = {
+      {"basic list of lists", "1;2, 42;43", {{"1", "2"}, {"42", "43"}}},
+      {"empty list of lists", "", {}},
+      {"single item list of lists", "42", {{"42"}}},
+      {"no whitespace list of lists", "1,42", {{"1"}, {"42"}}},
+      {"no inner whitespace list of lists",
+       "1;2, 42;43",
+       {{"1", "2"}, {"42", "43"}}},
+      {"extra whitespace list of lists", "1 , 42", {{"1"}, {"42"}}},
+      {"extra inner whitespace list of lists",
+       "1 ; 2,42 ; 43",
+       {{"1", "2"}, {"42", "43"}}},
+      {"trailing comma list of lists", "1;2, 42,", {}},
+      {"trailing semicolon list of lists", "1;2, 42;43;", {}},
+      {"leading comma list of lists", ",1;2, 42", {}},
+      {"leading semicolon list of lists", ";1;2, 42;43", {}},
+      {"empty item list of lists", "1,,42", {}},
+      {"empty inner item list of lists", "1;;2,42", {}},
+  };
+  for (const auto& c : cases) {
+    base::Optional<ListOfLists> result = ParseListOfLists(c.raw);
+    if (!c.expected.empty()) {
+      EXPECT_TRUE(result.has_value()) << c.name;
+      EXPECT_EQ(*result, c.expected) << c.name;
+    } else {
+      EXPECT_FALSE(result.has_value()) << c.name;
+    }
+  }
+}
+
 inline bool operator==(const ParameterisedIdentifier& lhs,
                        const ParameterisedIdentifier& rhs) {
   return lhs.identifier == rhs.identifier && lhs.params == rhs.params;
