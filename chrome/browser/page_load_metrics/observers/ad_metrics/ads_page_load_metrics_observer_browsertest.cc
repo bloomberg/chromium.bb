@@ -12,7 +12,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -169,9 +170,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   waiter->AddMinimumCompleteResourcesExpectation(4);
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(
-      kCrossOriginHistogramId,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+  histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
+                                      FrameData::OriginStatus::kSame, 1);
 }
 
 // Test that an empty embedded ad isn't reported at all.
@@ -197,9 +197,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   waiter->Wait();
 
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(
-      kCrossOriginHistogramId,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+  histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
+                                      FrameData::OriginStatus::kSame, 1);
 }
 
 // Test that an ad with a different origin as the main page is cross origin.
@@ -224,9 +223,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
       page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kLoadEvent);
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(
-      kCrossOriginHistogramId,
-      AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+  histogram_tester.ExpectUniqueSample(kCrossOriginHistogramId,
+                                      FrameData::OriginStatus::kCross, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
@@ -259,10 +257,10 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectBucketCount(
       kAdUserActivationHistogramId,
-      AdsPageLoadMetricsObserver::UserActivationStatus::kReceivedActivation, 1);
+      FrameData::UserActivationStatus::kReceivedActivation, 1);
   histogram_tester.ExpectBucketCount(
       kAdUserActivationHistogramId,
-      AdsPageLoadMetricsObserver::UserActivationStatus::kNoActivation, 1);
+      FrameData::UserActivationStatus::kNoActivation, 1);
 }
 
 // Test that a subframe that aborts (due to doc.write) doesn't cause a crash
@@ -349,9 +347,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   waiter->AddMinimumCompleteResourcesExpectation(4);
   waiter->Wait();
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
-  histogram_tester.ExpectUniqueSample(
-      kVisibilityHistogramId,
-      AdsPageLoadMetricsObserver::AdFrameVisibility::kVisible, 1);
+  histogram_tester.ExpectUniqueSample(kVisibilityHistogramId,
+                                      FrameData::FrameVisibility::kVisible, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
@@ -366,8 +363,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   histogram_tester.ExpectUniqueSample(
-      kVisibilityHistogramId,
-      AdsPageLoadMetricsObserver::AdFrameVisibility::kDisplayNone, 1);
+      kVisibilityHistogramId, FrameData::FrameVisibility::kDisplayNone, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FramePixelSize) {

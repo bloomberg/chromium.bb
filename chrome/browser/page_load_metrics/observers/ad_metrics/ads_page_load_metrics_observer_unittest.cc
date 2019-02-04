@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 
 #include <map>
 #include <memory>
@@ -18,6 +18,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_tester.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -41,10 +42,10 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
-using content::TestNavigationThrottle;
+using content::NavigationSimulator;
 using content::RenderFrameHost;
 using content::RenderFrameHostTester;
-using content::NavigationSimulator;
+using content::TestNavigationThrottle;
 
 namespace {
 
@@ -378,9 +379,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
                        ResourceCached::NOT_CACHED, 10);
     // Trigger histograms by navigating away, then test them.
     NavigateFrame(kAdUrl, main_frame);
-    histograms.ExpectUniqueSample(
-        kCrossOriginHistogramId,
-        AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+    histograms.ExpectUniqueSample(kCrossOriginHistogramId,
+                                  FrameData::OriginStatus::kCross, 1);
   }
 
   // Add a non-ad subframe and an ad subframe and make sure the total count
@@ -395,9 +395,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
                        ResourceCached::NOT_CACHED, 10);
     // Trigger histograms by navigating away, then test them.
     NavigateFrame(kAdUrl, main_frame);
-    histograms.ExpectUniqueSample(
-        kCrossOriginHistogramId,
-        AdsPageLoadMetricsObserver::AdOriginStatus::kCross, 1);
+    histograms.ExpectUniqueSample(kCrossOriginHistogramId,
+                                  FrameData::OriginStatus::kCross, 1);
   }
 
   // Add an ad subframe in the same origin as the parent frame and make sure it
@@ -411,9 +410,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdsOriginStatusMetrics) {
                        ResourceCached::NOT_CACHED, 10);
     // Trigger histograms by navigating away, then test them.
     NavigateFrame(kAdUrl, main_frame);
-    histograms.ExpectUniqueSample(
-        kCrossOriginHistogramId,
-        AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
+    histograms.ExpectUniqueSample(kCrossOriginHistogramId,
+                                  FrameData::OriginStatus::kSame, 1);
   }
 }
 
