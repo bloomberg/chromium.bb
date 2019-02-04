@@ -315,7 +315,6 @@ MessageType GetStatusLabels(Profile* profile,
 #if !defined(OS_CHROMEOS)
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
-    identity::IdentityManager* identity_manager,
     int* content_string_id,
     int* button_string_id) {
   const syncer::SyncService* service =
@@ -350,15 +349,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   SigninErrorController* signin_error_controller =
       SigninErrorControllerFactory::GetForProfile(profile);
   if (signin_error_controller && signin_error_controller->HasError()) {
-    if (profile->IsSupervised()) {
-      // For a supervised user, no direct action can be taken to resolve an
-      // auth token error.
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_SUPERVISED_SIGNIN_MESSAGE;
-      *button_string_id = 0;
-      return SUPERVISED_USER_AUTH_ERROR;
-    }
-    // For a non-supervised user, the user can reauth to resolve the signin
-    // error.
+    // The user can reauth to resolve the signin error.
     *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_MESSAGE;
     *button_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON;
     return AUTH_ERROR;
@@ -383,8 +374,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     }
 
     // Check for a sync confirmation error.
-    if (identity_manager->HasPrimaryAccount() &&
-        ShouldRequestSyncConfirmation(service)) {
+    if (ShouldRequestSyncConfirmation(service)) {
       *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
       return SETTINGS_UNCONFIRMED_ERROR;
@@ -394,7 +384,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   // There is no error.
   return NO_SYNC_ERROR;
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 MessageType GetStatus(Profile* profile,
                       const syncer::SyncService* service,
