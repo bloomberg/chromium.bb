@@ -15,7 +15,6 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
@@ -60,8 +59,7 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     : profile_(profile),
       app_info_(std::move(app_info)),
       helper_factory_(base::BindRepeating(&BookmarkAppHelperCreateWrapper)),
-      data_retriever_(std::make_unique<web_app::WebAppDataRetriever>()),
-      installer_(std::make_unique<BookmarkAppInstaller>(profile)) {}
+      data_retriever_(std::make_unique<web_app::WebAppDataRetriever>()) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
 
@@ -70,7 +68,7 @@ void BookmarkAppInstallationTask::InstallWebAppOrShortcutFromWebContents(
     ResultCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  data_retriever().GetWebApplicationInfo(
+  data_retriever_->GetWebApplicationInfo(
       web_contents,
       base::BindOnce(&BookmarkAppInstallationTask::OnGetWebApplicationInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -85,11 +83,6 @@ void BookmarkAppInstallationTask::SetBookmarkAppHelperFactoryForTesting(
 void BookmarkAppInstallationTask::SetDataRetrieverForTesting(
     std::unique_ptr<web_app::WebAppDataRetriever> data_retriever) {
   data_retriever_ = std::move(data_retriever);
-}
-
-void BookmarkAppInstallationTask::SetInstallerForTesting(
-    std::unique_ptr<BookmarkAppInstaller> installer) {
-  installer_ = std::move(installer);
 }
 
 void BookmarkAppInstallationTask::OnGetWebApplicationInfo(

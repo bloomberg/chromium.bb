@@ -23,7 +23,6 @@
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -153,30 +152,6 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<Result> app_installation_result_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallationTaskTest);
-};
-
-class TestInstaller : public BookmarkAppInstaller {
- public:
-  explicit TestInstaller(Profile* profile, bool succeeds)
-      : BookmarkAppInstaller(profile), succeeds_(succeeds) {}
-
-  ~TestInstaller() override = default;
-
-  void Install(const WebApplicationInfo& web_app_info,
-               ResultCallback callback) override {
-    web_app_info_ = web_app_info;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  succeeds_ ? "12345" : std::string()));
-  }
-
-  const WebApplicationInfo& web_app_info() { return web_app_info_.value(); }
-
- private:
-  const bool succeeds_;
-  base::Optional<WebApplicationInfo> web_app_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInstaller);
 };
 
 TEST_F(BookmarkAppInstallationTaskTest,

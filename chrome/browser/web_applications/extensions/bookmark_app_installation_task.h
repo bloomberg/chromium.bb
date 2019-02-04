@@ -30,7 +30,6 @@ enum class InstallResultCode;
 namespace extensions {
 
 class BookmarkAppHelper;
-class BookmarkAppInstaller;
 class Extension;
 
 // Class to install a BookmarkApp-based Shortcut or WebApp from a WebContents
@@ -79,11 +78,6 @@ class BookmarkAppInstallationTask {
       BookmarkAppHelperFactory helper_factory);
   void SetDataRetrieverForTesting(
       std::unique_ptr<web_app::WebAppDataRetriever> data_retriever);
-  void SetInstallerForTesting(std::unique_ptr<BookmarkAppInstaller> installer);
-
- protected:
-  web_app::WebAppDataRetriever& data_retriever() { return *data_retriever_; }
-  BookmarkAppInstaller& installer() { return *installer_; }
 
  private:
   void OnGetWebApplicationInfo(
@@ -104,7 +98,6 @@ class BookmarkAppInstallationTask {
   BookmarkAppHelperFactory helper_factory_;
 
   std::unique_ptr<web_app::WebAppDataRetriever> data_retriever_;
-  std::unique_ptr<BookmarkAppInstaller> installer_;
 
   base::WeakPtrFactory<BookmarkAppInstallationTask> weak_ptr_factory_{this};
 
