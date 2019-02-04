@@ -184,4 +184,29 @@ runTests([
       }));
     });
   },
+
+  function testRedirectToUrlWithExtraHeadersListener() {
+    // Set a cookie so the cookie request header is set.
+    navigateAndWait(getSetCookieUrl('foo', 'bar'), function() {
+      var finalURL = getServerURL('echoheader?Cookie');
+      var url = getServerURL('server-redirect?' + finalURL);
+      var listener = callbackPass(function(details) {
+        removeHeader(details.requestHeaders, 'cookie');
+        return {requestHeaders: details.requestHeaders};
+      });
+      chrome.webRequest.onBeforeSendHeaders.addListener(listener,
+          {urls: [finalURL]}, ['requestHeaders', 'blocking', 'extraHeaders']);
+
+      navigateAndWait(url, function(tab) {
+        chrome.test.assertEq(finalURL, tab.url);
+        chrome.webRequest.onBeforeSendHeaders.removeListener(listener);
+        chrome.tabs.executeScript(tab.id, {
+          code: 'document.body.innerText'
+        }, callbackPass(function(results) {
+          chrome.test.assertTrue(results[0].indexOf('bar') == -1,
+              'Header not removed.');
+        }));
+      });
+    });
+  },
 ]);

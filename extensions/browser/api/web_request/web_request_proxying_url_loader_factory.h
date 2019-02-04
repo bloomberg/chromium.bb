@@ -153,14 +153,31 @@ class WebRequestProxyingURLLoaderFactory
 
     bool request_completed_ = false;
 
-    // If |uses_header_client_| is set to true, the request will be sent with
-    // the network::mojom::kURLLoadOptionUseHeaderClient option, and we expect
-    // events to come through the network::mojom::TrustedURLLoaderHeaderClient
-    // binding on the factory. This is only set to true if there is a listener
-    // that needs to view or modify headers set in the network process.
-    bool uses_header_client_ = false;
+    // If |has_any_extra_headers_listeners_| is set to true, the request will be
+    // sent with the network::mojom::kURLLoadOptionUseHeaderClient option, and
+    // we expect events to come through the
+    // network::mojom::TrustedURLLoaderHeaderClient binding on the factory. This
+    // is only set to true if there is a listener that needs to view or modify
+    // headers set in the network process.
+    bool has_any_extra_headers_listeners_ = false;
+    bool current_request_uses_header_client_ = false;
     OnBeforeSendHeadersCallback on_before_send_headers_callback_;
     OnHeadersReceivedCallback on_headers_received_callback_;
+
+    // If extraHeaders listeners are present, we may receive the
+    // OnBeforeSendHeaders event for a redirect before OnBeforeRequest has been
+    // run on that URL. In that case we need to queue up this event until
+    // OnBeforeRequest has been completed and we know the request will not be
+    // canceled/redirected there.
+    struct PendingBeforeSendHeadersData;
+    std::unique_ptr<PendingBeforeSendHeadersData>
+        pending_before_send_headers_data_;
+
+    // Whether the request has gone to the network yet. If an
+    // OnBeforeSendHeaders event reaches us before the request has gone to the
+    // network, it should be saved for later in
+    // |pending_before_send_headers_data_|.
+    bool network_request_started_ = false;
 
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
