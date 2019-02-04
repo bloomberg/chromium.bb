@@ -122,9 +122,10 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
     if option.endswith('dir'):
       continue
 
+    src_subdir = option.replace('\\', os.sep)
     dst_dir = os.path.join(staging_dir, config.get(section, option))
     dst_dir = dst_dir.replace('\\', os.sep)
-    src_paths = glob.glob(os.path.join(src_dir, option))
+    src_paths = glob.glob(os.path.join(src_dir, src_subdir))
     if src_paths and not os.path.exists(dst_dir):
       os.makedirs(dst_dir)
     for src_path in src_paths:
