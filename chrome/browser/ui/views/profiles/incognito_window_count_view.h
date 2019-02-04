@@ -28,6 +28,7 @@ class IncognitoWindowCountView : public views::BubbleDialogDelegateView,
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
   void Init() override;
+  bool ShouldSnapFrameWidth() const override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;

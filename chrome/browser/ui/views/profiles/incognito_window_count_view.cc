@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,10 +64,13 @@ void IncognitoWindowCountView::Init() {
       views::BoxLayout::Orientation::kVertical));
 
   auto incognito_icon = std::make_unique<views::ImageView>();
-  // TODO(https://crbug.com/896235): Try replacing |kIncognitoCircleIcon| with
-  // drawing a circle under |kIncognitoIcon| and removing the circled icon.
+  // TODO(https://crbug.com/896235): Color to be updated after incognito
+  // redesign is finalized. Text color is chosen to have maximum contrast with
+  // background color.
+  const SkColor icon_color = views::style::GetColor(
+      *this, views::style::CONTEXT_TEXTFIELD, STYLE_PRIMARY_MONOSPACED);
   incognito_icon->SetImage(
-      gfx::CreateVectorIcon(kIncognitoCircleIcon, 40, gfx::kGoogleGrey100));
+      gfx::CreateVectorIcon(kIncognitoIcon, 40, icon_color));
 
   // TODO(https://crbug.com/915120): This Button is never clickable. Replace
   // by an alternative list item.
@@ -83,6 +87,10 @@ void IncognitoWindowCountView::Init() {
   AddChildView(new HoverButton(
       this, gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_WINDOW_COUNTER_CLOSE_BUTTON)));
+}
+
+bool IncognitoWindowCountView::ShouldSnapFrameWidth() const {
+  return true;
 }
 
 void IncognitoWindowCountView::ButtonPressed(views::Button* sender,
