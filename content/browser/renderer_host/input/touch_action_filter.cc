@@ -361,6 +361,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
           gesture_sequence_.erase(gesture_sequence_.begin(),
                                   gesture_sequence_.end() - 256);
         base::debug::SetCrashKeyString(crash_key, gesture_sequence_);
+        base::debug::DumpWithoutCrashing();
         gesture_sequence_.clear();
       }
       // TODO(xidachen): investigate why the touch action has no value.
