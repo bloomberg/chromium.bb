@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
@@ -133,6 +134,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // the app list UI.
   virtual void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) = 0;
+
+  // Returns the AssistantViewDelegate.
+  virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;
 };
 
 }  // namespace app_list

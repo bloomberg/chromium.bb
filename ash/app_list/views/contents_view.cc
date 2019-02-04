@@ -13,6 +13,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "ash/app_list/views/assistant/assistant_page_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/search_box_view.h"
@@ -110,6 +111,14 @@ void ContentsView::Init(AppListModel* model) {
   AddLauncherPage(search_results_page_view_,
                   ash::AppListState::kStateSearchResults);
 
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    assistant_page_view_ =
+        new AssistantPageView(view_delegate->GetAssistantViewDelegate());
+    assistant_page_view_->SetVisible(false);
+    AddLauncherPage(assistant_page_view_,
+                    ash::AppListState::kStateEmbeddedAssistant);
+  }
+
   AddLauncherPage(horizontal_page_container_, ash::AppListState::kStateApps);
 
   int initial_page_index = GetPageIndexForState(ash::AppListState::kStateStart);
@@ -155,9 +164,10 @@ void ContentsView::SetActiveState(ash::AppListState state, bool animate) {
   if (IsStateActive(state))
     return;
 
-  // The primary way to set the state to search results should be via
-  // |ShowSearchResults|
-  DCHECK(state != ash::AppListState::kStateSearchResults);
+  // The primary way to set the state to search or Assistant results should be
+  // via |ShowSearchResults| or |ShowEmbeddedAssistantUI|.
+  DCHECK(state != ash::AppListState::kStateSearchResults &&
+         state != ash::AppListState::kStateEmbeddedAssistant);
 
   SetActiveStateInternal(GetPageIndexForState(state), false, animate);
 }
@@ -205,12 +215,12 @@ AppsContainerView* ContentsView::GetAppsContainerView() {
 }
 
 void ContentsView::SetActiveStateInternal(int page_index,
-                                          bool show_search_results,
+                                          bool show_search_or_assistant_results,
                                           bool animate) {
   if (!GetPageView(page_index)->visible())
     return;
 
-  if (!show_search_results)
+  if (!show_search_or_assistant_results)
     page_before_search_ = page_index;
 
   app_list_pages_[GetActivePageIndex()]->OnWillBeHidden();
@@ -236,6 +246,8 @@ void ContentsView::ActivePageChanged() {
   GetAppListMainView()->model()->SetState(state);
 
   UpdateExpandArrowFocusBehavior(state);
+
+  UpdateSearchBoxVisibility(state);
 }
 
 void ContentsView::ShowSearchResults(bool show) {
@@ -252,6 +264,24 @@ void ContentsView::ShowSearchResults(bool show) {
 
 bool ContentsView::IsShowingSearchResults() const {
   return IsStateActive(ash::AppListState::kStateSearchResults);
+}
+
+void ContentsView::ShowEmbeddedAssistantUI(bool show) {
+  int assistant_page =
+      GetPageIndexForState(ash::AppListState::kStateEmbeddedAssistant);
+  DCHECK_GE(assistant_page, 0);
+
+  // Hide or Show results.
+  GetPageView(assistant_page)->SetVisible(show);
+  if (show)
+    GetPageView(assistant_page)->RequestFocus();
+
+  SetActiveStateInternal(show ? assistant_page : page_before_search_, show,
+                         !AppListView::ShortAnimationsForTesting());
+}
+
+bool ContentsView::IsShowingEmbeddedAssistantUI() const {
+  return IsStateActive(ash::AppListState::kStateEmbeddedAssistant);
 }
 
 void ContentsView::UpdatePageBounds() {
@@ -271,7 +301,6 @@ void ContentsView::UpdatePageBounds() {
 
   ash::AppListState current_state = GetStateForPageIndex(current_page);
   ash::AppListState target_state = GetStateForPageIndex(target_page);
-
   // Update app list pages.
   for (AppListPage* page : app_list_pages_) {
     gfx::Rect to_rect = page->GetPageBoundsForState(target_state);
@@ -370,6 +399,12 @@ void ContentsView::UpdateExpandArrowFocusBehavior(
       ax::mojom::Event::kTreeChanged);
 }
 
+void ContentsView::UpdateSearchBoxVisibility(ash::AppListState current_state) {
+  const bool show_search_box =
+      current_state != ash::AppListState::kStateEmbeddedAssistant;
+  GetSearchBoxView()->SetVisible(show_search_box);
+}
+
 PaginationModel* ContentsView::GetAppsPaginationModel() {
   return GetAppsContainerView()->apps_grid_view()->pagination_model();
 }
@@ -463,7 +498,11 @@ bool ContentsView::Back() {
       GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
       ShowSearchResults(false);
       break;
-    case ash::AppListState::kStateCustomLauncherPageDeprecated:
+    case ash::AppListState::kStateEmbeddedAssistant:
+      GetSearchBoxView()->ClearSearch();
+      GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
+      ShowEmbeddedAssistantUI(false);
+      break;
     case ash::AppListState::kInvalidState:  // Falls through.
       NOTREACHED();
       break;
@@ -603,6 +642,11 @@ bool ContentsView::ShouldLayoutPage(AppListPage* page,
              target_state == ash::AppListState::kStateApps) ||
             (current_state == ash::AppListState::kStateApps &&
              target_state == ash::AppListState::kStateSearchResults));
+  }
+
+  if (page == assistant_page_view_) {
+    return current_state == ash::AppListState::kStateEmbeddedAssistant ||
+           target_state == ash::AppListState::kStateEmbeddedAssistant;
   }
 
   return false;

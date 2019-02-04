@@ -105,6 +105,13 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Schedules animation for app list when overview mode starts or ends.
   void ScheduleOverviewModeAnimation(bool start, bool animate);
 
+  // Shows or hides the Assistant page.
+  // |show| is true to show and false to hide.
+  void ShowEmbeddedAssistantUI(bool show);
+
+  // Returns current visibility of the Assistant page.
+  bool IsShowingEmbeddedAssistantUI() const;
+
  private:
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);

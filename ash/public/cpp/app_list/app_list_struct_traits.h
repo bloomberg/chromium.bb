@@ -27,7 +27,8 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
         return ash::mojom::AppListState::kStateSearchResults;
       case ash::AppListState::kStateStart:
         return ash::mojom::AppListState::kStateStart;
-      case ash::AppListState::kStateCustomLauncherPageDeprecated:
+      case ash::AppListState::kStateEmbeddedAssistant:
+        return ash::mojom::AppListState::kStateEmbeddedAssistant;
       case ash::AppListState::kInvalidState:
         break;
     }
@@ -46,6 +47,9 @@ struct EnumTraits<ash::mojom::AppListState, ash::AppListState> {
         return true;
       case ash::mojom::AppListState::kStateStart:
         *out = ash::AppListState::kStateStart;
+        return true;
+      case ash::mojom::AppListState::kStateEmbeddedAssistant:
+        *out = ash::AppListState::kStateEmbeddedAssistant;
         return true;
     }
     NOTREACHED();

@@ -89,6 +89,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool CanProcessEventsOnApplistViews() override;
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
+  ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

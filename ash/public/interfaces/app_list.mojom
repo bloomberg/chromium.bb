@@ -88,6 +88,7 @@ enum AppListState {
   kStateApps = 0,
   kStateSearchResults,
   kStateStart,
+  kStateEmbeddedAssistant,
 };
 
 // The status of the app list model.

@@ -89,7 +89,6 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   params.initial_apps_page = current_apps_page;
   params.is_tablet_mode = is_tablet_mode;
   params.is_side_shelf = IsSideShelf(root_window);
-
   view->Initialize(params);
 
   SnapAppListBoundsToDisplayEdge();

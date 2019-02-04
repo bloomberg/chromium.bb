@@ -103,7 +103,7 @@ void AssistantViewDelegateImpl::DownloadImage(
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 
-wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
+::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
   return Shell::Get()->cursor_manager();
 }
 

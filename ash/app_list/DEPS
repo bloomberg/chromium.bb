@@ -1,4 +1,7 @@
 include_rules = [
+  "+ash/assistant/model",
+  "+ash/assistant/ui",
+  "+ash/assistant/util",
   "+components/keyed_service/core",
   "+components/sync",
   "+mojo/public/cpp",
