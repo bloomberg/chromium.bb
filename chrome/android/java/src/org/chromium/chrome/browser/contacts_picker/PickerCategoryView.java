@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.JsonWriter;
@@ -136,6 +137,11 @@ public class PickerCategoryView extends RelativeLayout
         View root = LayoutInflater.from(context).inflate(R.layout.contacts_picker_dialog, this);
         mSelectableListLayout =
                 (SelectableListLayout<ContactDetails>) root.findViewById(R.id.selectable_list);
+        mSelectableListLayout.initializeEmptyView(
+                VectorDrawableCompat.create(
+                        mActivity.getResources(), R.drawable.contacts_big, mActivity.getTheme()),
+                R.string.contacts_picker_no_contacts_found,
+                R.string.contacts_picker_no_contacts_found);
 
         mPickerAdapter = new PickerAdapter(this, context.getContentResolver(), formattedOrigin);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
@@ -237,7 +243,7 @@ public class PickerCategoryView extends RelativeLayout
         }
 
         boolean allSelected = selectedItems.size() == mPickerAdapter.getItemCount() - 1;
-        mTopView.updateSelectAllCheckbox(allSelected);
+        if (mTopView != null) mTopView.updateSelectAllCheckbox(allSelected);
     }
 
     // RecyclerView.RecyclerListener:
