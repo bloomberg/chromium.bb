@@ -847,8 +847,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   RecordInterfaceOrientationMetric();
   RecordMainFrameNavigationMetric(webState);
 
-  [[OmniboxGeolocationController sharedInstance] finishPageLoadForTab:tab
-                                                          loadSuccess:success];
+  [[OmniboxGeolocationController sharedInstance]
+      finishPageLoadForWebState:webState
+                    loadSuccess:success];
 }
 
 - (void)webState:(web::WebState*)webState

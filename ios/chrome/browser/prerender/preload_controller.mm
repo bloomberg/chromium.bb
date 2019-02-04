@@ -283,8 +283,9 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   }
 
   if (!webState->IsLoading()) {
-    [[OmniboxGeolocationController sharedInstance] finishPageLoadForTab:tab
-                                                            loadSuccess:YES];
+    [[OmniboxGeolocationController sharedInstance]
+        finishPageLoadForWebState:webState.get()
+                      loadSuccess:YES];
   }
 
   return webState;
