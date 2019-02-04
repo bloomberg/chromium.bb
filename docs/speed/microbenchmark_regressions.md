@@ -2,7 +2,24 @@
 
 [TOC]
 
+##  Microbenchmarks
+
+A microbenchmark attempts to measure the performance of a "small" bit of code.
+These tests are typically in the sub-millisecond range. The code being tested
+usually performs no I/O, or else is a test of some single, specific I/O task.
+[1]
+
+We maintain and measure a set of such microbenchmarks for example
+[blink_perf](./benchmark/harnesses/blink_perf.md), dromaeo, gpu_perftests, and
+rasterize_and_record_micro.
+
+[1] https://github.com/google/caliper/wiki/JavaMicrobenchmarks#what-is-a-microbenchmark
+
 ## Interesting sources of false positives
+
+Due to their nature microbenchmarks are much more sensitive to changes in the
+underlying abstraction levels which can result in a large number of false
+positive alerts. Below are some of such changes relevant to Chromium.
 
 ### AFDO rolls.
 
