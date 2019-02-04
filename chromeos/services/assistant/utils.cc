@@ -47,6 +47,10 @@ std::string CreateLibAssistantConfig(bool disable_hotword) {
   discovery.SetKey("enable_mdns", Value(false));
   config.SetKey("discovery", std::move(discovery));
 
+  Value internal(Type::DICTIONARY);
+  internal.SetKey("surface_type", Value("OPA_CROS"));
+  config.SetKey("internal", std::move(internal));
+
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Log to 'log' sub dir in user's home dir.
     Value logging(Type::DICTIONARY);
@@ -61,9 +65,7 @@ std::string CreateLibAssistantConfig(bool disable_hotword) {
     config.SetKey("logging", std::move(logging));
   } else {
     // Print logs to console if running in desktop mode.
-    Value internal(Type::DICTIONARY);
     internal.SetKey("disable_log_files", Value(true));
-    config.SetKey("internal", std::move(internal));
   }
 
   Value audio_input(Type::DICTIONARY);
