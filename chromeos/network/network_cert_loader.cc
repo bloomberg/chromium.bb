@@ -142,44 +142,18 @@ class NetworkCertLoader::CertCache : public net::CertDatabase::Observer {
 
 namespace {
 
-// Checks if |certificate| is on the given |slot|.
-bool IsCertificateOnSlot(CERTCertificate* certificate, PK11SlotInfo* slot) {
-  crypto::ScopedPK11SlotList slots_for_cert(
-      PK11_GetAllSlotsForCert(certificate, nullptr));
-  if (!slots_for_cert)
-    return false;
-
-  for (PK11SlotListElement* slot_element =
-           PK11_GetFirstSafe(slots_for_cert.get());
-       slot_element; slot_element = PK11_GetNextSafe(slots_for_cert.get(),
-                                                     slot_element, PR_FALSE)) {
-    if (slot_element->slot == slot) {
-      // All previously visited elements have been freed by PK11_GetNextSafe,
-      // but we're not calling that for the last one, so free it explicitly.
-      // The slots_for_cert list itself will be freed because ScopedPK11SlotList
-      // is a unique_ptr.
-      PK11_FreeSlotListElement(slots_for_cert.get(), slot_element);
-      return true;
-    }
-  }
-  return false;
-}
-
 // Goes through all certificates in |certs| and copies those certificates
-// which are on |system_slot| to a new list.
+// which are on the system slot to a new list.
 net::ScopedCERTCertificateList FilterSystemTokenCertificates(
     net::ScopedCERTCertificateList certs,
-    crypto::ScopedPK11Slot system_slot) {
+    const net::NSSCertDatabase* cert_db) {
   VLOG(1) << "FilterSystemTokenCertificates";
-  if (!system_slot)
-    return net::ScopedCERTCertificateList();
 
-  PK11SlotInfo* system_slot_ptr = system_slot.get();
-  // Only keep certificates which are on the |system_slot|.
+  // Only keep certificates which are on the system slot.
   certs.erase(
       std::remove_if(certs.begin(), certs.end(),
-                     [system_slot_ptr](const net::ScopedCERTCertificate& cert) {
-                       return !IsCertificateOnSlot(cert.get(), system_slot_ptr);
+                     [cert_db](const net::ScopedCERTCertificate& cert) {
+                       return !cert_db->IsCertificateOnSystemSlot(cert.get());
                      }),
       certs.end());
   return certs;
@@ -350,16 +324,13 @@ void NetworkCertLoader::OnCertCacheUpdated() {
   // filter.
   if (user_cert_cache_->initial_load_finished() &&
       user_cert_cache_->has_system_certificates()) {
-    crypto::ScopedPK11Slot system_slot =
-        user_cert_cache_->nss_database()->GetSystemSlot();
-    DCHECK(system_slot);
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&FilterSystemTokenCertificates,
                        net::x509_util::DupCERTCertificateList(
                            user_cert_cache_->cert_list()),
-                       std::move(system_slot)),
+                       user_cert_cache_->nss_database()),
         base::BindOnce(&NetworkCertLoader::StoreCertsFromCache,
                        weak_factory_.GetWeakPtr(),
                        net::x509_util::DupCERTCertificateList(

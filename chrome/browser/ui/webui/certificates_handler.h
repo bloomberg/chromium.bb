@@ -19,6 +19,14 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
+#if defined(OS_CHROMEOS)
+enum class Slot { kUser, kSystem };
+#endif
+
 namespace certificate_manager {
 
 class FileAccessProvider;
@@ -41,6 +49,11 @@ class CertificatesHandler : public content::WebUIMessageHandler,
                     int index,
                     void* params) override;
   void FileSelectionCanceled(void* params) override;
+
+#if defined(OS_CHROMEOS)
+  // Register profile preferences.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+#endif
 
  private:
   // View certificate.
@@ -156,12 +169,24 @@ class CertificatesHandler : public content::WebUIMessageHandler,
 
   gfx::NativeWindow GetParentWindow() const;
 
-  // Assuming that |args| is a list, parses the list element at |arg_index| as
-  // an id for |cert_info_id_map_| and looks up the corresponding CertInfo. If
-  // anything goes wrong, returns nullptr.
+  // If |args| is a list, parses the list element at |arg_index| as an id for
+  // |cert_info_id_map_| and looks up the corresponding CertInfo. If there is
+  // an error parsing the list, returns nullptr.
   CertificateManagerModel::CertInfo* GetCertInfoFromCallbackArgs(
       const base::Value& args,
       size_t arg_index);
+
+#if defined(OS_CHROMEOS)
+  // Returns true if the user may manage certificates on |slot| according
+  // CertificateManagementAllowed to policy.
+  bool IsCertificateManagementAllowedPolicy(Slot slot) const;
+#endif
+
+  // Returns true if the certificate represented by |cert_info| is read-only
+  // (i.e. can not be deleted). Evaluates the certificate attributes and, on
+  // Chrome OS devices, the enterprise policy CertificateManagementAllowed.
+  bool IsCertificateReadOnly(
+      const CertificateManagerModel::CertInfo* cert_info);
 
   // The Certificates Manager model
   bool requested_certificate_manager_model_;

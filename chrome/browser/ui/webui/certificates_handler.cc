@@ -32,7 +32,10 @@
 #include "chrome/browser/ui/crypto_module_password_dialog_nss.h"
 #include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "chrome/common/net/x509_certificate_model_nss.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
@@ -74,6 +77,19 @@ enum {
   IMPORT_SERVER_FILE_SELECTED,
   IMPORT_CA_FILE_SELECTED,
 };
+
+#if defined(OS_CHROMEOS)
+// Enumeration of certificate management permissions which corresponds to
+// values of policy CertificateManagementAllowed.
+enum class CertificateManagementPermission : int {
+  // Allow users to manage all certificates
+  kAll = 0,
+  // Allow users to manage user certificates
+  kUserOnly = 1,
+  // Disallow users from managing certificates
+  kNone = 2
+};
+#endif
 
 std::string OrgNameToId(const std::string& org) {
   return "org-" + org;
@@ -560,6 +576,11 @@ void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
   AssignWebUICallbackId(args);
   CHECK(args->GetBoolean(1, &use_hardware_backed_));
 
+#if defined(OS_CHROMEOS)
+  CHECK(IsCertificateManagementAllowedPolicy(Slot::kUser))
+      << "Importing certificates not allowed by policy";
+#endif
+
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("p12"));
@@ -720,6 +741,11 @@ void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   AssignWebUICallbackId(args);
 
+#if defined(OS_CHROMEOS)
+  CHECK(IsCertificateManagementAllowedPolicy(Slot::kUser))
+      << "Importing certificates not allowed by policy";
+#endif
+
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
       std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
@@ -786,6 +812,11 @@ void CertificatesHandler::ImportServerFileRead(const int* read_errno,
 void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   AssignWebUICallbackId(args);
+
+#if defined(OS_CHROMEOS)
+  CHECK(IsCertificateManagementAllowedPolicy(Slot::kUser))
+      << "Importing certificates not allowed by policy";
+#endif
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
@@ -919,13 +950,12 @@ void CertificatesHandler::OnCertificateManagerModelCreated(
 }
 
 void CertificatesHandler::CertificateManagerModelReady() {
-  base::Value user_db_available_value(
-      certificate_manager_model_->is_user_db_available());
-  base::Value tpm_available_value(
-      certificate_manager_model_->is_tpm_available());
+  bool import_allowed = true;
+#if defined(OS_CHROMEOS)
+  import_allowed = IsCertificateManagementAllowedPolicy(Slot::kUser);
+#endif
   if (IsJavascriptAllowed()) {
-    FireWebUIListener("certificates-model-ready", user_db_available_value,
-                      tpm_available_value);
+    FireWebUIListener("certificates-model-ready", base::Value(import_allowed));
   }
   certificate_manager_model_->Refresh();
 }
@@ -992,7 +1022,7 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
       cert_dict.SetKey(kCertificatesHandlerNameField,
                        base::Value(cert_info->name()));
       cert_dict.SetKey(kCertificatesHandlerReadonlyField,
-                       base::Value(cert_info->read_only()));
+                       base::Value(IsCertificateReadOnly(cert_info)));
       cert_dict.SetKey(kCertificatesHandlerUntrustedField,
                        base::Value(cert_info->untrusted()));
       cert_dict.SetKey(
@@ -1104,5 +1134,45 @@ CertificatesHandler::GetCertInfoFromCallbackArgs(const base::Value& args,
 
   return cert_info_id_map_.Lookup(cert_info_id);
 }
+
+#if defined(OS_CHROMEOS)
+bool CertificatesHandler::IsCertificateManagementAllowedPolicy(
+    Slot slot) const {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
+  auto policy_value = static_cast<CertificateManagementPermission>(
+      prefs->GetInteger(prefs::kCertificateManagementAllowed));
+
+  if (slot == Slot::kUser) {
+    return policy_value != CertificateManagementPermission::kNone;
+  }
+  return policy_value == CertificateManagementPermission::kAll;
+}
+#endif  // defined(OS_CHROMEOS)
+
+bool CertificatesHandler::IsCertificateReadOnly(
+    const CertificateManagerModel::CertInfo* cert_info) {
+  if (cert_info->read_only()) {
+    return true;
+  }
+
+#if defined(OS_CHROMEOS)
+  return !IsCertificateManagementAllowedPolicy(
+      cert_info->device_wide() ? Slot::kSystem : Slot::kUser);
+#else
+  return false;
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void CertificatesHandler::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // Allow users to manage all certificates by default. This can be overridden
+  // by enterprise policy.
+  registry->RegisterIntegerPref(
+      prefs::kCertificateManagementAllowed,
+      static_cast<int>(CertificateManagementPermission::kAll));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace certificate_manager

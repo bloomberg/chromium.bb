@@ -23,11 +23,12 @@
       <span class="flex">
           [[getDescription_(certificateType, certificates)]]</span>
       <paper-button id="import" on-tap="onImportTap_"
-          hidden="[[!canImport_(certificateType)]]">
+          hidden="[[!canImport_(certificateType, importAllowed, isKiosk_)]]">
         [[i18n('certificateManagerImport')]]</paper-button>
 <if expr="chromeos">
       <paper-button id="importAndBind" on-tap="onImportAndBindTap_"
-          hidden="[[!canImportAndBind_(certificateType, isGuest_)]]">
+          hidden="[[!canImportAndBind_(certificateType, importAllowed,
+                 isGuest_)]]">
         [[i18n('certificateManagerImportAndBind')]]</paper-button>
 </if>
     </div>

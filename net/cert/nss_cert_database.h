@@ -131,6 +131,10 @@ class NET_EXPORT NSSCertDatabase {
   // before SetSystemSlot is called and get a NULL result.
   // See https://crbug.com/399554 .
   virtual crypto::ScopedPK11Slot GetSystemSlot() const;
+
+  // Check whether the certificate is stored on the system slot (i.e. is a
+  // device certificate).
+  bool IsCertificateOnSystemSlot(CERTCertificate* cert) const;
 #endif
 
   // Get the default slot for public key data.

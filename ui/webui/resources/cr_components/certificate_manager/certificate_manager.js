@@ -49,6 +49,16 @@ Polymer({
       },
     },
 
+    /**
+     * Indicates if certificate import is allowed by Chrome OS specific policy
+     * CertificateManagementAllowed.
+     * Value exists only for Chrome OS.
+     */
+    importAllowed: {
+      type: Boolean,
+      value: true,
+    },
+
     /** @private */
     certificateTypeEnum_: {
       type: Object,
@@ -110,8 +120,15 @@ Polymer({
   /** @override */
   attached: function() {
     this.addWebUIListener('certificates-changed', this.set.bind(this));
+    this.addWebUIListener(
+        'certificates-model-ready', this.setImportAllowed.bind(this));
     certificate_manager.CertificatesBrowserProxyImpl.getInstance()
         .refreshCertificates();
+  },
+
+  /** @private */
+  setImportAllowed: function(allowed) {
+    this.importAllowed = allowed;
   },
 
   /**

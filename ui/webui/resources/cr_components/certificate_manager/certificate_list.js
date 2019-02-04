@@ -21,6 +21,9 @@ Polymer({
     /** @type {!CertificateType} */
     certificateType: String,
 
+    /** @type {boolean} */
+    importAllowed: Boolean,
+
     // 'if expr="chromeos"' here is breaking vulcanize. TODO(stevenjb/dpapad):
     // Restore after migrating to polymer-bundler, crbug.com/731881.
     /** @private */
@@ -72,7 +75,8 @@ Polymer({
    * @private
    */
   canImport_: function() {
-    return !this.isKiosk_ && this.certificateType != CertificateType.OTHER;
+    return !this.isKiosk_ && this.certificateType != CertificateType.OTHER &&
+        this.importAllowed;
   },
 
   // <if expr="chromeos">
@@ -81,7 +85,8 @@ Polymer({
    * @private
    */
   canImportAndBind_: function() {
-    return !this.isGuest_ && this.certificateType == CertificateType.PERSONAL;
+    return !this.isGuest_ && this.certificateType == CertificateType.PERSONAL &&
+        this.importAllowed;
   },
   // </if>
 

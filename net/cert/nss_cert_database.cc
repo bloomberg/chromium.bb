@@ -110,6 +110,15 @@ void NSSCertDatabase::ListCertsInSlot(ListCertsCallback callback,
 crypto::ScopedPK11Slot NSSCertDatabase::GetSystemSlot() const {
   return crypto::ScopedPK11Slot();
 }
+
+bool NSSCertDatabase::IsCertificateOnSystemSlot(CERTCertificate* cert) const {
+  crypto::ScopedPK11Slot system_slot = GetSystemSlot();
+  if (!system_slot)
+    return false;
+
+  return PK11_FindCertInSlot(system_slot.get(), cert, nullptr) !=
+         CK_INVALID_HANDLE;
+}
 #endif
 
 crypto::ScopedPK11Slot NSSCertDatabase::GetPublicSlot() const {
