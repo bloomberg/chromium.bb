@@ -127,6 +127,16 @@ void ClientRoot::OnLocalSurfaceIdChanged() {
                                                 : window_->bounds());
 }
 
+void ClientRoot::AllocateLocalSurfaceIdAndNotifyClient() {
+  if (!ShouldAssignLocalSurfaceId())
+    return;
+
+  // Setting a null LocalSurfaceId forces allocation.
+  ProxyWindow::GetMayBeNull(window_)->set_local_surface_id(base::nullopt);
+  UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
+  NotifyClientOfNewBounds(last_bounds_);
+}
+
 void ClientRoot::AttachChildFrameSinkId(ProxyWindow* proxy_window) {
   DCHECK(proxy_window->attached_frame_sink_id().is_valid());
   DCHECK(ProxyWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());

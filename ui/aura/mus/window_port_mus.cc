@@ -29,6 +29,7 @@
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -41,6 +42,12 @@ namespace aura {
 namespace {
 static const char* kMus = "Mus";
 }  // namespace
+
+struct WindowPortMus::PendingLayerTreeFrameSinkArgs {
+  scoped_refptr<viz::ContextProvider> context_provider;
+  scoped_refptr<viz::RasterContextProvider> raster_context_provider;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager;
+};
 
 WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
 
@@ -176,45 +183,31 @@ void WindowPortMus::EmbedUsingToken(
                      std::move(callback)));
 }
 
-std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
-WindowPortMus::RequestLayerTreeFrameSink(
+void WindowPortMus::CreateLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
-  viz::mojom::CompositorFrameSinkRequest sink_request =
-      mojo::MakeRequest(&sink_info);
-  viz::mojom::CompositorFrameSinkClientPtr client;
-  viz::mojom::CompositorFrameSinkClientRequest client_request =
-      mojo::MakeRequest(&client);
-
-  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
-  ui::Compositor* compositor = window_->layer()->GetCompositor();
-  DCHECK(compositor);
-  params.compositor_task_runner = compositor->task_runner();
-  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
-  params.pipes.compositor_frame_sink_info = std::move(sink_info);
-  params.pipes.client_request = std::move(client_request);
-  bool root_accepts_events =
-      (window_->event_targeting_policy() ==
-       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
-      (window_->event_targeting_policy() ==
-       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
-    params.hit_test_data_provider =
-        std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            /* should_ask_for_child_regions */ false, root_accepts_events);
+  if (did_set_frame_sink_) {
+    pending_layer_tree_frame_sink_args_ =
+        std::make_unique<PendingLayerTreeFrameSinkArgs>();
+    pending_layer_tree_frame_sink_args_->context_provider =
+        std::move(context_provider);
+    pending_layer_tree_frame_sink_args_->raster_context_provider =
+        std::move(raster_context_provider);
+    pending_layer_tree_frame_sink_args_->gpu_memory_buffer_manager =
+        gpu_memory_buffer_manager;
+    window_tree_client_->RequestNewLocalSurfaceId(this);
+    return;
   }
-  params.enable_surface_synchronization = true;
-  params.client_name = kMus;
-
-  auto layer_tree_frame_sink =
-      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), std::move(raster_context_provider),
-          &params);
-  window_tree_client_->AttachCompositorFrameSink(
-      server_id(), std::move(sink_request), std::move(client));
-  return layer_tree_frame_sink;
+  // The second time a LayerTreeFrameSink is set LayerTreeHostImpl expects a
+  // new LocalSurfaceId. Request one from the server, and when received create
+  // the LayerTreeFrameSink.
+  // TODO(sky): this is temporary and can be removed once
+  // https://crbug.com/921129 is fixed.
+  did_set_frame_sink_ = true;
+  CreateLayerTreeFrameSinkImpl(std::move(context_provider),
+                               std::move(raster_context_provider),
+                               gpu_memory_buffer_manager);
 }
 
 viz::FrameSinkId WindowPortMus::GenerateFrameSinkIdFromServerId() const {
@@ -591,6 +584,16 @@ float WindowPortMus::GetDeviceScaleFactor() {
   return window_->layer()->device_scale_factor();
 }
 
+void WindowPortMus::DidSetWindowTreeHostBoundsFromServer() {
+  if (!pending_layer_tree_frame_sink_args_)
+    return;
+
+  auto args = std::move(pending_layer_tree_frame_sink_args_);
+  CreateLayerTreeFrameSinkImpl(std::move(args->context_provider),
+                               std::move(args->raster_context_provider),
+                               args->gpu_memory_buffer_manager);
+}
+
 void WindowPortMus::OnPreInit(Window* window) {
   window_ = window;
   window_tree_client_->OnWindowMusCreated(this);
@@ -800,6 +803,47 @@ void WindowPortMus::UpdateOcclusionStateAfterVisiblityChange(bool visible) {
                              ? occlusion_state_before_hidden_.value()
                              : Window::OcclusionState::VISIBLE);
   }
+}
+
+void WindowPortMus::CreateLayerTreeFrameSinkImpl(
+    scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+  viz::mojom::CompositorFrameSinkPtrInfo sink_info;
+  viz::mojom::CompositorFrameSinkRequest sink_request =
+      mojo::MakeRequest(&sink_info);
+  viz::mojom::CompositorFrameSinkClientPtr client;
+  viz::mojom::CompositorFrameSinkClientRequest client_request =
+      mojo::MakeRequest(&client);
+
+  cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
+  ui::Compositor* compositor = window_->layer()->GetCompositor();
+  DCHECK(compositor);
+  params.compositor_task_runner = compositor->task_runner();
+  params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
+  params.pipes.compositor_frame_sink_info = std::move(sink_info);
+  params.pipes.client_request = std::move(client_request);
+  bool root_accepts_events =
+      (window_->event_targeting_policy() ==
+       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+      (window_->event_targeting_policy() ==
+       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  if (features::IsVizHitTestingDrawQuadEnabled()) {
+    params.hit_test_data_provider =
+        std::make_unique<viz::HitTestDataProviderDrawQuad>(
+            /* should_ask_for_child_regions */ false, root_accepts_events);
+  }
+  params.enable_surface_synchronization = true;
+  params.client_name = kMus;
+
+  auto layer_tree_frame_sink =
+      std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+          std::move(context_provider), std::move(raster_context_provider),
+          &params);
+  window_tree_client_->AttachCompositorFrameSink(
+      server_id(), std::move(sink_request), std::move(client));
+  window_->GetHost()->compositor()->SetLayerTreeFrameSink(
+      std::move(layer_tree_frame_sink));
 }
 
 }  // namespace aura

@@ -110,6 +110,11 @@ interface WindowTree {
                   gfx.mojom.Rect bounds,
                   viz.mojom.LocalSurfaceId? local_surface_id);
 
+  // Asks the server to generate a new LocalSurfaceId for a window. The server
+  // responds with the new LocalSurfaceId by way of OnWindowBoundsChanged().
+  // This is only useful for top-levels.
+  AllocateLocalSurfaceId(uint64 window_id);
+
   SetWindowTransform(uint32 change_id,
                      uint64 window_id,
                      gfx.mojom.Transform transform);

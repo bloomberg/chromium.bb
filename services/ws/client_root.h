@@ -67,6 +67,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // Called when the LocalSurfaceId of the embedder changes.
   void OnLocalSurfaceIdChanged();
 
+  void AllocateLocalSurfaceIdAndNotifyClient();
+
   // Attaches/unattaches proxy_window->attached_frame_sink_id() to the
   // HostFrameSinkManager.
   void AttachChildFrameSinkId(ProxyWindow* proxy_window);

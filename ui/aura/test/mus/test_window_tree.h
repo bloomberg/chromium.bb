@@ -183,6 +183,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
       ws::Id window_id,
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void AllocateLocalSurfaceId(uint64_t window_id) override {}
   void SetWindowTransform(uint32_t change_id,
                           ws::Id window_id,
                           const gfx::Transform& transform) override;

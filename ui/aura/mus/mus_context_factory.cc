@@ -47,6 +47,8 @@ void MusContextFactory::OnEstablishedGpuChannel(
   // doesn't need to use GetForAcceleratedWidget().
   CHECK(window_port);
 
+  DCHECK_EQ(host->compositor(), compositor.get());
+
   scoped_refptr<viz::ContextProvider> context_provider =
       gpu_->CreateContextProvider(gpu_channel);
   // If the binding fails, then we need to return early since the compositor
@@ -79,12 +81,9 @@ void MusContextFactory::OnEstablishedGpuChannel(
     shared_worker_context_provider_factory_.reset();
   }
 
-  std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink =
-      window_port->RequestLayerTreeFrameSink(
-          std::move(context_provider),
-          std::move(shared_worker_context_provider),
-          gpu_->gpu_memory_buffer_manager());
-  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
+  window_port->CreateLayerTreeFrameSink(
+      std::move(context_provider), std::move(shared_worker_context_provider),
+      gpu_->gpu_memory_buffer_manager());
 }
 
 void MusContextFactory::CreateLayerTreeFrameSink(

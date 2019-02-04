@@ -372,6 +372,8 @@ class AURA_EXPORT WindowTreeClient
                                   int64_t old_value,
                                   std::unique_ptr<ui::PropertyData> data);
 
+  void RequestNewLocalSurfaceId(WindowMus* window);
+
   // Overridden from WindowTreeClient:
   void OnClientId(uint32_t client_id) override;
   void OnEmbed(

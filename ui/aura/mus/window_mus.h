@@ -127,6 +127,8 @@ class AURA_EXPORT WindowMus {
 
   virtual float GetDeviceScaleFactor() = 0;
 
+  virtual void DidSetWindowTreeHostBoundsFromServer() = 0;
+
  private:
   // Just for set_server_id(), which other places should not call.
   friend class WindowTreeClient;
