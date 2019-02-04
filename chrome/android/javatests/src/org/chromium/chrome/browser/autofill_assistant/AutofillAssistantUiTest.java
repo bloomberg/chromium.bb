@@ -141,7 +141,7 @@ public class AutofillAssistantUiTest {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> assistantCoordinator.getModel().getOverlayModel().set(
-                                AssistantOverlayModel.STATE, AssistantOverlayState.full()));
+                                AssistantOverlayModel.STATE, AssistantOverlayState.FULL));
         View overlay = bottomSheet.findViewById(R.id.touch_event_filter);
         Assert.assertTrue(overlay.isShown());
 

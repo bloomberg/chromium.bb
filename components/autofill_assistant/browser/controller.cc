@@ -626,7 +626,7 @@ ElementArea* Controller::touchable_element_area() {
   if (!touchable_element_area_) {
     touchable_element_area_ = std::make_unique<ElementArea>(this);
     touchable_element_area_->SetOnUpdate(base::BindRepeating(
-        &UiController::UpdateTouchableArea,
+        &UiController::SetTouchableArea,
         // Unretained is safe, since touchable_element_area_ is guaranteed to be
         // deleted before the UI controller.
         base::Unretained(GetUiController())));

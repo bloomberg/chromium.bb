@@ -31,6 +31,7 @@ import org.chromium.content_public.browser.WebContents;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -85,7 +86,10 @@ public class TouchEventFilterView
     private final Paint mGrayOut;
     private final Paint mClear;
 
-    private AssistantOverlayState mCurrentState = AssistantOverlayState.hidden();
+    @AssistantOverlayState
+    private int mCurrentState = AssistantOverlayState.HIDDEN;
+
+    private List<RectF> mTouchableArea = Collections.emptyList();
 
     /** Padding added between the element area and the grayed-out area. */
     private final float mPaddingPx;
@@ -244,32 +248,28 @@ public class TouchEventFilterView
     /**
      * Set the current state of the overlay.
      */
-    public void setState(AssistantOverlayState newState) {
-        if (newState.equals(mCurrentState)) {
-            return;
-        }
-
-        // Partial overlay has precedence over full overlay.
-        // TODO(crbug.com/806868): Remove this precedence by making sure we don't set a full overlay
-        // when there is a partial overlay already. This class shouldn't dictate whether it accepts
-        // its state or not.
-        if (mCurrentState.isPartial() && newState.isFull()) {
-            return;
-        }
-
+    public void setState(@AssistantOverlayState int newState) {
         mCurrentState = newState;
 
         // Reset tap counter each time we hide the overlay.
-        if (newState.isHidden()) {
+        if (mCurrentState == AssistantOverlayState.HIDDEN) {
             mUnexpectedTapTimes.clear();
-        }
-
-        if (newState.isPartial()) {
-            clearOffsets();
         }
 
         updateVisibility();
         invalidate();
+    }
+
+    /**
+     * Set the touchable area. This only applies if current state is AssistantOverlayState.PARTIAL.
+     */
+    public void setTouchableArea(List<RectF> touchableArea) {
+        mTouchableArea = touchableArea;
+
+        clearOffsets();
+        if (mCurrentState == AssistantOverlayState.PARTIAL) {
+            invalidate();
+        }
     }
 
     private void updateVisibility() {
@@ -280,10 +280,10 @@ public class TouchEventFilterView
             //
             // TODO(crbug.com/806868): filter elements available to touch exploration, when it
             // is enabled.
-            setVisibility(!mCurrentState.isFull() ? View.GONE : View.VISIBLE);
+            setVisibility(mCurrentState != AssistantOverlayState.FULL ? View.GONE : View.VISIBLE);
         }
 
-        setAlpha(mCurrentState.isHidden() ? 0.0f : 1.0f);
+        setAlpha(mCurrentState == AssistantOverlayState.HIDDEN ? 0.0f : 1.0f);
     }
 
     private void clearOffsets() {
@@ -300,9 +300,14 @@ public class TouchEventFilterView
         }
 
         // Note that partial overlays have precedence over full overlays
-        if (mCurrentState.isPartial()) return dispatchTouchEventWithPartialOverlay(event);
-        if (mCurrentState.isFull()) return dispatchTouchEventWithFullOverlay(event);
-        return dispatchTouchEventWithNoOverlay();
+        switch (mCurrentState) {
+            case AssistantOverlayState.PARTIAL:
+                return dispatchTouchEventWithPartialOverlay(event);
+            case AssistantOverlayState.FULL:
+                return dispatchTouchEventWithFullOverlay(event);
+            default:
+                return dispatchTouchEventWithNoOverlay();
+        }
     }
 
     private boolean dispatchTouchEventWithNoOverlay() {
@@ -468,7 +473,7 @@ public class TouchEventFilterView
     @SuppressLint("CanvasSize")
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (mCurrentState.isHidden()) {
+        if (mCurrentState == AssistantOverlayState.HIDDEN) {
             return;
         }
         canvas.drawPaint(mGrayOut);
@@ -483,8 +488,12 @@ public class TouchEventFilterView
             canvas.drawRect(0, yBottom, width, canvas.getHeight(), mClear);
         }
 
+        if (mCurrentState != AssistantOverlayState.PARTIAL) {
+            return;
+        }
+
         int height = yBottom - yTop;
-        for (RectF rect : mCurrentState.boxes()) {
+        for (RectF rect : mTouchableArea) {
             mDrawRect.left = rect.left * width - mPaddingPx;
             mDrawRect.top =
                     yTop + rect.top * height - mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
@@ -584,7 +593,7 @@ public class TouchEventFilterView
     }
 
     private boolean isInTouchableArea(float x, float y) {
-        for (RectF rect : mCurrentState.boxes()) {
+        for (RectF rect : mTouchableArea) {
             if (rect.contains(x, y, x, y)) {
                 return true;
             }

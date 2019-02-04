@@ -29,8 +29,9 @@ public class AssistantOverlayCoordinator {
         // TODO(crbug.com/806868): Bind model to view through a ViewBinder instead.
         model.addObserver((source, propertyKey) -> {
             if (AssistantOverlayModel.STATE == propertyKey) {
-                AssistantOverlayState newState = model.get(AssistantOverlayModel.STATE);
-                setState(newState != null ? newState : AssistantOverlayState.hidden());
+                setState(model.get(AssistantOverlayModel.STATE));
+            } else if (AssistantOverlayModel.TOUCHABLE_AREA == propertyKey) {
+                mTouchEventFilter.setTouchableArea(model.get(AssistantOverlayModel.TOUCHABLE_AREA));
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
                 mTouchEventFilter.setDelegate(model.get(AssistantOverlayModel.DELEGATE));
             }
@@ -52,12 +53,12 @@ public class AssistantOverlayCoordinator {
     /**
      * Set the overlay state.
      */
-    private void setState(AssistantOverlayState state) {
-        if (state.isFull() && !mActivity.isViewObscuringAllTabs()) {
+    private void setState(@AssistantOverlayState int state) {
+        if (state == AssistantOverlayState.FULL && !mActivity.isViewObscuringAllTabs()) {
             mActivity.addViewObscuringAllTabs(mTouchEventFilter);
         }
 
-        if (!state.isFull() && mActivity.isViewObscuringAllTabs()) {
+        if (state != AssistantOverlayState.FULL && mActivity.isViewObscuringAllTabs()) {
             mActivity.removeViewObscuringAllTabs(mTouchEventFilter);
         }
 

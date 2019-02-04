@@ -103,19 +103,19 @@ UiControllerAndroid::GetHeaderModel() {
 void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
   switch (new_state) {
     case AutofillAssistantState::STARTING:
-      ShowOverlay();
+      SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
       SetProgressPulsingEnabled(false);
       return;
 
     case AutofillAssistantState::RUNNING:
-      ShowOverlay();
+      SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(false);
       SetProgressPulsingEnabled(false);
       return;
 
     case AutofillAssistantState::PROMPT:
-      ShowOverlay();  // partial overlay
+      SetOverlayState(OverlayState::PARTIAL);
       AllowShowingSoftKeyboard(true);
       SetProgressPulsingEnabled(true);
 
@@ -124,13 +124,13 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
       return;
 
     case AutofillAssistantState::MODAL_DIALOG:
-      ShowOverlay();
+      SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(true);
       SetProgressPulsingEnabled(false);
       return;
 
     case AutofillAssistantState::STOPPED:
-      HideOverlay();
+      SetOverlayState(OverlayState::HIDDEN);
       AllowShowingSoftKeyboard(true);
       SetProgressPulsingEnabled(false);
 
@@ -265,17 +265,12 @@ UiControllerAndroid::GetOverlayModel() {
   return Java_AssistantModel_getOverlayModel(AttachCurrentThread(), GetModel());
 }
 
-void UiControllerAndroid::ShowOverlay() {
-  Java_AssistantOverlayModel_setFull(AttachCurrentThread(), GetOverlayModel());
+void UiControllerAndroid::SetOverlayState(OverlayState state) {
+  Java_AssistantOverlayModel_setState(AttachCurrentThread(), GetOverlayModel(),
+                                      state);
 }
 
-void UiControllerAndroid::HideOverlay() {
-  Java_AssistantOverlayModel_setHidden(AttachCurrentThread(),
-                                       GetOverlayModel());
-}
-
-void UiControllerAndroid::UpdateTouchableArea(bool enabled,
-                                              const std::vector<RectF>& areas) {
+void UiControllerAndroid::SetTouchableArea(const std::vector<RectF>& areas) {
   JNIEnv* env = AttachCurrentThread();
   std::vector<float> flattened;
   for (const auto& rect : areas) {
@@ -284,7 +279,7 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
     flattened.emplace_back(rect.right);
     flattened.emplace_back(rect.bottom);
   }
-  Java_AssistantOverlayModel_setPartial(
+  Java_AssistantOverlayModel_setTouchableArea(
       env, GetOverlayModel(), base::android::ToJavaFloatArray(env, flattened));
 }
 

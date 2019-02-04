@@ -23,6 +23,7 @@ java_cpp_enum("autofill_assistant_enums_java") {
   sources = [
     "chip.h",
     "metrics.h",
+    "overlay_state.h",
   ]
 }
 
@@ -85,6 +86,7 @@ jumbo_static_library("browser") {
     "features.h",
     "metrics.cc",
     "metrics.h",
+    "overlay_state.h",
     "payment_information.h",
     "protocol_utils.cc",
     "protocol_utils.h",
