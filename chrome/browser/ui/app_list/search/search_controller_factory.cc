@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
 #include "chrome/browser/ui/app_list/search/crostini/crostini_repository_search_provider.h"
@@ -40,6 +41,7 @@ namespace {
 constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxLauncherSearchResults = 2;
+constexpr size_t kMaxAppReinstallSearchResults = 1;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
 // we request twice as many Play Store apps as we can show. Note that this still
@@ -104,6 +106,16 @@ std::unique_ptr<SearchController> CreateSearchController(
         controller->AddGroup(kMaxLauncherSearchResults, 1.0, 0.0);
     controller->AddProvider(search_api_group_id,
                             std::make_unique<LauncherSearchProvider>(profile));
+  }
+
+  // reinstallation candidates for Arc++ apps.
+  if (app_list_features::IsAppReinstallZeroStateEnabled() &&
+      arc::IsArcAllowedForProfile(profile)) {
+    size_t recommended_app_group_id =
+        controller->AddGroup(kMaxAppReinstallSearchResults, 1.0, kBoostOfApps);
+    controller->AddProvider(recommended_app_group_id,
+                            std::make_unique<ArcAppReinstallSearchProvider>(
+                                profile, kMaxAppReinstallSearchResults));
   }
 
   if (app_list_features::IsPlayStoreAppSearchEnabled()) {

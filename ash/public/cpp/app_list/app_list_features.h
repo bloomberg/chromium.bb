@@ -51,6 +51,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 // Enables the feature to rank app search result using AppSearchResultRanker.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppSearchResultRanker;
 
+// Enables the feature to include a single reinstallation candidate in
+// zero-state.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
@@ -61,6 +65,7 @@ bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
 bool ASH_PUBLIC_EXPORT IsAppSearchResultRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

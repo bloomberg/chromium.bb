@@ -2210,6 +2210,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ArcAppReinstall_Clicked">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>robsc@chromium.org</owner>
+  <owner>napper@chromium.org</owner>
+  <description>
+    A click on an app reinstall app candidate from Arc++.
+  </description>
+</action>
+
 <action name="AutoDetectChange">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -19871,6 +19880,11 @@ should be able to be added at any place in this file.
   <description>
     Recorded when the user takes a screenshot of a chrome tab.
   </description>
+</action>
+
+<action name="Tab.Screenshot.WithoutStoragePermission">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
 </action>
 
 <action name="Tab_DropURLBetweenTabs">
