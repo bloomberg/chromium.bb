@@ -360,13 +360,6 @@ enum SavePackageEvent {
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordSavePackageEvent(SavePackageEvent event);
 
-enum OriginStateOnResumption {
-  ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS = 1 << 0,
-  ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED = 1 << 1,
-  ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED = 1 << 2,
-  ORIGIN_STATE_ON_RESUMPTION_MAX = 1 << 3
-};
-
 // Enumeration for histogramming purposes.
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.

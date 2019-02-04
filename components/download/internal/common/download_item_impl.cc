@@ -1122,17 +1122,11 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   // Record some stats. If the precondition failed (the server returned
   // HTTP_PRECONDITION_FAILED), then the download will automatically retried as
   // a full request rather than a partial. Full restarts clobber validators.
-  int origin_state = 0;
-  if (chain_iter != new_create_info.url_chain.end())
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS;
   if (etag_ != new_create_info.etag ||
       last_modified_time_ != new_create_info.last_modified) {
     received_slices_.clear();
     destination_info_.received_bytes = 0;
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED;
   }
-  if (content_disposition_ != new_create_info.content_disposition)
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
 
   request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
                                  new_create_info.url_chain.end());
