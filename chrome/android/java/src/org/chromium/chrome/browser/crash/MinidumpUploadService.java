@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
+import org.chromium.components.minidump_uploader.MinidumpUploadCallable.MinidumpUploadStatus;
 import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
@@ -199,13 +200,13 @@ public class MinidumpUploadService extends IntentService {
         // Try to upload minidump
         MinidumpUploadCallable minidumpUploadCallable =
                 createMinidumpUploadCallable(minidumpFile, logfile);
-        @MinidumpUploadCallable.MinidumpUploadStatus int uploadStatus =
-                minidumpUploadCallable.call();
+        @MinidumpUploadStatus
+        int uploadStatus = minidumpUploadCallable.call();
 
-        if (uploadStatus == MinidumpUploadCallable.UPLOAD_SUCCESS) {
+        if (uploadStatus == MinidumpUploadStatus.SUCCESS) {
             // Only update UMA stats if an intended and successful upload.
             incrementCrashSuccessUploadCount(minidumpFileName);
-        } else if (uploadStatus == MinidumpUploadCallable.UPLOAD_FAILURE) {
+        } else if (uploadStatus == MinidumpUploadStatus.FAILURE) {
             // Unable to upload minidump. Incrementing try number and restarting.
             ++tries;
             if (tries == MAX_TRIES_ALLOWED) {

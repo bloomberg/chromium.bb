@@ -16,6 +16,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
+import org.chromium.components.minidump_uploader.MinidumpUploadCallable.MinidumpUploadStatus;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 
@@ -217,8 +218,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
         Assert.assertTrue(mExpectedFileAfterUpload.exists());
         assertValidUploadLogEntry();
     }
@@ -241,8 +241,8 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(MinidumpUploadCallable.UPLOAD_USER_DISABLED,
-                minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(
+                MinidumpUploadStatus.USER_DISABLED, minidumpUploadCallable.call().intValue());
 
         File expectedSkippedFileAfterUpload = new File(
                 mTestRule.getCrashDir(), mTestUpload.getName().replace(".dmp", ".skipped"));
@@ -268,7 +268,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(MinidumpUploadCallable.UPLOAD_DISABLED_BY_SAMPLING,
+        Assert.assertEquals(MinidumpUploadStatus.DISABLED_BY_SAMPLING,
                 minidumpUploadCallable.call().intValue());
 
         File expectedSkippedFileAfterUpload = new File(
@@ -295,8 +295,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_FAILURE, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.FAILURE, minidumpUploadCallable.call().intValue());
         Assert.assertFalse(mExpectedFileAfterUpload.exists());
     }
 
@@ -318,8 +317,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
         Assert.assertTrue(mExpectedFileAfterUpload.exists());
         assertValidUploadLogEntry();
     }
@@ -343,8 +341,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
         Assert.assertTrue(mExpectedFileAfterUpload.exists());
         assertValidUploadLogEntry();
     }
@@ -368,8 +365,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
 
         File expectedSkippedFileAfterUpload = new File(
                 mTestRule.getCrashDir(), mTestUpload.getName().replace(".forced", ".skipped"));
@@ -396,8 +392,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
 
         File expectedSkippedFileAfterUpload = new File(
                 mTestRule.getCrashDir(), mTestUpload.getName().replace(".forced", ".skipped"));
@@ -424,8 +419,7 @@ public class MinidumpUploadCallableTest {
 
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
 
         File expectedSkippedFileAfterUpload = new File(
                 mTestRule.getCrashDir(), mTestUpload.getName().replace(".forced", ".skipped"));
@@ -451,8 +445,7 @@ public class MinidumpUploadCallableTest {
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
 
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_FAILURE, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.FAILURE, minidumpUploadCallable.call().intValue());
         Assert.assertFalse(mExpectedFileAfterUpload.exists());
     }
 
@@ -477,8 +470,7 @@ public class MinidumpUploadCallableTest {
         MinidumpUploadCallable minidumpUploadCallable =
                 new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
 
-        Assert.assertEquals(
-                MinidumpUploadCallable.UPLOAD_SUCCESS, minidumpUploadCallable.call().intValue());
+        Assert.assertEquals(MinidumpUploadStatus.SUCCESS, minidumpUploadCallable.call().intValue());
         Assert.assertTrue(mExpectedFileAfterUpload.exists());
         assertValidUploadLogEntry();
     }
@@ -504,8 +496,8 @@ public class MinidumpUploadCallableTest {
                     new ErrorCodeHttpUrlConnectionFactory(errorCodes[n]);
             MinidumpUploadCallable minidumpUploadCallable =
                     new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-            Assert.assertEquals(MinidumpUploadCallable.UPLOAD_FAILURE,
-                    minidumpUploadCallable.call().intValue());
+            Assert.assertEquals(
+                    MinidumpUploadStatus.FAILURE, minidumpUploadCallable.call().intValue());
             // Note that mTestUpload is not renamed on failure - so we can try to upload that file
             // several times during the same test.
         }
