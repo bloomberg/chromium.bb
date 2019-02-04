@@ -70,7 +70,7 @@ class IdentityManagerFactory : public BrowserContextKeyedServiceFactory {
   void BrowserContextShutdown(content::BrowserContext* profile) override;
 
   // List of observers. Checks that list is empty on destruction.
-  mutable base::ObserverList<Observer, true>::Unchecked observer_list_;
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerFactory);
 };

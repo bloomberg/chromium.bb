@@ -20,8 +20,6 @@ std::unique_ptr<KeyedService> BuildFakeSigninManagerForTesting(
   Profile* profile = static_cast<Profile*>(context);
   manager.reset(new FakeSigninManagerForTesting(profile));
   manager->Initialize(nullptr);
-  SigninManagerFactory::GetInstance()
-      ->NotifyObserversOfSigninManagerCreationForTesting(manager.get());
   return std::move(manager);
 }
 
