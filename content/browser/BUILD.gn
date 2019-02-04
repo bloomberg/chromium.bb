@@ -355,8 +355,6 @@ jumbo_source_set("browser") {
     "appcache/appcache_database.h",
     "appcache/appcache_disk_cache.cc",
     "appcache/appcache_disk_cache.h",
-    "appcache/appcache_dispatcher_host.cc",
-    "appcache/appcache_dispatcher_host.h",
     "appcache/appcache_entry.h",
     "appcache/appcache_frontend_proxy.cc",
     "appcache/appcache_frontend_proxy.h",

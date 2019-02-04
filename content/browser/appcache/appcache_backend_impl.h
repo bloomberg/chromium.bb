@@ -16,40 +16,32 @@ namespace content {
 
 class AppCacheServiceImpl;
 
-class CONTENT_EXPORT AppCacheBackendImpl {
+class CONTENT_EXPORT AppCacheBackendImpl
+    : public blink::mojom::AppCacheBackend {
  public:
   AppCacheBackendImpl(AppCacheServiceImpl* service, int process_id);
-  ~AppCacheBackendImpl();
+  ~AppCacheBackendImpl() override;
 
   int process_id() const { return process_id_; }
 
-  // Methods to support the AppCacheBackend interface. A false return
-  // value indicates an invalid host_id and that no action was taken
-  // by the backend impl.
-  bool RegisterHost(int host_id);
-  bool UnregisterHost(int host_id);
-  bool SetSpawningHostId(int host_id, int spawning_host_id);
-  bool SelectCache(int host_id,
+  // blink::mojom::AppCacheBackend
+  void RegisterHost(int32_t host_id) override;
+  void UnregisterHost(int32_t host_id) override;
+  void SetSpawningHostId(int32_t host_id, int spawning_host_id) override;
+  void SelectCache(int32_t host_id,
                    const GURL& document_url,
-                   const int64_t cache_document_was_loaded_from,
-                   const GURL& manifest_url);
-  void GetResourceList(
-      int host_id,
-      std::vector<blink::mojom::AppCacheResourceInfo>* resource_infos);
-  bool SelectCacheForSharedWorker(int host_id, int64_t appcache_id);
-  bool MarkAsForeignEntry(int host_id,
+                   int64_t cache_document_was_loaded_from,
+                   const GURL& opt_manifest_url) override;
+  void SelectCacheForSharedWorker(int32_t host_id,
+                                  int64_t appcache_id) override;
+  void MarkAsForeignEntry(int32_t host_id,
                           const GURL& document_url,
-                          int64_t cache_document_was_loaded_from);
-
-  // The xxxWithCallback functions take ownership of the callback iff the host
-  // is found (and the return value is true). If the result is false, the
-  // callback might still be available to the caller of these methods.
-  // TODO(mek): Just pass callbacks unconditionally. That is possible if the
-  // caller is changed to call BindingSet::ReportBadMessage rather than calling
-  // the global mojo::ReportBadMessage.
-  bool GetStatusWithCallback(int host_id, GetStatusCallback* callback);
-  bool StartUpdateWithCallback(int host_id, StartUpdateCallback* callback);
-  bool SwapCacheWithCallback(int host_id, SwapCacheCallback* callback);
+                          int64_t cache_document_was_loaded_from) override;
+  void GetStatus(int32_t host_id, GetStatusCallback callback) override;
+  void StartUpdate(int32_t host_id, StartUpdateCallback callback) override;
+  void SwapCache(int32_t host_id, SwapCacheCallback callback) override;
+  void GetResourceList(int32_t host_id,
+                       GetResourceListCallback callback) override;
 
   // Returns a pointer to a registered host. The backend retains ownership.
   AppCacheHost* GetHost(int host_id) {
@@ -70,6 +62,8 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   }
 
  private:
+  // Raw pointer is safe because instances of this class are owned by
+  // |service_|.
   AppCacheServiceImpl* service_;
   AppCacheFrontendProxy frontend_proxy_;
   blink::mojom::AppCacheFrontend* frontend_;

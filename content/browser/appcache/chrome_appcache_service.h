@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #define CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -56,15 +58,8 @@ class CONTENT_EXPORT ChromeAppCacheService
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
-  void Bind(std::unique_ptr<blink::mojom::AppCacheBackend> backend,
-            blink::mojom::AppCacheBackendRequest request,
-            int process_id);
-  // Unbinds the pipe corresponding to the given process_id. Unbinding
-  // unregisters and destroys the existing backend for that process_id.
-  // The function must be called before a new backend is created for the given
-  // process_id to ensure that there is at most one backend per process_id.
-  // The function does nothing if no pipe was bound.
-  void Unbind(int process_id);
+  void CreateBackend(int process_id,
+                     blink::mojom::AppCacheBackendRequest request);
 
   void Shutdown();
 
@@ -85,6 +80,16 @@ class CONTENT_EXPORT ChromeAppCacheService
   friend class base::RefCountedThreadSafe<ChromeAppCacheService,
                                           ChromeAppCacheServiceDeleter>;
   friend struct ChromeAppCacheServiceDeleter;
+
+  void Bind(std::unique_ptr<blink::mojom::AppCacheBackend> backend,
+            blink::mojom::AppCacheBackendRequest request,
+            int process_id);
+  // Unbinds the pipe corresponding to the given process_id. Unbinding
+  // unregisters and destroys the existing backend for that process_id.
+  // The function must be called before a new backend is created for the given
+  // process_id to ensure that there is at most one backend per process_id.
+  // The function does nothing if no pipe was bound.
+  void Unbind(int process_id);
 
   void DeleteOnCorrectThread() const;
 
