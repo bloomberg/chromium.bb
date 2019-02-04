@@ -430,11 +430,11 @@ void WorkerGlobalScope::DidImportClassicScript(
     SetReferrerPolicy(referrer_policy);
   }
 
-  // Step 13.6. "Execute the Initialize a global object's CSP list algorithm
+  // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
   // This is done in the constructor of WorkerGlobalScope.
 
-  // Step 13.7. "Asynchronously complete the perform the fetch steps with
+  // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."
   EvaluateClassicScript(
       classic_script_loader->ResponseURL(), classic_script_loader->SourceText(),
