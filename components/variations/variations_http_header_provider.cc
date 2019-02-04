@@ -40,7 +40,7 @@ namespace variations {
 // ChromeContentBrowserClient::CreateURLLoaderThrottles() by also adding a
 // GoogleURLLoaderThrottle to a content::URLLoaderThrottle vector.
 // 3. SimpleURLLoader in browser, it is implemented in a SimpleURLLoader wrapper
-// function variations::CreateSimpleURLLoaderWithVariationsHeaders().
+// function variations::CreateSimpleURLLoaderWithVariationsHeader().
 
 // static
 VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {

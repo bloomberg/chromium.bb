@@ -12,6 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +99,7 @@ TEST(ContextualSuggestionsFetch, MakeResourceRequest_VariationsHeader) {
   std::unique_ptr<network::ResourceRequest> resource_request =
       fetch.MakeResourceRequestForTesting();
 
-  EXPECT_TRUE(resource_request->headers.HasHeader("X-Client-Data"));
+  EXPECT_TRUE(variations::HasVariationsHeader(*resource_request));
 }
 
 TEST(ContextualSuggestionsFetch,
@@ -118,7 +119,7 @@ TEST(ContextualSuggestionsFetch,
   std::unique_ptr<network::ResourceRequest> resource_request =
       fetch.MakeResourceRequestForTesting();
 
-  EXPECT_FALSE(resource_request->headers.HasHeader("X-Client-Data"));
+  EXPECT_FALSE(variations::HasVariationsHeader(*resource_request));
 }
 
 }  // namespace

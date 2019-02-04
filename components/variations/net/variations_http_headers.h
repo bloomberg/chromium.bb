@@ -8,15 +8,17 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace net {
-class HttpRequestHeaders;
 struct NetworkTrafficAnnotationTag;
+struct RedirectInfo;
 class URLRequest;
 }
 
 namespace network {
 struct ResourceRequest;
+struct ResourceResponseHead;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -28,10 +30,7 @@ enum class InIncognito { kNo, kYes };
 
 enum class SignedIn { kNo, kYes };
 
-// The name string for the header for variations information.
-extern const char kClientDataHeader[];
-
-// Adds Chrome experiment and metrics state as custom headers to |headers|.
+// Adds Chrome experiment and metrics state as custom headers to |request|.
 // The content of the headers will depend on |incognito| and |signed_in|
 // parameters. It is fine to pass SignedIn::NO if the state is not known to the
 // caller. This will prevent addition of ids of type
@@ -39,46 +38,80 @@ extern const char kClientDataHeader[];
 // from the variations server. These headers are never transmitted to non-Google
 // web sites, which is checked based on the destination |url|.
 // Returns true if custom headers are added. Returns false otherwise.
-bool AppendVariationHeaders(const GURL& url,
+bool AppendVariationsHeader(const GURL& url,
                             InIncognito incognito,
                             SignedIn signed_in,
-                            net::HttpRequestHeaders* headers);
+                            network::ResourceRequest* request);
 
-// Adds Chrome experiment and metrics state as custom headers to |headers|
-// when the signed-in state is not known to the caller; See above for details.
-bool AppendVariationHeadersUnknownSignedIn(const GURL& url,
+// TODO(toyoshim): Remove this deprecated API that takes net::URLRequest* once
+// all callers are removed after NetworkService being fully enabled, or migrated
+// to use SimpleURLLoader. See, crbug.com/773295.
+bool AppendVariationsHeader(const GURL& url,
+                            InIncognito incognito,
+                            SignedIn signed_in,
+                            net::URLRequest* request);
+
+// Similar to functions above, but uses specified |variations_header| as the
+// custom header value. You should not generally need to use this.
+bool AppendVariationsHeaderWithCustomValue(const GURL& url,
                                            InIncognito incognito,
-                                           net::HttpRequestHeaders* headers);
+                                           const std::string& variations_header,
+                                           network::ResourceRequest* request);
 
-// Strips the variation header if |new_location| does not point to a location
+// Adds Chrome experiment and metrics state as a custom header to |request|
+// when the signed-in state is not known to the caller; See above for details.
+bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
+                                           InIncognito incognito,
+                                           network::ResourceRequest* request);
+
+// TODO(toyoshim): Remove this deprecated API that takes net::URLRequest* once
+// all callers are removed after NetworkService being fully enabled, or migrated
+// to use SimpleURLLoader. See, crbug.com/773295.
+bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
+                                           InIncognito incognito,
+                                           net::URLRequest* request);
+
+// Removes the variations header for requests when a redirect to a non-Google
+// URL occurs.
+void RemoveVariationsHeaderIfNeeded(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers);
+
+// Strips the variations header if |new_location| does not point to a location
 // that should receive it. This is being called by the ChromeNetworkDelegate.
-// Components calling AppendVariationsHeaders() don't need to take care of this.
-void StripVariationHeaderIfNeeded(const GURL& new_location,
-                                  net::URLRequest* request);
+// Components calling AppendVariationsHeader() don't need to take care of this.
+void StripVariationsHeaderIfNeeded(const GURL& new_location,
+                                   net::URLRequest* request);
 
-// Creates a SimpleURLLoader that will include variations headers for requests
-// to Google and ensures they're removed if a redirect to a non-Google URL
-// occurs.
+// Creates a SimpleURLLoader that will include the variations header for
+// requests to Google and ensures they're removed if a redirect to a non-Google
+// URL occurs.
 std::unique_ptr<network::SimpleURLLoader>
-CreateSimpleURLLoaderWithVariationsHeaders(
+CreateSimpleURLLoaderWithVariationsHeader(
     std::unique_ptr<network::ResourceRequest> request,
     InIncognito incognito,
     SignedIn signed_in,
     const net::NetworkTrafficAnnotationTag& annotation_tag);
 
-// Creates a SimpleURLLoader that will include variations headers for requests
-// to Google when the signed-in state is unknown and ensures they're removed
-// if a redirect to a non-Google URL occurs.
+// Creates a SimpleURLLoader that will include the variations header for
+// requests to Google when the signed-in state is unknown and ensures they're
+// removed if a redirect to a non-Google URL occurs.
 std::unique_ptr<network::SimpleURLLoader>
-CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
     std::unique_ptr<network::ResourceRequest> request,
     InIncognito incognito,
     const net::NetworkTrafficAnnotationTag& annotation_tag);
 
+// Checks if |header_name| is one for the variations header.
+bool IsVariationsHeader(const std::string& header_name);
+
+// Checks if |request| contains the variations header.
+bool HasVariationsHeader(const network::ResourceRequest& request);
+
 // Checks whether variation headers should be appended to requests to the
-// specified |url|. Returns true for google.<TLD> and youtube.<TLD> URLs with
-// the https scheme.
-bool ShouldAppendVariationHeaders(const GURL& url);
+// specified |url|. Returns true for Google's hosts served over secure schemes.
+bool ShouldAppendVariationsHeader(const GURL& url);
 
 }  // namespace variations
 

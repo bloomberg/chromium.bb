@@ -429,9 +429,9 @@ void DataReductionProxyPingbackClientImpl::CreateLoaderForDataAndStart() {
                                  net::LOAD_DO_NOT_SAVE_COOKIES;
   resource_request->method = "POST";
   // Attach variations headers.
-  variations::AppendVariationHeaders(
+  variations::AppendVariationsHeader(
       pingback_url_, variations::InIncognito::kNo, variations::SignedIn::kNo,
-      &resource_request->headers);
+      resource_request.get());
   // TODO(https://crbug.com/808498): Re-add data use measurement once
   // SimpleURLLoader supports it.
   // ID=data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY

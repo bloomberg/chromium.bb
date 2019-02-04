@@ -637,11 +637,11 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   resource_request->method = method;
 
   // Add Chrome experiment state to the request headers.
-  variations::AppendVariationHeadersUnknownSignedIn(
+  variations::AppendVariationsHeaderUnknownSignedIn(
       request_url,
       driver_->IsIncognito() ? variations::InIncognito::kYes
                              : variations::InIncognito::kNo,
-      &resource_request->headers);
+      resource_request.get());
 
   // Set headers specific to the API if using it.
   if (UseApi())
@@ -650,8 +650,15 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
                                         "base64");
 
   // Put API key in request's header if there is.
+  // Note: variations::AppendVariationsHeaderUnknownsignedIn() returned true
+  // when the vadiations header was added, but variations header is not set if
+  // variations::Incognito::kYes is passed. On the other hand, the API key is
+  // needed even for variations::Incognito::kYes. So, we need to call
+  // variations::ShouldAppendVariationsHeader() below to check the condition
+  // without variations::Incognito value. Probably we want to factor out some
+  // code to know if the URL needs the API key.
   if (!api_key_.empty() &&
-      variations::ShouldAppendVariationHeaders(request_url)) {
+      variations::ShouldAppendVariationsHeader(request_url)) {
     // Make sure that we only send the API key to endpoints trusted by Chrome.
     resource_request->headers.SetHeader(kGoogApiKey, api_key_);
   }

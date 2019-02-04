@@ -263,7 +263,7 @@ int ChromeNetworkDelegate::OnHeadersReceived(
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                              const GURL& new_location) {
   extensions_delegate_->NotifyBeforeRedirect(request, new_location);
-  variations::StripVariationHeaderIfNeeded(new_location, request);
+  variations::StripVariationsHeaderIfNeeded(new_location, request);
 }
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request,

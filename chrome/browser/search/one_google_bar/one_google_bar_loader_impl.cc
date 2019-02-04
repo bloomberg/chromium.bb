@@ -147,7 +147,7 @@ class OneGoogleBarLoaderImpl::AuthenticatedURLLoader {
   void Start();
 
  private:
-  net::HttpRequestHeaders GetRequestHeaders() const;
+  void SetRequestHeaders(network::ResourceRequest* request) const;
 
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -176,11 +176,10 @@ OneGoogleBarLoaderImpl::AuthenticatedURLLoader::AuthenticatedURLLoader(
       callback_(std::move(callback)) {
 }
 
-net::HttpRequestHeaders
-OneGoogleBarLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
-  net::HttpRequestHeaders headers;
-  variations::AppendVariationHeadersUnknownSignedIn(
-      api_url_, variations::InIncognito::kNo, &headers);
+void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::SetRequestHeaders(
+    network::ResourceRequest* request) const {
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      api_url_, variations::InIncognito::kNo, request);
 #if defined(OS_CHROMEOS)
   signin::ChromeConnectedHeaderHelper chrome_connected_header_helper(
       account_consistency_mirror_required_
@@ -200,11 +199,10 @@ OneGoogleBarLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
           // Account ID is only needed for (drive|docs).google.com.
           /*account_id=*/std::string(), profile_mode);
   if (!chrome_connected_header_value.empty()) {
-    headers.SetHeader(signin::kChromeConnectedHeader,
-                      chrome_connected_header_value);
+    request->headers.SetHeader(signin::kChromeConnectedHeader,
+                               chrome_connected_header_value);
   }
 #endif
-  return headers;
 }
 
 void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
@@ -236,7 +234,7 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = api_url_;
   resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  resource_request->headers = GetRequestHeaders();
+  SetRequestHeaders(resource_request.get());
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 

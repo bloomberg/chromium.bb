@@ -468,7 +468,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
                                  net::LOAD_DO_NOT_SEND_COOKIES |
                                  net::LOAD_DO_NOT_SAVE_COOKIES;
   // Attach variations headers.
-  url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeaders(
+  url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
       std::move(resource_request), variations::InIncognito::kNo,
       variations::SignedIn::kNo, traffic_annotation);
 

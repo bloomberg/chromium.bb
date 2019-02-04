@@ -164,7 +164,7 @@ void ContextualSearchDelegate::ResolveSearchTermFromContext() {
   // Add Chrome experiment state to the request headers.
   // Reset will delete any previous loader, and we won't get any callback.
   url_loader_ =
-      variations::CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+      variations::CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
           std::move(resource_request),
           variations::InIncognito::kNo,  // Impossible to be incognito at this
                                          // point.

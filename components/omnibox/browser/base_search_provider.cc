@@ -104,11 +104,11 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
         })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  variations::AppendVariationHeadersUnknownSignedIn(
+  variations::AppendVariationsHeaderUnknownSignedIn(
       request->url,
       client->IsOffTheRecord() ? variations::InIncognito::kYes
                                : variations::InIncognito::kNo,
-      &request->headers);
+      request.get());
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
   // data_use_measurement::DataUseUserData::OMNIBOX

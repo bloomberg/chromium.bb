@@ -45,6 +45,7 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -353,17 +354,17 @@ const int kLocationAuthorizationStatusCount = 4;
 
 // Returns a dictionary with variation headers for qualified URLs. Can be empty.
 - (NSDictionary*)variationHeadersForURL:(const GURL&)URL {
-  net::HttpRequestHeaders variation_headers;
-  variations::AppendVariationHeadersUnknownSignedIn(
+  network::ResourceRequest resource_request;
+  variations::AppendVariationsHeaderUnknownSignedIn(
       URL,
       self.browserState->IsOffTheRecord() ? variations::InIncognito::kYes
                                           : variations::InIncognito::kNo,
-      &variation_headers);
+      &resource_request);
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
-  net::HttpRequestHeaders::Iterator header_iterator(variation_headers);
-  while (header_iterator.GetNext()) {
-    NSString* name = base::SysUTF8ToNSString(header_iterator.name());
-    NSString* value = base::SysUTF8ToNSString(header_iterator.value());
+  if (!resource_request.client_data_header.empty()) {
+    NSString* name = base::SysUTF8ToNSString("X-Client-Data");
+    NSString* value =
+        base::SysUTF8ToNSString(resource_request.client_data_header);
     result[name] = value;
   }
   return [result copy];

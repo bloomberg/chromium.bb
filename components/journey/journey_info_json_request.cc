@@ -145,8 +145,6 @@ JourneyInfoJsonRequest::Builder::BuildSimpleURLLoaderHeaders() const {
   if (!auth_header_.empty()) {
     headers.SetHeader("Authorization", auth_header_);
   }
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
   return headers;
 }
 
@@ -161,6 +159,9 @@ JourneyInfoJsonRequest::Builder::BuildSimpleURLLoader() const {
   resource_request->load_flags =
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
   resource_request->headers = BuildSimpleURLLoaderHeaders();
+  variations::AppendVariationsHeader(url_, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo,
+                                     resource_request.get());
   resource_request->method = "POST";
 
   auto simple_loader = network::SimpleURLLoader::Create(
