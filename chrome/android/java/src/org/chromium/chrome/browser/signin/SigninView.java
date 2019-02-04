@@ -62,10 +62,6 @@ public class SigninView extends LinearLayout {
         mAccountPickerEndImage = findViewById(R.id.account_picker_end_image);
         mSyncTitle = findViewById(R.id.signin_sync_title);
         mSyncDescription = findViewById(R.id.signin_sync_description);
-        mTapToSearchTitle = findViewById(R.id.signin_tap_to_search_title);
-        mTapToSearchDescription = findViewById(R.id.signin_tap_to_search_description);
-        mSafeBrowsingTitle = findViewById(R.id.signin_safe_browsing_title);
-        mSafeBrowsingDescription = findViewById(R.id.signin_safe_browsing_description);
         mDetailsDescription = findViewById(R.id.signin_details_description);
         mAcceptButton = findViewById(R.id.positive_button);
         mRefuseButton = findViewById(R.id.negative_button);
@@ -109,22 +105,6 @@ public class SigninView extends LinearLayout {
 
     TextView getSyncDescriptionView() {
         return mSyncDescription;
-    }
-
-    TextView getTapToSearchTitleView() {
-        return mTapToSearchTitle;
-    }
-
-    TextView getTapToSearchDescriptionView() {
-        return mTapToSearchDescription;
-    }
-
-    TextView getSafeBrowsingTitleView() {
-        return mSafeBrowsingTitle;
-    }
-
-    TextView getSafeBrowsingDescriptionView() {
-        return mSafeBrowsingDescription;
     }
 
     TextView getDetailsDescriptionView() {

@@ -321,14 +321,12 @@ public abstract class SigninFragmentBase
     }
 
     private void updateSigninDetailsDescription(boolean addSettingsLink) {
-        final @StringRes int description = mChildAccountStatus == ChildAccountStatus.REGULAR_CHILD
-                ? R.string.signin_details_description_child_account
-                : R.string.signin_details_description;
         final @Nullable Object settingsLinkSpan =
                 addSettingsLink ? new NoUnderlineClickableSpan(this::onSettingsLinkClicked) : null;
         final SpanApplier.SpanInfo spanInfo =
                 new SpanApplier.SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsLinkSpan);
-        mConsentTextTracker.setText(mView.getDetailsDescriptionView(), description,
+        mConsentTextTracker.setText(mView.getDetailsDescriptionView(),
+                R.string.signin_details_description,
                 input -> SpanApplier.applySpans(input.toString(), spanInfo));
     }
 
@@ -342,16 +340,6 @@ public abstract class SigninFragmentBase
                 ? R.string.signin_sync_description_child_account
                 : R.string.signin_sync_description;
         mConsentTextTracker.setText(mView.getSyncDescriptionView(), syncDescription);
-
-        mConsentTextTracker.setText(
-                mView.getTapToSearchTitleView(), R.string.signin_tap_to_search_title);
-        mConsentTextTracker.setText(
-                mView.getTapToSearchDescriptionView(), R.string.signin_tap_to_search_description);
-
-        mConsentTextTracker.setText(
-                mView.getSafeBrowsingTitleView(), R.string.signin_safe_browsing_title);
-        mConsentTextTracker.setText(
-                mView.getSafeBrowsingDescriptionView(), R.string.signin_safe_browsing_description);
 
         mConsentTextTracker.setText(mView.getRefuseButton(), getNegativeButtonTextId());
         mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
