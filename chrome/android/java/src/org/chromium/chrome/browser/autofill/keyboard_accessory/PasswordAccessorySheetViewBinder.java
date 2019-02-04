@@ -4,14 +4,18 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
+
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -104,14 +108,17 @@ class PasswordAccessorySheetViewBinder {
                 info.getFaviconProvider().fetchFavicon(
                         mIconSize, icon -> setIconForBitmap(username, icon));
             }
-            username.setPadding(mPadding, 0, mPadding, 0);
+            ViewCompat.setPaddingRelative(username, mPadding, 0, mPadding, 0);
             // Passwords have no icon, so increase the offset.
-            password.setPadding(2 * mPadding + mIconSize, 0, mPadding, 0);
+            ViewCompat.setPaddingRelative(password, 2 * mPadding + mIconSize, 0, mPadding, 0);
         }
 
         private void bindTextView(TextView text, KeyboardAccessoryData.UserInfo.Field field) {
             text.setTransformationMethod(
                     field.isObfuscated() ? new PasswordTransformationMethod() : null);
+            // With transformation, the character set forces a LTR gravity. Therefore, invert it:
+            text.setGravity(Gravity.CENTER_VERTICAL
+                    | (isLayoutRtl() && field.isObfuscated() ? Gravity.END : Gravity.START));
             text.setText(field.getDisplayText());
             text.setContentDescription(field.getA11yDescription());
             text.setOnClickListener(!field.isSelectable() ? null : src -> field.triggerSelection());
