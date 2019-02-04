@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -45,7 +46,9 @@ void ManagedUIHandler::InitializeInternal(content::WebUI* web_ui,
 }
 
 ManagedUIHandler::ManagedUIHandler(Profile* profile)
-    : profile_(profile), managed_(chrome::ShouldDisplayManagedUi(profile_)) {}
+    : profile_(profile), managed_(chrome::ShouldDisplayManagedUi(profile_)) {
+  pref_registrar_.Init(profile_->GetPrefs());
+}
 
 ManagedUIHandler::~ManagedUIHandler() {
   RemoveObservers();
@@ -86,6 +89,10 @@ void ManagedUIHandler::AddObservers() {
     auto domain = static_cast<policy::PolicyDomain>(i);
     policy_service->AddObserver(domain, this);
   }
+
+  pref_registrar_.Add(prefs::kSupervisedUserId,
+                      base::BindRepeating(&ManagedUIHandler::NotifyIfChanged,
+                                          base::Unretained(this)));
 }
 
 void ManagedUIHandler::RemoveObservers() {
@@ -99,6 +106,8 @@ void ManagedUIHandler::RemoveObservers() {
     auto domain = static_cast<policy::PolicyDomain>(i);
     policy_service->RemoveObserver(domain, this);
   }
+
+  pref_registrar_.RemoveAll();
 }
 
 std::unique_ptr<base::DictionaryValue> ManagedUIHandler::GetDataSourceUpdate()
