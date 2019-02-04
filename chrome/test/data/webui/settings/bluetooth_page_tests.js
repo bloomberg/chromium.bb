@@ -44,6 +44,14 @@ suite('Bluetooth', function() {
   };
 
   /** @type {!chrome.bluetooth.Device} */
+  let fakeUnpairedDevice3 = {
+    address: '00:00:00:00:00:03',
+    name: 'FakeUnpairedDevice3',
+    paired: false,
+    connected: false,
+  };
+
+  /** @type {!chrome.bluetooth.Device} */
   let fakePairedDevice1 = {
     address: '10:00:00:00:00:01',
     name: 'FakePairedDevice1',
@@ -55,6 +63,14 @@ suite('Bluetooth', function() {
   let fakePairedDevice2 = {
     address: '10:00:00:00:00:02',
     name: 'FakePairedDevice2',
+    paired: true,
+    connected: false,
+  };
+
+  /** @type {!chrome.bluetooth.Device} */
+  let fakePairedDevice3 = {
+    address: '10:00:00:00:00:03',
+    name: 'FakePairedDevice3',
     paired: true,
     connected: false,
   };
@@ -86,7 +102,7 @@ suite('Bluetooth', function() {
     bluetoothPage.prefs = getFakePrefs();
     assertTrue(!!bluetoothPage);
 
-    bluetoothApi_.setDevicesForTest([]);
+    bluetoothApi_.clearDevicesForTest();
     document.body.appendChild(bluetoothPage);
     Polymer.dom.flush();
   });
@@ -156,7 +172,7 @@ suite('Bluetooth', function() {
     }
 
     test('pair device', async function() {
-      bluetoothApi_.setDevicesForTest([
+      bluetoothApi_.simulateDevicesAddedForTest([
         fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
         fakePairedDevice2
       ]);
@@ -177,7 +193,7 @@ suite('Bluetooth', function() {
     });
 
     test('pair dialog', async function() {
-      bluetoothApi_.setDevicesForTest([
+      bluetoothApi_.simulateDevicesAddedForTest([
         fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
         fakePairedDevice2
       ]);
@@ -227,8 +243,9 @@ suite('Bluetooth', function() {
         assertTrue(!!pairedDeviceIronList);
       });
 
-      test('Unpaired devices: devices added', async function() {
-        bluetoothApi_.setDevicesForTest(
+      test('Unpaired devices: added and removed', async function() {
+        // Add two unpaired devices.
+        bluetoothApi_.simulateDevicesAddedForTest(
             [fakeUnpairedDevice1, fakeUnpairedDevice2]);
         await waitForListUpdateTimeout();
         Polymer.dom.flush();
@@ -239,6 +256,11 @@ suite('Bluetooth', function() {
         assertTrue(subpage.$.noUnpairedDevices.hidden);
         assertFalse(subpage.$.noPairedDevices.hidden);
 
+        assertEquals(
+            unpairedDeviceList()[0].address, fakeUnpairedDevice1.address);
+        assertEquals(
+            unpairedDeviceList()[1].address, fakeUnpairedDevice2.address);
+
         unpairedDeviceIronList.notifyResize();
         Polymer.dom.flush();
 
@@ -247,10 +269,94 @@ suite('Bluetooth', function() {
         assertEquals(2, devices.length);
         assertFalse(devices[0].device.paired);
         assertFalse(devices[1].device.paired);
+
+        // Remove the first device.
+        bluetoothApi_.simulateDevicesRemovedForTest(
+            [fakeUnpairedDevice1.address]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(1, deviceList().length);
+        assertEquals(1, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        assertEquals(
+            unpairedDeviceList()[0].address, fakeUnpairedDevice2.address);
+
+        // Add the first device again. Since the devices are always sorted by
+        // address, the new device will be added at the beginning of the list.
+        // TODO(ortuno): Devices should always be added at the end of the list.
+        bluetoothApi_.simulateDevicesAddedForTest([fakeUnpairedDevice1]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(2, deviceList().length);
+        assertEquals(2, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        assertEquals(
+            unpairedDeviceList()[0].address, fakeUnpairedDevice1.address);
+        assertEquals(
+            unpairedDeviceList()[1].address, fakeUnpairedDevice2.address);
+
+        // Remove both devices.
+        bluetoothApi_.simulateDevicesRemovedForTest(
+            [fakeUnpairedDevice1.address, fakeUnpairedDevice2.address]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(0, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
       });
 
-      test('Paired devices: devices added', async function() {
-        bluetoothApi_.setDevicesForTest([fakePairedDevice1, fakePairedDevice2]);
+      test('Unpaired devices: device updated', async function() {
+        // Add three unpaired devices.
+        bluetoothApi_.simulateDevicesAddedForTest(
+            [fakeUnpairedDevice1, fakeUnpairedDevice2, fakeUnpairedDevice3]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(3, deviceList().length);
+        assertEquals(3, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        // Update the one in the middle.
+        let updatedDevice = Object.assign({}, fakeUnpairedDevice2);
+        updatedDevice.name = 'Updated Name';
+        bluetoothApi_.simulateDeviceUpdatedForTest(updatedDevice);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(3, deviceList().length);
+        assertEquals(3, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        for (const prop in updatedDevice) {
+          assertEquals(updatedDevice[prop], deviceList()[1][prop]);
+          assertEquals(updatedDevice[prop], unpairedDeviceList()[1][prop]);
+        }
+      });
+
+      test('Paired devices: devices added and removed', async function() {
+        // Add two paired devices.
+        bluetoothApi_.simulateDevicesAddedForTest(
+            [fakePairedDevice1, fakePairedDevice2]);
         await waitForListUpdateTimeout();
         Polymer.dom.flush();
 
@@ -270,10 +376,155 @@ suite('Bluetooth', function() {
         assertTrue(devices[0].device.connected);
         assertTrue(devices[1].device.paired);
         assertFalse(devices[1].device.connected);
+
+        // Remove the first device.
+        bluetoothApi_.simulateDevicesRemovedForTest(
+            [fakePairedDevice1.address]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(1, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(1, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        assertEquals(pairedDeviceList()[0].address, fakePairedDevice2.address);
+
+        // Add the first device again. Since the devices are always sorted by
+        // address, the new device will be added at the beginning of the list.
+        // TODO(ortuno): Devices should always be added at the end of the list.
+        bluetoothApi_.simulateDevicesAddedForTest([fakePairedDevice1]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(2, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(2, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        assertEquals(pairedDeviceList()[0].address, fakePairedDevice1.address);
+        assertEquals(pairedDeviceList()[1].address, fakePairedDevice2.address);
+
+        // Remove both devices.
+        bluetoothApi_.simulateDevicesRemovedForTest(
+            [fakePairedDevice1.address, fakePairedDevice2.address]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(0, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+      });
+
+      test('Paired devices: device updated', async function() {
+        // Add three paired devices.
+        bluetoothApi_.simulateDevicesAddedForTest(
+            [fakePairedDevice1, fakePairedDevice2, fakePairedDevice3]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(3, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(3, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        // Update the one in the middle.
+        let updatedDevice = Object.assign({}, fakePairedDevice2);
+        updatedDevice.name = 'Updated Name';
+        bluetoothApi_.simulateDeviceUpdatedForTest(updatedDevice);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(3, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(3, pairedDeviceList().length);
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        for (const prop in updatedDevice) {
+          assertEquals(updatedDevice[prop], deviceList()[1][prop]);
+          assertEquals(updatedDevice[prop], pairedDeviceList()[1][prop]);
+        }
+      });
+
+      test('Unpaired device becomes paired', async function() {
+        // Add unpaired device.
+        bluetoothApi_.simulateDevicesAddedForTest([fakeUnpairedDevice1]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(1, deviceList().length);
+        assertEquals(1, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        // Mark the device as paired.
+        let nowPairedDevice = Object.assign({}, fakeUnpairedDevice1);
+        nowPairedDevice.paired = true;
+        bluetoothApi_.simulateDeviceUpdatedForTest(nowPairedDevice);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(1, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(1, pairedDeviceList().length);
+
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        assertTrue(deviceList()[0].paired);
+        assertTrue(pairedDeviceList()[0].paired);
+      });
+
+      test('Paired device becomes unpaired', async function() {
+        // Add paired device.
+        bluetoothApi_.simulateDevicesAddedForTest([fakePairedDevice1]);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(1, deviceList().length);
+        assertEquals(0, unpairedDeviceList().length);
+        assertEquals(1, pairedDeviceList().length);
+
+        assertFalse(subpage.$.noUnpairedDevices.hidden);
+        assertTrue(subpage.$.noPairedDevices.hidden);
+
+        // Mark the device as not paired.
+        let nowUnpairedDevice = Object.assign({}, fakePairedDevice1);
+        nowUnpairedDevice.paired = false;
+        bluetoothApi_.simulateDeviceUpdatedForTest(nowUnpairedDevice);
+
+        await waitForListUpdateTimeout();
+        Polymer.dom.flush();
+
+        assertEquals(1, deviceList().length);
+        assertEquals(1, unpairedDeviceList().length);
+        assertEquals(0, pairedDeviceList().length);
+
+        assertTrue(subpage.$.noUnpairedDevices.hidden);
+        assertFalse(subpage.$.noPairedDevices.hidden);
+
+        assertFalse(deviceList()[0].paired);
+        assertFalse(unpairedDeviceList()[0].paired);
       });
 
       test('Unpaired and paired devices: devices added', async function() {
-        bluetoothApi_.setDevicesForTest([
+        bluetoothApi_.simulateDevicesAddedForTest([
           fakeUnpairedDevice1, fakeUnpairedDevice2, fakePairedDevice1,
           fakePairedDevice2
         ]);
