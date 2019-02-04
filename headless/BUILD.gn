@@ -508,6 +508,10 @@ if (!is_component_build) {
       "lib/renderer/headless_content_renderer_client.h",
     ]
 
+    if (headless_use_embedded_resources) {
+      defines = [ "HEADLESS_USE_EMBEDDED_RESOURCES" ]
+    }
+
     if (enable_basic_printing) {
       sources += [
         "lib/renderer/headless_print_render_frame_helper_delegate.cc",
