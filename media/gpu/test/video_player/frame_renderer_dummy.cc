@@ -8,10 +8,6 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
-#include "ui/ozone/public/ozone_platform.h"
-#endif
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
@@ -22,9 +18,7 @@ FrameRendererDummy::FrameRendererDummy() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-FrameRendererDummy::~FrameRendererDummy() {
-  Destroy();
-}
+FrameRendererDummy::~FrameRendererDummy() {}
 
 // static
 std::unique_ptr<FrameRendererDummy> FrameRendererDummy::Create() {
@@ -36,35 +30,7 @@ std::unique_ptr<FrameRendererDummy> FrameRendererDummy::Create() {
 }
 
 bool FrameRendererDummy::Initialize() {
-#if defined(USE_OZONE)
-  // Initialize Ozone. This is necessary even though we are not doing any actual
-  // rendering. If not initialized a crash will occur when assigning picture
-  // buffers, even when passing 0 as texture ID.
-  // TODO(@dstaessens):
-  // * Get rid of the Ozone dependency, as it forces us to call 'stop ui' when
-  //   running tests.
-  LOG(INFO) << "Initializing Ozone Platform...\n"
-               "If this hangs indefinitely please call 'stop ui' first!";
-  ui::OzonePlatform::InitParams params = {.single_process = false};
-  ui::OzonePlatform::InitializeForUI(params);
-  ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-
-  // Initialize the Ozone GPU helper. If this is not done an error will occur:
-  // "Check failed: drm. No devices available for buffer allocation."
-  // Note: If a task environment is not set up initialization will hang
-  // indefinitely here.
-  gpu_helper_.reset(new ui::OzoneGpuTestHelper());
-  gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
-#endif
-
   return true;
-}
-
-void FrameRendererDummy::Destroy() {
-#if defined(USE_OZONE)
-  gpu_helper_.reset();
-#endif
 }
 
 void FrameRendererDummy::AcquireGLContext() {

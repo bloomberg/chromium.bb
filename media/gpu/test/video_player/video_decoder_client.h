@@ -55,7 +55,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   // thread-safe.
   static std::unique_ptr<VideoDecoderClient> Create(
       const VideoPlayer::EventCallback& event_cb,
-      FrameRenderer* frame_renderer,
+      std::unique_ptr<FrameRenderer> frame_renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
 
@@ -93,7 +93,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
 
   VideoDecoderClient(
       const VideoPlayer::EventCallback& event_cb,
-      FrameRenderer* renderer,
+      std::unique_ptr<FrameRenderer> renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
 
@@ -139,7 +139,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   int32_t GetNextPictureBufferId();
 
   VideoPlayer::EventCallback event_cb_;
-  FrameRenderer* const frame_renderer_;
+  std::unique_ptr<FrameRenderer> const frame_renderer_;
   std::vector<std::unique_ptr<VideoFrameProcessor>> const frame_processors_;
 
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory_;

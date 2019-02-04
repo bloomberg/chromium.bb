@@ -25,11 +25,11 @@ namespace test {
 
 VideoDecoderClient::VideoDecoderClient(
     const VideoPlayer::EventCallback& event_cb,
-    FrameRenderer* renderer,
+    std::unique_ptr<FrameRenderer> renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config)
     : event_cb_(event_cb),
-      frame_renderer_(renderer),
+      frame_renderer_(std::move(renderer)),
       frame_processors_(std::move(frame_processors)),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
@@ -42,20 +42,23 @@ VideoDecoderClient::VideoDecoderClient(
 VideoDecoderClient::~VideoDecoderClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
-  WaitForFrameProcessors();
-
   DestroyDecoder();
   decoder_client_thread_.Stop();
+
+  // Wait until the frame processors are done, before destroying them. As the
+  // decoder has been destroyed no new frames will be sent to the processors.
+  WaitForFrameProcessors();
 }
 
 // static
 std::unique_ptr<VideoDecoderClient> VideoDecoderClient::Create(
     const VideoPlayer::EventCallback& event_cb,
-    FrameRenderer* frame_renderer,
+    std::unique_ptr<FrameRenderer> frame_renderer,
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config) {
-  auto decoder_client = base::WrapUnique(new VideoDecoderClient(
-      event_cb, frame_renderer, std::move(frame_processors), config));
+  auto decoder_client = base::WrapUnique(
+      new VideoDecoderClient(event_cb, std::move(frame_renderer),
+                             std::move(frame_processors), config));
   if (!decoder_client->Initialize()) {
     return nullptr;
   }
@@ -270,7 +273,7 @@ void VideoDecoderClient::CreateDecoderFactoryTask(base::WaitableEvent* done) {
   if (hasGLContext) {
     decoder_factory_ = GpuVideoDecodeAcceleratorFactory::Create(
         base::BindRepeating(&FrameRenderer::GetGLContext,
-                            base::Unretained(frame_renderer_)),
+                            base::Unretained(frame_renderer_.get())),
         base::BindRepeating([]() { return true; }),
         base::BindRepeating([](uint32_t, uint32_t,
                                const scoped_refptr<gl::GLImage>&,

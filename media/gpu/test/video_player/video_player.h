@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/gpu/test/video_frame_helpers.h"
+#include "media/gpu/test/video_player/frame_renderer.h"
 
 namespace media {
 namespace test {
@@ -59,7 +60,7 @@ class VideoPlayer {
   // guarantee they outlive the video player.
   static std::unique_ptr<VideoPlayer> Create(
       const Video* video,
-      FrameRenderer* frame_renderer,
+      std::unique_ptr<FrameRenderer> frame_renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
 
@@ -112,7 +113,7 @@ class VideoPlayer {
 
   void Initialize(
       const Video* video,
-      FrameRenderer* frame_renderer,
+      std::unique_ptr<FrameRenderer> frame_renderer,
       std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
       const VideoDecoderClientConfig& config);
   void Destroy();

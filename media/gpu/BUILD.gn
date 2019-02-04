@@ -649,6 +649,9 @@ if (is_chromeos) {
     if (use_vaapi) {
       deps += [ "//media/gpu/vaapi" ]
     }
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 }
 

@@ -18,6 +18,11 @@
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_gpu_test_helper.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
@@ -39,11 +44,14 @@ class VideoDecoderTestEnvironment : public ::testing::Environment {
   void TearDown() override;
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
-  std::unique_ptr<FrameRendererDummy> dummy_frame_renderer_;
   const Video* const video_;
 
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
+
+#if defined(USE_OZONE)
+  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
+#endif
 };
 
 void VideoDecoderTestEnvironment::SetUp() {
@@ -63,12 +71,26 @@ void VideoDecoderTestEnvironment::SetUp() {
   media::VaapiWrapper::PreSandboxInitialization();
 #endif
 
-  dummy_frame_renderer_ = FrameRendererDummy::Create();
-  ASSERT_NE(dummy_frame_renderer_, nullptr);
+#if defined(USE_OZONE)
+  // Initialize Ozone. This is necessary to gain access to the GPU for hardware
+  // video decode acceleration.
+  LOG(WARNING) << "Initializing Ozone Platform...\n"
+                  "If this hangs indefinitely please call 'stop ui' first!";
+  ui::OzonePlatform::InitParams params = {.single_process = false};
+  ui::OzonePlatform::InitializeForUI(params);
+  ui::OzonePlatform::InitializeForGPU(params);
+  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
+
+  // Initialize the Ozone GPU helper. If this is not done an error will occur:
+  // "Check failed: drm. No devices available for buffer allocation."
+  // Note: If a task environment is not set up initialization will hang
+  // indefinitely here.
+  gpu_helper_.reset(new ui::OzoneGpuTestHelper());
+  gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
+#endif
 }
 
 void VideoDecoderTestEnvironment::TearDown() {
-  dummy_frame_renderer_.reset();
   task_environment_.reset();
 }
 
@@ -94,7 +116,7 @@ class VideoDecoderTest : public ::testing::Test {
             .Append(base::FilePath(test_info->name()));
     frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
 
-    return VideoPlayer::Create(video, g_env->dummy_frame_renderer_.get(),
+    return VideoPlayer::Create(video, FrameRendererDummy::Create(),
                                std::move(frame_processors), config);
   }
 };
