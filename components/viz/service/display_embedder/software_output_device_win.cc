@@ -348,10 +348,7 @@ std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinBrowser(
 std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinGpu(
     HWND hwnd,
     OutputDeviceBacking* backing,
-    mojom::DisplayClient* display_client,
-    HWND* out_child_hwnd) {
-  // TODO(kylechar): Remove |out_child_hwnd| parameter it's no longer used.
-
+    mojom::DisplayClient* display_client) {
   if (NeedsToUseLayerWindow(hwnd)) {
     DCHECK(display_client);
 
@@ -360,8 +357,6 @@ std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinGpu(
     mojom::LayeredWindowUpdaterPtr layered_window_updater;
     display_client->CreateLayeredWindowUpdater(
         mojo::MakeRequest(&layered_window_updater));
-
-    *out_child_hwnd = nullptr;
 
     return std::make_unique<SoftwareOutputDeviceWinProxy>(
         hwnd, std::move(layered_window_updater));

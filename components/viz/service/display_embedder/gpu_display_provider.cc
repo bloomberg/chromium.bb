@@ -33,7 +33,6 @@
 #if defined(OS_WIN)
 #include "components/viz/service/display_embedder/gl_output_surface_win.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
-#include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -246,25 +245,8 @@ GpuDisplayProvider::CreateSoftwareOutputDeviceForPlatform(
     return std::make_unique<SoftwareOutputDevice>();
 
 #if defined(OS_WIN)
-  HWND child_hwnd;
-  auto device = CreateSoftwareOutputDeviceWinGpu(
-      surface_handle, &output_device_backing_, display_client, &child_hwnd);
-
-  // If |child_hwnd| isn't null then a new child HWND was created.
-  if (child_hwnd) {
-    if (gpu_channel_manager_delegate_) {
-      // Send an IPC to browser process for SetParent().
-      gpu_channel_manager_delegate_->SendCreatedChildWindow(surface_handle,
-                                                            child_hwnd);
-    } else {
-      // We are already in the browser process.
-      gfx::RenderingWindowManager::GetInstance()->RegisterChild(
-          surface_handle, child_hwnd,
-          /*expected_child_process_id=*/::GetCurrentProcessId());
-    }
-  }
-
-  return device;
+  return CreateSoftwareOutputDeviceWinGpu(
+      surface_handle, &output_device_backing_, display_client);
 #elif defined(OS_MACOSX)
   return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)
