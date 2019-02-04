@@ -58,11 +58,16 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
         task_runner_handle) {
+  // We only get here for the main script request from the shadow page.
+  // importScripts() and other subresource fetches are handled on the worker
+  // thread by ServiceWorkerFetchContextImpl.
+  DCHECK_EQ(blink::mojom::RequestContextType::SERVICE_WORKER,
+            request.GetRequestContext());
+
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   // RenderThreadImpl may be null in some tests.
   if (render_thread && script_loader_factory() &&
-      blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-      IsScriptRequest(request)) {
+      blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     // TODO(crbug.com/796425): Temporarily wrap the raw
     // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
     return std::make_unique<WebURLLoaderImpl>(
@@ -71,19 +76,6 @@ ServiceWorkerNetworkProviderForServiceWorker::CreateURLLoader(
             script_loader_factory()));
   }
   return nullptr;
-}
-
-// TODO(falken): This class is only used for the shadow page so import
-// scripts shouldn't come here. Change the callsite to be a DCHECK that only
-// SERVICE_WORKER is used.
-//
-// static
-bool ServiceWorkerNetworkProviderForServiceWorker::IsScriptRequest(
-    const blink::WebURLRequest& request) {
-  auto request_context = request.GetRequestContext();
-  return request_context == blink::mojom::RequestContextType::SERVICE_WORKER ||
-         request_context == blink::mojom::RequestContextType::SCRIPT ||
-         request_context == blink::mojom::RequestContextType::IMPORT;
 }
 
 }  // namespace content

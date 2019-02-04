@@ -39,8 +39,6 @@ class ServiceWorkerNetworkProviderForServiceWorker final
   }
 
  private:
-  static bool IsScriptRequest(const blink::WebURLRequest& request);
-
   const int provider_id_;
   // The URL loader factory for loading the service worker's scripts.
   network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
