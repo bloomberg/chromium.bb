@@ -197,6 +197,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobMemoryController {
   // synchronously.
   void CallWhenStorageLimitsAreKnown(base::OnceClosure callback);
 
+  void set_amount_of_physical_memory_for_testing(int64_t amount_of_memory) {
+    amount_of_memory_for_testing_ = amount_of_memory;
+  }
+
  private:
   class FileQuotaAllocationTask;
   class MemoryQuotaAllocationTask;
@@ -273,6 +277,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobMemoryController {
   bool did_schedule_limit_calculation_ = false;
   bool did_calculate_storage_limits_ = false;
   std::vector<base::OnceClosure> on_calculate_limits_callbacks_;
+
+  base::Optional<int64_t> amount_of_memory_for_testing_;
 
   // Memory bookkeeping. These numbers are all disjoint.
   // This is the amount of memory we're using for blobs in RAM, including the
