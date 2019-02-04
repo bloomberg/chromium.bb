@@ -23,7 +23,7 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
   static crashpad::SimpleStringDictionary* annotations = []() {
     auto* annotations = new crashpad::SimpleStringDictionary();
     annotations->SetKeyValue("ptype", "AlertNotificationService.xpc");
-    annotations->SetKeyValue("pid", base::IntToString(getpid()).c_str());
+    annotations->SetKeyValue("pid", base::NumberToString(getpid()).c_str());
     return annotations;
   }();
   return annotations;
