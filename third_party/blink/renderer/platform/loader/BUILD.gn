@@ -20,6 +20,8 @@ blink_platform_sources("loader") {
     "cors/cors.h",
     "cors/cors_error_string.cc",
     "cors/cors_error_string.h",
+    "fetch/buffering_bytes_consumer.cc",
+    "fetch/buffering_bytes_consumer.h",
     "fetch/buffering_data_pipe_writer.cc",
     "fetch/buffering_data_pipe_writer.h",
     "fetch/bytes_consumer.cc",
@@ -130,6 +132,7 @@ jumbo_source_set("unit_tests") {
 
   # Source files for blink_platform_unittests.
   sources = [
+    "fetch/buffering_bytes_consumer_test.cc",
     "fetch/buffering_data_pipe_writer_test.cc",
     "fetch/bytes_consumer_for_data_consumer_handle_test.cc",
     "fetch/bytes_consumer_test.cc",

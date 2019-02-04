@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BUFFERING_BYTES_CONSUMER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BUFFERING_BYTES_CONSUMER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BUFFERING_BYTES_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BUFFERING_BYTES_CONSUMER_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -25,8 +25,9 @@ namespace blink {
 // BufferingBytesConsumer buffers reads chunks from the original BytesConsumer
 // and store it until they are read, before read requests are issued from the
 // client.
-class CORE_EXPORT BufferingBytesConsumer final : public BytesConsumer,
-                                                 private BytesConsumer::Client {
+class PLATFORM_EXPORT BufferingBytesConsumer final
+    : public BytesConsumer,
+      private BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(BufferingBytesConsumer);
 
  public:
@@ -66,4 +67,4 @@ class CORE_EXPORT BufferingBytesConsumer final : public BytesConsumer,
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BUFFERING_BYTES_CONSUMER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BUFFERING_BYTES_CONSUMER_H_
