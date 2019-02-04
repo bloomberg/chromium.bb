@@ -317,9 +317,9 @@ void WebTestContentBrowserClient::ExposeInterfacesToFrame(
   registry->AddInterface(base::Bind(&BindWebTestHelper));
 }
 
-scoped_refptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
+std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& url,

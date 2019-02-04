@@ -77,104 +77,6 @@ void RecordHttpAuthPromptType(AuthPromptType prompt_type) {
                             AUTH_PROMPT_TYPE_ENUM_COUNT);
 }
 
-// LoginHandlerProxy bridges between the reference-counted IO-thread
-// content::LoginHandler interface and the uniquely-owned single-threaded
-// LoginHandler. This is a temporary measure until the IO/UI hop is moved to the
-// other side of the //content boundary. https://crbug.com/908926.
-class LoginHandlerProxy : public content::LoginDelegate {
- public:
-  explicit LoginHandlerProxy(LoginAuthRequiredCallback callback)
-      : callback_(std::move(callback)) {}
-
-  void Start(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const content::GlobalRequestID& request_id,
-      bool is_request_for_main_frame,
-      const GURL& url,
-      scoped_refptr<net::HttpResponseHeaders> response_headers) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &LoginHandlerProxy::StartUI, this, base::RetainedRef(auth_info),
-            std::move(web_contents_getter), request_id,
-            is_request_for_main_frame, url, std::move(response_headers)));
-  }
-
-  void OnRequestCancelled() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    callback_.Reset();
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&LoginHandlerProxy::OnRequestCancelledUI, this));
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<LoginHandlerProxy>;
-  ~LoginHandlerProxy() override {
-    // At least one of OnRequestCancelledUI or OnAuthCredentialsUI must have
-    // been called at this point.
-    CHECK(!handler_);
-  }
-
-  void StartUI(
-      net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const content::GlobalRequestID& request_id,
-      bool is_request_for_main_frame,
-      const GURL& url,
-      scoped_refptr<net::HttpResponseHeaders> response_headers) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    WebContents* web_contents = web_contents_getter.Run();
-    if (!web_contents) {
-      // The request may have been canceled, or it may be for a renderer not
-      // hosted by a tab (e.g. an extension).
-      OnAuthCredentialsUI(base::nullopt);
-      return;
-    }
-
-    handler_ = LoginHandler::Create(
-                   auth_info, web_contents,
-                   base::BindOnce(&LoginHandlerProxy::OnAuthCredentialsUI,
-                                  base::Unretained(this)))
-                   .release();
-    handler_->Start(request_id, is_request_for_main_frame, url,
-                    std::move(response_headers));
-  }
-
-  void OnAuthCredentialsUI(
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    delete handler_;
-    handler_ = nullptr;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&LoginHandlerProxy::OnAuthCredentialsIO, this,
-                       auth_credentials));
-  }
-
-  void OnAuthCredentialsIO(
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    // OnRequestCancelled does inform handler_ of the cancelation, but that
-    // IO-to-UI hop may happen concurrently with handler_ calling
-    // OnAuthCredentialsUI.
-    if (callback_) {
-      std::move(callback_).Run(auth_credentials);
-    }
-  }
-
-  void OnRequestCancelledUI() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    delete handler_;
-    handler_ = nullptr;
-  }
-
-  LoginHandler* handler_ = nullptr;  // owned on the UI thread
-  LoginAuthRequiredCallback callback_;
-};
-
 }  // namespace
 
 // ----------------------------------------------------------------------------
@@ -655,17 +557,17 @@ void LoginHandler::BuildViewAndNotify(
 
 // ----------------------------------------------------------------------------
 // Public API
-scoped_refptr<content::LoginDelegate> CreateLoginPrompt(
+std::unique_ptr<content::LoginDelegate> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
     const GURL& url,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     LoginAuthRequiredCallback auth_required_callback) {
-  auto delegate = base::MakeRefCounted<LoginHandlerProxy>(
-      std::move(auth_required_callback));
-  delegate->Start(auth_info, std::move(web_contents_getter), request_id,
-                  is_request_for_main_frame, url, std::move(response_headers));
-  return delegate;
+  std::unique_ptr<LoginHandler> handler = LoginHandler::Create(
+      auth_info, web_contents, std::move(auth_required_callback));
+  handler->Start(request_id, is_request_for_main_frame, url,
+                 std::move(response_headers));
+  return handler;
 }

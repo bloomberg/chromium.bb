@@ -836,9 +836,9 @@ ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
   return nullptr;
 }
 
-scoped_refptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
+std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents* web_contents,
     const GlobalRequestID& request_id,
     bool is_request_for_main_frame,
     const GURL& url,

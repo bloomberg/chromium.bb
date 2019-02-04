@@ -163,7 +163,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   std::unique_ptr<ResourceHandler> handler_;
   ResourceLoaderDelegate* delegate_;
 
-  scoped_refptr<LoginDelegate> login_delegate_;
+  std::unique_ptr<LoginDelegate> login_delegate_;
   std::unique_ptr<SSLClientAuthHandler> ssl_client_auth_handler_;
 
   base::TimeTicks read_deferral_start_time_;

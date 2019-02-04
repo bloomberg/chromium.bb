@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_RESOURCE_LOADER_DELEGATE_H_
 #define CONTENT_BROWSER_LOADER_RESOURCE_LOADER_DELEGATE_H_
 
-#include "base/memory/scoped_refptr.h"
+#include <memory>
+
 #include "content/common/content_export.h"
 
 class GURL;
@@ -24,7 +25,7 @@ class ResourceLoader;
 
 class CONTENT_EXPORT ResourceLoaderDelegate {
  public:
-  virtual scoped_refptr<LoginDelegate> CreateLoginDelegate(
+  virtual std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) = 0;
 

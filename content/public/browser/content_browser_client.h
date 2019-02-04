@@ -1338,16 +1338,29 @@ class CONTENT_EXPORT ContentBrowserClient {
       ResourceContext* resource_context);
 
   // Creates a LoginDelegate that asks the user for a username and password.
-  // Caller owns the returned pointer.
+  // |web_contents| should not be null when CreateLoginDelegate is called.
   // |first_auth_attempt| is needed by AwHttpAuthHandler constructor.
   // |auth_required_callback| is used to transfer auth credentials to
   // URLRequest::SetAuth(). The credentials parameter of the callback
   // is base::nullopt if the request should be cancelled; otherwise
-  // the credentials will be used to respond to the auth challenge. This
-  // callback should be called on the IO thread task runner.
-  virtual scoped_refptr<LoginDelegate> CreateLoginDelegate(
+  // the credentials will be used to respond to the auth challenge.
+  // This method is called on the UI thread. The callback must be
+  // called on the UI thread as well. If the LoginDelegate is destroyed
+  // before the callback, the request has been canceled and the callback
+  // should not be called.
+  //
+  // There is no guarantee that |web_contents| will outlive the
+  // LoginDelegate. The LoginDelegate implementation can use WebContentsObserver
+  // to be notified when the WebContents is destroyed.
+  //
+  // TODO(davidben): This should be guaranteed. It isn't due to asynchronous
+  // destruction between the network logic and the owning WebContents, but that
+  // should be hidden from the embedder. Ideally this method would be on
+  // WebContentsDelegate, where the lifetime ordering is more
+  // obvious. https://crbug.com/456255
+  virtual std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      WebContents* web_contents,
       const GlobalRequestID& request_id,
       bool is_request_for_main_frame,
       const GURL& url,
