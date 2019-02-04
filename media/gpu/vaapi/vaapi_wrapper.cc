@@ -1016,19 +1016,20 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
     va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);
-    int dmabuf_fd = pixmap->GetDmaBufFd(i);
-    if (dmabuf_fd < 0) {
-      LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
-      return nullptr;
-    }
-    fds[i] = base::checked_cast<uintptr_t>(dmabuf_fd);
     DVLOG(4) << "plane " << i << ": pitch: " << va_attrib_extbuf.pitches[i]
              << " offset: " << va_attrib_extbuf.offsets[i];
   }
-
   va_attrib_extbuf.num_planes = num_planes;
-  va_attrib_extbuf.buffers = fds.data();
-  va_attrib_extbuf.num_buffers = fds.size();
+
+  if (pixmap->GetDmaBufFd(0) < 0) {
+    LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
+    return nullptr;
+  }
+  // We only have to pass the first file descriptor to a driver. A VA-API driver
+  // shall create a VASurface from the single fd correctly.
+  uintptr_t fd = base::checked_cast<uintptr_t>(pixmap->GetDmaBufFd(0));
+  va_attrib_extbuf.buffers = &fd;
+  va_attrib_extbuf.num_buffers = 1u;
 
   va_attrib_extbuf.flags = 0;
   va_attrib_extbuf.private_data = NULL;
