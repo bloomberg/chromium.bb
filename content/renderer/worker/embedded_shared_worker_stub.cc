@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
+#include "content/renderer/worker/embedded_shared_worker_stub.h"
 
 #include <stdint.h>
 #include <utility>
@@ -24,7 +24,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/shared_worker/web_service_worker_network_provider_impl_for_worker.h"
+#include "content/renderer/worker/web_service_worker_network_provider_impl_for_worker.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

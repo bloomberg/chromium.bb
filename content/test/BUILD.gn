@@ -1829,7 +1829,7 @@ test("content_unittests") {
     "../renderer/service_worker/service_worker_timeout_timer_unittest.cc",
     "../renderer/skia_benchmarking_extension_unittest.cc",
     "../renderer/v8_value_converter_impl_unittest.cc",
-    "../renderer/worker_thread_registry_unittest.cc",
+    "../renderer/worker/worker_thread_registry_unittest.cc",
     "../test/renderer_audio_output_stream_factory_context_impl_unittest.cc",
     "image_decoder_test.cc",
     "image_decoder_test.h",

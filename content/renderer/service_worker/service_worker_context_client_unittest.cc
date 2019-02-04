@@ -21,7 +21,7 @@
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_timeout_timer.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "content/renderer/worker_thread_registry.h"
+#include "content/renderer/worker/worker_thread_registry.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/network/public/cpp/features.h"
