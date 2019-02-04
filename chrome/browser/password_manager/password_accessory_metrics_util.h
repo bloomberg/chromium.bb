@@ -44,6 +44,7 @@ enum class AccessorySheetTrigger {
 enum class AccessoryTabType {
   ALL = 0,
   PASSWORDS = 1,
+  CREDIT_CARDS = 2,
   COUNT,
 };
 
@@ -69,6 +70,7 @@ enum class AccessoryAction {
 enum class AccessorySuggestionType {
   USERNAME = 0,
   PASSWORD = 1,
+  CREDIT_CARDS = 2,
   COUNT,
 };
 

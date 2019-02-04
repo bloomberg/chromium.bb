@@ -278,6 +278,9 @@ public class KeyboardAccessoryMetricsRecorder {
      */
     static void recordSheetTrigger(
             @AccessoryTabType int tabType, @AccessorySheetTrigger int bucket) {
+        // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
+        if (tabType == AccessoryTabType.CREDIT_CARDS) return;
+
         RecordHistogram.recordEnumeratedHistogram(
                 getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED, tabType), bucket,
                 AccessorySheetTrigger.COUNT);
@@ -301,6 +304,9 @@ public class KeyboardAccessoryMetricsRecorder {
 
     static void recordSuggestionSelected(
             @AccessoryTabType int tabType, @AccessorySuggestionType int bucket) {
+        // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
+        if (tabType == AccessoryTabType.CREDIT_CARDS) return;
+
         RecordHistogram.recordEnumeratedHistogram(
                 getHistogramForType(
                         UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED, AccessoryTabType.ALL),
@@ -319,6 +325,9 @@ public class KeyboardAccessoryMetricsRecorder {
      */
     static void recordSheetSuggestions(
             @AccessoryTabType int tabType, ListModel<AccessorySheetDataPiece> suggestionList) {
+        // TODO(crbug.com/926372): Add metrics capabilities for credit cards.
+        if (tabType == AccessoryTabType.CREDIT_CARDS) return;
+
         int interactiveSuggestions = 0;
         for (int i = 0; i < suggestionList.size(); ++i) {
             if (getType(suggestionList.get(i)) == PASSWORD_INFO) {

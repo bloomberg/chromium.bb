@@ -32,6 +32,7 @@ class ManualFillingBridge {
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         mManualFillingCoordinator = mActivity.getManualFillingController();
         mManualFillingCoordinator.registerPasswordProvider(mSheetDataProvider);
+        mManualFillingCoordinator.registerCreditCardProvider();
         mManualFillingCoordinator.registerActionProvider(mActionProvider);
     }
 

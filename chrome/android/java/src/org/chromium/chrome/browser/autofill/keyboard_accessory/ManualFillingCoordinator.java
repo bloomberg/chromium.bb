@@ -105,6 +105,10 @@ public class ManualFillingCoordinator {
         mMediator.registerPasswordProvider(sheetDataProvider);
     }
 
+    void registerCreditCardProvider() {
+        mMediator.registerCreditCardProvider();
+    }
+
     public void showWhenKeyboardIsVisible() {
         mMediator.showWhenKeyboardIsVisible();
     }
