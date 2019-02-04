@@ -354,6 +354,7 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '\n'
+          '#include <cstdint>\n'
           '#include <string>\n'
           '\n'
           '#include "base/values.h"\n'
@@ -405,6 +406,9 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
   for protobuf_type in protobuf_types:
     _WriteChromePolicyAccessHeader(f, protobuf_type)
 
+  f.write('constexpr int64_t kDevicePolicyExternalDataResourceCacheSize = %d;\n'
+          % _ComputeTotalDevicePolicyExternalDataMaxSize(policies))
+
   f.write('\n}  // namespace policy\n\n'
           '#endif  // CHROME_COMMON_POLICY_CONSTANTS_H_\n')
 
@@ -424,6 +428,14 @@ def _WriteChromePolicyAccessHeader(f, protobuf_type):
   f.write('};\n')
   f.write('extern const %sPolicyAccess k%sPolicyAccess[];\n\n' %
           (protobuf_type, protobuf_type))
+
+
+def _ComputeTotalDevicePolicyExternalDataMaxSize(policies):
+  total_device_policy_external_data_max_size = 0
+  for policy in policies:
+    if policy.is_device_only and policy.policy_type == 'TYPE_EXTERNAL':
+      total_device_policy_external_data_max_size += policy.max_size
+  return total_device_policy_external_data_max_size
 
 
 #------------------ policy constants source ------------------------#
