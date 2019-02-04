@@ -250,10 +250,11 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
   }
 
   if (submit_result_ == kSubmitResultPassed && filling_assistance_) {
-    // TODO(https://crbug.com/918846): record UKM.
     FillingAssistance filling_assistance = *filling_assistance_;
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.FillingAssistance",
                               filling_assistance);
+    ukm_entry_builder_.SetManagerFill_Assistance(
+        static_cast<int64_t>(filling_assistance));
 
     if (is_main_frame_secure_) {
       UMA_HISTOGRAM_ENUMERATION(

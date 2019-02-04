@@ -3964,6 +3964,13 @@ be describing additional metrics about the same event.
       enum ManagerAutofillEvent.
     </summary>
   </metric>
+  <metric name="ManagerFill.Assistance">
+    <summary>
+      Records for each successful submission the degree to which the user has
+      been assisted by the password manager. Recorded values correspond to the
+      enum password_manager::PasswordFormMetricsRecorder::FillingAssistance.
+    </summary>
+  </metric>
   <metric name="ParsingComparison">
     <summary>
       Records comparison result of old and new password form parsing algorithms.
