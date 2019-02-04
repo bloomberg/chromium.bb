@@ -71,9 +71,8 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
   params.delegate = this;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.name = widget_name;
+  params.shadow_elevation = wm::kShadowElevationInactiveWindow;
   widget_->Init(params);
-  wm::SetShadowElevation(widget_->GetNativeWindow(),
-                         wm::kShadowElevationInactiveWindow);
 
   // WebContentsObserver::DidFirstVisuallyNonEmptyPaint is not called under
   // mash. Work around this by showing the window immediately.
