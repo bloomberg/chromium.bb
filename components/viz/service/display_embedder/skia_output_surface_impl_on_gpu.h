@@ -60,6 +60,7 @@ class PlatformWindowSurface;
 
 namespace viz {
 
+class DirectContextProvider;
 class GpuServiceImpl;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
@@ -156,6 +157,24 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   bool was_context_lost() { return context_state_->context_lost(); }
 
+  // Skia gr_context() and |context_provider_| share an underlying GLContext.
+  // Each of them caches some GL state. Interleaving usage could make cached
+  // state inconsistent with GL state. Using a ScopedUseContextProvider whenever
+  // |context_provider_| could be accessed (e.g. processing completed queries),
+  // will keep cached state consistent with driver GL state.
+  class ScopedUseContextProvider {
+   public:
+    explicit ScopedUseContextProvider(SkiaOutputSurfaceImplOnGpu* impl_on_gpu);
+    ~ScopedUseContextProvider();
+    bool valid() { return valid_; }
+
+   private:
+    SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+    bool valid_ = true;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedUseContextProvider);
+  };
+
  private:
 // gpu::ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)
@@ -194,6 +213,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void ReleaseFenceSyncAndPushTextureUpdates(uint64_t sync_fence_release);
 
   GrContext* gr_context() { return context_state_->gr_context(); }
+  gpu::DecoderContext* decoder();
+
+  void ScheduleDelayedWork();
+  void PerformDelayedWork();
 
   SkColorType FramebufferColorType() {
     return supports_alpha_ ? kBGRA_8888_SkColorType : kRGB_888x_SkColorType;
@@ -255,6 +278,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   uint64_t swap_id_ = 0;
 
   ui::LatencyTracker latency_tracker_;
+
+  scoped_refptr<DirectContextProvider> context_provider_;
+  bool delayed_work_pending_ = false;
 
   gl::GLApi* api_ = nullptr;
   bool supports_alpha_ = false;
