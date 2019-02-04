@@ -29,10 +29,9 @@ const char FocusRing::kViewClassName[] = "FocusRing";
 
 // static
 std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
-  auto ring = base::WrapUnique<FocusRing>(new FocusRing(parent));
+  auto ring = base::WrapUnique<FocusRing>(new FocusRing());
   ring->set_owned_by_client();
   parent->AddChildView(ring.get());
-  parent->AddObserver(ring.get());
   ring->Layout();
   ring->SchedulePaint();
   return ring;
@@ -76,6 +75,22 @@ void FocusRing::Layout() {
   SetBoundsRect(focus_bounds);
 }
 
+void FocusRing::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.child != this)
+    return;
+
+  if (details.is_add) {
+    // Need to start observing the parent.
+    details.parent->AddObserver(this);
+  } else {
+    // This view is being removed from its parent. It needs to remove itself
+    // from its parent's observer list. Otherwise, since its |parent_| will
+    // become a nullptr, it won't be able to do so in its destructor.
+    details.parent->RemoveObserver(this);
+  }
+}
+
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
   if (!has_focus_predicate_(parent()))
     return;
@@ -98,7 +113,7 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     canvas->sk_canvas()->drawRRect(RingRectFromPathRect(bounds), paint);
   } else if (path.isOval(&bounds)) {
     gfx::RectF rect = gfx::SkRectToRectF(bounds);
-    View::ConvertRectToTarget(view_, this, &rect);
+    View::ConvertRectToTarget(parent(), this, &rect);
     canvas->sk_canvas()->drawRRect(SkRRect::MakeOval(gfx::RectFToSkRect(rect)),
                                    paint);
   } else if (path.isRRect(&rbounds)) {
@@ -114,7 +129,7 @@ void FocusRing::OnViewBlurred(View* view) {
   SchedulePaint();
 }
 
-FocusRing::FocusRing(View* parent) : view_(parent) {
+FocusRing::FocusRing() {
   // A layer is necessary to paint beyond the parent's bounds.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -138,7 +153,7 @@ SkRRect FocusRing::RingRectFromPathRect(const SkRect& rect) const {
 SkRRect FocusRing::RingRectFromPathRect(const SkRRect& rrect) const {
   double thickness = PlatformStyle::kFocusHaloThickness / 2.f;
   gfx::RectF r = gfx::SkRectToRectF(rrect.rect());
-  View::ConvertRectToTarget(view_, this, &r);
+  View::ConvertRectToTarget(parent(), this, &r);
 
   SkRRect skr =
       rrect.makeOffset(r.x() - rrect.rect().x(), r.y() - rrect.rect().y());
