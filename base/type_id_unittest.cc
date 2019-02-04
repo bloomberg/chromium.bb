@@ -4,6 +4,8 @@
 
 #include "base/type_id.h"
 
+#include <memory>
+
 #include "base/test/type_id_test_support_a.h"
 #include "base/test/type_id_test_support_b.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,55 +21,39 @@ struct U {};
 }  // namespace
 
 TEST(TypeId, Basic) {
-  static_assert(TypeId::Create<int>() == TypeId::Create<int>(), "");
-  static_assert(TypeId::Create<int>() != TypeId::Create<void>(), "");
-  static_assert(TypeId::Create<int>() != TypeId::Create<float>(), "");
-  static_assert(TypeId::Create<int>() != TypeId::Create<std::unique_ptr<T>>(),
-                "");
-  static_assert(TypeId::Create<int>() != TypeId::Create<std::unique_ptr<U>>(),
-                "");
+  EXPECT_EQ(TypeId::From<int>(), TypeId::From<int>());
+  EXPECT_NE(TypeId::From<int>(), TypeId::From<void>());
+  EXPECT_NE(TypeId::From<int>(), TypeId::From<float>());
+  EXPECT_NE(TypeId::From<int>(), TypeId::From<std::unique_ptr<T>>());
+  EXPECT_NE(TypeId::From<int>(), TypeId::From<std::unique_ptr<U>>());
 
-  static_assert(TypeId::Create<void>() != TypeId::Create<int>(), "");
-  static_assert(TypeId::Create<void>() == TypeId::Create<void>(), "");
-  static_assert(TypeId::Create<void>() != TypeId::Create<float>(), "");
-  static_assert(TypeId::Create<void>() != TypeId::Create<std::unique_ptr<T>>(),
-                "");
-  static_assert(TypeId::Create<void>() != TypeId::Create<std::unique_ptr<U>>(),
-                "");
+  EXPECT_NE(TypeId::From<void>(), TypeId::From<int>());
+  EXPECT_EQ(TypeId::From<void>(), TypeId::From<void>());
+  EXPECT_NE(TypeId::From<void>(), TypeId::From<float>());
+  EXPECT_NE(TypeId::From<void>(), TypeId::From<std::unique_ptr<T>>());
+  EXPECT_NE(TypeId::From<void>(), TypeId::From<std::unique_ptr<U>>());
 
-  static_assert(TypeId::Create<float>() != TypeId::Create<int>(), "");
-  static_assert(TypeId::Create<float>() != TypeId::Create<void>(), "");
-  static_assert(TypeId::Create<float>() == TypeId::Create<float>(), "");
-  static_assert(TypeId::Create<float>() != TypeId::Create<std::unique_ptr<T>>(),
-                "");
-  static_assert(TypeId::Create<float>() != TypeId::Create<std::unique_ptr<U>>(),
-                "");
+  EXPECT_NE(TypeId::From<float>(), TypeId::From<int>());
+  EXPECT_NE(TypeId::From<float>(), TypeId::From<void>());
+  EXPECT_EQ(TypeId::From<float>(), TypeId::From<float>());
+  EXPECT_NE(TypeId::From<float>(), TypeId::From<std::unique_ptr<T>>());
+  EXPECT_NE(TypeId::From<float>(), TypeId::From<std::unique_ptr<U>>());
 
-  static_assert(TypeId::Create<std::unique_ptr<T>>() != TypeId::Create<int>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<T>>() != TypeId::Create<void>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<T>>() != TypeId::Create<float>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<T>>() ==
-                    TypeId::Create<std::unique_ptr<T>>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<T>>() !=
-                    TypeId::Create<std::unique_ptr<U>>(),
-                "");
+  EXPECT_NE(TypeId::From<std::unique_ptr<T>>(), TypeId::From<int>());
+  EXPECT_NE(TypeId::From<std::unique_ptr<T>>(), TypeId::From<void>());
+  EXPECT_NE(TypeId::From<std::unique_ptr<T>>(), TypeId::From<float>());
+  EXPECT_EQ(TypeId::From<std::unique_ptr<T>>(),
+            TypeId::From<std::unique_ptr<T>>());
+  EXPECT_NE(TypeId::From<std::unique_ptr<T>>(),
+            TypeId::From<std::unique_ptr<U>>());
 
-  static_assert(TypeId::Create<std::unique_ptr<U>>() != TypeId::Create<int>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<U>>() != TypeId::Create<void>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<U>>() != TypeId::Create<float>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<U>>() !=
-                    TypeId::Create<std::unique_ptr<T>>(),
-                "");
-  static_assert(TypeId::Create<std::unique_ptr<U>>() ==
-                    TypeId::Create<std::unique_ptr<U>>(),
-                "");
+  EXPECT_NE(TypeId::From<std::unique_ptr<U>>(), TypeId::From<int>());
+  EXPECT_NE(TypeId::From<std::unique_ptr<U>>(), TypeId::From<void>());
+  EXPECT_NE(TypeId::From<std::unique_ptr<U>>(), TypeId::From<float>());
+  EXPECT_NE(TypeId::From<std::unique_ptr<U>>(),
+            TypeId::From<std::unique_ptr<T>>());
+  EXPECT_EQ(TypeId::From<std::unique_ptr<U>>(),
+            TypeId::From<std::unique_ptr<U>>());
 }
 
 TEST(TypeId, TypesInAnonymousNameSpacesDontCollide) {
@@ -85,10 +71,10 @@ TEST(TypeId, IdenticalTypesFromDifferentCompilationUnitsMatch) {
             TypeIdTestSupportB::GetTypeIdForUniquePtrInt());
 }
 
-TEST(TypeId, DISABLED_IdenticalTypesFromComponentAndStaticLibrary) {
+TEST(TypeId, IdenticalTypesFromComponentAndStaticLibrary) {
   // Code generated for the test itself is statically linked. Make sure it works
   // with components
-  constexpr TypeId static_linked_type = TypeId::Create<std::unique_ptr<int>>();
+  TypeId static_linked_type = TypeId::From<std::unique_ptr<int>>();
   EXPECT_EQ(static_linked_type, TypeIdTestSupportA::GetTypeIdForUniquePtrInt());
 }
 

@@ -14,52 +14,85 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
+#if defined(COMPILER_MSVC)
+#include <typeindex>
+#include <typeinfo>
+#endif
+
 namespace base {
+
 // Not ready for public consumption yet.
 namespace experimental {
+namespace internal {
 
+// The __attribute__((visibility("default"))) trick does not work for shared
+// libraries in MSVC. MSVC does support a reduced functionality typeid operator
+// with -fno-rtti, just enough for our needs.
+// Biggest drawback is that using typeid prevents us from having constexpr
+// methods (as the typeid operator is not constexpr)
+#if defined(COMPILER_MSVC)
+using TypeUniqueId = std::type_index;
+
+template <typename Type>
+inline TypeUniqueId UniqueIdFromType() {
+  return std::type_index(typeid(Type));
+}
+
+#else
 // A substitute for RTTI that uses the linker to uniquely reserve an address in
 // the binary for each type.
-class TypeId {
+// We need to make sure dummy_var has default visibility since we need to make
+// sure that there is only one definition across all libraries (shared or
+// static).
+template <typename Type>
+struct __attribute__((visibility("default"))) TypeTag {
+  static constexpr char dummy_var = 0;
+};
+
+// static
+template <typename Type>
+constexpr char TypeTag<Type>::dummy_var;
+
+using TypeUniqueId = const void*;
+
+template <typename Type>
+constexpr inline TypeUniqueId UniqueIdFromType() {
+  return &TypeTag<Type>::dummy_var;
+}
+#endif
+
+struct NoType {};
+
+}  // namespace internal
+
+class BASE_EXPORT TypeId {
  public:
-  bool constexpr operator==(const TypeId& other) const {
-    return type_id_ == other.type_id_;
+  template <typename T>
+  static TypeId From() {
+    return TypeId(PRETTY_FUNCTION, internal::UniqueIdFromType<T>());
   }
 
-  bool constexpr operator!=(const TypeId& other) const {
-    return !(*this == other);
+  TypeId();
+
+  TypeId(const TypeId& other) = default;
+  TypeId& operator=(const TypeId& other) = default;
+
+  bool operator==(TypeId other) const {
+    return unique_type_id_ == other.unique_type_id_;
   }
 
- public:
-  template <typename Type>
-  static constexpr TypeId Create() {
-    return TypeId(&TypeTag<Type>::dummy_var, PRETTY_FUNCTION);
-  }
+  bool operator!=(TypeId other) const { return !(*this == other); }
 
   std::string ToString() const;
 
  private:
-  template <typename Type>
-  struct TypeTag {
-    constexpr static char dummy_var = 0;
-  };
-
-  constexpr TypeId(const void* type_id, const char* function_name)
-      :
-#if DCHECK_IS_ON()
-        function_name_(function_name),
-#endif
-        type_id_(type_id) {
-  }
+  TypeId(const char* function_name, internal::TypeUniqueId unique_type_id);
 
 #if DCHECK_IS_ON()
-  const char* const function_name_;
+  const char* function_name_;
 #endif
-  const void* const type_id_;
+  internal::TypeUniqueId unique_type_id_;
 };
-
-template <typename Type>
-constexpr char TypeId::TypeTag<Type>::dummy_var;
 
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const TypeId& type_id);
 
