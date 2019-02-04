@@ -11,10 +11,10 @@ namespace features {
 
 // Enables the Media Session service including audio focus tracking. This allows
 // clients to consume the Media Session Mojo APIs but should not have any
-// changes to behavior. It is enabled by default on Chrome OS.
+// changes to behavior. It is enabled by default on all platforms except Android.
 const base::Feature kMediaSessionService {
   "MediaSessionService",
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if !defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
