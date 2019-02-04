@@ -71,7 +71,6 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/gpu_client.h"
-#include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
@@ -2242,7 +2241,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   registry->AddInterface(base::BindRepeating(
-      &AppCacheDispatcherHost::Create,
+      &ChromeAppCacheService::CreateBackend,
       base::Unretained(storage_partition_impl_->GetAppCacheService()),
       GetID()));
 

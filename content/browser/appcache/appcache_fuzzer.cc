@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
-#include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -149,8 +148,8 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
   blink::mojom::AppCacheBackendPtr host;
-  AppCacheDispatcherHost::Create(SingletonEnv().appcache_service.get(),
-                                 /*process_id=*/1, mojo::MakeRequest(&host));
+  SingletonEnv().appcache_service->CreateBackend(/*process_id=*/1,
+                                                 mojo::MakeRequest(&host));
 
   for (const fuzzing::proto::Command& command : session.commands()) {
     switch (command.command_case()) {
