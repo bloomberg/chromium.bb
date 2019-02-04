@@ -68,17 +68,27 @@ public class WebappSplashScreenThemeColorTest {
     public void testThemeColorNotUsedIfPagesHasOne() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
+        // Depending on the Android version, the status bar color will either be the same as the
+        // theme color or darker.
+        final int baseColor = Color.GREEN;
+        final int finalColor;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            finalColor = Color.GREEN;
+        } else {
+            finalColor = ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
+        }
+
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 TabTestUtils.simulateChangeThemeColor(
-                        mActivityTestRule.getActivity().getActivityTab(), Color.GREEN);
+                        mActivityTestRule.getActivity().getActivityTab(), baseColor);
             }
         });
 
         // Waits for theme-color to change so the test doesn't rely on system timing.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                ColorUtils.getDarkenedColorForStatusBar(Color.GREEN), new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(finalColor, new Callable<Integer>() {
                     @Override
                     public Integer call() {
                         return mActivityTestRule.getActivity().getWindow().getStatusBarColor();
