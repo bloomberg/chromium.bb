@@ -80,15 +80,9 @@ template("chrome_common_shared_library") {
     }
 
     # Compress relocations if needed.
-    if (use_lld) {
-      # Use RelR relocations when using the chromium linker. Unfortunately,
-      # the system linker only supports them since Android P, so this cannot
-      # be used for Monochrome, or the SystemWebview.
-      if (chromium_linker_supported) {
-        configs += [ "//build/config/android:lld_pack_relocations_with_relr" ]
-      } else if (_is_monochrome || _is_webview) {
-        configs += [ "//build/config/android:lld_pack_relocations" ]
-      }
+    if ((_is_monochrome || _is_webview || chromium_linker_supported) &&
+        use_lld) {
+      configs += [ "//build/config/android:lld_pack_relocations" ]
     }
 
     if ((_is_monochrome || _is_webview || chromium_linker_supported) &&
