@@ -502,4 +502,19 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-pressed-changed.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTheadFocus) {
+  RunEventTest(FILE_PATH_LITERAL("thead-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTfootFocus) {
+  RunEventTest(FILE_PATH_LITERAL("tfoot-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTbodyFocus) {
+  RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
+}
+
 }  // namespace content

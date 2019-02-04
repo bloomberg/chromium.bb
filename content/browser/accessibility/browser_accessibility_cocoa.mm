@@ -948,7 +948,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   // If it's focusable but didn't have any other name or value, compute a name
-  // from its descendants.
+  // from its descendants. Note that this is a workaround because VoiceOver
+  // does not always present focus changes if the new focus lacks a name.
   base::string16 value = owner_->GetValue();
   if (owner_->HasState(ax::mojom::State::kFocusable) &&
       !ui::IsControl(owner_->GetRole()) && value.empty() &&
