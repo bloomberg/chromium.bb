@@ -89,7 +89,7 @@ std::string GenerateCandidate(const FrameAdapter* frame) {
   new_name += base::JoinString(ancestor_names, "/");
 
   new_name += "/<!--frame";
-  new_name += base::IntToString(frame->GetSiblingCount());
+  new_name += base::NumberToString(frame->GetSiblingCount());
   new_name += "-->-->";
 
   // NOTE: This name might not be unique - see http://crbug.com/588800.
@@ -102,7 +102,7 @@ std::string GenerateFramePosition(const FrameAdapter* frame) {
       frame->GetFramePosition(FrameAdapter::BeginPoint::kParentFrame);
   for (int position : positions) {
     position_string += '-';
-    position_string += base::IntToString(position);
+    position_string += base::NumberToString(position);
   }
 
   // NOTE: The generated string is not guaranteed to be unique, but should
@@ -134,7 +134,7 @@ std::string AppendUniqueSuffix(const FrameAdapter* frame,
   candidate += '/';
   while (true) {
     size_t current_length = candidate.size();
-    candidate += base::IntToString(number_of_retries++);
+    candidate += base::NumberToString(number_of_retries++);
     candidate += "-->";
     if (frame->IsCandidateUnique(candidate))
       break;

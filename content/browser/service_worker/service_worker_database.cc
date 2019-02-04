@@ -31,7 +31,7 @@
 // =======================
 //
 // NOTE
-// - int64_t value is serialized as a string by base::Int64ToString().
+// - int64_t value is serialized as a string by base::NumberToString().
 // - GURL value is serialized as a string by GURL::spec().
 //
 // Version 1 (in sorted order)
@@ -148,19 +148,19 @@ std::string CreateRegistrationKeyPrefix(const GURL& origin) {
 }
 
 std::string CreateRegistrationKey(int64_t registration_id, const GURL& origin) {
-  return CreateRegistrationKeyPrefix(origin)
-      .append(base::Int64ToString(registration_id));
+  return CreateRegistrationKeyPrefix(origin).append(
+      base::NumberToString(registration_id));
 }
 
 std::string CreateResourceRecordKeyPrefix(int64_t version_id) {
   return base::StringPrintf("%s%s%c", service_worker_internals::kResKeyPrefix,
-                            base::Int64ToString(version_id).c_str(),
+                            base::NumberToString(version_id).c_str(),
                             service_worker_internals::kKeySeparator);
 }
 
 std::string CreateResourceRecordKey(int64_t version_id, int64_t resource_id) {
-  return CreateResourceRecordKeyPrefix(version_id).append(
-      base::Int64ToString(resource_id));
+  return CreateResourceRecordKeyPrefix(version_id)
+      .append(base::NumberToString(resource_id));
 }
 
 std::string CreateUniqueOriginKey(const GURL& origin) {
@@ -169,14 +169,14 @@ std::string CreateUniqueOriginKey(const GURL& origin) {
 }
 
 std::string CreateResourceIdKey(const char* key_prefix, int64_t resource_id) {
-  return base::StringPrintf(
-      "%s%s", key_prefix, base::Int64ToString(resource_id).c_str());
+  return base::StringPrintf("%s%s", key_prefix,
+                            base::NumberToString(resource_id).c_str());
 }
 
 std::string CreateUserDataKeyPrefix(int64_t registration_id) {
   return base::StringPrintf("%s%s%c",
                             service_worker_internals::kRegUserDataKeyPrefix,
-                            base::Int64ToString(registration_id).c_str(),
+                            base::NumberToString(registration_id).c_str(),
                             service_worker_internals::kKeySeparator);
 }
 
@@ -194,13 +194,13 @@ std::string CreateHasUserDataKeyPrefix(const std::string& user_data_name) {
 std::string CreateHasUserDataKey(int64_t registration_id,
                                  const std::string& user_data_name) {
   return CreateHasUserDataKeyPrefix(user_data_name)
-      .append(base::Int64ToString(registration_id));
+      .append(base::NumberToString(registration_id));
 }
 
 std::string CreateRegistrationIdToOriginKey(int64_t registration_id) {
   return base::StringPrintf("%s%s",
                             service_worker_internals::kRegIdToOriginKeyPrefix,
-                            base::Int64ToString(registration_id).c_str());
+                            base::NumberToString(registration_id).c_str());
 }
 
 void PutUniqueOriginToBatch(const GURL& origin,
@@ -1817,7 +1817,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
     // Write database default values.
     batch->Put(
         service_worker_internals::kDatabaseVersionKey,
-        base::Int64ToString(service_worker_internals::kCurrentSchemaVersion));
+        base::NumberToString(service_worker_internals::kCurrentSchemaVersion));
     state_ = DATABASE_STATE_INITIALIZED;
   }
 
@@ -1834,7 +1834,7 @@ void ServiceWorkerDatabase::BumpNextRegistrationIdIfNeeded(
   if (next_avail_registration_id_ <= used_id) {
     next_avail_registration_id_ = used_id + 1;
     batch->Put(service_worker_internals::kNextRegIdKey,
-               base::Int64ToString(next_avail_registration_id_));
+               base::NumberToString(next_avail_registration_id_));
   }
 }
 
@@ -1845,7 +1845,7 @@ void ServiceWorkerDatabase::BumpNextResourceIdIfNeeded(
   if (next_avail_resource_id_ <= used_id) {
     next_avail_resource_id_ = used_id + 1;
     batch->Put(service_worker_internals::kNextResIdKey,
-               base::Int64ToString(next_avail_resource_id_));
+               base::NumberToString(next_avail_resource_id_));
   }
 }
 
@@ -1856,7 +1856,7 @@ void ServiceWorkerDatabase::BumpNextVersionIdIfNeeded(
   if (next_avail_version_id_ <= used_id) {
     next_avail_version_id_ = used_id + 1;
     batch->Put(service_worker_internals::kNextVerIdKey,
-               base::Int64ToString(next_avail_version_id_));
+               base::NumberToString(next_avail_version_id_));
   }
 }
 

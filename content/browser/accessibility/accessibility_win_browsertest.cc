@@ -311,8 +311,8 @@ void AccessibilityWinBrowserTest::SetUpInputFieldHelper(
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
-  std::wstring caret_offset = base::UTF16ToWide(
-      base::IntToString16(static_cast<int>(kContentsLength - 1)));
+  std::wstring caret_offset =
+      base::UTF16ToWide(base::NumberToString16(kContentsLength - 1));
   ExecuteScript(
       std::wstring(L"let textField = document.querySelector('input,textarea');"
                    L"textField.focus();"
@@ -369,8 +369,8 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
-  std::wstring caret_offset = base::UTF16ToWide(
-      base::IntToString16(static_cast<int>(kContentsLength - 1)));
+  std::wstring caret_offset =
+      base::UTF16ToWide(base::NumberToString16(kContentsLength - 1));
   ExecuteScript(
       std::wstring(L"var textField = document.querySelector('textarea');"
                    L"textField.focus();"

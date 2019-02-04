@@ -44,7 +44,7 @@
 #include "url/origin.h"
 
 using base::ASCIIToUTF16;
-using base::Int64ToString16;
+using base::NumberToString16;
 using blink::IndexedDBDatabaseMetadata;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBIndexMetadata;
@@ -140,7 +140,7 @@ class IndexedDBDatabase::OpenRequest
         } else {
           message =
               ASCIIToUTF16("Internal error opening database with version ") +
-              Int64ToString16(pending_->version);
+              NumberToString16(pending_->version);
         }
         pending_->callbacks->OnError(IndexedDBDatabaseError(
             blink::kWebIDBDatabaseExceptionUnknownError, message));
@@ -190,9 +190,9 @@ class IndexedDBDatabase::OpenRequest
       pending_->callbacks->OnError(IndexedDBDatabaseError(
           blink::kWebIDBDatabaseExceptionVersionError,
           ASCIIToUTF16("The requested version (") +
-              Int64ToString16(pending_->version) +
+              NumberToString16(pending_->version) +
               ASCIIToUTF16(") is less than the existing version (") +
-              Int64ToString16(db_->metadata_.version) + ASCIIToUTF16(").")));
+              NumberToString16(db_->metadata_.version) + ASCIIToUTF16(").")));
       db_->RequestComplete(this);
       return;
     }

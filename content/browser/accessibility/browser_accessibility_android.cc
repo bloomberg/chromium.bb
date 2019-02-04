@@ -531,7 +531,7 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     int level = GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
     if (level >= 1 && level <= 6) {
       std::vector<base::string16> values;
-      values.push_back(base::IntToString16(level));
+      values.push_back(base::NumberToString16(level));
       return base::ReplaceStringPlaceholders(
           content_client->GetLocalizedString(IDS_AX_ROLE_HEADING_WITH_LEVEL),
           values, nullptr);

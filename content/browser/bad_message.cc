@@ -26,7 +26,8 @@ void LogBadMessage(BadMessageReason reason) {
 
   LOG(ERROR) << "Terminating renderer for bad IPC message, reason " << reason;
   base::UmaHistogramSparse("Stability.BadMessageTerminated.Content", reason);
-  base::debug::SetCrashKeyString(bad_message_reason, base::IntToString(reason));
+  base::debug::SetCrashKeyString(bad_message_reason,
+                                 base::NumberToString(reason));
 }
 
 void ReceivedBadMessageOnUIThread(int render_process_id,

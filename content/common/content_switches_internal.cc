@@ -95,7 +95,7 @@ void WaitForDebugger(const std::string& label) {
   title += label;  // makes attaching to process easier
   std::string message = label;
   message += " starting with pid: ";
-  message += base::IntToString(base::GetCurrentProcId());
+  message += base::NumberToString(base::GetCurrentProcId());
   ::MessageBox(NULL, base::UTF8ToWide(message).c_str(),
                base::UTF8ToWide(title).c_str(), MB_OK | MB_SETFOREGROUND);
 #elif defined(OS_POSIX)

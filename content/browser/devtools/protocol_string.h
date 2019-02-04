@@ -45,9 +45,7 @@ class CONTENT_EXPORT StringUtil {
   static String substring(const String& s, unsigned pos, unsigned len) {
     return s.substr(pos, len);
   }
-  static String fromInteger(int number) {
-    return base::IntToString(number);
-  }
+  static String fromInteger(int number) { return base::NumberToString(number); }
   static String fromDouble(double number) {
     String s = base::NumberToString(number);
     if (!s.empty() && s[0] == '.')

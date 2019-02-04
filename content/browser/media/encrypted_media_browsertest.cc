@@ -102,7 +102,7 @@ class EncryptedMediaTest
     query_params.emplace_back("keySystem", CurrentKeySystem());
     query_params.emplace_back(
         "configChangeType",
-        base::IntToString(static_cast<int>(config_change_type)));
+        base::NumberToString(static_cast<int>(config_change_type)));
     RunMediaTestPage("mse_config_change.html", query_params, media::kEnded,
                      true);
   }

@@ -3267,8 +3267,9 @@ void PepperPluginInstanceImpl::SetSizeAttributesForFullscreen() {
 
   blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
   screen_size_for_fullscreen_ = gfx::Size(info.rect.width, info.rect.height);
-  std::string width = base::IntToString(screen_size_for_fullscreen_.width());
-  std::string height = base::IntToString(screen_size_for_fullscreen_.height());
+  std::string width = base::NumberToString(screen_size_for_fullscreen_.width());
+  std::string height =
+      base::NumberToString(screen_size_for_fullscreen_.height());
 
   WebElement element = container_->GetElement();
   element.SetAttribute(WebString::FromUTF8(kWidth), WebString::FromUTF8(width));

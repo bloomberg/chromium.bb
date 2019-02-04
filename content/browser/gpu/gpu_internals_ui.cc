@@ -154,7 +154,7 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   auto basic_info = std::make_unique<base::ListValue>();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
-      base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
+      base::NumberToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
       "In-process GPU",
       std::make_unique<base::Value>(gpu_info.in_process_gpu)));

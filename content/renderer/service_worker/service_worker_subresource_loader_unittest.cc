@@ -1255,7 +1255,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
   int count = 1;
   std::string redirect_location =
       std::string("https://www.example.com/redirect_") +
-      base::IntToString(count);
+      base::NumberToString(count);
   fake_controller_.RespondWithRedirect(redirect_location);
   network::mojom::URLLoaderFactoryPtr factory =
       CreateSubresourceLoaderFactory();
@@ -1286,7 +1286,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
 
     // Redirect more.
     redirect_location = std::string("https://www.example.com/redirect_") +
-                        base::IntToString(count);
+                        base::NumberToString(count);
     fake_controller_.RespondWithRedirect(redirect_location);
     loader->FollowRedirect({}, {}, base::nullopt);
   }

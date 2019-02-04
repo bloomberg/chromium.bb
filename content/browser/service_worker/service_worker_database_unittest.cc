@@ -180,7 +180,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
   // Emulate an obsolete schema version.
   int64_t old_db_version = 1;
   leveldb::WriteBatch batch;
-  batch.Put("INITDATA_DB_VERSION", base::Int64ToString(old_db_version));
+  batch.Put("INITDATA_DB_VERSION", base::NumberToString(old_db_version));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK, database->WriteBatch(&batch));
   db_version = -1;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -220,7 +220,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
   // Emulate a corrupted schema version.
   int64_t corrupted_db_version = -10;
   leveldb::WriteBatch batch;
-  batch.Put("INITDATA_DB_VERSION", base::Int64ToString(corrupted_db_version));
+  batch.Put("INITDATA_DB_VERSION", base::NumberToString(corrupted_db_version));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK, database->WriteBatch(&batch));
   db_version = -1;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED,

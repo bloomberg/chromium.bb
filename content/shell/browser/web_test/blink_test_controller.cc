@@ -893,7 +893,7 @@ void BlinkTestController::RenderProcessExited(
       const base::Process& process = render_process_host->GetProcess();
       if (process.IsValid()) {
         printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +
-                                  base::IntToString(process.Pid()) + ")");
+                                  base::NumberToString(process.Pid()) + ")");
       } else {
         printer_->AddErrorMessage("#CRASHED - renderer");
       }

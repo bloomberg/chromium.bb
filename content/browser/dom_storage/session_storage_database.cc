@@ -680,7 +680,7 @@ bool SessionStorageDatabase::CreateMapForArea(const std::string& namespace_id,
     if (!ConsistencyCheck(conversion_ok))
       return false;
   }
-  batch->Put(next_map_id_key, base::Int64ToString(++next_map_id));
+  batch->Put(next_map_id_key, base::NumberToString(++next_map_id));
   std::string namespace_key =
       NamespaceKey(namespace_id, origin.GetURL().spec());
   batch->Put(namespace_key, *map_id);
@@ -762,7 +762,7 @@ bool SessionStorageDatabase::IncreaseMapRefCount(const std::string& map_id,
   int64_t old_ref_count;
   if (!GetMapRefCount(map_id, &old_ref_count))
     return false;
-  batch->Put(MapRefCountKey(map_id), base::Int64ToString(++old_ref_count));
+  batch->Put(MapRefCountKey(map_id), base::NumberToString(++old_ref_count));
   return true;
 }
 
@@ -777,7 +777,7 @@ bool SessionStorageDatabase::DecreaseMapRefCount(const std::string& map_id,
     return false;
   ref_count -= decrease;
   if (ref_count > 0) {
-    batch->Put(MapRefCountKey(map_id), base::Int64ToString(ref_count));
+    batch->Put(MapRefCountKey(map_id), base::NumberToString(ref_count));
   } else {
     // Clear all keys in the map.
     if (!ClearMap(map_id, batch))

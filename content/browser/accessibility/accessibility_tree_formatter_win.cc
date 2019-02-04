@@ -822,7 +822,7 @@ void AccessibilityTreeFormatterWin::AddIA2TextProperties(
     if (hr == S_OK && temp_bstr && wcslen(temp_bstr)) {
       // Append offset:<number>.
       base::string16 offset_str =
-          base::ASCIIToUTF16("offset:") + base::IntToString16(start_offset);
+          base::ASCIIToUTF16("offset:") + base::NumberToString16(start_offset);
       text_attributes->AppendString(offset_str);
       // Append name:value pairs.
       std::vector<base::string16> name_val_pairs =
