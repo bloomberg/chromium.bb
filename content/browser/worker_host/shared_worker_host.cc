@@ -225,16 +225,9 @@ void SharedWorkerHost::Start(
 
   // Set the default factory to the bundle for subresource loading to pass to
   // the renderer when NetworkService is on. When S13nServiceWorker is on, the
-  // default factory is already provided by SharedWorkerServiceImpl.
+  // default factory is already provided by
+  // WorkerScriptFetchInitiator::CreateFactoryBundle().
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // If the caller has supplied a URLLoaderFactory for AppCache, use that.
-    if (subresource_loader_params &&
-        subresource_loader_params->appcache_loader_factory_info.is_valid()) {
-      subresource_loader_factories->appcache_factory_info() =
-          std::move(subresource_loader_params->appcache_loader_factory_info);
-    }
-
-    // Set-up the default network loader factory.
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     CreateNetworkFactory(mojo::MakeRequest(&default_factory_info));
     subresource_loader_factories->default_factory_info() =
