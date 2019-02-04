@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/shared_worker/web_service_worker_network_provider_impl_for_worker.h"
+#include "content/renderer/worker/web_service_worker_network_provider_impl_for_worker.h"
 
 #include <utility>
 

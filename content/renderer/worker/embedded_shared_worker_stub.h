@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SHARED_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
-#define CONTENT_RENDERER_SHARED_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
+#ifndef CONTENT_RENDERER_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
+#define CONTENT_RENDERER_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
 
 #include <memory>
 #include <vector>
@@ -34,12 +34,12 @@ namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebSharedWorker;
-}
+}  // namespace blink
 
 namespace blink {
 class MessagePortChannel;
 class URLLoaderFactoryBundleInfo;
-}
+}  // namespace blink
 
 namespace content {
 
@@ -158,4 +158,4 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SHARED_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
+#endif  // CONTENT_RENDERER_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_

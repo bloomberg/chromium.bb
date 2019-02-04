@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/shared_worker/shared_worker_factory_impl.h"
+#include "content/renderer/worker/shared_worker_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
+#include "content/renderer/worker/embedded_shared_worker_stub.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"

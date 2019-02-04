@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/worker_thread_registry.h"
+#include "content/renderer/worker/worker_thread_registry.h"
 
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"

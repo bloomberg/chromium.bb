@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
-#define CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
+#ifndef CONTENT_RENDERER_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
+#define CONTENT_RENDERER_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
 
 #include "base/macros.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -49,4 +49,4 @@ class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SHARED_WORKER_SHARED_WORKER_FACTORY_IMPL_H_
+#endif  // CONTENT_RENDERER_WORKER_SHARED_WORKER_FACTORY_IMPL_H_

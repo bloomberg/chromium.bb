@@ -28,7 +28,7 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
-#include "content/renderer/shared_worker/web_service_worker_network_provider_impl_for_worker.h"
+#include "content/renderer/worker/web_service_worker_network_provider_impl_for_worker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
