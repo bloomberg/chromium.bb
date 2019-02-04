@@ -14,15 +14,12 @@
 #include "media/gpu/test/video_frame_mapper_factory.h"
 #include "ui/gfx/codec/png_codec.h"
 
-// Default output folder used to store frames.
-constexpr const base::FilePath::CharType* kDefaultOutputFolder =
-    FILE_PATH_LITERAL("video_frames");
-
 namespace media {
 namespace test {
 
-VideoFrameFileWriter::VideoFrameFileWriter()
-    : num_frames_writing_(0),
+VideoFrameFileWriter::VideoFrameFileWriter(const base::FilePath& output_folder)
+    : output_folder_(output_folder),
+      num_frames_writing_(0),
       frame_writer_thread_("FrameWriterThread"),
       frame_writer_cv_(&frame_writer_lock_) {
   DETACH_FROM_SEQUENCE(writer_sequence_checker_);
@@ -30,12 +27,17 @@ VideoFrameFileWriter::VideoFrameFileWriter()
 }
 
 VideoFrameFileWriter::~VideoFrameFileWriter() {
-  Destroy();
+  base::AutoLock auto_lock(frame_writer_lock_);
+  DCHECK_EQ(0u, num_frames_writing_);
+
+  frame_writer_thread_.Stop();
 }
 
 // static
-std::unique_ptr<VideoFrameFileWriter> VideoFrameFileWriter::Create() {
-  auto frame_file_writer = base::WrapUnique(new VideoFrameFileWriter());
+std::unique_ptr<VideoFrameFileWriter> VideoFrameFileWriter::Create(
+    const base::FilePath& output_folder) {
+  auto frame_file_writer =
+      base::WrapUnique(new VideoFrameFileWriter(output_folder));
   if (!frame_file_writer->Initialize()) {
     LOG(ERROR) << "Failed to initialize VideoFrameFileWriter";
     return nullptr;
@@ -56,24 +58,6 @@ bool VideoFrameFileWriter::Initialize() {
     return false;
   }
 
-  SetOutputFolder(base::FilePath(kDefaultOutputFolder));
-  return true;
-}
-
-void VideoFrameFileWriter::Destroy() {
-  base::AutoLock auto_lock(frame_writer_lock_);
-  DCHECK_EQ(0u, num_frames_writing_);
-
-  frame_writer_thread_.Stop();
-}
-
-void VideoFrameFileWriter::SetOutputFolder(
-    const base::FilePath& output_folder) {
-  base::AutoLock auto_lock(frame_writer_lock_);
-  DCHECK_EQ(0u, num_frames_writing_);
-
-  output_folder_ = output_folder;
-
   // If the directory is not absolute, consider it relative to our working dir.
   if (!output_folder_.IsAbsolute()) {
     output_folder_ = base::MakeAbsoluteFilePath(
@@ -85,13 +69,8 @@ void VideoFrameFileWriter::SetOutputFolder(
   if (!DirectoryExists(output_folder_)) {
     base::CreateDirectory(output_folder_);
   }
-}
 
-void VideoFrameFileWriter::WaitUntilDone() const {
-  base::AutoLock auto_lock(frame_writer_lock_);
-  while (num_frames_writing_ > 0) {
-    frame_writer_cv_.Wait();
-  }
+  return true;
 }
 
 void VideoFrameFileWriter::ProcessVideoFrame(
@@ -106,6 +85,14 @@ void VideoFrameFileWriter::ProcessVideoFrame(
       FROM_HERE,
       base::BindOnce(&VideoFrameFileWriter::ProcessVideoFrameTask,
                      base::Unretained(this), video_frame, frame_index));
+}
+
+bool VideoFrameFileWriter::WaitUntilDone() {
+  base::AutoLock auto_lock(frame_writer_lock_);
+  while (num_frames_writing_ > 0) {
+    frame_writer_cv_.Wait();
+  }
+  return true;
 }
 
 void VideoFrameFileWriter::ProcessVideoFrameTask(

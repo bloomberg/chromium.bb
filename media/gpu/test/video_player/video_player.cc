@@ -32,17 +32,18 @@ VideoPlayer::~VideoPlayer() {
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
     const Video* video,
     FrameRenderer* frame_renderer,
-    const std::vector<VideoFrameProcessor*>& frame_processors,
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  video_player->Initialize(video, frame_renderer, frame_processors, config);
+  video_player->Initialize(video, frame_renderer, std::move(frame_processors),
+                           config);
   return video_player;
 }
 
 void VideoPlayer::Initialize(
     const Video* video,
     FrameRenderer* frame_renderer,
-    const std::vector<VideoFrameProcessor*>& frame_processors,
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
     const VideoDecoderClientConfig& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
@@ -52,8 +53,8 @@ void VideoPlayer::Initialize(
   EventCallback event_cb =
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
-  decoder_client_ = VideoDecoderClient::Create(event_cb, frame_renderer,
-                                               frame_processors, config);
+  decoder_client_ = VideoDecoderClient::Create(
+      event_cb, frame_renderer, std::move(frame_processors), config);
   CHECK(decoder_client_) << "Failed to create decoder client";
 
   // Create a decoder for the specified video. We'll always use import mode as
@@ -178,6 +179,10 @@ size_t VideoPlayer::GetEventCount(VideoPlayerEvent event) const {
 
   base::AutoLock auto_lock(event_lock_);
   return video_player_event_counts_[static_cast<size_t>(event)];
+}
+
+bool VideoPlayer::WaitForFrameProcessors() {
+  return !decoder_client_ || decoder_client_->WaitForFrameProcessors();
 }
 
 size_t VideoPlayer::GetFlushDoneCount() const {

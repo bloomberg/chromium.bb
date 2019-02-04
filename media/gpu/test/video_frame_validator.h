@@ -88,14 +88,13 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // function is thread-safe.
   size_t GetMismatchedFramesCount() const;
 
-  // Wait until all currently scheduled frame validations are done. Returns true
-  // if no corrupt frames were found. This function might take a long time to
-  // complete, depending on the platform.
-  bool WaitUntilValidated() const;
-
   // Interface VideoFrameProcessor
   void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                          size_t frame_index) override;
+  // Wait until all currently scheduled frame validations are done. Returns true
+  // if no corrupt frames were found. This function might take a long time to
+  // complete, depending on the platform.
+  bool WaitUntilDone() override;
 
  private:
   VideoFrameValidator(uint32_t flags,

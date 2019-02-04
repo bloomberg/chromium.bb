@@ -18,6 +18,10 @@
 namespace media {
 namespace test {
 
+// Default output folder used to store frames.
+constexpr const base::FilePath::CharType* kDefaultOutputFolder =
+    FILE_PATH_LITERAL("video_frames");
+
 class VideoFrameMapper;
 
 // The video frame file writer class implements functionality to write video
@@ -27,32 +31,28 @@ class VideoFrameFileWriter : public VideoFrameProcessor {
   ~VideoFrameFileWriter() override;
 
   // Create an instance of the video frame file writer.
-  static std::unique_ptr<VideoFrameFileWriter> Create();
-
-  // Set the folder the video frame files will be written to.
-  void SetOutputFolder(const base::FilePath& output_folder);
-
-  // Wait until all currently scheduled frame write operations are done.
-  void WaitUntilDone() const;
+  static std::unique_ptr<VideoFrameFileWriter> Create(
+      const base::FilePath& output_folder =
+          base::FilePath(kDefaultOutputFolder));
 
   // Interface VideoFrameProcessor
   void ProcessVideoFrame(scoped_refptr<const VideoFrame> video_frame,
                          size_t frame_index) override;
+  // Wait until all currently scheduled frame write operations are done.
+  bool WaitUntilDone() override;
 
  private:
-  VideoFrameFileWriter();
+  explicit VideoFrameFileWriter(const base::FilePath& output_folder);
 
   // Initialize the video frame file writer.
   bool Initialize();
-  // Destroy the video frame file writer.
-  void Destroy();
 
   // Writes the specified video frame to file on the |file_writer_thread_|.
   void ProcessVideoFrameTask(scoped_refptr<const VideoFrame> video_frame,
                              size_t frame_index);
 
   // Output folder the frames will be written to.
-  base::FilePath output_folder_ GUARDED_BY(frame_writer_lock_);
+  base::FilePath output_folder_;
 
   // The video frame mapper used to gain access to the raw video frame memory.
   std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
