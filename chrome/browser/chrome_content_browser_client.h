@@ -527,8 +527,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       blink::mojom::RendererPreferenceWatcherPtr watcher) override;
   base::Optional<std::string> GetOriginPolicyErrorPage(
       content::OriginPolicyErrorReason error_reason,
-      const url::Origin& origin,
-      const GURL& url) override;
+      content::NavigationHandle* handle) override;
   bool CanIgnoreCertificateErrorIfNeeded() override;
   void OnNetworkServiceDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                                      int64_t recv_bytes,

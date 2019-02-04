@@ -880,8 +880,7 @@ void ContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
 
 base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
     OriginPolicyErrorReason error_reason,
-    const url::Origin& origin,
-    const GURL& url) {
+    content::NavigationHandle* handle) {
   return base::nullopt;
 }
 

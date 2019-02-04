@@ -110,6 +110,7 @@ function setupEvents() {
           break;
 
         case 'SAFEBROWSING':
+        case 'ORIGIN_POLICY':
           sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
           break;
 

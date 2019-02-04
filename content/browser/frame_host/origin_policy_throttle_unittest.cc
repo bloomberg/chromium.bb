@@ -143,4 +143,56 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
             nav_handle->navigation_request()->common_params().origin_policy);
 }
 
+TEST_P(OriginPolicyThrottleTest, AddException) {
+  if (!enabled())
+    return;
+
+  GURL url("https://example.org/bla");
+  OriginPolicyThrottle::GetKnownVersionsForTesting()[url::Origin::Create(url)] =
+      "abcd";
+
+  std::string version;
+  OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
+  EXPECT_EQ(version, "abcd");
+
+  OriginPolicyThrottle::AddExceptionFor(url);
+  OriginPolicyThrottle::ShouldRequestOriginPolicy(url, &version);
+  EXPECT_EQ(version, "0");
+}
+
+TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
+  if (!enabled())
+    return;
+
+  OriginPolicyThrottle::AddExceptionFor(GURL("https://example.org/blubb"));
+
+  // Start the navigation.
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(
+      GURL("https://example.org/bla"), web_contents());
+  navigation->SetAutoAdvance(false);
+  navigation->Start();
+  EXPECT_FALSE(navigation->IsDeferred());
+  EXPECT_EQ(NavigationThrottle::PROCEED,
+            navigation->GetLastThrottleCheckResult().action());
+
+  // Fake a response with a policy header.
+  const char* raw_headers = "HTTP/1.1 200 OK\nSec-Origin-Policy: policy-1\n\n";
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(raw_headers, strlen(raw_headers)));
+  NavigationHandleImpl* nav_handle =
+      static_cast<NavigationHandleImpl*>(navigation->GetNavigationHandle());
+  nav_handle->set_response_headers_for_testing(headers);
+  navigation->ReadyToCommit();
+
+  // Due to the exception, we expect the policy to not defer.
+  EXPECT_FALSE(navigation->IsDeferred());
+
+  // Also check that the header policy did not overwrite the exemption:
+  std::string version;
+  OriginPolicyThrottle::ShouldRequestOriginPolicy(
+      GURL("https://example.org/bla"), &version);
+  EXPECT_EQ(version, "0");
+}
+
 }  // namespace content

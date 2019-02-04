@@ -1395,8 +1395,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // errors.
   virtual base::Optional<std::string> GetOriginPolicyErrorPage(
       OriginPolicyErrorReason error_reason,
-      const url::Origin& origin,
-      const GURL& url);
+      content::NavigationHandle* navigation_handle);
 
   // Returns true if it is OK to ignore errors for certificates specified by the
   // --ignore-certificate-errors-spki-list command line flag. The embedder may
