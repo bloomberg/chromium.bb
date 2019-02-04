@@ -120,7 +120,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   std::unique_ptr<SignedExchangePrefetchHandler>
       signed_exchange_prefetch_handler_;
 
-
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
       signed_exchange_prefetch_metric_recorder_;
 
