@@ -266,6 +266,7 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//components/ukm:test_support",
     "//components/variations:test_support",
+    "//components/variations/net",
     "//components/web_resource:web_resource",
     "//google_apis/gcm",
     "//net:test_support",

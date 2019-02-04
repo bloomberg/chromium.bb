@@ -122,8 +122,6 @@ class SearchSuggestLoaderImpl::AuthenticatedURLLoader {
   void Start();
 
  private:
-  net::HttpRequestHeaders GetRequestHeaders() const;
-
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -142,14 +140,6 @@ SearchSuggestLoaderImpl::AuthenticatedURLLoader::AuthenticatedURLLoader(
     : url_loader_factory_(url_loader_factory),
       api_url_(std::move(api_url)),
       callback_(std::move(callback)) {}
-
-net::HttpRequestHeaders
-SearchSuggestLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
-  net::HttpRequestHeaders headers;
-  variations::AppendVariationHeadersUnknownSignedIn(
-      api_url_, variations::InIncognito::kNo, &headers);
-  return headers;
-}
 
 void SearchSuggestLoaderImpl::AuthenticatedURLLoader::Start() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -182,7 +172,8 @@ void SearchSuggestLoaderImpl::AuthenticatedURLLoader::Start() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = api_url_;
-  resource_request->headers = GetRequestHeaders();
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      api_url_, variations::InIncognito::kNo, resource_request.get());
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 

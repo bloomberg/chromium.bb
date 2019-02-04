@@ -289,8 +289,8 @@ JsonRequest::Builder::BuildResourceRequest() const {
   // Add X-Client-Data header with experiment IDs from field trials.
   // TODO: We should call AppendVariationHeaders with explicit
   // variations::SignedIn::kNo If the auth_header_ is empty
-  variations::AppendVariationHeadersUnknownSignedIn(
-      url_, variations::InIncognito::kNo, &resource_request->headers);
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      url_, variations::InIncognito::kNo, resource_request.get());
   return resource_request;
 }
 

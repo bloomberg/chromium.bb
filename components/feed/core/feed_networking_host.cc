@@ -70,7 +70,7 @@ class NetworkFetch {
                                 identity::AccessTokenInfo access_token_info);
   void StartLoader();
   std::unique_ptr<network::SimpleURLLoader> MakeLoader();
-  net::HttpRequestHeaders MakeHeaders(const std::string& auth_header) const;
+  void SetRequestHeaders(network::ResourceRequest* request) const;
   void PopulateRequestBody(network::SimpleURLLoader* loader);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response);
 
@@ -145,12 +145,6 @@ void NetworkFetch::StartLoader() {
 }
 
 std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
-  std::string auth_header =
-      access_token_.empty()
-          ? std::string()
-          : base::StringPrintf(kAuthorizationRequestHeaderFormat,
-                               access_token_.c_str());
-  net::HttpRequestHeaders headers = MakeHeaders(auth_header);
   // TODO(pnoland): Add data use measurement once it's supported for simple
   // url loader.
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -187,8 +181,8 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
 
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
   resource_request->allow_credentials = false;
-  resource_request->headers = headers;
   resource_request->method = request_type_;
+  SetRequestHeaders(resource_request.get());
 
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -199,22 +193,23 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   return simple_loader;
 }
 
-net::HttpRequestHeaders NetworkFetch::MakeHeaders(
-    const std::string& auth_header) const {
-  net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kContentType, kContentType);
-  headers.SetHeader(kContentEncoding, kGzip);
+void NetworkFetch::SetRequestHeaders(network::ResourceRequest* request) const {
+  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                             kContentType);
+  request->headers.SetHeader(kContentEncoding, kGzip);
 
-  bool is_authorized = !auth_header.empty();
-  if (is_authorized)
-    headers.SetHeader(net::HttpRequestHeaders::kAuthorization, auth_header);
+  variations::SignedIn signed_in_status = variations::SignedIn::kNo;
+  if (!access_token_.empty()) {
+    std::string auth_header = base::StringPrintf(
+        kAuthorizationRequestHeaderFormat, access_token_.c_str());
+    request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                               auth_header);
+    signed_in_status = variations::SignedIn::kYes;
+  }
 
-  variations::SignedIn signed_in_status =
-      is_authorized ? variations::SignedIn::kYes : variations::SignedIn::kNo;
   // Add X-Client-Data header with experiment IDs from field trials.
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     signed_in_status, &headers);
-  return headers;
+  variations::AppendVariationsHeader(url_, variations::InIncognito::kNo,
+                                     signed_in_status, request);
 }
 
 void NetworkFetch::PopulateRequestBody(network::SimpleURLLoader* loader) {

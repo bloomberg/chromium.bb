@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -27,6 +28,10 @@
 namespace variations {
 
 namespace {
+
+// The name string for the header for variations information.
+// Note that prior to M33 this header was named X-Chrome-Variations.
+const char kClientDataHeader[] = "X-Client-Data";
 
 const char* kSuffixesToSetHeadersFor[] = {
     ".android.com",
@@ -94,89 +99,165 @@ void LogUrlValidationHistogram(URLValidationResult result) {
                             URL_VALIDATION_RESULT_SIZE);
 }
 
-// Removes variations headers for requests when a redirect to a non-Google URL
-// occurs. This function is used as the callback parameter for
-// SimpleURLLoader::SetOnRedirectCallback() when
-// CreateSimpleURLLoaderWithVariationsHeaders() creates a SimpleURLLoader
-// object.
-void RemoveVariationsHeader(const net::RedirectInfo& redirect_info,
-                            const network::ResourceResponseHead& response_head,
-                            std::vector<std::string>* to_be_removed_headers) {
-  if (!ShouldAppendVariationHeaders(redirect_info.new_url))
-    to_be_removed_headers->push_back(kClientDataHeader);
-}
+constexpr network::ResourceRequest* null_resource_request = nullptr;
+constexpr net::URLRequest* null_url_request = nullptr;
+
+class VariationsHeaderHelper {
+ public:
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
+  VariationsHeaderHelper(network::ResourceRequest* request,
+                         SignedIn signed_in = SignedIn::kNo)
+      : VariationsHeaderHelper(request,
+                               null_url_request,
+                               CreateVariationsHeader(signed_in)) {}
+  VariationsHeaderHelper(net::URLRequest* request,
+                         SignedIn signed_in = SignedIn::kNo)
+      : VariationsHeaderHelper(null_resource_request,
+                               request,
+                               CreateVariationsHeader(signed_in)) {}
+  VariationsHeaderHelper(network::ResourceRequest* request,
+                         const std::string& variations_header)
+      : VariationsHeaderHelper(request, null_url_request, variations_header) {}
+
+  bool AppendHeaderIfNeeded(const GURL& url, InIncognito incognito) {
+    // Note the criteria for attaching client experiment headers:
+    // 1. We only transmit to Google owned domains which can evaluate
+    // experiments.
+    //    1a. These include hosts which have a standard postfix such as:
+    //         *.doubleclick.net or *.googlesyndication.com or
+    //         exactly www.googleadservices.com or
+    //         international TLD domains *.google.<TLD> or *.youtube.<TLD>.
+    // 2. Only transmit for non-Incognito profiles.
+    // 3. For the X-Client-Data header, only include non-empty variation IDs.
+    if ((incognito == InIncognito::kYes) || !ShouldAppendVariationsHeader(url))
+      return false;
+
+    if (variations_header_.empty())
+      return false;
+
+    if (resource_request_) {
+      // Set the variations header to client_data_header rather than headers to
+      // be exempted from CORS checks.
+      resource_request_->client_data_header = variations_header_;
+    } else if (url_request_) {
+      url_request_->SetExtraRequestHeaderByName(kClientDataHeader,
+                                                variations_header_, false);
+    } else {
+      NOTREACHED();
+      return false;
+    }
+    return true;
+  }
+
+ private:
+  static std::string CreateVariationsHeader(SignedIn signed_in) {
+    return VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader(
+        signed_in == SignedIn::kYes);
+  }
+
+  VariationsHeaderHelper(network::ResourceRequest* resource_request,
+                         net::URLRequest* url_request,
+                         std::string variations_header)
+      : resource_request_(resource_request), url_request_(url_request) {
+    DCHECK(resource_request_ || url_request_);
+    variations_header_ = std::move(variations_header);
+  }
+
+  network::ResourceRequest* resource_request_;
+  net::URLRequest* url_request_;
+  std::string variations_header_;
+
+  DISALLOW_COPY_AND_ASSIGN(VariationsHeaderHelper);
+};
 
 }  // namespace
 
-const char kClientDataHeader[] = "X-Client-Data";
-
-bool AppendVariationHeaders(const GURL& url,
+bool AppendVariationsHeader(const GURL& url,
                             InIncognito incognito,
                             SignedIn signed_in,
-                            net::HttpRequestHeaders* headers) {
-  // Note the criteria for attaching client experiment headers:
-  // 1. We only transmit to Google owned domains which can evaluate experiments.
-  //    1a. These include hosts which have a standard postfix such as:
-  //         *.doubleclick.net or *.googlesyndication.com or
-  //         exactly www.googleadservices.com or
-  //         international TLD domains *.google.<TLD> or *.youtube.<TLD>.
-  // 2. Only transmit for non-Incognito profiles.
-  // 3. For the X-Client-Data header, only include non-empty variation IDs.
-  if ((incognito == InIncognito::kYes) || !ShouldAppendVariationHeaders(url))
-    return false;
-
-  const std::string variation_ids_header =
-      VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader(
-          signed_in == SignedIn::kYes);
-  if (!variation_ids_header.empty()) {
-    // Note that prior to M33 this header was named X-Chrome-Variations.
-    headers->SetHeaderIfMissing(kClientDataHeader, variation_ids_header);
-    return true;
-  }
-  return false;
+                            network::ResourceRequest* request) {
+  return VariationsHeaderHelper(request, signed_in)
+      .AppendHeaderIfNeeded(url, incognito);
 }
 
-bool AppendVariationHeadersUnknownSignedIn(const GURL& url,
+bool AppendVariationsHeader(const GURL& url,
+                            InIncognito incognito,
+                            SignedIn signed_in,
+                            net::URLRequest* request) {
+  return VariationsHeaderHelper(request, signed_in)
+      .AppendHeaderIfNeeded(url, incognito);
+}
+
+bool AppendVariationsHeaderWithCustomValue(const GURL& url,
                                            InIncognito incognito,
-                                           net::HttpRequestHeaders* headers) {
-  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
-  // transmission of experiments coming from the variations server.
-  return AppendVariationHeaders(url, incognito, SignedIn::kNo, headers);
+                                           const std::string& variations_header,
+                                           network::ResourceRequest* request) {
+  return VariationsHeaderHelper(request, variations_header)
+      .AppendHeaderIfNeeded(url, incognito);
 }
 
-void StripVariationHeaderIfNeeded(const GURL& new_location,
-                                  net::URLRequest* request) {
-  if (!ShouldAppendVariationHeaders(new_location))
+bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
+                                           InIncognito incognito,
+                                           network::ResourceRequest* request) {
+  return VariationsHeaderHelper(request).AppendHeaderIfNeeded(url, incognito);
+}
+
+bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
+                                           InIncognito incognito,
+                                           net::URLRequest* request) {
+  return VariationsHeaderHelper(request).AppendHeaderIfNeeded(url, incognito);
+}
+
+void RemoveVariationsHeaderIfNeeded(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
+  if (!ShouldAppendVariationsHeader(redirect_info.new_url))
+    to_be_removed_headers->push_back(kClientDataHeader);
+}
+
+void StripVariationsHeaderIfNeeded(const GURL& new_location,
+                                   net::URLRequest* request) {
+  if (!ShouldAppendVariationsHeader(new_location))
     request->RemoveRequestHeaderByName(kClientDataHeader);
 }
 
 std::unique_ptr<network::SimpleURLLoader>
-CreateSimpleURLLoaderWithVariationsHeaders(
+CreateSimpleURLLoaderWithVariationsHeader(
     std::unique_ptr<network::ResourceRequest> request,
     InIncognito incognito,
     SignedIn signed_in,
     const net::NetworkTrafficAnnotationTag& annotation_tag) {
-  bool variation_headers_added = AppendVariationHeaders(
-      request->url, incognito, signed_in, &request->headers);
+  bool variation_headers_added =
+      AppendVariationsHeader(request->url, incognito, signed_in, request.get());
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(request), annotation_tag);
   if (variation_headers_added) {
     simple_url_loader->SetOnRedirectCallback(
-        base::BindRepeating(&RemoveVariationsHeader));
+        base::BindRepeating(&RemoveVariationsHeaderIfNeeded));
   }
   return simple_url_loader;
 }
 
 std::unique_ptr<network::SimpleURLLoader>
-CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
     std::unique_ptr<network::ResourceRequest> request,
     InIncognito incognito,
     const net::NetworkTrafficAnnotationTag& annotation_tag) {
-  return CreateSimpleURLLoaderWithVariationsHeaders(
+  return CreateSimpleURLLoaderWithVariationsHeader(
       std::move(request), incognito, SignedIn::kNo, annotation_tag);
 }
 
-bool ShouldAppendVariationHeaders(const GURL& url) {
+bool IsVariationsHeader(const std::string& header_name) {
+  return header_name == kClientDataHeader;
+}
+
+bool HasVariationsHeader(const network::ResourceRequest& request) {
+  return !request.client_data_header.empty();
+}
+
+bool ShouldAppendVariationsHeader(const GURL& url) {
   if (!url.is_valid()) {
     LogUrlValidationHistogram(INVALID_URL);
     return false;

@@ -331,17 +331,17 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (!request->is_pending()) {
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
+    request->SetExtraRequestHeaders(headers);
     bool is_off_the_record = io_data->IsOffTheRecord();
     bool is_signed_in =
         !is_off_the_record &&
         !io_data->google_services_account_id()->GetValue().empty();
-    variations::AppendVariationHeaders(
+    variations::AppendVariationsHeader(
         request->url(),
         is_off_the_record ? variations::InIncognito::kYes
                           : variations::InIncognito::kNo,
         is_signed_in ? variations::SignedIn::kYes : variations::SignedIn::kNo,
-        &headers);
-    request->SetExtraRequestHeaders(headers);
+        request);
   }
 
   signin::ChromeRequestAdapter signin_request_adapter(request);

@@ -292,9 +292,9 @@ void ContextualSuggestionsFetch::AppendHeaders(
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &base64_encoded_body);
   headers.SetHeader("X-Protobuffer-Request-Payload", base64_encoded_body);
-  variations::AppendVariationHeaders(resource_request->url,
-                                     variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
+  variations::AppendVariationsHeader(
+      resource_request->url, variations::InIncognito::kNo,
+      variations::SignedIn::kNo, resource_request);
 
   UMA_HISTOGRAM_COUNTS_1M(
       "ContextualSuggestions.FetchRequestProtoSizeKB",

@@ -334,35 +334,6 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
 // Verify in an integration that that the variations header (X-Client-Data) is
 // correctly attached and stripped from network requests that are triggered via
 // a URLFetcher.
-//
-// TODO(juncai): Remove this test when there are no more clients left that use
-// URLFetcher.
-// https://crbug.com/773295
-IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
-                       TestStrippingHeadersFromInternalRequest) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;  // URLFetcher doesn't work with network service.
-
-  BlockingURLFetcherDelegate delegate;
-
-  GURL url = GetGoogleRedirectUrl1();
-  std::unique_ptr<net::URLFetcher> fetcher =
-      net::URLFetcher::Create(url, net::URLFetcher::GET, &delegate);
-  net::HttpRequestHeaders headers;
-  variations::AppendVariationHeadersUnknownSignedIn(
-      url, variations::InIncognito::kNo, &headers);
-  fetcher->SetRequestContext(browser()->profile()->GetRequestContext());
-  fetcher->SetExtraRequestHeaders(headers.ToString());
-  fetcher->Start();
-
-  delegate.AwaitResponse();
-
-  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
-  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
-  EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
-  EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
-}
-
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromSubresourceRequest) {
   GURL url = server()->GetURL("/simple_page.html");
@@ -383,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(
   resource_request->url = url;
 
   std::unique_ptr<network::SimpleURLLoader> loader =
-      variations::CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+      variations::CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
           std::move(resource_request), variations::InIncognito::kNo,
           TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -414,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(
   resource_request->url = url;
 
   std::unique_ptr<network::SimpleURLLoader> loader =
-      variations::CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+      variations::CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
           std::move(resource_request), variations::InIncognito::kNo,
           TRAFFIC_ANNOTATION_FOR_TESTS);
 

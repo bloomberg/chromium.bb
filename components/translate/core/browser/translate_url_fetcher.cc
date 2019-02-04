@@ -102,7 +102,7 @@ bool TranslateURLFetcher::Request(const GURL& url,
     resource_request->headers.AddHeaderFromString(extra_request_header_);
 
   simple_loader_ =
-      variations::CreateSimpleURLLoaderWithVariationsHeadersUnknownSignedIn(
+      variations::CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
           std::move(resource_request),
           is_incognito ? variations::InIncognito::kYes
                        : variations::InIncognito::kNo,

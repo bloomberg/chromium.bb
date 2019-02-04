@@ -846,11 +846,11 @@ void PaymentsClient::InitializeResourceRequest() {
     // Add Chrome experiment state to the request headers.
     net::HttpRequestHeaders headers;
     // User is always signed-in to be able to upload card to Google Payments.
-    variations::AppendVariationHeaders(
+    variations::AppendVariationsHeader(
         resource_request_->url,
         is_off_the_record_ ? variations::InIncognito::kYes
                            : variations::InIncognito::kNo,
-        variations::SignedIn::kYes, &resource_request_->headers);
+        variations::SignedIn::kYes, resource_request_.get());
   }
 }
 

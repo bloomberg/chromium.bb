@@ -41,8 +41,8 @@ void AddVariationHeaders(network::ResourceRequest* request) {
   // Note: It's OK to pass InIncognito::kNo since we are expected to be in
   // non-incognito state here (i.e. contextual sugestions are not served in
   // incognito mode).
-  variations::AppendVariationHeadersUnknownSignedIn(
-      request->url, variations::InIncognito::kNo, &request->headers);
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      request->url, variations::InIncognito::kNo, request);
 }
 
 // Returns API request body. The final result depends on the following input

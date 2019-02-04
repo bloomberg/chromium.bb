@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -66,6 +67,8 @@ class JsonRequestTest : public testing::Test {
             {ntp_snippets::kArticleSuggestionsFeature.name}),
         pref_service_(std::make_unique<TestingPrefServiceSimple>()),
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
+        mock_runner_handle_(
+            std::make_unique<base::ThreadTaskRunnerHandle>(mock_task_runner_)),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {
@@ -98,6 +101,7 @@ class JsonRequestTest : public testing::Test {
   variations::testing::VariationParamsManager params_manager_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> mock_runner_handle_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
