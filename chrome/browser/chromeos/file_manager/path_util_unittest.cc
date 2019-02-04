@@ -598,8 +598,8 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
 };
 
 FileSystemURL CreateExternalURL(const base::FilePath& path) {
-  return FileSystemURL::CreateForTest(GURL(), storage::kFileSystemTypeExternal,
-                                      path);
+  return FileSystemURL::CreateForTest(url::Origin(),
+                                      storage::kFileSystemTypeExternal, path);
 }
 
 TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Removable) {
@@ -657,7 +657,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
   base::RunLoop run_loop;
   ConvertToContentUrls(
       std::vector<FileSystemURL>{FileSystemURL::CreateForTest(
-          GURL(), storage::kFileSystemTypeTest,
+          url::Origin(), storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe("/media/removable/a/b/c"))},
       base::BindOnce(
           [](base::RunLoop* run_loop, const std::vector<GURL>& urls) {
@@ -776,7 +776,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
   base::RunLoop run_loop;
   ConvertToContentUrls(
       std::vector<FileSystemURL>{FileSystemURL::CreateForTest(
-          GURL(), storage::kFileSystemTypeArcDocumentsProvider,
+          url::Origin(), storage::kFileSystemTypeArcDocumentsProvider,
           base::FilePath::FromUTF8Unsafe(
               "/special/arc-documents-provider/"
               "com.android.providers.media.documents/"
@@ -798,7 +798,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest,
   base::RunLoop run_loop;
   ConvertToContentUrls(
       std::vector<FileSystemURL>{FileSystemURL::CreateForTest(
-          GURL(), storage::kFileSystemTypeArcDocumentsProvider,
+          url::Origin(), storage::kFileSystemTypeArcDocumentsProvider,
           base::FilePath::FromUTF8Unsafe(
               "/special/arc-documents-provider/"
               "com.android.providers.media.documents/"

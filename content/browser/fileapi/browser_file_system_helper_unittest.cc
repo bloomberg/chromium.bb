@@ -57,7 +57,7 @@ TEST(BrowserFileSystemHelperTest,
       external_mount_points->CreateExternalFileSystemURL(kSensitiveOrigin,
                                                          kMountName, kTestPath);
   EXPECT_TRUE(original_file.is_valid());
-  EXPECT_EQ(kSensitiveOrigin, original_file.origin());
+  EXPECT_EQ(kSensitiveOrigin, original_file.origin().GetURL());
 
   // Prepare fake FileSystemContext to use in the test.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner(

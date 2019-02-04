@@ -29,9 +29,8 @@ FileSystemURL CreateFileSystemURL(const std::string& extension,
                                   const char* path,
                                   ExternalMountPoints* mount_points) {
   return mount_points->CreateCrackedFileSystemURL(
-      GURL("chrome-extension://" + extension + "/"),
-      storage::kFileSystemTypeExternal,
-      base::FilePath::FromUTF8Unsafe(path));
+      url::Origin::Create(GURL("chrome-extension://" + extension + "/")),
+      storage::kFileSystemTypeExternal, base::FilePath::FromUTF8Unsafe(path));
 }
 
 TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {

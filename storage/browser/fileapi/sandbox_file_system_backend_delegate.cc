@@ -539,7 +539,7 @@ FileSystemFileUtil* SandboxFileSystemBackendDelegate::sync_file_util() {
 
 bool SandboxFileSystemBackendDelegate::IsAccessValid(
     const FileSystemURL& url) const {
-  if (!IsAllowedScheme(url.origin()))
+  if (!IsAllowedScheme(url.origin().GetURL()))
     return false;
 
   if (url.path().ReferencesParent())

@@ -14,6 +14,9 @@
 #include "storage/common/fileapi/file_system_util.h"
 
 class GURL;
+namespace url {
+class Origin;
+}
 
 namespace storage {
 class FileSystemMountOption;
@@ -64,7 +67,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MountPoints {
   // If the the URL is not valid or does not belong to any of the mount points
   // registered in this context, returns empty, invalid FileSystemURL.
   virtual FileSystemURL CreateCrackedFileSystemURL(
-      const GURL& origin,
+      const url::Origin& origin,
       storage::FileSystemType type,
       const base::FilePath& path) const = 0;
 

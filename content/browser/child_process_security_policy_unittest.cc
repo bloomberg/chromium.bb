@@ -720,7 +720,8 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
   base::FilePath file(TEST_PATH("/dir/testfile"));
   file = file.NormalizePathSeparators();
   storage::FileSystemURL url = storage::FileSystemURL::CreateForTest(
-      GURL("http://foo/"), storage::kFileSystemTypeTest, file);
+      url::Origin::Create(GURL("http://foo/")), storage::kFileSystemTypeTest,
+      file);
 
   // Test initially having no permissions.
   CheckHasNoFileSystemFilePermission(p, file, url);

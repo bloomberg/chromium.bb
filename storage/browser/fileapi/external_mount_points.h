@@ -79,7 +79,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ExternalMountPoints
                         FileSystemMountOption* mount_option) const override;
   FileSystemURL CrackURL(const GURL& url) const override;
   FileSystemURL CreateCrackedFileSystemURL(
-      const GURL& origin,
+      const url::Origin& origin,
       FileSystemType type,
       const base::FilePath& path) const override;
 

@@ -270,7 +270,8 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
   scoped_refptr<storage::ExternalMountPoints> mount_points(
       storage::ExternalMountPoints::CreateRefCounted());
 
-  const GURL kTestOrigin("http://chromium.org");
+  const url::Origin kTestOrigin =
+      url::Origin::Create(GURL("http://chromium.org"));
 
   mount_points->RegisterFileSystem("c",
                                    storage::kFileSystemTypeNativeLocal,

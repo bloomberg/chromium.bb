@@ -27,7 +27,7 @@ namespace {
 RecentFile MakeRecentFile(const std::string& name,
                           const base::Time& last_modified) {
   storage::FileSystemURL url = storage::FileSystemURL::CreateForTest(
-      GURL(),  // origin
+      url::Origin(),  // origin
       storage::kFileSystemTypeNativeLocal, base::FilePath(name));
   return RecentFile(url, last_modified);
 }

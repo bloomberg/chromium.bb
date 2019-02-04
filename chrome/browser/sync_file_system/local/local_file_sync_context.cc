@@ -379,8 +379,7 @@ void LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate(
             local_path, url_for_sync, std::move(operation_callback));
       } else {
         FileSystemURL dir_url = file_system_context->CreateCrackedFileSystemURL(
-            url_for_sync.origin(),
-            url_for_sync.mount_type(),
+            url_for_sync.origin().GetURL(), url_for_sync.mount_type(),
             storage::VirtualPath::DirName(url_for_sync.virtual_path()));
         file_system_context->operation_runner()->CreateDirectory(
             dir_url, false /* exclusive */, true /* recursive */,
@@ -549,7 +548,7 @@ void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   if (shutdown_on_io_)
     return;
-  UpdateChangesForOrigin(url.origin(), base::DoNothing());
+  UpdateChangesForOrigin(url.origin().GetURL(), base::DoNothing());
   if (url_syncable_callback_.is_null() ||
       sync_status()->IsWriting(url_waiting_sync_on_io_)) {
     return;
@@ -687,7 +686,7 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
   (*tracker_ptr)->GetNextChangedURLs(&urls, 0);
   for (FileSystemURLQueue::iterator iter = urls.begin();
        iter != urls.end(); ++iter) {
-    origins_with_changes->insert(iter->origin());
+    origins_with_changes->insert(iter->origin().GetURL());
   }
 
   // Creates snapshot directory.
@@ -986,7 +985,7 @@ void LocalFileSyncContext::ClearSyncFlagOnIOThread(
   }
 
   // Since a sync has finished the number of changes must have been updated.
-  UpdateChangesForOrigin(url.origin(), base::DoNothing());
+  UpdateChangesForOrigin(url.origin().GetURL(), base::DoNothing());
 }
 
 void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
@@ -997,7 +996,7 @@ void LocalFileSyncContext::FinalizeSnapshotSyncOnIOThread(
   sync_status()->EndWriting(url);
 
   // Since a sync has finished the number of changes must have been updated.
-  UpdateChangesForOrigin(url.origin(), base::DoNothing());
+  UpdateChangesForOrigin(url.origin().GetURL(), base::DoNothing());
 }
 
 void LocalFileSyncContext::DidApplyRemoteChange(

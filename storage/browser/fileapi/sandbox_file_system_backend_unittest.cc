@@ -113,8 +113,9 @@ class SandboxFileSystemBackendTest : public testing::Test {
                    base::FilePath* root_path) {
     base::File::Error error = base::File::FILE_OK;
     backend_->ResolveURL(
-        FileSystemURL::CreateForTest(origin_url, type, base::FilePath()), mode,
-        base::BindOnce(&DidOpenFileSystem, &error));
+        FileSystemURL::CreateForTest(url::Origin::Create(origin_url), type,
+                                     base::FilePath()),
+        mode, base::BindOnce(&DidOpenFileSystem, &error));
     base::RunLoop().RunUntilIdle();
     if (error != base::File::FILE_OK)
       return false;

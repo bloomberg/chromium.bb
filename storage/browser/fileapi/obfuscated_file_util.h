@@ -299,7 +299,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
                                        base::File::Error* error_code);
 
   void InvalidateUsageCache(FileSystemOperationContext* context,
-                            const GURL& origin,
+                            const url::Origin& origin,
                             FileSystemType type);
 
   void MarkUsed();

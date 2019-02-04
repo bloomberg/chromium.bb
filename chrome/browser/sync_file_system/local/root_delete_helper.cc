@@ -29,7 +29,8 @@ void ResetFileChangeTracker(storage::FileSystemContext* file_system_context,
       SyncFileSystemBackend::GetBackend(file_system_context);
   DCHECK(backend);
   DCHECK(backend->change_tracker());
-  backend->change_tracker()->ResetForFileSystem(url.origin(), url.type());
+  backend->change_tracker()->ResetForFileSystem(url.origin().GetURL(),
+                                                url.type());
 }
 
 }  // namespace
@@ -61,7 +62,7 @@ void RootDeleteHelper::Run() {
             "%s", url_.DebugString().c_str());
 
   file_system_context_->DeleteFileSystem(
-      url_.origin(), url_.type(),
+      url_.origin().GetURL(), url_.type(),
       base::Bind(&RootDeleteHelper::DidDeleteFileSystem,
                  weak_factory_.GetWeakPtr()));
 }
@@ -90,8 +91,7 @@ void RootDeleteHelper::DidResetFileChangeTracker() {
 
   // Reopening the filesystem.
   file_system_context_->sandbox_delegate()->OpenFileSystem(
-      url_.origin(),
-      url_.type(),
+      url_.origin().GetURL(), url_.type(),
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&RootDeleteHelper::DidOpenFileSystem,
                  weak_factory_.GetWeakPtr()),

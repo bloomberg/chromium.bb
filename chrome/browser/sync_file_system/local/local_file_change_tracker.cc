@@ -288,7 +288,7 @@ void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
     // Advance |iter| before calling ResetForURL to avoid the iterator
     // invalidation in it.
     ++iter;
-    if (url.origin() == origin && url.type() == type)
+    if (url.origin().GetURL() == origin && url.type() == type)
       ResetForURL(url, change_seq, batch.get());
   }
 
@@ -298,7 +298,7 @@ void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
     // Advance |iter| before calling ResetForURL to avoid the iterator
     // invalidation in it.
     ++iter;
-    if (url.origin() == origin && url.type() == type)
+    if (url.origin().GetURL() == origin && url.type() == type)
       ResetForURL(url, change_seq, batch.get());
   }
 
@@ -389,8 +389,8 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
             file_util->CreateFileEnumerator(context.get(), url, false));
         base::FilePath path_each;
         while (!(path_each = enumerator->Next()).empty()) {
-          dirty_files.push(CreateSyncableFileSystemURL(
-                  url.origin(), path_each));
+          dirty_files.push(
+              CreateSyncableFileSystemURL(url.origin().GetURL(), path_each));
         }
         break;
       }

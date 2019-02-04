@@ -262,10 +262,10 @@ void PrepareDropDataForChildProcess(
 
     // Note: We are using the origin URL provided by the sender here. It may be
     // different from the receiver's.
-    file_system_file.url =
-        GURL(storage::GetIsolatedFileSystemRootURIString(
-                 file_system_url.origin(), filesystem_id, std::string())
-                 .append(register_name));
+    file_system_file.url = GURL(
+        storage::GetIsolatedFileSystemRootURIString(
+            file_system_url.origin().GetURL(), filesystem_id, std::string())
+            .append(register_name));
     file_system_file.filesystem_id = filesystem_id;
   }
 }

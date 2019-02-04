@@ -79,7 +79,7 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
     EXPECT_TRUE(
         mount_point_virtual_path.AppendRelativePath(virtual_path, &path));
     return storage::FileSystemURL::CreateForTest(
-        GURL(),  // origin
+        url::Origin(),  // origin
         storage::kFileSystemTypeArcContent, path);
   }
 
