@@ -248,8 +248,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FuzzerVariant variant = PIPELINE_FUZZER_VARIANT;
 
   if (variant == SRC) {
-    media::ProgressivePipelineIntegrationFuzzerTest test;
-    test.RunTest(data, size);
+    {
+      media::ProgressivePipelineIntegrationFuzzerTest test;
+      test.RunTest(data, size);
+    }
+
+    {
+      // Rerun the test with the dav1d video decoder instead of libaom. Note:
+      // this ends up running for all SRC fuzzing and not just AV1 content, but
+      // that's true for our entire corpus.
+      base::test::ScopedFeatureList features_with_dav1d;
+      features_with_dav1d.InitAndEnableFeature(media::kDav1dVideoDecoder);
+      media::ProgressivePipelineIntegrationFuzzerTest test;
+      test.RunTest(data, size);
+    }
   } else {
     // Sequentially fuzz with new and old MSE buffering APIs.  See
     // https://crbug.com/718641.
@@ -264,6 +276,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       base::test::ScopedFeatureList features_with_buffering_api_forced;
       features_with_buffering_api_forced.InitAndDisableFeature(
           media::kMseBufferByPts);
+      media::MediaSourcePipelineIntegrationFuzzerTest test;
+      test.RunTest(data, size, MseFuzzerVariantEnumToMimeTypeString(variant));
+    }
+
+    // Rerun the test with the dav1d video decoder instead of libaom. No need to
+    // run with ByPts in both configurations, just use the default.
+    if (variant == MP4_AV1) {
+      base::test::ScopedFeatureList features_with_dav1d;
+      features_with_dav1d.InitAndEnableFeature(media::kDav1dVideoDecoder);
       media::MediaSourcePipelineIntegrationFuzzerTest test;
       test.RunTest(data, size, MseFuzzerVariantEnumToMimeTypeString(variant));
     }
