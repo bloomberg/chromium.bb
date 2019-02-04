@@ -14,7 +14,7 @@ namespace features {
 // changes to behavior. It is enabled by default on Chrome OS.
 const base::Feature kMediaSessionService {
   "MediaSessionService",
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
