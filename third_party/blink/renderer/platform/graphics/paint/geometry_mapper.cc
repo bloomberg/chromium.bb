@@ -253,8 +253,9 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
     OverlayScrollbarClipBehavior clip_behavior,
     InclusiveIntersectOrNot inclusive_behavior,
     bool& success) {
-  PropertyTreeState last_transform_and_clip_state(local_state.Transform(),
-                                                  local_state.Clip(), nullptr);
+  PropertyTreeState last_transform_and_clip_state(
+      local_state.Transform(), local_state.Clip(),
+      &EffectPaintPropertyNode::Root());
 
   auto* ancestor_effect = ancestor_state.Effect()->Unalias();
   for (const auto* effect = local_state.Effect()->Unalias();
@@ -264,8 +265,9 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
       continue;
 
     DCHECK(effect->OutputClip());
-    PropertyTreeState transform_and_clip_state(effect->LocalTransformSpace(),
-                                               effect->OutputClip(), nullptr);
+    PropertyTreeState transform_and_clip_state(
+        effect->LocalTransformSpace(), effect->OutputClip(),
+        &EffectPaintPropertyNode::Root());
     bool intersects = LocalToAncestorVisualRectInternal(
         last_transform_and_clip_state, transform_and_clip_state, mapping_rect,
         clip_behavior, inclusive_behavior, success);
@@ -280,7 +282,8 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
   }
 
   PropertyTreeState final_transform_and_clip_state(
-      ancestor_state.Transform(), ancestor_state.Clip(), nullptr);
+      ancestor_state.Transform(), ancestor_state.Clip(),
+      &EffectPaintPropertyNode::Root());
   bool intersects = LocalToAncestorVisualRectInternal(
       last_transform_and_clip_state, final_transform_and_clip_state,
       mapping_rect, clip_behavior, inclusive_behavior, success);

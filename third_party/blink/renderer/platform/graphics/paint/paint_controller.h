@@ -184,9 +184,11 @@ class PLATFORM_EXPORT PaintController {
 
   // Get the artifact generated after the last commit.
   const PaintArtifact& GetPaintArtifact() const {
+#if DCHECK_IS_ON()
     DCHECK(new_display_item_list_.IsEmpty());
     DCHECK(new_paint_chunks_.IsInInitialState());
     DCHECK(current_paint_artifact_);
+#endif
     return *current_paint_artifact_;
   }
   scoped_refptr<const PaintArtifact> GetPaintArtifactShared() const {

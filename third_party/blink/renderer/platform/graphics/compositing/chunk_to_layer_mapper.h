@@ -19,13 +19,10 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   DISALLOW_NEW();
 
  public:
-  ChunkToLayerMapper(const PropertyTreeState& layer_state,
-                     const gfx::Vector2dF& layer_offset,
-                     const FloatSize& visual_rect_subpixel_offset = FloatSize())
-      : layer_state_(layer_state.Unalias()),
-        layer_offset_(layer_offset),
-        visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
-        chunk_state_(nullptr, nullptr, nullptr) {}
+  ChunkToLayerMapper(
+      const PropertyTreeState& layer_state,
+      const gfx::Vector2dF& layer_offset,
+      const FloatSize& visual_rect_subpixel_offset = FloatSize());
 
   // This class can map from multiple chunks. Before mapping from a chunk, this
   // method must be called to prepare for the chunk.

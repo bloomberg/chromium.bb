@@ -9,6 +9,17 @@
 
 namespace blink {
 
+ChunkToLayerMapper::ChunkToLayerMapper(
+    const PropertyTreeState& layer_state,
+    const gfx::Vector2dF& layer_offset,
+    const FloatSize& visual_rect_subpixel_offset)
+    : layer_state_(layer_state.Unalias()),
+      layer_offset_(layer_offset),
+      visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
+      chunk_state_(layer_state_),
+      transform_(TransformationMatrix().Translate(-layer_offset.x(),
+                                                  -layer_offset.y())) {}
+
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
   outset_for_raster_effects_ = chunk.outset_for_raster_effects;
 

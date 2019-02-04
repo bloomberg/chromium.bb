@@ -55,6 +55,13 @@ gfx::Transform Translation(SkMScalar x, SkMScalar y) {
   return transform;
 }
 
+void SetTransform(PaintChunk& chunk,
+                  const TransformPaintPropertyNode* transform) {
+  auto properties = chunk.properties.GetPropertyTreeState();
+  properties.SetTransform(transform);
+  chunk.properties = RefCountedPropertyTreeState(properties);
+}
+
 class FakeScrollClient {
  public:
   FakeScrollClient() : did_scroll_count(0) {}
@@ -1839,7 +1846,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
   auto transform = CreateTransform(
       t0(), TransformationMatrix().Translate(99, 0), FloatPoint3D(100, 100, 0));
   {
-    paint_chunk2.properties.SetTransform(transform.get());
+    SetTransform(paint_chunk2, transform.get());
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1848,7 +1855,7 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
       CreateTransform(t0(), TransformationMatrix().Translate(100, 0),
                       FloatPoint3D(100, 100, 0));
   {
-    paint_chunk2.properties.SetTransform(transform2.get());
+    SetTransform(paint_chunk2, transform2.get());
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
@@ -1903,7 +1910,7 @@ TEST_P(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
 
   PaintChunk chunk2 = DefaultChunk();
   chunk2.properties = chunk1.properties;
-  chunk2.properties.SetTransform(transform.get());
+  SetTransform(chunk2, transform.get());
   chunk2.bounds = FloatRect(0, 0, 50, 60);
   pending_layer.Merge(PendingLayer(chunk2, 1, false));
 

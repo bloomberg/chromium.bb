@@ -27,7 +27,9 @@ class PLATFORM_EXPORT PaintChunker final {
   PaintChunker();
   ~PaintChunker();
 
+#if DCHECK_IS_ON()
   bool IsInInitialState() const;
+#endif
 
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return current_properties_;

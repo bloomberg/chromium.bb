@@ -6,39 +6,25 @@
 
 namespace blink {
 
-static const PropertyTreeState& UninitializedProperties() {
-  DEFINE_STATIC_LOCAL(PropertyTreeState, initial_properties,
-                      (nullptr, nullptr, nullptr));
-  return initial_properties;
-}
-
 PaintChunker::PaintChunker()
-    : current_properties_(UninitializedProperties()), force_new_chunk_(false) {}
+    : current_properties_(PropertyTreeState::Uninitialized()),
+      force_new_chunk_(false) {}
 
 PaintChunker::~PaintChunker() = default;
 
+#if DCHECK_IS_ON()
 bool PaintChunker::IsInInitialState() const {
-  if (current_properties_ != UninitializedProperties())
+  if (current_properties_ != PropertyTreeState::Uninitialized())
     return false;
 
   DCHECK(chunks_.IsEmpty());
   return true;
 }
+#endif
 
 void PaintChunker::UpdateCurrentPaintChunkProperties(
     const base::Optional<PaintChunk::Id>& chunk_id,
     const PropertyTreeState& properties) {
-  // TODO(crbug.com/923729): This is a temporary set of checks to determine the
-  // cause of the referenced bug. At this point we should have all of the
-  // properties given to us. Note that scoped objects that restore previous
-  // properties might put us back into uninitialized properties state, but if
-  // we're not being set to uninitialized then we must have all properties set.
-  if (properties != UninitializedProperties()) {
-    CHECK(properties.Transform());
-    CHECK(properties.Clip());
-    CHECK(properties.Effect());
-  }
-
   // If properties are the same, continue to use the previously set
   // |next_chunk_id_| because the id of the outer painting is likely to be
   // more stable to reduce invalidation because of chunk id changes.
@@ -59,13 +45,15 @@ void PaintChunker::ForceNewChunk() {
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
-  // Property nodes should never be null because they should either be set to
-  // properties created by a LayoutObject/FrameView, or be set to a non-null
-  // root node. If these DCHECKs are hit we are missing a call to update the
-  // properties. See: ScopedPaintChunkProperties.
-  DCHECK(current_properties_.Transform());
-  DCHECK(current_properties_.Clip());
-  DCHECK(current_properties_.Effect());
+#if DCHECK_IS_ON()
+  // If this DCHECKs are hit we are missing a call to update the properties.
+  // See: ScopedPaintChunkProperties.
+  DCHECK(!IsInInitialState());
+  // TODO(crbug.com/923729): This CHECK is a temporary to determine the cause of
+  // the referenced bug. At this point we should have all of the properties
+  // given to us.
+  CHECK(current_properties_.IsInitialized());
+#endif
 
   bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollHitTest();
   if (item_forces_new_chunk)
@@ -103,7 +91,7 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
 
 Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
   next_chunk_id_ = base::nullopt;
-  current_properties_ = UninitializedProperties();
+  current_properties_ = PropertyTreeState::Uninitialized();
   chunks_.ShrinkToFit();
   return std::move(chunks_);
 }
