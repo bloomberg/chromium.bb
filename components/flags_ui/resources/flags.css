@@ -90,12 +90,12 @@ h2 {
 
 #header .flex-container .flex:first-child,
 [dir='rtl'] #header .flex-container .flex:last-child {
-  text-align: left;
+  text-align: left; /* csschecker-disable-line left-right */
 }
 
 #header .flex-container .flex:last-child,
 [dir='rtl'] #header .flex-container .flex:first-child {
-  text-align: right;
+  text-align: right; /* csschecker-disable-line left-right */
 }
 
 .hidden {
@@ -207,7 +207,7 @@ h2 {
 }
 
 [dir='rtl'] .experiment .flex-container .flex:first-child  {
-  text-align: right;
+  text-align: right; /* csschecker-disable-line left-right */
 }
 
 .experiment p {
@@ -245,7 +245,7 @@ h2 {
 .experiment-actions {
   flex: 0 0 auto;
   padding-inline-start: 5px;
-  text-align: right;
+  text-align: right; /* csschecker-disable-line left-right */
   width: 150px;
 }
 
@@ -292,7 +292,7 @@ h2 {
   margin: 0;
   padding: 0;
   position: relative;
-  text-align: left;
+  text-align: left; /* csschecker-disable-line left-right */
   width: 100%;
 }
 
@@ -349,7 +349,8 @@ h2 {
   margin-inline-start: -100%;
 }
 
-.selected .tab-content {
+.selected .tab-content,
+.selected .tab-content .template {
   display: block;
 }
 
@@ -371,11 +372,11 @@ h2 {
 }
 
 #needs-restart .flex:last-child {
-  text-align: right;
+  text-align: right; /* csschecker-disable-line left-right */
 }
 
 [dir='rtl'] #needs-restart .flex:last-child {
-  text-align: left;
+  text-align: left; /* csschecker-disable-line left-right */
 }
 
 #needs-restart.show {
@@ -414,11 +415,11 @@ html.focus-outline-visible #experiment-restart-button:focus {
 
 #version {
   color: var(--color-light-gray);
-  text-align: right;
+  text-align: right; /* csschecker-disable-line left-right */
 }
 
 [dir='rtl'] #version {
-  text-align: left;
+  text-align: left; /* csschecker-disable-line left-right */
 }
 
 @media (max-width: 360px) {
@@ -468,7 +469,7 @@ html.focus-outline-visible #experiment-restart-button:focus {
   .experiment .experiment-actions {
     max-width: 100%;
     padding-top: 12px;
-    text-align: left;
+    text-align: left; /* csschecker-disable-line left-right */
     width: 100%;
   }
 
@@ -478,11 +479,11 @@ html.focus-outline-visible #experiment-restart-button:focus {
 
   #flagsTemplate > .flex-container:first-child:not('.version') {
     flex-direction: column;
-    text-align: left;
+    text-align: left; /* csschecker-disable-line left-right */
   }
 
   [dir='rtl'] #flagsTemplate > .flex-container:first-child {
-    text-align: right;
+    text-align: right; /* csschecker-disable-line left-right */
   }
 
   #flagsTemplate > .flex-container:first-child .flex {
@@ -490,7 +491,7 @@ html.focus-outline-visible #experiment-restart-button:focus {
   }
 
   [dir='rtl'] #flagsTemplate > .flex-container #version {
-    text-align: right;
+    text-align: right; /* csschecker-disable-line left-right */
   }
 
   #needs-restart {

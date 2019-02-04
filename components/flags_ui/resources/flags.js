@@ -15,8 +15,29 @@
  *     See returnFlagsExperiments() for the structure of this object.
  */
 function renderTemplate(experimentalFeaturesData) {
-  // This is the javascript code that processes the template:
-  jstProcess(new JsEvalContext(experimentalFeaturesData), $('flagsTemplate'));
+  var templateToProcess = jstGetTemplate('tab-content-available-template');
+  var content = $('tab-content-available');
+
+  if (content.childNodes > 0) {
+    // Already processed, use the internal content area template.
+    templateToProcess =  content;
+  } else {
+    // Duplicate the template into the content area.
+    // This prevents the misrendering of available flags when the template
+    // is rerendered. Example - resetting flags.
+    content.textContent = '';
+    content.appendChild(templateToProcess);
+  }
+
+  // Process the templates: available / unavailable flags.
+  jstProcess(new JsEvalContext(experimentalFeaturesData), templateToProcess);
+
+  // Unavailable flags are not shown on iOS.
+  var unavailableTemplate = $('tab-content-unavailable');
+  if (unavailableTemplate) {
+    jstProcess(new JsEvalContext(experimentalFeaturesData),
+        $('tab-content-unavailable'));
+  }
 
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
