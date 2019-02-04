@@ -175,7 +175,7 @@ The subcomponents of omnibox bugs include:
 | UI>Browser>Omnibox>ZeroSuggest | Suggestions displayed on omnibox focus (both contextual and non-contextual). |
 
 If the bug is extremely low priority, set the **NextAction field** to
-**01/08/2019** and mention that we will "reassess" the bug next year.  This
+**01/07/2020** and mention that we will "reassess" the bug next year.  This
 NextAction field is for Priority-3 bugs that are somehow less important than
 other *priority-3* bugs.  These are bugs we’re sure no one on the team intends
 to fix this year (e.g., really unimportant, or mostly unimportant and hard to
