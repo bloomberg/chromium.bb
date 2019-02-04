@@ -9,6 +9,8 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import android.support.annotation.IntDef;
 import android.util.Log;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -24,22 +26,22 @@ import java.util.regex.Pattern;
  */
 public class WebApkVerifySignature {
     /** Errors codes. */
-    @IntDef({
-            ERROR_OK, ERROR_BAD_APK, ERROR_EXTRA_FIELD_TOO_LARGE, ERROR_FILE_COMMENT_TOO_LARGE,
-            ERROR_INCORRECT_SIGNATURE, ERROR_SIGNATURE_NOT_FOUND, ERROR_TOO_MANY_META_INF_FILES,
-            ERROR_BAD_BLANK_SPACE, ERROR_BAD_V2_SIGNING_BLOCK,
-    })
+    @IntDef({Error.OK, Error.BAD_APK, Error.EXTRA_FIELD_TOO_LARGE, Error.FILE_COMMENT_TOO_LARGE,
+            Error.INCORRECT_SIGNATURE, Error.SIGNATURE_NOT_FOUND, Error.TOO_MANY_META_INF_FILES,
+            Error.BAD_BLANK_SPACE, Error.BAD_V2_SIGNING_BLOCK})
     @SuppressWarnings("JavaLangClash")
-    public @interface Error {}
-    public static final int ERROR_OK = 0;
-    public static final int ERROR_BAD_APK = 1;
-    public static final int ERROR_EXTRA_FIELD_TOO_LARGE = 2;
-    public static final int ERROR_FILE_COMMENT_TOO_LARGE = 3;
-    public static final int ERROR_INCORRECT_SIGNATURE = 4;
-    public static final int ERROR_SIGNATURE_NOT_FOUND = 5;
-    public static final int ERROR_TOO_MANY_META_INF_FILES = 6;
-    public static final int ERROR_BAD_BLANK_SPACE = 7;
-    public static final int ERROR_BAD_V2_SIGNING_BLOCK = 8;
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Error {
+        int OK = 0;
+        int BAD_APK = 1;
+        int EXTRA_FIELD_TOO_LARGE = 2;
+        int FILE_COMMENT_TOO_LARGE = 3;
+        int INCORRECT_SIGNATURE = 4;
+        int SIGNATURE_NOT_FOUND = 5;
+        int TOO_MANY_META_INF_FILES = 6;
+        int BAD_BLANK_SPACE = 7;
+        int BAD_V2_SIGNING_BLOCK = 8;
+    }
 
     private static final String TAG = "WebApkVerifySignature";
 
@@ -162,47 +164,48 @@ public class WebApkVerifySignature {
      * set.
      * @return OK on success.
      */
-    public int read() {
+    public @Error int read() {
         try {
+            @Error
             int err = readEOCD();
-            if (err != ERROR_OK) {
+            if (err != Error.OK) {
                 return err;
             }
             // Short circuit if no comment found.
             if (parseCommentSignature(mComment) == null) {
-                return ERROR_SIGNATURE_NOT_FOUND;
+                return Error.SIGNATURE_NOT_FOUND;
             }
             err = readDirectory();
-            if (err != ERROR_OK) {
+            if (err != Error.OK) {
                 return err;
             }
         } catch (Exception e) {
-            return ERROR_BAD_APK;
+            return Error.BAD_APK;
         }
-        return ERROR_OK;
+        return Error.OK;
     }
 
     /**
      * verifySignature hashes all the files and then verifies the signature.
      * @param pub The public key that it should be verified against.
-     * @return ERROR_OK if the public key signature verifies.
+     * @return Error.OK if the public key signature verifies.
      */
-    public int verifySignature(PublicKey pub) {
+    public @Error int verifySignature(PublicKey pub) {
         byte[] sig = parseCommentSignature(mComment);
         if (sig == null || sig.length == 0) {
-            return ERROR_SIGNATURE_NOT_FOUND;
+            return Error.SIGNATURE_NOT_FOUND;
         }
         try {
             Signature signature = Signature.getInstance(SIGNING_ALGORITHM);
             signature.initVerify(pub);
             int err = calculateHash(signature);
-            if (err != ERROR_OK) {
+            if (err != Error.OK) {
                 return err;
             }
-            return signature.verify(sig) ? ERROR_OK : ERROR_INCORRECT_SIGNATURE;
+            return signature.verify(sig) ? Error.OK : Error.INCORRECT_SIGNATURE;
         } catch (Exception e) {
             Log.e(TAG, "Exception calculating signature", e);
-            return ERROR_INCORRECT_SIGNATURE;
+            return Error.INCORRECT_SIGNATURE;
         }
     }
 
@@ -211,7 +214,7 @@ public class WebApkVerifySignature {
      * cryptographic hash.
      * @param sig Signature object you can call update on.
      */
-    public int calculateHash(Signature sig) throws Exception {
+    public @Error int calculateHash(Signature sig) throws Exception {
         Collections.sort(mBlocks);
         int metaInfCount = 0;
         for (Block block : mBlocks) {
@@ -219,7 +222,7 @@ public class WebApkVerifySignature {
                 metaInfCount++;
                 if (metaInfCount > MAX_META_INF_FILES) {
                     // TODO(scottkirkwood): Add whitelist of files.
-                    return ERROR_TOO_MANY_META_INF_FILES;
+                    return Error.TOO_MANY_META_INF_FILES;
                 }
 
                 // Files that begin with META-INF/ are not part of the hash.
@@ -241,7 +244,7 @@ public class WebApkVerifySignature {
             slice.limit(block.mCompressedSize);
             sig.update(slice);
         }
-        return ERROR_OK;
+        return Error.OK;
     }
 
     /**
@@ -273,12 +276,12 @@ public class WebApkVerifySignature {
 
     /**
      * Reads the End of Central Directory Record.
-     * @return ERROR_OK on success.
+     * @return Error.OK on success.
      */
-    private int readEOCD() {
+    private @Error int readEOCD() {
         int start = findEOCDStart();
         if (start < 0) {
-            return ERROR_BAD_APK;
+            return Error.BAD_APK;
         }
         mEndOfCentralDirOffset = start;
 
@@ -291,14 +294,14 @@ public class WebApkVerifySignature {
         mComment = readString(commentLength);
         if (mBuffer.position() < mBuffer.limit()) {
             // We should have read every byte to the end of the file by this time.
-            return ERROR_BAD_BLANK_SPACE;
+            return Error.BAD_BLANK_SPACE;
         }
-        return ERROR_OK;
+        return Error.OK;
     }
 
     /**
      * Reads the central directory and populates {@link mBlocks} with data about each entry.
-     * @return ERROR_OK on success.
+     * @return Error.OK on success.
      */
     @Error
     int readDirectory() {
@@ -308,7 +311,7 @@ public class WebApkVerifySignature {
             int signature = read4();
             if (signature != CD_SIG) {
                 Log.d(TAG, "Missing Central Directory Signature");
-                return ERROR_BAD_APK;
+                return Error.BAD_APK;
             }
             // CreatorVersion(2), ReaderVersion(2), Flags(2), CompressionMethod(2)
             // ModifiedTime(2), ModifiedDate(2), CRC32(4) = 16 bytes
@@ -323,17 +326,17 @@ public class WebApkVerifySignature {
             String filename = readString(fileNameLength);
             seekDelta(extraLen + fileCommentLength);
             if (extraLen > MAX_EXTRA_LENGTH) {
-                return ERROR_EXTRA_FIELD_TOO_LARGE;
+                return Error.EXTRA_FIELD_TOO_LARGE;
             }
             if (fileCommentLength > MAX_FILE_COMMENT_LENGTH) {
-                return ERROR_FILE_COMMENT_TOO_LARGE;
+                return Error.FILE_COMMENT_TOO_LARGE;
             }
             mBlocks.add(new Block(filename, offset, compressedSize));
         }
 
         if (mBuffer.position() != mEndOfCentralDirOffset) {
             // At this point we should be exactly at the EOCD start.
-            return ERROR_BAD_BLANK_SPACE;
+            return Error.BAD_BLANK_SPACE;
         }
 
         // We need blocks to be sorted by position at this point.
@@ -343,14 +346,14 @@ public class WebApkVerifySignature {
         // Read the 'local file header' block to the size of the header in bytes.
         for (Block block : mBlocks) {
             if (block.mPosition != lastByte) {
-                return ERROR_BAD_BLANK_SPACE;
+                return Error.BAD_BLANK_SPACE;
             }
 
             seek(block.mPosition);
             int signature = read4();
             if (signature != LFH_SIG) {
                 Log.d(TAG, "LFH Signature missing");
-                return ERROR_BAD_APK;
+                return Error.BAD_APK;
             }
             // ReaderVersion(2)
             seekDelta(2);
@@ -361,7 +364,7 @@ public class WebApkVerifySignature {
             int fileNameLength = read2();
             int extraFieldLength = read2();
             if (extraFieldLength > MAX_EXTRA_LENGTH) {
-                return ERROR_EXTRA_FIELD_TOO_LARGE;
+                return Error.EXTRA_FIELD_TOO_LARGE;
             }
 
             block.mHeaderSize =
@@ -388,13 +391,13 @@ public class WebApkVerifySignature {
                 // Only if we have a v2 signature do we allow medium sized gap between the last
                 // block and the start of the central directory.
                 if (mCentralDirOffset - lastByte > MAX_V2_SIGNING_BLOCK_SIZE) {
-                    return ERROR_BAD_V2_SIGNING_BLOCK;
+                    return Error.BAD_V2_SIGNING_BLOCK;
                 }
             } else {
-                return ERROR_BAD_BLANK_SPACE;
+                return Error.BAD_BLANK_SPACE;
             }
         }
-        return ERROR_OK;
+        return Error.OK;
     }
 
     /**
