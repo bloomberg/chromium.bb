@@ -69,6 +69,13 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
     # complex schemas using stringified JSON - instead, store them as dicts.
 ]
 
+# 100 MiB upper limit on the total device policy external data max size limits
+# due to the security reasons.
+# You can increase this limit if you're introducing new external data type
+# device policy, but be aware that too heavy policies could result in user
+# profiles not having enough space on the device.
+TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE = 1024 * 1024 * 100
+
 
 class PolicyTemplateChecker(object):
 
@@ -237,6 +244,22 @@ class PolicyTemplateChecker(object):
                    'not store complex data as stringified JSON - instead, ' +
                    'store it in a dict and define it in "schema".') %
                   policy.get('name'))
+
+  def _CheckTotalDevicePolicyExternalDataMaxSize(self, policy_definitions):
+    total_device_policy_external_data_max_size = 0
+    for policy in policy_definitions:
+      if (policy.get('device_only', False) and
+          self._CheckContains(policy, 'type', str) == 'external'):
+        total_device_policy_external_data_max_size += self._CheckContains(
+            policy, 'max_size', int)
+    if (total_device_policy_external_data_max_size >
+        TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE):
+      self._Error(
+          ('Total sum of device policy external data maximum size limits ' +
+           'should not exceed %d bytes, current sum is %d bytes.') %
+          (TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE,
+           total_device_policy_external_data_max_size))
+
 
   # Returns True if the example value for a policy seems to contain JSON
   # embedded inside a string. Simply checks if strings start with '{', so it
@@ -697,6 +720,7 @@ class PolicyTemplateChecker(object):
       self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
       if highest_id is not None:
         self._CheckHighestId(policy_ids, highest_id)
+      self._CheckTotalDevicePolicyExternalDataMaxSize(policy_definitions)
 
     # Made it as a dict (policy_name -> True) to reuse _CheckContains.
     policy_names = {
