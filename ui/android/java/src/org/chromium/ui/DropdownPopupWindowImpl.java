@@ -95,7 +95,7 @@ class DropdownPopupWindowImpl
         rectProvider.setInsetPx(0, /* top= */ paddingRect.bottom, 0, /* bottom= */ paddingRect.top);
         mHorizontalPadding = paddingRect.right + paddingRect.left;
         mAnchoredPopupWindow.setPreferredHorizontalOrientation(
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER);
+                AnchoredPopupWindow.HorizontalOrientation.CENTER);
         mAnchoredPopupWindow.setUpdateOrientationOnChange(true);
         mAnchoredPopupWindow.setOutsideTouchable(true);
     }
