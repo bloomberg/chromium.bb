@@ -74,6 +74,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   explicit ThreadControllerWithMessagePumpImpl(const TickClock* time_source);
 
   // MessagePump::Delegate implementation.
+  MessagePump::Delegate::NextWorkInfo DoSomeWork() override;
   bool DoWork() override;
   bool DoDelayedWork(TimeTicks* next_run_time) override;
   bool DoIdleWork() override;

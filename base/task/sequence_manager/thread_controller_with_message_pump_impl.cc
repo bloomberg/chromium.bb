@@ -142,8 +142,10 @@ void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
   if (main_thread_only().next_delayed_do_work == run_time)
     return;
 
-  run_time = CapAtOneDay(run_time, lazy_now);
+  // Cap at one day but remember the exact time for the above equality check on
+  // the next round.
   main_thread_only().next_delayed_do_work = run_time;
+  run_time = CapAtOneDay(run_time, lazy_now);
 
   // Do not call ScheduleDelayedWork if there is an immediate DoWork scheduled.
   // We can rely on calling ScheduleDelayedWork from the next DoWork call.
@@ -212,6 +214,39 @@ void ThreadControllerWithMessagePumpImpl::RemoveNestingObserver(
 const scoped_refptr<AssociatedThreadId>&
 ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
   return associated_thread_;
+}
+
+MessagePump::Delegate::NextWorkInfo
+ThreadControllerWithMessagePumpImpl::DoSomeWork() {
+  main_thread_only().immediate_do_work_posted = false;
+  bool ran_task = false;  // Unused.
+  LazyNow continuation_lazy_now(time_source_);
+  TimeDelta delay_till_next_task =
+      DoWorkImpl(&continuation_lazy_now, &ran_task);
+  // Schedule a continuation.
+  if (delay_till_next_task.is_zero()) {
+    // Need to run new work immediately, but due to the contract of DoSomeWork
+    // we only need to return a null TimeTicks to ensure that happens.
+    main_thread_only().immediate_do_work_posted = true;
+    return MessagePump::Delegate::NextWorkInfo();
+  }
+
+  // While the math below would saturate when |delay_till_next_task.is_max()|;
+  // special-casing here avoids unnecessarily sampling Now() when out of work.
+  if (delay_till_next_task.is_max()) {
+    main_thread_only().next_delayed_do_work = TimeTicks::Max();
+    return {TimeTicks::Max()};
+  }
+
+  // The MessagePump will schedule the delay on our behalf, so we need to update
+  // |main_thread_only().next_delayed_do_work|.
+  // TODO(gab, alexclarke): Replace DelayTillNextTask() with NextTaskTime() to
+  // avoid converting back-and-forth between TimeTicks and TimeDelta.
+  main_thread_only().next_delayed_do_work =
+      continuation_lazy_now.Now() + delay_till_next_task;
+  return {CapAtOneDay(main_thread_only().next_delayed_do_work,
+                      &continuation_lazy_now),
+          continuation_lazy_now.Now()};
 }
 
 bool ThreadControllerWithMessagePumpImpl::DoWork() {

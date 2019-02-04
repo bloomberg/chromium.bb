@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_pump.h"
+
 #include "base/message_loop/message_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,13 +17,52 @@ using ::testing::Invoke;
 using ::testing::Return;
 
 namespace base {
+
 namespace {
+
+bool PumpTypeUsesDoSomeWork(MessageLoopBase::Type type) {
+  switch (type) {
+    case MessageLoopBase::Type::TYPE_DEFAULT:
+#if defined(OS_IOS)
+      // iOS uses a MessagePumpCFRunLoop instead of MessagePumpDefault for
+      // TYPE_DEFAULT. TODO(gab): migrate MessagePumpCFRunLoop too.
+      return false;
+#else
+      return true;
+#endif
+    case MessageLoopBase::Type::TYPE_UI:
+#if defined(OS_IOS)
+      // iOS uses a MessagePumpDefault for UI in unit tests, ref.
+      // test_support_ios.mm::CreateMessagePumpForUIForTests().
+      return true;
+#else
+      // TODO(gab): Complete migration of all UI pumps to DoSomeWork() as part
+      // of crbug.com/885371.
+      return false;
+#endif
+    case MessageLoopBase::Type::TYPE_IO:
+      // TODO(gab): Complete migration of all IO pumps to DoSomeWork() as part
+      // of crbug.com/885371.
+      return false;
+
+    case MessageLoopBase::Type::TYPE_CUSTOM:
+#if defined(OS_ANDROID)
+    case MessageLoopBase::Type::TYPE_JAVA:
+#endif  // defined(OS_ANDROID)
+      // Not tested in this file.
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
 
 class MockMessagePumpDelegate : public MessagePump::Delegate {
  public:
   MockMessagePumpDelegate() = default;
 
   // MessagePump::Delegate:
+  MOCK_METHOD0(DoSomeWork, MessagePump::Delegate::NextWorkInfo());
   MOCK_METHOD0(DoWork, bool());
   MOCK_METHOD1(DoDelayedWork, bool(TimeTicks*));
   MOCK_METHOD0(DoIdleWork, bool());
@@ -36,17 +77,28 @@ class MessagePumpTest : public ::testing::TestWithParam<MessageLoopBase::Type> {
       : message_pump_(MessageLoop::CreateMessagePumpForType(GetParam())) {}
 
  protected:
+  const bool pump_uses_do_some_work_ = PumpTypeUsesDoSomeWork(GetParam());
+
   std::unique_ptr<MessagePump> message_pump_;
 };
+
+}  // namespace
 
 TEST_P(MessagePumpTest, QuitStopsWork) {
   testing::StrictMock<MockMessagePumpDelegate> delegate;
 
   // Not expecting any calls to DoDelayedWork or DoIdleWork after quitting.
-  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
-    message_pump_->Quit();
-    return false;
-  }));
+  if (pump_uses_do_some_work_) {
+    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+      message_pump_->Quit();
+      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+    }));
+  } else {
+    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+      message_pump_->Quit();
+      return false;
+    }));
+  }
   EXPECT_CALL(delegate, DoDelayedWork(_)).Times(0);
   EXPECT_CALL(delegate, DoIdleWork()).Times(0);
 
@@ -63,29 +115,53 @@ TEST_P(MessagePumpTest, QuitStopsWorkWithNestedRunLoop) {
   // nested loop exits, we schedule another DoWork which quits the outer
   // (original) run loop. The test verifies that there are no extra calls to
   // DoWork after the outer loop quits.
-  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([&] {
-    message_pump_->ScheduleWork();
-    message_pump_->Run(&nested_delegate);
-    message_pump_->ScheduleWork();
-    return false;
-  }));
-  EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([&] {
-    // Quit the nested run loop.
-    message_pump_->Quit();
-    return false;
-  }));
-  EXPECT_CALL(delegate, DoDelayedWork(_)).WillOnce(Return(false));
+  if (pump_uses_do_some_work_) {
+    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([&] {
+      message_pump_->ScheduleWork();
+      message_pump_->Run(&nested_delegate);
+      message_pump_->ScheduleWork();
+      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+    }));
+    EXPECT_CALL(nested_delegate, DoSomeWork).WillOnce(Invoke([&] {
+      // Quit the nested run loop.
+      message_pump_->Quit();
+      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+    }));
+  } else {
+    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([&] {
+      message_pump_->ScheduleWork();
+      message_pump_->Run(&nested_delegate);
+      message_pump_->ScheduleWork();
+      return false;
+    }));
+    EXPECT_CALL(nested_delegate, DoWork).WillOnce(Invoke([&] {
+      // Quit the nested run loop.
+      message_pump_->Quit();
+      return false;
+    }));
+    EXPECT_CALL(delegate, DoDelayedWork(_)).WillOnce(Return(false));
+  }
+
   // The outer pump may or may not trigger idle work at this point.
   EXPECT_CALL(delegate, DoIdleWork()).Times(AnyNumber());
-  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([&] {
-    // Quit the original run loop.
-    message_pump_->Quit();
-    return false;
-  }));
+
+  if (pump_uses_do_some_work_) {
+    EXPECT_CALL(delegate, DoSomeWork).WillOnce(Invoke([this] {
+      message_pump_->Quit();
+      return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+    }));
+  } else {
+    EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+      message_pump_->Quit();
+      return false;
+    }));
+  }
 
   message_pump_->ScheduleWork();
   message_pump_->Run(&delegate);
 }
+
+namespace {
 
 class TimerSlackTestDelegate : public MessagePump::Delegate {
  public:
@@ -101,14 +177,34 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
     action_.store(NONE);
   }
 
+  MessagePump::Delegate::NextWorkInfo DoSomeWork() override {
+    switch (action_.load()) {
+      case NONE:
+        break;
+      case SCHEDULE_DELAYED_WORK: {
+        // After being woken up by the other thread, we let the pump know that
+        // the next delayed task is in fact much sooner than the 1 hour delay it
+        // was aware of. If the pump refreshes its timer correctly, it will wake
+        // up shortly, finishing the test.
+        action_.store(QUIT);
+        TimeTicks now = TimeTicks::Now();
+        return {now + TimeDelta::FromMilliseconds(50), now};
+      }
+      case QUIT:
+        message_pump_->Quit();
+        break;
+    }
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks::Max()};
+  }
+
   bool DoWork() override {
     switch (action_.load()) {
       case NONE:
         break;
       case SCHEDULE_DELAYED_WORK:
         // After being woken up by the other thread, we schedule work after a
-        // short delay. If is workaround was successful, the pump will wake up
-        // shortly, finishing the test.
+        // short delay. If the pump refreshes its timer correctly, it will wake
+        // up shortly, finishing the test.
         action_.store(QUIT);
         message_pump_->ScheduleDelayedWork(TimeTicks::Now() +
                                            TimeDelta::FromMilliseconds(50));
@@ -137,6 +233,8 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
   MessagePump* const message_pump_;
   std::atomic<Action> action_;
 };
+
+}  // namespace
 
 TEST_P(MessagePumpTest, TimerSlackWithLongDelays) {
   // This is a regression test for an issue where the iOS message pump fails to
@@ -171,5 +269,4 @@ INSTANTIATE_TEST_SUITE_P(,
                                            MessageLoop::TYPE_UI,
                                            MessageLoop::TYPE_IO));
 
-}  // namespace
 }  // namespace base
