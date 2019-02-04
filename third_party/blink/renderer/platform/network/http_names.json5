@@ -58,6 +58,7 @@
     "Refresh",
     "Resource-Freshness",
     "Save-Data",
+    "Sec-CH-Lang",
     "Sec-Required-CSP",
     "Server-Timing",
     "SourceMap",

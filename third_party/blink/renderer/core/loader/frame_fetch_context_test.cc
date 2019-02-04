@@ -50,7 +50,9 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -791,6 +793,31 @@ TEST_F(FrameFetchContextHintsTest, MonitorViewportWidthHints) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
 }
 
+TEST_F(FrameFetchContextHintsTest, MonitorLangHint) {
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", false, "");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
+
+  ClientHintsPreferences preferences;
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kLang);
+  document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
+
+  document->domWindow()->navigator()->SetLanguagesForTesting("en-US");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
+               "\"en-US\"");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
+
+  document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
+               "\"en\", \"de\", \"fr\"");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
+
+  document->domWindow()->navigator()->SetLanguagesForTesting(
+      "en-US,fr_FR,de-DE,es");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
+               "\"en-US\", \"fr-FR\", \"de-DE\", \"es\"");
+  ExpectHeader("http://www.example.com/1.gif", "Sec-CH-Lang", false, "");
+}
+
 TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", false, "");
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
@@ -799,6 +826,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "rtt", false, "");
   ExpectHeader("https://www.example.com/1.gif", "downlink", false, "");
   ExpectHeader("https://www.example.com/1.gif", "ect", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", false, "");
 
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -810,12 +838,17 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kRtt);
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDownlink);
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kEct);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kLang);
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   document->GetFrame()->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", true, "4");
   ExpectHeader("https://www.example.com/1.gif", "DPR", true, "1");
   ExpectHeader("https://www.example.com/1.gif", "Width", true, "400", 400);
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", true, "500");
+
+  document->domWindow()->navigator()->SetLanguagesForTesting("en,de,fr");
+  ExpectHeader("https://www.example.com/1.gif", "Sec-CH-Lang", true,
+               "\"en\", \"de\", \"fr\"");
 
   // Value of network quality client hints may vary, so only check if the
   // header is present and the values are non-negative/non-empty.

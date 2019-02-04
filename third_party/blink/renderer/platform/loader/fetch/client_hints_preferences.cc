@@ -25,7 +25,7 @@ void ParseAcceptChHeader(const String& header_value,
        i < static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1; ++i) {
     enabled_hints.SetIsEnabled(
         static_cast<mojom::WebClientHintsType>(i),
-        accept_client_hints_header.Contains(kClientHintsHeaderMapping[i]));
+        accept_client_hints_header.Contains(kClientHintsNameMapping[i]));
   }
 
   enabled_hints.SetIsEnabled(
@@ -43,13 +43,18 @@ void ParseAcceptChHeader(const String& header_value,
   enabled_hints.SetIsEnabled(
       mojom::WebClientHintsType::kEct,
       enabled_hints.IsEnabled(mojom::WebClientHintsType::kEct));
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kLang,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kLang) &&
+          RuntimeEnabledFeatures::LangClientHintHeaderEnabled());
 }
 
 }  // namespace
 
 ClientHintsPreferences::ClientHintsPreferences() {
   DCHECK_EQ(static_cast<size_t>(mojom::WebClientHintsType::kMaxValue) + 1,
-            kClientHintsHeaderMappingCount);
+            kClientHintsMappingsCount);
 }
 
 void ClientHintsPreferences::UpdateFrom(

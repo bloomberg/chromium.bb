@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -37,6 +38,38 @@ AtomicString NavigatorLanguage::language() {
 }
 
 const Vector<String>& NavigatorLanguage::languages() {
+  EnsureUpdatedLanguage();
+  return languages_;
+}
+
+AtomicString NavigatorLanguage::SerializeLanguagesForClientHintHeader() {
+  EnsureUpdatedLanguage();
+
+  StringBuilder builder;
+  for (size_t i = 0; i < languages_.size(); i++) {
+    if (i)
+      builder.Append(", ");
+    builder.Append('"');
+    builder.Append(languages_[i]);
+    builder.Append('"');
+  }
+  return builder.ToAtomicString();
+}
+
+bool NavigatorLanguage::IsLanguagesDirty() const {
+  return languages_dirty_;
+}
+
+void NavigatorLanguage::SetLanguagesDirty() {
+  languages_dirty_ = true;
+  languages_.clear();
+}
+
+void NavigatorLanguage::SetLanguagesForTesting(const String& languages) {
+  languages_ = ParseAndSanitize(languages);
+}
+
+void NavigatorLanguage::EnsureUpdatedLanguage() {
   if (languages_dirty_) {
     String accept_languages_override;
     probe::applyAcceptLanguageOverride(context_, &accept_languages_override);
@@ -49,16 +82,6 @@ const Vector<String>& NavigatorLanguage::languages() {
 
     languages_dirty_ = false;
   }
-  return languages_;
-}
-
-bool NavigatorLanguage::IsLanguagesDirty() const {
-  return languages_dirty_;
-}
-
-void NavigatorLanguage::SetLanguagesDirty() {
-  languages_dirty_ = true;
-  languages_.clear();
 }
 
 void NavigatorLanguage::Trace(blink::Visitor* visitor) {

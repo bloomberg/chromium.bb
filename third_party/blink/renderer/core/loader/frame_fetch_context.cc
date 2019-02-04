@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -857,6 +858,17 @@ void FrameFetchContext::AddClientHintsIfNecessary(
             mojom::WebClientHintsType::kEct)],
         AtomicString(NetworkStateNotifier::EffectiveConnectionTypeToString(
             holdback_ect.value())));
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kLang, hints_preferences,
+                           enabled_hints)) {
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kLang)],
+        GetFrame()
+            ->DomWindow()
+            ->navigator()
+            ->SerializeLanguagesForClientHintHeader());
   }
 }
 
