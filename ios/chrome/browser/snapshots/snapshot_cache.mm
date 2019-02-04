@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
 
 #import <UIKit/UIKit.h>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/critical_closure.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #import "base/ios/crb_protocol_observers.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
@@ -24,9 +23,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/snapshots/lru_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_internal.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
