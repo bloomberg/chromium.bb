@@ -192,10 +192,10 @@ TEST_F(RunSegmenterTest, EmojiZWJSequences) {
         FontFallbackPriority::kEmojiEmoji},
        {"abcd", USCRIPT_LATIN, OrientationIterator::kOrientationKeep,
         FontFallbackPriority::kText},
-       {"👩‍👩‍", USCRIPT_LATIN, OrientationIterator::kOrientationKeep,
+       {"👩‍👩", USCRIPT_LATIN, OrientationIterator::kOrientationKeep,
         FontFallbackPriority::kEmojiEmoji},
-       {"efg", USCRIPT_LATIN, OrientationIterator::kOrientationKeep,
-        FontFallbackPriority::kText}});
+       {u8"\U0000200D‍efg", USCRIPT_LATIN,
+        OrientationIterator::kOrientationKeep, FontFallbackPriority::kText}});
 }
 
 TEST_F(RunSegmenterTest, JapaneseLetterlikeEnd) {
@@ -243,10 +243,8 @@ TEST_F(RunSegmenterTest, EmojiSubdivisionFlags) {
 
 TEST_F(RunSegmenterTest, NonEmojiPresentationSymbols) {
   CheckRunsHorizontal(
-      {{u8"\U00002626\U0000262a\U00002638\U0000271d\U00002721", USCRIPT_COMMON,
-        OrientationIterator::kOrientationKeep,
-        FontFallbackPriority::kEmojiText},
-       {u8"\U00002627\U00002628\U00002629\U0000262b\U0000262c\U00002670"
+      {{u8"\U00002626\U0000262a\U00002638\U0000271d\U00002721\U00002627"
+        u8"\U00002628\U00002629\U0000262b\U0000262c\U00002670"
         "\U00002671\U0000271f\U00002720",
         USCRIPT_COMMON, OrientationIterator::kOrientationKeep,
         FontFallbackPriority::kText}});

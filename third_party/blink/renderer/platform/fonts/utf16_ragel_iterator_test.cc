@@ -59,7 +59,7 @@ TEST(UTF16RagelIteratorTest, CharacterClasses) {
       class_examples_unicode_string.length(),
       class_examples_unicode_string.length() - 1);
   size_t i = base::size(categories) - 1;
-  while (reverse_ragel_iterator.cursor() > 0) {
+  while (reverse_ragel_iterator.Cursor() > 0) {
     CHECK_EQ(categories[i], *reverse_ragel_iterator);
     i--;
     reverse_ragel_iterator--;
@@ -104,10 +104,33 @@ TEST(UTF16RagelIteratorTest, ArithmeticOperators) {
 
 TEST(UTF16RagelIteratorTest, InvalidOperationOnEmpty) {
   UTF16RagelIterator ragel_iterator;
-  CHECK_EQ(ragel_iterator.cursor(), 0u);
+  CHECK_EQ(ragel_iterator.Cursor(), 0u);
   EXPECT_DEATH_IF_SUPPORTED(ragel_iterator++, "");
   EXPECT_DEATH_IF_SUPPORTED(ragel_iterator--, "");
   EXPECT_DEATH_IF_SUPPORTED(*ragel_iterator, "");
+}
+
+TEST(UTF16RagelIteratorTest, CursorPositioning) {
+  UChar32 flags_codepoints[] = {0x1F99E, 0x1F99E, 0x1F99E,
+                                kLeftSpeechBubbleCharacter};
+
+  icu_63::UnicodeString flags_unicode_string = icu_63::UnicodeString::fromUTF32(
+      flags_codepoints, base::size(flags_codepoints));
+  UTF16RagelIterator ragel_iterator(
+      reinterpret_cast<const UChar*>(flags_unicode_string.getBuffer()),
+      flags_unicode_string.length());
+
+  CHECK_EQ(ragel_iterator.end().Cursor(), 8u);
+
+  CHECK_EQ(*ragel_iterator, UTF16RagelIterator::EMOJI_EMOJI_PRESENTATION);
+  CHECK_EQ(*(ragel_iterator.SetCursor(4)),
+           UTF16RagelIterator::EMOJI_EMOJI_PRESENTATION);
+  CHECK_EQ(*(ragel_iterator.SetCursor(6)),
+           UTF16RagelIterator::EMOJI_TEXT_PRESENTATION);
+
+  EXPECT_DEATH_IF_SUPPORTED(ragel_iterator.SetCursor(-1), "");
+  EXPECT_DEATH_IF_SUPPORTED(
+      ragel_iterator.SetCursor(ragel_iterator.end().Cursor()), "");
 }
 
 }  // namespace blink

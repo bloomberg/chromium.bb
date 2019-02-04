@@ -1469,6 +1469,7 @@ jumbo_component("platform") {
     "//third_party/blink/public:embedded_frame_sink_mojo_bindings_blink",
     "//third_party/blink/public/common",
     "//third_party/ced",
+    "//third_party/emoji-segmenter",
     "//third_party/icu",
     "//third_party/webrtc/p2p:rtc_p2p",
     "//third_party/webrtc_overrides:init_webrtc",
