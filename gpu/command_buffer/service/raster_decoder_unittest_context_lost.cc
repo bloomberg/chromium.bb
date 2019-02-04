@@ -173,29 +173,6 @@ TEST_P(RasterDecoderLostContextTest, LostFromMakeCurrentWithRobustness) {
   ClearCurrentDecoderError();
 }
 
-TEST_P(RasterDecoderLostContextTest, TextureDestroyAfterLostFromMakeCurrent) {
-  Init(/*has_robustness=*/true);
-
-  CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RGBA_8888,
-                    /*width=*/2, /*height=*/2,
-                    /*cleared=*/false);
-
-  // The texture should never be deleted at the GL level.
-  EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(kNewServiceId)))
-      .Times(0)
-      .RetiresOnSaturation();
-
-  // Force context lost for MakeCurrent().
-  EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
-  // Expect the group to be lost.
-  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
-
-  decoder_->MakeCurrent();
-  EXPECT_TRUE(decoder_->WasContextLost());
-  EXPECT_EQ(error::kMakeCurrentFailed, GetContextLostReason());
-  ClearCurrentDecoderError();
-}
-
 TEST_P(RasterDecoderLostContextTest, QueryDestroyAfterLostFromMakeCurrent) {
   Init(/*has_robustness=*/false);
 

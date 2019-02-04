@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -19,6 +20,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/copy_texture_chromium_mock.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -27,6 +29,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,6 +64,7 @@ RasterDecoderTestBase::RasterDecoderTestBase()
       shared_memory_base_(nullptr),
       ignore_cached_state_for_test_(GetParam()),
       shader_translator_cache_(gpu_preferences_),
+      memory_tracker_(nullptr),
       copy_texture_manager_(nullptr) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
@@ -148,19 +152,13 @@ gpu::Mailbox RasterDecoderTestBase::CreateFakeTexture(
     GLsizei width,
     GLsizei height,
     bool cleared) {
-  // Create texture and temporary ref.
-  const GLuint kTempClientId = next_fake_texture_client_id_++;
-  auto* temp_ref =
-      group_->texture_manager()->CreateTexture(kTempClientId, service_id);
-  group_->texture_manager()->SetTarget(temp_ref, GL_TEXTURE_2D);
-  group_->texture_manager()->SetLevelInfo(
-      temp_ref, GL_TEXTURE_2D, 0, viz::GLInternalFormat(resource_format),
-      /*width=*/width, /*height=*/height, 1, 0,
-      viz::GLDataFormat(resource_format), viz::GLDataType(resource_format),
-      cleared ? gfx::Rect(width, height) : gfx::Rect());
-  gpu::Mailbox mailbox = gpu::Mailbox::Generate();
-  group_->mailbox_manager()->ProduceTexture(mailbox, temp_ref->texture());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+  std::unique_ptr<SharedImageBacking> backing =
+      SharedImageBackingFactoryGLTexture::CreateSharedImageForTest(
+          mailbox, GL_TEXTURE_2D, service_id, cleared, resource_format,
+          gfx::Size(width, height), SHARED_IMAGE_USAGE_RASTER);
+  shared_images_.push_back(
+      shared_image_manager_.Register(std::move(backing), &memory_tracker_));
   return mailbox;
 }
 
@@ -295,6 +293,9 @@ void RasterDecoderTestBase::ResetDecoder() {
   group_->Destroy(mock_decoder_.get(), false);
   command_buffer_service_.reset();
   command_buffer_service_for_mock_decoder_.reset();
+  for (auto& image : shared_images_)
+    image->OnContextLost();
+  shared_images_.clear();
   ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();
   gl::init::ShutdownGL(false);

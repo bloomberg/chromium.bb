@@ -5,6 +5,9 @@
 #include "gpu/command_buffer/service/raster_decoder.h"
 
 #include <limits>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -18,6 +21,7 @@
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -148,6 +152,53 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_FALSE(query->IsPending());
 }
 
+TEST_P(RasterDecoderTest, CopyTexSubImage2DSizeMismatch) {
+  shared_context_state_->set_need_context_state_reset(true);
+  // Create uninitialized source texture.
+  gpu::Mailbox source_texture_mailbox =
+      CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RGBA_8888,
+                        /*width=*/1, /*height=*/1,
+                        /*cleared=*/true);
+  GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
+  CopyMailboxes(mailboxes, source_texture_mailbox, client_texture_mailbox_);
+
+  auto representation =
+      group().shared_image_representation_factory()->ProduceGLTexture(
+          client_texture_mailbox_);
+  gles2::Texture* dest_texture = representation->GetTexture();
+
+  {
+    // This will initialize the bottom right corner of destination.
+    SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    cmd.Init(1, 1, 0, 0, 1, 1, mailboxes);
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    EXPECT_EQ(dest_texture->GetLevelClearedRect(GL_TEXTURE_2D, 0),
+              gfx::Rect(1, 1, 1, 1));
+  }
+
+  {
+    // Dest rect outside of dest bounds
+    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    cmd.Init(2, 2, 0, 0, 1, 1, mailboxes);
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+    EXPECT_EQ(dest_texture->GetLevelClearedRect(GL_TEXTURE_2D, 0),
+              gfx::Rect(1, 1, 1, 1));
+  }
+
+  {
+    // Source rect outside of source bounds
+    auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
+    cmd.Init(0, 0, 0, 0, 2, 2, mailboxes);
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+    EXPECT_EQ(dest_texture->GetLevelClearedRect(GL_TEXTURE_2D, 0),
+              gfx::Rect(1, 1, 1, 1));
+  }
+}
+
 TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
   shared_context_state_->set_need_context_state_reset(true);
   // Create uninitialized source texture.
@@ -155,6 +206,8 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RGBA_8888,
                         /*width=*/2, /*height=*/2,
                         /*cleared=*/false);
+  GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
+  CopyMailboxes(mailboxes, source_texture_mailbox, client_texture_mailbox_);
 
   // This will initialize the top half of destination.
   {
@@ -165,8 +218,6 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
                                   GL_UNSIGNED_BYTE, 0, 0, 2, 2, 0);
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
     auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
-    GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
-    CopyMailboxes(mailboxes, source_texture_mailbox, client_texture_mailbox_);
     cmd.Init(0, 0, 0, 0, 2, 1, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
@@ -180,15 +231,14 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
                                   GL_UNSIGNED_BYTE, 0, 1, 2, 1, 0);
     SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
     auto& cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
-    GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
-    CopyMailboxes(mailboxes, source_texture_mailbox, client_texture_mailbox_);
     cmd.Init(1, 1, 0, 0, 1, 1, mailboxes);
     EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(mailboxes)));
   }
 
-  auto* texture = gles2::Texture::CheckedCast(
-      group().mailbox_manager()->ConsumeTexture(client_texture_mailbox_));
-  EXPECT_TRUE(texture->SafeToRenderFrom());
+  auto representation =
+      group().shared_image_representation_factory()->ProduceGLTexture(
+          client_texture_mailbox_);
+  EXPECT_TRUE(representation->GetTexture()->SafeToRenderFrom());
 }
 
 TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
@@ -202,7 +252,6 @@ TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
       CreateFakeTexture(kNewServiceId, viz::ResourceFormat::RED_8,
                         /*width=*/2, /*height=*/2, /*cleared=*/true);
 
-  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
   auto& copy_cmd = *GetImmediateAs<CopySubTextureINTERNALImmediate>();
   GLbyte mailboxes[sizeof(gpu::Mailbox) * 2];
   CopyMailboxes(mailboxes, client_texture_mailbox_, dest_texture_mailbox);

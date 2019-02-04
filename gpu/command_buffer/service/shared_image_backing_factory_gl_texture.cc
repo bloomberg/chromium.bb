@@ -4,6 +4,10 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
+#include <algorithm>
+#include <string>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -532,6 +536,10 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     max_texture_size_ =
         std::min(max_texture_size_, workarounds.max_texture_size);
   }
+  // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
+  // can be used to accurately represent all valid sub-rects, with overflow
+  // cases, clamped to INT_MAX, always invalid.
+  max_texture_size_ = std::min(max_texture_size_, INT_MAX - 1);
 
   // TODO(piman): Can we extract the logic out of FeatureInfo?
   scoped_refptr<gles2::FeatureInfo> feature_info =
@@ -769,11 +777,11 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
                            pixel_data.data());
   }
 
-  return MakeBacking(mailbox, target, service_id, image, gles2::Texture::BOUND,
-                     level_info_internal_format, format_info.gl_format,
-                     format_info.gl_type, format_info.swizzle,
-                     pixel_data.empty() ? is_cleared : true, format, size,
-                     color_space, usage);
+  return MakeBacking(
+      use_passthrough_, mailbox, target, service_id, image,
+      gles2::Texture::BOUND, level_info_internal_format, format_info.gl_format,
+      format_info.gl_type, format_info.swizzle,
+      pixel_data.empty() ? is_cleared : true, format, size, color_space, usage);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -857,9 +865,25 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   GLenum gl_type =
       gles2::TextureManager::ExtractTypeFromStorageFormat(internal_format);
 
-  return MakeBacking(mailbox, target, service_id, image, image_state,
-                     internal_format, gl_format, gl_type, nullptr, true, format,
-                     size, color_space, usage);
+  return MakeBacking(use_passthrough_, mailbox, target, service_id, image,
+                     image_state, internal_format, gl_format, gl_type, nullptr,
+                     true, format, size, color_space, usage);
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryGLTexture::CreateSharedImageForTest(
+    const Mailbox& mailbox,
+    GLenum target,
+    GLuint service_id,
+    bool is_cleared,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    uint32_t usage) {
+  return MakeBacking(false, mailbox, target, service_id, nullptr,
+                     gles2::Texture::UNBOUND, viz::GLInternalFormat(format),
+                     viz::GLDataFormat(format), viz::GLDataType(format),
+                     nullptr, is_cleared, format, size, gfx::ColorSpace(),
+                     usage);
 }
 
 scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
@@ -889,6 +913,7 @@ scoped_refptr<gl::GLImage> SharedImageBackingFactoryGLTexture::MakeGLImage(
 
 std::unique_ptr<SharedImageBacking>
 SharedImageBackingFactoryGLTexture::MakeBacking(
+    bool passthrough,
     const Mailbox& mailbox,
     GLenum target,
     GLuint service_id,
@@ -903,7 +928,7 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  if (use_passthrough_) {
+  if (passthrough) {
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture =
         base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
     if (image)
