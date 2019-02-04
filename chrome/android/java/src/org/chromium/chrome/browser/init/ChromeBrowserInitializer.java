@@ -215,7 +215,6 @@ public class ChromeBrowserInitializer {
             new AsyncTask<Void>() {
                 @Override
                 protected Void doInBackground() {
-                    ContextUtils.getAppSharedPreferences();
                     DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
                     ActivityAssigner.warmUpSharedPrefs(mApplication);
                     DownloadManagerService.warmUpSharedPrefs();
@@ -224,7 +223,6 @@ public class ChromeBrowserInitializer {
             }
                     .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
-            ContextUtils.getAppSharedPreferences();
             DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
             ActivityAssigner.warmUpSharedPrefs(mApplication);
             DownloadManagerService.warmUpSharedPrefs();
@@ -247,6 +245,7 @@ public class ChromeBrowserInitializer {
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
         ApplicationStatus.registerStateListenerForAllActivities(
                 createActivityStateListener());
+        mApplication.initDefaultNightMode();
 
         mPreInflationStartupComplete = true;
     }
