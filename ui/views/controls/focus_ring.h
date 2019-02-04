@@ -79,6 +79,8 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // View:
   const char* GetClassName() const override;
   void Layout() override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
 
   // ViewObserver:
@@ -86,7 +88,7 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   void OnViewBlurred(View* view) override;
 
  private:
-  explicit FocusRing(View* parent);
+  FocusRing();
 
   // Translates the provided SkRect or SkRRect, which is in the parent's
   // coordinate system, into this view's coordinate system, then insets it
@@ -95,9 +97,6 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // well.
   SkRRect RingRectFromPathRect(const SkRect& rect) const;
   SkRRect RingRectFromPathRect(const SkRRect& rect) const;
-
-  // The View this focus ring is installed on.
-  View* view_ = nullptr;
 
   // The path to draw this focus ring around. IsPathUseable(path_) is always
   // true.

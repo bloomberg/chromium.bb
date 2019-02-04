@@ -7,7 +7,9 @@
 
 namespace app_list {
 
-SearchResultBaseView::SearchResultBaseView() : Button(this) {}
+SearchResultBaseView::SearchResultBaseView() : Button(this) {
+  SetInstallFocusRingOnFocus(false);
+}
 
 SearchResultBaseView::~SearchResultBaseView() = default;
 
