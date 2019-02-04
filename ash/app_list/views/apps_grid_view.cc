@@ -506,14 +506,15 @@ void AppsGridView::StartDragAndDropHostDragAfterLongPress(Pointer pointer) {
 void AppsGridView::TryStartDragAndDropHostDrag(
     Pointer pointer,
     const gfx::Point& grid_location) {
-  drag_pointer_ = pointer;
-  // Move the view to the front so that it appears on top of other views.
-  ReorderChildView(drag_view_, -1);
-  bounds_animator_.StopAnimatingView(drag_view_);
   // Stopping the animation may have invalidated our drag view due to the
   // view hierarchy changing.
   if (!drag_view_)
     return;
+
+  drag_pointer_ = pointer;
+  // Move the view to the front so that it appears on top of other views.
+  ReorderChildView(drag_view_, -1);
+  bounds_animator_.StopAnimatingView(drag_view_);
 
   if (!dragging_for_reparent_item_)
     StartDragAndDropHostDrag(grid_location);
