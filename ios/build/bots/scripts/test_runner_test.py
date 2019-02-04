@@ -127,6 +127,8 @@ class SimulatorTestRunnerTest(TestCase):
               lambda _: 'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
     self.mock(os.path, 'exists', lambda _: True)
+    self.mock(test_runner.TestRunner, 'set_sigterm_handler',
+      lambda self, handler: 0)
 
   def test_app_not_found(self):
     """Ensures AppNotFoundError is raised."""
@@ -361,9 +363,14 @@ class WprProxySimulatorTestRunnerTest(TestCase):
               lambda _: 'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
     self.mock(os.path, 'exists', lambda _: True)
-    self.mock(test_runner.SimulatorTestRunner, 'getSimulator', lambda _: 'fake-id')
-    self.mock(test_runner.SimulatorTestRunner, 'deleteSimulator', lambda a, b: True)
-    self.mock(test_runner.WprProxySimulatorTestRunner, 'copy_trusted_certificate', lambda a, b: True)
+    self.mock(test_runner.TestRunner, 'set_sigterm_handler',
+      lambda self, handler: 0)
+    self.mock(test_runner.SimulatorTestRunner, 'getSimulator',
+      lambda _: 'fake-id')
+    self.mock(test_runner.SimulatorTestRunner, 'deleteSimulator',
+      lambda a, b: True)
+    self.mock(test_runner.WprProxySimulatorTestRunner,
+      'copy_trusted_certificate', lambda a, b: True)
 
   def test_replay_path_not_found(self):
     """Ensures ReplayPathNotFoundError is raised."""
@@ -466,8 +473,10 @@ class WprProxySimulatorTestRunnerTest(TestCase):
         'xcode-build',
         'out-dir',
     )
-    self.mock(test_runner.WprProxySimulatorTestRunner, 'wprgo_start', lambda a,b: None)
-    self.mock(test_runner.WprProxySimulatorTestRunner, 'wprgo_stop', lambda _: None)
+    self.mock(test_runner.WprProxySimulatorTestRunner, 'wprgo_start',
+      lambda a,b: None)
+    self.mock(test_runner.WprProxySimulatorTestRunner, 'wprgo_stop',
+      lambda _: None)
 
     self.mock(os.path, 'isfile', lambda _: True)
     self.mock(glob, 'glob', lambda _: ["file1", "file2"])

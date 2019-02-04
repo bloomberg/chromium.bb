@@ -139,7 +139,8 @@ class WprToolsNotFoundError(TestRunnerError):
 class ShardingDisabledError(TestRunnerError):
   """Temporary error indicating that sharding is not yet implemented."""
   def __init__(self):
-    super(ShardingDisabledError, self).__init__('Sharding has not been implemented!')
+    super(ShardingDisabledError, self).__init__(
+      'Sharding has not been implemented!')
 
 
 def get_kif_test_filter(tests, invert=False):
@@ -456,6 +457,31 @@ class TestRunner(object):
     """
     raise NotImplementedError
 
+  def set_sigterm_handler(self, handler):
+    """Sets the SIGTERM handler for the test runner.
+
+    This is its own separate function so it can be mocked in tests.
+
+    Args:
+      handler: The handler to be called when a SIGTERM is caught
+
+    Returns:
+      The previous SIGTERM handler for the test runner.
+    """
+    return signal.signal(signal.SIGTERM, handler)
+
+  def handle_sigterm(self, proc):
+    """Handles a SIGTERM sent while a test command is executing.
+
+    Will SIGKILL the currently executing test process, then
+    attempt to exit gracefully.
+
+    Args:
+      proc: The currently executing test process.
+    """
+    print "Sigterm caught during test run. Killing test process."
+    proc.kill()
+
   def _run(self, cmd, shards=1):
     """Runs the specified command, parsing GTest output.
 
@@ -497,6 +523,9 @@ class TestRunner(object):
           stdout=subprocess.PIPE,
           stderr=subprocess.STDOUT,
       )
+      old_handler = self.set_sigterm_handler(
+        lambda _signum, _frame: self.handle_sigterm(proc))
+
       while True:
         line = proc.stdout.readline()
         if not line:
@@ -506,7 +535,10 @@ class TestRunner(object):
         print line
         sys.stdout.flush()
 
+      print "Waiting for test process to terminate."
       proc.wait()
+      print "Test process terminated."
+      self.set_sigterm_handler(old_handler)
       sys.stdout.flush()
 
       returncode = proc.returncode
@@ -1119,6 +1151,8 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
+    old_handler = self.set_sigterm_handler(
+      lambda _signum, _frame: self.handle_sigterm(proc))
 
     if self.xctest_path:
       parser = xctest_utils.XCTestLogParser()
@@ -1135,6 +1169,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       sys.stdout.flush()
 
     proc.wait()
+    self.set_sigterm_handler(old_handler)
     sys.stdout.flush()
 
     self.wprgo_stop()
