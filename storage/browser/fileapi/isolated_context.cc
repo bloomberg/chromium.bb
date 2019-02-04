@@ -353,7 +353,7 @@ FileSystemURL IsolatedContext::CrackURL(const GURL& url) const {
 }
 
 FileSystemURL IsolatedContext::CreateCrackedFileSystemURL(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type,
     const base::FilePath& path) const {
   return CrackFileSystemURL(FileSystemURL(origin, type, path));

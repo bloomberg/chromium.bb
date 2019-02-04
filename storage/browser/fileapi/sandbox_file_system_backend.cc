@@ -75,8 +75,9 @@ void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
     return;
   }
 
-  delegate_->OpenFileSystem(url.origin(), url.type(), mode, std::move(callback),
-                            GetFileSystemRootURI(url.origin(), url.type()));
+  delegate_->OpenFileSystem(
+      url.origin().GetURL(), url.type(), mode, std::move(callback),
+      GetFileSystemRootURI(url.origin().GetURL(), url.type()));
 }
 
 AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
@@ -113,7 +114,7 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
     return nullptr;
 
   SpecialStoragePolicy* policy = delegate_->special_storage_policy();
-  if (policy && policy->IsStorageUnlimited(url.origin()))
+  if (policy && policy->IsStorageUnlimited(url.origin().GetURL()))
     operation_context->set_quota_limit_type(storage::kQuotaLimitTypeUnlimited);
   else
     operation_context->set_quota_limit_type(storage::kQuotaLimitTypeLimited);

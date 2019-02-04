@@ -13,6 +13,7 @@
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -93,10 +94,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemURL {
   // Methods for creating FileSystemURL without attempting to crack them.
   // Should be used only in tests.
   static FileSystemURL CreateForTest(const GURL& url);
-  static FileSystemURL CreateForTest(const GURL& origin,
+  static FileSystemURL CreateForTest(const url::Origin& origin,
                                      FileSystemType mount_type,
                                      const base::FilePath& virtual_path);
-  static FileSystemURL CreateForTest(const GURL& origin,
+  static FileSystemURL CreateForTest(const url::Origin& origin,
                                      FileSystemType mount_type,
                                      const base::FilePath& virtual_path,
                                      const std::string& mount_filesystem_id,
@@ -109,7 +110,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemURL {
   bool is_valid() const { return is_valid_; }
 
   // Returns the origin part of this URL. See the class comment for details.
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
 
   // Returns the type part of this URL. See the class comment for details.
   FileSystemType type() const { return type_; }
@@ -159,11 +160,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemURL {
   friend class IsolatedContext;
 
   explicit FileSystemURL(const GURL& filesystem_url);
-  FileSystemURL(const GURL& origin,
+  FileSystemURL(const url::Origin& origin,
                 FileSystemType mount_type,
                 const base::FilePath& virtual_path);
   // Creates a cracked FileSystemURL.
-  FileSystemURL(const GURL& origin,
+  FileSystemURL(const url::Origin& origin,
                 FileSystemType mount_type,
                 const base::FilePath& virtual_path,
                 const std::string& mount_filesystem_id,
@@ -172,10 +173,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemURL {
                 const std::string& filesystem_id,
                 const FileSystemMountOption& mount_option);
 
+  // Used to determine if a FileSystemURL was default constructed.
+  bool is_null_ = false;
+
   bool is_valid_;
 
   // Values parsed from the original URL.
-  GURL origin_;
+  url::Origin origin_;
   FileSystemType mount_type_;
   base::FilePath virtual_path_;
 

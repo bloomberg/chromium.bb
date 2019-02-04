@@ -255,13 +255,14 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
               names_[i]).Append(relatives[j].path);
 
       FileSystemURL cracked = isolated_context()->CreateCrackedFileSystemURL(
-          GURL("http://chromium.org"), kFileSystemTypeIsolated, virtual_path);
+          url::Origin::Create(GURL("http://chromium.org")),
+          kFileSystemTypeIsolated, virtual_path);
 
       ASSERT_EQ(relatives[j].valid, cracked.is_valid());
 
       if (!relatives[j].valid)
         continue;
-      ASSERT_EQ(GURL("http://chromium.org"), cracked.origin());
+      ASSERT_EQ("http://chromium.org", cracked.origin().Serialize());
       ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
                     .NormalizePathSeparators().value(),
                 cracked.path().value());

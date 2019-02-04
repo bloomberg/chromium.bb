@@ -87,7 +87,7 @@ class FileSystemContextTest : public testing::Test {
                                   const std::string& expect_filesystem_id) {
     EXPECT_TRUE(url.is_valid());
 
-    EXPECT_EQ(expect_origin, url.origin());
+    EXPECT_EQ(expect_origin, url.origin().GetURL());
     EXPECT_EQ(expect_mount_type, url.mount_type());
     EXPECT_EQ(expect_type, url.type());
     EXPECT_EQ(expect_path, url.path());

@@ -290,7 +290,8 @@ base::File ObfuscatedFileUtil::CreateOrOpen(
   if (file.IsValid() && file_flags & base::File::FLAG_WRITE &&
       context->quota_limit_type() == storage::kQuotaLimitTypeUnlimited &&
       sandbox_delegate_) {
-    sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
+    sandbox_delegate_->StickyInvalidateUsageCache(url.origin().GetURL(),
+                                                  url.type());
   }
   return file;
 }
@@ -1009,7 +1010,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForURL(
     base::File::Error* error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetDirectoryForOriginAndType(
-      url.origin(), CallGetTypeStringForURL(url), create, error_code);
+      url.origin().GetURL(), CallGetTypeStringForURL(url), create, error_code);
 }
 
 std::string ObfuscatedFileUtil::CallGetTypeStringForURL(
@@ -1192,8 +1193,8 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     const FileSystemURL& url, bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string key = GetDirectoryDatabaseKey(
-      url.origin(), CallGetTypeStringForURL(url));
+  std::string key = GetDirectoryDatabaseKey(url.origin().GetURL(),
+                                            CallGetTypeStringForURL(url));
   if (key.empty())
     return nullptr;
 
@@ -1273,10 +1274,10 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
 
 void ObfuscatedFileUtil::InvalidateUsageCache(
     FileSystemOperationContext* context,
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type) {
   if (sandbox_delegate_)
-    sandbox_delegate_->InvalidateUsageCache(origin, type);
+    sandbox_delegate_->InvalidateUsageCache(origin.GetURL(), type);
 }
 
 void ObfuscatedFileUtil::MarkUsed() {

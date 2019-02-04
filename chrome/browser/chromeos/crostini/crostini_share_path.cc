@@ -293,7 +293,7 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
   bool result = mount_points->GetVirtualPath(path, &virtual_path);
   if (result) {
     storage::FileSystemURL url = mount_points->CreateCrackedFileSystemURL(
-        GURL(), storage::kFileSystemTypeExternal, virtual_path);
+        url::Origin(), storage::kFileSystemTypeExternal, virtual_path);
     result = file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
         profile_, url, &inside);
   }

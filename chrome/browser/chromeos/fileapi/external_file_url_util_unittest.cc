@@ -33,13 +33,10 @@ class ExternalFileURLUtilTest : public testing::Test {
 
   storage::FileSystemURL CreateExpectedURL(const base::FilePath& path) {
     return storage::FileSystemURL::CreateForTest(
-        GURL("chrome-extension://xxx"),
+        url::Origin::Create(GURL("chrome-extension://xxx")),
         storage::kFileSystemTypeExternal,
-        base::FilePath("drive-test-user-hash").Append(path),
-        "",
-        storage::kFileSystemTypeDrive,
-        base::FilePath(),
-        "",
+        base::FilePath("drive-test-user-hash").Append(path), "",
+        storage::kFileSystemTypeDrive, base::FilePath(), "",
         storage::FileSystemMountOption());
   }
 

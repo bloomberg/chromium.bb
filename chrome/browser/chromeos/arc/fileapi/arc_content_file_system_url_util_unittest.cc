@@ -71,7 +71,7 @@ TEST(ArcContentFileSystemUrlUtilTest, FileSystemUrlToArcUrl) {
       base::FilePath(kContentFileSystemMountPointPath)
           .Append(base::FilePath::FromUTF8Unsafe(EscapeArcUrl(arc_url)));
   storage::FileSystemURL file_system_url =
-      storage::FileSystemURL::CreateForTest(GURL(),  // origin
+      storage::FileSystemURL::CreateForTest(url::Origin(),  // origin
                                             storage::kFileSystemTypeArcContent,
                                             path);
 

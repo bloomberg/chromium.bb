@@ -472,7 +472,8 @@ FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
     const GURL& origin,
     FileSystemType type,
     const base::FilePath& path) const {
-  return CrackFileSystemURL(FileSystemURL(origin, type, path));
+  return CrackFileSystemURL(
+      FileSystemURL(url::Origin::Create(origin), type, path));
 }
 
 #if defined(OS_CHROMEOS)

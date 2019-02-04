@@ -714,7 +714,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(storage_policy_.get());
     const FileSystemURL url = FileSystemURL::CreateForTest(
-        origin_, kFileSystemTypePersistent, base::FilePath());
+        url::Origin::Create(origin_), kFileSystemTypePersistent,
+        base::FilePath());
 
     // Create DirectoryDatabase for isolated origin.
     SandboxDirectoryDatabase* db =
@@ -722,8 +723,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     ASSERT_TRUE(db != nullptr);
 
     // Destory it.
-    file_util->DestroyDirectoryDatabase(
-        url.origin(), GetTypeString(url.type()));
+    file_util->DestroyDirectoryDatabase(url.origin().GetURL(),
+                                        GetTypeString(url.type()));
     ASSERT_TRUE(file_util->directories_.empty());
   }
 
@@ -732,7 +733,8 @@ class ObfuscatedFileUtilTest : public testing::Test {
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(storage_policy_.get());
     const FileSystemURL url = FileSystemURL::CreateForTest(
-        origin_, kFileSystemTypePersistent, base::FilePath());
+        url::Origin::Create(origin_), kFileSystemTypePersistent,
+        base::FilePath());
 
     // Create DirectoryDatabase for isolated origin.
     SandboxDirectoryDatabase* db =
@@ -741,7 +743,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     ASSERT_EQ(1U, file_util->directories_.size());
 
     // Remove isolated.
-    storage_policy_->RemoveIsolated(url.origin());
+    storage_policy_->RemoveIsolated(url.origin().GetURL());
 
     // This should still get the same database.
     SandboxDirectoryDatabase* db2 =

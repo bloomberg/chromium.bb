@@ -97,7 +97,7 @@ class QuotaReservationTest : public testing::Test {
   storage::FileSystemURL MakeFileSystemURL(
       const base::FilePath::StringType& file_name) {
     return storage::FileSystemURL::CreateForTest(
-        GURL(kOrigin), kType, MakeFilePath(file_name));
+        url::Origin::Create(GURL(kOrigin)), kType, MakeFilePath(file_name));
   }
 
   scoped_refptr<QuotaReservation> CreateQuotaReservation(

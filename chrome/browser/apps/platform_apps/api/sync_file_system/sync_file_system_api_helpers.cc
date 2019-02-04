@@ -119,7 +119,8 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryValueForFileSystemEntry(
           .AsUTF8Unsafe();
 
   std::string root_url =
-      storage::GetFileSystemRootURI(url.origin(), url.mount_type()).spec();
+      storage::GetFileSystemRootURI(url.origin().GetURL(), url.mount_type())
+          .spec();
   if (!url.filesystem_id().empty()) {
     root_url.append(url.filesystem_id());
     root_url.append("/");
@@ -128,8 +129,8 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryValueForFileSystemEntry(
   auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("fileSystemType",
                   storage::GetFileSystemTypeString(url.mount_type()));
-  dict->SetString("fileSystemName",
-                  storage::GetFileSystemName(url.origin(), url.type()));
+  dict->SetString("fileSystemName", storage::GetFileSystemName(
+                                        url.origin().GetURL(), url.type()));
   dict->SetString("rootUrl", root_url);
   dict->SetString("filePath", file_path);
   dict->SetBoolean("isDirectory",

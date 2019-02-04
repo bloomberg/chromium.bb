@@ -219,7 +219,8 @@ class CopyOrMoveOperationTestHelper {
     storage::FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     backend->ResolveURL(
-        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
+        FileSystemURL::CreateForTest(url::Origin::Create(origin_), src_type_,
+                                     base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
@@ -235,7 +236,8 @@ class CopyOrMoveOperationTestHelper {
             std::move(factory));
     }
     backend->ResolveURL(
-        FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
+        FileSystemURL::CreateForTest(url::Origin::Create(origin_), dest_type_,
+                                     base::FilePath()),
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::BindOnce(&ExpectOk));
     scoped_task_environment_.RunUntilIdle();
@@ -297,8 +299,7 @@ class CopyOrMoveOperationTestHelper {
     for (size_t i = 0; i < test_case_size; ++i) {
       const FileSystemTestCaseRecord& test_case = test_cases[i];
       FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-          root.origin(),
-          root.mount_type(),
+          root.origin().GetURL(), root.mount_type(),
           root.virtual_path().Append(test_case.path));
       if (test_case.is_directory)
         result = CreateDirectory(url);
@@ -331,8 +332,7 @@ class CopyOrMoveOperationTestHelper {
       ASSERT_EQ(base::File::FILE_OK, ReadDirectory(dir, &entries));
       for (size_t i = 0; i < entries.size(); ++i) {
         FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
-            dir.origin(),
-            dir.mount_type(),
+            dir.origin().GetURL(), dir.mount_type(),
             dir.virtual_path().Append(entries[i].name));
         base::FilePath relative;
         root.virtual_path().AppendRelativePath(url.virtual_path(), &relative);
