@@ -124,18 +124,23 @@ void AnimationWorkletProxyClient::Dispose() {
                           mutator_item.mutator_dispatcher,
                           WrapCrossThreadPersistent(this)));
     }
-
-    // At worklet scope termination break the reference cycle between
-    // AnimationWorkletGlobalScope and AnimationWorkletProxyClient.
-    global_scopes_.clear();
   }
-
-  mutator_items_.clear();
   state_ = RunState::kDisposed;
+
+  // At worklet scope termination break the reference cycle between
+  // AnimationWorkletGlobalScope and AnimationWorkletProxyClient.
+  global_scopes_.clear();
+  mutator_items_.clear();
 }
 
 std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
     std::unique_ptr<AnimationWorkletInput> input) {
+  std::unique_ptr<AnimationWorkletOutput> output =
+      std::make_unique<AnimationWorkletOutput>();
+
+  if (state_ == RunState::kDisposed)
+    return output;
+
   base::ElapsedTimer timer;
   DCHECK(input);
 #if DCHECK_IS_ON()
@@ -148,9 +153,6 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletProxyClient::Mutate(
   for (auto global_scope : global_scopes_) {
     global_scope->UpdateAnimatorsList(*input);
   }
-
-  std::unique_ptr<AnimationWorkletOutput> output =
-      std::make_unique<AnimationWorkletOutput>();
 
   // Assume animators are stateful.
   // TODO(https://crbug.com/914918): Implement filter for detecting stateless
