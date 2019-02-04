@@ -1751,9 +1751,13 @@ if (enable_java_templates) {
 
       if (defined(invoker.expected_manifest)) {
         inputs += [ invoker.expected_manifest ]
+        _normalized_output = "${invoker.output_manifest}.normalized"
+        outputs += [ _normalized_output ]
         args += [
           "--expected-manifest",
           rebase_path(invoker.expected_manifest, root_build_dir),
+          "--normalized-output",
+          rebase_path(_normalized_output, root_build_dir),
         ]
         if (check_android_configuration) {
           args += [ "--verify-expected-manifest" ]
