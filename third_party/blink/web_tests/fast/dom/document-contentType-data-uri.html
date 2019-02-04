@@ -12,14 +12,31 @@
 <script>
 window.jsTestIsAsync = true;
 
+var events = [];
+
 window.onmessage = function(e) {
+    // For consistent ordering, we capture the events, sort them and then test them.
     if (e.data)
-        shouldBe('"' + e.data.obtained + '"', '"' + e.data.expected + '"');
+        events.push(e);
     else
         testFailed("Null message payload");
 
-    if (--expectedMessagesCount == 0)
+    if (--expectedMessagesCount == 0) {
+        events.sort((e1, e2) => {
+            if (e1.data.obtained < e2.data.obtained) {
+                return -1;
+            } if (e1.data.obtained > e2.data.obtained) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+        for (var i in events) {
+            var e = events[i];
+            shouldBe('"' + e.data.obtained + '"', '"' + e.data.expected + '"');
+        }
         finishJSTest();
+    }
 };
 
 var documentContents = '<script xmlns="http://www.w3.org/1999/xhtml">' +
