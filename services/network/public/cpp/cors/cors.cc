@@ -367,7 +367,13 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       // See
       // https://w3c.github.io/device-memory/#sec-device-memory-client-hint-header
       // for more details.
-      "device-memory", "dpr", "width", "viewport-width"};
+      "device-memory", "dpr", "width", "viewport-width",
+
+      // The `Sec-CH-Lang` header field is a proposed replacement for
+      // `Accept-Language`, using the Client Hints infrastructure.
+      //
+      // https://tools.ietf.org/html/draft-west-lang-client-hint
+      "sec-ch-lang"};
   const std::string lower_name = base::ToLowerASCII(name);
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))

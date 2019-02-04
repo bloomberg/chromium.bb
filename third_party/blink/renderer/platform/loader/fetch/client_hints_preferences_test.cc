@@ -24,16 +24,20 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
     bool expectation_rtt;
     bool expectation_downlink;
     bool expectation_ect;
+    bool expectation_lang;
   } cases[] = {
-      {"width, dpr, viewportWidth", true, true, false, false, false, false},
-      {"WiDtH, dPr, viewport-width, rtt, downlink, ect", true, true, true, true,
-       true, true},
+      {"width, dpr, viewportWidth", true, true, false, false, false, false,
+       false},
+      {"WiDtH, dPr, viewport-width, rtt, downlink, ect, lang", true, true, true,
+       true, true, true, true},
       {"WiDtH, dPr, viewport-width, rtt, downlink, effective-connection-type",
-       true, true, true, true, true, false},
-      {"WIDTH, DPR, VIWEPROT-Width", true, true, false, false, false, false},
-      {"VIewporT-Width, wutwut, width", true, false, true, false, false, false},
-      {"dprw", false, false, false, false, false, false},
-      {"DPRW", false, false, false, false, false, false},
+       true, true, true, true, true, false, false},
+      {"WIDTH, DPR, VIWEPROT-Width", true, true, false, false, false, false,
+       false},
+      {"VIewporT-Width, wutwut, width", true, false, true, false, false, false,
+       false},
+      {"dprw", false, false, false, false, false, false, false},
+      {"DPRW", false, false, false, false, false, false, false},
   };
 
   for (const auto& test_case : cases) {
@@ -55,6 +59,8 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
               preferences.ShouldSend(mojom::WebClientHintsType::kDownlink));
     EXPECT_EQ(test_case.expectation_ect,
               preferences.ShouldSend(mojom::WebClientHintsType::kEct));
+    EXPECT_EQ(test_case.expectation_lang,
+              preferences.ShouldSend(mojom::WebClientHintsType::kLang));
 
     // Calling UpdateFromAcceptClientHintsHeader with empty header should have
     // no impact on client hint preferences.
@@ -98,6 +104,7 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kRtt));
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kDownlink));
   EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kLang));
 
   // Calling UpdateFromAcceptClientHintsHeader with empty header should have
   // no impact on client hint preferences.
@@ -108,6 +115,7 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kRtt));
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kDownlink));
   EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kLang));
 
   // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
   // have no impact on client hint preferences.
@@ -117,7 +125,7 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
       preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth));
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kRtt));
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kDownlink));
-  EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kLang));
 
   // Calling UpdateFromAcceptClientHintsHeader with "width" header should
   // have no impact on already enabled client hint preferences.
@@ -128,6 +136,7 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesAreUpdated) {
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kRtt));
   EXPECT_TRUE(preferences.ShouldSend(mojom::WebClientHintsType::kDownlink));
   EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kEct));
+  EXPECT_FALSE(preferences.ShouldSend(mojom::WebClientHintsType::kLang));
 
   preferences.UpdateFromAcceptClientHintsLifetimeHeader("1000", kurl, nullptr);
   EXPECT_EQ(base::TimeDelta::FromSeconds(1000),
@@ -160,20 +169,21 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
     bool expect_rtt;
     bool expect_downlink;
     bool expect_ect;
+    bool expect_lang;
   } test_cases[] = {
-      {"width, dpr, viewportWidth", "", 0, false, true, true, false, false,
-       false, false},
+      {"width, dpr, viewportWidth, lang", "", 0, false, true, true, false,
+       false, false, false, true},
       {"width, dpr, viewportWidth", "-1000", 0, false, true, true, false, false,
-       false, false},
-      {"width, dpr, viewportWidth", "1000s", 0, false, true, true, false, false,
-       false, false},
-      {"width, dpr, viewportWidth", "1000.5", 0, false, true, true, false,
        false, false, false},
+      {"width, dpr, viewportWidth", "1000s", 0, false, true, true, false, false,
+       false, false, false},
+      {"width, dpr, viewportWidth", "1000.5", 0, false, true, true, false,
+       false, false, false, false},
       {"width, dpr, rtt, downlink, ect", "1000", 1000, false, true, true, false,
-       true, true, true},
+       true, true, true, false},
       {"device-memory", "-1000", 0, true, false, false, false, false, false,
-       false},
-      {"dpr rtt", "1000", 1000, false, false, false, false, false, false,
+       false, false},
+      {"dpr rtt", "1000", 1000, false, false, false, false, false, false, false,
        false},
   };
 
@@ -191,6 +201,7 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
     EXPECT_FALSE(enabled_types.IsEnabled(mojom::WebClientHintsType::kRtt));
     EXPECT_FALSE(enabled_types.IsEnabled(mojom::WebClientHintsType::kDownlink));
     EXPECT_FALSE(enabled_types.IsEnabled(mojom::WebClientHintsType::kEct));
+    EXPECT_FALSE(enabled_types.IsEnabled(mojom::WebClientHintsType::kLang));
     TimeDelta persist_duration = preferences.GetPersistDuration();
     EXPECT_EQ(base::TimeDelta(), persist_duration);
 
@@ -223,6 +234,8 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
               enabled_types.IsEnabled(mojom::WebClientHintsType::kDownlink));
     EXPECT_EQ(test.expect_ect,
               enabled_types.IsEnabled(mojom::WebClientHintsType::kEct));
+    EXPECT_EQ(test.expect_lang,
+              enabled_types.IsEnabled(mojom::WebClientHintsType::kLang));
   }
 }
 

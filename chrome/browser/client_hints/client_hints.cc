@@ -17,14 +17,17 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/client_hints/client_hints.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_util.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/url_request/url_request.h"
@@ -367,12 +370,20 @@ void ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
         blink::kWebEffectiveConnectionTypeMapping[effective_connection_type]);
   }
 
+  if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kLang)) {
+    additional_headers->SetHeader(
+        blink::kClientHintsHeaderMapping[static_cast<int>(
+            blink::mojom::WebClientHintsType::kLang)],
+        blink::SerializeLangClientHint(
+            profile->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+  }
+
   // Static assert that triggers if a new client hint header is added. If a
   // new client hint header is added, the following assertion should be updated.
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      blink::mojom::WebClientHintsType::kEct ==
+      blink::mojom::WebClientHintsType::kLang ==
           blink::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 

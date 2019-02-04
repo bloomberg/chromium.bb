@@ -685,6 +685,10 @@
       name: "LangAttributeAwareFormControlUI",
     },
     {
+      name: "LangClientHintHeader",
+      status: "experimental",
+    },
+    {
       name: "LayeredAPI",
       implied_by: ["ExperimentalProductivityFeatures"],
     },
