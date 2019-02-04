@@ -152,9 +152,6 @@ if (is_chromeos) {
       ":decode_helpers",
       "//media/gpu",
     ]
-    if (use_ozone) {
-      deps += [ "//ui/ozone" ]
-    }
   }
 }
 
