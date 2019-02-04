@@ -189,10 +189,15 @@ void SigninViewController::ShowDiceSigninTab(
       signin::AccountConsistencyMethod::kDiceMigration));
 
   // If redirect_url is empty, we would like to redirect to the NTP, but it's
-  // not possible through the continue_url. Use the google base URL instead
-  // here, and the DiceTabHelper may do the redirect to the NTP later.
+  // not possible through the continue_url, because Gaia cannot redirect to
+  // chrome:// URLs. Use the google base URL instead here, and the DiceTabHelper
+  // may do the redirect to the NTP later.
+  // Note: Gaia rejects some continue URLs as invalid and responds with HTTP
+  // error 400. This seems to happen in particular if the continue URL is not a
+  // Google-owned domain. Chrome cannot enforce that only valid URLs are used,
+  // because the set of valid URLs is not specified.
   std::string continue_url =
-      redirect_url.is_empty()
+      (redirect_url.is_empty() || !redirect_url.SchemeIsHTTPOrHTTPS())
           ? UIThreadSearchTermsData(profile).GoogleBaseURLValue()
           : redirect_url.spec();
 
@@ -232,8 +237,8 @@ void SigninViewController::ShowDiceSigninTab(
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
 
-  // Use |redirect_url| and not |continue_url|, so that the flow can redirect to
-  // the NTP.
+  // Use |redirect_url| and not |continue_url|, so that the DiceTabHelper can
+  // redirect to chrome:// URLs such as the NTP.
   tab_helper->InitializeSigninFlow(signin_url, access_point, signin_reason,
                                    promo_action, redirect_url);
 }
