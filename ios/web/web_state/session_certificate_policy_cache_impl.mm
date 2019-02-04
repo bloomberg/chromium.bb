@@ -51,22 +51,6 @@ SessionCertificatePolicyCacheImpl::SessionCertificatePolicyCacheImpl()
 
 SessionCertificatePolicyCacheImpl::~SessionCertificatePolicyCacheImpl() {}
 
-void SessionCertificatePolicyCacheImpl::RegisterAllowedCertificate(
-    const scoped_refptr<net::X509Certificate> certificate,
-    const std::string& host,
-    net::CertStatus status) {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  [allowed_certs_ addObject:[[CRWSessionCertificateStorage alloc]
-                                initWithCertificate:certificate
-                                               host:host
-                                             status:status]];
-}
-
-void SessionCertificatePolicyCacheImpl::ClearAllowedCertificates() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  [allowed_certs_ removeAllObjects];
-}
-
 void SessionCertificatePolicyCacheImpl::UpdateCertificatePolicyCache(
     const scoped_refptr<web::CertificatePolicyCache>& cache) const {
   DCHECK_CURRENTLY_ON(WebThread::UI);
@@ -80,6 +64,17 @@ void SessionCertificatePolicyCacheImpl::UpdateCertificatePolicyCache(
                                        cert.status);
         }
       }));
+}
+
+void SessionCertificatePolicyCacheImpl::RegisterAllowedCertificate(
+    const scoped_refptr<net::X509Certificate> certificate,
+    const std::string& host,
+    net::CertStatus status) {
+  DCHECK_CURRENTLY_ON(WebThread::UI);
+  [allowed_certs_ addObject:[[CRWSessionCertificateStorage alloc]
+                                initWithCertificate:certificate
+                                               host:host
+                                             status:status]];
 }
 
 void SessionCertificatePolicyCacheImpl::SetAllowedCerts(NSSet* allowed_certs) {

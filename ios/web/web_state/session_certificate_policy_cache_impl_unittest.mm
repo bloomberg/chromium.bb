@@ -81,15 +81,6 @@ TEST_F(SessionCertificatePolicyCacheImplTest, RegisterAllowedCert) {
   EXPECT_EQ(status_, cert_storage.status);
 }
 
-// Tests that ClearAllowedCerts() successfully removes all previously added
-// certs.
-TEST_F(SessionCertificatePolicyCacheImplTest, ClearAllowedCerts) {
-  // Clear the certs and verify that it has been removed.
-  EXPECT_EQ(1U, cache_.GetAllowedCerts().count);
-  cache_.ClearAllowedCertificates();
-  EXPECT_EQ(0U, cache_.GetAllowedCerts().count);
-}
-
 // Tests that UpdateCertificatePolicyCache() successfully transfers the allowed
 // certificate information to a CertificatePolicyCache.
 TEST_F(SessionCertificatePolicyCacheImplTest, UpdateCertificatePolicyCache) {

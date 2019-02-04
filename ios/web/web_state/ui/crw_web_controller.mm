@@ -72,7 +72,6 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/page_display_state.h"
-#include "ios/web/public/web_state/session_certificate_policy_cache.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -91,6 +90,7 @@
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
+#import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -3931,8 +3931,8 @@ GURL URLEscapedForHistory(const GURL& url) {
           [_certVerificationController allowCert:leafCert
                                          forHost:host
                                           status:info.cert_status];
-          _webStateImpl->GetSessionCertificatePolicyCache()
-              ->RegisterAllowedCertificate(
+          _webStateImpl->GetSessionCertificatePolicyCacheImpl()
+              .RegisterAllowedCertificate(
                   leafCert, base::SysNSStringToUTF8(host), info.cert_status);
           // New navigation is a different navigation from the original one.
           // The new navigation is always browser-initiated and happens when
