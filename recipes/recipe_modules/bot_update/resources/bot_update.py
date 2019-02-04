@@ -886,11 +886,11 @@ def parse_revisions(revisions, root):
     # TODO(hinoka): Delete this when webkit switches to recipes.
     expanded_revisions.extend(revision.split(','))
   for revision in expanded_revisions:
-    split_revision = revision.split('@')
+    split_revision = revision.split('@', 1)
     if len(split_revision) == 1:
       # This is just a plain revision, set it as the revision for root.
       results[root] = split_revision[0]
-    elif len(split_revision) == 2:
+    else:
       # This is an alt_root@revision argument.
       current_root, current_rev = split_revision
 
@@ -908,9 +908,7 @@ def parse_revisions(revisions, root):
         normalized_root = current_root.strip('/')
 
       results[normalized_root] = current_rev
-    else:
-      print ('WARNING: %r is not recognized as a valid revision specification,'
-             'skipping' % revision)
+
   return results
 
 
