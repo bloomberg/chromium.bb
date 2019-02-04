@@ -126,8 +126,7 @@ CGFloat kScrollViewTrailingGradientStart = 0.975;
   self.languagesScrollView.translatesAutoresizingMaskIntoConstraints = NO;
   self.languagesScrollView.showsVerticalScrollIndicator = NO;
   self.languagesScrollView.showsHorizontalScrollIndicator = NO;
-  self.languagesScrollView.canCancelContentTouches = YES;
-  self.languagesScrollView.bounces = NO;
+  self.languagesScrollView.bounces = YES;
   self.languagesScrollView.delegate = self;
   [self addSubview:self.languagesScrollView];
 
