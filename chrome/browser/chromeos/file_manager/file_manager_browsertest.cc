@@ -152,10 +152,6 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
       command_line->AppendSwitchASCII("force-tablet-mode", "touch_view");
       command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
     }
-
-    // TODO(crbug.com/879404): Fix tests to work with NativeSMB.
-    // Tests assume that no native FSPs are enabled.
-    scoped_feature_list_.InitAndDisableFeature(features::kNativeSmb);
   }
 
   GuestMode GetGuestMode() const override { return GetParam().guest_mode; }
