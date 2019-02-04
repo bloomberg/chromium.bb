@@ -5,6 +5,7 @@
 #include "ui/aura/mus/client_side_window_move_handler.h"
 
 #include "base/bind.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -12,6 +13,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 
@@ -19,8 +22,55 @@ namespace aura {
 
 namespace {
 
-void WindowMoveEnded(Window* window, bool success) {
-  window->env()->gesture_recognizer()->CancelActiveTouches(window);
+// TODO(estade,mukai): De-dupe this constant and the following logic with
+// WmToplevelWindowEventHandler.
+constexpr int kDragStartTopEdgeInset = 8;
+
+Window* GetToplevelTargetForEvent(ui::LocatedEvent* event, int* component) {
+  DCHECK(!event->handled());
+  auto* window = static_cast<Window*>(event->target());
+
+  if (!window || !window->delegate())
+    return nullptr;
+
+  *component = window->delegate()->GetNonClientComponent(event->location());
+
+  if (ui::CanPerformDragOrResize(*component)) {
+    DCHECK_EQ(window, window->GetToplevelWindow());
+    return window;
+  }
+
+  // Gestures can sometimes trigger drags from the client area. All other events
+  // and hit locations will not trigger a drag.
+  if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN || *component != HTCLIENT)
+    return nullptr;
+
+  window = window->GetToplevelWindow();
+  if (!window->GetProperty(client::kGestureDragFromClientAreaTopMovesWindow))
+    return nullptr;
+
+  if (event->AsGestureEvent()->details().scroll_y_hint() < 0)
+    return nullptr;
+
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
+
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
+  hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
+
+  // There may be a bezel sensor off screen logically above
+  // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
+  // triggered in the bezel area too.
+  bool in_bezel = location_in_screen.y() < hit_bounds_in_screen.y() &&
+                  location_in_screen.x() >= hit_bounds_in_screen.x() &&
+                  location_in_screen.x() < hit_bounds_in_screen.right();
+
+  if (hit_bounds_in_screen.Contains(location_in_screen) || in_bezel)
+    return window;
+
+  return nullptr;
 }
 
 int GetHitTestComponent(Window* window, const gfx::Point& location) {
@@ -48,18 +98,18 @@ ClientSideWindowMoveHandler::~ClientSideWindowMoveHandler() {
 void ClientSideWindowMoveHandler::MaybeSetupLastTarget(
     ui::LocatedEvent* event) {
   last_target_.RemoveAll();
-  Window* window = static_cast<Window*>(event->target());
-  if (!window || !window->delegate())
+
+  Window* window = GetToplevelTargetForEvent(event, &last_component_);
+  if (!window) {
+    last_component_ = HTNOWHERE;
     return;
-  int component = window->delegate()->GetNonClientComponent(event->location());
-  if (!ui::CanPerformDragOrResize(component))
-    return;
+  }
 
   last_target_.Add(window);
   last_location_ = event->location();
-  last_component_ = component;
-  UpdateWindowResizeShadow(
-      window, ui::IsResizingComponent(component) ? component : HTNOWHERE);
+  UpdateWindowResizeShadow(window, ui::IsResizingComponent(last_component_)
+                                       ? last_component_
+                                       : HTNOWHERE);
 }
 
 void ClientSideWindowMoveHandler::UpdateWindowResizeShadow(Window* window,
@@ -73,22 +123,26 @@ void ClientSideWindowMoveHandler::MaybePerformWindowMove(
     ui::LocatedEvent* event,
     ws::mojom::MoveLoopSource source) {
   Window* target = static_cast<Window*>(event->target());
-  if (!target || !last_target_.Contains(target) || !target->delegate())
+  if (!last_target_.Contains(target->GetToplevelWindow()))
     return;
 
   gfx::Point screen_location = last_location_;
   auto* screen_position_client =
       aura::client::GetScreenPositionClient(target->GetRootWindow());
-  // screen_position_client may be null.in test.
+  // screen_position_client may be null in tests.
   if (screen_position_client)
     screen_position_client->ConvertPointToScreen(target, &screen_location);
+
   WindowTreeHostMus::ForWindow(target)->PerformWindowMove(
       target, source, screen_location, last_component_,
-      base::BindOnce(&WindowMoveEnded, target));
+      base::BindOnce(&ClientSideWindowMoveHandler::OnWindowMoveDone,
+                     base::Unretained(this)));
 
   // Clear |last_target_| so that event->target() won't match with
   // |last_target_| anymore.
   last_target_.RemoveAll();
+
+  dragging_window_ = target;
   event->SetHandled();
 }
 
@@ -148,10 +202,22 @@ void ClientSideWindowMoveHandler::OnGestureEvent(ui::GestureEvent* event) {
   // TODO(mukai): create a common class in ash/public/cpp to share the logic.
   if (event->handled())
     return;
+
+  // A drag may have already been started and gesture events transferred, but
+  // in-flight gesture events may still come through, targetting the original
+  // window. These need to be set to handled so that the client area doesn't
+  // complain about unexpected scroll updates or ends.
+  if (dragging_window_) {
+    event->SetHandled();
+    return;
+  }
+
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
       MaybeSetupLastTarget(event);
-      return;
+      if (!last_target_.windows().empty())
+        event->SetHandled();
+      break;
 
     case ui::ET_GESTURE_SCROLL_UPDATE:
       MaybePerformWindowMove(event, ws::mojom::MoveLoopSource::TOUCH);
@@ -161,6 +227,12 @@ void ClientSideWindowMoveHandler::OnGestureEvent(ui::GestureEvent* event) {
       // Do nothing.
       break;
   }
+}
+
+void ClientSideWindowMoveHandler::OnWindowMoveDone(bool success) {
+  dragging_window_->env()->gesture_recognizer()->CancelActiveTouches(
+      dragging_window_);
+  dragging_window_ = nullptr;
 }
 
 }  // namespace aura

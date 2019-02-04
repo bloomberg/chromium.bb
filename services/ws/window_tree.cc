@@ -2046,11 +2046,6 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
     window_tree_client_->OnChangeCompleted(change_id, false);
     return;
   }
-  if (!ui::CanPerformDragOrResize(hit_test)) {
-    DVLOG(1) << "PerformWindowMove failed (incorrect hit_test)";
-    window_tree_client_->OnChangeCompleted(change_id, false);
-    return;
-  }
 
   window_moving_ = window;
   window_service_->delegate()->RunWindowMoveLoop(

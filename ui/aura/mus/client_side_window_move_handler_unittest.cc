@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_tree_client_test_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -29,10 +30,21 @@ class WindowMoveTestDelegate : public test::TestWindowDelegate {
   WindowMoveTestDelegate() = default;
   ~WindowMoveTestDelegate() override = default;
 
+  // Makes the window behave as if fullscreened: the entire window is HTCLIENT,
+  // and the flag to enable drags from the top of the screen/window is enabled.
+  void Fullscreen() {
+    fullscreen_ = true;
+    window_->SetProperty(aura::client::kGestureDragFromClientAreaTopMovesWindow,
+                         true);
+  }
+
   void set_window(Window* window) { window_ = window; }
 
  private:
   int GetNonClientComponent(const gfx::Point& point) const override {
+    if (fullscreen_)
+      return HTCLIENT;
+
     gfx::Size size = window_->bounds().size();
     if (point.y() < kBorderThickness) {
       if (point.x() < kBorderThickness)
@@ -60,6 +72,7 @@ class WindowMoveTestDelegate : public test::TestWindowDelegate {
     return HTCAPTION;
   }
 
+  bool fullscreen_ = false;
   Window* window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowMoveTestDelegate);
@@ -143,11 +156,11 @@ class ClientSideWindowMoveHandlerTest
 
   gfx::Rect GetWindowBounds() { return test_window_->GetBoundsInScreen(); }
 
- private:
   WindowMoveTestDelegate test_delegate_;
   std::unique_ptr<Window> test_window_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ClientSideWindowMoveHandlerTest);
 };
 
@@ -213,7 +226,7 @@ TEST_P(ClientSideWindowMoveHandlerTest, WindowResize) {
   EXPECT_FALSE(observer.in_window_move());
 }
 
-TEST_P(ClientSideWindowMoveHandlerTest, ClientAreaDontStartMove) {
+TEST_P(ClientSideWindowMoveHandlerTest, ClientAreaDoesntStartMove) {
   WindowMoveObserver observer(window_tree_client_impl());
 
   MoveInputTo(GetWindowBounds().CenterPoint());
@@ -221,6 +234,29 @@ TEST_P(ClientSideWindowMoveHandlerTest, ClientAreaDontStartMove) {
   PressInput();
   MoveInputBy(20, 20);
   EXPECT_FALSE(observer.in_window_move());
+  window_tree()->AckAllChanges();
+
+  // Simulate fullscreen; the events still don't trigger a drag because the y
+  // coordinate is too great.
+  test_delegate_.Fullscreen();
+  MoveInputTo(GetWindowBounds().CenterPoint());
+
+  PressInput();
+  MoveInputBy(20, 20);
+  EXPECT_FALSE(observer.in_window_move());
+  window_tree()->AckAllChanges();
+}
+
+TEST_P(ClientSideWindowMoveHandlerTest, ClientAreaCanStartMove) {
+  WindowMoveObserver observer(window_tree_client_impl());
+  test_delegate_.Fullscreen();
+
+  MoveInputTo(GetWindowBounds().top_center());
+
+  PressInput();
+  MoveInputBy(0, 20);
+  // The window will be moved for a gesture sequence but not a mouse sequence.
+  EXPECT_NE(IsInputMouse(), observer.in_window_move());
   window_tree()->AckAllChanges();
 }
 
