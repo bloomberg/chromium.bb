@@ -166,6 +166,14 @@ class TestSocketFactory : public ClientSocketFactory {
     NOTIMPLEMENTED();
     return std::unique_ptr<SSLClientSocket>();
   }
+  std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<StreamSocket>,
+      const HostPortPair&,
+      const SSLConfig&,
+      const SSLClientSocketContext&) override {
+    NOTIMPLEMENTED();
+    return std::unique_ptr<SSLClientSocket>();
+  }
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<ClientSocketHandle> transport_socket,
       const std::string& user_agent,

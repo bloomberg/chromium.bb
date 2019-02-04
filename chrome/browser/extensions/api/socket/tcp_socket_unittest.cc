@@ -518,6 +518,14 @@ class TestSocketFactory : public net::ClientSocketFactory {
     NOTIMPLEMENTED();
     return std::unique_ptr<net::SSLClientSocket>();
   }
+  std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      std::unique_ptr<net::StreamSocket>,
+      const net::HostPortPair&,
+      const net::SSLConfig&,
+      const net::SSLClientSocketContext&) override {
+    NOTIMPLEMENTED();
+    return std::unique_ptr<net::SSLClientSocket>();
+  }
   std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<net::ClientSocketHandle> transport_socket,
       const std::string& user_agent,

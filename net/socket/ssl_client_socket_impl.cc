@@ -414,7 +414,8 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       cert_verifier_(context.cert_verifier),
       cert_verification_result_(kCertVerifyPending),
       cert_transparency_verifier_(context.cert_transparency_verifier),
-      transport_(std::move(transport_socket)),
+      client_socket_handle_(std::move(transport_socket)),
+      stream_socket_(client_socket_handle_->socket()),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_client_session_cache_(context.ssl_client_session_cache),
@@ -429,7 +430,43 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       policy_enforcer_(context.ct_policy_enforcer),
       pkp_bypassed_(false),
       is_fatal_cert_error_(false),
-      net_log_(transport_->socket()->NetLog()),
+      net_log_(stream_socket_->NetLog()),
+      weak_factory_(this) {
+  CHECK(cert_verifier_);
+  CHECK(transport_security_state_);
+  CHECK(cert_transparency_verifier_);
+  CHECK(policy_enforcer_);
+}
+
+SSLClientSocketImpl::SSLClientSocketImpl(
+    std::unique_ptr<StreamSocket> nested_socket,
+    const HostPortPair& host_and_port,
+    const SSLConfig& ssl_config,
+    const SSLClientSocketContext& context)
+    : pending_read_error_(kSSLClientSocketNoPendingResult),
+      pending_read_ssl_error_(SSL_ERROR_NONE),
+      completed_connect_(false),
+      was_ever_used_(false),
+      cert_verifier_(context.cert_verifier),
+      cert_verification_result_(kCertVerifyPending),
+      cert_transparency_verifier_(context.cert_transparency_verifier),
+      nested_socket_(std::move(nested_socket)),
+      stream_socket_(nested_socket_.get()),
+      host_and_port_(host_and_port),
+      ssl_config_(ssl_config),
+      ssl_client_session_cache_(context.ssl_client_session_cache),
+      ssl_session_cache_shard_(context.ssl_session_cache_shard),
+      next_handshake_state_(STATE_NONE),
+      in_confirm_handshake_(false),
+      disconnected_(false),
+      negotiated_protocol_(kProtoUnknown),
+      certificate_requested_(false),
+      signature_result_(kSSLClientSocketNoPendingResult),
+      transport_security_state_(context.transport_security_state),
+      policy_enforcer_(context.ct_policy_enforcer),
+      pkp_bypassed_(false),
+      is_fatal_cert_error_(false),
+      net_log_(stream_socket_->NetLog()),
       weak_factory_(this) {
   CHECK(cert_verifier_);
   CHECK(transport_security_state_);
@@ -516,7 +553,7 @@ void SSLClientSocketImpl::Disconnect() {
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
 
-  transport_->socket()->Disconnect();
+  stream_socket_->Disconnect();
 }
 
 // ConfirmHandshake may only be called on a connected socket and, like other
@@ -552,7 +589,7 @@ bool SSLClientSocketImpl::IsConnected() const {
   if (user_read_buf_.get() || user_write_buf_.get())
     return true;
 
-  return transport_->socket()->IsConnected();
+  return stream_socket_->IsConnected();
 }
 
 bool SSLClientSocketImpl::IsConnectedAndIdle() const {
@@ -574,15 +611,15 @@ bool SSLClientSocketImpl::IsConnectedAndIdle() const {
   if (transport_adapter_->HasPendingReadData())
     return false;
 
-  return transport_->socket()->IsConnectedAndIdle();
+  return stream_socket_->IsConnectedAndIdle();
 }
 
 int SSLClientSocketImpl::GetPeerAddress(IPEndPoint* addressList) const {
-  return transport_->socket()->GetPeerAddress(addressList);
+  return stream_socket_->GetPeerAddress(addressList);
 }
 
 int SSLClientSocketImpl::GetLocalAddress(IPEndPoint* addressList) const {
-  return transport_->socket()->GetLocalAddress(addressList);
+  return stream_socket_->GetLocalAddress(addressList);
 }
 
 const NetLogWithSource& SSLClientSocketImpl::NetLog() const {
@@ -645,7 +682,7 @@ void SSLClientSocketImpl::GetConnectionAttempts(ConnectionAttempts* out) const {
 }
 
 int64_t SSLClientSocketImpl::GetTotalReceivedBytes() const {
-  return transport_->socket()->GetTotalReceivedBytes();
+  return stream_socket_->GetTotalReceivedBytes();
 }
 
 void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
@@ -691,7 +728,7 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
 }
 
 void SSLClientSocketImpl::ApplySocketTag(const SocketTag& tag) {
-  return transport_->socket()->ApplySocketTag(tag);
+  return stream_socket_->ApplySocketTag(tag);
 }
 
 int SSLClientSocketImpl::Read(IOBuffer* buf,
@@ -720,7 +757,7 @@ int SSLClientSocketImpl::ReadIfReady(IOBuffer* buf,
 }
 
 int SSLClientSocketImpl::CancelReadIfReady() {
-  int result = transport_->socket()->CancelReadIfReady();
+  int result = stream_socket_->CancelReadIfReady();
   // Cancel |user_read_callback_|, because caller does not expect the callback
   // to be invoked after they have canceled the ReadIfReady.
   user_read_callback_.Reset();
@@ -750,11 +787,11 @@ int SSLClientSocketImpl::Write(
 }
 
 int SSLClientSocketImpl::SetReceiveBufferSize(int32_t size) {
-  return transport_->socket()->SetReceiveBufferSize(size);
+  return stream_socket_->SetReceiveBufferSize(size);
 }
 
 int SSLClientSocketImpl::SetSendBufferSize(int32_t size) {
-  return transport_->socket()->SetSendBufferSize(size);
+  return stream_socket_->SetSendBufferSize(size);
 }
 
 void SSLClientSocketImpl::OnReadReady() {
@@ -804,7 +841,7 @@ int SSLClientSocketImpl::Init() {
   }
 
   transport_adapter_.reset(
-      new SocketBIOAdapter(transport_->socket(), kDefaultOpenSSLBufferSize,
+      new SocketBIOAdapter(stream_socket_, kDefaultOpenSSLBufferSize,
                            kDefaultOpenSSLBufferSize, this));
   BIO* transport_bio = transport_adapter_->bio();
 
