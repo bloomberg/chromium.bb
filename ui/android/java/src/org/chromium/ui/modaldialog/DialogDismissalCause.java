@@ -13,7 +13,8 @@ import java.lang.annotation.RetentionPolicy;
         DialogDismissalCause.NEGATIVE_BUTTON_CLICKED, DialogDismissalCause.ACTION_ON_CONTENT,
         DialogDismissalCause.DISMISSED_BY_NATIVE,
         DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE, DialogDismissalCause.TAB_SWITCHED,
-        DialogDismissalCause.TAB_DESTROYED, DialogDismissalCause.ACTIVITY_DESTROYED})
+        DialogDismissalCause.TAB_DESTROYED, DialogDismissalCause.ACTIVITY_DESTROYED,
+        DialogDismissalCause.NOT_ATTACHED_TO_WINDOW})
 @Retention(RetentionPolicy.SOURCE)
 public @interface DialogDismissalCause {
     // Please do not remove or change the order of the existing values, and add new value at the end
@@ -38,4 +39,6 @@ public @interface DialogDismissalCause {
     int TAB_DESTROYED = 7;
     /** The activity associated with the dialog is destroyed. */
     int ACTIVITY_DESTROYED = 8;
+    /** The content view of the activity associated with the dialog is not attached to window. */
+    int NOT_ATTACHED_TO_WINDOW = 9;
 }
