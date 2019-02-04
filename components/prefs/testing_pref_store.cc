@@ -54,7 +54,8 @@ bool TestingPrefStore::IsInitializationComplete() const {
 void TestingPrefStore::SetValue(const std::string& key,
                                 std::unique_ptr<base::Value> value,
                                 uint32_t flags) {
-  if (prefs_.SetValue(key, std::move(value))) {
+  DCHECK(value);
+  if (prefs_.SetValue(key, base::Value::FromUniquePtrValue(std::move(value)))) {
     committed_ = false;
     NotifyPrefValueChanged(key);
   }
@@ -63,9 +64,9 @@ void TestingPrefStore::SetValue(const std::string& key,
 void TestingPrefStore::SetValueSilently(const std::string& key,
                                         std::unique_ptr<base::Value> value,
                                         uint32_t flags) {
-  if (value)
-    CheckPrefIsSerializable(key, *value);
-  if (prefs_.SetValue(key, std::move(value)))
+  DCHECK(value);
+  CheckPrefIsSerializable(key, *value);
+  if (prefs_.SetValue(key, base::Value::FromUniquePtrValue(std::move(value))))
     committed_ = false;
 }
 
