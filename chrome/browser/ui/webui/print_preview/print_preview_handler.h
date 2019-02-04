@@ -318,7 +318,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   bool has_logged_printers_count_;
 
   // The settings used for the most recent preview request.
-  std::unique_ptr<base::DictionaryValue> last_preview_settings_;
+  base::Value last_preview_settings_;
 
 #if defined(OS_CHROMEOS)
   // Holds token service to get OAuth2 access tokens.

@@ -279,32 +279,26 @@ const char kHeaderFooter[] = "headerFooter";
 // managed by an enterprise policy.
 const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 
-// Get the print job settings dictionary from |json_str|. Returns NULL on
-// failure.
-std::unique_ptr<base::DictionaryValue> GetSettingsDictionary(
-    const std::string& json_str) {
-  if (json_str.empty()) {
-    NOTREACHED() << "Empty print job settings";
-    return NULL;
-  }
-  std::unique_ptr<base::DictionaryValue> settings =
-      base::DictionaryValue::From(base::JSONReader::Read(json_str));
-  if (!settings) {
+// Get the print job settings dictionary from |json_str|.
+// Returns |base::Value()| on failure.
+base::Value GetSettingsDictionary(const std::string& json_str) {
+  std::unique_ptr<base::Value> settings = base::JSONReader::Read(json_str);
+  if (!settings->is_dict()) {
     NOTREACHED() << "Print job settings must be a dictionary.";
-    return NULL;
+    return base::Value();
   }
 
-  if (settings->empty()) {
+  if (settings->DictEmpty()) {
     NOTREACHED() << "Print job settings dictionary is empty";
-    return NULL;
+    return base::Value();
   }
 
-  return settings;
+  return base::Value::FromUniquePtrValue(std::move(settings));
 }
 
 // Track the popularity of print settings and report the stats.
-void ReportPrintSettingsStats(const base::DictionaryValue& print_settings,
-                              const base::DictionaryValue& preview_settings,
+void ReportPrintSettingsStats(const base::Value& print_settings,
+                              const base::Value& preview_settings,
                               bool is_pdf) {
   ReportPrintSettingHistogram(TOTAL);
 
@@ -317,134 +311,106 @@ void ReportPrintSettingsStats(const base::DictionaryValue& print_settings,
   // print ticket. Similarly, settings applied at the printer should be pulled
   // from the print ticket, as they may have dummy values in the preview
   // request.
-  const base::ListValue* page_range_array = NULL;
-  if (preview_settings.GetList(kSettingPageRange, &page_range_array) &&
-      !page_range_array->empty()) {
+  const base::Value* page_range_array =
+      preview_settings.FindKey(kSettingPageRange);
+  if (page_range_array && page_range_array->is_list() &&
+      !page_range_array->GetList().empty()) {
     ReportPrintSettingHistogram(PAGE_RANGE);
   }
 
-  const base::DictionaryValue* media_size_value = NULL;
-  if (preview_settings.GetDictionary(kSettingMediaSize, &media_size_value) &&
-      !media_size_value->empty()) {
-    bool is_default = false;
-    if (media_size_value->GetBoolean(kSettingMediaSizeIsDefault, &is_default) &&
-        is_default) {
+  const base::Value* media_size_value =
+      preview_settings.FindKey(kSettingMediaSize);
+  if (media_size_value && media_size_value->is_dict() &&
+      !media_size_value->DictEmpty()) {
+    if (media_size_value->FindBoolKey(kSettingMediaSizeIsDefault)
+            .value_or(false)) {
       ReportPrintSettingHistogram(DEFAULT_MEDIA);
     } else {
       ReportPrintSettingHistogram(NON_DEFAULT_MEDIA);
     }
   }
 
-  bool landscape = false;
-  if (preview_settings.GetBoolean(kSettingLandscape, &landscape))
-    ReportPrintSettingHistogram(landscape ? LANDSCAPE : PORTRAIT);
+  base::Optional<bool> landscape_opt =
+      preview_settings.FindBoolKey(kSettingLandscape);
+  if (landscape_opt)
+    ReportPrintSettingHistogram(landscape_opt.value() ? LANDSCAPE : PORTRAIT);
 
-  int copies = 1;
-  if (print_settings.GetInteger(kSettingCopies, &copies) && copies > 1) {
+  if (print_settings.FindIntKey(kSettingCopies).value_or(1) > 1)
     ReportPrintSettingHistogram(COPIES);
-  }
 
-  int scaling = 100;
-  if (preview_settings.GetInteger(kSettingScaleFactor, &scaling) &&
-      scaling != 100) {
+  if (preview_settings.FindIntKey(kSettingScaleFactor).value_or(100) != 100)
     ReportPrintSettingHistogram(SCALING);
-  }
 
-  int pages_per_sheet = 1;
-  if (preview_settings.GetInteger(kSettingPagesPerSheet, &pages_per_sheet) &&
-      pages_per_sheet != 1) {
+  if (preview_settings.FindIntKey(kSettingPagesPerSheet).value_or(1) != 1)
     ReportPrintSettingHistogram(PAGES_PER_SHEET);
-  }
 
-  bool collate = false;
-  if (print_settings.GetBoolean(kSettingCollate, &collate) && collate)
+  if (print_settings.FindBoolKey(kSettingCollate).value_or(false))
     ReportPrintSettingHistogram(COLLATE);
 
-  int duplex_mode = 0;
-  if (print_settings.GetInteger(kSettingDuplexMode, &duplex_mode))
-    ReportPrintSettingHistogram(duplex_mode ? DUPLEX : SIMPLEX);
+  base::Optional<int> duplex_mode_opt =
+      print_settings.FindIntKey(kSettingDuplexMode);
+  if (duplex_mode_opt)
+    ReportPrintSettingHistogram(duplex_mode_opt.value() ? DUPLEX : SIMPLEX);
 
-  int color_mode = 0;
-  if (print_settings.GetInteger(kSettingColor, &color_mode)) {
+  base::Optional<int> color_mode_opt = print_settings.FindIntKey(kSettingColor);
+  if (color_mode_opt) {
     ReportPrintSettingHistogram(
-        IsColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
+        IsColorModelSelected(color_mode_opt.value()) ? COLOR : BLACK_AND_WHITE);
   }
 
-  int margins_type = 0;
-  if (preview_settings.GetInteger(kSettingMarginsType, &margins_type) &&
-      margins_type != 0) {
+  if (preview_settings.FindIntKey(kSettingMarginsType).value_or(0) != 0)
     ReportPrintSettingHistogram(NON_DEFAULT_MARGINS);
-  }
 
-  bool headers = false;
-  if (preview_settings.GetBoolean(kSettingHeaderFooterEnabled, &headers) &&
-      headers) {
+  if (preview_settings.FindBoolKey(kSettingHeaderFooterEnabled).value_or(false))
     ReportPrintSettingHistogram(HEADERS_AND_FOOTERS);
-  }
 
-  bool css_background = false;
-  if (preview_settings.GetBoolean(kSettingShouldPrintBackgrounds,
-                                  &css_background) &&
-      css_background) {
+  if (preview_settings.FindBoolKey(kSettingShouldPrintBackgrounds)
+          .value_or(false)) {
     ReportPrintSettingHistogram(CSS_BACKGROUND);
   }
 
-  bool selection_only = false;
-  if (preview_settings.GetBoolean(kSettingShouldPrintSelectionOnly,
-                                  &selection_only) &&
-      selection_only) {
+  if (preview_settings.FindBoolKey(kSettingShouldPrintSelectionOnly)
+          .value_or(false)) {
     ReportPrintSettingHistogram(SELECTION_ONLY);
   }
 
-  bool rasterize = false;
-  if (preview_settings.GetBoolean(kSettingRasterizePdf, &rasterize) &&
-      rasterize) {
+  if (preview_settings.FindBoolKey(kSettingRasterizePdf).value_or(false))
     ReportPrintSettingHistogram(PRINT_AS_IMAGE);
-  }
 
-  bool fit_to_page = false;
   if (is_pdf &&
-      preview_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_page) &&
-      fit_to_page) {
+      preview_settings.FindBoolKey(kSettingFitToPageEnabled).value_or(false)) {
     ReportPrintSettingHistogram(FIT_TO_PAGE);
   }
 
-  int dpi_horizontal = 0;
-  int dpi_vertical = 0;
-  if (print_settings.GetInteger(kSettingDpiHorizontal, &dpi_horizontal) &&
-      print_settings.GetInteger(kSettingDpiVertical, &dpi_vertical) &&
-      dpi_horizontal > 0 && dpi_vertical > 0) {
-    bool is_default = false;
-    if (print_settings.GetBoolean(kSettingDpiDefault, &is_default))
-      ReportPrintSettingHistogram(is_default ? DEFAULT_DPI : NON_DEFAULT_DPI);
+  if (print_settings.FindIntKey(kSettingDpiHorizontal).value_or(0) > 0 &&
+      print_settings.FindIntKey(kSettingDpiVertical).value_or(0) > 0) {
+    base::Optional<bool> is_default_opt =
+        print_settings.FindBoolKey(kSettingDpiDefault);
+    if (is_default_opt) {
+      ReportPrintSettingHistogram(is_default_opt.value() ? DEFAULT_DPI
+                                                         : NON_DEFAULT_DPI);
+    }
   }
 }
 
-UserActionBuckets DetermineUserAction(const base::DictionaryValue& settings) {
-  bool value = false;
+UserActionBuckets DetermineUserAction(const base::Value& settings) {
 #if defined(OS_MACOSX)
-  value = settings.HasKey(kSettingOpenPDFInPreview);
-#endif
-  if (value)
+  if (settings.FindKey(kSettingOpenPDFInPreview) != nullptr)
     return OPEN_IN_MAC_PREVIEW;
+#endif
   // This needs to be checked before checking for a cloud print ID, since a
   // print ticket for printing to Drive will also contain a cloud print ID.
-  settings.GetBoolean(kSettingPrintToGoogleDrive, &value);
-  if (value)
+  if (settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false))
     return PRINT_TO_GOOGLE_DRIVE;
-  if (settings.HasKey(kSettingCloudPrintId))
+  if (settings.FindKey(kSettingCloudPrintId) != nullptr)
     return PRINT_WITH_CLOUD_PRINT;
-  settings.GetBoolean(kSettingPrintWithPrivet, &value);
-  if (value)
+  if (settings.FindBoolKey(kSettingPrintWithPrivet).value_or(false))
     return PRINT_WITH_PRIVET;
-  settings.GetBoolean(kSettingPrintWithExtension, &value);
-  if (value)
+  if (settings.FindBoolKey(kSettingPrintWithExtension).value_or(false))
     return PRINT_WITH_EXTENSION;
-  settings.GetBoolean(kSettingPrintToPDF, &value);
-  if (value)
+  if (settings.FindBoolKey(kSettingPrintToPDF).value_or(false))
     return PRINT_TO_PDF;
-  settings.GetBoolean(kSettingShowSystemDialog, &value);
-  if (value)
+  if (settings.FindBoolKey(kSettingShowSystemDialog).value_or(false))
     return FALLBACK_TO_ADVANCED_SETTINGS_DIALOG;
   return PRINT_TO_PRINTER;
 }
@@ -716,11 +682,9 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   args->GetString(0, &callback_id);
   CHECK(!callback_id.empty());
   args->GetString(1, &json_str);
-  std::unique_ptr<base::DictionaryValue> settings =
-      GetSettingsDictionary(json_str);
-  CHECK(settings);
-  int request_id = -1;
-  settings->GetInteger(kPreviewRequestID, &request_id);
+  base::Value settings = GetSettingsDictionary(json_str);
+  CHECK(settings.is_dict());
+  int request_id = settings.FindIntKey(kPreviewRequestID).value();
   CHECK_GT(request_id, -1);
 
   CHECK(!base::ContainsKey(preview_callbacks_, request_id));
@@ -728,8 +692,9 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::ShouldCancelRequest() on the IO thread.
-  settings->SetInteger(kPreviewUIID,
-                       print_preview_ui()->GetIDForPrintPreviewUI().value());
+  settings.SetKey(
+      kPreviewUIID,
+      base::Value(print_preview_ui()->GetIDForPrintPreviewUI().value()));
 
   // Increment request count.
   ++regenerate_preview_request_count_;
@@ -747,25 +712,26 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 
   // Retrieve the page title and url and send it to the renderer process if
   // headers and footers are to be displayed.
-  bool display_header_footer = false;
-  bool success =
-      settings->GetBoolean(kSettingHeaderFooterEnabled, &display_header_footer);
-  DCHECK(success);
-  if (display_header_footer) {
-    settings->SetString(kSettingHeaderFooterTitle, initiator->GetTitle());
+  base::Optional<bool> display_header_footer_opt =
+      settings.FindBoolKey(kSettingHeaderFooterEnabled);
+  DCHECK(display_header_footer_opt);
+  if (display_header_footer_opt.value_or(false)) {
+    settings.SetKey(kSettingHeaderFooterTitle,
+                    base::Value(initiator->GetTitle()));
 
     url::Replacements<char> url_sanitizer;
     url_sanitizer.ClearUsername();
     url_sanitizer.ClearPassword();
     const GURL& initiator_url = initiator->GetLastCommittedURL();
-    settings->SetString(kSettingHeaderFooterURL,
-                        url_formatter::FormatUrl(
-                            initiator_url.ReplaceComponents(url_sanitizer)));
+    settings.SetKey(kSettingHeaderFooterURL,
+                    base::Value(url_formatter::FormatUrl(
+                        initiator_url.ReplaceComponents(url_sanitizer))));
   }
 
   VLOG(1) << "Print preview request start";
 
-  rfh->Send(new PrintMsg_PrintPreview(rfh->GetRoutingID(), *settings));
+  rfh->Send(new PrintMsg_PrintPreview(
+      rfh->GetRoutingID(), static_cast<base::DictionaryValue&>(settings)));
   last_preview_settings_ = std::move(settings);
 }
 
@@ -780,18 +746,16 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   std::string json_str;
   CHECK(args->GetString(1, &json_str));
 
-  std::unique_ptr<base::DictionaryValue> settings =
-      GetSettingsDictionary(json_str);
-  if (!settings) {
+  base::Value settings = GetSettingsDictionary(json_str);
+  if (!settings.is_dict()) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value(-1));
     return;
   }
 
-  const UserActionBuckets user_action = DetermineUserAction(*settings);
+  const UserActionBuckets user_action = DetermineUserAction(settings);
 
-  int page_count = 0;
-  if (!settings->GetInteger(kSettingPreviewPageCount, &page_count) ||
-      page_count <= 0) {
+  int page_count = settings.FindIntKey(kSettingPreviewPageCount).value_or(-1);
+  if (page_count <= 0) {
     RejectJavascriptCallback(base::Value(callback_id),
                              GetErrorValue(user_action, "NO_PAGE_COUNT"));
     return;
@@ -811,8 +775,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
   // After validating |settings|, record metrics.
   bool is_pdf = !print_preview_ui()->source_is_modifiable();
-  if (last_preview_settings_)
-    ReportPrintSettingsStats(*settings, *last_preview_settings_, is_pdf);
+  if (last_preview_settings_.is_dict())
+    ReportPrintSettingsStats(settings, last_preview_settings_, is_pdf);
   {
     PrintDocumentTypeBuckets doc_type = is_pdf ? PDF_DOCUMENT : HTML_DOCUMENT;
     size_t average_page_size_in_kb = data->size() / page_count;
@@ -836,8 +800,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   PrinterHandler* handler =
       GetPrinterHandler(GetPrinterTypeForUserAction(user_action));
   handler->StartPrint(print_preview_ui()->initiator_title(),
-                      base::Value::FromUniquePtrValue(std::move(settings)),
-                      data,
+                      std::move(settings), data,
                       base::BindOnce(&PrintPreviewHandler::OnPrintResult,
                                      weak_factory_.GetWeakPtr(), callback_id));
 }
