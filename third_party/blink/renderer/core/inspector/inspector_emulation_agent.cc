@@ -141,11 +141,6 @@ Response InspectorEmulationAgent::disable() {
   setCPUThrottlingRate(1);
   setFocusEmulationEnabled(false);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
-  if (virtual_time_setup_) {
-    DCHECK(web_local_frame_);
-    web_local_frame_->View()->Scheduler()->RemoveVirtualTimeObserver(this);
-    virtual_time_setup_ = false;
-  }
   return Response::OK();
 }
 
@@ -299,10 +294,6 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
   }
 
   InnerEnable();
-  if (!virtual_time_setup_) {
-    web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
-    virtual_time_setup_ = true;
-  }
 
   // This needs to happen before we apply virtual time.
   if (initial_virtual_time.isJust()) {
@@ -390,26 +381,13 @@ Response InspectorEmulationAgent::setNavigatorOverrides(
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   TRACE_EVENT_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget", this);
   WebView* view = web_local_frame_->View();
-  if (!view) {
-    DCHECK_EQ(false, virtual_time_setup_);
+  if (!view)
     return;
-  }
+
   view->Scheduler()->SetVirtualTimePolicy(
       PageScheduler::VirtualTimePolicy::kPause);
   virtual_time_policy_.Set(protocol::Emulation::VirtualTimePolicyEnum::Pause);
   GetFrontend()->virtualTimeBudgetExpired();
-}
-
-void InspectorEmulationAgent::OnVirtualTimeAdvanced(
-    WTF::TimeDelta virtual_time_offset) {
-  virtual_time_offset_.Set(virtual_time_offset.InMillisecondsF());
-  GetFrontend()->virtualTimeAdvanced(virtual_time_offset.InMillisecondsF());
-}
-
-void InspectorEmulationAgent::OnVirtualTimePaused(
-    WTF::TimeDelta virtual_time_offset) {
-  virtual_time_offset_.Set(virtual_time_offset.InMillisecondsF());
-  GetFrontend()->virtualTimePaused(virtual_time_offset.InMillisecondsF());
 }
 
 Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(

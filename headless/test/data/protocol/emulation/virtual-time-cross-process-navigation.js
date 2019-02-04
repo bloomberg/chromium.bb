@@ -31,6 +31,8 @@ const server = new Map([
   ['http://c.com/', siteC],
   ['http://d.com/', siteD]]);
 
+const virtualTimeBudget = 100;
+
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank(
       `Tests that virtual time survives cross-process navigation.`);
@@ -38,9 +40,6 @@ const server = new Map([
   await dp.Network.setRequestInterception({ patterns: [{ urlPattern: '*' }] });
 
   let virtualTime = 0;
-  dp.Emulation.onVirtualTimeAdvanced(data => {
-    virtualTime = data.params.virtualTimeElapsed;
-  });
 
   dp.Network.onRequestIntercepted(event => {
     let url = event.params.request.url;
@@ -54,9 +53,10 @@ const server = new Map([
 
   let count = 0;
   dp.Emulation.onVirtualTimeBudgetExpired(data => {
+    virtualTime += virtualTimeBudget;
     if (++count < 50) {
       dp.Emulation.setVirtualTimePolicy({
-          policy: 'pauseIfNetworkFetchesPending', budget: 100});
+          policy: 'pauseIfNetworkFetchesPending', budget: virtualTimeBudget});
     } else {
       testRunner.completeTest();
     }
@@ -64,7 +64,7 @@ const server = new Map([
 
   await dp.Emulation.setVirtualTimePolicy({policy: 'pause'});
   await dp.Emulation.setVirtualTimePolicy({
-      policy: 'pauseIfNetworkFetchesPending', budget: 100,
+      policy: 'pauseIfNetworkFetchesPending', budget: virtualTimeBudget,
       waitForNavigation: true});
   dp.Page.navigate({url: 'http://a.com'});
 })

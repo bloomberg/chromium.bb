@@ -345,15 +345,6 @@ void PageSchedulerImpl::GrantVirtualTimeBudget(
       main_thread_scheduler_->GetVirtualTimeDomain()->Now() + budget);
 }
 
-void PageSchedulerImpl::AddVirtualTimeObserver(VirtualTimeObserver* observer) {
-  main_thread_scheduler_->AddVirtualTimeObserver(observer);
-}
-
-void PageSchedulerImpl::RemoveVirtualTimeObserver(
-    VirtualTimeObserver* observer) {
-  main_thread_scheduler_->RemoveVirtualTimeObserver(observer);
-}
-
 void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
   if (is_audio_playing) {
     audio_state_ = AudioState::kAudible;

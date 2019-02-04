@@ -14,24 +14,10 @@
     testRunner.log(text);
   });
 
-  dp.Emulation.onVirtualTimeAdvanced(data => {
-    // Debug chrome schedules stray tasks that break this test.
-    // Our numbers are round, so we prevent this flake 999 times of 1000.
-    const time = data.params.virtualTimeElapsed;
-    if (time !== Math.round(time))
-      return;
-    testRunner.log(`Advanced to ${time}ms`);
-  });
-
   let virtualTimeBase = 0;
   let totalElapsedTime = 0;
   let frameTimeTicks = 0;
   let lastGrantedChunk = 0;
-
-  dp.Emulation.onVirtualTimePaused(data => {
-    // Remember the base time for frame time calculation.
-    virtualTimeBase = data.params.virtualTimeElapsed;
-  });
 
   await dp.Emulation.setVirtualTimePolicy({policy: 'pause'});
   lastGrantedChunk = 1000;
@@ -70,7 +56,7 @@
   async function AdvanceTime() {
     await dp.Emulation.onceVirtualTimeBudgetExpired();
     totalElapsedTime += lastGrantedChunk;
-    testRunner.log(`Elasped time: ${totalElapsedTime}`);
+    testRunner.log(`Elapsed time: ${totalElapsedTime}`);
     frameTimeTicks = virtualTimeBase + totalElapsedTime;
   }
 

@@ -1669,7 +1669,6 @@ base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime(
           main_thread_only().initial_virtual_time_offset,
       &helper_, policy));
   RegisterTimeDomain(virtual_time_domain_.get());
-  virtual_time_domain_->SetObserver(this);
 
   DCHECK(!virtual_time_control_task_queue_);
   virtual_time_control_task_queue_ =
@@ -1743,10 +1742,6 @@ void MainThreadSchedulerImpl::VirtualTimePaused() {
       pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
     }
   }
-  for (auto& observer : main_thread_only().virtual_time_observers) {
-    observer.OnVirtualTimePaused(virtual_time_domain_->Now() -
-                                 main_thread_only().initial_virtual_time_ticks);
-  }
 }
 
 void MainThreadSchedulerImpl::VirtualTimeResumed() {
@@ -1796,24 +1791,6 @@ void MainThreadSchedulerImpl::SetInitialVirtualTime(base::Time time) {
 void MainThreadSchedulerImpl::SetInitialVirtualTimeOffset(
     base::TimeDelta offset) {
   main_thread_only().initial_virtual_time_offset = offset;
-}
-
-void MainThreadSchedulerImpl::AddVirtualTimeObserver(
-    VirtualTimeObserver* observer) {
-  main_thread_only().virtual_time_observers.AddObserver(observer);
-}
-
-void MainThreadSchedulerImpl::RemoveVirtualTimeObserver(
-    VirtualTimeObserver* observer) {
-  main_thread_only().virtual_time_observers.RemoveObserver(observer);
-}
-
-void MainThreadSchedulerImpl::OnVirtualTimeAdvanced() {
-  for (auto& observer : main_thread_only().virtual_time_observers) {
-    observer.OnVirtualTimeAdvanced(
-        virtual_time_domain_->Now() -
-        main_thread_only().initial_virtual_time_ticks);
-  }
 }
 
 void MainThreadSchedulerImpl::ApplyVirtualTimePolicy() {

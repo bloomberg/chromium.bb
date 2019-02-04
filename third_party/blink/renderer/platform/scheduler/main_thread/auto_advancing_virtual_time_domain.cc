@@ -26,7 +26,6 @@ AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
     : task_starvation_count_(0),
       max_task_starvation_count_(0),
       can_advance_virtual_time_(true),
-      observer_(nullptr),
       helper_(helper),
       now_ticks_(initial_time_ticks),
       initial_time_ticks_(initial_time_ticks),
@@ -118,10 +117,6 @@ void AutoAdvancingVirtualTimeDomain::SetNextDelayedDoWork(
     RequestDoWork();
 }
 
-void AutoAdvancingVirtualTimeDomain::SetObserver(Observer* observer) {
-  observer_ = observer;
-}
-
 void AutoAdvancingVirtualTimeDomain::SetCanAdvanceVirtualTime(
     bool can_advance_virtual_time) {
   can_advance_virtual_time_ = can_advance_virtual_time;
@@ -161,9 +156,6 @@ bool AutoAdvancingVirtualTimeDomain::MaybeAdvanceVirtualTime(
     base::AutoLock lock(now_ticks_lock_);
     now_ticks_ = new_virtual_time;
   }
-
-  if (observer_)
-    observer_->OnVirtualTimeAdvanced();
 
   return true;
 }
@@ -208,10 +200,6 @@ base::Time AutoAdvancingVirtualTimeDomain::GetVirtualTime() {
   DCHECK(AutoAdvancingVirtualTimeDomain::g_time_domain_);
   return AutoAdvancingVirtualTimeDomain::g_time_domain_->Date();
 }
-
-AutoAdvancingVirtualTimeDomain::Observer::Observer() = default;
-
-AutoAdvancingVirtualTimeDomain::Observer::~Observer() = default;
 
 }  // namespace scheduler
 }  // namespace blink

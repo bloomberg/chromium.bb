@@ -32,8 +32,7 @@ class RGBA;
 }  // namespace protocol
 
 class CORE_EXPORT InspectorEmulationAgent final
-    : public InspectorBaseAgent<protocol::Emulation::Metainfo>,
-      public PageScheduler::VirtualTimeObserver {
+    : public InspectorBaseAgent<protocol::Emulation::Metainfo> {
  public:
   explicit InspectorEmulationAgent(WebLocalFrameImpl*);
   ~InspectorEmulationAgent() override;
@@ -95,10 +94,6 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response disable() override;
   void Restore() override;
 
-  // scheduler::PageScheduler::VirtualTimeObserver implementation.
-  void OnVirtualTimeAdvanced(WTF::TimeDelta virtual_time_offset) override;
-  void OnVirtualTimePaused(WTF::TimeDelta virtual_time_offset) override;
-
   void Trace(blink::Visitor*) override;
 
  private:
@@ -115,7 +110,6 @@ class CORE_EXPORT InspectorEmulationAgent final
   void ApplyVirtualTimePolicy(const PendingVirtualTimePolicy& new_policy);
 
   Member<WebLocalFrameImpl> web_local_frame_;
-  bool virtual_time_setup_ = false;
   WTF::TimeTicks virtual_time_base_ticks_;
 
   // Supports a virtual time policy change scheduled to occur after any

@@ -916,68 +916,6 @@ TEST_F(PageSchedulerImplTest, VirtualTimeBudgetExhaustedCallback) {
 }
 
 namespace {
-class MockObserver : public PageScheduler::VirtualTimeObserver {
- public:
-  ~MockObserver() override = default;
-
-  void OnVirtualTimeAdvanced(base::TimeDelta virtual_time_offset) override {
-    virtual_time_log_.push_back(base::StringPrintf(
-        "Advanced to %dms",
-        static_cast<int>(virtual_time_offset.InMilliseconds())));
-  }
-
-  void OnVirtualTimePaused(base::TimeDelta virtual_time_offset) override {
-    virtual_time_log_.push_back(base::StringPrintf(
-        "Paused at %dms",
-        static_cast<int>(virtual_time_offset.InMilliseconds())));
-  }
-
-  const std::vector<std::string>& virtual_time_log() const {
-    return virtual_time_log_;
-  }
-
- private:
-  std::vector<std::string> virtual_time_log_;
-};
-
-void NopTask() {}
-}  // namespace
-
-TEST_F(PageSchedulerImplTest, VirtualTimeObserver) {
-  MockObserver mock_observer;
-  page_scheduler_->AddVirtualTimeObserver(&mock_observer);
-  page_scheduler_->EnableVirtualTime();
-
-  ThrottleableTaskQueue()->task_runner()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&NopTask),
-      base::TimeDelta::FromMilliseconds(200));
-
-  ThrottleableTaskQueue()->task_runner()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&NopTask),
-      base::TimeDelta::FromMilliseconds(20));
-
-  ThrottleableTaskQueue()->task_runner()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&NopTask),
-      base::TimeDelta::FromMilliseconds(2));
-
-  page_scheduler_->GrantVirtualTimeBudget(
-      base::TimeDelta::FromMilliseconds(1000),
-      base::BindOnce(
-          [](PageScheduler* scheduler) {
-            scheduler->SetVirtualTimePolicy(VirtualTimePolicy::kPause);
-          },
-          base::Unretained(page_scheduler_.get())));
-
-  test_task_runner_->FastForwardUntilNoTasksRemain();
-
-  EXPECT_THAT(
-      mock_observer.virtual_time_log(),
-      ElementsAre("Advanced to 2ms", "Advanced to 20ms", "Advanced to 200ms",
-                  "Advanced to 1000ms", "Paused at 1000ms"));
-  page_scheduler_->RemoveVirtualTimeObserver(&mock_observer);
-}
-
-namespace {
 void RepostingTask(scoped_refptr<TaskQueue> task_queue,
                    int max_count,
                    int* count) {

@@ -69,8 +69,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
       public QueueingTimeEstimator::Client,
-      public base::trace_event::TraceLog::AsyncEnabledStateObserver,
-      public AutoAdvancingVirtualTimeDomain::Observer {
+      public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
   // Don't use except for tracing.
   struct TaskDescriptionForTracing {
@@ -226,9 +225,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   //
   // TODO(yutak): Reduce the overlaps and simplify.
 
-  // AutoAdvancingVirtualTimeDomain::Observer implementation:
-  void OnVirtualTimeAdvanced() override;
-
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;
   void SetHasVisibleRenderWidgetWithTouchHandler(
@@ -274,7 +270,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       FrameSchedulerImpl* frame_scheduler);
 
   using VirtualTimePolicy = PageScheduler::VirtualTimePolicy;
-  using VirtualTimeObserver = PageScheduler::VirtualTimeObserver;
 
   using BaseTimeOverridePolicy =
       AutoAdvancingVirtualTimeDomain::BaseTimeOverridePolicy;
@@ -297,8 +292,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void SetInitialVirtualTime(base::Time time);
   void SetInitialVirtualTimeOffset(base::TimeDelta offset);
   void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
-  void AddVirtualTimeObserver(VirtualTimeObserver*);
-  void RemoveVirtualTimeObserver(VirtualTimeObserver*);
   base::TimeTicks IncrementVirtualTimePauseCount();
   void DecrementVirtualTimePauseCount();
   void MaybeAdvanceVirtualTime(base::TimeTicks new_virtual_time);
@@ -850,7 +843,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         base::Optional<base::sequence_manager::TaskQueue::QueuePriority>,
         TracingCategoryName::kInfo>
         task_priority_for_tracing;  // Only used for tracing.
-    base::ObserverList<VirtualTimeObserver>::Unchecked virtual_time_observers;
     base::Time initial_virtual_time;
     base::TimeTicks initial_virtual_time_ticks;
 
