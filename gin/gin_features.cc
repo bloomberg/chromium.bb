@@ -10,4 +10,8 @@ namespace features {
 const base::Feature kV8OptimizeJavascript{"V8OptimizeJavascript",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables flushing of JS bytecode in V8.
+const base::Feature kV8FlushBytecode{"V8FlushBytecode",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
