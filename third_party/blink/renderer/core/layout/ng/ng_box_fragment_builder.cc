@@ -31,8 +31,8 @@ void GatherInlineContainerFragmentsFromLinebox(
     if (!descendant.fragment->IsBox())
       continue;
     LayoutObject* key = descendant.fragment->GetLayoutObject();
-    // TODO(atotic) Is traversing continuations the right thing to do?
-    if (key->IsLayoutInline())  // key for inlines is continuation root.
+    // Key for inline is continuation root if it exists.
+    if (key->IsLayoutInline() && key->GetNode())
       key = key->GetNode()->GetLayoutObject();
     auto it = inline_containing_block_map->find(key);
     if (it == inline_containing_block_map->end()) {
