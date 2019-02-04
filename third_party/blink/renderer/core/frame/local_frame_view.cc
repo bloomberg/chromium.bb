@@ -2633,13 +2633,8 @@ void LocalFrameView::PaintTree() {
     // Devtools overlays query the inspected page's paint data so this update
     // needs to be after other paintings. Because devtools overlays can add
     // layers, this needs to be before layers are collected.
-    auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_);
-    if (web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays()) {
+    if (auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_))
       web_local_frame_impl->UpdateDevToolsOverlays();
-      // Devtools overlays can change cc::Layer property tree nodes and we need
-      // to ensure these updated values are pushed to the compositor.
-      SetPaintArtifactCompositorNeedsUpdate();
-    }
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
