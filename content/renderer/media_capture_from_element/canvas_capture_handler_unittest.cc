@@ -83,8 +83,11 @@ class CanvasCaptureHandlerTest
 
   // Verify returned frames.
   static sk_sp<SkImage> GenerateTestImage(bool opaque, int width, int height) {
+    SkImageInfo info = SkImageInfo::MakeN32(
+        width, height, opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
+        SkColorSpace::MakeSRGB());
     SkBitmap testBitmap;
-    testBitmap.allocN32Pixels(width, height, opaque);
+    testBitmap.allocPixels(info);
     testBitmap.eraseARGB(opaque ? 255 : kTestAlphaValue, 30, 60, 200);
     return SkImage::MakeFromBitmap(testBitmap);
   }
@@ -117,6 +120,7 @@ class CanvasCaptureHandlerTest
           video_frame->visible_data(media::VideoFrame::kAPlane);
       EXPECT_EQ(kTestAlphaValue, a_plane[0]);
     }
+    EXPECT_TRUE(video_frame->ColorSpace().IsValid());
   }
 
   blink::WebMediaStreamTrack track_;
