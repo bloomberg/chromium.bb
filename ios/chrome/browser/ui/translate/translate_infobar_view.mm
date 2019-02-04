@@ -226,16 +226,18 @@ const CGFloat kIconTrailingMargin = 12;
   self.toolbarConfiguration =
       [[ToolbarConfiguration alloc] initWithStyle:NORMAL];
 
-  self.optionsButton =
+  ToolbarButton* optionsButton =
       [self toolbarButtonWithImageNamed:@"translate_options"
                                  target:self
                                  action:@selector(showOptions)];
+  self.optionsButton = optionsButton;
   [contentView addSubview:self.optionsButton];
 
-  self.dismissButton =
+  ToolbarButton* dismissButton =
       [self toolbarButtonWithImageNamed:@"translate_dismiss"
                                  target:self
                                  action:@selector(dismiss)];
+  self.dismissButton = dismissButton;
   [contentView addSubview:self.dismissButton];
 
   ApplyVisualConstraintsWithMetrics(
