@@ -55,7 +55,6 @@ namespace blink {
 
 class FragmentData;
 class PaintLayer;
-class PropertyTreeState;
 
 enum ShouldRespectOverflowClipType {
   kIgnoreOverflowClip,
@@ -220,12 +219,6 @@ class CORE_EXPORT PaintLayerClipper {
       const FragmentData&,
       ShouldRespectOverflowClipType should_apply_self_overflow_clip,
       ClipRect& output) const;
-
-  ALWAYS_INLINE void InitializeCommonClipRectState(
-      const ClipRectsContext&,
-      const FragmentData&,
-      PropertyTreeState& source_property_tree_state,
-      PropertyTreeState& destination_property_tree_state) const;
 
   // Same as calculateRects, but using GeometryMapper.
   ALWAYS_INLINE void CalculateRectsWithGeometryMapper(

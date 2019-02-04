@@ -453,11 +453,15 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   if (is_clipping_root && !context.ShouldRespectRootLayerClip())
     return;
 
-  PropertyTreeState source_property_tree_state(nullptr, nullptr, nullptr);
-  PropertyTreeState destination_property_tree_state(nullptr, nullptr, nullptr);
-  InitializeCommonClipRectState(context, fragment_data,
-                                source_property_tree_state,
-                                destination_property_tree_state);
+  auto source_property_tree_state = fragment_data.LocalBorderBoxProperties();
+  auto destination_property_tree_state =
+      context.root_fragment->LocalBorderBoxProperties();
+  if (context.ShouldRespectRootLayerClip()) {
+    destination_property_tree_state.SetClip(context.root_fragment->PreClip());
+  } else {
+    destination_property_tree_state.SetClip(
+        context.root_fragment->PostOverflowClip());
+  }
 
   // The background rect applies all clips *above* m_layer, but not the overflow
   // clip of m_layer. It also applies a clip to the total painting bounds
@@ -502,27 +506,6 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
     // TODO(chrishtr): generalize to multiple fragments.
     output.MoveBy(-context.root_fragment->PaintOffset());
     output.Move(context.sub_pixel_accumulation);
-  }
-}
-
-void PaintLayerClipper::InitializeCommonClipRectState(
-    const ClipRectsContext& context,
-    const FragmentData& fragment_data,
-    PropertyTreeState& source_property_tree_state,
-    PropertyTreeState& destination_property_tree_state) const {
-  DCHECK(use_geometry_mapper_);
-  DCHECK(fragment_data.HasLocalBorderBoxProperties());
-  source_property_tree_state = fragment_data.LocalBorderBoxProperties();
-
-  DCHECK(context.root_fragment->HasLocalBorderBoxProperties());
-  destination_property_tree_state =
-      context.root_fragment->LocalBorderBoxProperties();
-
-  if (context.ShouldRespectRootLayerClip()) {
-    destination_property_tree_state.SetClip(context.root_fragment->PreClip());
-  } else {
-    destination_property_tree_state.SetClip(
-        context.root_fragment->PostOverflowClip());
   }
 }
 

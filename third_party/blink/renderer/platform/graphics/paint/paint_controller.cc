@@ -510,8 +510,10 @@ void PaintController::FinishCycle() {
   if (usage_ == kTransient)
     return;
 
+#if DCHECK_IS_ON()
   DCHECK(new_display_item_list_.IsEmpty());
   DCHECK(new_paint_chunks_.IsInInitialState());
+#endif
 
   if (committed_) {
     committed_ = false;

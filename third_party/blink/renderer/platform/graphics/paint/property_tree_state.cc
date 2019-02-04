@@ -8,6 +8,15 @@
 
 namespace blink {
 
+// For Uninitialized().
+PropertyTreeState::PropertyTreeState()
+    : transform_(nullptr), clip_(nullptr), effect_(nullptr) {}
+
+const PropertyTreeState& PropertyTreeState::Uninitialized() {
+  DEFINE_STATIC_LOCAL(PropertyTreeState, uninitialized, ());
+  return uninitialized;
+}
+
 const PropertyTreeState& PropertyTreeState::Root() {
   DEFINE_STATIC_LOCAL(
       PropertyTreeState, root,
@@ -17,21 +26,20 @@ const PropertyTreeState& PropertyTreeState::Root() {
 }
 
 PropertyTreeState PropertyTreeState::Unalias() const {
-  return PropertyTreeState(transform_ ? transform_->Unalias() : nullptr,
-                           clip_ ? clip_->Unalias() : nullptr,
-                           effect_ ? effect_->Unalias() : nullptr);
+  return PropertyTreeState(Transform()->Unalias(), Clip()->Unalias(),
+                           Effect()->Unalias());
 }
 
 String PropertyTreeState::ToString() const {
-  return String::Format("t:%p c:%p e:%p", Transform(), Clip(), Effect());
+  return String::Format("t:%p c:%p e:%p", transform_, clip_, effect_);
 }
 
 #if DCHECK_IS_ON()
 
 String PropertyTreeState::ToTreeString() const {
-  return "transform:\n" + (Transform() ? Transform()->ToTreeString() : "null") +
-         "\nclip:\n" + (Clip() ? Clip()->ToTreeString() : "null") +
-         "\neffect:\n" + (Effect() ? Effect()->ToTreeString() : "null");
+  return "transform:\n" + (transform_ ? transform_->ToTreeString() : "null") +
+         "\nclip:\n" + (clip_ ? clip_->ToTreeString() : "null") +
+         "\neffect:\n" + (effect_ ? effect_->ToTreeString() : "null");
 }
 
 #endif

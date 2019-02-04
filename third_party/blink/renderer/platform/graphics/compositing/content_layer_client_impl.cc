@@ -27,7 +27,7 @@ ContentLayerClientImpl::ContentLayerClientImpl()
       raster_invalidator_([this](const IntRect& rect) {
         cc_picture_layer_->SetNeedsDisplayRect(rect);
       }),
-      layer_state_(nullptr, nullptr, nullptr),
+      layer_state_(PropertyTreeState::Uninitialized()),
       weak_ptr_factory_(this) {
   cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 }
