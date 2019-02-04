@@ -150,6 +150,10 @@ TEST_F(PaymentRequestStateTest, CanMakePayment) {
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_TRUE(can_make_payment);
       }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_TRUE(has_enrolled_instrument);
+      }));
 
   // CanMakePayment returns true because the requested method is supported.
   state()->CanMakePayment(/*legacy_mode=*/false,
@@ -174,6 +178,10 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_NoEnrolledInstrument) {
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_FALSE(can_make_payment);
       }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_FALSE(has_enrolled_instrument);
+      }));
 
   // CanMakePayment returns true because the requested method is supported, even
   // though the payment instrument is not ready to pay.
@@ -197,6 +205,10 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_UnsupportedPaymentMethod) {
   state()->CanMakePayment(
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_FALSE(can_make_payment);
+      }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_FALSE(has_enrolled_instrument);
       }));
 
   // CanMakePayment returns true because the requested method is supported, even
@@ -223,6 +235,10 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_OnlyBasicCard) {
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_TRUE(can_make_payment);
       }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_TRUE(has_enrolled_instrument);
+      }));
 
   // CanMakePayment returns true because the requested method is supported.
   state()->CanMakePayment(
@@ -247,6 +263,10 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificAvailable) {
   state()->CanMakePayment(
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_TRUE(can_make_payment);
+      }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_TRUE(has_enrolled_instrument);
       }));
 
   // CanMakePayment returns true because the requested method is supported.
@@ -274,6 +294,10 @@ TEST_F(PaymentRequestStateTest,
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_FALSE(can_make_payment);
       }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_FALSE(has_enrolled_instrument);
+      }));
 
   // CanMakePayment returns true because the requested method is supported, even
   // though there is no enrolled instrument.
@@ -299,6 +323,10 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificUnavailable) {
   state()->CanMakePayment(
       /*legacy_mode=*/true, base::BindOnce([](bool can_make_payment) {
         EXPECT_FALSE(can_make_payment);
+      }));
+  state()->HasEnrolledInstrument(
+      base::BindOnce([](bool has_enrolled_instrument) {
+        EXPECT_FALSE(has_enrolled_instrument);
       }));
 
   // CanMakePayment returns true because the requested method is supported, even

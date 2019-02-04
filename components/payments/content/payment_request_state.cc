@@ -250,8 +250,15 @@ void PaymentRequestState::HasEnrolledInstrument(StatusCallback callback) {
 }
 
 void PaymentRequestState::CheckHasEnrolledInstrument(StatusCallback callback) {
-  // TODO(https://crbug.com/915907): Implement hasEnrolledInstrument.
-  NOTREACHED();
+  DCHECK(get_all_instruments_finished_);
+  bool has_enrolled_instrument_value = false;
+  for (const auto& instrument : available_instruments_) {
+    if (instrument->IsValidForCanMakePayment()) {
+      has_enrolled_instrument_value = true;
+      break;
+    }
+  }
+  std::move(callback).Run(has_enrolled_instrument_value);
 }
 
 void PaymentRequestState::AreRequestedMethodsSupported(

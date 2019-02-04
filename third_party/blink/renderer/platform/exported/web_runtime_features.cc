@@ -335,6 +335,11 @@ void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
   RuntimeEnabledFeatures::SetPaymentRequestEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePaymentRequestHasEnrolledInstrument(
+    bool enable) {
+  RuntimeEnabledFeatures::SetPaymentRequestHasEnrolledInstrumentEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePermissionsAPI(bool enable) {
   RuntimeEnabledFeatures::SetPermissionsEnabled(enable);
 }

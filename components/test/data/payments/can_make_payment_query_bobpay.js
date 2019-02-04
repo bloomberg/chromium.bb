@@ -7,6 +7,30 @@
 /* global PaymentRequest:false */
 /* global print:false */
 
+const defaultDetails = {
+  total: {
+    label: 'Total',
+    amount: {
+      currency: 'USD',
+      value: '5.00',
+    },
+  },
+};
+
+const bobPayMethod = {
+  supportedMethods: 'https://bobpay.com',
+  data: {
+    'bobPayParameter': '1',
+  },
+};
+
+const alicePayMethod = {
+  supportedMethods: 'https://alicepay.com',
+  data: {
+    'alicePayParameter': '2',
+  },
+};
+
 var first;
 var second;
 
@@ -35,6 +59,20 @@ function printSecond(result) {
 }
 
 /**
+ * Runs |testFunction| and logs any result or error using |logger|.
+ * @param {function} testFunction A function with no argument and returns a
+ * Promise.
+ * @param {function} logger A function that takes one argument.
+ */
+function run(testFunction, logger) {
+  try {
+    testFunction().then(logger).catch(logger);
+  } catch (error) {
+    logger(error);
+  }
+}
+
+/**
  * Checks for existence of Bob Pay twice, with the same payment method specific
  * parameters.
  */
@@ -42,41 +80,15 @@ function buy() {  // eslint-disable-line no-unused-vars
   first = null;
   second = null;
 
-  try {
-    new PaymentRequest(
-        [{
-          supportedMethods: 'https://bobpay.com',
-          data: {'bobPayParameter': '1'},
-        }],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakePayment()
-        .then(function(result) {
-          printFirst(result);
-        })
-        .catch(function(error) {
-          printFirst(error);
-        });
-  } catch (error) {
-    printFirst(error);
-  }
+  const request1 = new PaymentRequest([bobPayMethod], defaultDetails);
+  run(() => {
+    return request1.canMakePayment();
+  }, printFirst);
 
-  try {
-    new PaymentRequest(
-        [{
-          supportedMethods: 'https://bobpay.com',
-          data: {'bobPayParameter': '1'},
-        }],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakePayment()
-        .then(function(result) {
-          printSecond(result);
-        })
-        .catch(function(error) {
-          printSecond(error);
-        });
-  } catch (error) {
-    printSecond(error);
-  }
+  const request2 = new PaymentRequest([bobPayMethod], defaultDetails);
+  run(() => {
+    return request2.canMakePayment();
+  }, printSecond);
 }
 
 /**
@@ -86,39 +98,31 @@ function otherBuy() {  // eslint-disable-line no-unused-vars
   first = null;
   second = null;
 
-  try {
-    new PaymentRequest(
-        [{
-          supportedMethods: 'https://bobpay.com',
-          data: {'bobPayParameter': '1'},
-        }],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakePayment()
-        .then(function(result) {
-          printFirst(result);
-        })
-        .catch(function(error) {
-          printFirst(error);
-        });
-  } catch (error) {
-    printFirst(error);
-  }
+  const request1 = new PaymentRequest([bobPayMethod], defaultDetails);
+  run(() => {
+    return request1.canMakePayment();
+  }, printFirst);
 
-  try {
-    new PaymentRequest(
-        [{
-          supportedMethods: 'https://alicepay.com',
-          data: {'alicePayParameter': '2'},
-        }],
-        {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakePayment()
-        .then(function(result) {
-          printSecond(result);
-        })
-        .catch(function(error) {
-          printSecond(error);
-        });
-  } catch (error) {
-    printSecond(error);
-  }
+  const request2 = new PaymentRequest([alicePayMethod], defaultDetails);
+  run(() => {
+    return request2.canMakePayment();
+  }, printSecond);
+}
+
+/**
+ * Checks for existence of an enrolled instrument for BobPay and AlicePay.
+ */
+function hasEnrolledInstrument() {  // eslint-disable-line no-unused-vars
+  first = null;
+  second = null;
+
+  const request1 = new PaymentRequest([bobPayMethod], defaultDetails);
+  run(() => {
+    return request1.hasEnrolledInstrument();
+  }, printFirst);
+
+  const request2 = new PaymentRequest([alicePayMethod], defaultDetails);
+  run(() => {
+    return request2.hasEnrolledInstrument();
+  }, printSecond);
 }
