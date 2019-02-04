@@ -12,6 +12,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display_embedder/direct_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -137,6 +138,32 @@ SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
     OffscreenSurface&& offscreen_surface) = default;
 
+SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::ScopedUseContextProvider(
+    SkiaOutputSurfaceImplOnGpu* impl_on_gpu)
+    : impl_on_gpu_(impl_on_gpu) {
+  if (!impl_on_gpu_->MakeCurrent()) {
+    valid_ = false;
+    return;
+  }
+
+  // GLRendererCopier uses context_provider_->ContextGL(), which caches GL state
+  // and removes state setting calls that it considers redundant. To get to a
+  // safe known GL state, we first call the client side to set the cached state,
+  // then we make driver GL state consistent with that.
+  impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState();
+  auto* api = impl_on_gpu_->api_;
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
+  api->glDisableFn(GL_SCISSOR_TEST);
+  api->glDisableFn(GL_STENCIL_TEST);
+  api->glDisableFn(GL_BLEND);
+}
+
+SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider::
+    ~ScopedUseContextProvider() {
+  if (valid_)
+    impl_on_gpu_->gr_context()->resetContext();
+}
+
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     gpu::SurfaceHandle surface_handle,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
@@ -219,6 +246,10 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // ~DirectContextProvider wants either the context to be lost or made current.
+  MakeCurrent();
+
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_surface_) {
     vulkan_surface_->Destroy();
@@ -460,6 +491,25 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   auto* surface =
       id ? offscreen_surfaces_[id].surface.get() : sk_surface_.get();
 
+  if (!is_using_vulkan()) {
+    if (!context_provider_) {
+      context_provider_ = base::MakeRefCounted<DirectContextProvider>(
+          context_state_->context(), gl_surface_, supports_alpha_,
+          gpu_preferences_, feature_info_.get());
+      context_provider_->BindToCurrentThread();
+    }
+    ScopedUseContextProvider use_context_provider(this);
+
+    // TODO(crbug.com/914502): Do this on the GPU instead of CPU with GL.
+    // copier_->CopyFromTextureOrFramebuffer(
+    //     std::move(request), output_rect,
+    //     internal_format, gl_id, surface_size, flipped, color_space);
+
+    // GLRendererCopier may have kicked off a glQuery.
+    if (decoder()->HasMoreIdleWork() || decoder()->HasPendingQueries())
+      ScheduleDelayedWork();
+  }
+
   SkBitmap bitmap;
   SkImageInfo copy_rect_info = SkImageInfo::Make(
       copy_rect.width(), copy_rect.height(), SkColorType::kN32_SkColorType,
@@ -509,6 +559,36 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   // conversion, if needed.
   request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
       result_format, result_rect, bitmap));
+}
+
+gpu::DecoderContext* SkiaOutputSurfaceImplOnGpu::decoder() {
+  return context_provider_->decoder();
+}
+
+void SkiaOutputSurfaceImplOnGpu::ScheduleDelayedWork() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (delayed_work_pending_)
+    return;
+  delayed_work_pending_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::PerformDelayedWork,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(2));
+}
+
+void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ScopedUseContextProvider use_context_provider(this);
+
+  delayed_work_pending_ = false;
+  if (MakeCurrent()) {
+    decoder()->PerformIdleWork();
+    decoder()->ProcessPendingQueries(false);
+    if (decoder()->HasMoreIdleWork() || decoder()->HasPendingQueries()) {
+      ScheduleDelayedWork();
+    }
+  }
 }
 
 sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(

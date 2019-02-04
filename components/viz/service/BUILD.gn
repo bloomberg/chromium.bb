@@ -98,6 +98,8 @@ viz_component("service") {
     "display_embedder/compositing_mode_reporter_impl.cc",
     "display_embedder/compositing_mode_reporter_impl.h",
     "display_embedder/compositor_overlay_candidate_validator.h",
+    "display_embedder/direct_context_provider.cc",
+    "display_embedder/direct_context_provider.h",
     "display_embedder/display_provider.h",
     "display_embedder/gl_output_surface.cc",
     "display_embedder/gl_output_surface.h",
