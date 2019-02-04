@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/input/pointer_event_manager.h"
 
+#include <limits>
+
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -100,12 +102,54 @@ class PointerEventManagerTest : public SimTest {
   WebMouseEvent CreateTestMouseEvent(WebInputEvent::Type type,
                                      const WebFloatPoint& coordinates) {
     WebMouseEvent event(type, coordinates, coordinates,
-                        WebPointerProperties::Button::kLeft, 0, 0,
+                        WebPointerProperties::Button::kLeft, 0,
+                        WebInputEvent::kLeftButtonDown,
                         WebInputEvent::GetStaticTimeStampForTests());
     event.SetFrameScale(1);
     return event;
   }
 };
+
+TEST_F(PointerEventManagerTest, HasPointerCapture) {
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<body style='padding: 0px; width: 400px; height: 400px;'>"
+      "</body>");
+  ASSERT_FALSE(GetDocument().body()->hasPointerCapture(4));
+  ASSERT_FALSE(GetDocument().body()->hasPointerCapture(
+      std::numeric_limits<PointerId>::max()));
+  ASSERT_FALSE(GetDocument().body()->hasPointerCapture(0));
+  ASSERT_FALSE(GetDocument().body()->hasPointerCapture(-1));
+  ASSERT_FALSE(
+      GetDocument().body()->hasPointerCapture(PointerEventFactory::kMouseId));
+
+  ExceptionState exception(nullptr, ExceptionState::kExecutionContext, "", "");
+
+  GetEventHandler().HandleMousePressEvent(
+      CreateTestMouseEvent(WebInputEvent::kMouseDown, WebFloatPoint(100, 100)));
+
+  ASSERT_FALSE(
+      GetDocument().body()->hasPointerCapture(PointerEventFactory::kMouseId));
+
+  GetDocument().body()->setPointerCapture(PointerEventFactory::kMouseId,
+                                          exception);
+  ASSERT_TRUE(
+      GetDocument().body()->hasPointerCapture(PointerEventFactory::kMouseId));
+
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseEvent(WebInputEvent::kMouseMove, WebFloatPoint(200, 200)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+  ASSERT_TRUE(
+      GetDocument().body()->hasPointerCapture(PointerEventFactory::kMouseId));
+
+  GetDocument().body()->releasePointerCapture(PointerEventFactory::kMouseId,
+                                              exception);
+  ASSERT_FALSE(
+      GetDocument().body()->hasPointerCapture(PointerEventFactory::kMouseId));
+}
 
 TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   WebView().MainFrameWidget()->Resize(WebSize(400, 400));
