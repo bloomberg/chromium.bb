@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "net/base/network_change_notifier.h"
 
 namespace {
@@ -86,8 +87,9 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   // Trigger network change notification and remember time when it happened.
   // Ensure that scheduler runs canary job immediately.
   fake_server::FakeServerHttpPostProvider::EnableNetwork();
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  content::NetworkConnectionChangeSimulator connection_change_simulator;
+  connection_change_simulator.SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_ETHERNET);
 
   base::Time network_notification_time = base::Time::Now();
 
