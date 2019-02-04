@@ -89,23 +89,17 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   ~SerializerMarkupAccumulator() override;
 
  protected:
-  void AppendCustomAttributes(StringBuilder&,
-                              const Element&,
-                              Namespaces&) override;
+  void AppendCustomAttributes(const Element&, Namespaces&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) const override;
   bool ShouldIgnoreElement(const Element&) const override;
-  void AppendElement(StringBuilder& out, const Element&, Namespaces&) override;
-  void AppendAttribute(StringBuilder& out,
-                       const Element&,
-                       const Attribute&,
-                       Namespaces&) override;
+  void AppendElement(const Element&, Namespaces&) override;
+  void AppendAttribute(const Element&, const Attribute&, Namespaces&) override;
   void AppendStartMarkup(Node&, Namespaces&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
-  void AppendAttributeValue(StringBuilder& out, const String& attribute_value);
-  void AppendRewrittenAttribute(StringBuilder& out,
-                                const Element&,
+  void AppendAttributeValue(const String& attribute_value);
+  void AppendRewrittenAttribute(const Element&,
                                 const String& attribute_name,
                                 const String& attribute_value);
 
@@ -134,12 +128,11 @@ SerializerMarkupAccumulator::SerializerMarkupAccumulator(
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator() = default;
 
 void SerializerMarkupAccumulator::AppendCustomAttributes(
-    StringBuilder& result,
     const Element& element,
     Namespaces& namespaces) {
   Vector<Attribute> attributes = delegate_.GetCustomAttributes(element);
   for (const auto& attribute : attributes)
-    AppendAttribute(result, element, attribute, namespaces);
+    AppendAttribute(element, attribute, namespaces);
 }
 
 bool SerializerMarkupAccumulator::ShouldIgnoreAttribute(
@@ -161,30 +154,28 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
   return delegate_.ShouldIgnoreElement(element);
 }
 
-void SerializerMarkupAccumulator::AppendElement(StringBuilder& result,
-                                                const Element& element,
+void SerializerMarkupAccumulator::AppendElement(const Element& element,
                                                 Namespaces& namespaces) {
-  MarkupAccumulator::AppendElement(result, element, namespaces);
+  MarkupAccumulator::AppendElement(element, namespaces);
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // element like this, without special cases for XHTML
   if (IsHTMLHeadElement(element)) {
-    result.Append("<meta http-equiv=\"Content-Type\" content=\"");
-    AppendAttributeValue(result, document_->SuggestedMIMEType());
-    result.Append("; charset=");
-    AppendAttributeValue(result, document_->characterSet());
+    markup_.Append("<meta http-equiv=\"Content-Type\" content=\"");
+    AppendAttributeValue(document_->SuggestedMIMEType());
+    markup_.Append("; charset=");
+    AppendAttributeValue(document_->characterSet());
     if (document_->IsXHTMLDocument())
-      result.Append("\" />");
+      markup_.Append("\" />");
     else
-      result.Append("\">");
+      markup_.Append("\">");
   }
 
   // FIXME: For object (plugins) tags and video tag we could replace them by an
   // image of their current contents.
 }
 
-void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
-                                                  const Element& element,
+void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
                                                   const Attribute& attribute,
                                                   Namespaces& namespaces) {
   // Check if link rewriting can affect the attribute.
@@ -197,7 +188,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
     if (delegate_.RewriteLink(element, new_link_for_the_element)) {
       if (is_link_attribute) {
         // Rewrite element links.
-        AppendRewrittenAttribute(out, element, attribute.GetName().ToString(),
+        AppendRewrittenAttribute(element, attribute.GetName().ToString(),
                                  new_link_for_the_element);
       } else {
         DCHECK(is_src_doc_attribute);
@@ -205,7 +196,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
         // serialized subframe to use html contents from the link provided by
         // Delegate::rewriteLink rather than html contents from srcdoc
         // attribute.
-        AppendRewrittenAttribute(out, element, html_names::kSrcAttr.LocalName(),
+        AppendRewrittenAttribute(element, html_names::kSrcAttr.LocalName(),
                                  new_link_for_the_element);
       }
       return;
@@ -213,7 +204,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
   }
 
   // Fallback to appending the original attribute.
-  MarkupAccumulator::AppendAttribute(out, element, attribute, namespaces);
+  MarkupAccumulator::AppendAttribute(element, attribute, namespaces);
 }
 
 void SerializerMarkupAccumulator::AppendStartMarkup(Node& node,
@@ -228,14 +219,12 @@ std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
 }
 
 void SerializerMarkupAccumulator::AppendAttributeValue(
-    StringBuilder& out,
     const String& attribute_value) {
-  MarkupFormatter::AppendAttributeValue(out, attribute_value,
+  MarkupFormatter::AppendAttributeValue(markup_, attribute_value,
                                         document_->IsHTMLDocument());
 }
 
 void SerializerMarkupAccumulator::AppendRewrittenAttribute(
-    StringBuilder& out,
     const Element& element,
     const String& attribute_name,
     const String& attribute_value) {
@@ -246,11 +235,11 @@ void SerializerMarkupAccumulator::AppendRewrittenAttribute(
   // Append the rewritten attribute.
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // attribute like this.
-  out.Append(' ');
-  out.Append(attribute_name);
-  out.Append("=\"");
-  AppendAttributeValue(out, attribute_value);
-  out.Append("\"");
+  markup_.Append(' ');
+  markup_.Append(attribute_name);
+  markup_.Append("=\"");
+  AppendAttributeValue(attribute_value);
+  markup_.Append("\"");
 }
 
 // TODO(tiger): Right now there is no support for rewriting URLs inside CSS

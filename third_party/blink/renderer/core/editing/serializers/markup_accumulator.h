@@ -50,30 +50,14 @@ class MarkupAccumulator {
                     SerializationType = SerializationType::kAsOwnerDocument);
   virtual ~MarkupAccumulator();
 
-  void AppendString(const String&);
   // Serialize a Node, without its children and its end tag.
   virtual void AppendStartMarkup(Node&, Namespaces&);
   void AppendEndTag(const Element&);
-  void AppendEndMarkup(StringBuilder&, const Element&);
 
   bool SerializeAsHTMLDocument(const Node&) const;
   String ToString() { return markup_.ToString(); }
 
-  virtual void AppendCustomAttributes(StringBuilder&,
-                                      const Element&,
-                                      Namespaces&);
-
-  virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
   virtual bool ShouldIgnoreElement(const Element&) const;
-  virtual void AppendElement(StringBuilder&, const Element&, Namespaces&);
-  void AppendStartTagOpen(StringBuilder&, const Element&, Namespaces&);
-  void AppendStartTagClose(StringBuilder&, const Element&);
-  virtual void AppendAttribute(StringBuilder&,
-                               const Element&,
-                               const Attribute&,
-                               Namespaces&);
-
-  EntityMask EntityMaskForText(const Text&) const;
 
   // Returns an auxiliary DOM tree, i.e. shadow tree, that needs also to be
   // serialized. The root of auxiliary DOM tree is returned as an 1st element
@@ -84,22 +68,34 @@ class MarkupAccumulator {
   // tree content.
   virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
 
- private:
-  bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
-  static void AppendAttributeAsXMLWithNamespace(StringBuilder& result,
-                                                const Element& element,
-                                                const Attribute& attribute,
-                                                const String& value,
-                                                Namespaces& namespaces);
-  static bool ShouldAddNamespaceAttribute(const Attribute& attribute,
-                                          const Element& element);
-  static void AppendNamespace(StringBuilder& result,
-                              const AtomicString& prefix,
-                              const AtomicString& namespace_uri,
-                              Namespaces& namespaces);
+ protected:
+  virtual void AppendElement(const Element&, Namespaces&);
+  virtual void AppendAttribute(const Element&, const Attribute&, Namespaces&);
 
   MarkupFormatter formatter_;
   StringBuilder markup_;
+
+ private:
+  void AppendString(const String&);
+  void AppendStartTagOpen(const Element&, Namespaces&);
+  void AppendStartTagClose(const Element&);
+  bool ShouldAddNamespaceElement(const Element&, Namespaces&) const;
+  void AppendNamespace(const AtomicString& prefix,
+                       const AtomicString& namespace_uri,
+                       Namespaces& namespaces);
+  void AppendAttributeAsXMLWithNamespace(const Element& element,
+                                         const Attribute& attribute,
+                                         const String& value,
+                                         Namespaces& namespaces);
+  static bool ShouldAddNamespaceAttribute(const Attribute& attribute,
+                                          const Element& element);
+
+  void AppendEndMarkup(const Element&);
+
+  EntityMask EntityMaskForText(const Text&) const;
+
+  virtual void AppendCustomAttributes(const Element&, Namespaces&);
+  virtual bool ShouldIgnoreAttribute(const Element&, const Attribute&) const;
 
   DISALLOW_COPY_AND_ASSIGN(MarkupAccumulator);
 };
