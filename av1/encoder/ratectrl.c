@@ -1168,7 +1168,8 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
 
   if (oxcf->rc_mode == AOM_Q ||
       (frame_is_intra_only(cm) && !rc->this_key_frame_forced &&
-       cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH)) {
+       cpi->twopass.kf_zeromotion_pct >= STATIC_KF_GROUP_THRESH &&
+       rc->frames_to_key > 1)) {
     q = active_best_quality;
     // Special case code to try and match quality with forced key frames.
   } else if (frame_is_intra_only(cm) && rc->this_key_frame_forced) {
