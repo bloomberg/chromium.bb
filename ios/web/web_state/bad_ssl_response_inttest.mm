@@ -119,6 +119,25 @@ TEST_P(BadSslResponseTest, AllowLoad) {
   EXPECT_EQ(url, web_state()->GetLastCommittedURL());
 }
 
+// Tests navigation to a page with self signed SSL cert and allowing the load
+// via WebClient. Subsequent navigation should not call AllowCertificateError
+// but always allow the load.
+TEST_P(BadSslResponseTest, RememberCertDecision) {
+  // Allow the load via WebClient.
+  web_client()->SetAllowCertificateErrors(true);
+  GURL url(https_server_.GetURL("/echo"));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
+  EXPECT_EQ(url, web_state()->GetLastCommittedURL());
+
+  // Make sure that second loads succeeds without consulting WebClient.
+  web_client()->SetAllowCertificateErrors(false);
+  GURL url2(https_server_.GetURL("/echoall"));
+  test::LoadUrl(web_state(), url2);
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "GET /echoall"));
+  EXPECT_EQ(url2, web_state()->GetLastCommittedURL());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ProgrammaticBadSslResponseTest,
     BadSslResponseTest,
