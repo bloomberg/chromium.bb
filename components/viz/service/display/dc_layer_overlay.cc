@@ -13,6 +13,7 @@
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
 
