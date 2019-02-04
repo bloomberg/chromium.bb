@@ -32,19 +32,11 @@ namespace internal {
 
 namespace {
 
-// Returns worker pool EnvironmentType for given arguments |is_background| and
-// |is_blocking|.
-EnvironmentType GetEnvironmentIndex(bool is_background, bool is_blocking) {
-  if (is_background) {
-    if (is_blocking)
-      return BACKGROUND_BLOCKING;
-    return BACKGROUND;
-  }
+constexpr EnvironmentParams kForegroundPoolEnvironmentParams{
+    "Foreground", base::ThreadPriority::NORMAL};
 
-  if (is_blocking)
-    return FOREGROUND_BLOCKING;
-  return FOREGROUND;
-}
+constexpr EnvironmentParams kBackgroundPoolEnvironmentParams{
+    "Background", base::ThreadPriority::BACKGROUND};
 
 }  // namespace
 
@@ -66,42 +58,22 @@ TaskSchedulerImpl::TaskSchedulerImpl(
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
-  static_assert(
-      std::extent<decltype(environment_to_worker_pool_)>() == ENVIRONMENT_COUNT,
-      "The size of |environment_to_worker_pool_| must match "
-      "ENVIRONMENT_COUNT.");
-  static_assert(
-      size(kEnvironmentParams) == ENVIRONMENT_COUNT,
-      "The size of |kEnvironmentParams| must match ENVIRONMENT_COUNT.");
+  foreground_pool_.emplace(
+      JoinString(
+          {histogram_label, kForegroundPoolEnvironmentParams.name_suffix}, "."),
+      kForegroundPoolEnvironmentParams.name_suffix,
+      kForegroundPoolEnvironmentParams.priority_hint,
+      task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
 
-  int num_pools_to_create = CanUseBackgroundPriorityForSchedulerWorker()
-                                ? ENVIRONMENT_COUNT
-                                : ENVIRONMENT_COUNT_WITHOUT_BACKGROUND_PRIORITY;
-  for (int environment_type = 0; environment_type < num_pools_to_create;
-       ++environment_type) {
-    worker_pools_.emplace_back(std::make_unique<SchedulerWorkerPoolImpl>(
+  if (CanUseBackgroundPriorityForSchedulerWorker()) {
+    background_pool_.emplace(
         JoinString(
-            {histogram_label, kEnvironmentParams[environment_type].name_suffix},
+            {histogram_label, kBackgroundPoolEnvironmentParams.name_suffix},
             "."),
-        kEnvironmentParams[environment_type].name_suffix,
-        kEnvironmentParams[environment_type].priority_hint,
-        task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef()));
+        kBackgroundPoolEnvironmentParams.name_suffix,
+        kBackgroundPoolEnvironmentParams.priority_hint,
+        task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
   }
-
-  // Map environment indexes to pools. |kMergeBlockingNonBlockingPools| is
-  // assumed to be disabled.
-  environment_to_worker_pool_[FOREGROUND] =
-      worker_pools_[GetEnvironmentIndex(false, false)].get();
-  environment_to_worker_pool_[FOREGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(false, true)].get();
-  environment_to_worker_pool_[BACKGROUND] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(), false)]
-          .get();
-  environment_to_worker_pool_[BACKGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(), true)]
-          .get();
 }
 
 TaskSchedulerImpl::~TaskSchedulerImpl() {
@@ -109,8 +81,9 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
   DCHECK(join_for_testing_returned_.IsSet());
 #endif
 
-  // Clear |worker_pools_| to release held TrackedRefs, which block teardown.
-  worker_pools_.clear();
+  // Reset worker pools to release held TrackedRefs, which block teardown.
+  foreground_pool_.reset();
+  background_pool_.reset();
 }
 
 void TaskSchedulerImpl::Start(
@@ -122,26 +95,6 @@ void TaskSchedulerImpl::Start(
   // are usually not ready when TaskSchedulerImpl is instantiated in a process.
   if (FeatureList::IsEnabled(kAllTasksUserBlocking))
     all_tasks_user_blocking_.Set();
-
-  const bool use_blocking_pools =
-      !base::FeatureList::IsEnabled(kMergeBlockingNonBlockingPools);
-
-  // Remap environment indexes to pools with |use_blocking_pools|.
-  // TODO(etiennep): This is only necessary because of the kMergeBlockingNonBlockingPools
-  // experiment. Remove this after the experiment.
-  environment_to_worker_pool_[FOREGROUND] =
-      worker_pools_[GetEnvironmentIndex(false, false)].get();
-  environment_to_worker_pool_[FOREGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(false, use_blocking_pools)].get();
-  environment_to_worker_pool_[BACKGROUND] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(), false)]
-          .get();
-  environment_to_worker_pool_[BACKGROUND_BLOCKING] =
-      worker_pools_[GetEnvironmentIndex(
-                        CanUseBackgroundPriorityForSchedulerWorker(),
-                        use_blocking_pools)]
-          .get();
 
   // Start the service thread. On platforms that support it (POSIX except NaCL
   // SFI), the service thread runs a MessageLoopForIO which is used to support
@@ -187,30 +140,15 @@ void TaskSchedulerImpl::Start(
   const int max_best_effort_tasks_in_foreground_pool = std::max(
       1, std::min(init_params.background_worker_pool_params.max_tasks(),
                   init_params.foreground_worker_pool_params.max_tasks() / 2));
-  worker_pools_[FOREGROUND]->Start(
-      init_params.foreground_worker_pool_params,
-      max_best_effort_tasks_in_foreground_pool, service_thread_task_runner,
-      scheduler_worker_observer, worker_environment);
-  const int max_best_effort_tasks_in_foreground_blocking_pool = std::max(
-      1, std::min(
-             init_params.background_blocking_worker_pool_params.max_tasks(),
-             init_params.foreground_blocking_worker_pool_params.max_tasks() /
-                 2));
-  worker_pools_[FOREGROUND_BLOCKING]->Start(
-      init_params.foreground_blocking_worker_pool_params,
-      max_best_effort_tasks_in_foreground_blocking_pool,
-      service_thread_task_runner, scheduler_worker_observer,
-      worker_environment);
+  foreground_pool_->Start(init_params.foreground_worker_pool_params,
+                          max_best_effort_tasks_in_foreground_pool,
+                          service_thread_task_runner, scheduler_worker_observer,
+                          worker_environment);
 
-  if (CanUseBackgroundPriorityForSchedulerWorker()) {
-    worker_pools_[BACKGROUND]->Start(
+  if (background_pool_.has_value()) {
+    background_pool_->Start(
         init_params.background_worker_pool_params,
         init_params.background_worker_pool_params.max_tasks(),
-        service_thread_task_runner, scheduler_worker_observer,
-        worker_environment);
-    worker_pools_[BACKGROUND_BLOCKING]->Start(
-        init_params.background_blocking_worker_pool_params,
-        init_params.background_blocking_worker_pool_params.max_tasks(),
         service_thread_task_runner, scheduler_worker_observer,
         worker_environment);
   }
@@ -267,8 +205,9 @@ TaskSchedulerImpl::CreateUpdateableSequencedTaskRunnerWithTraitsForTesting(
 
 std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
   std::vector<const HistogramBase*> histograms;
-  for (const auto& worker_pool : worker_pools_)
-    worker_pool->GetHistograms(&histograms);
+  foreground_pool_->GetHistograms(&histograms);
+  if (background_pool_.has_value())
+    background_pool_->GetHistograms(&histograms);
 
   return histograms;
 }
@@ -304,8 +243,9 @@ void TaskSchedulerImpl::JoinForTesting() {
   // https://crbug.com/771701.
   service_thread_->Stop();
   single_thread_task_runner_manager_.JoinForTesting();
-  for (const auto& worker_pool : worker_pools_)
-    worker_pool->JoinForTesting();
+  foreground_pool_->JoinForTesting();
+  if (background_pool_.has_value())
+    background_pool_->JoinForTesting();
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Set();
 #endif
@@ -401,8 +341,12 @@ void TaskSchedulerImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
 }
 
 SchedulerWorkerPoolImpl* TaskSchedulerImpl::GetWorkerPoolForTraits(
-    const TaskTraits& traits) const {
-  return environment_to_worker_pool_[GetEnvironmentIndexForTraits(traits)];
+    const TaskTraits& traits) {
+  if (traits.priority() == TaskPriority::BEST_EFFORT &&
+      background_pool_.has_value()) {
+    return &background_pool_.value();
+  }
+  return &foreground_pool_.value();
 }
 
 TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
@@ -413,9 +357,9 @@ TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
 }
 
 void TaskSchedulerImpl::ReportHeartbeatMetrics() const {
-  for (const auto& worker_pool : worker_pools_)
-    worker_pool->ReportHeartbeatMetrics();
-  delayed_task_manager_.ReportHeartbeatMetrics();
+  foreground_pool_->ReportHeartbeatMetrics();
+  if (background_pool_.has_value())
+    background_pool_->ReportHeartbeatMetrics();
 }
 
 }  // namespace internal

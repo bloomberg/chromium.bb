@@ -139,18 +139,14 @@ TestLauncherTracer* GetTestLauncherTracer() {
 void CreateAndStartTaskScheduler(int num_parallel_jobs) {
   // These values are taken from TaskScheduler::StartWithDefaultParams(), which
   // is not used directly to allow a custom number of threads in the foreground
-  // blocking pool.
-  constexpr int kMaxBackgroundThreads = 1;
-  constexpr int kMaxBackgroundBlockingThreads = 2;
-  const int max_foreground_threads =
-      std::max(1, base::SysInfo::NumberOfProcessors());
+  // pool.
+  // TODO(etiennep): Change this to 2 in future CL.
+  constexpr int kMaxBackgroundThreads = 3;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
   base::TaskScheduler::Create("TestLauncher");
   base::TaskScheduler::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
-       {kMaxBackgroundBlockingThreads, kSuggestedReclaimTime},
-       {max_foreground_threads, kSuggestedReclaimTime},
        {num_parallel_jobs, kSuggestedReclaimTime}});
 }
 

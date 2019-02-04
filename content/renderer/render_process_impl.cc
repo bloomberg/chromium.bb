@@ -64,25 +64,18 @@ void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
 
 std::unique_ptr<base::TaskScheduler::InitParams>
 GetDefaultTaskSchedulerInitParams() {
-
-  constexpr int kMaxNumThreadsInBackgroundPool = 1;
-  constexpr int kMaxNumThreadsInBackgroundBlockingPool = 1;
-  constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 2;
-  constexpr int kMaxNumThreadsInForegroundBlockingPool = 1;
+  constexpr int kMaxNumThreadsInBackgroundPool = 2;
+  constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 3;
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
   return std::make_unique<base::TaskScheduler::InitParams>(
       base::SchedulerWorkerPoolParams(kMaxNumThreadsInBackgroundPool,
                                       kSuggestedReclaimTime),
-      base::SchedulerWorkerPoolParams(kMaxNumThreadsInBackgroundBlockingPool,
-                                      kSuggestedReclaimTime),
       base::SchedulerWorkerPoolParams(
           std::max(
               kMaxNumThreadsInForegroundPoolLowerBound,
               content::GetMinThreadsInRendererTaskSchedulerForegroundPool()),
-          kSuggestedReclaimTime),
-      base::SchedulerWorkerPoolParams(kMaxNumThreadsInForegroundBlockingPool,
-                                      kSuggestedReclaimTime));
+          kSuggestedReclaimTime));
 }
 
 #if defined(DCHECK_IS_CONFIGURABLE)
