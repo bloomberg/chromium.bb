@@ -323,6 +323,13 @@ const char* const kGeolocationAuthorizationActionNewUser =
   DCHECK(tab.webState->GetNavigationManager());
   web::NavigationItem* item =
       tab.webState->GetNavigationManager()->GetVisibleItem();
+
+  if (!item) {
+    // TODO(crbug.com/899827): remove this early return once committed
+    // navigation item always exists after WebStateObserver::PageLoaded.
+    return;
+  }
+
   if (![self URLIsAuthorizationPromptingURL:item->GetURL()] ||
       !self.locationManager.locationServicesEnabled) {
     return;
