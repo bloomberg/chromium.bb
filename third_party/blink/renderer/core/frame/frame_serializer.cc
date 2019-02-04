@@ -92,7 +92,6 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
   void AppendCustomAttributes(StringBuilder&,
                               const Element&,
                               Namespaces&) override;
-  void AppendText(StringBuilder& out, Text&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) const override;
   bool ShouldIgnoreElement(const Element&) const override;
   void AppendElement(StringBuilder& out, const Element&, Namespaces&) override;
@@ -101,7 +100,6 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
                        const Attribute&,
                        Namespaces&) override;
   void AppendStartMarkup(Node&, Namespaces&) override;
-  void AppendEndTag(const Element&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
@@ -142,11 +140,6 @@ void SerializerMarkupAccumulator::AppendCustomAttributes(
   Vector<Attribute> attributes = delegate_.GetCustomAttributes(element);
   for (const auto& attribute : attributes)
     AppendAttribute(result, element, attribute, namespaces);
-}
-
-void SerializerMarkupAccumulator::AppendText(StringBuilder& result,
-                                             Text& text) {
-  MarkupAccumulator::AppendText(result, text);
 }
 
 bool SerializerMarkupAccumulator::ShouldIgnoreAttribute(
@@ -227,10 +220,6 @@ void SerializerMarkupAccumulator::AppendStartMarkup(Node& node,
                                                     Namespaces& namespaces) {
   MarkupAccumulator::AppendStartMarkup(node, namespaces);
   nodes_.push_back(&node);
-}
-
-void SerializerMarkupAccumulator::AppendEndTag(const Element& element) {
-  MarkupAccumulator::AppendEndTag(element);
 }
 
 std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
