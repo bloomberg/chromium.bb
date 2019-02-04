@@ -5,7 +5,9 @@
 #ifndef GIN_OBJECT_TEMPLATE_BUILDER_H_
 #define GIN_OBJECT_TEMPLATE_BUILDER_H_
 
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -79,6 +81,25 @@ class GIN_EXPORT ObjectTemplateBuilder {
         name, internal::CreateFunctionTemplate(isolate_, getter, type_name_),
         internal::CreateFunctionTemplate(isolate_, setter, type_name_));
   }
+
+  // Whereas SetProperty creates an accessor property, this creates what appears
+  // to be a data property but whose value is lazily computed the first time the
+  // [[Get]] operation occurs.
+  template <typename T>
+  ObjectTemplateBuilder& SetLazyDataProperty(const base::StringPiece& name,
+                                             const T& getter) {
+    InvokerOptions options;
+    if (std::is_member_function_pointer<T>::value) {
+      options.holder_is_first_argument = true;
+      options.holder_type = type_name_;
+    }
+    v8::AccessorNameGetterCallback callback;
+    v8::Local<v8::Value> data;
+    std::tie(callback, data) = CreateDataPropertyCallback(
+        isolate_, base::BindRepeating(getter), std::move(options));
+    return SetLazyDataPropertyImpl(name, callback, data);
+  }
+
   ObjectTemplateBuilder& AddNamedPropertyInterceptor();
   ObjectTemplateBuilder& AddIndexedPropertyInterceptor();
 
@@ -90,6 +111,10 @@ class GIN_EXPORT ObjectTemplateBuilder {
   ObjectTemplateBuilder& SetPropertyImpl(
       const base::StringPiece& name, v8::Local<v8::FunctionTemplate> getter,
       v8::Local<v8::FunctionTemplate> setter);
+  ObjectTemplateBuilder& SetLazyDataPropertyImpl(
+      const base::StringPiece& name,
+      v8::AccessorNameGetterCallback callback,
+      v8::Local<v8::Value> data);
 
   v8::Isolate* isolate_;
 
