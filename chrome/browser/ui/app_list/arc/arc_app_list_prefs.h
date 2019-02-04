@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -346,10 +347,6 @@ class ArcAppListPrefs : public KeyedService,
   void OnUninstallShortcut(const std::string& package_name,
                            const std::string& intent_uri) override;
   void OnPackageRemoved(const std::string& package_name) override;
-  void OnAppIconDeprecated(const std::string& package_name,
-                           const std::string& activity,
-                           arc::mojom::ScaleFactor scale_factor,
-                           const std::vector<uint8_t>& icon_png_data) override;
   void OnIcon(const std::string& app_id,
               const ArcAppIconDescriptor& descriptor,
               const std::vector<uint8_t>& icon_png_data);
@@ -485,17 +482,11 @@ class ArcAppListPrefs : public KeyedService,
   // Schedules deletion of app folder with icons on file thread.
   void ScheduleAppFolderDeletion(const std::string& app_id);
 
-  // TODO(b/112035954): Remove following block of 4 methods that supports icon
+  // TODO(b/112035954): Remove following block of 2 methods that supports icon
   // using deprecated mojom. Once Android side change is propagated in builds we
   // can safely remove this. Sends icon request view mojom using old protocol.
   // In this protocol only icons of 48 pixels are supported. This requires
   // resizing icon to the requested size.
-  void SendIconRequestDeprecated(const std::string& app_id,
-                                 const AppInfo& app,
-                                 const ArcAppIconDescriptor& descriptor);
-  void OnIconDeprecated(const std::string& app_id,
-                        const ArcAppIconDescriptor& descriptor,
-                        const std::vector<uint8_t>& icon_png_data);
   void OnIconResized(const std::string& app_id,
                      const ArcAppIconDescriptor& descriptor,
                      const std::vector<uint8_t>& icon_png_data);
