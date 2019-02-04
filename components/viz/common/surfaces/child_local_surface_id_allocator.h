@@ -43,6 +43,10 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
 
   void GenerateId();
 
+  // If UpdateFromParent() has been called this calls GenerateId(), otherwise
+  // the child sequence number is advanced.
+  void GenerateIdOrIncrementChild();
+
   const LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation() const {
     return current_local_surface_id_allocation_;
   }

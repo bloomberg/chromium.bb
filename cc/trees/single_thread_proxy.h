@@ -34,7 +34,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   static std::unique_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
-      TaskRunnerProvider* task_runner_provider_);
+      TaskRunnerProvider* task_runner_provider);
   ~SingleThreadProxy() override;
 
   // Proxy implementation
@@ -124,6 +124,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                                    bool skip_draw) override;
   void NeedsImplSideInvalidation(bool needs_first_draw_on_activation) override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
+  uint32_t GenerateChildSurfaceSequenceNumberSync() override;
   void NotifyImageDecodeRequestFinished() override;
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,

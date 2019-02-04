@@ -375,14 +375,9 @@ void Compositor::SetScaleAndSize(
   bool device_scale_factor_changed = device_scale_factor_ != scale;
   device_scale_factor_ = scale;
 
-  if (size_ != size_in_pixel && local_surface_id_allocation.IsValid()) {
-    // A new LocalSurfaceId must be set when the compositor size changes.
-    DCHECK_NE(
-        local_surface_id_allocation.local_surface_id(),
-        host_->local_surface_id_allocation_from_parent().local_surface_id());
-    DCHECK_NE(local_surface_id_allocation,
-              host_->local_surface_id_allocation_from_parent());
-  }
+  if (size_ != size_in_pixel && local_surface_id_allocation.IsValid())
+    DCHECK_NE(local_surface_id_allocation, last_local_surface_id_allocation_);
+  last_local_surface_id_allocation_ = local_surface_id_allocation;
 
   if (!size_in_pixel.IsEmpty()) {
     bool size_changed = size_ != size_in_pixel;

@@ -1064,6 +1064,8 @@ void LayerTreeImpl::SetLocalSurfaceIdAllocationFromParent(
         local_surface_id_allocation_from_parent) {
   local_surface_id_allocation_from_parent_ =
       local_surface_id_allocation_from_parent;
+  if (IsActiveTree())
+    host_impl_->OnLayerTreeLocalSurfaceIdAllocationChanged();
 }
 
 void LayerTreeImpl::RequestNewLocalSurfaceId() {

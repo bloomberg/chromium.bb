@@ -713,6 +713,12 @@ class CC_EXPORT LayerTreeHostImpl
 
   void SetActiveURL(const GURL& url);
 
+  // Called when LayerTreeImpl's LocalSurfaceIdAllocation changes.
+  void OnLayerTreeLocalSurfaceIdAllocationChanged();
+
+  // See SyncSurfaceIdAllocator for details.
+  uint32_t GenerateChildSurfaceSequenceNumberSync();
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -1082,6 +1088,10 @@ class CC_EXPORT LayerTreeHostImpl
   base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
+
+  // Set to true if waiting to receive a LocalSurfaceIdAllocation that matches
+  // that of |child_local_surface_id_allocator_|.
+  bool waiting_for_local_surface_id_ = false;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 

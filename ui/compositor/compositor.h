@@ -23,7 +23,7 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -506,6 +506,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   bool disabled_swap_until_resize_ = false;
 
   const char* trace_environment_name_;
+
+  viz::LocalSurfaceIdAllocation last_local_surface_id_allocation_;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_;
 

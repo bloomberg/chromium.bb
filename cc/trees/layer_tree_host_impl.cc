@@ -542,6 +542,9 @@ bool LayerTreeHostImpl::CanDraw() const {
     return false;
   }
 
+  if (waiting_for_local_surface_id_)
+    return false;
+
   if (resourceless_software_draw_)
     return true;
 
@@ -1357,7 +1360,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
 
   // If we return DRAW_SUCCESS, then we expect DrawLayers() to be called before
   // this function is called again.
-  return draw_result;
+  return DRAW_SUCCESS;
 }
 
 void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
@@ -1854,9 +1857,8 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
       active_tree_->set_needs_update_draw_properties();
     }
 
-    if (resourceless_software_draw) {
+    if (resourceless_software_draw)
       client_->OnCanDrawStateChanged(CanDraw());
-    }
 
     client_->OnDrawForLayerTreeFrameSink(resourceless_software_draw_,
                                          skip_draw);
@@ -5696,6 +5698,37 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url) {
   // case to occur.
   if (ukm_manager_)
     ukm_manager_->SetSourceURL(url);
+}
+
+void LayerTreeHostImpl::OnLayerTreeLocalSurfaceIdAllocationChanged() {
+  if (!waiting_for_local_surface_id_)
+    return;
+
+  const viz::LocalSurfaceId& current_id =
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  const viz::LocalSurfaceId& new_id =
+      active_tree()
+          ->local_surface_id_allocation_from_parent()
+          .local_surface_id();
+  if ((current_id.embed_token() != new_id.embed_token()) ||
+      (new_id.parent_sequence_number() > current_id.parent_sequence_number()) ||
+      ((new_id.parent_sequence_number() ==
+        current_id.parent_sequence_number()) &&
+       (new_id.child_sequence_number() >=
+        current_id.child_sequence_number()))) {
+    waiting_for_local_surface_id_ = false;
+    client_->OnCanDrawStateChanged(CanDraw());
+  }
+}
+
+uint32_t LayerTreeHostImpl::GenerateChildSurfaceSequenceNumberSync() {
+  waiting_for_local_surface_id_ = true;
+  child_local_surface_id_allocator_.GenerateIdOrIncrementChild();
+  client_->OnCanDrawStateChanged(CanDraw());
+  return child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+      .local_surface_id()
+      .child_sequence_number();
 }
 
 void LayerTreeHostImpl::AllocateLocalSurfaceId() {

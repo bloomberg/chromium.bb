@@ -92,4 +92,13 @@ void ChildLocalSurfaceIdAllocator::GenerateId() {
       current_local_surface_id_allocation_.local_surface_id_.ToString());
 }
 
+void ChildLocalSurfaceIdAllocator::GenerateIdOrIncrementChild() {
+  if (current_local_surface_id_allocation_.IsValid()) {
+    GenerateId();
+  } else {
+    ++current_local_surface_id_allocation_.local_surface_id_
+          .child_sequence_number_;
+  }
+}
+
 }  // namespace viz
