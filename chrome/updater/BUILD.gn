@@ -12,6 +12,11 @@ group("updater") {
       "//chrome/updater/win",
     ]
   }
+  if (is_mac) {
+    deps = [
+      "//chrome/updater/mac",
+    ]
+  }
 }
 
 source_set("common") {
@@ -27,13 +32,20 @@ source_set("common") {
 
 source_set("updater_tests") {
   testonly = true
-  if (is_win) {
-    sources = [
-      "win/updater_unittest.cc",
-    ]
 
+  sources = [
+    "updater_unittest.cc",
+  ]
+
+  if (is_win) {
     data_deps = [
       "//chrome/updater/win:updater",
+    ]
+  }
+
+  if (is_mac) {
+    data_deps = [
+      "//chrome/updater/mac:updater",
     ]
   }
 
