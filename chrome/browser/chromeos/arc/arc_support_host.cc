@@ -575,6 +575,7 @@ bool ArcSupportHost::Initialize() {
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, loadtime_data.get());
+  loadtime_data->SetString("locale", app_locale);
 
   base::DictionaryValue message;
   message.SetString(kAction, kActionInitialize);

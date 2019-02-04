@@ -111,11 +111,12 @@ body.large-view {
   padding: 0;
 }
 
-#play-footer ul {
+.play-footer ul,
+.play-header {
   display: none;
 }
 
-#play-footer {
+.play-footer {
   border: 0;
   margin: 0;
   padding: 0;
