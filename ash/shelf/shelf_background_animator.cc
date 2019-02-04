@@ -143,6 +143,7 @@ int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
     ShelfBackgroundType background_type) const {
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
+    case SHELF_BACKGROUND_OVERVIEW:
       return kShelfTranslucentAlpha;
     case SHELF_BACKGROUND_MAXIMIZED:
       return kShelfTranslucentMaximizedWindow;
@@ -230,6 +231,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
     case SHELF_BACKGROUND_OOBE:
     case SHELF_BACKGROUND_LOGIN:
     case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
+    case SHELF_BACKGROUND_OVERVIEW:
       duration_ms = 250;
       break;
   }
@@ -267,6 +269,7 @@ void ShelfBackgroundAnimator::GetTargetValues(
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_APP_LIST:
+    case SHELF_BACKGROUND_OVERVIEW:
       shelf_target_color = darken_wallpaper(kShelfTranslucentColorDarkenAlpha);
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
