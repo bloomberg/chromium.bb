@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_ANDROID_USAGE_STATS_USAGE_STATS_BRIDGE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/usage_stats/usage_stats_database.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -18,8 +21,7 @@ namespace usage_stats {
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
-
-class UsageStatsDatabase;
+using base::android::ScopedJavaGlobalRef;
 
 /* Native counterpart of UsageStatsBridge.java. Holds non-owning pointers to
  * native implementation to which operations are delegated. This bridge is
@@ -84,6 +86,13 @@ class UsageStatsBridge {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
+  void OnGetAllSuspensionsDone(ScopedJavaGlobalRef<jobject> callback,
+                               UsageStatsDatabase::Error error,
+                               std::vector<std::string> suspensions);
+
+  void OnSetSuspensionsDone(ScopedJavaGlobalRef<jobject> callback,
+                            UsageStatsDatabase::Error error);
+
   std::unique_ptr<UsageStatsDatabase> usage_stats_database_;
 
   base::WeakPtrFactory<UsageStatsBridge> weak_ptr_factory_;
