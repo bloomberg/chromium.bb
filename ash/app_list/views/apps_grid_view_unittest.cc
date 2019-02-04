@@ -47,6 +47,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {
@@ -1018,6 +1019,28 @@ TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
   apps_grid_view_->EndDrag(true);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
             model_->GetModelContent());
+}
+
+// Test focus change before and after dragging an item. (See
+// https://crbug.com/834682)
+TEST_F(AppsGridViewTest, FocusOfDraggedView) {
+  model_->PopulateApps(1);
+  contents_view_->GetAppsContainerView()->Layout();
+  auto* search_box = contents_view_->GetSearchBoxView()->search_box();
+  auto* item_view = apps_grid_view_->view_model()->view_at(0);
+  EXPECT_TRUE(search_box->HasFocus());
+  EXPECT_FALSE(item_view->HasFocus());
+
+  // Dragging the item towards its right.
+  const gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  const gfx::Point to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
+  SimulateDrag(AppsGridView::MOUSE, from, to);
+  EXPECT_FALSE(search_box->HasFocus());
+  EXPECT_TRUE(item_view->HasFocus());
+
+  apps_grid_view_->EndDrag(false);
+  EXPECT_FALSE(search_box->HasFocus());
+  EXPECT_TRUE(item_view->HasFocus());
 }
 
 // Test various dragging behaviors only allowed when apps grid gap (part of
