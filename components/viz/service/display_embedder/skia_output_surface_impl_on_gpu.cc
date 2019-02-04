@@ -322,9 +322,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (gr_shader_cache_) {
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
     }
-    if (backing_framebuffer_object_ !=
-        gl_surface_->GetBackingFramebufferObject())
-      CreateSkSurfaceForGL();
     sk_surface_->draw(ddl.get());
     gr_context()->flush();
   }
@@ -751,8 +748,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForGL() {
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
 
   GrGLFramebufferInfo framebuffer_info;
-  backing_framebuffer_object_ = gl_surface_->GetBackingFramebufferObject();
-  framebuffer_info.fFBOID = backing_framebuffer_object_;
+  framebuffer_info.fFBOID = gl_surface_->GetBackingFramebufferObject();
   if (supports_alpha_) {
     framebuffer_info.fFormat =
         gl_version_info_->is_es ? GL_BGRA8_EXT : GL_RGBA8;

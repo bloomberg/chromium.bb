@@ -148,6 +148,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   OutputSurfaceClient* client_ = nullptr;
 
+  unsigned int backing_framebuffer_object_ = 0;
+  gfx::Size reshape_surface_size_;
+  float reshape_device_scale_factor_ = 0.f;
+  gfx::ColorSpace reshape_color_space_;
+  bool reshape_has_alpha_ = false;
+  bool reshape_use_stencil_ = false;
+
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
   SkSurfaceCharacterization characterization_;
   base::Optional<SkDeferredDisplayListRecorder> recorder_;

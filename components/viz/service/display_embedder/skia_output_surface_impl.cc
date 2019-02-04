@@ -367,6 +367,12 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     bool has_alpha,
                                     bool use_stencil) {
+  reshape_surface_size_ = size;
+  reshape_device_scale_factor_ = device_scale_factor;
+  reshape_color_space_ = color_space;
+  reshape_has_alpha_ = has_alpha;
+  reshape_use_stencil_ = use_stencil;
+
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (initialize_waitable_event_) {
     initialize_waitable_event_->Wait();
@@ -374,15 +380,23 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
   }
 
   SkSurfaceCharacterization* characterization = nullptr;
-  if (characterization_.isValid()) {
-    // TODO(weiliang): suppoot color space. https://crbug.com/795132
-    characterization_ =
-        characterization_.createResized(size.width(), size.height());
-  } else {
+  // If the render target is changed between GL fbo zero and non-zero, we cannot
+  // recreate SkSurface characterization from the existing characterization. So
+  // we have to request a new SkSurface characterization from
+  // SkiaOutputSurfaceImplOnGpu.
+  backing_framebuffer_object_ =
+      gl_surface_ ? gl_surface_->GetBackingFramebufferObject() : 0;
+  if (!characterization_.isValid() ||
+      (!is_using_vulkan_ &&
+       characterization_.usesGLFBO0() != (backing_framebuffer_object_ == 0))) {
     characterization = &characterization_;
     initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
+  } else {
+    // TODO(weiliang): support color space. https://crbug.com/795132
+    characterization_ =
+        characterization_.createResized(size.width(), size.height());
   }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
@@ -464,6 +478,15 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   }
 
   DCHECK(characterization_.isValid());
+  // The fbo is changed, in that case we need notify SkiaOutputSurfaceImplOnGpu,
+  // so it can recreate SkSurface from the new fbo, and return a updated
+  // SkSurfaceCharacterization if necessary.
+  if (gl_surface_ && backing_framebuffer_object_ !=
+                         gl_surface_->GetBackingFramebufferObject()) {
+    Reshape(reshape_surface_size_, reshape_device_scale_factor_,
+            reshape_color_space_, reshape_has_alpha_, reshape_use_stencil_);
+  }
+
   recorder_.emplace(characterization_);
   if (!show_overdraw_feedback_)
     return recorder_->getCanvas();
@@ -680,10 +703,9 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
 
   if (task_executor_) {
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
-        task_executor_.get(), std::move(gl_surface_),
-        std::move(shared_context_state_), sequence_->GetSequenceId(),
-        did_swap_buffer_complete_callback, buffer_presented_callback,
-        context_lost_callback);
+        task_executor_.get(), gl_surface_, std::move(shared_context_state_),
+        sequence_->GetSequenceId(), did_swap_buffer_complete_callback,
+        buffer_presented_callback, context_lost_callback);
   } else {
     impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
         gpu_service_, surface_handle_, did_swap_buffer_complete_callback,
