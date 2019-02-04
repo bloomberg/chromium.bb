@@ -18,6 +18,7 @@ from chromite.api import service
 from chromite.api.gen import build_api_pb2
 from chromite.api.gen import autotest_pb2
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
@@ -171,12 +172,37 @@ class Router(object):
     if method_options.HasField('implementation_name'):
       method_name = method_options.implementation_name
 
+    # Check the chroot assertion settings before running.
+    service_options = svc.GetOptions().Extensions[self._service_options]
+    self._HandleChrootAssert(service_options, method_options)
+
     # Import the module and get the method.
     method_impl = self._GetMethod(module_name, method_name)
 
     # Successfully located; call and return.
     method_impl(*args)
     return output_msg
+
+  def _HandleChrootAssert(self, service_options, method_options):
+    """Check the chroot assert options and execute assertion as needed.
+
+    Args:
+      service_options (google.protobuf.Message): The service options.
+      method_options (google.protobuf.Message): The method options.
+    """
+    chroot_assert = build_api_pb2.NO_ASSERTION
+    if method_options.HasField('method_chroot_assert'):
+      # Prefer the method option when set.
+      chroot_assert = method_options.method_chroot_assert
+    elif service_options.HasField('service_chroot_assert'):
+      # Fall back to the service option.
+      chroot_assert = service_options.service_chroot_assert
+
+    # Execute appropriate assertion if set.
+    if chroot_assert == build_api_pb2.INSIDE:
+      cros_build_lib.AssertInsideChroot()
+    elif chroot_assert == build_api_pb2.OUTSIDE:
+      cros_build_lib.AssertOutsideChroot()
 
   def _GetMethod(self, module_name, method_name):
     """Get the implementation of the method for the service module.

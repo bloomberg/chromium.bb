@@ -25,19 +25,61 @@ service TestApiService {
   };
 
   // Method that has input and output messages.
-  rpc InputOutputMethod(TestRequestMessage) returns (TestResultMessage) {
-
-  };
+  rpc InputOutputMethod(TestRequestMessage) returns (TestResultMessage);
   // Method with only input message.
-  rpc InputMethod(TestRequestMessage) returns (google.protobuf.Empty) {
-
-  };
+  rpc InputMethod(TestRequestMessage) returns (google.protobuf.Empty);
   // Method with only output message.
-  rpc OutputMethod(google.protobuf.Empty) returns (TestResultMessage) {
-
-  };
+  rpc OutputMethod(google.protobuf.Empty) returns (TestResultMessage);
   // Method with no input or output message.
-  rpc NoIoMethod(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  rpc NoIoMethod(google.protobuf.Empty) returns (google.protobuf.Empty);
+  // Method name override.
+  rpc RenamedMethod(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (method_options) = {
+      implementation_name: 'CorrectName'
+    };
+  }
+}
 
+// Inside chroot service.
+service InsideChrootApiService {
+  // Mocking the method returns means we don't have an implementation of this
+  // module, but we do require it.
+  option (service_options) = {
+    module: "build_api_test",
+    service_chroot_assert: INSIDE,
   };
+
+  // No override of service level inside assertion.
+  rpc InsideServiceInsideMethod(google.protobuf.Empty)
+    returns (google.protobuf.Empty);
+
+  // Override service level inside assertion with outside assertion.
+  rpc InsideServiceOutsideMethod(google.protobuf.Empty)
+    returns (google.protobuf.Empty) {
+    option (method_options) = {
+      method_chroot_assert: OUTSIDE,
+    };
+  }
+}
+
+// Outside chroot service.
+service OutsideChrootApiService {
+  // Mocking the method returns means we don't have an implementation of this
+  // module, but we do require it.
+  option (service_options) = {
+    module: "build_api_test",
+    service_chroot_assert: OUTSIDE,
+  };
+
+  // No override of service level outside assertion.
+  rpc OutsideServiceOutsideMethod(google.protobuf.Empty)
+    returns (google.protobuf.Empty);
+
+  // Override service level outside assertion with inside assertion.
+  rpc OutsideServiceInsideMethod(google.protobuf.Empty)
+    returns (google.protobuf.Empty) {
+    option (method_options) = {
+      method_chroot_assert: INSIDE,
+    };
+  }
 }

@@ -3,6 +3,7 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
@@ -20,10 +21,40 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto2',
   serialized_options=None,
-  serialized_pb=_b('\n\x0f\x62uild_api.proto\x1a google/protobuf/descriptor.proto\"(\n\x16\x42uildApiServiceOptions\x12\x0e\n\x06module\x18\x01 \x02(\t\"4\n\x15\x42uildApiMethodOptions\x12\x1b\n\x13implementation_name\x18\x01 \x01(\t:S\n\x0fservice_options\x12\x1f.google.protobuf.ServiceOptions\x18\xd8\xad\x03 \x01(\x0b\x32\x17.BuildApiServiceOptions:P\n\x0emethod_options\x12\x1e.google.protobuf.MethodOptions\x18\xd8\xad\x03 \x01(\x0b\x32\x16.BuildApiMethodOptions')
+  serialized_pb=_b('\n\x0f\x62uild_api.proto\x1a google/protobuf/descriptor.proto\"Y\n\x16\x42uildApiServiceOptions\x12\x0e\n\x06module\x18\x01 \x02(\t\x12/\n\x15service_chroot_assert\x18\x02 \x01(\x0e\x32\x10.ChrootAssertion\"d\n\x15\x42uildApiMethodOptions\x12\x1b\n\x13implementation_name\x18\x01 \x01(\t\x12.\n\x14method_chroot_assert\x18\x02 \x01(\x0e\x32\x10.ChrootAssertion*<\n\x0f\x43hrootAssertion\x12\x10\n\x0cNO_ASSERTION\x10\x00\x12\n\n\x06INSIDE\x10\x01\x12\x0b\n\x07OUTSIDE\x10\x02:S\n\x0fservice_options\x12\x1f.google.protobuf.ServiceOptions\x18\xd8\xad\x03 \x01(\x0b\x32\x17.BuildApiServiceOptions:P\n\x0emethod_options\x12\x1e.google.protobuf.MethodOptions\x18\xd8\xad\x03 \x01(\x0b\x32\x16.BuildApiMethodOptions')
   ,
   dependencies=[google_dot_protobuf_dot_descriptor__pb2.DESCRIPTOR,])
 
+_CHROOTASSERTION = _descriptor.EnumDescriptor(
+  name='ChrootAssertion',
+  full_name='ChrootAssertion',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='NO_ASSERTION', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='INSIDE', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='OUTSIDE', index=2, number=2,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=246,
+  serialized_end=306,
+)
+_sym_db.RegisterEnumDescriptor(_CHROOTASSERTION)
+
+ChrootAssertion = enum_type_wrapper.EnumTypeWrapper(_CHROOTASSERTION)
+NO_ASSERTION = 0
+INSIDE = 1
+OUTSIDE = 2
 
 SERVICE_OPTIONS_FIELD_NUMBER = 55000
 service_options = _descriptor.FieldDescriptor(
@@ -57,6 +88,13 @@ _BUILDAPISERVICEOPTIONS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='service_chroot_assert', full_name='BuildApiServiceOptions.service_chroot_assert', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -70,7 +108,7 @@ _BUILDAPISERVICEOPTIONS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=53,
-  serialized_end=93,
+  serialized_end=142,
 )
 
 
@@ -88,6 +126,13 @@ _BUILDAPIMETHODOPTIONS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='method_chroot_assert', full_name='BuildApiMethodOptions.method_chroot_assert', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -100,12 +145,15 @@ _BUILDAPIMETHODOPTIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=95,
-  serialized_end=147,
+  serialized_start=144,
+  serialized_end=244,
 )
 
+_BUILDAPISERVICEOPTIONS.fields_by_name['service_chroot_assert'].enum_type = _CHROOTASSERTION
+_BUILDAPIMETHODOPTIONS.fields_by_name['method_chroot_assert'].enum_type = _CHROOTASSERTION
 DESCRIPTOR.message_types_by_name['BuildApiServiceOptions'] = _BUILDAPISERVICEOPTIONS
 DESCRIPTOR.message_types_by_name['BuildApiMethodOptions'] = _BUILDAPIMETHODOPTIONS
+DESCRIPTOR.enum_types_by_name['ChrootAssertion'] = _CHROOTASSERTION
 DESCRIPTOR.extensions_by_name['service_options'] = service_options
 DESCRIPTOR.extensions_by_name['method_options'] = method_options
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
