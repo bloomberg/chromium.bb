@@ -15,10 +15,12 @@
 namespace content {
 
 NavigationPreloadRequest::NavigationPreloadRequest(
+    base::WeakPtr<ServiceWorkerContextClient> owner,
     int fetch_event_id,
     const GURL& url,
     blink::mojom::FetchEventPreloadHandlePtr preload_handle)
-    : fetch_event_id_(fetch_event_id),
+    : owner_(std::move(owner)),
+      fetch_event_id_(fetch_event_id),
       url_(url),
       url_loader_(std::move(preload_handle->url_loader)),
       binding_(this, std::move(preload_handle->url_loader_client_request)) {}
@@ -34,7 +36,7 @@ void NavigationPreloadRequest::OnReceiveResponse(
   WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
                                         report_security_info,
                                         -1 /* request_id */);
-  MaybeReportResponseToClient();
+  MaybeReportResponseToOwner();
 }
 
 void NavigationPreloadRequest::OnReceiveRedirect(
@@ -44,18 +46,15 @@ void NavigationPreloadRequest::OnReceiveRedirect(
   DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
       response_head.headers->response_code()));
 
-  ServiceWorkerContextClient* client =
-      ServiceWorkerContextClient::ThreadSpecificInstance();
-  if (!client)
-    return;
+  CHECK(owner_);
   response_ = std::make_unique<blink::WebURLResponse>();
   WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
                                         false /* report_security_info */,
                                         -1 /* request_id */);
-  client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
+  owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                       mojo::ScopedDataPipeConsumerHandle());
   // This will delete |this|.
-  client->OnNavigationPreloadComplete(
+  owner_->OnNavigationPreloadComplete(
       fetch_event_id_, response_head.response_start,
       response_head.encoded_data_length, 0 /* encoded_body_length */,
       0 /* decoded_body_length */);
@@ -78,7 +77,7 @@ void NavigationPreloadRequest::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(!body_.is_valid());
   body_ = std::move(body);
-  MaybeReportResponseToClient();
+  MaybeReportResponseToOwner();
 }
 
 void NavigationPreloadRequest::OnComplete(
@@ -103,48 +102,38 @@ void NavigationPreloadRequest::OnComplete(
     }
 
     // This will delete |this|.
-    ReportErrorToClient(message, unsanitized_message);
+    ReportErrorToOwner(message, unsanitized_message);
     return;
   }
 
-  ServiceWorkerContextClient* client =
-      ServiceWorkerContextClient::ThreadSpecificInstance();
-  if (!client)
-    return;
+  CHECK(owner_);
   if (response_) {
     // When the response body from the server is empty, OnComplete() is called
     // without OnStartLoadingResponseBody().
     DCHECK(!body_.is_valid());
-    client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
+    owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                         mojo::ScopedDataPipeConsumerHandle());
   }
   // This will delete |this|.
-  client->OnNavigationPreloadComplete(
+  owner_->OnNavigationPreloadComplete(
       fetch_event_id_, status.completion_time, status.encoded_data_length,
       status.encoded_body_length, status.decoded_body_length);
 }
 
-void NavigationPreloadRequest::MaybeReportResponseToClient() {
+void NavigationPreloadRequest::MaybeReportResponseToOwner() {
   if (!response_ || !body_.is_valid())
     return;
-  ServiceWorkerContextClient* client =
-      ServiceWorkerContextClient::ThreadSpecificInstance();
-  if (!client)
-    return;
-
-  client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
+  CHECK(owner_);
+  owner_->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
                                       std::move(body_));
 }
 
-void NavigationPreloadRequest::ReportErrorToClient(
+void NavigationPreloadRequest::ReportErrorToOwner(
     const std::string& message,
     const std::string& unsanitized_message) {
-  ServiceWorkerContextClient* client =
-      ServiceWorkerContextClient::ThreadSpecificInstance();
-  if (!client)
-    return;
+  CHECK(owner_);
   // This will delete |this|.
-  client->OnNavigationPreloadError(
+  owner_->OnNavigationPreloadError(
       fetch_event_id_, std::make_unique<blink::WebServiceWorkerError>(
                            blink::mojom::ServiceWorkerErrorType::kNetwork,
                            blink::WebString::FromUTF8(message),

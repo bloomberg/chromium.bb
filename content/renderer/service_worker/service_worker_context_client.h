@@ -71,10 +71,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient,
       public blink::mojom::ServiceWorker {
  public:
-  // Returns a thread-specific client instance.  This does NOT create a
-  // new instance.
-  static ServiceWorkerContextClient* ThreadSpecificInstance();
-
   // Called on the main thread.
   // - |is_starting_installed_worker| is true if the script is already installed
   //   and will be streamed from the browser process.
@@ -367,7 +363,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 
-  static void ResetThreadSpecificInstanceForTesting();
   void SetTimeoutTimerForTesting(
       std::unique_ptr<ServiceWorkerTimeoutTimer> timeout_timer);
 

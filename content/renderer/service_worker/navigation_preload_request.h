@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -25,7 +26,9 @@ namespace content {
 // ServiceWorkerContextClient.
 class NavigationPreloadRequest final : public network::mojom::URLLoaderClient {
  public:
+  // |owner| must outlive |this|.
   NavigationPreloadRequest(
+      base::WeakPtr<ServiceWorkerContextClient> owner,
       int fetch_event_id,
       const GURL& url,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle);
@@ -47,9 +50,14 @@ class NavigationPreloadRequest final : public network::mojom::URLLoaderClient {
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
  private:
-  void MaybeReportResponseToClient();
-  void ReportErrorToClient(const std::string& message,
-                           const std::string& unsanitized_message);
+  void MaybeReportResponseToOwner();
+  void ReportErrorToOwner(const std::string& message,
+                          const std::string& unsanitized_message);
+
+  // TODO(crbug.com/907311): This is just a WeakPtr to do a CHECK that the owner
+  // really outlives this, as we've been getting related crashes. Change this to
+  // a raw pointer when the bug is fixed.
+  base::WeakPtr<ServiceWorkerContextClient> owner_;
 
   const int fetch_event_id_;
   const GURL url_;
