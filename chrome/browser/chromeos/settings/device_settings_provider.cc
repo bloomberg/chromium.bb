@@ -139,8 +139,10 @@ void SetJsonDeviceSetting(const std::string& setting_name,
   std::string error;
   std::unique_ptr<base::Value> decoded_json =
       policy::DecodeJsonStringAndNormalize(json_string, policy_name, &error);
-  if (decoded_json)
-    pref_value_map->SetValue(setting_name, std::move(decoded_json));
+  if (decoded_json) {
+    pref_value_map->SetValue(
+        setting_name, base::Value::FromUniquePtrValue(std::move(decoded_json)));
+  }
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -200,73 +202,71 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policy.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
       policy.ephemeral_users_enabled().ephemeral_users_enabled());
 
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
+  std::vector<base::Value> list;
   const em::UserWhitelistProto& whitelist_proto = policy.user_whitelist();
   const RepeatedPtrField<std::string>& whitelist =
       whitelist_proto.user_whitelist();
-  for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
-       it != whitelist.end(); ++it) {
-    list->AppendString(*it);
+  for (const std::string& value : whitelist) {
+    list.push_back(base::Value(value));
   }
-  new_values_cache->SetValue(kAccountsPrefUsers, std::move(list));
+  new_values_cache->SetValue(kAccountsPrefUsers, base::Value(std::move(list)));
 
-  std::unique_ptr<base::ListValue> account_list(new base::ListValue());
+  std::vector<base::Value> account_list;
   const em::DeviceLocalAccountsProto device_local_accounts_proto =
       policy.device_local_accounts();
   const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
       device_local_accounts_proto.account();
   RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
-  for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-    std::unique_ptr<base::DictionaryValue> entry_dict(
-        new base::DictionaryValue());
-    if (entry->has_type()) {
-      if (entry->has_account_id()) {
-        entry_dict->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
-                           base::Value(entry->account_id()));
+  for (const em::DeviceLocalAccountInfoProto& entry : accounts) {
+    base::Value entry_dict(base::Value::Type::DICTIONARY);
+    if (entry.has_type()) {
+      if (entry.has_account_id()) {
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
+                          base::Value(entry.account_id()));
       }
-      entry_dict->SetKey(kAccountsPrefDeviceLocalAccountsKeyType,
-                         base::Value(entry->type()));
-      if (entry->kiosk_app().has_app_id()) {
-        entry_dict->SetKey(kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-                           base::Value(entry->kiosk_app().app_id()));
+      entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyType,
+                        base::Value(entry.type()));
+      if (entry.kiosk_app().has_app_id()) {
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+                          base::Value(entry.kiosk_app().app_id()));
       }
-      if (entry->kiosk_app().has_update_url()) {
-        entry_dict->SetKey(kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
-                           base::Value(entry->kiosk_app().update_url()));
+      if (entry.kiosk_app().has_update_url()) {
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
+                          base::Value(entry.kiosk_app().update_url()));
       }
-      if (entry->android_kiosk_app().has_package_name()) {
-        entry_dict->SetKey(
+      if (entry.android_kiosk_app().has_package_name()) {
+        entry_dict.SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
-            base::Value(entry->android_kiosk_app().package_name()));
+            base::Value(entry.android_kiosk_app().package_name()));
       }
-      if (entry->android_kiosk_app().has_class_name()) {
-        entry_dict->SetKey(
+      if (entry.android_kiosk_app().has_class_name()) {
+        entry_dict.SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
-            base::Value(entry->android_kiosk_app().class_name()));
+            base::Value(entry.android_kiosk_app().class_name()));
       }
-      if (entry->android_kiosk_app().has_action()) {
-        entry_dict->SetKey(
+      if (entry.android_kiosk_app().has_action()) {
+        entry_dict.SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
-            base::Value(entry->android_kiosk_app().action()));
+            base::Value(entry.android_kiosk_app().action()));
       }
-      if (entry->android_kiosk_app().has_display_name()) {
-        entry_dict->SetKey(
+      if (entry.android_kiosk_app().has_display_name()) {
+        entry_dict.SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
-            base::Value(entry->android_kiosk_app().display_name()));
+            base::Value(entry.android_kiosk_app().display_name()));
       }
-    } else if (entry->has_deprecated_public_session_id()) {
+    } else if (entry.has_deprecated_public_session_id()) {
       // Deprecated public session specification.
-      entry_dict->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
-                         base::Value(entry->deprecated_public_session_id()));
-      entry_dict->SetKey(
+      entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
+                        base::Value(entry.deprecated_public_session_id()));
+      entry_dict.SetKey(
           kAccountsPrefDeviceLocalAccountsKeyType,
           base::Value(
               em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION));
     }
-    account_list->Append(std::move(entry_dict));
+    account_list.push_back(std::move(entry_dict));
   }
   new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts,
-                             std::move(account_list));
+                             base::Value(std::move(account_list)));
 
   if (policy.has_device_local_accounts()) {
     if (policy.device_local_accounts().has_auto_login_id()) {
@@ -289,14 +289,13 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policy.device_local_accounts().prompt_for_network_when_offline());
 
   if (policy.has_start_up_flags()) {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
+    std::vector<base::Value> list;
     const em::StartUpFlagsProto& flags_proto = policy.start_up_flags();
     const RepeatedPtrField<std::string>& flags = flags_proto.flags();
-    for (RepeatedPtrField<std::string>::const_iterator it = flags.begin();
-         it != flags.end(); ++it) {
-      list->AppendString(*it);
+    for (const std::string& entry : flags) {
+      list.push_back(base::Value(entry));
     }
-    new_values_cache->SetValue(kStartUpFlags, std::move(list));
+    new_values_cache->SetValue(kStartUpFlags, base::Value(std::move(list)));
   }
 
   if (policy.has_saml_settings()) {
@@ -328,44 +327,46 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 
   if (policy.has_login_video_capture_allowed_urls()) {
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
+    std::vector<base::Value> list;
     const em::LoginVideoCaptureAllowedUrlsProto&
         login_video_capture_allowed_urls_proto =
             policy.login_video_capture_allowed_urls();
     for (const auto& value : login_video_capture_allowed_urls_proto.urls()) {
-      list->AppendString(value);
+      list.push_back(base::Value(value));
     }
-    new_values_cache->SetValue(kLoginVideoCaptureAllowedUrls, std::move(list));
+    new_values_cache->SetValue(kLoginVideoCaptureAllowedUrls,
+                               base::Value(std::move(list)));
   }
 
   if (policy.has_device_login_screen_app_install_list()) {
-    std::unique_ptr<base::ListValue> apps(new base::ListValue);
+    std::vector<base::Value> apps;
     const em::DeviceLoginScreenAppInstallListProto& proto(
         policy.device_login_screen_app_install_list());
     for (const auto& app : proto.device_login_screen_app_install_list())
-      apps->AppendString(app);
+      apps.push_back(base::Value(app));
     new_values_cache->SetValue(kDeviceLoginScreenAppInstallList,
-                               std::move(apps));
+                               base::Value(std::move(apps)));
   }
 
   if (policy.has_login_screen_locales()) {
-    std::unique_ptr<base::ListValue> locales(new base::ListValue);
+    std::vector<base::Value> locales;
     const em::LoginScreenLocalesProto& login_screen_locales(
         policy.login_screen_locales());
     for (const auto& locale : login_screen_locales.login_screen_locales())
-      locales->AppendString(locale);
-    new_values_cache->SetValue(kDeviceLoginScreenLocales, std::move(locales));
+      locales.push_back(base::Value(locale));
+    new_values_cache->SetValue(kDeviceLoginScreenLocales,
+                               base::Value(std::move(locales)));
   }
 
   if (policy.has_login_screen_input_methods()) {
-    std::unique_ptr<base::ListValue> input_methods(new base::ListValue);
+    std::vector<base::Value> input_methods;
     const em::LoginScreenInputMethodsProto& login_screen_input_methods(
         policy.login_screen_input_methods());
     for (const auto& input_method :
          login_screen_input_methods.login_screen_input_methods())
-      input_methods->AppendString(input_method);
+      input_methods.push_back(base::Value(input_method));
     new_values_cache->SetValue(kDeviceLoginScreenInputMethods,
-                               std::move(input_methods));
+                               base::Value(std::move(input_methods)));
   }
 
   if (policy.has_saml_login_authentication_type() &&
@@ -406,14 +407,13 @@ void DecodeAutoUpdatePolicies(
 
     const RepeatedField<int>& allowed_connection_types =
         au_settings_proto.allowed_connection_types();
-    std::unique_ptr<base::ListValue> list(new base::ListValue());
-    for (RepeatedField<int>::const_iterator i(allowed_connection_types.begin());
-         i != allowed_connection_types.end(); ++i) {
-      list->AppendInteger(*i);
+    std::vector<base::Value> list;
+    for (int value : allowed_connection_types) {
+      list.push_back(base::Value(value));
     }
-    if (!list->empty()) {
+    if (!list.empty()) {
       new_values_cache->SetValue(kAllowedConnectionTypesForUpdate,
-                                 std::move(list));
+                                 base::Value(std::move(list)));
     }
 
     if (au_settings_proto.has_disallowed_time_intervals()) {
@@ -611,7 +611,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     // Set empty value if policy is missing, to make sure that webui
     // will receive setting update.
     new_values_cache->SetValue(kDeviceDisplayResolution,
-                               std::make_unique<base::DictionaryValue>());
+                               base::Value(base::Value::Type::DICTIONARY));
   }
 
   if (policy.has_allow_bluetooth() &&
@@ -633,13 +633,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     auto off_hours_policy = policy::off_hours::ConvertOffHoursProtoToValue(
         policy.device_off_hours());
     if (off_hours_policy)
-      new_values_cache->SetValue(kDeviceOffHours, std::move(off_hours_policy));
+      new_values_cache->SetValue(
+          kDeviceOffHours,
+          base::Value::FromUniquePtrValue(std::move(off_hours_policy)));
   }
 
   if (policy.has_tpm_firmware_update_settings()) {
     new_values_cache->SetValue(kTPMFirmwareUpdateSettings,
-                               tpm_firmware_update::DecodeSettingsProto(
-                                   policy.tpm_firmware_update_settings()));
+                               base::Value::FromUniquePtrValue(
+                                   tpm_firmware_update::DecodeSettingsProto(
+                                       policy.tpm_firmware_update_settings())));
   }
 
   if (policy.has_minimum_required_version()) {
@@ -653,8 +656,8 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_cast_receiver_name()) {
     const em::CastReceiverNameProto& container(policy.cast_receiver_name());
     if (container.has_name()) {
-      new_values_cache->SetValue(
-          kCastReceiverName, std::make_unique<base::Value>(container.name()));
+      new_values_cache->SetValue(kCastReceiverName,
+                                 base::Value(container.name()));
     }
   }
 
@@ -664,7 +667,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (container.has_unaffiliated_arc_allowed()) {
       new_values_cache->SetValue(
           kUnaffiliatedArcAllowed,
-          std::make_unique<base::Value>(container.unaffiliated_arc_allowed()));
+          base::Value(container.unaffiliated_arc_allowed()));
     }
   }
 
@@ -695,17 +698,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (container.has_device_unaffiliated_crostini_allowed()) {
       new_values_cache->SetValue(
           kDeviceUnaffiliatedCrostiniAllowed,
-          std::make_unique<base::Value>(
-              container.device_unaffiliated_crostini_allowed()));
+          base::Value(container.device_unaffiliated_crostini_allowed()));
     }
   }
 
   if (policy.has_plugin_vm_allowed()) {
     const em::PluginVmAllowedProto& container(policy.plugin_vm_allowed());
     if (container.has_plugin_vm_allowed()) {
-      new_values_cache->SetValue(
-          kPluginVmAllowed,
-          std::make_unique<base::Value>(container.plugin_vm_allowed()));
+      new_values_cache->SetValue(kPluginVmAllowed,
+                                 base::Value(container.plugin_vm_allowed()));
     }
   }
 
@@ -714,8 +715,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.plugin_vm_license_key());
     if (container.has_plugin_vm_license_key()) {
       new_values_cache->SetValue(
-          kPluginVmLicenseKey,
-          std::make_unique<base::Value>(container.plugin_vm_license_key()));
+          kPluginVmLicenseKey, base::Value(container.plugin_vm_license_key()));
     }
   }
 
