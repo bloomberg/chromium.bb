@@ -366,8 +366,7 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
     const bool should_show_sync_paused_ui =
         AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
         sync_ui_util::GetMessagesForAvatarSyncError(
-            profile_, IdentityManagerFactory::GetForProfile(profile_), &unused,
-            &unused) == sync_ui_util::AUTH_ERROR;
+            profile_, &unused, &unused) == sync_ui_util::AUTH_ERROR;
     return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
   }
 #endif  // !defined(OS_CHROMEOS)

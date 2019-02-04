@@ -911,12 +911,9 @@ views::View* ProfileChooserView::CreateProfileChooserView(
 views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
     const AvatarMenu::Item& avatar_item) {
   int content_string_id, button_string_id;
-  auto* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser_->profile());
   sync_ui_util::AvatarSyncErrorType error =
       sync_ui_util::GetMessagesForAvatarSyncError(
-          browser_->profile(), identity_manager, &content_string_id,
-          &button_string_id);
+          browser_->profile(), &content_string_id, &button_string_id);
   if (error == sync_ui_util::NO_SYNC_ERROR)
     return nullptr;
 

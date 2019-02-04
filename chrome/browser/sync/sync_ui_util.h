@@ -64,7 +64,6 @@ MessageType GetStatusLabels(Profile* profile,
 // exposed to the user through the titlebar avatar button.
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
-    identity::IdentityManager* identity_manager,
     int* content_string_id,
     int* button_string_id);
 #endif
