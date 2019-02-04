@@ -237,7 +237,8 @@ void MixerInput::VolumeScaleAccumulate(const float* src,
                                        int frames,
                                        float* dest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  slew_volume_.ProcessFMAC(!volume_applied_, src, frames, 1, dest);
+  slew_volume_.ProcessFMAC(volume_applied_ /* repeat_transition */, src, frames,
+                           1, dest);
   volume_applied_ = true;
 }
 

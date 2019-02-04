@@ -5,6 +5,7 @@
 #include "chromecast/media/base/slew_volume.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 #include "base/logging.h"
@@ -78,7 +79,6 @@ void SlewVolume::SetSampleRate(int sample_rate) {
   SetVolume(volume_scale_);
 }
 
-// Slew rate should be volume_to_slew / slew_time / sample_rate
 void SlewVolume::SetVolume(double volume_scale) {
   volume_scale_ = volume_scale;
   if (interrupted_) {
@@ -86,13 +86,12 @@ void SlewVolume::SetVolume(double volume_scale) {
     last_starting_volume_ = current_volume_;
   }
 
-  if (volume_scale_ > current_volume_) {
-    max_slew_per_sample_ = (volume_scale_ - current_volume_) * 1000.0 /
-                           (max_slew_time_ms_ * sample_rate_);
-  } else {
-    max_slew_per_sample_ = (current_volume_ - volume_scale_) * 1000.0 /
-                           (max_slew_time_ms_ * sample_rate_);
-  }
+  // Slew rate should be volume_to_slew / slew_time / sample_rate, but use a
+  // minimum volume_to_slew of 0.1 to avoid very small slew per sample.
+  double volume_diff =
+      std::max(0.1, std::fabs(volume_scale_ - current_volume_));
+  max_slew_per_sample_ =
+      volume_diff * 1000.0 / (max_slew_time_ms_ * sample_rate_);
 }
 
 float SlewVolume::LastBufferMaxMultiplier() {
