@@ -24,3 +24,9 @@ class TraceTestExpectations(GpuTestExpectations):
     # Skip on platforms where DirectComposition isn't supported
     self.Skip('VideoTraceTest_*',
         ['mac', 'linux', 'android', 'chromeos', 'win7'], bug=867136)
+
+    self.Flaky('VideoTraceTest_DirectComposition_ComplexOverlays',
+        ['win10'], bug=928006)
+
+    self.Flaky('VideoTraceTest_DirectComposition_Nonroot',
+        ['win10'], bug=928166)
