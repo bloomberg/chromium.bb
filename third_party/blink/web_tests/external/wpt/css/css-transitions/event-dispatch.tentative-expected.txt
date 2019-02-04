@@ -1,0 +1,29 @@
+This is a testharness.js-based test.
+FAIL Idle -> Pending or Before assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Idle -> Before assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Idle or Pending -> Active assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Idle or Pending -> After assert_equals: Expected transitionrun event, but got transitionend event instead expected "transitionrun" but got "transitionend"
+FAIL Before -> Idle (display: none) assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Before -> Idle (Animation.timeline = null) assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Before -> Active assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Before -> After assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Active -> Idle, no delay (display: none) assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> Idle, no delay (Animation.timeline = null) assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> Idle, with positive delay (display: none) assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> Idle, with positive delay (Animation.timeline = null) assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> Idle, with negative delay (display: none) assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> Idle, with negative delay (Animation.timeline = null) assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> Before assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Active -> After assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL After -> Before assert_equals: Expected transitionrun event, but got transitionend event instead expected "transitionrun" but got "transitionend"
+FAIL After -> Active assert_equals: Expected transitionrun event, but got transitionend event instead expected "transitionrun" but got "transitionend"
+FAIL Calculating the interval start and end time with negative start delay. assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Calculating the interval start and end time with negative end delay. assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Call Animation.cancel after canceling transition. assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Restart transition after canceling transition immediately assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Call Animation.cancel after restarting transition immediately assert_true: Timed out waiting for transitionrun expected true got false
+FAIL Set timeline and play transition after clear the timeline assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Set null target effect after canceling the transition assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+FAIL Cancel the transition after clearing the target effect assert_true: Timed out waiting for transitionrun, transitionstart expected true got false
+Harness: the test ran to completion.
+
