@@ -802,6 +802,8 @@ void PaintArtifactCompositor::Update(
   if (!NeedsUpdate())
     return;
 
+  TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
+
   // When using BlinkGenPropertyTrees, the compositor accepts a list of layers
   // and property trees instead of building property trees. This DCHECK ensures
   // we have not forgotten to set |use_layer_lists|.
