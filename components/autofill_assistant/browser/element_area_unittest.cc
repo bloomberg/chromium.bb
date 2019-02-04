@@ -89,9 +89,7 @@ class ElementAreaTest : public testing::Test, public ScriptExecutorDelegate {
     element_area_.SetFromProto(area);
   }
 
-  void OnUpdate(bool success, const std::vector<RectF>& area) {
-    highlighted_area_ = area;
-  }
+  void OnUpdate(const std::vector<RectF>& area) { highlighted_area_ = area; }
 
   // scoped_task_environment_ must be first to guarantee other field
   // creation run in that environment.

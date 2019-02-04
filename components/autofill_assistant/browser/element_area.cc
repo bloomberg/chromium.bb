@@ -193,7 +193,7 @@ void ElementArea::ReportUpdate() {
     rect.top = 0.0;
     rect.right = 1.0;
     rect.bottom = 1.0;
-    on_update_.Run(true, areas);
+    on_update_.Run(areas);
     return;
   }
 
@@ -211,7 +211,7 @@ void ElementArea::ReportUpdate() {
       areas.emplace_back(rect);
     }
   }
-  on_update_.Run(!rectangles_.empty(), areas);
+  on_update_.Run(areas);
 }
 
 }  // namespace autofill_assistant

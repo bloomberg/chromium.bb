@@ -63,14 +63,12 @@ class UiController {
   // Hide the progress bar.
   virtual void HideProgressBar() = 0;
 
-  // Updates the area of the visible viewport that is accessible.
-  //
-  // If |enabled| is false, the visible viewport is accessible.
+  // Updates the area of the visible viewport that is accessible when the
+  // overlay state is OverlayState::PARTIAL.
   //
   // |areas| is expressed in coordinates relative to the width or height of the
   // visible viewport, as a number between 0 and 1. It can be empty.
-  virtual void UpdateTouchableArea(bool enabled,
-                                   const std::vector<RectF>& areas) = 0;
+  virtual void SetTouchableArea(const std::vector<RectF>& areas) = 0;
 
  protected:
   UiController() = default;

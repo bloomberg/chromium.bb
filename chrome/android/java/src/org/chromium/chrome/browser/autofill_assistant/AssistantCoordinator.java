@@ -111,7 +111,7 @@ class AssistantCoordinator {
         mBottomBarCoordinator.expand();
 
         // Hide everything except header.
-        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.hidden());
+        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.HIDDEN);
         mModel.getDetailsModel().clearDetails();
         mModel.getPaymentRequestModel().set(AssistantPaymentRequestModel.OPTIONS, null);
         mModel.getCarouselModel().clearChips();
@@ -142,7 +142,7 @@ class AssistantCoordinator {
         mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
-        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.full());
+        mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
         // Disable swiping for the onboarding because it interferes with letting the user scroll
         // the onboarding contents.
@@ -161,7 +161,7 @@ class AssistantCoordinator {
 
                     // Hide overlay.
                     mModel.getOverlayModel().set(
-                            AssistantOverlayModel.STATE, AssistantOverlayState.hidden());
+                            AssistantOverlayModel.STATE, AssistantOverlayState.HIDDEN);
 
                     onAccept.run();
                 });

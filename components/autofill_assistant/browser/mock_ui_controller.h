@@ -37,8 +37,7 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
   MOCK_METHOD1(ShowProgressBar, void(int progress));
   MOCK_METHOD0(HideProgressBar, void());
-  MOCK_METHOD2(UpdateTouchableArea,
-               void(bool enabled, const std::vector<RectF>& areas));
+  MOCK_METHOD1(SetTouchableArea, void(const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(Terminate, bool());
   MOCK_METHOD0(ExpandBottomSheet, void());
   MOCK_CONST_METHOD0(GetDropOutReason, Metrics::DropOutReason());

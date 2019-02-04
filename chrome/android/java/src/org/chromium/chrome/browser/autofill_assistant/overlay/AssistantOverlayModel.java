@@ -18,34 +18,31 @@ import java.util.List;
  */
 @JNINamespace("autofill_assistant")
 public class AssistantOverlayModel extends PropertyModel {
-    public static final WritableObjectPropertyKey<AssistantOverlayState> STATE =
+    public static final WritableIntPropertyKey STATE = new WritableIntPropertyKey();
+
+    public static final WritableObjectPropertyKey<List<RectF>> TOUCHABLE_AREA =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<AssistantOverlayDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
     public AssistantOverlayModel() {
-        super(STATE, DELEGATE);
+        super(STATE, TOUCHABLE_AREA, DELEGATE);
     }
 
     @CalledByNative
-    private void setHidden() {
-        set(STATE, AssistantOverlayState.hidden());
+    private void setState(@AssistantOverlayState int state) {
+        set(STATE, state);
     }
 
     @CalledByNative
-    private void setFull() {
-        set(STATE, AssistantOverlayState.full());
-    }
-
-    @CalledByNative
-    private void setPartial(float[] coords) {
+    private void setTouchableArea(float[] coords) {
         List<RectF> boxes = new ArrayList<>();
         for (int i = 0; i < coords.length; i += 4) {
             boxes.add(new RectF(/* left= */ coords[i], /* top= */ coords[i + 1],
                     /* right= */ coords[i + 2], /* bottom= */ coords[i + 3]));
         }
-        set(STATE, AssistantOverlayState.partial(boxes));
+        set(TOUCHABLE_AREA, boxes);
     }
 
     @CalledByNative

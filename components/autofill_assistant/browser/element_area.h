@@ -57,11 +57,10 @@ class ElementArea {
   // Defines a callback that'll be run every time the set of element coordinates
   // changes.
   //
-  // The first argument is true if there are any elements in the area. The
-  // second reports the areas that corresponds to currently known elements,
-  // which might be empty.
+  // The argument reports the areas that corresponds to currently known
+  // elements, which might be empty.
   void SetOnUpdate(
-      base::RepeatingCallback<void(bool, const std::vector<RectF>& areas)> cb) {
+      base::RepeatingCallback<void(const std::vector<RectF>& areas)> cb) {
     on_update_ = cb;
   }
 
@@ -114,8 +113,7 @@ class ElementArea {
   // If true, regular updates are currently scheduled.
   bool scheduled_update_;
 
-  base::RepeatingCallback<void(bool, const std::vector<RectF>& areas)>
-      on_update_;
+  base::RepeatingCallback<void(const std::vector<RectF>& areas)> on_update_;
 
   base::WeakPtrFactory<ElementArea> weak_ptr_factory_;
 
