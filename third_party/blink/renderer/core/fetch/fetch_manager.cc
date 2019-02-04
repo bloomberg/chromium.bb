@@ -111,7 +111,9 @@ bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
   return !value.IsEmpty();
 }
 
-class SRIBytesConsumer final : public BytesConsumer {
+// A BytesConsumer implementation that acts as a place holder. The actual
+// BytesConsumer can be provided later by calling "Update()".
+class PlaceHolderBytesConsumer final : public BytesConsumer {
  public:
   // BytesConsumer implementation
   Result BeginRead(const char** buffer, size_t* available) override {
@@ -165,7 +167,7 @@ class SRIBytesConsumer final : public BytesConsumer {
     // We must not be in the errored state until we get updated.
     return underlying_->GetError();
   }
-  String DebugName() const override { return "SRIBytesConsumer"; }
+  String DebugName() const override { return "PlaceHolderBytesConsumer"; }
 
   // This function can be called at most once.
   void Update(BytesConsumer* consumer) {
@@ -238,22 +240,18 @@ class FetchManager::Loader final
   void Abort();
 
   class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>,
-                            public WebDataConsumerHandle::Client {
+                            public BytesConsumer::Client {
+    USING_GARBAGE_COLLECTED_MIXIN(SRIVerifier);
+
    public:
-    // Promptly clear m_handle and m_reader.
-    EAGERLY_FINALIZE();
-    // SRIVerifier takes ownership of |handle| and |response|.
-    // |updater| must be garbage collected. The other arguments
-    // all must have the lifetime of the give loader.
-    SRIVerifier(std::unique_ptr<WebDataConsumerHandle> handle,
-                SRIBytesConsumer* updater,
+    SRIVerifier(BytesConsumer* body,
+                PlaceHolderBytesConsumer* updater,
                 Response* response,
                 FetchManager::Loader* loader,
                 String integrity_metadata,
                 const KURL& url,
-                FetchResponseType response_type,
-                scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-        : handle_(std::move(handle)),
+                FetchResponseType response_type)
+        : body_(body),
           updater_(updater),
           response_(response),
           loader_(loader),
@@ -261,37 +259,34 @@ class FetchManager::Loader final
           url_(url),
           response_type_(response_type),
           finished_(false) {
-      reader_ = handle_->ObtainReader(this, std::move(task_runner));
+      body_->SetClient(this);
+
+      OnStateChange();
     }
 
-    void Cancel() {
-      reader_ = nullptr;
-      handle_ = nullptr;
-    }
+    void Cancel() { body_->Cancel(); }
 
-    void DidGetReadable() override {
-      DCHECK(reader_);
+    void OnStateChange() override {
+      using Result = BytesConsumer::Result;
+
       DCHECK(loader_);
       DCHECK(response_);
 
-      WebDataConsumerHandle::Result r = WebDataConsumerHandle::kOk;
-      while (r == WebDataConsumerHandle::kOk) {
-        const void* buffer;
-        size_t size;
-        r = reader_->BeginRead(&buffer, WebDataConsumerHandle::kFlagNone,
-                               &size);
-        if (r == WebDataConsumerHandle::kOk) {
-          buffer_.Append(static_cast<const char*>(buffer),
-                         SafeCast<wtf_size_t>(size));
-          reader_->EndRead(size);
+      Result result = Result::kOk;
+      while (result == Result::kOk) {
+        const char* buffer;
+        size_t available;
+        result = body_->BeginRead(&buffer, &available);
+        if (result == Result::kOk) {
+          buffer_.Append(buffer, SafeCast<wtf_size_t>(available));
+          result = body_->EndRead(available);
         }
+        if (result == Result::kShouldWait)
+          return;
       }
-      if (r == WebDataConsumerHandle::kShouldWait)
-        return;
-      String error_message =
-          "Unknown error occurred while trying to verify integrity.";
+
       finished_ = true;
-      if (r == WebDataConsumerHandle::kDone) {
+      if (result == Result::kDone) {
         SubresourceIntegrity::ReportInfo report_info;
         bool check_result = true;
         if (response_type_ != FetchResponseType::kBasic &&
@@ -328,22 +323,27 @@ class FetchManager::Loader final
           return;
         }
       }
+      String error_message =
+          "Unknown error occurred while trying to verify integrity.";
       updater_->Update(
           BytesConsumer::CreateErrored(BytesConsumer::Error(error_message)));
       loader_->PerformNetworkError(error_message);
     }
 
+    String DebugName() const override { return "SRIVerifier"; }
+
     bool IsFinished() const { return finished_; }
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
+      visitor->Trace(body_);
       visitor->Trace(updater_);
       visitor->Trace(response_);
       visitor->Trace(loader_);
     }
 
    private:
-    std::unique_ptr<WebDataConsumerHandle> handle_;
-    Member<SRIBytesConsumer> updater_;
+    Member<BytesConsumer> body_;
+    Member<PlaceHolderBytesConsumer> updater_;
     // We cannot store a Response because its JS wrapper can be collected.
     // TODO(yhirano): Fix this.
     Member<Response> response_;
@@ -351,7 +351,6 @@ class FetchManager::Loader final
     String integrity_metadata_;
     KURL url_;
     const FetchResponseType response_type_;
-    std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
     Vector<char> buffer_;
     bool finished_;
   };
@@ -533,7 +532,7 @@ void FetchManager::Loader::DidReceiveResponse(
   }
 
   FetchResponseData* response_data = nullptr;
-  SRIBytesConsumer* sri_consumer = nullptr;
+  PlaceHolderBytesConsumer* sri_consumer = nullptr;
   if (fetch_request_data_->Integrity().IsEmpty()) {
     BytesConsumer* bytes_consumer =
         MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
@@ -553,7 +552,7 @@ void FetchManager::Loader::DidReceiveResponse(
         MakeGarbageCollected<BodyStreamBuffer>(script_state, bytes_consumer,
                                                signal_));
   } else {
-    sri_consumer = MakeGarbageCollected<SRIBytesConsumer>();
+    sri_consumer = MakeGarbageCollected<PlaceHolderBytesConsumer>();
     response_data = FetchResponseData::CreateWithBuffer(
         MakeGarbageCollected<BodyStreamBuffer>(script_state, sri_consumer,
                                                signal_));
@@ -631,10 +630,11 @@ void FetchManager::Loader::DidReceiveResponse(
   } else {
     DCHECK(!integrity_verifier_);
     integrity_verifier_ = MakeGarbageCollected<SRIVerifier>(
-        std::move(handle), sri_consumer, r, this,
-        fetch_request_data_->Integrity(), response.CurrentRequestUrl(),
-        r->GetResponse()->GetType(),
-        resolver_->GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
+        MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
+            GetExecutionContext()->GetTaskRunner(TaskType::kNetworking),
+            std::move(handle)),
+        sri_consumer, r, this, fetch_request_data_->Integrity(),
+        response.CurrentRequestUrl(), r->GetResponse()->GetType());
   }
 }
 
