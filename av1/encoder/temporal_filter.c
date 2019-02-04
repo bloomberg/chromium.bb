@@ -61,7 +61,9 @@ static void temporal_filter_predictors_mb_c(
   }
 
   if (use_32x32) {
-    const MV mv = { mv_row, mv_col };
+    assert(mv_row >= INT16_MIN && mv_row <= INT16_MAX && mv_col >= INT16_MIN &&
+           mv_col <= INT16_MAX);
+    const MV mv = { (int16_t)mv_row, (int16_t)mv_col };
 
     av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], BW, &mv, scale, BW,
                               BH, &conv_params, interp_filters, &warp_types, x,
