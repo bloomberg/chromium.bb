@@ -99,9 +99,9 @@ class GLCopyTexImage2DWorkaroundTest : public testing::TestWithParam<GLenum> {
   GLManager gl_;
 };
 
-INSTANTIATE_TEST_CASE_P(GLCopyTexImage2DWorkaroundTestWithParam,
-                        GLCopyTexImage2DWorkaroundTest,
-                        ::testing::Values(GL_RGBA));
+INSTANTIATE_TEST_SUITE_P(GLCopyTexImage2DWorkaroundTestWithParam,
+                         GLCopyTexImage2DWorkaroundTest,
+                         ::testing::Values(GL_RGBA));
 
 TEST_P(GLCopyTexImage2DWorkaroundTest, UseIntermediaryTexture) {
   int width = 1;

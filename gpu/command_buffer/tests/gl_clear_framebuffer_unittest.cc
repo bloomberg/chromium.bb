@@ -112,9 +112,9 @@ void GLClearFramebufferTest::DrawQuad() {
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-INSTANTIATE_TEST_CASE_P(GLClearFramebufferTestWithParam,
-                        GLClearFramebufferTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(GLClearFramebufferTestWithParam,
+                         GLClearFramebufferTest,
+                         ::testing::Values(true, false));
 
 TEST_P(GLClearFramebufferTest, ClearColor) {
   if (!IsApplicable()) {

@@ -684,12 +684,12 @@ TEST_P(EXTBlendFuncExtendedES3DrawTest, ES3ConflictsArray) {
   EXPECT_TRUE(LinkProgram());
 }
 
-INSTANTIATE_TEST_CASE_P(TranslatorVariants,
-                        EXTBlendFuncExtendedDrawTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(TranslatorVariants,
+                         EXTBlendFuncExtendedDrawTest,
+                         ::testing::Bool());
 
-INSTANTIATE_TEST_CASE_P(TranslatorVariants,
-                        EXTBlendFuncExtendedES3DrawTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(TranslatorVariants,
+                         EXTBlendFuncExtendedES3DrawTest,
+                         ::testing::Bool());
 
 }  // namespace gpu

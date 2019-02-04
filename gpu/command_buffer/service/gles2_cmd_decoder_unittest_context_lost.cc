@@ -96,7 +96,7 @@ TEST_P(GLES2DecoderDrawOOMTest, ContextLostReasonWhenStatusIsUnknown) {
   EXPECT_EQ(error::kUnknown, GetContextLostReason());
 }
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDrawOOMTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderDrawOOMTest, ::testing::Bool());
 
 class GLES2DecoderLostContextTest : public GLES2DecoderManualInitTest {
  protected:
@@ -339,9 +339,9 @@ TEST_P(GLES2DecoderLostContextTest, LoseGroupFromRobustness) {
   ClearCurrentDecoderError();
 }
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderLostContextTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderLostContextTest,
+                         ::testing::Bool());
 
 }  // namespace gles2
 }  // namespace gpu

@@ -56,10 +56,10 @@ class RasterDecoderTest : public RasterDecoderTestBase {
   RasterDecoderTest() = default;
 };
 
-INSTANTIATE_TEST_CASE_P(Service, RasterDecoderTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(Service,
-                        RasterDecoderManualInitTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, RasterDecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         RasterDecoderManualInitTest,
+                         ::testing::Bool());
 
 const GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
 

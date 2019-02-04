@@ -65,9 +65,9 @@ class GLCubeMapTextureTest : public testing::TestWithParam<GLenum> {
   GLuint framebuffer_id_;
 };
 
-INSTANTIATE_TEST_CASE_P(GLCubeMapTextureTests,
-                        GLCubeMapTextureTest,
-                        ::testing::ValuesIn(kCubeMapTextureTargets));
+INSTANTIATE_TEST_SUITE_P(GLCubeMapTextureTests,
+                         GLCubeMapTextureTest,
+                         ::testing::ValuesIn(kCubeMapTextureTargets));
 
 TEST_P(GLCubeMapTextureTest, TexImage2DAfterFBOBinding) {
   GLenum cube_map_target = GetParam();

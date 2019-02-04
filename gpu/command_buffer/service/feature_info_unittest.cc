@@ -173,9 +173,9 @@ static const MockedGLVersionKind kGLVersionKinds[] = {
   ES3_on_Version3_2Compatibility
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        FeatureInfoTest,
-                        ::testing::ValuesIn(kGLVersionKinds));
+INSTANTIATE_TEST_SUITE_P(Service,
+                         FeatureInfoTest,
+                         ::testing::ValuesIn(kGLVersionKinds));
 
 TEST_P(FeatureInfoTest, Basic) {
   SetupWithoutInit();

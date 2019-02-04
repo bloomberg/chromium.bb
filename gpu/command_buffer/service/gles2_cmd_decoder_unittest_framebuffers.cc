@@ -1468,7 +1468,7 @@ TEST_P(GLES2ReadPixelsAsyncTest, ReadPixelsAsyncChangePackAlignment) {
   FinishReadPixelsAndCheckResult(kWidth, kHeight, pixels);
 }
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2ReadPixelsAsyncTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2ReadPixelsAsyncTest, ::testing::Bool());
 
 // Check that if a renderbuffer is attached and GL returns
 // GL_FRAMEBUFFER_COMPLETE that the buffer is cleared and state is restored.
@@ -2389,9 +2389,9 @@ class GLES2DecoderMultisampledRenderToTextureTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderMultisampledRenderToTextureTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderMultisampledRenderToTextureTest,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
        NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM_EXT) {
@@ -4034,9 +4034,9 @@ TEST_P(GLES2DecoderTestWithDrawRectangle, FramebufferDrawRectangleClear) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTestWithDrawRectangle,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTestWithDrawRectangle,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderManualInitTest, MESAFramebufferFlipYExtensionEnabled) {
   InitState init;

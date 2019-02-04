@@ -2545,7 +2545,7 @@ testing::tuple<const char*, const char*> make_gl_ext_tuple(
 }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SupportedContexts,
     ProgramManagerWithPathRenderingTest,
     testing::Values(
@@ -2635,7 +2635,7 @@ TEST_P(ProgramManagerDualSourceBlendingES2Test, UseSecondaryFragData) {
   EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SupportedContexts,
     ProgramManagerDualSourceBlendingES2Test,
     testing::Values(

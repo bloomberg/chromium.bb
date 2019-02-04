@@ -4227,9 +4227,9 @@ class GLES2DecoderCompressedFormatsTest : public GLES2DecoderManualInitTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderCompressedFormatsTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderCompressedFormatsTest,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderCompressedFormatsTest, GetCompressedTextureFormatsS3TC) {
   const GLenum formats[] = {
@@ -4406,9 +4406,9 @@ class GLES2DecoderTexStorageFormatAndTypeTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderTexStorageFormatAndTypeTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderTexStorageFormatAndTypeTest,
+                         ::testing::Bool());
 
 TEST_P(GLES2DecoderTexStorageFormatAndTypeTest, ES2) {
   InitState init;

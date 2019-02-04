@@ -439,9 +439,9 @@ static const GpuDriverBugWorkarounds workarounds_cases[] = {
 
 };
 
-INSTANTIATE_TEST_CASE_P(WithWorkarounds,
-                        GLVirtualContextsTest,
-                        ::testing::ValuesIn(workarounds_cases));
+INSTANTIATE_TEST_SUITE_P(WithWorkarounds,
+                         GLVirtualContextsTest,
+                         ::testing::ValuesIn(workarounds_cases));
 
 }  // namespace gpu
 

@@ -82,9 +82,9 @@ class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
   void AddExpectationsForBindSampler(GLuint unit, GLuint id);
 };
 
-INSTANTIATE_TEST_CASE_P(Service,
-                        GLES2DecoderRestoreStateTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service,
+                         GLES2DecoderRestoreStateTest,
+                         ::testing::Bool());
 
 void GLES2DecoderRestoreStateTest::AddExpectationsForActiveTexture(
     GLenum unit) {
