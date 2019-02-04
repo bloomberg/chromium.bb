@@ -746,15 +746,15 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
 bool Editor::FindString(LocalFrame& frame,
                         const String& target,
                         FindOptions options) {
-  VisibleSelection selection =
-      frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+  VisibleSelectionInFlatTree selection =
+      frame.Selection().ComputeVisibleSelectionInFlatTree();
 
   // TODO(yosin) We should make |findRangeOfString()| to return
   // |EphemeralRange| rather than|Range| object.
-  Range* const result_range =
-      FindRangeOfString(*frame.GetDocument(), target,
-                        EphemeralRange(selection.Start(), selection.End()),
-                        static_cast<FindOptions>(options | kFindAPICall));
+  Range* const result_range = FindRangeOfString(
+      *frame.GetDocument(), target,
+      EphemeralRangeInFlatTree(selection.Start(), selection.End()),
+      static_cast<FindOptions>(options | kFindAPICall));
 
   if (!result_range)
     return false;
