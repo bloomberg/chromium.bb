@@ -997,6 +997,7 @@ crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-block-sibling-003.xht [ Failure ]
 crbug.com/924142 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-012.html [ Failure Crash ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-margin-001.xht [ Failure ]
